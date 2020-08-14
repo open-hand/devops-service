@@ -117,4 +117,14 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     void deleteByIds(@Param("versionIds") Set<Long> versionIds);
 
     AppServiceVersionDTO queryByShareVersion(@Param("appServiceId") Long appServiceId, @Param("projectId") Long projectId);
+
+    List<Long> selectAllAppServiceIdWithNullHarborConfig();
+
+    void updateNullHarborVersionToDefaultType(@Param("appServiceId") Long appServiceId);
+
+    void updateNullHarborVersionToCustomType(@Param("appServiceId") Long appServiceId, @Param("configId") Long harborConfigId);
+
+    void updateDefaultHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
+
+    void updateCustomHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
 }

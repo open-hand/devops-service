@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,6 +10,7 @@ package io.choerodon.devops.api.vo;
  * @Date 2020/4/13 11:18
  */
 public class PipelineWebHookProjectVO {
+    @Encrypt
     private Long id;
     private String name;
 

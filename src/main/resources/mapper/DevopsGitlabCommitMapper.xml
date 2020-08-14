@@ -3,21 +3,19 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper">
     <select id="listCommits" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO">
-        SELECT
-        dgc.id,
-        dgc.user_id,
-        dgc.app_service_id,
-        dgc.ref,
-        dgc.commit_date,
-        dgc.commit_sha,
-        dgc.commit_content,
-        dgc.url,
-        da.`name` appServiceName
-        FROM
-        devops_gitlab_commit dgc
-        JOIN devops_app_service da ON dgc.app_service_id = da.id
-        WHERE
-        da.project_id = #{projectId}
+        SELECT dgc.id,
+               dgc.user_id,
+               dgc.app_service_id,
+               dgc.ref,
+               dgc.commit_date,
+               dgc.commit_sha,
+               dgc.commit_content,
+               dgc.url,
+               da.`name` appServiceName
+        FROM devops_gitlab_commit dgc
+                     JOIN devops_app_service da ON dgc.app_service_id = da.id
+                WHERE
+                da.project_id = #{projectId}
         <if test="appServiceIds != null">
             AND dgc.app_service_id IN
             <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
@@ -27,41 +25,57 @@
         AND da.is_active = 1
         AND dgc.app_service_id = da.id
         <if test="startDate != null">
-            AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
+            AND dgc.commit_date >= CONCAT('', '${startDate}', ' 00:00:00')
         </if>
         <if test="endDate != null">
-            AND dgc.commit_date <![CDATA[<=]]>  CONCAT('','${endDate}',' 23:59:59')
+            AND dgc.commit_date <![CDATA[<=]]> CONCAT('', '${endDate}', ' 23:59:59')
         </if>
         ORDER BY dgc.commit_date DESC
     </select>
 
 
     <select id="queryByAppIdAndBranch" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO">
-        SELECT
-        dgc.id,
-        dgc.user_id,
-        dgc.app_service_id,
-        dgc.ref,
-        dgc.commit_date,
-        dgc.commit_sha,
-        dgc.commit_content,
-        dgc.url
-        FROM
-        devops_gitlab_commit dgc
-        WHERE
-        dgc.app_service_id = #{appServiceId}
-        AND dgc.ref = #{branchName}
+        SELECT dgc.id,
+               dgc.user_id,
+               dgc.app_service_id,
+               dgc.ref,
+               dgc.commit_date,
+               dgc.commit_sha,
+               dgc.commit_content,
+               dgc.url
+        FROM devops_gitlab_commit dgc
+                WHERE
+                dgc.app_service_id = #{appServiceId}
+                  AND dgc.ref = #{branchName}
         <if test="startDate != null">
-            AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
+            AND dgc.commit_date >= CONCAT('', '${startDate}', ' 00:00:00')
         </if>
-
     </select>
     <delete id="deleteByAppServiceId">
         DELETE
-            FROM
-                devops_gitlab_commit
-            WHERE
-            app_service_id = #{appServiceId}
+        FROM devops_gitlab_commit
+        WHERE app_service_id = #{appServiceId}
     </delete>
 
+    <select id="listLatestUseAppServiceIdAndDate" resultType="io.choerodon.devops.api.vo.LatestAppServiceVO">
+        SELECT dgc.app_service_id AS id, max(dgc.commit_date) AS last_update_date
+        FROM devops_gitlab_commit dgc
+                     JOIN devops_app_service das ON dgc.app_service_id = das.id
+                WHERE dgc.user_id = #{userId}
+                  AND dgc.commit_date <![CDATA[>]]> #{time}
+                  AND das.project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
+        GROUP BY dgc.app_service_id, dgc.commit_date
+    </select>
+
+    <select id="queryCountByProjectIdAndDate" resultType="java.util.Date">
+        SELECT dgc.creation_date
+        FROM devops_gitlab_commit dgc
+                     JOIN devops_app_service das ON dgc.app_service_id = das.id
+        WHERE das.project_id = #{projectId}
+          AND dgc.commit_date <![CDATA[>=]]> #{startDate}
+          AND dgc.commit_date <![CDATA[<=]]> #{endDate}
+    </select>
 </mapper>

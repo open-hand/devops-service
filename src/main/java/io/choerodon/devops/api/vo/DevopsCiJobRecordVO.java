@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.annotation.WillDeleted;
 
 /**
  * 〈功能简述〉
@@ -12,14 +15,21 @@ import io.swagger.annotations.ApiModelProperty;
  * @author wanghao
  * @since 2020/4/7 22:34
  */
+@WillDeleted
 public class DevopsCiJobRecordVO {
+    @Encrypt
     private Long id;
+
     @ApiModelProperty("gitlab job记录id")
     private Long gitlabJobId;
+
+    @Encrypt
     @ApiModelProperty("流水线记录id")
     private Long ciPipelineRecordId;
     @ApiModelProperty("阶段名称")
     private String stage;
+
+    @Encrypt
     @ApiModelProperty("触发用户")
     private Long triggerUserId;
     @ApiModelProperty("任务类型")
@@ -34,12 +44,22 @@ public class DevopsCiJobRecordVO {
     private Date finishedDate;
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
+    @ApiModelProperty("release阶段生成chart的版本")
+    private String chartVersion;
 
     @ApiModelProperty("ci中返回sonar")
     private List<SonarContentVO> sonarContentVOS;
 
     public List<SonarContentVO> getSonarContentVOS() {
         return sonarContentVOS;
+    }
+
+    public String getChartVersion() {
+        return chartVersion;
+    }
+
+    public void setChartVersion(String chartVersion) {
+        this.chartVersion = chartVersion;
     }
 
     public void setSonarContentVOS(List<SonarContentVO> sonarContentVOS) {

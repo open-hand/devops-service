@@ -1,18 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ObjectMeta;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
@@ -32,6 +21,16 @@ import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1ObjectMeta;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -68,12 +67,14 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapVO devopsConfigMapVO) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsConfigMapVO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsConfigMapVO.getEnvId());
         UserAttrDTO userAttrDTO;
         if (!sync) {
             userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -190,14 +191,14 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(Long configMapId) {
+    public void delete(Long projectId, Long configMapId) {
         DevopsConfigMapDTO devopsConfigMapDTO = baseQueryById(configMapId);
 
         if (devopsConfigMapDTO == null) {
             return;
         }
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsConfigMapDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsConfigMapDTO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -256,10 +257,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             v1ObjectMeta.setName(devopsConfigMapDTO.getName());
             v1ConfigMap.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1ConfigMap);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            Integer gitalbEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
             resourceConvertToYamlHandler.operationEnvGitlabFile(
                     null,
-                    projectId,
+                    gitalbEnvProjectId,
                     DELETE_TYPE,
                     userAttrDTO.getGitlabUserId(),
                     devopsConfigMapDTO.getId(), CONFIGMAP, null, false, devopsEnvironmentDTO.getId(), path);
@@ -323,9 +324,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public Page<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageable, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsConfigMapMapper.listByEnv(envId,
-                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
-                        appServiceId));
+                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
+                appServiceId));
     }
 
     @Override

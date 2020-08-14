@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.iam;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by n!Ck
@@ -9,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Description:
  */
 public class LabelVO {
+    @Encrypt
     @ApiModelProperty(value = "主键")
     private Long id;
     @ApiModelProperty(value = "名称")

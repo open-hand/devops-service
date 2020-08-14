@@ -9,7 +9,11 @@ import java.util.List;
 public class DevopsPipelineDTO {
 
     private Long pipelineRecordId;
+    private String pipelineName;
     private String businessKey;
+    private List<String> userNames;
+    private Boolean multiAssign;
+
     private List<DevopsPipelineStageDTO> stages;
 
     public String getBusinessKey() {
@@ -34,5 +38,29 @@ public class DevopsPipelineDTO {
 
     public void setStages(List<DevopsPipelineStageDTO> stages) {
         this.stages = stages;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
+
+    public List<String> getUserNames() {
+        return userNames;
+    }
+
+    public void setUserNames(List<String> userNames) {
+        this.userNames = userNames;
+    }
+
+    public Boolean getMultiAssign() {
+        return multiAssign;
+    }
+
+    public void setMultiAssign(Boolean multiAssign) {
+        this.multiAssign = multiAssign;
     }
 }

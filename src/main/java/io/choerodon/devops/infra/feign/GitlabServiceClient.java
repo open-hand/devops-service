@@ -1,20 +1,20 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
-import java.util.Map;
-import javax.validation.Valid;
-
+import io.choerodon.devops.api.vo.CiVariableVO;
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 /**
  * gitlab服务 feign客户端
@@ -94,18 +94,6 @@ public interface GitlabServiceClient {
     ResponseEntity<List<DeployKeyDTO>> listDeploykey(@RequestParam("projectId") Integer projectId,
                                                      @RequestParam("userId") Integer userId);
 
-
-    @PostMapping(value = "/v1/projects/{projectId}/variables")
-    ResponseEntity<Map<String, Object>> addProjectVariable(@PathVariable("projectId") Integer projectId,
-                                                           @RequestBody GitlabTransferDTO gitlabTransferDTO,
-                                                           @RequestParam("protecteds") Boolean protecteds,
-                                                           @RequestParam("userId") Integer userId);
-
-    @PutMapping(value = "/v1/projects/{projectId}/variables")
-    ResponseEntity<List<Map<String, Object>>> batchAddProjectVariable(@PathVariable("projectId") Integer projectId,
-                                                                      @RequestParam("userId") Integer userId,
-                                                                      @RequestBody @Valid List<VariableDTO> variableDTODTOS);
-
     @DeleteMapping(value = "/v1/projects/{projectId}")
     ResponseEntity deleteProjectById(@PathVariable("projectId") Integer projectId,
                                      @RequestParam("userId") Integer userId);
@@ -122,12 +110,6 @@ public interface GitlabServiceClient {
     ResponseEntity<GitlabProjectDTO> queryProjectByName(@RequestParam("userId") Integer userId,
                                                         @RequestParam("groupName") String groupName,
                                                         @RequestParam("projectName") String projectName);
-
-
-    @GetMapping(value = "/v1/projects/{projectId}/variable")
-    ResponseEntity<List<VariableDTO>> listVariable(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("userId") Integer userId);
-
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<ImpersonationTokenDTO> create(@PathVariable("userId") Integer userId);
@@ -216,7 +198,7 @@ public interface GitlabServiceClient {
                                                            @RequestParam("sha") String sha,
                                                            @RequestParam("userId") Integer userId);
 
-    @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
+    @PostMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
     ResponseEntity<List<CommitDTO>> getCommits(@PathVariable("projectId") Integer projectId,
                                                @RequestBody GitlabTransferDTO gitlabTransferDTO);
 
@@ -552,4 +534,122 @@ public interface GitlabServiceClient {
             @PathVariable("projectId") Integer projectId,
             @ApiParam(value = "要查询的分支名", required = true)
             @PathVariable("branchName") String branchName);
+
+    /**
+     * 列举出gitlab项目组的ci variable
+     *
+     * @param groupId 组id
+     * @param userId  gitlab用户id
+     * @return
+     */
+    @GetMapping(value = "/v1/groups/{groupId}/variable")
+    ResponseEntity<List<CiVariableVO>> listProjectVariable(@PathVariable("groupId") Integer groupId,
+                                                           @RequestParam("userId") Integer userId);
+
+    @ApiOperation(value = "添加组ci环境变量")
+    @PostMapping(value = "/v1/groups/{groupId}/variable")
+    ResponseEntity<CiVariableVO> createGroupVariable(
+            @ApiParam(value = "组ID", required = true)
+            @PathVariable("groupId") Integer groupId,
+            @ApiParam(value = "变量key&value", required = true)
+            @RequestBody GitlabTransferDTO gitlabTransferDTO,
+            @ApiParam(value = "变量是否保护", required = true)
+            @RequestParam("protecteds") boolean protecteds,
+            @ApiParam(value = "用户Id称")
+            @RequestParam(required = false, name = "userId") Integer userId);
+
+    /**
+     * 批量增加/更新组ci环境变量
+     *
+     * @param groupId 组id
+     * @param userId  用户id
+     * @param list    变量列表
+     * @return 变量列表
+     */
+    @ApiOperation(value = " 批量增加/更新项目ci环境变量")
+    @PutMapping(value = "/v1/groups/{groupId}/variables")
+    ResponseEntity<List<CiVariableVO>> batchSaveGroupVariable(
+            @ApiParam(value = "组ID", required = true)
+            @PathVariable("groupId") Integer groupId,
+            @ApiParam(value = "用户ID", required = true)
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "variable信息", required = true)
+            @RequestBody List<CiVariableVO> list);
+
+    /**
+     * 删除组中指定key的变量
+     *
+     * @param groupId 组id
+     * @param userId  用户id
+     * @param key     key
+     * @return 204 code
+     */
+    @ApiOperation(value = "删除ci环境变量")
+    @DeleteMapping(value = "/v1/groups/{groupId}/variables")
+    ResponseEntity<Void> deleteVariable(
+            @ApiParam(value = "组ID", required = true)
+            @PathVariable("groupId") Integer groupId,
+            @ApiParam(value = "用户ID", required = true)
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "variable key", required = true)
+            @RequestParam(value = "key") String key);
+
+    /**
+     * 批量删除组中指定key的变量
+     *
+     * @param groupId 组id
+     * @param userId  用户id
+     * @param key     key
+     * @return 204 code
+     */
+    @ApiOperation(value = "批量删除组中指定key的变量")
+    @DeleteMapping(value = "/v1/groups/{groupId}/variables")
+    ResponseEntity<Void> batchGroupDeleteVariable(
+            @ApiParam(value = "组ID", required = true)
+            @PathVariable("groupId") Integer groupId,
+            @ApiParam(value = "用户ID", required = true)
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "variable keys", required = true)
+            @RequestBody List<String> key);
+
+    /**
+     * 列举出gitlab项目的ci variable
+     *
+     * @param projectId gitlab项目id
+     * @param userId    gitlab用户id
+     * @return
+     */
+    @GetMapping(value = "/v1/projects/{projectId}/variable")
+    ResponseEntity<List<CiVariableVO>> listAppServiceVariable(@PathVariable("projectId") Integer projectId,
+                                                              @RequestParam("userId") Integer userId);
+
+
+    @PostMapping(value = "/v1/projects/{projectId}/variables")
+    ResponseEntity<CiVariableVO> addProjectVariable(@PathVariable("projectId") Integer projectId,
+                                                    @RequestBody GitlabTransferDTO gitlabTransferDTO,
+                                                    @RequestParam("protecteds") Boolean protecteds,
+                                                    @RequestParam("userId") Integer userId);
+
+    @PutMapping(value = "/v1/projects/{projectId}/variables")
+    ResponseEntity<List<CiVariableVO>> batchSaveProjectVariable(@PathVariable("projectId") Integer projectId,
+                                                                @RequestParam("userId") Integer userId,
+                                                                @RequestBody List<CiVariableVO> ciVariableVOList);
+
+    /**
+     * 批量删除项目中指定key的变量
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @param key       key
+     * @return 204 code
+     */
+    @ApiOperation(value = "批量删除项目中指定key的变量")
+    @DeleteMapping(value = "/v1/projects/{projectId}/variables")
+    ResponseEntity<Void> batchProjectDeleteVariable(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "用户ID", required = true)
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "variable keys", required = true)
+            @RequestBody List<String> key);
 }

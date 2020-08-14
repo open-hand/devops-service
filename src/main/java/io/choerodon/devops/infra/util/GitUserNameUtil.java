@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.util;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 
@@ -41,15 +43,15 @@ public class GitUserNameUtil {
         return getGitlabRealUsername(details.getUsername());
     }
 
+    // TODO 调用方修改逻辑
     /**
      * 获取登录用户Id
      *
      * @return userId
      */
-    public static Integer getUserId() {
+    public static Long getUserId() {
         CustomUserDetails details = DetailsHelper.getUserDetails();
-        Long userId = details.getUserId();
-        return TypeUtil.objToInteger(userId);
+        return details.getUserId();
     }
 
     public static String getEmail(){
@@ -80,5 +82,14 @@ public class GitUserNameUtil {
             return "admin1";
         }
         return username;
+    }
+
+    public static Long getIamUserIdByGitlabUserName(String username) {
+        if ("admin1".equals(username) || "root".equals(username)) {
+            return 1L;
+        }
+        UserAttrService userAttrService = ApplicationContextHelper.getContext().getBean(UserAttrService.class);
+        UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
+        return userAttrE.getIamUserId();
     }
 }

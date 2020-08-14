@@ -10,7 +10,6 @@ import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
 import EmptyPage from '../../../../../../components/empty-page';
 
-
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
 import './index.less';

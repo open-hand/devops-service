@@ -5,7 +5,7 @@ export default (formatMessage) => ({
   fields: [
     {
       name: 'id',
-      type: 'number',
+      type: 'string',
     },
     {
       name: 'name',

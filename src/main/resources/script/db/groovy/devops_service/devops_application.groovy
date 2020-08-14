@@ -115,4 +115,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
     changeSet(author: 'zmf', id: '2020-05-13-app-add-uk', failOnError: false) {
         addUniqueConstraint(tableName: 'devops_app_service', constraintName: 'app-service-token-uk', columnNames: 'token')
     }
+    changeSet(author: 'wanghao', id: '2020-07-05-app-service-add--index') {
+        createIndex(indexName: "idx_last_update_by", tableName: "devops_app_service") {
+            column(name: "last_updated_by")
+            column(name: 'last_update_date')
+        }
+    }
+    changeSet(author: 'wanghao', id: '2020-07-06-app-service-add-index') {
+        createIndex(indexName: "idx_gitlab_project_id", tableName: "devops_app_service") {
+            column(name: 'gitlab_project_id')
+        }
+    }
 }

@@ -51,10 +51,10 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
         record.getField('appServiceVersionId').reset();
         if (value) {
           record.getField('appServiceVersionId').set('lookupAxiosConfig', {
-            url: `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${value.split('__')[0]}&deploy_only=true&do_page=true&page=1&size=40`,
+            url: `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${value.split('**')[0]}&deploy_only=true&do_page=true&page=1&size=40`,
             method: 'post',
           });
-          record.set('instanceName', getRandomName(value.split('__')[1]));
+          record.set('instanceName', getRandomName(value.split('**')[1]));
         }
         record.set('valueId', null);
         break;
@@ -83,7 +83,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
   function getValueIdLookUp({ record }) {
     if (record.get('environmentId') && record.get('appServiceId')) {
       return {
-        url: `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?env_id=${record.get('environmentId')}&app_service_id=${record.get('appServiceId').split('__')[0]}`,
+        url: `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?env_id=${record.get('environmentId')}&app_service_id=${record.get('appServiceId').split('**')[0]}`,
         method: 'get',
       };
     }
@@ -121,7 +121,7 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
         const newData = [];
         forEach(data, (item) => {
           const res = omit(item, ['__id', '__status', 'appServiceSource', 'devopsServiceReqVO', 'devopsIngressVO']);
-          const appServiceId = Number(item.appServiceId.split('__')[0]);
+          const appServiceId = item.appServiceId.split('**')[0];
           const devopsServiceReqVO = item.devopsServiceReqVO ? omit(item.devopsServiceReqVO[0], ['__id', '__status']) : null;
           const devopsIngressVO = item.devopsIngressVO ? omit(item.devopsIngressVO[0], ['__id', '__status']) : null;
           res.appServiceId = appServiceId;
@@ -157,12 +157,12 @@ export default (({ intlPrefix, formatMessage, projectId, envOptionsDs, deploySto
     },
     fields: [
       { name: 'appServiceId', type: 'string', label: formatMessage({ id: `${intlPrefix}.app` }), required: true },
-      { name: 'appServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true },
-      { name: 'environmentId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: 'environment' }), required: true, options: envOptionsDs },
+      { name: 'appServiceVersionId', type: 'string', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true },
+      { name: 'environmentId', type: 'string', textField: 'name', valueField: 'id', label: formatMessage({ id: 'environment' }), required: true, options: envOptionsDs },
       { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true, validator: checkName },
       {
         name: 'valueId',
-        type: 'number',
+        type: 'string',
         textField: 'name',
         valueField: 'id',
         label: formatMessage({ id: `${intlPrefix}.config` }),

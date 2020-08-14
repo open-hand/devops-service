@@ -3,10 +3,14 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
-public class DevopsConfigMapRespVO extends DevopsResourceDataInfoVO {
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
+public class DevopsConfigMapRespVO extends DevopsResourceDataInfoVO {
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long envId;
+    @Encrypt
     private Long commandId;
     private String commandStatus;
     private String envCode;

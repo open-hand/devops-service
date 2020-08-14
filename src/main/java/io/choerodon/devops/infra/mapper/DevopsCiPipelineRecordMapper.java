@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
@@ -43,4 +44,9 @@ public interface DevopsCiPipelineRecordMapper extends BaseMapper<DevopsCiPipelin
      * @return 应用服务
      */
     AppServiceDTO queryGitlabProjectIdByRecordId(@Param("pipelineRecordId") Long recordId);
+
+    List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(@Param("date") Date date,
+                                                               @Param("currentDate") Date currentDate);
+
+    DevopsCiPipelineRecordVO selectById(Long ciPipelineRecordId);
 }

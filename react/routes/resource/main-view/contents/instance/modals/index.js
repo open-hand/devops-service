@@ -186,7 +186,7 @@ const IstModals = injectIntl(observer(() => {
   }
 
   function getHeader() {
-    const [envId] = parentId.split('-');
+    const [envId] = parentId.split('**');
     const envRecord = treeDs.find((record) => record.get('key') === envId);
     const connect = envRecord && envRecord.get('connect');
     const record = baseDs.current;

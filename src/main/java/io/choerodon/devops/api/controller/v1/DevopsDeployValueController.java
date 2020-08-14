@@ -1,17 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -23,6 +11,18 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -50,8 +50,10 @@ public class DevopsDeployValueController {
     public ResponseEntity<Page<DevopsDeployValueVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+            @Encrypt
             @ApiParam(value = "环境Id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
@@ -116,6 +118,7 @@ public class DevopsDeployValueController {
     public ResponseEntity<DevopsDeployValueVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "配置Id", required = true)
             @RequestParam(value = "value_id") Long valueId) {
         return Optional.ofNullable(devopsDeployValueService.query(projectId, valueId))
@@ -132,23 +135,23 @@ public class DevopsDeployValueController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "配置id", required = true)
             @RequestParam(value = "value_id") Long valueId) {
         devopsDeployValueService.delete(projectId, valueId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 
     /**
      * 校验部署配置的名称在环境下唯一
      *
-     * @param projectId     项目id
-     * @param name          名称
-     * @param deployValueId 部署配置id(更新时校验名称需要)
-     * @param envId         环境id
+     * @param projectId 项目id
+     * @param name      名称
+     * @param envId     环境id
      * @return 没有内容则名称合法
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -159,6 +162,7 @@ public class DevopsDeployValueController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "名称", required = true)
             @RequestParam(value = "name") String name,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return ResponseEntity.ok(devopsDeployValueService.isNameUnique(projectId, name, envId));
@@ -177,6 +181,7 @@ public class DevopsDeployValueController {
     public ResponseEntity<Boolean> checkDelete(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
         return Optional.ofNullable(devopsDeployValueService.checkDelete(projectId, valueId))
@@ -198,8 +203,10 @@ public class DevopsDeployValueController {
     public ResponseEntity<List<DevopsDeployValueVO>> listByEnvAndApp(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
+            @Encrypt
             @ApiParam(value = "环境Id", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId))

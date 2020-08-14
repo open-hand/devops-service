@@ -2,10 +2,7 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import useStore from '../../../../../stores/useStore';
-import useStepStore from './useStore';
 import AddStepFormDataSet from './AddStepDataset';
-import useEditBlockStore from '../../../../../stores/useEditBlockStore';
 
 const Store = createContext();
 
@@ -18,14 +15,18 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     children,
     pipelineId,
     stepStore,
+    AppState: { currentMenuType: { projectId } },
+    appServiceId,
   } = props;
-  const addStepDs = useMemo(() => new DataSet(AddStepFormDataSet()), []);
+  
+  const addStepDs = useMemo(() => new DataSet(AddStepFormDataSet(projectId)), [projectId, appServiceId]);
 
   const value = {
     ...props,
     stepStore,
     addStepDs,
     pipelineId,
+    projectId,
   };
 
   return (

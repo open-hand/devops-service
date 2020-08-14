@@ -4,9 +4,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
-
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +25,19 @@ import java.util.Set;
 public interface BaseServiceClient {
 
     @GetMapping(value = "/choerodon/v1/projects/{projectId}")
-    ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId);
+    ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId,
+                                               @RequestParam(value = "with_category_info") Boolean withCategoryInfo,
+                                               @RequestParam(value = "with_user_info") Boolean withUserInfo,
+                                               @RequestParam(value = "with_agile_info") Boolean withAgileInfo);
 
+    /**
+     * @param organizationId 组织id
+     * @param withMoreInfo   获取更详细的组织配置信息以及用户信息
+     * @return
+     */
     @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
-    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
+    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId,
+                                                 @RequestParam(value = "with_more_info") Boolean withMoreInfo);
 
     /**
      * 根据id集合查询组织
@@ -206,4 +215,11 @@ public interface BaseServiceClient {
     ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(
             @PathVariable("user_id") Long userId,
             @RequestBody Set<Long> projectIds);
+
+    @GetMapping("/choerodon/v1/organizations/{organization_id}/users/{user_id}/owned_projects")
+    ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable("organization_id") Long organizationId,
+                                                       @PathVariable("user_id") Long userId);
+
+    @GetMapping("/choerodon/v1/sync/user")
+    ResponseEntity<List<UserVO>> listUserByCreationDate();
 }

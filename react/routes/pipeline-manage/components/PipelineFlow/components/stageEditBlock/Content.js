@@ -7,9 +7,19 @@ import Loading from '../../../../../../components/loading';
 
 const defaultData = [
   {
-    name: '阶段一',
+    name: '构建',
     sequence: 1,
     jobList: [],
+    type: 'CI',
+    parallel: 1,
+    triggerType: '',
+  }, {
+    name: '部署',
+    sequence: 2,
+    jobList: [],
+    type: 'CD',
+    parallel: 0,
+    triggerType: 'auto',
   },
 ];
 
@@ -22,34 +32,53 @@ export default observer(() => {
     edit,
     appServiceId,
     appServiceName,
+    appServiceCode,
+    appServiceType,
     image,
+    dataSource: propsDataSource,
   } = usePipelineStageEditStore();
+
   const {
     setStepData,
     getStepData,
     getStepData2,
-    loadData,
     getLoading,
   } = editBlockStore || stepStore;
 
-
   useEffect(() => {
-    pipelineId && !edit ? loadData(projectId, pipelineId) : setStepData(defaultData, edit);
-  }, [pipelineId, projectId]);
+    let stageList = [];
+    if (appServiceId && appServiceType === 'test') {
+      stageList = [...defaultData.slice(0, 1)];
+    } else {
+      stageList = [...defaultData];
+    }
+    if (propsDataSource) {
+      stageList = [...propsDataSource.stageList];
+    }
+    setStepData(stageList, edit);
+  }, [appServiceId]);
 
   function renderColumn() {
     const dataSource = edit ? getStepData2 : getStepData;
     if (dataSource && dataSource.length > 0) {
-      return dataSource.map((item, index) => <EditColumn
-        columnIndex={index}
-        key={item.id}
-        {...item}
-        edit={edit}
-        pipelineId={pipelineId}
-        appServiceId={appServiceId}
-        appServiceName={appServiceName}
-        image={image}
-      />);
+      return dataSource.map((item, index) => {
+        const nextStageType = dataSource[index + 1]?.type && dataSource[index + 1]?.type.toUpperCase();
+        return (<EditColumn
+          {...item}
+          columnIndex={index}
+          key={item.id}
+          isLast={String(index) === String(dataSource.length - 1)}
+          isFirst={index === 0}
+          nextStageType={nextStageType}
+          edit={edit}
+          pipelineId={pipelineId}
+          appServiceId={appServiceId}
+          appServiceName={appServiceName}
+          appServiceCode={appServiceCode}
+          appServiceType={appServiceType}
+          image={image}
+        />);
+      });
     }
   }
 

@@ -104,14 +104,14 @@ const EnvModals = observer(() => {
 
   function deployAfter({ envId, appServiceId, id: instanceId }) {
     treeDs.query();
-    const parentId = `${envId}-${appServiceId}`;
+    const parentId = `${envId}**${appServiceId}`;
     resourceStore.setSelectedMenu({
       id: instanceId,
       parentId,
-      key: `${parentId}-${instanceId}`,
+      key: `${parentId}**${instanceId}`,
       itemType: itemTypes.IST_ITEM,
     });
-    resourceStore.setExpandedKeys([`${envId}`, `${envId}-${appServiceId}`]);
+    resourceStore.setExpandedKeys([`${envId}`, `${envId}**${appServiceId}`]);
   }
 
   function openEnvDetail() {

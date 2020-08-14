@@ -7,7 +7,7 @@ export default ((intlPrefix, formatMessage) => ({
   fields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }) },
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }) },
     { name: 'active', type: 'boolean', label: formatMessage({ id: 'status' }) },
     { name: 'creationDate', type: 'string', label: formatMessage({ id: 'createDate' }) },

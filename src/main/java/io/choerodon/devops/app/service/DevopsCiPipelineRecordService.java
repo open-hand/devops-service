@@ -34,7 +34,7 @@ public interface DevopsCiPipelineRecordService {
      */
     void asyncPipelineUpdate(Long pipelineRecordId, Integer gitlabPipelineId);
 
-    DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long gitlabPipelineId);
+    DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long ciPipelineRecordId);
 
     /**
      * 删除流水线的执行记录
@@ -67,4 +67,10 @@ public interface DevopsCiPipelineRecordService {
      * 查询流水线执行记录
      */
     DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId);
+
+    DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId);
+
+    List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(Long statusUpdatePeriodMilliSeconds);
+
+    DevopsCiPipelineRecordVO queryByCiPipelineRecordId(Long ciPipelineRecordId);
 }

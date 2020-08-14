@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 
 import io.choerodon.core.swagger.ChoerodonRouteData;
 import io.choerodon.swagger.annotation.ChoerodonExtraData;

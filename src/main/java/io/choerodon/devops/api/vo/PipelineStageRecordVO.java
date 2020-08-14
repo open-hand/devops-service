@@ -2,19 +2,24 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:12 2019/4/4
  * Description:
  */
 public class PipelineStageRecordVO {
+    @Encrypt
     private Long id;
     private String stageName;
     private String status;
     private String triggerType;
+    @Encrypt
     private Long pipelineId;
     private Integer isParallel;
     private String executionTime;
+    @Encrypt
     private Long stageId;
     private List<PipelineTaskRecordVO> taskRecordDTOS;
     private List<PipelineUserVO> userDTOS;

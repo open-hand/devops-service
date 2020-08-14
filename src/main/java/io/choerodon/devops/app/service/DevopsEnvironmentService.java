@@ -1,10 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
@@ -12,6 +7,10 @@ import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.ibatis.annotations.Param;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 
 /**
@@ -197,9 +196,10 @@ public interface DevopsEnvironmentService {
     /**
      * 环境下为用户分配权限
      *
+     * @param projectId                   项目id
      * @param devopsEnvPermissionUpdateVO 权限更新信息
      */
-    void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
+    void updateEnvUserPermission(Long projectId, DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
 
     /**
      * 删除已停用或失败的环境
@@ -240,7 +240,7 @@ public interface DevopsEnvironmentService {
      *
      * @param envId 环境id
      */
-    void retryGitOps(Long envId);
+    void retryGitOps(Long projectId, Long envId);
 
     /**
      * 重试系统环境的GitOps解析

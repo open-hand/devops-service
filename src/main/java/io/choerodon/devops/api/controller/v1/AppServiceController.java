@@ -1,15 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.*;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -23,6 +13,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.*;
 
 /**
  * Created by younger on 2018/4/4.
@@ -36,6 +37,18 @@ public class AppServiceController {
 
     public AppServiceController(AppServiceService applicationServiceService) {
         this.applicationServiceService = applicationServiceService;
+    }
+
+    @ApiOperation("内部查询项目下的应用服务 / 不区分权限")
+    @PostMapping("page_by_options_internal")
+    @Permission(permissionWithin = true)
+    @CustomPageRequest
+    public ResponseEntity<Page<AppServiceRepVO>> internalListAll(
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageable,
+            @RequestBody(required = false) String params) {
+        return Results.success(applicationServiceService.internalListAllInProject(projectId, params, pageable));
     }
 
     /**
@@ -94,6 +107,7 @@ public class AppServiceController {
     public ResponseEntity<AppServiceRepVO> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(applicationServiceService.query(projectId, appServiceId))
@@ -136,6 +150,7 @@ public class AppServiceController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
+            @Encrypt
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "启用停用", required = true)
             @RequestParam Boolean active) {
@@ -150,6 +165,7 @@ public class AppServiceController {
     public ResponseEntity<AppServiceMsgVO> checkAppService(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(applicationServiceService.checkAppService(projectId, appServiceId))
@@ -170,6 +186,7 @@ public class AppServiceController {
     public ResponseEntity<Void> delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
         applicationServiceService.delete(projectId, appServiceId);
@@ -202,6 +219,8 @@ public class AppServiceController {
             @RequestParam(value = "app_market", required = false) Boolean appMarket,
             @ApiParam(value = "服务类型")
             @RequestParam(value = "type", required = false) String type,
+            @ApiParam(value = "是否校验团队成员权限")
+            @RequestParam(value = "checkMember", required = false, defaultValue = "false") Boolean checkMember,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
@@ -209,7 +228,7 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
@@ -228,8 +247,10 @@ public class AppServiceController {
     public ResponseEntity<Page<AppServiceCodeVO>> pageByEnvIdAndappServiceId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "服务 Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
@@ -255,11 +276,13 @@ public class AppServiceController {
     public ResponseEntity<List<AppServiceCodeVO>> listByEnvIdAndStatus(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例运行状态")
             @RequestParam(required = false) String status,
             @ApiParam(value = "服务 Id")
+            @Encrypt
             @RequestParam(required = false) Long appServiceId) {
         return Optional.ofNullable(applicationServiceService.listByEnvId(projectId, envId, status, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -457,6 +480,7 @@ public class AppServiceController {
     public ResponseEntity<List<AppServiceUserPermissionRespVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable Long appServiceId) {
         return Optional.ofNullable(applicationServiceService.listAllUserPermission(appServiceId))
@@ -497,17 +521,17 @@ public class AppServiceController {
     /**
      * 校验chart仓库配置信息是否正确
      *
-     * @param url chartmusume地址
+     * @param configVO chartMuseum信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart仓库配置信息是否正确")
-    @GetMapping(value = "/check_chart")
+    @PostMapping(value = "/check_chart")
     public void checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "chartmusume地址", required = true)
-            @RequestParam String url) {
-        applicationServiceService.checkChart(url);
+            @ApiParam(value = "chartMuseum信息", required = true)
+            @RequestBody ConfigVO configVO) {
+        applicationServiceService.checkChart(configVO.getUrl(), configVO.getUserName(), configVO.getPassword());
     }
 
     /**
@@ -547,11 +571,10 @@ public class AppServiceController {
     public ResponseEntity<SonarContentsVO> getSonarQube(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(applicationServiceService.getSonarContent(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.sonarqube.content.get"));
+        return Results.success(applicationServiceService.getSonarContent(projectId, appServiceId));
     }
 
     /**
@@ -567,6 +590,7 @@ public class AppServiceController {
     public ResponseEntity<SonarTableVO> getSonarQubeTable(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "类型", required = true)
@@ -606,6 +630,7 @@ public class AppServiceController {
     public ResponseEntity<Page<DevopsUserPermissionVO>> pagePermissionUsers(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
@@ -624,10 +649,12 @@ public class AppServiceController {
     public ResponseEntity<Page<DevopsUserPermissionVO>> listNonPermissionUsers(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
+            @Encrypt
             @ApiParam(value = "指定的用户Id")
             @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
@@ -641,29 +668,32 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用服务权限更新")
     @PostMapping(value = "/{app_service_id}/update_permission")
-    public ResponseEntity updatePermission(
+    public ResponseEntity<Void> updatePermission(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "权限信息", required = true)
             @RequestBody AppServicePermissionVO appServicePermissionVO) {
         applicationServiceService.updatePermission(projectId, appServiceId, appServicePermissionVO);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用服务权限删除")
     @DeleteMapping(value = "/{app_service_id}/delete_permission")
-    public ResponseEntity deletePermission(
+    public ResponseEntity<Void> deletePermission(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @Encrypt
             @ApiParam(value = "user Id", required = true)
             @RequestParam(value = "user_id") Long userId) {
         applicationServiceService.deletePermission(projectId, appServiceId, userId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -673,6 +703,7 @@ public class AppServiceController {
     public ResponseEntity<List<ProjectVO>> listProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用服务Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "查询参数", required = true)
@@ -686,13 +717,13 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "从平台内部导入应用服务")
     @PostMapping(value = "/import/internal")
-    public ResponseEntity importAppService(
+    public ResponseEntity<Void> importAppService(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody List<ApplicationImportInternalVO> importInternalVOS) {
         applicationServiceService.importAppServiceInternal(projectId, importInternalVOS);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -759,6 +790,7 @@ public class AppServiceController {
     public ResponseEntity<Page<AppServiceVO>> batchQueryAppService(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "应用服务Ids")
             @RequestParam(value = "ids") Set<Long> ids,
             @ApiParam(value = "是否分页")
@@ -786,6 +818,7 @@ public class AppServiceController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "应用服务Ids")
+            @Encrypt
             @RequestBody(required = false) Set<Long> ids) {
         return Optional.ofNullable(
                 applicationServiceService.listByIdsOrPage(projectId, ids, doPage, pageable))
@@ -811,6 +844,7 @@ public class AppServiceController {
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务Ids")
+            @Encrypt
             @RequestParam(value = "version_ids") Set<Long> ids) {
         return Optional.ofNullable(
                 applicationServiceService.listServiceByVersionIds(ids))
@@ -831,7 +865,7 @@ public class AppServiceController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "列出项目下有版本的普通应用服务，任何角色可以查到所有的的应用服务")
+    @ApiOperation(value = "列出项目下普通应用服务，任何角色可以查到所有的的应用服务")
     @GetMapping(value = "/list_app_services_having_versions")
     public ResponseEntity<List<AppServiceSimpleVO>> listHavingVersions(
             @ApiParam(value = "项目Id")
@@ -845,8 +879,8 @@ public class AppServiceController {
     public ResponseEntity<Map<Long, Integer>> countByProjectId(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "longList") List<Long> longList) {
-        return new ResponseEntity<>(applicationServiceService.countByProjectId(longList), HttpStatus.OK);
+            @RequestParam(value = "longList") List<Long> projectIds) {
+        return new ResponseEntity<>(applicationServiceService.countByProjectId(projectIds), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -880,6 +914,13 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return ResponseEntity.ok(applicationServiceService.pageAppServiceToCreateCiPipeline(projectId, pageRequest, params));
+    }
+
+    @GetMapping("/fix/data")
+    @ApiOperation(value = "手动调用接口进行数据修复")
+    @Permission(level = ResourceLevel.SITE)
+    public void fixData() {
+        applicationServiceService.fixAppServiceVersion();
     }
 }
 

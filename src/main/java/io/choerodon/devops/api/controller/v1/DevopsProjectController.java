@@ -1,9 +1,11 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -92,5 +95,23 @@ public class DevopsProjectController {
         return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
+    }
+
+
+    /**
+     * 查询项目gitlab group信息
+     *
+     * @param projectId 项目id
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,permissionWithin = true)
+    @ApiOperation(value = "查询项目gitlab group信息")
+    @PostMapping("/gitlab_groups")
+    public ResponseEntity<List<GitlabProjectSimple>> queryGitlabGroups(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "项目Ids")
+            @RequestBody List<Long> projectIds) {
+        return new ResponseEntity<>(devopsProjectService.queryGitlabGroups(projectIds), HttpStatus.OK);
+
     }
 }

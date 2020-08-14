@@ -4,6 +4,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 添加集群的权限分配
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  */
 public class DevopsClusterPermissionUpdateVO {
+    @Encrypt
     @ApiModelProperty("集群id / 必需")
     @NotNull(message = "error.cluster.id.null")
     private Long clusterId;

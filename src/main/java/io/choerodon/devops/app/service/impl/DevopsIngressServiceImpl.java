@@ -1,23 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -46,6 +30,21 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -98,6 +97,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    PermissionHelper permissionHelper;
 
 
     @Override
@@ -106,7 +107,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             description = "Devops创建域名", inputSchema = "{}")
     public void createIngress(Long projectId, DevopsIngressVO devopsIngressVO) {
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsIngressVO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -246,9 +247,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         boolean deleteCert = false;
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId()
-
-        );
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsIngressVO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -431,15 +430,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteIngress(Long ingressId) {
+    public void deleteIngress(Long projectId, Long ingressId) {
         DevopsIngressDTO ingressDO = baseQuery(ingressId);
 
         if (ingressDO == null) {
             return;
         }
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(ingressDO.getEnvId()
-        );
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, ingressDO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -504,10 +502,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             v1ObjectMeta.setName(ingressDO.getName());
             v1beta1Ingress.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1beta1Ingress);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
             resourceConvertToYamlHandler.operationEnvGitlabFile(
                     null,
-                    projectId,
+                    gitlabEnvProjectId,
                     DELETE,
                     userAttrDTO.getGitlabUserId(),
                     ingressDO.getId(), INGRESS, null, false, devopsEnvironmentDTO.getId(), path);

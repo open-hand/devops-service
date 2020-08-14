@@ -2,6 +2,9 @@ package io.choerodon.devops.infra.util;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.Assert;
 
@@ -15,6 +18,13 @@ public final class JsonHelper {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private JsonHelper() {
+    }
+
+    static {
+        OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+        OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     /**
@@ -51,12 +61,12 @@ public final class JsonHelper {
     }
 
     /**
-     * 将json里的双引号转为单引号
+     * 将json中的双引号替换为单引号 (不管属性值包括双引号的情况)
      *
-     * @param json 正常的json
-     * @return 双引号转为单引号的json
+     * @param json json
+     * @return 单引号的json
      */
-    public static String singleQuoteJson(String json) {
+    public static String singleQuoteWrapped(String json) {
         return json.replaceAll("\"", "'");
     }
 }

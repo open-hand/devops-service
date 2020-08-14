@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/users")
 public class DevopsUserController {
 
+
     @Autowired
     private UserAttrService userAttrService;
 
@@ -37,6 +39,7 @@ public class DevopsUserController {
     public ResponseEntity<UserAttrVO> queryByUserId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "用户id", required = true)
             @PathVariable(value = "user_id") Long userId) {
         return Optional.ofNullable(userAttrService.queryByUserId(userId))

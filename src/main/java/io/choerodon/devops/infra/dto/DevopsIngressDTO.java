@@ -1,14 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.List;
-import java.util.Objects;
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.persistence.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Creator: Runge
@@ -20,8 +19,12 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_ingress")
 public class DevopsIngressDTO extends AuditDomain {
+
+    public static final String ENCRYPT_KEY = "devops_ingress";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Encrypt(DevopsIngressDTO.ENCRYPT_KEY)
     private Long id;
     private Long projectId;
     private Long envId;

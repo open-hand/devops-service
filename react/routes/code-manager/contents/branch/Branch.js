@@ -13,6 +13,7 @@ import Loading from '../../../../components/loading';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { useTableStore } from './stores';
+import EmptyPage from '../../components/empty-page';
 
 import '../../../main.less';
 import './Branch.less';
@@ -37,6 +38,7 @@ function Branch(props) {
     appServiceDs,
     appServiceId,
     formatMessage,
+    branchStore,
   } = useTableStore();
 
   const [isOPERATIONS, setIsOPERATIONS] = useState(false);
@@ -78,25 +80,31 @@ function Branch(props) {
       </Permission>);
 
   function renderEmpty() {
-    if (!appServiceDs.toData()) {
+    const appServiceData = appServiceDs.toData();
+    if (!appServiceData) {
       return false;
     } else {
-      const appArr = appServiceDs.current && appServiceDs.toData();
-      const select = appArr.filter((item) => item.id === appServiceId);
-      return !select[0].emptyRepository;
+      const appArr = appServiceDs.current && appServiceData;
+      const select = appArr.filter((item) => item?.id === appServiceId);
+      return !select[0]?.emptyRepository;
     }
   }
   // 打开创建分支模态框
-  function openCreateBranchModal() {
-    ProModal.open({
-      key: branchCreateModalKey,
-      title: <FormattedMessage id="branch.create" />,
-      drawer: true,
-      children: <BranchCreate intl={intl} appServiceId={appServiceId} handleRefresh={handleRefresh} />,
-      style: branchCreateModalStyle,
-      okText: <FormattedMessage id="create" />,
-      cancelText: <FormattedMessage id="cancel" />,
-    });
+  async function openCreateBranchModal() {
+    try {
+      await branchStore.checkCreate(projectId, appServiceId);
+      ProModal.open({
+        key: branchCreateModalKey,
+        title: <FormattedMessage id="branch.create" />,
+        drawer: true,
+        children: <BranchCreate intl={intl} appServiceId={appServiceId} handleRefresh={handleRefresh} />,
+        style: branchCreateModalStyle,
+        okText: <FormattedMessage id="create" />,
+        cancelText: <FormattedMessage id="cancel" />,
+      });
+    } catch (e) {
+      // return
+    }
   }
 
   /**
@@ -158,6 +166,16 @@ function Branch(props) {
       cancelText: <FormattedMessage id="cancel" />,
     });
   }
+
+  async function handleMergeRequest(record) {
+    try {
+      await branchStore.checkCreate(projectId, appServiceId, 'MERGE_REQUEST_CREATE');
+      window.open(`${record.get('commitUrl').split('/commit')[0]}/merge_requests/new?change_branches=true&merge_request[source_branch]=${record.get('branchName')}&merge_request[target_branch]=master`);
+    } catch (e) {
+      // return
+    }
+  }
+
   // 分支名称渲染函数
   function branchNameRenderer({ record, text }) {
     const status = record.get('status');
@@ -189,9 +207,7 @@ function Branch(props) {
           'choerodon.code.project.develop.code-management.ps.default',
         ],
         text: formatMessage({ id: 'branch.request' }),
-        action: () => {
-          window.open(`${record.get('commitUrl').split('/commit')[0]}/merge_requests/new?change_branches=true&merge_request[source_branch]=${record.get('branchName')}&merge_request[target_branch]=master`);
-        },
+        action: () => handleMergeRequest(record),
       },
       {
         service: [
@@ -326,6 +342,16 @@ function Branch(props) {
 
   // 获取分支正文列表
   function tableBranch() {
+    if (branchStore.getIsEmpty) {
+      return (
+        <EmptyPage
+          title={formatMessage({ id: 'empty.title.prohibited' })}
+          describe={formatMessage({ id: 'empty.title.code' })}
+          btnText={formatMessage({ id: 'empty.link.code' })}
+          pathname="/rducm/code-lib-management/apply"
+        />
+      );
+    }
     return (
       <div className="c7ncd-tab-table">
         <Table className="c7n-branch-main-table" queryBar="bar" dataSet={tableDs}>
@@ -338,7 +364,6 @@ function Branch(props) {
       </div>
     );
   }
-
 
   return (
     <Page

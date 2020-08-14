@@ -32,7 +32,9 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.enums.AppServiceEvent;
 import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
@@ -71,6 +73,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
 
     @Override
@@ -309,6 +313,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
     @Override
     public Page<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, PageRequest pageable, Date startTime, Date endTime) {
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
         if (appServiceId == null) {
             return new Page<>();
         }
@@ -337,7 +342,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 refWithPipelineIds.put(key, devopsGitlabPipelineDTO.getPipelineId());
             }
         });
-        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 

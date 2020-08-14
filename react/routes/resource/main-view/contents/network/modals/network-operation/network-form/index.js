@@ -68,7 +68,6 @@ function FormContent() {
     return !!record.get('portName');
   }
 
-
   function labelOptionRenderer({ record, text, value }) {
     return `${record.get('meaning')}`;
   }
@@ -143,7 +142,7 @@ function FormContent() {
   let targetForm = null;
   if (current) {
     if (current.get('target') === 'instance') {
-      targetForm = <Fragment> 
+      targetForm = <Fragment>
         <Select name="appServiceId" colSpan={3} className="app-service-select" optionRenderer={appServiceRenderer} />
         <Select name="appInstance" colSpan={3} className="app-instance-select" optionRenderer={appInstanceOptionRenderer} renderer={appInstanceRenderer} />
       </Fragment>;
@@ -203,7 +202,7 @@ function FormContent() {
 
   const networkName = <Form dataSet={formDs} columns={3}>
     <TextField name="name" colSpan={3} maxLength={30} disabled={!!networkId} />
-  </Form>; 
+  </Form>;
 
   return (
     <Fragment>
@@ -247,7 +246,7 @@ function FormContent() {
         <div className="group-port">
           {
             map(portDs.created, (record, index) => (<Form record={record} key={`port-record-${index}`} columns={5}>
-              
+
               {
                 current.get('type') !== 'ClusterIP'
                   && <TextField name="nodePort" maxLength={5} />

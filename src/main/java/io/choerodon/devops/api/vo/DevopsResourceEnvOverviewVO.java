@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 资源视图下环境目录信息
@@ -10,11 +11,15 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  */
 public class DevopsResourceEnvOverviewVO {
+    @Encrypt
     @ApiModelProperty("环境id")
     private Long id;
 
     @ApiModelProperty("环境名称")
     private String name;
+
+    @ApiModelProperty
+    private String code;
 
     @ApiModelProperty("环境是否连接")
     private Boolean connect;
@@ -129,5 +134,14 @@ public class DevopsResourceEnvOverviewVO {
 
     public void setCertifications(List<DevopsResourceBasicInfoVO> certifications) {
         this.certifications = certifications;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public DevopsResourceEnvOverviewVO setCode(String code) {
+        this.code = code;
+        return this;
     }
 }

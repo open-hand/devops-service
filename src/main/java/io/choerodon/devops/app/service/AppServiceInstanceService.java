@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
@@ -20,7 +22,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface AppServiceInstanceService {
     String INSTANCE_LABEL_RELEASE = "choerodon.io/release";
-    String INSTANCE_LABEL_APPLICATION = "choerodon.io/application";
     String INSTANCE_LABEL_APP_SERVICE_ID = "choerodon.io/app-service-id";
 
     /**
@@ -70,11 +71,12 @@ public interface AppServiceInstanceService {
     /**
      * 部署应用
      *
+     * @param projectId          项目id
      * @param appServiceDeployVO 部署信息
      * @param isFromPipeline     是否是从流水线发起的部署
      * @return ApplicationInstanceVO
      */
-    AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline);
+    AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline);
 
     /**
      * 部署应用,GitOps
@@ -108,31 +110,35 @@ public interface AppServiceInstanceService {
     /**
      * 实例停止
      *
+     * @param projectId  项目id
      * @param instanceId 实例id
      */
-    void stopInstance(Long instanceId);
+    void stopInstance(Long projectId, Long instanceId);
 
     /**
      * 实例重启
      *
+     * @param projectId  项目id
      * @param instanceId 实例id
      */
-    void startInstance(Long instanceId);
+    void startInstance(Long projectId, Long instanceId);
 
 
     /**
      * 实例重新部署
      *
+     * @param projectId  项目id
      * @param instanceId 实例id
      */
-    void restartInstance(Long instanceId);
+    void restartInstance(Long projectId, Long instanceId);
 
     /**
      * 实例删除
      *
+     * @param projectId  项目id
      * @param instanceId 实例id
      */
-    void deleteInstance(Long instanceId, Boolean deletePrmotheus);
+    void deleteInstance(@Nullable Long projectId, Long instanceId, Boolean deletePrmotheus);
 
 
     /**
@@ -244,10 +250,10 @@ public interface AppServiceInstanceService {
     /**
      * 部署自动化测试应用
      *
+     * @param projectId          项目id
      * @param appServiceDeployVO 部署信息
-     * @return ApplicationInstanceVO
      */
-    void deployTestApp(AppServiceDeployVO appServiceDeployVO);
+    void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO);
 
     /**
      * 根据实例id获取更多资源详情(json格式）
@@ -280,12 +286,12 @@ public interface AppServiceInstanceService {
     /**
      * 操作pod的数量
      *
+     * @param projectId      项目id
      * @param envId          环境id
      * @param deploymentName deploymentName
      * @param count          pod数量
-     * @return ApplicationInstanceVO
      */
-    void operationPodCount(String deploymentName, Long envId, Long count);
+    void operationPodCount(Long projectId, String deploymentName, Long envId, Long count);
 
 
     DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);

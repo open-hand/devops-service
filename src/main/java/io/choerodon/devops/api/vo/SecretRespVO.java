@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by n!Ck
  * Date: 18-12-4
@@ -10,9 +12,10 @@ import java.util.Map;
  * Description:
  */
 public class SecretRespVO extends DevopsResourceDataInfoVO {
-
+    @Encrypt
     private Long id;
     private String name;
+    @Encrypt
     private Long envId;
     private String description;
     private List<String> key;

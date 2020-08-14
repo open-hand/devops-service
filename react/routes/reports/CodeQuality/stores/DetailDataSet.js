@@ -8,7 +8,7 @@ export default ({ intlPrefix, formatMessage, appServiceDs, objectTypeDs, chartsD
     fields: [
       {
         name: 'appServiceId',
-        type: 'number',
+        type: 'string',
         textField: 'name',
         valueField: 'id',
         label: formatMessage({ id: 'chooseApp' }),

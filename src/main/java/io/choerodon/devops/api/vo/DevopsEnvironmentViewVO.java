@@ -4,11 +4,13 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
  */
 public class DevopsEnvironmentViewVO {
+    @Encrypt
     @ApiModelProperty("环境id")
     private Long id;
 
@@ -20,6 +22,18 @@ public class DevopsEnvironmentViewVO {
 
     @ApiModelProperty("关联的应用服务")
     private List<DevopsAppServiceViewVO> apps;
+
+    @ApiModelProperty("环境code")
+    private String code;
+
+    public String getCode() {
+        return code;
+    }
+
+    public DevopsEnvironmentViewVO setCode(String code) {
+        this.code = code;
+        return this;
+    }
 
     public Long getId() {
         return id;

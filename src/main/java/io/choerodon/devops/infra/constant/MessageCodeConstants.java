@@ -30,4 +30,5 @@ public class MessageCodeConstants {
     public static final String PIPELINE_AUDIT = "PIPELINEAUDIT";
     public static final String PIPELINE_STOP = "PIPELINESTOP";
     public static final String PIPELINE_PASS = "PIPELINEPASS";
+    public static final String PIPELINE_STAGE_AUDIT = "PIPELINESTAGEAUDIT";
 }

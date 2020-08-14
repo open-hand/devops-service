@@ -1,6 +1,8 @@
 import { runInAction } from 'mobx';
 import forEach from 'lodash/forEach';
 import remove from 'lodash/remove';
+import moment from 'moment';
+import setEnvRecentItem from '../../../utils/setEnvRecentItem';
 
 const GROUP_ITEM = 'group';
 const ENV_ITEM = 'detail';
@@ -44,7 +46,7 @@ function formatTreeData({ data, expandedKeys, formatMessage, intlPrefix }) {
   return result;
 }
 
-function handleSelect({ record, store, previous, dataSet }) {
+function handleSelect({ record, store, previous, dataSet, projectId, organizationId, projectName }) {
   if (record) {
     const itemType = record.get('itemType');
     const synchro = record.get('synchro');
@@ -55,7 +57,15 @@ function handleSelect({ record, store, previous, dataSet }) {
       dataSet.query();
     } else if (synchro && !failed) {
       const data = record.toData();
+      const recentEnv = {
+        ...data,
+        projectId,
+        organizationId,
+        projectName,
+        clickTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+      };
       store.setSelectedMenu(data);
+      setEnvRecentItem({ value: recentEnv });
     } else {
       runInAction(() => {
         // 处理中和创建失败的环境不允许选中
@@ -66,7 +76,7 @@ function handleSelect({ record, store, previous, dataSet }) {
   }
 }
 
-export default (projectId, store, formatMessage, intlPrefix) => ({
+export default ({ projectId, store, formatMessage, intlPrefix, organizationId, projectName }) => ({
   autoQuery: true,
   paging: false,
   dataKey: null,
@@ -76,7 +86,7 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
   idField: 'key',
   events: {
     select: ({ dataSet, record, previous }) => {
-      handleSelect({ record, store, previous, dataSet });
+      handleSelect({ record, store, previous, dataSet, projectId, organizationId, projectName });
     },
     unSelect: ({ record }) => {
       record.isSelected = true;

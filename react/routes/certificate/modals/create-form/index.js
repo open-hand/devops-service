@@ -33,20 +33,20 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
   const { getFieldDecorator, validateFieldsAndScroll } = form;
 
   const checkName = useMemo(() => (
-    debounce(async (rule, value, callback) => {
+    debounce((rule, value, callback) => {
       const { name } = store.getCert || {};
       if (value && value !== name) {
-        try {
-          const res = await store.checkCertName(projectId, encodeURIComponent(value));
-          if ((res && res.failed) || !res) {
-            callback(formatMessage({ id: 'checkNameExist' }));
-          } else {
-            callback();
-          }
-        } catch (e) {
-          callback(formatMessage({ id: 'checkNameFailed' }));
-          Choerodon.handleResponseError(e);
-        }
+        store.checkCertName(projectId, encodeURIComponent(value))
+          .then(res => {
+            if ((res && res.failed) || !res) {
+              callback(formatMessage({ id: 'checkNameExist' }));
+            } else {
+              callback();
+            }
+          })
+          .catch(e => {
+            callback(formatMessage({ id: 'checkNameFailed' }));
+          });
       } else {
         callback();
       }
@@ -56,7 +56,6 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
   useEffect(() => {
     certId && store.loadCertById(projectId, certId);
   }, []);
-
 
   /**
    * 域名格式检查
@@ -73,40 +72,48 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
     }
   }
 
-  modal.handleOk(async () => {
-    let result = true;
+  function formValidate() {
     const formData = new FormData();
-    validateFieldsAndScroll((err, data) => {
-      if (!err) {
-        const excludeProps = ['domainArr', 'cert', 'key'];
 
-        if (uploadMode) {
-          const { key, cert } = data;
+    return new Promise((resolve) => {
+      validateFieldsAndScroll((err, data) => {
+        if (!err) {
+          const excludeProps = ['domainArr', 'cert', 'key'];
 
-          formData.append('key', key.file);
-          formData.append('cert', cert.file);
-        }
+          if (uploadMode) {
+            const { key, cert } = data;
 
-        forEach(data, (value, k) => {
-          if (!includes(excludeProps, k)) {
-            formData.append(k, value);
+            formData.append('key', key.file);
+            formData.append('cert', cert.file);
           }
-        });
 
-        if (certId) {
-          const { skipCheckProjectPermission, objectVersionNumber, id } = store.getCert || {};
-          formData.append('skipCheckProjectPermission', skipCheckProjectPermission);
-          formData.append('objectVersionNumber', objectVersionNumber);
-          formData.append('id', id);
-          formData.append('type', 'update');
-        } else {
-          formData.append('skipCheckProjectPermission', true);
-          formData.append('type', 'create');
+          forEach(data, (value, k) => {
+            if (!includes(excludeProps, k)) {
+              formData.append(k, value);
+            }
+          });
+
+          if (certId) {
+            const { skipCheckProjectPermission, objectVersionNumber, id } = store.getCert || {};
+            formData.append('skipCheckProjectPermission', skipCheckProjectPermission);
+            formData.append('objectVersionNumber', objectVersionNumber);
+            formData.append('id', id);
+            formData.append('type', 'update');
+          } else {
+            formData.append('skipCheckProjectPermission', true);
+            formData.append('type', 'create');
+          }
+          resolve(formData);
         }
-      }
-      result = !err;
+        resolve(false);
+      });
     });
-    if (!result) {
+  }
+
+  modal.handleOk(async () => {
+    const formData = await formValidate();
+
+    if (!formData) {
       return false;
     }
 

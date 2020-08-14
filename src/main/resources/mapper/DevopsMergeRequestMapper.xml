@@ -3,56 +3,79 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper">
     <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
-        SELECT
-        *
-        FROM
-        devops_merge_request
-        WHERE
-        gitlab_project_id = #{projectId}
-        AND state = #{state}
+        SELECT *
+        FROM devops_merge_request
+        WHERE gitlab_project_id = #{projectId}
+          AND state = #{state}
     </select>
 
 
     <select id="listBySourceBranch" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
-        SELECT
-        *
-        FROM
-        devops_merge_request
-          WHERE
-        gitlab_project_id = #{projectId}
-        AND source_branch = #{branchName}
+        SELECT *
+        FROM devops_merge_request
+        WHERE gitlab_project_id = #{projectId}
+          AND source_branch = #{branchName}
         ORDER by id desc
     </select>
 
 
-
     <select id="countMergeRequest" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
-     SELECT
-	count(id) total,
-	count( CASE WHEN dmr.state = 'merged' THEN 'merged' END ) merged,
-	count( CASE WHEN dmr.state = 'closed' THEN 'closed' END ) closed,
-	count( CASE WHEN dmr.state = 'opened' THEN 'opened' END ) opened,
-        (SELECT COUNT(1) FROM devops_merge_request tmp LEFT JOIN devops_user du ON tmp.assignee_id = du.gitlab_user_id WHERE du.iam_user_id = #{iamUserId} AND tmp.gitlab_project_id = #{projectId} AND tmp.state = 'opened') AS audit_count
-    FROM
-	devops_merge_request dmr
-	where dmr.gitlab_project_id = #{projectId}
+        SELECT count(id)                                               total,
+               count(CASE WHEN dmr.state = 'merged' THEN 'merged' END) merged,
+               count(CASE WHEN dmr.state = 'closed' THEN 'closed' END) closed,
+               count(CASE WHEN dmr.state = 'opened' THEN 'opened' END) opened,
+               (SELECT COUNT(1)
+                FROM devops_merge_request tmp
+                             LEFT JOIN devops_user du ON tmp.assignee_id = du.gitlab_user_id
+                WHERE du.iam_user_id = #{iamUserId}
+                  AND tmp.gitlab_project_id = #{projectId}
+                  AND tmp.state = 'opened') AS                         audit_count
+        FROM devops_merge_request dmr
+        where dmr.gitlab_project_id = #{projectId}
     </select>
 
     <delete id="deleteByProjectId">
         DELETE
-            FROM
-                devops_merge_request
-            WHERE
-            gitlab_project_id = #{projectId}
+        FROM devops_merge_request
+        WHERE gitlab_project_id = #{projectId}
     </delete>
 
     <select id="listToBeAuditedByThisUser" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
         SELECT dmr.*
         FROM devops_merge_request dmr
-        LEFT JOIN devops_user du ON dmr.assignee_id = du.gitlab_user_id
+                     LEFT JOIN devops_user du ON dmr.assignee_id = du.gitlab_user_id
         WHERE du.iam_user_id = #{iamUserId}
-        AND dmr.gitlab_project_id = #{projectId}
-        AND dmr.state = 'opened'
+          AND dmr.gitlab_project_id = #{projectId}
+          AND dmr.state = 'opened'
+    </select>
+
+    <select id="listToBeAuditedByThisUserUnderProjectIds"
+            resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
+        SELECT dmr.*, das.project_id
+        FROM devops_merge_request dmr
+                     LEFT JOIN devops_user du ON dmr.assignee_id = du.gitlab_user_id
+                     LEFT JOIN devops_app_service das ON dmr.gitlab_project_id = das.gitlab_project_id
+                WHERE du.iam_user_id = #{iamUserId}
+                  AND dmr.state = 'opened'
+                  AND dmr.gitlab_project_id IN
+        <foreach collection="gitlabProjectIds" item="gitlabProjectId" separator="," open="(" close=")">
+            #{gitlabProjectId}
+        </foreach>
+    </select>
+
+    <select id="listLatestUseAppServiceIdAndDate" resultType="io.choerodon.devops.api.vo.LatestAppServiceVO">
+        SELECT id, max(last_update_date) AS last_update_date
+        FROM (SELECT das.id, dmr.last_update_date
+              FROM devops_merge_request dmr
+              JOIN devops_app_service das ON dmr.gitlab_project_id = das.gitlab_project_id
+        WHERE dmr.last_updated_by = #{userId} and dmr.last_update_date > #{time}
+          AND das.project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
+        ) t
+        GROUP BY id, last_update_date
+
     </select>
 </mapper>
 

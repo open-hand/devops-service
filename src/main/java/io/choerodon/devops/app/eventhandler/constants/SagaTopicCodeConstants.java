@@ -101,6 +101,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_GITLAB_CI_PIPELINE = "devops-gitlab-ci-pipeline";
 
     /**
+     * 处理流水线执行成功， 为了纯cd流水线触发
+     */
+    public static final String DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD = "devops-ci-pipeline-success-for-simple-cd";
+
+    /**
      * 创建分支
      */
     public static final String DEVOPS_CREATE_BRANCH = "devops-create-branch";
@@ -131,6 +136,11 @@ public class SagaTopicCodeConstants {
      * 创建流水线自动部署实例
      */
     public static final String DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE = "devops-pipeline-auto-deploy-instance";
+
+    /**
+     * 创建流水线环境自动部署实例
+     */
+    public static final String DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE = "devops-pipeline-env-auto-deploy-instance";
 
     /**
      * 注册组织事件
@@ -226,6 +236,11 @@ public class SagaTopicCodeConstants {
      * 批量部署
      */
     public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-batch-deployment";
+
+    /**
+     * devops 主机部署
+     */
+    public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
 
     private SagaTopicCodeConstants() {
     }

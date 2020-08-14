@@ -1,13 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Date;
-import java.util.List;
-import javax.persistence.*;
-
 import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
+import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/14.
@@ -17,8 +17,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_env_pod")
 public class DevopsEnvPodDTO extends AuditDomain {
 
+    public static final String ENCRYPT_KEY = "devops_env_pod";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Encrypt(DevopsEnvPodDTO.ENCRYPT_KEY)
     private Long id;
     private Long instanceId;
     private String name;

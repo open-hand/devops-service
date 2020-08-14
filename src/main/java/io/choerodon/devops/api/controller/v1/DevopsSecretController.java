@@ -5,6 +5,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,7 +59,7 @@ public class DevopsSecretController {
             @ApiParam(value = "请求体", required = true)
             @RequestBody @Valid SecretReqVO secretReqVO) {
         secretReqVO.setType("create");
-        return Optional.ofNullable(devopsSecretService.createOrUpdate(secretReqVO))
+        return Optional.ofNullable(devopsSecretService.createOrUpdate(projectId, secretReqVO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.create"));
     }
@@ -79,7 +80,7 @@ public class DevopsSecretController {
             @ApiParam(value = "请求体", required = true)
             @RequestBody @Valid SecretUpdateVO secretUpdateVO) {
         secretUpdateVO.setType("update");
-        return Optional.ofNullable(devopsSecretService.createOrUpdate(ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
+        return Optional.ofNullable(devopsSecretService.createOrUpdate(projectId, ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.update"));
     }
@@ -98,11 +99,13 @@ public class DevopsSecretController {
     public ResponseEntity<Boolean> deleteSecret(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "密钥id", required = true)
             @PathVariable(value = "secret_id") Long secretId) {
-        return Optional.ofNullable(devopsSecretService.deleteSecret(envId, secretId))
+        return Optional.ofNullable(devopsSecretService.deleteSecret(projectId, envId, secretId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.delete"));
     }
@@ -124,8 +127,10 @@ public class DevopsSecretController {
     public ResponseEntity<Page<SecretRespVO>> pageByOption(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
+            @Encrypt
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
@@ -153,6 +158,7 @@ public class DevopsSecretController {
     public ResponseEntity<SecretRespVO> querySecret(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "密钥id", required = true)
             @PathVariable(value = "secret_id") Long secretId,
             @ApiParam(value = "是否解码值")
@@ -175,6 +181,7 @@ public class DevopsSecretController {
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "密钥名")

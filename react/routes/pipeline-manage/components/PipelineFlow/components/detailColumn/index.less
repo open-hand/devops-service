@@ -1,23 +1,53 @@
+@success: #00bfa5;
+@running: #4d90fe;
+@pending: #ffb100;
+@failed: #f77a70;
+@canceled: #d8d8d8;
+@skipped: #d8d8d8;
+@stop: #ff7043;
+@not_audit: #f1b42d;
+
 .c7n-piplineManage-detail-column {
   flex: 0 1 auto;
   position: relative;
-  width: 2.2rem;
+  min-width: 2.1rem;
   min-height: ~"calc(100vh - 2.4rem)";
   background: rgba(245, 246, 250, 1);
   border-radius: 4px;
   padding: 12px;
+  flex-shrink: 0;
   & + & {
-    margin-left: .24rem;
+    margin-left: .16rem;
   }
   &:first-of-type {
     .c7n-piplineManage-detail-column-type {
       display: none;
     }
   }
+
+  &-success {
+    border-top: 4px solid @success;
+  }
+  &-running {
+    border-top: 4px solid @running;
+  }
+  &-pending {
+    border-top: 4px solid @pending;
+  }
+  &-failed {
+    border-top: 4px solid @failed;
+  }
+  &-stop {
+    border-top: 4px solid @stop;
+  }
+  &-not_audit {
+    border-top: 4px solid @not_audit;
+  }
+
   &-type {
     position: absolute;
-    top: .4rem;
-    left: -0.38rem;
+    top: 0.5rem;
+    left: -0.27rem;
     &:first-of-type {
       display: none;
     }
@@ -25,18 +55,21 @@
       background: rgba(104, 135, 232, 1);
       display: inline-block;
       &:first-of-type {
-        width: .24rem;
-        height: .24rem;
-        font-size: 16px;
-        border-radius: 50%;
-        color: #fff;
-        text-align: center;
-        line-height: .24rem;
-        vertical-align: sub;
+        background: #6887e8;
+        display: inline-block;
+        width: .21rem;
+        height: .02rem;
+        position: absolute;
       }
       &:nth-of-type(2) {
-        width: .14rem;
-        height: .02rem;
+        border: 4px solid white;
+        width: 0;
+        height: 0;
+        display: inline-block;
+        border-left: 9px solid #6887e8;
+        position: relative;
+        bottom: 0.1rem;
+        left: 0.2rem;
       }
     }
   }
@@ -48,9 +81,8 @@
       font-weight: 500;
       color: rgba(0, 0, 0, 1);
       line-height: .21rem;
-      margin-left: .02rem;
     }
-    span:nth-of-type(2) {
+    span:nth-of-type(3) {
       font-size: .12rem;
       font-weight: 400;
       color: rgba(0, 0, 0, 0.54);
@@ -109,7 +141,6 @@
           font-size: .13rem;
           font-weight: 400;
           color: rgba(58, 52, 95, 1);
-          line-height: .12rem;
         }
         &:nth-of-type(2) {
           font-size: .10rem;
@@ -158,6 +189,7 @@
           }
           &:nth-of-type(2) {
             color: rgba(58, 52, 95, 0.65);
+            margin-left: .1rem;
             max-width: 1.08rem;
             overflow-wrap: break-word;
             -webkit-line-clamp: 1;

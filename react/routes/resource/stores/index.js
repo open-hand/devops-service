@@ -18,7 +18,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
   observer((props) => {
     const {
       intl: { formatMessage },
-      AppState: { currentMenuType: { id } },
+      AppState: { currentMenuType: { id, organizationId, name: projectName } },
       children,
       location,
     } = props;
@@ -27,7 +27,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
     const { viewType: newViewType = viewTypeMemo.IST_VIEW_TYPE } = location.state || {};
     const resourceStore = useStore(newViewType);
     const viewType = resourceStore.getViewType;
-    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage })), [viewType, id]);
+    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage, organizationId, projectName })), [viewType, id]);
 
     useEffect(() => {
       // NOTE: 这里只对部署跳转进来的这一种情况处理，若之后添加新的情况可在此处做
@@ -35,19 +35,29 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       if (location.state) {
         const { envId, appServiceId, instanceId } = location.state;
         if (newViewType === IST_VIEW_TYPE) {
-          const parentId = `${envId}-${appServiceId}`;
-          resourceStore.setSelectedMenu({
-            id: instanceId,
-            parentId,
-            key: `${parentId}-${instanceId}`,
-            itemType: itemTypes.IST_ITEM,
-          });
-          resourceStore.setExpandedKeys([`${envId}`, `${envId}-${appServiceId}`]);
+          if (instanceId) {
+            const parentId = `${envId}**${appServiceId}`;
+            resourceStore.setSelectedMenu({
+              id: instanceId,
+              parentId,
+              key: `${parentId}**${instanceId}`,
+              itemType: itemTypes.IST_ITEM,
+            });
+            resourceStore.setExpandedKeys([`${envId}`, `${envId}**${appServiceId}`]);
+          } else {
+            resourceStore.setSelectedMenu({
+              id: envId,
+              parentId: '0',
+              key: String(envId),
+              itemType: itemTypes.ENV_ITEM,
+            });
+            resourceStore.setExpandedKeys([`${envId}`]);
+          }
         } else {
           resourceStore.setSelectedMenu({
             id: 0,
             name: formatMessage({ id: 'instances' }),
-            key: `${envId}-instances`,
+            key: `${envId}**instances`,
             isGroup: true,
             itemType: 'group_instances',
             parentId: String(envId),

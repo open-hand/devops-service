@@ -22,12 +22,14 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.polaris.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -85,6 +87,8 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsClusterProPermissionService devopsClusterProPermissionService;
 
     @Override
     public DevopsPolarisRecordRespVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
@@ -107,7 +111,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
         } else {
             // 如果是组织管理员，则跳过项目层权限校验
-            if (Boolean.FALSE.equals(permissionHelper.isOrganzationRoot(userId, projectDTO.getOrganizationId()))) {
+            if (Boolean.FALSE.equals(permissionHelper.isOrganizationRoot(userId, projectDTO.getOrganizationId()))) {
                 permissionHelper.checkProjectOwnerOrGitlabAdmin(projectId, userId);
             }
         }
@@ -203,6 +207,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         if (devopsEnvironmentDTO == null) {
             throw new CommonException(ERROR_ENV_ID_NOT_EXIST, envId);
         }
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         Long clusterId = devopsEnvironmentDTO.getClusterId();
 
@@ -228,6 +233,14 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             throw new CommonException("error.cluster.not.exist", clusterId);
         }
 
+        // 校验项目是否拥有集群权限
+        if (!projectId.equals(devopsClusterDTO.getProjectId())) {
+            List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
+            if (CollectionUtils.isEmpty(devopsClusterProPermissionDTOS)
+                    || devopsClusterProPermissionDTOS.stream().map(DevopsClusterProPermissionDTO::getProjectId).noneMatch(v -> v.equals(projectId))) {
+                throw new CommonException(MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            }
+        }
         // 校验集群是否连接
         clusterConnectionHandler.checkEnvConnection(clusterId);
 

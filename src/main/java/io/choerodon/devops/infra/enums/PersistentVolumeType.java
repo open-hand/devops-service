@@ -8,7 +8,8 @@ package io.choerodon.devops.infra.enums;
  */
 public enum PersistentVolumeType {
     NFS("NFS"),
-    HOST_PATH("HostPath");
+    HOST_PATH("HostPath"),
+    LOCAL_PV("LocalPV");
 
     private String type;
 

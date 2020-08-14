@@ -1,11 +1,14 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 为了返回应用服务最基本的信息
  *
  * @author zmf
  */
 public class BaseApplicationServiceVO {
+    @Encrypt
     private Long id;
     private String name;
 

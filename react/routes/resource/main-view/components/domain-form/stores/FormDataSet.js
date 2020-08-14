@@ -129,7 +129,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
       { name: 'isNormal', type: 'boolean', defaultValue: true, required: true, ignore: 'always' },
       {
         name: 'certId',
-        type: 'number',
+        type: 'string',
         textField: 'certName',
         valueField: 'id',
         label: formatMessage({ id: 'domain.form.cert' }),
@@ -138,8 +138,8 @@ export default ({ formatMessage, intlPrefix, projectId, envId, ingressId, pathLi
           lookupAxiosConfig: renderLookupUrl,
         },
       },
-      { name: 'envId', type: 'number', defaultValue: envId },
-      { name: 'appServiceId', type: 'number', defaultValue: appServiceId },
+      { name: 'envId', type: 'string', defaultValue: envId },
+      { name: 'appServiceId', type: 'string', defaultValue: appServiceId },
     ],
     events: {
       load: handleLoad,

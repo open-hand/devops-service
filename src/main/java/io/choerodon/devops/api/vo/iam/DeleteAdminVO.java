@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.iam;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 删除用户的管理员身份时发送saga的载体
@@ -9,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 19-12-24
  */
 public class DeleteAdminVO {
+    @Encrypt
     @ApiModelProperty("管理员用户id")
     private Long adminUserId;
 

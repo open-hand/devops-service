@@ -1,11 +1,11 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Map;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by n!Ck
@@ -14,12 +14,15 @@ import io.swagger.annotations.ApiModelProperty;
  * Description:
  */
 public class SecretReqVO {
+    @Encrypt
     @ApiModelProperty(value = "密钥id")
     private Long id;
 
+    @Encrypt
     @ApiModelProperty(value = "应用id/非必填")
     private Long appServiceId;
 
+    @Encrypt
     @ApiModelProperty(value = "环境id/必填")
     @NotNull(message = "error.env.id.null")
     private Long envId;

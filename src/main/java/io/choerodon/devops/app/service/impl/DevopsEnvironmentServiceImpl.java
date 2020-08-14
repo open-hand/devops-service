@@ -1,26 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -37,6 +20,7 @@ import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
@@ -52,6 +36,22 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/4/9.
@@ -575,11 +575,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean updateActive(Long projectId, Long environmentId, Boolean active) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, environmentId);
+
         if (active == null) {
             active = Boolean.TRUE;
         }
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(environmentId);
         List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         // 要停用环境时，对环境进行校验
@@ -676,6 +676,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentUpdateVO update(DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO, Long projectId) {
+        permissionHelper.checkEnvBelongToProject(projectId, devopsEnvironmentUpdateDTO.getId());
         DevopsEnvironmentDTO toUpdate = new DevopsEnvironmentDTO();
         toUpdate.setId(devopsEnvironmentUpdateDTO.getId());
         toUpdate.setName(devopsEnvironmentUpdateDTO.getName());
@@ -694,9 +695,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
 
     @Override
-    public void retryGitOps(Long envId) {
+    public void retryGitOps(Long projectId, Long envId) {
         // TODO 参考{@link io.choerodon.devops.app.service.impl.DevopsClusterResourceServiceImpl.retrySystemEnvGitOps}改写
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
@@ -1107,15 +1108,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return;
         }
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
-
-        if (userAttrDTO == null) {
-            return;
-        }
-
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
 
         if (environmentDTO == null) {
+            return;
+        }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(environmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+
+        if (userAttrDTO == null) {
             return;
         }
 
@@ -1143,6 +1146,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         userPayload.setAddGitlabUserIds(Collections.emptyList());
         // 待删除的用户
         userPayload.setDeleteGitlabUserIds(Collections.singletonList(userAttrDTO.getGitlabUserId().intValue()));
+        userPayload.setDevopsEnvironmentDTO(environmentDTO);
         userPayload.setOption(3);
 
         // 发送saga进行相应的gitlab侧的数据处理
@@ -1152,7 +1156,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("env")
                         .withRefId(String.valueOf(envId))
-                        .withJson(JSONObject.toJSONString(userPayload))
+                        .withPayloadAndSerialize(userPayload)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
                 builder -> {
                 });
@@ -1167,8 +1171,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION, description = "更新环境的权限")
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
+    public void updateEnvUserPermission(Long projectId, DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
         DevopsEnvironmentDTO preEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvPermissionUpdateVO.getEnvId());
+        CommonExAssertUtil.assertTrue(projectId.equals(preEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
 
         DevopsEnvUserPayload userPayload = new DevopsEnvUserPayload();
         userPayload.setEnvId(preEnvironmentDTO.getId());
@@ -1290,11 +1296,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteDeactivatedOrFailedEnvironment(Long projectId, Long envId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
-        if (devopsEnvironmentDTO == null) {
-            return;
-        }
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         //排除掉运行中的环境
         if (Boolean.TRUE.equals(devopsEnvironmentDTO.getActive()) && Boolean.FALSE.equals(devopsEnvironmentDTO.getFailed()) && upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
@@ -1407,7 +1410,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             List<String> namespaces = JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class);
             namespaces.remove(devopsEnvironmentDTO.getCode());
             devopsClusterDTO.setNamespaces((JSONArray.toJSONString(namespaces)));
-            devopsClusterService.baseUpdate(devopsClusterDTO);
+            devopsClusterService.baseUpdate(null, devopsClusterDTO);
         }
 
 

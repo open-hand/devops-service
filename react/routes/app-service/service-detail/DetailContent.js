@@ -33,15 +33,15 @@ const DetailContent = observer(() => {
         component={Version}
         alwaysShow
       />
-      <PageTab
-        title={<Tips
-          helpText={formatMessage({ id: `${intlPrefix}.detail.permission.tips` })}
-          title={formatMessage({ id: `${intlPrefix}.permission` })}
-        />}
-        tabKey="Allocation"
-        component={Allocation}
-        alwaysShow={accessPermission}
-      />
+      {/* <PageTab */}
+      {/*  title={<Tips */}
+      {/*    helpText={formatMessage({ id: `${intlPrefix}.detail.permission.tips` })} */}
+      {/*    title={formatMessage({ id: `${intlPrefix}.permission` })} */}
+      {/*  />} */}
+      {/*  tabKey="Allocation" */}
+      {/*  component={Allocation} */}
+      {/*  alwaysShow={accessPermission} */}
+      {/* /> */}
       <PageTab
         title={<Tips
           helpText={formatMessage({ id: `${intlPrefix}.detail.share.tips` })}

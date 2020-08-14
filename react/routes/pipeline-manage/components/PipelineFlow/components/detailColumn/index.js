@@ -10,52 +10,32 @@ import CodeQuality from '../codeQuality';
 import CodeLog from '../codeLog';
 import './index.less';
 import { handlePromptError } from '../../../../../../utils';
+import StageType from '../stage-type';
+import StatusTag from '../StatusTag';
+import DepolyLog from '../deployLog';
 
 const jobType = {
   build: {
     name: '构建',
-    children: [
-      {
-        name: '构建包名称：',
-        type: 'artifactName',
-      },
-      {
-        name: '构建包下载地址：',
-        type: 'artifactUrl',
-      },
-    ],
   },
   sonar: {
     name: '代码检查',
-    children: [
-      {
-        name: '检测Bugs数量：',
-        type: '',
-      },
-      {
-        name: '检测代码异味数量：',
-        type: '',
-      },
-      {
-        name: '安全漏洞数量：',
-        type: '',
-      },
-    ],
   },
   custom: {
     name: '自定义',
-    children: [],
   },
   chart: {
     name: '发布Chart',
-    children: [],
   },
-};
-
-const sonarText = {
-  new_bugs: '检测Bugs数量：',
-  code_smells: '检测代码异味数量：',
-  vulnerabilities: '安全漏洞数量：',
+  cdDeploy: {
+    name: '部署',
+  },
+  cdAudit: {
+    name: '人工卡点',
+  },
+  cdHost: {
+    name: '主机部署',
+  },
 };
 
 function renderDuration(value) {
@@ -82,7 +62,6 @@ function renderDuration(value) {
 }
 
 const DetailItem = (props) => {
-  const [expand, setExpand] = useState(false);
   const {
     durationSeconds,
     itemStatus,
@@ -92,78 +71,23 @@ const DetailItem = (props) => {
     projectId,
     gitlabJobId,
     detailStore: {
-      retryJob, getDetailData,
+      retryJob, getDetailData, retryCdJob, // retryCdJob是部署类型任务的重试 
     },
     name,
-    artifacts,
-    sonarContentVOS,
     handleRefresh,
+    cdAuto, // cd阶段job独有的
+    audit, // cd阶段job独有的
+    stageId, // cd阶段job独有的
+    cdRecordId, // cd阶段job独有的
+    gitlabPipelineId,
+    jobRecordId,
+    history,
+    location: { search },
+    countersigned,
+    chartVersion,
   } = props;
 
-  const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.devopsCiPipelineVO;
-
-  function handleDropDown() {
-    setExpand(!expand);
-  }
-
-  const renderMainPanel = () => {
-    if (type === 'build' && artifacts) {
-      return artifacts.map((artItem, artkey) => {
-        const { artifactName, artifactUrl } = artItem;
-        return (<Fragment>
-          <div>
-            <span>构建包名称：</span>
-            <Tooltip title={artifactName}>
-              <span>{artifactName}</span>
-            </Tooltip>
-          </div>
-          <div>
-            <span>构建包下载地址：</span>
-            <Tooltip title={artifactUrl}>
-              <span>{artifactUrl}</span>
-            </Tooltip>
-          </div>
-        </Fragment>);
-      });
-    } else if (type === 'sonar' && sonarContentVOS) {
-      const arr = sonarContentVOS.filter(item => sonarText[item.key]);
-      return arr.map((item, key) => (
-        <div>
-          <span>{sonarText[item.key]}</span>
-          <Tooltip>
-            <span>{item.value}</span>
-          </Tooltip>
-        </div>
-      ));
-    }
-  };
-
-  const renderMain = () => (
-    <main style={{ display: expand ? 'block' : 'none' }}>
-      {renderMainPanel()}
-      {/* {
-        type === 'sonar' && sonarContentVOS && sonarContentVOS
-        && <Fragment>
-          <div>
-            <span>检测Bugs数量：</span>
-            <Tooltip>
-              <span>-</span>
-            </Tooltip>
-          </div>
-          <div>
-            <span>检测代码异味数量：</span>
-            <Tooltip>
-              <span>-</span>
-            </Tooltip>
-          </div>
-          <div>
-            <span>安全漏洞数量：</span>
-            <span>-</span>
-          </div>
-        </Fragment>
-      } */}
-    </main>
-  );
+  const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
 
   function openDescModal() {
     Modal.open({
@@ -173,6 +97,30 @@ const DetailItem = (props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       children: <CodeLog gitlabProjectId={gitlabProjectId} projectId={projectId} gitlabJobId={gitlabJobId} />,
+      drawer: true,
+      okText: '关闭',
+      footer: (okbtn) => (
+        <Fragment>
+          {okbtn}
+        </Fragment>
+      ),
+    });
+  }
+
+  function openCdLog() {
+    const logData = {
+      projectId,
+      cdRecordId,
+      stageId,
+      jobRecordId,
+    };
+    Modal.open({
+      title: `查看${jobType[type].name}日志`,
+      key: Modal.key(),
+      style: {
+        width: 'calc(100vw - 3.52rem)',
+      },
+      children: <DepolyLog {...logData} />,
       drawer: true,
       okText: '关闭',
       footer: (okbtn) => (
@@ -214,11 +162,138 @@ const DetailItem = (props) => {
       return false;
     }
   }
+  async function handleCdJobRetry() {
+    try {
+      const res = await retryCdJob(projectId, cdRecordId);
+      if (handlePromptError(res)) {
+        handleRefresh();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      Choerodon.handleResponseError(error);
+      return false;
+    }
+  }
+
+  const renderCdAuto = () => {
+    const {
+      envName,
+      appServiceName: cdJobAppServiceName,
+      appServiceVersion: cdJobAppServiceVersion,
+      instanceName,
+      envId,
+      appServiceId: jobAppServiceId,
+      instanceId,
+    } = cdAuto || {};
+
+    function linkTo() {
+      if (instanceId && instanceName) {
+        history.push({
+          pathname: '/devops/resource',
+          search,
+          state: {
+            instanceId,
+            appServiceId,
+            envId,
+          },
+        });
+      } else {
+        history.push(`/devops/resource${search}`);
+      }
+    }
+
+    return (
+      <main>
+        <div>
+          <span>部署环境:</span>
+          <span>{envName || '-'}</span>
+        </div>
+        <div>
+          <span>应用服务:</span>
+          <span>{cdJobAppServiceName || '-'}</span>
+        </div>
+        <div>
+          <span>服务版本:</span>
+          <Tooltip title={cdJobAppServiceVersion}>
+            <span>{cdJobAppServiceVersion || '-'}</span>
+          </Tooltip>
+        </div>
+        <div>
+          <span>生成实例:</span>
+          <span
+            style={{ color: '#3F51B5', cursor: 'pointer' }}
+            onClick={linkTo}
+          >{(itemStatus !== 'created' && instanceName) || '-'}</span>
+        </div>
+      </main>
+    );
+  };
+
+  const renderCdAudit = () => {
+    const {
+      appointUsers,
+      reviewedUsers,
+      status: auditJobStatus,
+    } = audit || {};
+    const appontUserString = appointUsers && appointUsers.map(x => x.realName).join('，');
+    const reviewedUserStirng = reviewedUsers && reviewedUsers.map(x => x.realName).join('，');
+    const countersignedText = countersigned ? '会签' : '或签';
+    const countersignedNullText = countersigned === null ? '-' : countersignedText;
+    return (
+      <main>
+        <div>
+          <span>审核模式:</span>
+          <span>{countersignedNullText}</span>
+        </div>
+        <div>
+          <span>指定审核人员:</span>
+          <Tooltip title={appontUserString}>
+            <span>{appontUserString || '-'}</span>
+          </Tooltip>
+        </div>
+        <div>
+          <span>已审核人员:</span>
+          <Tooltip title={reviewedUserStirng}>
+            <span>{reviewedUserStirng || '-'}</span>
+          </Tooltip>
+        </div>
+        <div>
+          <span>审核状态:</span>
+          <StatusTag status={auditJobStatus} />
+        </div>
+      </main>
+    );
+  };
+
+  const renderChart = () => (
+    <main>
+      <div>
+        <span>生成版本:</span>
+        <Tooltip title={chartVersion}>
+          <span>{chartVersion || '-'}</span>
+        </Tooltip>
+      </div>
+    </main>
+  );
+
+  function getRetryBtnDisabled() {
+    const successAndFailed = itemStatus === 'success' || itemStatus === 'failed';
+    if (type === 'cdDeploy') {
+      return !successAndFailed;
+    } else {
+      return !(successAndFailed || itemStatus === 'canceled');
+    }
+  }
 
   return (
     <div className="c7n-piplineManage-detail-column-item">
       <header>
-        <StatusDot size={13} status={itemStatus} />
+        <StatusDot
+          size={13}
+          status={itemStatus}
+          style={{ lineHeight: '22px' }}
+        />
         <div className="c7n-piplineManage-detail-column-item-sub">
           <Tooltip title={name}>
             <span>{type && `【${jobType[type].name}】`}{name}</span>
@@ -229,45 +304,48 @@ const DetailItem = (props) => {
             </Tooltip>
           }
         </div>
-        {((type === 'build' && artifacts) || (type === 'sonar' && sonarContentVOS)) && <Button
-          className="c7n-piplineManage-detail-column-item-btn"
-          icon={!expand ? 'arrow_drop_down' : 'arrow_drop_up'}
-          shape="circle"
-          funcType="flat"
-          size="small"
-          onClick={handleDropDown}
-        />}
       </header>
-
-      {(type === 'build' || type === 'sonar') && renderMain()}
-
+      {
+        type === 'cdDeploy' && renderCdAuto()
+      }
+      {
+        type === 'cdAudit' && renderCdAudit()
+      }
+      {
+        type === 'chart' && renderChart()
+      }
       <footer>
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
-          <Tooltip title="查看日志">
-            <Button
-              funcType="flat"
-              shape="circle"
-              size="small"
-              icon="description-o"
-              disabled={itemStatus === 'created'}
-              onClick={openDescModal}
-              color="primary"
-            />
-          </Tooltip>
-        </Permission>
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.retry']}>
-          <Tooltip title="重试">
-            <Button
-              funcType="flat"
-              disabled={!(itemStatus === 'success' || itemStatus === 'failed' || itemStatus === 'canceled')}
-              shape="circle"
-              size="small"
-              icon="refresh"
-              color="primary"
-              onClick={handleJobRetry}
-            />
-          </Tooltip>
-        </Permission>
+        {
+          type !== 'cdAudit' && type !== 'cdHost' && <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}>
+            <Tooltip title="查看日志">
+              <Button
+                funcType="flat"
+                shape="circle"
+                size="small"
+                icon="description-o"
+                disabled={itemStatus === 'created' || itemStatus === 'skipped'}
+                onClick={(type !== 'cdDeploy') ? openDescModal : openCdLog}
+                color="primary"
+              />
+            </Tooltip>
+          </Permission>
+        }
+        {
+          type !== 'cdAudit'
+          && <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.retry']}>
+            <Tooltip title="重试">
+              <Button
+                funcType="flat"
+                disabled={getRetryBtnDisabled()}
+                shape="circle"
+                size="small"
+                icon="refresh"
+                color="primary"
+                onClick={type === 'cdDeploy' || type === 'cdHost' || type === 'cdAudit' ? handleCdJobRetry : handleJobRetry}
+              />
+            </Tooltip>
+          </Permission>
+        }
         {
           type === 'sonar' && (
             <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.job.sonarqube']}>
@@ -295,7 +373,7 @@ const DetailItem = (props) => {
 
 export default observer((props) => {
   // 抛出piplineName
-  const { piplineName, piplineStatus, jobRecordVOList, seconds } = props;
+  const { piplineName, piplineStatus, jobRecordVOList, seconds, type, stageId, parallel, triggerType = 'auto' } = props;
 
   useEffect(() => {
   }, []);
@@ -307,12 +385,13 @@ export default observer((props) => {
       return item;
     });
     return hasJobs ? lists.map((item, index) => {
-      const { status, gitlabJobId, stage } = item;
+      const { status, gitlabJobId, stage, id: jobRecordId } = item;
       return (
         <DetailItem
           key={gitlabJobId}
           piplineName={stage}
           itemStatus={status}
+          jobRecordId={jobRecordId}
           {...props}
           {...item}
         />
@@ -320,22 +399,36 @@ export default observer((props) => {
     }) : '无执行详情...';
   };
 
+  const realType = type?.toUpperCase();
+
   return (
-    <div className="c7n-piplineManage-detail-column">
+    <div className={`c7n-piplineManage-detail-column c7n-piplineManage-detail-column-${piplineStatus}`}>
       <div className="c7n-piplineManage-detail-column-header">
-        <StatusDot size={17} status={piplineStatus} />
+        {/*<StatusDot size={17} status={piplineStatus} />*/}
         <span>{piplineName}</span>
+        <span className={`c7n-piplineManage-stage-type c7n-piplineManage-stage-type-${realType}`}>{realType}</span>
         {seconds ? <span>{renderDuration(seconds)}</span> : null}
       </div>
       <div className="c7n-piplineManage-detail-column-lists">
-        <h6>任务列表</h6>
+        <h6>
+          任务列表
+          {/* Todo 加上串并行逻辑后优化判断 */}
+          <span
+            className={`c7n-piplineManage-stage-type-task c7n-piplineManage-stage-type-task-${parallel || realType === 'CI' ? 'parallel' : 'serial'}`}
+          >
+            {parallel || realType === 'CI' ? '任务并行' : '任务串行'}
+          </span>
+        </h6>
         {renderItem()}
       </div>
       <div className="c7n-piplineManage-detail-column-type">
-        <Tooltip title="自动流转">
-          <span>A</span>
-        </Tooltip>
-        <span />
+        {triggerType === 'auto' ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 28 9">
+            <path fill="#6887E8" d="M511.5,131 L520.5,135.5 L511.5,140 L511.5,136 L493,136 L493,135 L511.5,135 L511.5,131 Z" transform="translate(-493 -131)" />
+          </svg>
+        ) : (<svg xmlns="http://www.w3.org/2000/svg" width="28" height="9" viewBox="0 0 26 9">
+          <path fill="#F1B42D" d="M917.5,130 L926.5,134.5 L917.5,139 L917.5,135 L913.5,135 L913.5,134 L917.5,134 L917.5,130 Z M905.5,134 L905.5,135 L901.5,135 L901.5,134 L905.5,134 Z M911.5,134 L911.5,135 L907.5,135 L907.5,134 L911.5,134 Z" transform="translate(-901 -130)" />
+        </svg>)}
       </div>
     </div>
   );

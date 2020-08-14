@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ProjectCertificationCreateUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -24,6 +25,7 @@ import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
 import io.choerodon.devops.app.service.SendNotificationService;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
@@ -169,7 +171,11 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO) {
+    public void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationCreateUpdateVO createUpdateVO) {
+        // 特殊情况的主键加密手动处理
+        ProjectCertificationVO projectCertificationVO = ConvertUtils.convertObject(createUpdateVO, ProjectCertificationVO.class);
+        projectCertificationVO.setId(KeyDecryptHelper.decryptValue(createUpdateVO.getId()));
+
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getTenantNum(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
@@ -281,12 +287,12 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public void deleteCert(Long certId) {
+    public void deleteCert(Long projectId, Long certId) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
             return;
         }
-
+        CommonExAssertUtil.assertTrue(projectId.equals(certificationDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {

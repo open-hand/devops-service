@@ -1,40 +1,35 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.*;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
-import io.choerodon.devops.app.service.DevopsConfigService;
-import io.choerodon.devops.app.service.DevopsHarborUserService;
-import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.app.service.HarborService;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.dto.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.HarborUserDTO;
-import io.choerodon.devops.infra.dto.harbor.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
+import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.feign.RdupmClient;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 
 /**
  * Created with IntelliJ IDEA.
@@ -46,20 +41,15 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 @Component
 public class HarborServiceImpl implements HarborService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarborServiceImpl.class);
-    private static final String HARBOR = "harbor";
-    private static final String AUTHTYPE = "pull";
     private static final Gson gson = new Gson();
 
     @Autowired
-    private HarborConfigurationProperties harborConfigurationProperties;
+    @Lazy
+    private RdupmClient rdupmClient;
     @Autowired
-    private DevopsConfigService devopsConfigService;
+    private AppServiceShareRuleMapper appServiceShareRuleMapper;
     @Autowired
-    private DevopsProjectService devopsProjectService;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private DevopsHarborUserService devopsHarborUserService;
+    private AppServiceMapper appServiceMapper;
 
     @Value("${services.harbor.baseUrl}")
     private String baseUrl;
@@ -67,64 +57,6 @@ public class HarborServiceImpl implements HarborService {
     private String username;
     @Value("${services.harbor.password}")
     private String password;
-
-    @Override
-    public void createHarborForProject(HarborPayload harborPayload) {
-        HarborClient harborClient = initHarborClient(harborPayload);
-        Boolean createUser = harborPayload.getProjectId() != null;
-        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), createUser, true);
-    }
-
-
-    @Override
-    public void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser, Boolean harborPrivate) {
-        //创建harbor仓库
-        try {
-            Response<Void> result = null;
-            LOGGER.info(harborConfigurationProperties.getParams());
-            if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
-                result = harborClient.insertProject(new Project(projectCode, harborPrivate ? 0 : 1)).execute();
-            } else {
-                Map<String, String> params = new HashMap<>();
-                params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
-                result = harborClient.insertProject(params, new Project(projectCode, harborPrivate ? 0 : 1)).execute();
-            }
-            if (result.raw().code() != 201 && result.raw().code() != 409) {
-                throw new CommonException(result.message());
-            }
-            if (createUser) {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-                User user = convertHarborUser(projectDTO, true, null);
-                User pullUser = convertHarborUser(projectDTO, false, null);
-                //创建用户,绑定角色
-                createHarborUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
-                createHarborUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
-
-                HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
-                HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
-                devopsHarborUserService.baseCreateOrUpdate(harborUserDTO);
-                devopsHarborUserService.baseCreateOrUpdate(pullHarborUserDTO);
-
-                devopsProjectDTO.setHarborProjectIsPrivate(true);
-                devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
-                devopsProjectDTO.setHarborPullUserId(pullHarborUserDTO.getId());
-                devopsProjectService.baseUpdate(devopsProjectDTO);
-
-            }
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
-
-    }
-
-    @Override
-    public void createHarborUserByClient(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles) {
-        HarborClient harborClient = initHarborClient(harborPayload);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        createHarborUser(harborClient, user, roles, organizationDTO, projectDTO);
-    }
 
     @Override
     public User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String name) {
@@ -143,64 +75,104 @@ public class HarborServiceImpl implements HarborService {
         return new User(userName, userEmail, pwd, userName);
     }
 
-    private void createHarborUser(HarborClient harborClient, User user, List<Integer> roles, Tenant organizationDTO, ProjectDTO projectDTO) {
-        Response<Void> result = null;
-        try {
-            result = harborClient.insertUser(user).execute();
-            if (result.raw().code() != 201 && result.raw().code() != 409) {
-                throw new CommonException(result.errorBody().string());
-            }
-            //给项目绑定角色
-            Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getTenantNum() + "-" + projectDTO.getCode()).execute();
-            if (!CollectionUtils.isEmpty(projects.body())) {
-                Integer harborProjectId = devopsConfigService.getHarborProjectId(projects.body(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode());
 
-                Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
-                if (systemInfoResponse.raw().code() != 200) {
-                    throw new CommonException(systemInfoResponse.errorBody().string());
-                }
-                if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                    Role role = new Role();
-                    role.setUsername(user.getUsername());
-                    role.setRoles(roles);
-                    result = harborClient.setProjectMember(harborProjectId, role).execute();
-                } else {
-                    ProjectMember projectMember = new ProjectMember();
-                    MemberUser memberUser = new MemberUser();
-                    projectMember.setRoleId(roles.get(0));
-                    memberUser.setUsername(user.getUsername());
-                    projectMember.setMemberUser(memberUser);
-                    result = harborClient.setProjectMember(harborProjectId, projectMember).execute();
-                }
-                if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
-                    throw new CommonException(result.errorBody().string());
+    @Override
+    public List<HarborRepoConfigDTO> listAllCustomRepoByProject(Long projectId) {
+        HarborAllRepoDTO harborAllRepoDTO = rdupmClient.queryAllHarborRepoConfig(projectId).getBody();
+        List<HarborRepoConfigDTO> harborCustomRepoVOS = new ArrayList<>();
+        if (!Objects.isNull(harborAllRepoDTO)) {
+            List<HarborRepoConfigDTO> harborCustomRepoConfigList = harborAllRepoDTO.getHarborCustomRepoConfigList();
+            HarborRepoConfigDTO harborDefaultRepoConfig = harborAllRepoDTO.getHarborDefaultRepoConfig();
+            if (!CollectionUtils.isEmpty(harborCustomRepoConfigList)) {
+                for (HarborRepoConfigDTO harborRepoConfigDTO : harborCustomRepoConfigList) {
+                    harborRepoConfigDTO.setType(CUSTOM_REPO);
+                    harborCustomRepoVOS.add(harborRepoConfigDTO);
                 }
             }
-
-        } catch (Exception e) {
-            throw new CommonException(e);
+            if (!Objects.isNull(harborDefaultRepoConfig) && !Objects.isNull(harborDefaultRepoConfig.getRepoId())) {
+                harborDefaultRepoConfig.setType(DEFAULT_REPO);
+                harborCustomRepoVOS.add(harborDefaultRepoConfig);
+            }
         }
+        return harborCustomRepoVOS;
     }
 
-
-    private HarborClient initHarborClient(HarborPayload harborPayload) {
-        //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
-        if (harborPayload.getProjectId() != null) {
-            DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR, AUTHTYPE));
-            harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
-            harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
-            harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
+    @Override
+    public DevopsConfigDTO queryRepoConfigToDevopsConfig(Long projectId, Long appServiceId, String operateType) {
+        HarborRepoDTO harborRepoDTO = new HarborRepoDTO();
+        AppServiceShareRuleDTO appServiceShareRuleDTO = queryShareAppService(appServiceId);
+        if (!Objects.isNull(appServiceShareRuleDTO)) {
+            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+            harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceId).getBody();
         } else {
-            harborConfigurationProperties.setUsername(username);
-            harborConfigurationProperties.setPassword(password);
-            baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-            harborConfigurationProperties.setBaseUrl(baseUrl);
-            harborConfigurationProperties.setInsecureSkipTlsVerify(true);
+            harborRepoDTO = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
         }
-        ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
-        configurationProperties.setType(HARBOR);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        return retrofit.create(HarborClient.class);
+        if (Objects.isNull(harborRepoDTO) || Objects.isNull(harborRepoDTO.getHarborRepoConfig())) {
+            throw new CommonException("no custom or default warehouse configuration exists");
+        }
+        return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
     }
 
+    @Override
+    public DevopsConfigDTO queryRepoConfigByIdToDevopsConfig(Long appServiceId, Long projectId, Long harborConfigId, String repoType, String operateType) {
+        //查询应用服务是否为共享，如果是共享则从原来的的项目下拿仓库
+        HarborRepoDTO harborRepoDTO;
+        AppServiceShareRuleDTO appServiceShareRuleDTO = null;
+        if (appServiceId != null) {
+            appServiceShareRuleDTO = queryShareAppService(appServiceId);
+        }
+        if (!Objects.isNull(appServiceShareRuleDTO)) {
+            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+            harborRepoDTO = rdupmClient.queryHarborRepoConfigById(appServiceDTO.getProjectId(),
+                    harborConfigId, repoType).getBody();
+        } else {
+            harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
+        }
+        if (Objects.isNull(harborRepoDTO) || Objects.isNull(harborRepoDTO.getHarborRepoConfig())) {
+            throw new CommonException("query.repo.config.is null.by.configId");
+        }
+        return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
+    }
+
+    private AppServiceShareRuleDTO queryShareAppService(Long appServiceId) {
+        AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
+        appServiceShareRuleDTO.setAppServiceId(appServiceId);
+        AppServiceShareRuleDTO serviceShareRuleDTO = appServiceShareRuleMapper.selectOne(appServiceShareRuleDTO);
+        return serviceShareRuleDTO;
+    }
+
+    private DevopsConfigDTO repoDTOToDevopsConfigDTO(HarborRepoDTO harborRepoDTO, String operateType) {
+        HarborRepoConfigDTO harborRepoConfig = harborRepoDTO.getHarborRepoConfig();
+        DevopsConfigDTO devopsHarborConfig = new DevopsConfigDTO();
+        ConfigVO configVO = new ConfigVO();
+        configVO.setUrl(harborRepoConfig.getRepoUrl());
+        //自定义仓库才有默认的邮箱
+        if (AUTH_TYPE_PULL.equals(operateType)) {
+            if (CUSTOM_REPO.equals(harborRepoDTO.getRepoType())) {
+                configVO.setUserName(harborRepoConfig.getLoginName());
+                configVO.setPassword(harborRepoConfig.getPassword());
+            } else {
+                configVO.setUserName(harborRepoDTO.getPullRobot().getName());
+                configVO.setPassword(harborRepoDTO.getPullRobot().getToken());
+            }
+
+        } else {
+            if (CUSTOM_REPO.equals(harborRepoDTO.getRepoType())) {
+                configVO.setUserName(harborRepoConfig.getLoginName());
+                configVO.setPassword(harborRepoConfig.getPassword());
+            } else {
+                configVO.setUserName(harborRepoDTO.getPushRobot().getName());
+                configVO.setPassword(harborRepoDTO.getPushRobot().getToken());
+            }
+        }
+        configVO.setProject(harborRepoConfig.getRepoName());
+        configVO.setPrivate(Boolean.TRUE.toString().equals(harborRepoConfig.getIsPrivate()));
+
+        devopsHarborConfig.setConfig(gson.toJson(configVO));
+        devopsHarborConfig.setType(harborRepoDTO.getRepoType());
+        devopsHarborConfig.setId(harborRepoConfig.getRepoId());
+        return devopsHarborConfig;
+    }
 }
+
+

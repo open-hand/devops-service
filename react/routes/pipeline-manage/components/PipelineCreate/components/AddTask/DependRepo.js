@@ -82,7 +82,7 @@ const DependRepo = observer(({ ds, modal, handleAdd, dsData, handleParentCancel 
       <div className="dependRepo_form_borderline" style={{ marginTop: 10 }} />
       {
         ds.records.filter(d => d.data.privateIf).map((r, rIndex) => (
-          <div className="dependRepo_form_container" style={{ marginTop: 10 }}>
+          <div className="dependRepo_form_container" style={{ marginTop: 28 }}>
             <Form columns={2} record={r}>
               <TextField name="name" />
               <Select name="type">
@@ -108,7 +108,7 @@ const DependRepo = observer(({ ds, modal, handleAdd, dsData, handleParentCancel 
           </div>
         ))
       }
-      <div style={{ marginTop: 10 }}>
+      <div style={{ marginTop: 20 }}>
         <Button funcType="flat" onClick={() => handleCreateDependRepo(true)} className="depandRepo_addRepo">+添加私有依赖仓库</Button>
       </div>
     </div>

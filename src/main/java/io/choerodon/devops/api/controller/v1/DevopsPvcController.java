@@ -5,6 +5,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/pvcs")
 public class DevopsPvcController {
+
     @Autowired
     DevopsPvcService devopsPvcService;
 
@@ -48,6 +50,7 @@ public class DevopsPvcController {
     public ResponseEntity<Page<DevopsPvcRespVO>> pageByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
@@ -88,11 +91,13 @@ public class DevopsPvcController {
     public ResponseEntity<Boolean> deletePvc(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "PVC id", required = true)
             @PathVariable(value = "pvc_id") Long pvcId) {
-        return Optional.of(devopsPvcService.delete(envId, pvcId))
+        return Optional.of(devopsPvcService.delete(projectId, envId, pvcId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pvc.delete"));
     }
@@ -110,6 +115,7 @@ public class DevopsPvcController {
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "PVC名称", required = true)

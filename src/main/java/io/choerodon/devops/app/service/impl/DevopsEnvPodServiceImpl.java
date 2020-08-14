@@ -1,18 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Pod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
@@ -27,6 +14,18 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -55,6 +54,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private AgentCommandService agentCommandService;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     public Page<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam) {
@@ -277,14 +278,15 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteEnvPodById(Long envId, Long podId) {
+    public void deleteEnvPodById(Long projectId, Long envId, Long podId) {
         DevopsEnvPodDTO devopsEnvPodDTO = baseQueryById(podId);
         // 查询不到pod直接返回
         if (devopsEnvPodDTO == null) {
             return;
         }
         //检验环境相关信息
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 

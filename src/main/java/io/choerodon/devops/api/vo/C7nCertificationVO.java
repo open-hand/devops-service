@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: Runge
  * Date: 2018/8/20
@@ -9,15 +11,18 @@ import java.util.List;
  * Description:
  */
 public class C7nCertificationVO {
+    @Encrypt
     private Long id;
     private String certName;
     private String commonName;
     private List<String> domains;
     private String type;
+    @Encrypt
     private Long certId;
     private String keyValue;
     private String certValue;
     private String status;
+    @Encrypt
     private Long envId;
     private String envName;
     private Boolean envConnected;

@@ -131,4 +131,16 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     public void batchDelete(List<Long> envIds, Long userId) {
         devopsEnvUserPermissionMapper.batchDelete(envIds, userId);
     }
+
+    @Override
+    public Boolean checkUserEnvPermission(Long envId, Long userId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        // 判断当前用户是否是项目所有者或者root，如果是，直接跳过校验，如果不是，校验环境权限
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(devopsEnvironmentDTO.getProjectId(), userId)) {
+            DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO(envId, userId);
+            devopsEnvUserPermissionDO = devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO);
+            return devopsEnvUserPermissionDO != null && devopsEnvUserPermissionDO.getPermitted();
+        }
+        return true;
+    }
 }

@@ -1,8 +1,12 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: Runge
@@ -11,16 +15,19 @@ import io.swagger.annotations.ApiModelProperty;
  * Description:
  */
 public class DevopsIngressVO extends DevopsResourceDataInfoVO {
-
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long appServiceId;
     private String domain;
     private String name;
+    @Encrypt
     private Long envId;
     private String envName;
     private Boolean envStatus;
     private Boolean isUsable;
     private String status;
+    @Encrypt
     private Long certId;
     private String certName;
     private String certStatus;

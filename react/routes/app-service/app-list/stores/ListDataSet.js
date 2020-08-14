@@ -9,7 +9,7 @@ export default ((intlPrefix, formatMessage, projectId, dataKey) => ({
       const postData = getTablePostData(data);
 
       return {
-        url: `/devops/v1/projects/${projectId}/app_service/page_by_options`,
+        url: `/devops/v1/projects/${projectId}/app_service/page_by_options?checkMember=true`,
         method: 'post',
         data: postData,
       };
@@ -22,7 +22,7 @@ export default ((intlPrefix, formatMessage, projectId, dataKey) => ({
   fields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }) },
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }) },
     { name: 'active', type: 'boolean', label: formatMessage({ id: 'status' }) },
     { name: 'creationDate', type: 'string', label: formatMessage({ id: 'createDate' }) },

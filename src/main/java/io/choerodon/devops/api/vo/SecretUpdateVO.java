@@ -1,21 +1,23 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Map;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author lihao
  * @date 2019-09-15 15:54
  */
 public class SecretUpdateVO {
+    @Encrypt
     @ApiModelProperty(value = "密钥id/必填")
     @NotNull(message = "error.id.null")
     private Long id;
 
+    @Encrypt
     @ApiModelProperty(value = "环境id/必填")
     @NotNull(message = "error.env.id.null")
     private Long envId;
@@ -34,6 +36,7 @@ public class SecretUpdateVO {
     @ApiModelProperty(value = "创建或者更新")
     private String type;
 
+    @Encrypt
     @ApiModelProperty(value = "应用id/非必填")
     private Long appServiceId;
 

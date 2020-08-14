@@ -2,10 +2,13 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
 public class DevopsAppServiceViewVO {
+    @Encrypt
     private Long id;
     private String name;
     private String type;

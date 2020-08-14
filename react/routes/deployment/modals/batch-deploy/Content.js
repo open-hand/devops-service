@@ -145,7 +145,7 @@ const BatchDeployModal = injectIntl(observer(() => {
                       onClick={() => handleClickAppService(formRecord)}
                     >
                       {map(deployStore.getAppService[0] && deployStore.getAppService[0].appServiceList, ({ id, name, code }) => (
-                        <Option value={`${id}__${code}`} key={id}>{name}</Option>
+                        <Option value={`${id}**${code}`} key={id}>{name}</Option>
                       ))}
                     </Select>
                     {batchDeployDs.data.length > 1 ? (
@@ -192,7 +192,7 @@ const BatchDeployModal = injectIntl(observer(() => {
                       {map(deployStore.getShareAppService, ({ id: groupId, name: groupName, appServiceList }) => (
                         <OptGroup label={groupName} key={groupId}>
                           {map(appServiceList, ({ id, name, code }) => (
-                            <Option value={`${id}__${code}`} key={id}>{name}</Option>
+                            <Option value={`${id}**${code}`} key={id}>{name}</Option>
                           ))}
                         </OptGroup>
                       ))}

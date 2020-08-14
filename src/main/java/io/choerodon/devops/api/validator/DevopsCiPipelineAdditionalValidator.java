@@ -11,9 +11,9 @@ import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
@@ -22,6 +22,7 @@ import io.choerodon.devops.infra.util.MavenSettingsUtil;
  * @author zmf
  * @since 20-4-20
  */
+@WillDeleted
 public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
 
@@ -49,19 +50,19 @@ public class DevopsCiPipelineAdditionalValidator {
     /**
      * 是对JSR303无法校验的部分进行补充性的校验
      *
-     * @param devopsCiPipelineVO 流水线数据
+     * @param ciCdPipelineVO 流水线数据
      */
-    public static void additionalCheckPipeline(DevopsCiPipelineVO devopsCiPipelineVO) {
-        if (CollectionUtils.isEmpty(devopsCiPipelineVO.getStageList())) {
+    public static void additionalCheckPipeline(CiCdPipelineVO ciCdPipelineVO) {
+        if (CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS()) && CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
             throw new CommonException(ERROR_STAGES_EMPTY);
         }
 
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
 
-        validateImage(devopsCiPipelineVO.getImage());
+        validateImage(ciCdPipelineVO.getImage());
 
-        devopsCiPipelineVO.getStageList()
+        ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()
                 .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
                 .forEach(stage -> {
@@ -174,7 +175,7 @@ public class DevopsCiPipelineAdditionalValidator {
      */
     @SuppressWarnings("unchecked")
     private static void validateCustomJobFormat(String stageName, DevopsCiJobVO devopsCiJobVO) {
-        if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
+        if (!JobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }
 

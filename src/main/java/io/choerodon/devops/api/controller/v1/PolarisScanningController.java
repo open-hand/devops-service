@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ public class PolarisScanningController {
             @PathVariable("project_id") Long projectId,
             @ApiParam("扫描的范围 env/cluster")
             @RequestParam("scope") String scope,
+            @Encrypt
             @ApiParam("对应scope的envId或者clusterId")
             @RequestParam("scope_id") Long scopeId) {
         return new ResponseEntity<>(polarisScanningService.queryRecordByScopeAndScopeId(projectId, scope, scopeId), HttpStatus.OK);
@@ -46,6 +48,7 @@ public class PolarisScanningController {
     public ResponseEntity<String> queryEnvPolarisResult(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam("需要扫描的环境的id")
             @PathVariable("env_id") Long envId) {
         return new ResponseEntity<>(polarisScanningService.queryEnvPolarisResult(projectId, envId), HttpStatus.OK);
@@ -57,6 +60,7 @@ public class PolarisScanningController {
     public ResponseEntity<DevopsPolarisRecordVO> scanEnv(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam("需要扫描的环境的id")
             @PathVariable("env_id") Long envId) {
         return new ResponseEntity<>(polarisScanningService.scanEnv(projectId, envId), HttpStatus.OK);
@@ -68,6 +72,7 @@ public class PolarisScanningController {
     public ResponseEntity<DevopsPolarisSummaryVO> clusterPolarisSummary(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam("需要扫描的集群的id")
             @PathVariable("cluster_id") Long clusterId) {
         return new ResponseEntity<>(polarisScanningService.clusterPolarisSummary(projectId, clusterId), HttpStatus.OK);
@@ -79,6 +84,7 @@ public class PolarisScanningController {
     public ResponseEntity<ClusterPolarisEnvDetailsVO> clusterPolarisEnvDetail(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam("需要扫描的集群的id")
             @PathVariable("cluster_id") Long clusterId) {
         return new ResponseEntity<>(polarisScanningService.clusterPolarisEnvDetail(projectId, clusterId), HttpStatus.OK);
@@ -90,6 +96,7 @@ public class PolarisScanningController {
     public ResponseEntity<DevopsPolarisRecordVO> scanCluster(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam("需要扫描的集群的id")
             @PathVariable("cluster_id") Long clusterId) {
         return new ResponseEntity<>(polarisScanningService.scanCluster(projectId, clusterId), HttpStatus.OK);

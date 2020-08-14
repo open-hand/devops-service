@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
 
 
@@ -70,5 +71,33 @@ public enum AccessLevel {
     @Override
     public String toString() {
         return this.value.toString();
+    }
+
+    public static String getAccessLevelName(Integer value) {
+        AccessLevel accessLevel = AccessLevel.forValue(value);
+        String accessLevelName;
+        switch (accessLevel) {
+            case NONE:
+                accessLevelName = "NONE";
+                break;
+            case GUEST:
+                accessLevelName = "Guest";
+                break;
+            case REPORTER:
+                accessLevelName = "Reporter";
+                break;
+            case DEVELOPER:
+                accessLevelName = "Developer";
+                break;
+            case MASTER:
+                accessLevelName = "Maintainer";
+                break;
+            case OWNER:
+                accessLevelName = "Owner";
+                break;
+            default:
+                accessLevelName = "NONE";
+        }
+        return accessLevelName;
     }
 }

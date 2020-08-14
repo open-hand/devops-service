@@ -1,17 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -22,6 +10,18 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/clusters")
@@ -64,11 +64,12 @@ public class DevopsClusterController {
     public void update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id")
             @PathVariable("cluster_id") Long clusterId,
             @ApiParam(value = "集群对象")
             @RequestBody @Valid DevopsClusterUpdateVO devopsClusterUpdateVO) {
-        devopsClusterService.updateCluster(clusterId, devopsClusterUpdateVO);
+        devopsClusterService.updateCluster(projectId, clusterId, devopsClusterUpdateVO);
     }
 
     /**
@@ -83,6 +84,7 @@ public class DevopsClusterController {
     public ResponseEntity<DevopsClusterRepVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.query(clusterId))
@@ -158,6 +160,7 @@ public class DevopsClusterController {
     public ResponseEntity<Page<ProjectReqVO>> pageRelatedProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "分页参数")
@@ -183,10 +186,12 @@ public class DevopsClusterController {
     public ResponseEntity<Page<ProjectReqVO>> listAllNonRelatedProjects(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
+            @Encrypt
             @ApiParam(value = "指定项目id")
             @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
@@ -204,15 +209,16 @@ public class DevopsClusterController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下为项目分配权限")
     @PostMapping(value = "/{cluster_id}/permission")
-    public ResponseEntity assignPermission(
+    public ResponseEntity<Void> assignPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "权限分配信息")
             @RequestBody @Valid DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO) {
-        devopsClusterService.assignPermission(devopsClusterPermissionUpdateVO);
-        return new ResponseEntity(HttpStatus.OK);
+        devopsClusterService.assignPermission(projectId, devopsClusterPermissionUpdateVO);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -226,15 +232,16 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除集群下该项目的权限")
     @DeleteMapping(value = "/{cluster_id}/permission")
-    public ResponseEntity deletePermissionOfProject(
+    public ResponseEntity<Void> deletePermissionOfProject(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "要删除权限的项目id", required = true)
             @RequestParam(value = "delete_project_id") Long projectToDelete) {
-        devopsClusterService.deletePermissionOfProject(clusterId, projectToDelete);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        devopsClusterService.deletePermissionOfProject(projectId, clusterId, projectToDelete);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -252,6 +259,7 @@ public class DevopsClusterController {
     public ResponseEntity<String> queryShell(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.queryShell(clusterId))
@@ -305,7 +313,6 @@ public class DevopsClusterController {
      *
      * @param projectId 项目ID
      * @param clusterId 集群Id
-     * @return String
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除集群")
@@ -313,9 +320,10 @@ public class DevopsClusterController {
     public void deleteCluster(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId) {
-        devopsClusterService.deleteCluster(clusterId);
+        devopsClusterService.deleteCluster(projectId, clusterId);
     }
 
     /**
@@ -331,6 +339,7 @@ public class DevopsClusterController {
     public ResponseEntity<ClusterMsgVO> checkConnectEnvsAndPV(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.checkConnectEnvsAndPV(clusterId))
@@ -355,6 +364,7 @@ public class DevopsClusterController {
     public ResponseEntity<Page<DevopsEnvPodVO>> pageQueryPodsByNodeName(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "节点名称", required = true)
@@ -383,6 +393,7 @@ public class DevopsClusterController {
     public ResponseEntity<Page<ClusterNodeInfoVO>> listClusterNodes(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "分页参数")
@@ -405,6 +416,7 @@ public class DevopsClusterController {
     public ResponseEntity<ClusterNodeInfoVO> queryNodeInfo(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "节点名称", required = true)
@@ -417,5 +429,17 @@ public class DevopsClusterController {
     @GetMapping("/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateCluster(@PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(devopsClusterService.checkEnableCreateCluster(projectId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(("查询指定集群下的节点名称"))
+    @GetMapping("/{cluster_id}/node_names")
+    public ResponseEntity<List<String>> getNodeNames(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @Encrypt
+            @PathVariable(value = "cluster_id") Long clusterId) {
+        return new ResponseEntity<>(clusterNodeInfoService.queryNodeName(projectId, clusterId), HttpStatus.OK);
     }
 }

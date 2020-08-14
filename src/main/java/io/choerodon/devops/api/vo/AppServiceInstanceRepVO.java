@@ -1,12 +1,16 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by Sheep on 2019/7/30.
  */
 public class AppServiceInstanceRepVO {
-
+    @Encrypt
     private Long instanceId;
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long envId;
     private String appServiceName;
     private String appServiceVersion;

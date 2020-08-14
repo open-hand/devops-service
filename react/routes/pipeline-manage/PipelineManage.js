@@ -12,32 +12,24 @@ import PipelineCreate from './components/PipelineCreate';
 import RecordDetail from './components/record-detail';
 import EmptyPage from '../../components/empty-page';
 import { usePipelineManageStore } from './stores';
-import PipelineEdit from './components/PipelineFlow/StageEdit';
+import HeaderButtons from '../../components/header-buttons';
+import VariableSettings from './components/variable-settings';
+import AuditModal from './components/audit-modal';
+import GitlabRunner from './components/gitlab-runner';
 
 import './index.less';
+import MouserOverWrapper from '../../components/MouseOverWrapper';
 
 const recordDetailKey = Modal.key();
+const settingsKey = Modal.key();
+const auditKey = Modal.key();
+const runnerKey = Modal.key();
 const modalStyle = {
   width: 380,
 };
-
-function beforeunload(e) {
-  const confirmationMessage = '您的修改尚未保存，确定要离开吗?';
-  (e || window.event).returnValue = confirmationMessage;
-  return confirmationMessage;
-}
-
-function debounce(fn, ms) {
-  let timeoutId;
-  // eslint-disable-next-line func-names
-  return function () {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      // eslint-disable-next-line prefer-rest-params
-      fn.apply(this, arguments);
-    }, ms);
-  };
-}
+const settingsModalStyle = {
+  width: 740,
+};
 
 const PipelineManage = observer((props) => {
   const {
@@ -58,22 +50,6 @@ const PipelineManage = observer((props) => {
     projectId,
   } = usePipelineManageStore();
 
-  const [promptChanged, setPromptChange] = useState();
-
-  useEffect(() => {
-    if (getHasModify(false)) {
-      window.addEventListener('beforeunload', beforeunload);
-    } else {
-      window.removeEventListener('beforeunload', beforeunload);
-    }
-  }, [getHasModify(false)]);
-
-  useEffect(() => {
-    if (promptChanged) {
-      window.removeEventListener('beforeunload', beforeunload);
-    }
-  }, [promptChanged]);
-
   const handleCreatePipeline = () => {
     Modal.open({
       key: Modal.key(),
@@ -82,7 +58,7 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate refreshTree={handleRefresh} editBlockStore={editBlockStore} mainStore={mainStore} />,
+      children: <PipelineCreate mathRandom={Math.random()} refreshTree={handleRefresh} editBlockStore={editBlockStore} mainStore={mainStore} />,
       okText: '创建',
     });
   };
@@ -91,45 +67,16 @@ const PipelineManage = observer((props) => {
 
   const { getSelectedMenu } = mainStore;
 
-  function checkHasModifyandRefresh() {
-    if (getHasModify(false)) {
-      Modal.open({
-        key: Modal.key(),
-        title: '保存提示',
-        children: '您的修改尚未保存，确定要离开吗?',
-        onOk: handleRefresh,
-      });
-    } else {
-      handleRefresh();
-    }
-  }
-
   async function handleRefresh() {
     setHasModify(false, false);
     await treeDs.query();
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
-    const { gitlabPipelineId } = getDetailData;
+    const { gitlabPipelineId, devopsPipelineRecordRelId } = getDetailData;
     if (!parentId) {
       id && loadData(projectId, id);
     } else {
-      gitlabPipelineId && loadDetailData(projectId, gitlabPipelineId);
-    }
-  }
-
-  async function handleSaveEdit() {
-    const { id } = getMainData;
-    try {
-      const res = await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${id}`, getMainData);
-      if (handlePromptError(res)) {
-        setHasModify(false, false);
-        loadData(projectId, id);
-        return res;
-      }
-      return false;
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-      return false;
+      devopsPipelineRecordRelId && loadDetailData(projectId, devopsPipelineRecordRelId);
     }
   }
 
@@ -141,19 +88,31 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate dataSource={editBlockStore.getMainData} refreshTree={handleRefresh} editBlockStore={editBlockStore} />,
+      children: <PipelineCreate
+        dataSource={editBlockStore.getMainData}
+        refreshTree={handleRefresh}
+        editBlockStore={editBlockStore}
+      />,
       okText: formatMessage({ id: 'save' }),
     });
   }
 
   function openRecordDetail() {
-    const { gitlabPipelineId } = getSelectedMenu;
+    const { devopsPipelineRecordRelId } = getSelectedMenu;
+    const { devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId } = getDetailData;
+    const newDevopsPipelineRecordRelId = devopsPipelineRecordRelId || detailDevopsPipelineRecordRelId;
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
-      title: formatMessage({ id: `${intlPrefix}.record.detail.title` }, { id: gitlabPipelineId }),
+      title: <span className={`${prefixCls}-detail-modal-title`}>
+        流水线记录“
+        <MouserOverWrapper width="100px" text={`#${newDevopsPipelineRecordRelId}`}>
+          <span>{`#${newDevopsPipelineRecordRelId}`}</span>
+        </MouserOverWrapper>
+        ”的详情
+      </span>,
       children: <RecordDetail
-        pipelineRecordId={gitlabPipelineId}
+        pipelineRecordId={newDevopsPipelineRecordRelId}
         intlPrefix={intlPrefix}
         refresh={handleRefresh}
         store={mainStore}
@@ -165,90 +124,157 @@ const PipelineManage = observer((props) => {
   }
 
   async function changeRecordExecute(type) {
-    const { gitlabProjectId, gitlabPipelineId } = getSelectedMenu;
+    const { gitlabProjectId, gitlabPipelineId, devopsPipelineRecordRelId } = getSelectedMenu;
+    const { gitlabProjectId: detailGitlabProjectId, gitlabPipelineId: detailGitlabPipelineId, devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId } = getDetailData;
     const res = await mainStore.changeRecordExecute({
       projectId,
-      gitlabProjectId,
-      recordId: gitlabPipelineId,
+      gitlabProjectId: gitlabProjectId || detailGitlabProjectId,
+      recordId: gitlabPipelineId || detailGitlabPipelineId,
       type,
+      devopsPipelineRecordRelId: devopsPipelineRecordRelId || detailDevopsPipelineRecordRelId,
     });
     if (res) {
       handleRefresh();
     }
   }
 
-  function getButtons() {
-    const { parentId, status } = getSelectedMenu;
-    if (!parentId) {
-      return (
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.update']}>
-          <Button
-            icon="mode_edit"
-            onClick={openEditModal}
-            // disabled={!getHasModify(false)}
-          >
-            {formatMessage({ id: 'edit' })}
-          </Button>
-        </Permission>
-      );
-    } else {
-      let btn;
-      switch (status) {
-        case 'running':
-        case 'pending':
-          btn = <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.cancel']}>
-            <Button
-              icon="power_settings_new"
-              onClick={() => changeRecordExecute('cancel')}
-            >
-              {formatMessage({ id: `${intlPrefix}.execute.cancel` })}
-            </Button>
-          </Permission>;
-          break;
-        case 'canceled':
-        case 'failed':
-          btn = <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.retry']}>
-            <Button
-              icon="refresh"
-              onClick={() => changeRecordExecute('retry')}
-            >
-              {formatMessage({ id: `${intlPrefix}.execute.retry` })}
-            </Button>
-          </Permission>;
-          break;
-        default:
-          break;
+  function openAuditModal() {
+    const { devopsCdPipelineDeatilVO, parentId } = getSelectedMenu;
+    const { cdRecordId, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO, pipelineName } = getDetailData;
+    Modal.open({
+      key: auditKey,
+      title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+      children: <AuditModal
+        cdRecordId={cdRecordId}
+        name={pipelineName}
+        mainStore={mainStore}
+        onClose={handleRefresh}
+        checkData={devopsCdPipelineDeatilVO || detailDevopsCdPipelineDeatilVO}
+      />,
+      movable: false,
+    });
+  }
+
+  function openSettingsModal(type) {
+    const { id } = getMainData;
+    const { appServiceId, appServiceName } = getSelectedMenu;
+    Modal.open({
+      key: settingsKey,
+      style: settingsModalStyle,
+      title: formatMessage({ id: `${intlPrefix}.settings.${type}` }),
+      children: <VariableSettings
+        intlPrefix={intlPrefix}
+        appServiceId={type === 'global' ? null : appServiceId}
+        appServiceName={type === 'global' ? null : appServiceName}
+        store={mainStore}
+        refresh={handleRefresh}
+      />,
+      drawer: true,
+      okText: formatMessage({ id: 'save' }),
+    });
+  }
+
+  function openRunnerModal() {
+    Modal.open({
+      key: runnerKey,
+      style: settingsModalStyle,
+      title: formatMessage({ id: `${intlPrefix}.gitlab.runner` }),
+      children: <GitlabRunner />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+    });
+  }
+
+  function getHeaderButtons() {
+    const { parentId, status, devopsCdPipelineDeatilVO } = getSelectedMenu;
+    const { status: detailStatus, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO } = getDetailData;
+    const buttons = [{
+      permissions: ['choerodon.code.project.develop.ci-pipeline.ps.create'],
+      name: formatMessage({ id: `${intlPrefix}.create` }),
+      icon: 'playlist_add',
+      handler: handleCreatePipeline,
+      display: true,
+      group: 1,
+    }, {
+      permissions: ['choerodon.code.project.develop.ci-pipeline.ps.variable.project'],
+      name: formatMessage({ id: `${intlPrefix}.settings.global` }),
+      icon: 'settings-o',
+      handler: () => openSettingsModal('global'),
+      display: true,
+      group: 1,
+    }, {
+      permissions: ['choerodon.code.project.develop.ci-pipeline.ps.runner'],
+      name: formatMessage({ id: `${intlPrefix}.gitlab.runner` }),
+      icon: 'find_in_page-o',
+      handler: openRunnerModal,
+      display: true,
+      group: 1,
+    }];
+    if (treeDs.length && treeDs.status === 'ready') {
+      if (!parentId) {
+        buttons.push({
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.update'],
+          name: formatMessage({ id: 'edit' }),
+          icon: 'mode_edit',
+          handler: openEditModal,
+          display: true,
+          group: 2,
+        }, {
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.variable.app'],
+          name: formatMessage({ id: `${intlPrefix}.settings.local` }),
+          icon: 'settings-o',
+          handler: () => openSettingsModal('local'),
+          display: true,
+          group: 2,
+        });
+      } else {
+        const newStatus = status || detailStatus;
+        const newDevopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO || detailDevopsCdPipelineDeatilVO;
+        buttons.push({
+          name: formatMessage({ id: `${intlPrefix}.record.detail` }),
+          icon: 'find_in_page-o',
+          handler: openRecordDetail,
+          display: true,
+          group: 2,
+        }, {
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.cancel'],
+          name: formatMessage({ id: `${intlPrefix}.execute.cancel` }),
+          icon: 'power_settings_new',
+          handler: () => changeRecordExecute('cancel'),
+          display: newStatus === 'pending' || newStatus === 'running',
+          group: 2,
+        }, {
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.retry'],
+          name: formatMessage({ id: `${intlPrefix}.execute.retry` }),
+          icon: 'refresh',
+          handler: () => changeRecordExecute('retry'),
+          display: newStatus === 'failed' || newStatus === 'canceled',
+          group: 2,
+        }, {
+          permissions: ['choerodon.code.project.develop.ci-pipeline.ps.audit'],
+          name: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+          icon: 'authorize',
+          handler: openAuditModal,
+          display: newStatus === 'not_audit' && newDevopsCdPipelineDeatilVO && newDevopsCdPipelineDeatilVO.execute,
+          group: 2,
+        });
       }
-      return (<Fragment>
-        <Button
-          icon="find_in_page-o"
-          onClick={openRecordDetail}
-        >
-          {formatMessage({ id: `${intlPrefix}.record.detail` })}
-        </Button>
-        {btn}
-      </Fragment>);
     }
+    buttons.push({
+      name: formatMessage({ id: 'refresh' }),
+      icon: 'refresh',
+      handler: handleRefresh,
+      display: true,
+      group: 2,
+    });
+    return buttons;
   }
 
   return (
     <Page service={permissions} className="pipelineManage_page">
       <Header title="流水线">
-        <Permission service={['choerodon.code.project.develop.ci-pipeline.ps.create']}>
-          <Button
-            onClick={handleCreatePipeline}
-            icon="playlist_add"
-          >
-            {formatMessage({ id: `${intlPrefix}.create` })}
-          </Button>
-        </Permission>
-        {!treeDs.length && treeDs.status === 'ready' ? null : getButtons()}
-        <Button
-          onClick={debounce(checkHasModifyandRefresh, 500)}
-          icon="refresh"
-        >
-          {formatMessage({ id: 'refresh' })}
-        </Button>
+        <HeaderButtons items={getHeaderButtons()} showClassName={false} />
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
@@ -262,33 +288,25 @@ const PipelineManage = observer((props) => {
               access
             />
           </Suspense>
-        </div> : (
-          <div
-            ref={rootRef}
-            className={`${prefixCls}-wrap`}
-          >
-            <DragBar
-              parentRef={rootRef}
-              store={mainStore}
+        </div> : (<div
+          ref={rootRef}
+          className={`${prefixCls}-wrap`}
+        >
+          <DragBar
+            parentRef={rootRef}
+            store={mainStore}
+          />
+          <PipelineTree handleRefresh={handleRefresh} />
+          <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+            <PipelineFlow
+              stepStore={editBlockStore}
+              detailStore={detailStore}
+              handleRefresh={handleRefresh}
+              treeDs={treeDs}
+              mainStore={mainStore}
             />
-            <PipelineTree handleRefresh={handleRefresh} />
-            <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-              <PipelineFlow
-                stepStore={editBlockStore}
-                detailStore={detailStore}
-                handleRefresh={handleRefresh}
-                treeDs={treeDs}
-              />
-              <Prompt
-                message={() => {
-                  setPromptChange(true);
-                  return getHasModify && '您的修改尚未保存，确定要离开吗?';
-                }}
-                when={getHasModify(false)}
-              />
-
-            </div>
           </div>
+        </div>
         )}
       </Content>
     </Page>

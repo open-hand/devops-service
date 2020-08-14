@@ -118,19 +118,29 @@ public class RetrofitHandler {
                 });
                 return okHttpClientBuilder.build();
             } else {
-                OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
-                okHttpClientBuilder.interceptors().add((Interceptor.Chain chain) -> {
-                    Request original = chain.request();
-                    Request.Builder requestBuilder = original.newBuilder()
-                            .header("Authorization", token);
-                    Request request = requestBuilder.build();
-                    return chain.proceed(request);
-                });
-                return okHttpClientBuilder.build();
+                return RetrofitHandler.buildWithToken(token);
             }
         } else {
-            return new OkHttpClient.Builder().build();
+            return RetrofitHandler.buildWithToken(token);
         }
+    }
+
+    /**
+     * basic的token来创建client
+     *
+     * @param token basic认证的token
+     * @return client
+     */
+    public static OkHttpClient buildWithToken(String token) {
+        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
+        okHttpClientBuilder.interceptors().add((Interceptor.Chain chain) -> {
+            Request original = chain.request();
+            Request.Builder requestBuilder = original.newBuilder()
+                    .header("Authorization", token);
+            Request request = requestBuilder.build();
+            return chain.proceed(request);
+        });
+        return okHttpClientBuilder.build();
     }
 
     public static SonarClient getSonarClient(String sonarqubeUrl, String sonar, String userName, String password) {

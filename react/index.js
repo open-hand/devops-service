@@ -19,9 +19,10 @@ const Repository = asyncRouter(() => import('./routes/repository'));
 const ProRepository = asyncRouter(() => import('./routes/pro-repository'));
 const PVManager = asyncRouter(() => import('./routes/pv-manager'));
 const PipelineManage = asyncRouter(() => import('./routes/pipeline-manage'));
+const DDD = asyncRouter(() => import('./routes/ddd'));
 
 function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
-  const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
+  const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`));
   return (
     <IntlProviderAsync>
       <div className="c7ncd-root">
@@ -39,6 +40,7 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/project-repository`} component={ProRepository} />
           <Route path={`${match.url}/reports`} component={Reports} />
           <Route path={`${match.url}/pv-management`} component={PVManager} />
+          <Route path={`${match.url}/ddd`} component={DDD} />
           <Route path="*" component={nomatch} />
         </Switch>
         <ModalContainer />
