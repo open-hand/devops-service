@@ -83,4 +83,22 @@
         FROM devops_cicd_pipeline dcp
         WHERE dcp.token = #{token,jdbcType=VARCHAR}
     </select>
+
+    <select id="selectPipelineByProjectId" resultType="io.choerodon.devops.infra.dto.CiCdPipelineDTO">
+        SELECT
+	       dcp.id,
+	       dcp.`name`,
+	       dcp.is_enabled AS enabled,
+	       dcp.app_service_id,
+	       dcp.trigger_type,
+	       dcp.project_id,
+	       dcp.image
+        FROM
+           devops_cicd_pipeline dcp
+	    WHERE
+	       dcp.project_id =#{project_id,jdbcType=BIGINT}
+    </select>
+
+
+
 </mapper>

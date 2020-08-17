@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO">
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper">
 
+    <select id="selectBySprint" resultType="io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO">
+        SELECT
+          *
+        FROM
+         devops_pipeline_record_rel dprr
+        WHERE
+          dprr.pipeline_id =  #{pipeline_id}
+        AND dprr.creation_date <![CDATA[>=]]> #{startDate}
+        AND dprr.creation_date <![CDATA[<=]]> #{endDate}
+    </select>
 </mapper>
