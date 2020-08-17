@@ -122,8 +122,10 @@ public class IssueServiceImpl implements IssueService {
         List<IamUserDTO> assignees = baseServiceClientOperator.listUsersByIds(assigneeIds);
 
         devopsMergeRequestDTOS.forEach(devopsMergeRequestE -> {
-            Long authorId = devopsMergeRequestE.getAuthorId();
-            Long assigneeId = devopsMergeRequestE.getAssigneeId();
+            Long authorId = userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
+            Long assigneeId = userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
             CustomMergeRequestVO customMergeRequestVO = new CustomMergeRequestVO();
             customMergeRequestVO.setApplicationId(applicationId);
             if (authorId != null) {
