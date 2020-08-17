@@ -21,10 +21,6 @@
     "compile": "choerodon-front-boot compile",
     "clean-install": "rm -rf node_modules && rm package-lock.json && npm i --registry https://nexus.choerodon.com.cn/repository/choerodon-npm && chmod -R u+x node_modules"
   },
-  "peerDependencies": {
-    "@choerodon/boot": "0.22.0",
-    "@choerodon/master": "0.23.0"
-  },
   "dependencies": {
     "choerodon-ui": "0.8.x",
     "diff-match-patch": "^1.0.4",
@@ -54,9 +50,10 @@
   },
   "devDependencies": {
     "@choerodon/boot": "0.22.0",
-    "@choerodon/master": "^0.23.0",
+    "@choerodon/master": "0.24.0",
     "del": "^4.1.1",
     "eslint-config-c7n-app": "^0.0.1",
+    "babel-preset-c7n-app": "^0.0.1",
     "eslint-plugin-react-hooks": "^1.7.0",
     "lodash": "latest"
   },
