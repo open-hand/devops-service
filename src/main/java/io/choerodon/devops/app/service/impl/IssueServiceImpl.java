@@ -45,6 +45,8 @@ public class IssueServiceImpl implements IssueService {
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private AppServiceMapper appServiceMapper;
+    @Autowired
+    private UserAttrService userAttrService;
 
 
     @Override
@@ -111,8 +113,10 @@ public class IssueServiceImpl implements IssueService {
         List<Long> authorIds = new ArrayList<>();
         List<Long> assigneeIds = new ArrayList<>();
         devopsMergeRequestDTOS.stream().forEach(devopsMergeRequestE -> {
-            authorIds.add(devopsMergeRequestE.getAuthorId());
-            assigneeIds.add(devopsMergeRequestE.getAssigneeId());
+            authorIds.add(userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId()));
+            assigneeIds.add(userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId()));
         });
         List<IamUserDTO> authors = baseServiceClientOperator.listUsersByIds(authorIds);
         List<IamUserDTO> assignees = baseServiceClientOperator.listUsersByIds(assigneeIds);
