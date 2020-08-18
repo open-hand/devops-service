@@ -18,4 +18,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_audit.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'lihao', id: '2020-08-18-add-column') {
+        addColumn(tableName: 'devops_cd_audit') {
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id', beforeColumn: "user_id")
+        }
+    }
 }
