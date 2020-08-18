@@ -59,4 +59,8 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
             column(name: "project_id", type: "BIGINT UNSIGNED", afterColumn: 'organization_id', remarks: '项目ID')
         }
     }
+
+    changeSet(author: 'lihao', id: '2020-07-31-modify-column-org_cert_id') {
+        modifyDataType(tableName: 'devops_certification', columnName: 'org_cert_id', newDataType: 'BIGINT UNSIGNED')
+    }
 }

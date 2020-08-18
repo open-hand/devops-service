@@ -3,6 +3,9 @@ package script.db
 databaseChangeLog(logicalFilePath: 'dba/devops_app_user_permission.groovy') {
     changeSet(author: 'n1ck', id: '2018-11-21-create-table') {
         createTable(tableName: "devops_app_user_permission", remarks: '应用用户权限表') {
+            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
+                constraints(primaryKey: true)
+            }
             column(name: 'iam_user_id', type: 'BIGINT UNSIGNED', remarks: '用户id')
             column(name: 'login_name', type: 'VARCHAR(32)', remarks: '用户登陆名')
             column(name: 'real_name', type: 'VARCHAR(32)', remarks: '用户真实名')
@@ -19,7 +22,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_user_permission.groovy') {
         addUniqueConstraint(tableName: 'devops_app_user_permission',
                 constraintName: 'uk_iam_user_id_app_id', columnNames: 'iam_user_id,app_id')
 
-        createIndex(indexName: "devops_app_user_idx_app_id", tableName: "devops_app_user_permission") {
+        createIndex(indexName: "idx_app_id_app_user_permission", tableName: "devops_app_user_permission") {
             column(name: "app_id")
         }
     }
@@ -36,5 +39,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_user_permission.groovy') {
 
     changeSet(author: 'sheep', id: '2019-8-05-rename-table') {
         renameTable(newTableName: 'devops_app_service_user_rel', oldTableName: 'devops_app_user_rel')
+    }
+
+    changeSet(author: 'zmf', id: '2020-05-13-devops_app_service_user_rel-add-uk', failOnError: false) {
+        addUniqueConstraint(tableName: 'devops_app_service_user_rel',
+                constraintName: 'uk_devops_app_service_user_rel_app_service_id_iam_user_id', columnNames: 'app_service_id,iam_user_id')
     }
 }

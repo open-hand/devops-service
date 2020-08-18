@@ -56,9 +56,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
         }
     }
 
+    changeSet(author: 'sheep', id: '2019-09-29-updateDataType') {
+        modifyDataType(tableName: 'devops_cluster', columnName: 'description', newDataType: 'VARCHAR(500)')
+    }
+
     changeSet(author: 'zmf', id: '2019-10-27-add-system-env-id-column') {
         addColumn(tableName: 'devops_cluster') {
             column(name: 'system_env_id', type: 'BIGINT UNSIGNED', remarks: 'cluster env id', afterColumn: 'description')
+        }
+    }
+
+    changeSet(author: 'ztx', id: '2019-11-01-add-client_id-column') {
+        addColumn(tableName: 'devops_cluster') {
+            column(name: 'client_id', type: 'BIGINT UNSIGNED', remarks: 'client_id', afterColumn: 'system_env_id')
         }
     }
 }

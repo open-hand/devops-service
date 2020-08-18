@@ -20,7 +20,6 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification_file.groovy') {
         addUniqueConstraint(tableName: 'devops_certification_file', constraintName: 'uk_cert_id', columnNames: 'cert_id')
     }
 
-
     changeSet(author: 'Younger', id: '2018-10-08-drop-column') {
         dropColumn(columnName: "cert_id", tableName: "devops_certification_file")
 
