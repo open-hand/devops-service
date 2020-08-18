@@ -1,10 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -42,6 +39,45 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     private String deployMetadata;
     private Long deployInfoId;
     private Long commandId;
+
+    @Transient
+    @ApiModelProperty("流水线记录id")
+    private Long pipelineRecordId;
+
+    @Transient
+    @ApiModelProperty("阶段名称")
+    private String stageName;
+
+    @Transient
+    @ApiModelProperty("流水线名称")
+    private String pipelineName;
+
+    public Long getPipelineRecordId() {
+        return pipelineRecordId;
+    }
+
+    public DevopsCdJobRecordDTO setPipelineRecordId(Long pipelineRecordId) {
+        this.pipelineRecordId = pipelineRecordId;
+        return this;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public DevopsCdJobRecordDTO setStageName(String stageName) {
+        this.stageName = stageName;
+        return this;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
+
 
     public Long getId() {
         return id;
@@ -208,6 +244,9 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", deployMetadata='" + deployMetadata + '\'' +
                 ", deployInfoId=" + deployInfoId +
                 ", commandId=" + commandId +
-                '}';
+                ", pipelineRecordId=" + pipelineRecordId +
+                ", stageName='" + stageName + '\'' +
+                ", pipelineName='" + pipelineName + '\'' +
+                "} ";
     }
 }

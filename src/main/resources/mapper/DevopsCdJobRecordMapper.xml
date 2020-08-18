@@ -52,4 +52,15 @@
         SET status = #{status}
         WHERE id = #{jobRecordId} AND status = 'not_audit'
     </update>
+
+    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+        SELECT dcjr.*,dcpr.pipeline_name,dcsr.name as stage_name,dcsr.pipeline_record_id FROM devops_cd_job_record dcjr
+        JOIN devops_cd_stage_record dcsr ON dcjr.stage_record_id=dcsr.id
+        JOIN devops_cd_pipeline_record dcpr ON dcpr.id=dcsr.pipeline_record_id
+        WHERE dcjr.id
+        IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

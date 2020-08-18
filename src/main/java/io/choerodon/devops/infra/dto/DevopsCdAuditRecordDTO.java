@@ -22,6 +22,7 @@ public class DevopsCdAuditRecordDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long userId;
+    private Long projectId;
     private Long pipelineRecordId;
     private Long stageRecordId;
     private Long jobRecordId;
@@ -75,11 +76,21 @@ public class DevopsCdAuditRecordDTO extends AuditDomain {
         this.status = status;
     }
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public DevopsCdAuditRecordDTO setProjectId(Long projectId) {
+        this.projectId = projectId;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdAuditRecordDTO{" +
                 "id=" + id +
                 ", userId=" + userId +
+                ", projectId=" + projectId +
                 ", pipelineRecordId=" + pipelineRecordId +
                 ", stageRecordId=" + stageRecordId +
                 ", jobRecordId=" + jobRecordId +

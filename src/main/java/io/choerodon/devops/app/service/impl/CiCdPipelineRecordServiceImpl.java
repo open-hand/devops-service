@@ -341,7 +341,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             if (CollectionUtils.isEmpty(commitDTOList)) {
                 throw new CommonException("error.ref.no.commit");
             }
-            devopsCdPipelineService.triggerCdPipeline(appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, tag, null);
+            devopsCdPipelineService.triggerCdPipeline(projectId, appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, tag, null);
         } else {
             devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
         }

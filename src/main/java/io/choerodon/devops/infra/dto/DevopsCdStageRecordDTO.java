@@ -1,9 +1,8 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -24,6 +23,18 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
     private Long projectId;
     private Long stageId;
     private String stageName;
+
+    @Transient
+    @ApiModelProperty("流水线名称")
+    private String pipelineName;
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
     public Long getId() {
         return id;
@@ -101,6 +112,7 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
                 ", projectId=" + projectId +
                 ", stageId=" + stageId +
                 ", stageName='" + stageName + '\'' +
-                '}';
+                ", pipelineName='" + pipelineName + '\'' +
+                "} ";
     }
 }

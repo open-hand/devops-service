@@ -1,5 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
@@ -7,9 +17,7 @@ import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.app.service.WorkBenchService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
-import io.choerodon.devops.infra.dto.PipelineRecordDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -17,15 +25,6 @@ import io.choerodon.devops.infra.enums.ApprovalTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 public class WorkBenchServiceImpl implements WorkBenchService {
@@ -50,6 +49,12 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     private UserAttrService userAttrService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
+    @Autowired
+    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+    @Autowired
+    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
@@ -146,7 +151,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         CommonExAssertUtil.assertNotNull(userId, "error.user.get");
-        // 查出该用户待审批的流水线阶段
+        // 查出该用户待审批的流水线阶段(旧流水线)
         List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
         if (pipelineRecordDTOList.size() == 0) {
             return approvalVOList;
@@ -166,6 +171,35 @@ public class WorkBenchServiceImpl implements WorkBenchService {
                     .setPipelineRecordId(pipelineRecordDTO.getId())
                     .setStageRecordId(pipelineRecordDTO.getStageRecordId())
                     .setTaskRecordId(pipelineRecordDTO.getTaskRecordId());
+            approvalVOList.add(approvalVO);
+        });
+
+        // 查处该用户待审批的流水线阶段(新流水线)
+        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
+
+        List<Long> stageRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getStageRecordId() != null).map(DevopsCdAuditRecordDTO::getStageRecordId).collect(Collectors.toList());
+        List<DevopsCdStageRecordDTO> devopsCdStageDTOS = devopsCdStageRecordMapper.listByIds(stageRecordIds);
+        devopsCdStageDTOS.forEach(devopsCdStageRecordDTO -> {
+            ApprovalVO approvalVO = new ApprovalVO()
+                    .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                    .setProjectId(devopsCdStageRecordDTO.getProjectId())
+                    .setProjectName(projectNameMap.get(devopsCdStageRecordDTO.getProjectId()).getName())
+                    .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdStageRecordDTO.getPipelineName(), devopsCdStageRecordDTO.getStageName()))
+                    .setPipelineRecordId(devopsCdStageRecordDTO.getPipelineRecordId())
+                    .setStageRecordId(devopsCdStageRecordDTO.getId());
+            approvalVOList.add(approvalVO);
+        });
+
+        List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
+        List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
+        devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
+            ApprovalVO approvalVO = new ApprovalVO()
+                    .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                    .setProjectId(devopsCdJobRecordDTO.getProjectId())
+                    .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
+                    .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
+                    .setPipelineRecordId(devopsCdJobRecordDTO.getPipelineRecordId())
+                    .setStageRecordId(devopsCdJobRecordDTO.getId());
             approvalVOList.add(approvalVO);
         });
         return approvalVOList;
