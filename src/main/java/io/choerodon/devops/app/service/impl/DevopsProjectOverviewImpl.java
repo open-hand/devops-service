@@ -200,7 +200,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
             return new CountVO();
         }
-        Map<String, Long> dateCount = devopsPipelineRecordRelDTOS.stream().map(simpleDateFormat::format)
+        Map<String, Long> dateCount = devopsPipelineRecordRelDTOS.stream().map(DevopsPipelineRecordRelDTO::getCreationDate).map(simpleDateFormat::format)
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
 
