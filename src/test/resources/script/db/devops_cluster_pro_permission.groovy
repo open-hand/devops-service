@@ -4,6 +4,7 @@ package script.db
 databaseChangeLog(logicalFilePath: 'dba/devops_cluster_pro_permission.groovy') {
     changeSet(author: 'Younger', id: '2018-11-01-create-table') {
         createTable(tableName: "devops_cluster_pro_permission", remarks: 'cluster project permission') {
+            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true)
             column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: '集群Id')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
             column(name: 'project_name', type: 'VARCHAR(64)', remarks: '项目名')
@@ -26,6 +27,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_pro_permission.groovy') {
     changeSet(author: 'zmf', id: '2020-01-13-add-primary-key') {
         addNotNullConstraint(tableName: "devops_cluster_pro_rel", columnName: "cluster_id", columnDataType: "BIGINT UNSIGNED")
         addNotNullConstraint(tableName: "devops_cluster_pro_rel", columnName: "project_id", columnDataType: "BIGINT UNSIGNED")
-        addPrimaryKey(tableName: "devops_cluster_pro_rel", columnNames: "cluster_id, project_id")
+
+        addUniqueConstraint(tableName: 'devops_cluster_pro_rel',
+                constraintName: 'devops_cluster_pro_cluster_id_project_id_uk', columnNames: 'cluster_id, project_id')
     }
 }

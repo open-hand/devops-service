@@ -45,4 +45,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_pod.groovy') {
     changeSet(author: 'sheep', id: '2019-08-05-rename-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'instance_id', oldColumnName: 'app_instance_id', tableName: 'devops_env_pod')
     }
+
+    changeSet(author: 'wx', id: '2020-2-18-idx-instance-id') {
+        createIndex(indexName: "idx_instance_id ", tableName: "devops_env_pod") {
+            column(name: "instance_id")
+        }
+    }
 }

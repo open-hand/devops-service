@@ -24,4 +24,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task.groovy') {
     changeSet(author: 'scp', id: '2019-08-11-rename-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_deploy_id', oldColumnName: 'app_deploy_id', tableName: 'devops_pipeline_task')
     }
+
+    changeSet(author: 'lihao', id: '2020-07-19-add-index') {
+        createIndex(tableName: 'devops_pipeline_task', indexName: 'dp_pipeline_task_stage_id_idx') {
+            column(name: 'stage_id')
+        }
+    }
 }

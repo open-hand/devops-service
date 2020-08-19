@@ -6,10 +6,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: 'id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(40)', remarks: 'pv名称'){
+            column(name: 'name', type: 'VARCHAR(40)', remarks: 'pv名称') {
                 constraints(nullable: false)
             }
-            column(name: 'type', type: 'VARCHAR(10)', remarks: 'pv存储类型'){
+            column(name: 'type', type: 'VARCHAR(10)', remarks: 'pv存储类型') {
                 constraints(nullable: false)
             }
             column(name: 'description', type: 'VARCHAR(40)', remarks: 'pv描述')
@@ -17,9 +17,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: '所属集群') {
                 constraints(nullable: false)
             }
-            column(name: 'storage', type: 'VARCHAR(20)',remarks: '存储容量')
+            column(name: 'storage', type: 'VARCHAR(20)', remarks: '存储容量')
             column(name: 'access_modes', type: 'VARCHAR(20)', remarks: '访问类型')
-            column(name: 'skip_check_project_permission', type: 'TINYINT(1)',defaultValue: 1,remarks: '指定权限,是否只属于特定项目，默认为1')
+            column(name: 'skip_check_project_permission', type: 'TINYINT(1)', defaultValue: 1, remarks: '指定权限,是否只属于特定项目，默认为1')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
@@ -53,10 +53,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
         }
     }
 
-
     changeSet(id: '2019-11-27-add-column', author: 'lihao') {
         addColumn(tableName: 'devops_pv') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '所属项目id')
         }
+    }
+
+    changeSet(id: '2020-1-6-update-column', author: 'lihao') {
+        sql("ALTER TABLE devops_pv MODIFY pvc_name varchar(128) null comment '绑定的PVC名称'")
     }
 }
