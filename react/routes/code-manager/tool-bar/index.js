@@ -109,7 +109,11 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
   function rendererAppServiceId({ value, text }) {
     const record = appServiceDs.find((appServiceRecord) => appServiceRecord.get('id') === value);
 
-    return `${text}(${record.get('code')})`;
+    try {
+      return `${text}(${record.get('code')})`;
+    } catch (e) {
+      return text;
+    }
   }
 
   function renderAppServiceOption({ value, text }) {
