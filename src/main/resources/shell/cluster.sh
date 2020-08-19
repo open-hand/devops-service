@@ -1,4 +1,4 @@
-helm upgrade --install  \
+helm upgrade --install --create-namespace\
     {NAME} \
     --repo={REPOURL} \
     --namespace=choerodon \
