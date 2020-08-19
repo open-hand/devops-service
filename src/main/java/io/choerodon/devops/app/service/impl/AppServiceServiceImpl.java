@@ -312,6 +312,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        Boolean shareAppService = false;
+        if (!appServiceDTO.getProjectId().equals(projectId)) {
+            shareAppService = true;
+        }
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
         List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
         if (!devopsConfigVOS.isEmpty()) {
@@ -322,8 +326,12 @@ public class AppServiceServiceImpl implements AppServiceService {
             });
         }
         //url地址拼接
-        if (appServiceDTO.getGitlabProjectId() != null) {
+        if (appServiceDTO.getGitlabProjectId() != null && !shareAppService) {
             appServiceRepVO.setRepoUrl(concatRepoUrl(organizationDTO.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode()));
+        }
+        if (shareAppService) {
+            ProjectDTO shareProjectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            appServiceRepVO.setShareProjectName(shareProjectDTO.getName());
         }
         //添加harbor的配置信息
         HarborRepoDTO selectedHarborConfig = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
@@ -673,7 +681,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
         }
 
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(),false);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         List<Long> userIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
         userIds.addAll(applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
@@ -1247,7 +1255,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public SonarContentsVO getSonarContent(Long projectId, Long appServiceId) {
         try {
-           checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
         } catch (GitlabAccessInvalidException e) {
             return null;
         }
