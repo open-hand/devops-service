@@ -405,7 +405,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             updateFirstStage(devopsCdPipelineRecordDTO.getId());
         } catch (Exception e) {
             e.printStackTrace();
-            sendFailedSiteMessage(devopsCdPipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
+            sendFailedSiteMessage(devopsCdPipelineRecordDTO.getId(), GitUserNameUtil.getUserId());
             devopsCdPipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
 //            devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
             devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
@@ -503,7 +503,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     });
         } catch (Exception e) {
             LOGGER.error("error.create.pipeline.auto.deploy.instance", e);
-            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
+            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
