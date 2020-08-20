@@ -176,8 +176,8 @@ public class GitlabCiUtil {
         return String.format(DEFAULT_SONAR_TEMPLATE, skipTests);
     }
 
-    public static String getDefaultSonarScannerCommand(String skipTests) {
-        return String.format(DEFAULT_SONAR_SCANNNER_TEMPLATE, skipTests);
+    public static String getDefaultSonarScannerCommand(String sources) {
+        return String.format(DEFAULT_SONAR_SCANNNER_TEMPLATE, sources);
     }
 
     /**
