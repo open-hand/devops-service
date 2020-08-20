@@ -315,7 +315,7 @@ public class PipelineServiceImpl implements PipelineService {
             updateFirstStage(pipelineRecordDTO.getId());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
-            sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
+            sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId());
             pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordDTO.setErrorInfo(e.getMessage());
             pipelineRecordService.baseUpdate(pipelineRecordDTO);
@@ -382,7 +382,7 @@ public class PipelineServiceImpl implements PipelineService {
                     builder -> {
                     });
         } catch (Exception e) {
-            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
+            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
             long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
             stageRecordDTO.setExecutionTime(Long.toString(time));

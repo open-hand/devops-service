@@ -1093,7 +1093,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
                     Map<String, String> params = new HashMap<>();
                     params.put(STAGE_NAME, stageName);
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
                     sendPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
