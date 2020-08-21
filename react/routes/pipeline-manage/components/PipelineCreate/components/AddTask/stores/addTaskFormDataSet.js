@@ -1,11 +1,18 @@
-export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore, organizationId, ZpkOptionsDs) => {
+export default (
+  PipelineCreateFormDataSet,
+  AppServiceOptionsDs,
+  appServiceId,
+  projectId,
+  AddTaskUseStore,
+  organizationId,
+  ZpkOptionsDs,
+) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
       return true;
-    } else {
-      return '请输入格式正确的image镜像';
     }
+    return '请输入格式正确的image镜像';
   }
   return ({
     autoCreate: true,
@@ -151,6 +158,27 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       // multiple: true,
       required: true,
       options: ZpkOptionsDs,
+    },
+    {
+      name: 'scannerType',
+      type: 'string',
+      label: '检查类型',
+      dynamicProps: {
+        required: ({ record }) => record.get('type') === 'sonar',
+      },
+    }, {
+      name: 'sources',
+      type: 'string',
+      label: '扫描路径',
+      dynamicProps: {
+        required: ({ record }) => record.get('type') === 'sonar' && record.get('scannerType') === 'SonarScanner',
+      },
+    },
+    {
+      name: 'skipTests',
+      type: 'boolean',
+      label: '是否执行Maven单侧',
+      defaultValue: true,
     },
     {
       name: 'configType',

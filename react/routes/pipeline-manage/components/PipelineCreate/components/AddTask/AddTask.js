@@ -1,9 +1,14 @@
+/* eslint-disable */
 import React, { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
-import { Form, Select, TextField, Modal, SelectBox, Button, Password } from 'choerodon-ui/pro';
+import {
+  Form, Select, TextField, Modal, SelectBox, Button, Password,
+} from 'choerodon-ui/pro';
 import _ from 'lodash';
-import { Icon, Spin, Tooltip, Divider } from 'choerodon-ui';
+import {
+  Icon, Spin, Tooltip,
+} from 'choerodon-ui';
 import { Base64 } from 'js-base64';
 import Tips from '../../../../../../components/new-tips';
 import YamlEditor from '../../../../../../components/yamlEditor';
@@ -85,19 +90,21 @@ const AddTask = observer(() => {
   useEffect(() => {
     if (steps.length > 0) {
       const old = AddTaskFormDataSet.current.get('private');
-      if (steps.find(s => s.checked).repo) {
-        const item = [...(steps.find(s => s.checked).repo.publicRepo || []), ...(steps.find(s => s.checked).repo.privateRepo || [])];
-        AddTaskFormDataSet.current.set('private', item.length > 0 ? Array.from(new Set([...old, 'custom'])) : old.filter(o => o !== 'custom'));
+      if (steps.find((s) => s.checked).repo) {
+        const item = [
+          ...(steps.find((s) => s.checked).repo.publicRepo || []),
+          ...(steps.find((s) => s.checked).repo.privateRepo || [])];
+        AddTaskFormDataSet.current.set('private', item.length > 0 ? Array.from(new Set([...old, 'custom'])) : old.filter((o) => o !== 'custom'));
       }
-      if (steps.find(s => s.checked).mavenSettings) {
+      if (steps.find((s) => s.checked).mavenSettings) {
         AddTaskFormDataSet.current.set('private', Array.from(new Set([...old, 'copy'])));
       }
-      AddTaskFormDataSet.getField('uploadFilePattern').set('required', steps.some(s => s.type === 'upload'));
-      AddTaskFormDataSet.getField('dockerContextDir').set('required', steps.some(s => s.type === 'docker'));
-      AddTaskFormDataSet.getField('dockerFilePath').set('required', steps.some(s => s.type === 'docker'));
-      AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', steps.some(s => s.type === 'upload'));
-      AddTaskFormDataSet.getField('zpk').set('required', steps.some(s => s.type === 'maven_deploy'));
-      AddTaskFormDataSet.getField('jar_zpk').set('required', steps.some(s => s.type === 'upload_jar'));
+      AddTaskFormDataSet.getField('uploadFilePattern').set('required', steps.some((s) => s.type === 'upload'));
+      AddTaskFormDataSet.getField('dockerContextDir').set('required', steps.some((s) => s.type === 'docker'));
+      AddTaskFormDataSet.getField('dockerFilePath').set('required', steps.some((s) => s.type === 'docker'));
+      AddTaskFormDataSet.getField('uploadArtifactFileName').set('required', steps.some((s) => s.type === 'upload'));
+      AddTaskFormDataSet.getField('zpk').set('required', steps.some((s) => s.type === 'maven_deploy'));
+      AddTaskFormDataSet.getField('jar_zpk').set('required', steps.some((s) => s.type === 'upload_jar'));
     }
   }, [steps]);
 
@@ -141,7 +148,10 @@ const AddTask = observer(() => {
       useStore.setDefaultImage(res);
       if (jobDetail) {
         if (!['custom', 'chart'].includes(jobDetail.type)) {
-          const { config, authType, username, token, password, sonarUrl, configType } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+          const {
+            config, authType, username, token, password, sonarUrl, configType, scannerType, sources, skipTests,
+          } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+          debugger;
           let uploadFilePattern;
           let dockerContextDir;
           let dockerFilePath;
@@ -185,7 +195,7 @@ const AddTask = observer(() => {
             }
             c.yaml = Base64.decode(c.script);
           });
-          ['toUpload', 'toDownload'].forEach(item => {
+          ['toUpload', 'toDownload'].forEach((item) => {
             if (jobDetail[item]) {
               share.push(item);
             }
@@ -202,17 +212,20 @@ const AddTask = observer(() => {
             zpk,
             jar_zpk: jarZpk,
             skipDockerTlsVerify,
+            scannerType,
+            sources,
+            skipTests,
             triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
             configType,
             // triggerRefs: jobDetail.triggerRefs ? jobDetail.triggerRefs.split(',') : [],
             glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
-            bzmc: newSteps.find(s => s.checked) ? newSteps.find(s => s.checked).name : '',
+            bzmc: newSteps.find((s) => s.checked) ? newSteps.find((s) => s.checked).name : '',
             authType,
             username,
             token,
             password,
             sonarUrl,
-            private: newSteps.length > 0 && newSteps?.find(s => s.checked)?.repos ? ['custom'] : '',
+            private: newSteps.length > 0 && newSteps?.find((s) => s.checked)?.repos ? ['custom'] : '',
             share,
           };
           AddTaskFormDataSet.loadData([data]);
@@ -226,7 +239,7 @@ const AddTask = observer(() => {
                 triggerValue: jobDetail.triggerValue && jobDetail.triggerType !== 'regex' ? jobDetail.triggerValue.split(',') : jobDetail.triggerValue,
                 glyyfw: appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')),
               },
-            ]
+            ],
           );
           if (jobDetail.type === 'custom') {
             setCustomYaml(Base64.decode(jobDetail.metadata));
@@ -300,10 +313,10 @@ const AddTask = observer(() => {
                 s.script = Base64.encode(s.yaml);
                 delete s.yaml;
                 if (s.repo) {
-                  s.repos = [...(s.repo.publicRepo || []).map(p => {
+                  s.repos = [...(s.repo.publicRepo || []).map((p) => {
                     p.private = p.privateIf;
                     return p;
-                  }), ...(s.repo.privateRepo || []).map(p => {
+                  }), ...(s.repo.privateRepo || []).map((p) => {
                     p.private = p.privateIf;
                     return p;
                   })];
@@ -342,46 +355,45 @@ const AddTask = observer(() => {
                 return s;
               }),
             }).replace(/"/g, "'");
-          } else if (data.type === 'sonar') {
+          } if (data.type === 'sonar') {
             return JSON.stringify({
               ...data,
               metadata: '',
             }).replace(/"/g, "'");
-          } else if (data.type === 'custom') {
+          } if (data.type === 'custom') {
             return Base64.encode(customYaml);
           }
         }()),
       };
       handleOk(data);
       return true;
-    } else {
-      let checkedIndex;
-      for (let i = 0; i < steps.length; i++) {
-        if (Object.keys(checkField).includes(steps[i].type)) {
-          for (let j = 0; j < checkField[steps[i].type].length; j++) {
-            const isValid = AddTaskFormDataSet.current.getField(checkField[steps[i].type][j]).isValid();
-            if (!isValid) {
-              checkedIndex = i;
-              break;
-            }
+    }
+    let checkedIndex;
+    for (let i = 0; i < steps.length; i++) {
+      if (Object.keys(checkField).includes(steps[i].type)) {
+        for (let j = 0; j < checkField[steps[i].type].length; j++) {
+          const isValid = AddTaskFormDataSet.current.getField(checkField[steps[i].type][j]).isValid();
+          if (!isValid) {
+            checkedIndex = i;
+            break;
           }
-        }
-        if (String(checkedIndex) !== 'undefined') {
-          break;
         }
       }
       if (String(checkedIndex) !== 'undefined') {
-        setSteps(steps.map((s, sIndex) => {
-          if (String(sIndex) === String(checkedIndex)) {
-            s.checked = true;
-          } else {
-            s.checked = false;
-          }
-          return s;
-        }));
+        break;
       }
-      return false;
     }
+    if (String(checkedIndex) !== 'undefined') {
+      setSteps(steps.map((s, sIndex) => {
+        if (String(sIndex) === String(checkedIndex)) {
+          s.checked = true;
+        } else {
+          s.checked = false;
+        }
+        return s;
+      }));
+    }
+    return false;
   };
 
   useEffect(() => {
@@ -450,7 +462,8 @@ const AddTask = observer(() => {
     if (text === 'Docker构建') {
       return (
         <Tooltip title="由于该步骤中Dockerfile内kaniko指令限制，建议此步骤作为同任务中最后一个步骤。">
-          {text}<Icon style={{ position: 'relative', left: '1px', bottom: '1px' }} type="help" />
+          {text}
+          <Icon style={{ position: 'relative', left: '1px', bottom: '1px' }} type="help" />
         </Tooltip>
       );
     }
@@ -468,7 +481,7 @@ const AddTask = observer(() => {
         <Form dataSet={AddTaskStepFormDataSet}>
           <Select
             onOption={({ record }) => ({
-              disabled: steps.map(s => s.type).includes(record.get('value')),
+              disabled: steps.map((s) => s.type).includes(record.get('value')),
             })}
             optionRenderer={optionRenderer}
             renderer={renderer}
@@ -564,11 +577,13 @@ const AddTask = observer(() => {
               <span onClick={() => handleAddStepItem(index + 1)} style={{ fontSize: 20 }}>+</span>
             </div>
           </div>
-        )) : (<div className="AddTask_stepMapContent">
-          <div className="AddTask_stepAdd">
-            <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
+        )) : (
+          <div className="AddTask_stepMapContent">
+            <div className="AddTask_stepAdd">
+              <span onClick={() => handleAddStepItem(0)} style={{ fontSize: 20 }}>+</span>
+            </div>
           </div>
-        </div>)
+        )
       }
     </div>
   );
@@ -633,32 +648,44 @@ const AddTask = observer(() => {
       if (String(testConnect)) {
         if (testConnect) {
           return (
-            <React.Fragment>
+            <>
               <div className="addTask_testConnect_success"><i className="success" /></div>
-              <p className="addTask_testConnect_havnot" style={{ marginTop: '4px', marginBottom: '6px' }}>测试连接: <span>成功</span></p>
-              <p style={{ color: 'rgba(58,52,95,0.65)' }}>(重新进行连接测试: <Button onClick={handleTestConnect} funcType="flat" style={{ width: 'auto', color: '#3F51B5' }}>测试连接</Button>)</p>
-            </React.Fragment>
-          );
-        } else {
-          return (
-            <React.Fragment>
-              <div style={{ borderColor: 'rgb(247, 122, 112)' }} className="addTask_testConnect_success"><i className="failure">X</i></div>
-              <p className="addTask_testConnect_havnot" style={{ marginTop: '4px', marginBottom: '6px' }}>测试连接: <span style={{ color: 'rgb(247, 122, 112)' }}>失败</span></p>
-              <p style={{ color: 'rgba(58,52,95,0.65)' }}>(重新进行连接测试: <Button onClick={handleTestConnect} funcType="flat" style={{ width: 'auto', color: '#3F51B5' }}>测试连接</Button>)</p>
-            </React.Fragment>
+              <p className="addTask_testConnect_havnot" style={{ marginTop: '4px', marginBottom: '6px' }}>
+                测试连接:
+                <span>成功</span>
+              </p>
+              <p style={{ color: 'rgba(58,52,95,0.65)' }}>
+                (重新进行连接测试:
+                <Button onClick={handleTestConnect} funcType="flat" style={{ width: 'auto', color: '#3F51B5' }}>测试连接</Button>
+                )
+              </p>
+            </>
           );
         }
-      } else {
         return (
-          <React.Fragment>
-            <img style={{ width: 121, marginRight: 39 }} src={emptyImg} alt="none" />
-            <div>
-              <p className="addTask_testConnect_havnot">未进行过连接</p>
-              <Button className="addTest_notTestButton" onClick={handleTestConnect} funcType="raised" style={{ width: 'auto', color: '#3F51B5' }} newLine>测试连接</Button>
-            </div>
-          </React.Fragment>
+          <>
+            <div style={{ borderColor: 'rgb(247, 122, 112)' }} className="addTask_testConnect_success"><i className="failure">X</i></div>
+            <p className="addTask_testConnect_havnot" style={{ marginTop: '4px', marginBottom: '6px' }}>
+              测试连接:
+              <span style={{ color: 'rgb(247, 122, 112)' }}>失败</span>
+            </p>
+            <p style={{ color: 'rgba(58,52,95,0.65)' }}>
+              (重新进行连接测试:
+              <Button onClick={handleTestConnect} funcType="flat" style={{ width: 'auto', color: '#3F51B5' }}>测试连接</Button>
+              )
+            </p>
+          </>
         );
       }
+      return (
+        <>
+          <img style={{ width: 121, marginRight: 39 }} src={emptyImg} alt="none" />
+          <div>
+            <p className="addTask_testConnect_havnot">未进行过连接</p>
+            <Button className="addTest_notTestButton" onClick={handleTestConnect} funcType="raised" style={{ width: 'auto', color: '#3F51B5' }} newLine>测试连接</Button>
+          </div>
+        </>
+      );
     }
     if ((AddTaskFormDataSet.current.get('authType') === 'username')) {
       return (
@@ -670,9 +697,8 @@ const AddTask = observer(() => {
             background: ConnectLoading ? 'rgba(117,137,242,0.06)' : (function () {
               if (String(testConnect)) {
                 return 'rgba(0,191,165,0.06)';
-              } else {
-                return 'white';
               }
+              return 'white';
             }()),
             flexDirection: !String(testConnect) && !ConnectLoading ? 'row' : 'column',
             textAlign: 'center',
@@ -680,10 +706,10 @@ const AddTask = observer(() => {
         >
           {
             ConnectLoading ? (
-              <React.Fragment>
+              <>
                 <Spin size="large" />
                 <p className="addTask_testConnect_havnot">正在进行连接测试</p>
-              </React.Fragment>
+              </>
             ) : renderDom()
           }
         </div>
@@ -696,16 +722,16 @@ const AddTask = observer(() => {
     let flag = false;
     if (data.length === 0) {
       flag = true;
-      const newData = old.filter(o => o !== 'custom');
+      const newData = old.filter((o) => o !== 'custom');
       AddTaskFormDataSet.current.set('private', newData);
     }
-    const data2 = steps.map(s => {
+    const data2 = steps.map((s) => {
       if (s.checked) {
         const newRepo = flag ? undefined : {
           privateRepo: [],
           publicRepo: [],
         };
-        data.forEach(d => {
+        data.forEach((d) => {
           if (d.privateIf) {
             newRepo.privateRepo = [
               ...newRepo.privateRepo,
@@ -733,9 +759,9 @@ const AddTask = observer(() => {
       Modal.confirm({
         title: '切换配置方式',
         children: '确定要切换为"界面可视化定义"的方式吗，切换后，将会清空已有的Setting配置。',
-      }).then(button => {
+      }).then((button) => {
         if (button === 'ok') {
-          setSteps(steps.map(s => {
+          setSteps(steps.map((s) => {
             if (s.checked) {
               s.mavenSettings = '';
             }
@@ -757,7 +783,7 @@ const AddTask = observer(() => {
         style: {
           width: 380,
         },
-        children: <DependRepo handleParentCancel={handleCancel} dsData={steps.find(s => s.checked).repo} handleAdd={handleAddRepo} ds={DependRepoDataSet} />,
+        children: <DependRepo handleParentCancel={handleCancel} dsData={steps.find((s) => s.checked).repo} handleAdd={handleAddRepo} ds={DependRepoDataSet} />,
         drawer: true,
         okText: '添加',
       });
@@ -767,7 +793,7 @@ const AddTask = observer(() => {
   const handleCancel = (data) => {
     const old = AddTaskFormDataSet.current.get('private');
     if (data.length === 0) {
-      const newData = old.filter(o => o !== 'custom');
+      const newData = old.filter((o) => o !== 'custom');
       AddTaskFormDataSet.current.set('private', newData);
     }
   };
@@ -777,9 +803,9 @@ const AddTask = observer(() => {
       Modal.confirm({
         title: '切换配置方式',
         children: '确定要切换为"粘贴XML内容"的方式吗，切换后，将会清空已有的Setting配置。',
-      }).then(button => {
+      }).then((button) => {
         if (button === 'ok') {
-          setSteps(steps.map(s => {
+          setSteps(steps.map((s) => {
             if (s.checked) {
               s.repo = undefined;
             }
@@ -795,7 +821,7 @@ const AddTask = observer(() => {
       initXml();
     }
     function initXml() {
-      const originMavenSetting = steps.find(s => s.checked).mavenSettings || '';
+      const originMavenSetting = steps.find((s) => s.checked).mavenSettings || '';
       Modal.open({
         key: Modal.key(),
         title: '配置依赖仓库',
@@ -810,8 +836,8 @@ const AddTask = observer(() => {
               readOnly={false}
               colSpan={4}
               newLine
-              value={steps.length > 0 ? steps.find(s => s.checked).mavenSettings || '' : ''}
-              onValueChange={(valueYaml) => setSteps(steps.map(s => {
+              value={steps.length > 0 ? steps.find((s) => s.checked).mavenSettings || '' : ''}
+              onValueChange={(valueYaml) => setSteps(steps.map((s) => {
                 if (s.checked) {
                   s.mavenSettings = valueYaml;
                 }
@@ -823,19 +849,19 @@ const AddTask = observer(() => {
           </div>
         ),
         onOk: () => {
-          if (!steps.find(s => s.checked).mavenSettings) {
-            AddTaskFormDataSet.current.set('private', AddTaskFormDataSet.current.get('private').filter(o => o !== 'copy'));
+          if (!steps.find((s) => s.checked).mavenSettings) {
+            AddTaskFormDataSet.current.set('private', AddTaskFormDataSet.current.get('private').filter((o) => o !== 'copy'));
           }
         },
         onCancel: () => {
-          setSteps(steps.map(s => {
+          setSteps(steps.map((s) => {
             if (s.checked) {
               s.mavenSettings = originMavenSetting;
             }
             return s;
           }));
-          if (!steps.find(s => s.checked).mavenSettings) {
-            AddTaskFormDataSet.current.set('private', AddTaskFormDataSet.current.get('private').filter(o => o !== 'copy'));
+          if (!steps.find((s) => s.checked).mavenSettings) {
+            AddTaskFormDataSet.current.set('private', AddTaskFormDataSet.current.get('private').filter((o) => o !== 'copy'));
           }
         },
       });
@@ -846,7 +872,7 @@ const AddTask = observer(() => {
     newV = newV || [];
     oldV = oldV || [];
     function minus(a, b) {
-      return [...a.filter(item => !b.includes(item)), ...b.filter(item => !a.includes(item))];
+      return [...a.filter((item) => !b.includes(item)), ...b.filter((item) => !a.includes(item))];
     }
     const extra = minus(newV, oldV)[0];
     if (newV.length > oldV.length) {
@@ -860,9 +886,9 @@ const AddTask = observer(() => {
       Modal.confirm({
         title: '清空配置',
         children: '确定清空已有的Setting配置吗?',
-      }).then(button => {
+      }).then((button) => {
         if (button === 'ok') {
-          setSteps(steps.map(s => {
+          setSteps(steps.map((s) => {
             if (s.checked) {
               s.repo = undefined;
             }
@@ -876,9 +902,9 @@ const AddTask = observer(() => {
       Modal.confirm({
         title: '清空配置',
         children: '确定清空已有的Setting配置吗?',
-      }).then(button => {
+      }).then((button) => {
         if (button === 'ok') {
-          setSteps(steps.map(s => {
+          setSteps(steps.map((s) => {
             if (s.checked) {
               s.mavenSettings = '';
             }
@@ -900,7 +926,9 @@ const AddTask = observer(() => {
         currentSize += 10;
         getBranchsList();
       }}
-    >{text}</a>
+    >
+      {text}
+    </a>
   ) : text);
 
   const getMissionOther = () => {
@@ -916,30 +944,31 @@ const AddTask = observer(() => {
         </Select>,
         <div newLine colSpan={4} style={{ display: 'flex', flexDirection: 'column' }} className="AddTask_stepContent">
           {generateSteps()}
-          {steps.length !== 0 ? <div
-            className="stepformContent"
-          >
-            <TextField
-              onChange={(value) => {
-                setSteps(steps.map(s => {
-                  if (s.checked) {
-                    s.name = value;
-                  }
-                  return s;
-                }));
-              }}
-              style={{
-                width: 339,
-                marginTop: 30,
-                marginBottom: AddTaskFormDataSet.current.getField('bzmc').isValid() ? 20 : 40,
-                marginRight: 8,
-              }}
-              name="bzmc"
-            />
-            {
+          {steps.length !== 0 ? (
+            <div
+              className="stepformContent"
+            >
+              <TextField
+                onChange={(value) => {
+                  setSteps(steps.map((s) => {
+                    if (s.checked) {
+                      s.name = value;
+                    }
+                    return s;
+                  }));
+                }}
+                style={{
+                  width: 339,
+                  marginTop: 30,
+                  marginBottom: AddTaskFormDataSet.current.getField('bzmc').isValid() ? 20 : 40,
+                  marginRight: 8,
+                }}
+                name="bzmc"
+              />
+              {
               (function () {
-                if (steps.find(s => s.checked)) {
-                  const type = steps.find(s => s.checked).type;
+                if (steps.find((s) => s.checked)) {
+                  const { type } = steps.find((s) => s.checked);
                   const style = {
                     width: 339,
                     marginTop: 30,
@@ -957,7 +986,7 @@ const AddTask = observer(() => {
                         )}
                       />
                     );
-                  } else if (type === 'maven_deploy') {
+                  } if (type === 'maven_deploy') {
                     style.marginBottom = AddTaskFormDataSet.current.getField('zpk').isValid() ? 20 : 40;
                     return (
                       <Select
@@ -965,7 +994,7 @@ const AddTask = observer(() => {
                         style={style}
                       />
                     );
-                  } else if (type === 'upload_jar') {
+                  } if (type === 'upload_jar') {
                     style.marginBottom = AddTaskFormDataSet.current.getField('jar_zpk').isValid() ? 20 : 40;
                     return (
                       <Select
@@ -977,12 +1006,13 @@ const AddTask = observer(() => {
                 }
               }())
             }
-          </div> : null}
+            </div>
+          ) : null}
           <div>
             {
               (function () {
-                if (steps.find(s => s.checked)) {
-                  const type = steps.find(s => s.checked).type;
+                if (steps.find((s) => s.checked)) {
+                  const { type } = steps.find((s) => s.checked);
                   if (type === 'maven_deploy') {
                     return (
                       <div style={{ marginBottom: 20 }}>
@@ -1008,7 +1038,7 @@ const AddTask = observer(() => {
           </div>
 
           {
-            steps.find(s => s.checked) && (steps.find(s => s.checked).type === 'Maven' || steps.find(s => s.checked).type === 'maven_deploy')
+            steps.find((s) => s.checked) && (steps.find((s) => s.checked).type === 'Maven' || steps.find((s) => s.checked).type === 'maven_deploy')
               ? [
                 <div style={{
                   marginLeft: '-16px',
@@ -1028,7 +1058,8 @@ const AddTask = observer(() => {
                   }}
                   onClick={() => setExpandIfSetting(!expandIfSetting)}
                 >
-                  高级设置<Icon style={{ fontSize: 18 }} type={expandIfSetting ? 'expand_less' : 'expand_more'} />
+                  高级设置
+                  <Icon style={{ fontSize: 18 }} type={expandIfSetting ? 'expand_less' : 'expand_more'} />
                 </div>,
                 expandIfSetting ? (
                   <div newLine>
@@ -1057,7 +1088,7 @@ const AddTask = observer(() => {
                             style={{
                               marginLeft: 8,
                               display: (function () {
-                                const repo = steps.find(s => s.checked).repo;
+                                const { repo } = steps.find((s) => s.checked);
                                 if (JSON.stringify(repo) && JSON.stringify(repo) !== '{}') {
                                   return 'inline-block';
                                 }
@@ -1075,7 +1106,7 @@ const AddTask = observer(() => {
                         </span>
                       </Option>
                       {
-                        steps.find(s => s.checked) && steps.find(s => s.checked).type !== 'maven_deploy' && (
+                        steps.find((s) => s.checked) && steps.find((s) => s.checked).type !== 'maven_deploy' && (
                           <Option value="copy">
                             <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                               粘贴XML内容
@@ -1083,7 +1114,7 @@ const AddTask = observer(() => {
                                 onClick={handleOpenXML}
                                 style={{
                                   marginLeft: 8,
-                                  display: steps.find(s => s.checked).mavenSettings ? 'inline-block' : 'none',
+                                  display: steps.find((s) => s.checked).mavenSettings ? 'inline-block' : 'none',
                                 }}
                               >
                                 <Icon
@@ -1107,7 +1138,7 @@ const AddTask = observer(() => {
           {
             (function () {
               if (steps.length > 0) {
-                const type = steps?.find(s => s.checked)?.type;
+                const type = steps?.find((s) => s.checked)?.type;
                 if (type && ['Maven', 'npm', 'go', 'maven_deploy', 'upload_jar'].includes(type)) {
                   return [
                     <div style={{
@@ -1127,14 +1158,14 @@ const AddTask = observer(() => {
                           readOnly={false}
                           colSpan={4}
                           newLine
-                          value={steps.length > 0 ? steps.find(s => s.checked).yaml : ''}
+                          value={steps.length > 0 ? steps.find((s) => s.checked).yaml : ''}
                           onValueChange={(valueYaml) => handleChangeValue(valueYaml)}
                           modeChange={false}
                           showError={false}
                         />
                       </div>
                     )];
-                } else if (type === 'upload') {
+                } if (type === 'upload') {
                   return [
                     <TextField
                       style={{ width: 314 }}
@@ -1143,7 +1174,7 @@ const AddTask = observer(() => {
                     />,
                     <TextField style={{ width: 339, marginTop: 20, marginBottom: 20 }} name="uploadArtifactFileName" />,
                   ];
-                } else if (type === 'docker') {
+                } if (type === 'docker') {
                   return [
                     <div style={{ marginBottom: 20 }}>
                       <TextField
@@ -1199,44 +1230,64 @@ const AddTask = observer(() => {
           }
         </div>,
       ];
+    }
+    let extra;
+    if (AddTaskFormDataSet.current.get('authType') === 'username') {
+      extra = [
+        <TextField newLine name="username" colSpan={2} />,
+        <Password name="password" colSpan={2} />,
+        <TextField name="sonarUrl" colSpan={2} />,
+      ];
     } else {
-      let extra;
-      if (AddTaskFormDataSet.current.get('authType') === 'username') {
-        extra = [
-          <TextField newLine name="username" colSpan={2} />,
-          <Password name="password" colSpan={2} />,
-          <TextField name="sonarUrl" colSpan={2} />,
-        ];
-      } else {
-        extra = [
-          <TextField newLine name="token" />,
-          <TextField name="sonarUrl" />,
-        ];
-      }
-      return [
-        <SelectBox
-          className="addTask_authType"
-          name="configType"
-          colSpan={2}
-          addonAfter={<Tips helpText={!useStore.getHasDefaultSonar ? '平台暂无默认的SonarQube配置，请在自定义配置中进行添加。' : ''} />}
-        >
-          <Option value="default">默认配置</Option>
-          <Option value="custom">自定义配置</Option>
-        </SelectBox>,
-        AddTaskFormDataSet.current.get('configType') === 'custom' ? [
-          <SelectBox
-            className="addTask_authType"
-            name="authType"
-            colSpan={2}
-          >
-            <Option value="username">用户名与密码</Option>
-            <Option value="token">Token</Option>
-          </SelectBox>,
-          ...extra,
-          renderTestConnect(),
-        ] : '',
+      extra = [
+        <TextField newLine name="token" />,
+        <TextField name="sonarUrl" />,
       ];
     }
+    return [
+      <p className="c7ncd-sonarqube-title" colSpan={4} newLine>SonarQube</p>,
+      <Select name="scannerType" colSpan={2}>
+        <Option value="SonarScanner">SonarScanner</Option>
+        <Option value="SonarMaven">SonarMaven</Option>
+      </Select>,
+      (function () {
+        const record = AddTaskFormDataSet.current;
+        if (record.get('scannerType') === 'SonarScanner') {
+          return (
+            <TextField name="sources" colSpan={2} />
+          );
+        } if (record.get('scannerType') === 'SonarMaven') {
+          return (
+            <SelectBox name="skipTests" colSpan={2}>
+              <Option value>是</Option>
+              <Option value={false}>否</Option>
+            </SelectBox>
+          );
+        }
+        return <div colSpan={2} />;
+      }()),
+      <SelectBox
+        className="addTask_authType"
+        name="configType"
+        colSpan={2}
+        addonAfter={<Tips helpText={!useStore.getHasDefaultSonar ? '平台暂无默认的SonarQube配置，请在自定义配置中进行添加。' : ''} />}
+      >
+        <Option value="default">默认配置</Option>
+        <Option value="custom">自定义配置</Option>
+      </SelectBox>,
+      AddTaskFormDataSet.current.get('configType') === 'custom' ? [
+        <SelectBox
+          className="addTask_authType"
+          name="authType"
+          colSpan={2}
+        >
+          <Option value="username">用户名与密码</Option>
+          <Option value="token">Token</Option>
+        </SelectBox>,
+        ...extra,
+        renderTestConnect(),
+      ] : '',
+    ];
   };
 
   const handleChangeImage = (data) => {
@@ -1255,7 +1306,8 @@ const AddTask = observer(() => {
       style={{ cursor: 'pointer' }}
       onClick={() => setExpandIf(!expandIf)}
     >
-      高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
+      高级设置
+      <Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
     </div>,
     expandIf ? (
       <div
@@ -1303,7 +1355,7 @@ const AddTask = observer(() => {
   }
 
   return (
-    <React.Fragment>
+    <>
       <Form className="addTaskForm" dataSet={AddTaskFormDataSet} columns={4}>
         <Select name="type" colSpan={1}>
           <Option value="build">构建</Option>
@@ -1336,28 +1388,32 @@ const AddTask = observer(() => {
                   name="triggerValue"
                   addonAfter={<Tips helpText="您可在此输入正则表达式来配置触发分支；例：若想匹配以 feature 开头的分支，可以输入 ^feature.*。更多表达式，详见用户手册。若不填写，则默认为所有分支和tag" />}
                 />
-              ) : (<Select
-                combo
-                searchable
-                multiple
-                name="triggerValue"
-                addonAfter={<Tips helpText={renderTriggerTypeTips()} />}
-                searchMatcher="branchName"
-                optionRenderer={({ text }) => renderderBranchs({ text })}
-                maxTagCount={3}
-                maxTagPlaceholder={(omittedValues) => <Tooltip title={omittedValues.join(',')}>
-                  {`+${omittedValues.length}`}
-                </Tooltip>}
-                className="addTaskForm-select"
-                renderer={renderderBranchs}
-                colSpan={2}
-              >
-                {
-                  branchsList.map(b => (
+              ) : (
+                <Select
+                  combo
+                  searchable
+                  multiple
+                  name="triggerValue"
+                  addonAfter={<Tips helpText={renderTriggerTypeTips()} />}
+                  searchMatcher="branchName"
+                  optionRenderer={({ text }) => renderderBranchs({ text })}
+                  maxTagCount={3}
+                  maxTagPlaceholder={(omittedValues) => (
+                    <Tooltip title={omittedValues.join(',')}>
+                      {`+${omittedValues.length}`}
+                    </Tooltip>
+                  )}
+                  className="addTaskForm-select"
+                  renderer={renderderBranchs}
+                  colSpan={2}
+                >
+                  {
+                  branchsList.map((b) => (
                     <Option value={b.value}>{b.name}</Option>
                   ))
                 }
-              </Select>)}
+                </Select>
+              )}
             </div>,
             getImageDom(),
             getShareSettings(),
@@ -1373,7 +1429,7 @@ const AddTask = observer(() => {
           />]
         }
       </Form>
-    </React.Fragment>
+    </>
   );
 });
 
