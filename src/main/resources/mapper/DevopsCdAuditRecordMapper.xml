@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper">
+    <select id="listByProjectIdsAndUserId" resultType="io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO">
+        SELECT * FROM devops_cd_audit_record
+        WHERE user_id=#{userId}
+        AND status='not_audit'
+        <if test="projectIds!=null and projectIds.size>0">
+            AND project_id IN
+            <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
+                #{projectId}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="updateProjectIdByStageRecordId">
+        UPDATE devops_cd_audit_record
+        SET project_id =#{projectId}
+        WHERE stage_record_id=#{stageRecordId}
+    </update>
+
+    <update id="updateProjectIdByJobRecordId">
+        UPDATE devops_cd_audit_record
+        SET project_id =#{projectId}
+        WHERE job_record_id=#{jobRecordId}
+    </update>
+</mapper>

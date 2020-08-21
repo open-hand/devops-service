@@ -6,6 +6,8 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +55,7 @@ public class DevopsGitController {
     public ResponseEntity<String> queryUrl(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(devopsGitService.queryUrl(projectId, appServiceId))
@@ -74,9 +77,10 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建标签")
     @PostMapping("/tags")
-    public ResponseEntity createTag(
+    public ResponseEntity<Void> createTag(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "标签名称", required = true)
@@ -88,7 +92,7 @@ public class DevopsGitController {
             @ApiParam(value = "发布日志")
             @RequestBody(required = false) String releaseNotes) {
         devopsGitService.createTag(projectId, appServiceId, tag, ref, msg, releaseNotes);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -104,9 +108,10 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新标签")
     @PutMapping("/tags")
-    public ResponseEntity updateTag(
+    public ResponseEntity<Void> updateTag(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "标签名称", required = true)
@@ -132,16 +137,14 @@ public class DevopsGitController {
     public ResponseEntity<Page<TagVO>> pageTagsByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-        return Optional.ofNullable(devopsGitService.pageTagsByOptions(projectId, appServiceId, params,
-                page, size))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.tags.get"));
+        return Results.success(devopsGitService.pageTagsByOptions(projectId, appServiceId, params, page, size));
     }
 
     /**
@@ -158,6 +161,7 @@ public class DevopsGitController {
     public ResponseEntity<List<TagVO>> listTags(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(devopsGitService.listTags(projectId, appServiceId))
@@ -179,6 +183,7 @@ public class DevopsGitController {
     public ResponseEntity<Boolean> checkTag(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "Tag 名称", required = true)
@@ -199,9 +204,10 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除标签")
     @DeleteMapping("/tags")
-    public ResponseEntity deleteTag(
+    public ResponseEntity<Void> deleteTag(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "标签名称", required = true)
@@ -221,15 +227,16 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建分支")
     @PostMapping("/branch")
-    public ResponseEntity createBranch(
+    public ResponseEntity<Void> createBranch(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支", required = true)
             @RequestBody DevopsBranchVO devopsBranchVO) {
         devopsGitService.createBranch(projectId, appServiceId, devopsBranchVO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -248,15 +255,14 @@ public class DevopsGitController {
     public ResponseEntity<Page<BranchVO>> pageBranchByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.branch.get"));
+        return Results.success(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params));
     }
 
     /**
@@ -274,6 +280,7 @@ public class DevopsGitController {
     public ResponseEntity<DevopsBranchVO> queryBranch(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支名", required = true)
@@ -294,15 +301,16 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新分支关联的问题")
     @PutMapping("/update_branch_issue")
-    public ResponseEntity updateBranchIssue(
+    public ResponseEntity<Void> updateBranchIssue(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支更新信息", required = true)
             @RequestBody @Valid DevopsBranchUpdateVO devopsBranchUpdateVO) {
         devopsGitService.updateBranchIssue(projectId, appServiceId, devopsBranchUpdateVO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -315,15 +323,16 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除分支")
     @DeleteMapping("/branch")
-    public ResponseEntity deleteBranch(
+    public ResponseEntity<Void> deleteBranch(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "branch_name") String branchName) {
-        devopsGitService.deleteBranch(appServiceId, branchName);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        devopsGitService.deleteBranch(projectId, appServiceId, branchName);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -341,6 +350,7 @@ public class DevopsGitController {
     public ResponseEntity<MergeRequestTotalVO> listMergeRequest(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务ID")
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "合并请求状态")
@@ -348,9 +358,7 @@ public class DevopsGitController {
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageable) {
-        return Optional.ofNullable(devopsGitService.listMergeRequest(projectId, appServiceId, state, pageable))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.mergerequest.get"));
+        return Results.success(devopsGitService.listMergeRequest(projectId, appServiceId, state, pageable));
     }
 
     /**
@@ -366,6 +374,7 @@ public class DevopsGitController {
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务ID")
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支名")

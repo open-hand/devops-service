@@ -13,7 +13,7 @@ public class Spec {
     @ApiModelProperty("chart包名")
     private String chartName;
     @ApiModelProperty("命令id")
-    private Integer commandId;
+    private Long commandId;
     @ApiModelProperty("镜像拉取校验secret")
     private List<ImagePullSecret> imagePullSecrets;
     @ApiModelProperty("chart版本")
@@ -69,11 +69,11 @@ public class Spec {
         this.imagePullSecrets = imagePullSecrets;
     }
 
-    public Integer getCommandId() {
+    public Long getCommandId() {
         return commandId;
     }
 
-    public void setCommandId(Integer commandId) {
+    public void setCommandId(Long commandId) {
         this.commandId = commandId;
     }
 }

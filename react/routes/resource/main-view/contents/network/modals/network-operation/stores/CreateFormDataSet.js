@@ -40,7 +40,6 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
       return errorMsg;
     }
   }
-  
 
   function checkInstance(value, name, record) {
     if (!networkId) return;
@@ -62,7 +61,7 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
       return msg;
     }
   }
-  
+
   return {
     autoCreate: true,
     children: {
@@ -73,14 +72,14 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
     fields: [
       {
         name: 'name',
-        type: 'string', 
+        type: 'string',
         label: formatMessage({ id: 'network.form.name' }),
         required: true,
         validator: checkName,
       },
       {
         name: 'appServiceId',
-        type: 'number', 
+        type: 'string',
         label: formatMessage({ id: 'network.form.app' }),
         required: true,
         valueField: 'id',
@@ -95,17 +94,17 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
       },
       {
         name: 'target',
-        type: 'string', 
+        type: 'string',
         defaultValue: 'instance',
       },
       {
         name: 'type',
-        type: 'string', 
+        type: 'string',
         defaultValue: 'ClusterIP',
       },
       {
         name: 'appInstance',
-        type: 'string', 
+        type: 'string',
         label: formatMessage({ id: 'network.target.instance' }),
         required: true,
         options: appInstanceOptionsDs,
@@ -153,7 +152,7 @@ export default ({ formatMessage, portDs, endPointsDs, targetLabelsDs, appInstanc
             break;
           case 'type':
             networkId
-              ? record.init('externalIps', initPorts({ portDs, type: value, networkInfoDs })) 
+              ? record.init('externalIps', initPorts({ portDs, type: value, networkInfoDs }))
               : handleTypeChange({ portDs, value, record });
             break;
           case 'appServiceId':
@@ -188,7 +187,6 @@ function handleTargetChange({ targetLabelsDs, endPointsDs, value, record }) {
   }
 }
 
-
 function handleTypeChange({ portDs, value, record }) {
   portDs.reset();
   portDs.create();
@@ -221,7 +219,6 @@ function createNetworkName(opt) {
   return initName;
 }
 
-
 export function transFormData(data, formatMessage, envId) {
   const { portDs: portData, endPointsDs: endPointsData, targetLabelsDs: targetLabelsData, target, appInstance, name, type, externalIps, targetIps, appServiceId } = data;
 
@@ -232,7 +229,7 @@ export function transFormData(data, formatMessage, envId) {
     nodePort: value.nodePort,
     protocol: value.protocol,
   }));
-        
+
   let targetAppServiceId;
   let targetInstanceCode;
   let selectors = null;
@@ -240,9 +237,9 @@ export function transFormData(data, formatMessage, envId) {
   // 目标对象是实例还是选择器
   if (target === 'instance') {
     /**
-     * NOTE: 处理所有实例和单个实例的问题 
+     * NOTE: 处理所有实例和单个实例的问题
      * 所有实例直接与AppService关联所以此处赋值给targetAppServiceId
-     * 单个实例直接与AppInstnace关联所以此处赋值给targetInstanceCode 
+     * 单个实例直接与AppInstnace关联所以此处赋值给targetInstanceCode
      */
     if (appInstance === formatMessage({ id: 'all_instance' })) {
       targetAppServiceId = appServiceId;
@@ -272,13 +269,12 @@ export function transFormData(data, formatMessage, envId) {
       };
     }
   }
-  
+
   let externalIp;
   if (externalIps) {
     const ips = externalIps.join(',');
     externalIp = ips || null;
   }
- 
 
   return {
     appServiceId,

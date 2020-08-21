@@ -19,7 +19,7 @@ export default ({ formatMessage, intlPrefix, projectId, groupOptionDs }) => ({
     },
     {
       name: 'devopsEnvGroupId',
-      type: 'number',
+      type: 'string',
       textField: 'name',
       valueField: 'id',
       label: '选择分组',

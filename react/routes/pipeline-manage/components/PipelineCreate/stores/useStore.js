@@ -17,8 +17,24 @@ export default function useStore() {
       return this.defaultImage;
     },
 
+    currentAppService: {},
+    get getCurrentAppService() {
+      return this.currentAppService;
+    },
+    setCurrentAppService(data) {
+      this.currentAppService = data;
+    },
+
+    searchAppServiceData: [],
+    get getSearchAppServiceData() {
+      return this.searchAppServiceData;
+    },
+    setSearchAppServiceData(data) {
+      this.searchAppServiceData = data;
+    },
+
     axiosCreatePipeline(data, projectId) {
-      return axios.post(`/devops/v1/projects/${projectId}/ci_pipelines`, data);
+      return axios.post(`/devops/v1/projects/${projectId}/cicd_pipelines`, data);
     },
   }));
 }

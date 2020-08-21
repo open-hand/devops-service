@@ -140,16 +140,14 @@ export default class CertificateCreate extends Component {
           }
         });
 
-        const response = await store.createCert(projectId, formData)
-          .catch((error) => {
-            Choerodon.handleResponseError(error);
+        try {
+          const response = await store.createCert(projectId, formData);
+          if (handlePromptError(response, false)) {
+            this.handleClose(true);
             this.setState({ submitting: false });
-          });
-
-        this.setState({ submitting: false });
-
-        if (handlePromptError(response, false)) {
-          this.handleClose(true);
+          }
+        } catch (error) {
+          this.setState({ submitting: false });
         }
       } else {
         this.setState({ submitting: false });

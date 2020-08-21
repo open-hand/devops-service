@@ -1,18 +1,24 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
+import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.CiPipelineImageVO;
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.DevopsCiJobService;
+import io.choerodon.devops.app.service.CiPipelineImageService;
+import io.choerodon.devops.app.service.CiPipelineMavenService;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -24,13 +30,27 @@ public class CiController {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
+    @Value("${services.sonarqube.url:#{null}}")
+    private String sonarqubeUrl;
+
+    @Value("${services.sonarqube.username:#{null}}")
+    private String userName;
+    @Value("${services.sonarqube.password:#{null}}")
+    private String password;
+
     private final AppServiceService applicationService;
     private final AppServiceVersionService appServiceVersionService;
+    private final CiPipelineImageService ciPipelineImageService;
+    private final CiPipelineMavenService ciPipelineMavenService;
 
     public CiController(AppServiceService applicationService,
-                        AppServiceVersionService appServiceVersionService) {
+                        AppServiceVersionService appServiceVersionService,
+                        CiPipelineMavenService ciPipelineMavenService,
+                        CiPipelineImageService ciPipelineImageService) {
         this.applicationService = applicationService;
         this.appServiceVersionService = appServiceVersionService;
+        this.ciPipelineImageService = ciPipelineImageService;
+        this.ciPipelineMavenService = ciPipelineMavenService;
     }
 
     /**
@@ -69,6 +89,8 @@ public class CiController {
             @RequestParam String image,
             @ApiParam(value = "harbor_config_id", required = true)
             @RequestParam(value = "harbor_config_id") String harborConfigId,
+            @ApiParam(value = "repo_type", required = true)
+            @RequestParam(value = "repo_type") String repoType,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
             @ApiParam(value = "版本", required = true)
@@ -76,8 +98,9 @@ public class CiController {
             @ApiParam(value = "commit", required = true)
             @RequestParam String commit,
             @ApiParam(value = "taz包", required = true)
-            @RequestParam MultipartFile file) {
-        appServiceVersionService.create(image, harborConfigId, token, version, commit, file);
+            @RequestParam MultipartFile file,
+            @RequestParam String ref) {
+        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref);
         return ResponseEntity.ok().build();
     }
 
@@ -86,5 +109,47 @@ public class CiController {
     @GetMapping("/default_image")
     public ResponseEntity<String> queryDefaultCiImageUrl() {
         return ResponseEntity.ok(defaultCiImage);
+    }
+
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "存储镜像的元数据")
+    @PostMapping("/record_image")
+    public ResponseEntity<Void> createImageRecord(@RequestBody @Valid CiPipelineImageVO ciPipelineImageVO) {
+        ciPipelineImageService.createOrUpdate(ciPipelineImageVO);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "存储Jar包的元数据")
+    @PostMapping("/save_jar_metadata")
+    public ResponseEntity<Void> saveJarMetaData(
+            @ApiParam(value = "制品库id", required = true)
+            @RequestParam("nexus_repo_id") Long nexusRepoId,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "pom文件", required = true)
+            @RequestParam MultipartFile file) {
+        ciPipelineMavenService.createOrUpdate(nexusRepoId, gitlabPipelineId, jobName, token, file);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "判断平台是否有配置sonarqube")
+    @GetMapping("/has_default_sonar")
+    public ResponseEntity<Boolean> hasDefaultSonarqubeConfig() {
+        return ResponseEntity.ok(!StringUtils.isEmpty(sonarqubeUrl));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @GetMapping("/sonar_default")
+    @ApiOperation("质量管理用/查询sonar默认配置 / 结果可能改为空的对象，字段值可能为空")
+    public ResponseEntity<SonarInfoVO> getSonarDefault() {
+        return ResponseEntity.ok(new SonarInfoVO(userName, password, sonarqubeUrl));
     }
 }

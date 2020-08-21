@@ -20,7 +20,6 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     store,
     refresh,
   } = props;
-
   const detailDs = useMemo(() => new DataSet(DetailDataSet({ formatMessage, intlPrefix, projectId, pipelineRecordId, store, refresh })), [projectId, pipelineRecordId]);
 
   const value = {

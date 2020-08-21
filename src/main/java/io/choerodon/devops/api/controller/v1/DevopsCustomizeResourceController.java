@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -46,18 +47,19 @@ public class DevopsCustomizeResourceController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "创建其他k8s资源")
+    @ApiOperation(value = "创建或更新其他k8s资源")
     @PostMapping
-    public ResponseEntity createResource(@PathVariable(value = "project_id") Long projectId,
-                                         @ModelAttribute @Valid DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
-                                         BindingResult bindingResult,
-                                         @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
+    public ResponseEntity<Void> createResource(
+            @PathVariable(value = "project_id") Long projectId,
+            @ModelAttribute @Valid DevopsCustomizeResourceCreateOrUpdateVO devopsCustomizeResourceReqVO,
+            BindingResult bindingResult,
+            @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
         // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         devopsCustomizeResourceService.createOrUpdateResource(projectId, devopsCustomizeResourceReqVO, contentFile);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -71,10 +73,12 @@ public class DevopsCustomizeResourceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除其他k8s资源")
     @DeleteMapping
-    public ResponseEntity deleteResource(@PathVariable(value = "project_id") Long projectId,
-                                         @RequestParam(value = "resource_id") Long resourceId) {
-        devopsCustomizeResourceService.deleteResource(resourceId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    public ResponseEntity<Void> deleteResource(
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @RequestParam(value = "resource_id") Long resourceId) {
+        devopsCustomizeResourceService.deleteResource(projectId, resourceId);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -89,8 +93,10 @@ public class DevopsCustomizeResourceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取资源详情")
     @GetMapping("/{resource_id}")
-    public ResponseEntity<DevopsCustomizeResourceVO> getResource(@PathVariable(value = "project_id") Long projectId,
-                                                                 @PathVariable(value = "resource_id") Long resourceId) {
+    public ResponseEntity<DevopsCustomizeResourceVO> getResource(
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "resource_id") Long resourceId) {
         return Optional.ofNullable(devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId))
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.resource.get"));
@@ -102,7 +108,7 @@ public class DevopsCustomizeResourceController {
      *
      * @param projectId   项目id
      * @param envId       环境id
-     * @param pageable 分页参数
+     * @param pageable    分页参数
      * @param searchParam 查询参数
      * @return Page of DevopsCustomizeResourceDTO
      */
@@ -115,6 +121,7 @@ public class DevopsCustomizeResourceController {
     public ResponseEntity<Page<DevopsCustomizeResourceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")

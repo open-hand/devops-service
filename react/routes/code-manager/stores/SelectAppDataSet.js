@@ -4,6 +4,6 @@ export default ({ handleDataSetChange }) => ({
     update: handleDataSetChange,
   },
   fields: [
-    { name: 'appServiceId', type: 'number' },
+    { name: 'appServiceId', type: 'string' },
   ],
 });

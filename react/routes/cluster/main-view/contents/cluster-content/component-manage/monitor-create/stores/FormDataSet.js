@@ -50,7 +50,7 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
     },
     {
       name: 'prometheusPvId',
-      type: 'number',
+      type: 'string',
       textField: 'name',
       valueField: 'id',
       label: 'PrometheusPV',
@@ -59,7 +59,7 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
     },
     {
       name: 'grafanaPvId',
-      type: 'number',
+      type: 'string',
       textField: 'name',
       valueField: 'id',
       label: 'GrafanaPV',
@@ -68,12 +68,17 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
     },
     {
       name: 'alertmanagerPvId',
-      type: 'number',
+      type: 'string',
       textField: 'name',
       valueField: 'id',
       label: 'AlertManagerPV',
       required: true,
       options: pvDs,
+    },
+    {
+      name: 'enableTls',
+      type: 'boolean',
+      defaultValue: false,
     },
   ],
 });

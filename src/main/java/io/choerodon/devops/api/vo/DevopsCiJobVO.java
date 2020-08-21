@@ -1,17 +1,25 @@
 package io.choerodon.devops.api.vo;
 
-import javax.persistence.*;
+import java.util.List;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.annotation.WillDeleted;
 
 /**
  * @author wanghao
  * @since 2020/4/2 17:00
  */
+@WillDeleted
 public class DevopsCiJobVO {
-
+    @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,9 +31,11 @@ public class DevopsCiJobVO {
     @ApiModelProperty("runner镜像地址")
     private String image;
 
+    @Encrypt
     @ApiModelProperty("阶段id")
     private Long ciStageId;
 
+    @Encrypt
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
 
@@ -33,10 +43,18 @@ public class DevopsCiJobVO {
     @NotEmpty(message = "error.job.type.cannot.be.null")
     private String type;
 
-    @ApiModelProperty("触发分支")
-    @NotEmpty(message = "error.job.triggerRefs.cannot.be.null")
-    private String triggerRefs;
+    @ApiModelProperty("触发类型对应的值")
+    private String triggerValue;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiTriggerType}
+     */
+    @ApiModelProperty("触发类型")
+    private String triggerType;
+
+    /**
+     * {@link CiConfigVO}
+     */
     @ApiModelProperty("详细信息 / 如果是自定义任务, 这个字段是base64加密过的")
     @NotEmpty(message = "error.job.metadata.cannot.be.null")
     private String metadata;
@@ -46,6 +64,17 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     private Boolean toDownload;
+
+    @ApiModelProperty("ci阶段的构建类型")
+    private List<String> configJobTypes;
+
+    public List<String> getConfigJobTypes() {
+        return configJobTypes;
+    }
+
+    public void setConfigJobTypes(List<String> configJobTypes) {
+        this.configJobTypes = configJobTypes;
+    }
 
     private Long objectVersionNumber;
 
@@ -94,12 +123,20 @@ public class DevopsCiJobVO {
         this.type = type;
     }
 
-    public String getTriggerRefs() {
-        return triggerRefs;
+    public String getTriggerValue() {
+        return triggerValue;
     }
 
-    public void setTriggerRefs(String triggerRefs) {
-        this.triggerRefs = triggerRefs;
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
     }
 
     public String getMetadata() {

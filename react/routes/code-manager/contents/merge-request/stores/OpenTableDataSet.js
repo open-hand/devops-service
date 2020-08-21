@@ -15,6 +15,11 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
         method: 'get',
         transformResponse: (response) => {
           try {
+            if (!response) {
+              mergedRequestStore.setIsEmpty(true);
+              return response;
+            }
+            mergedRequestStore.setIsEmpty(false);
             const data = JSON.parse(response);
             if (data && data.failed) {
               return data;
@@ -37,7 +42,7 @@ export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) =>
     },
     fields: [
       { name: 'title', type: 'string', label: formatMessage({ id: 'app.name' }) },
-      { name: 'iid', type: 'number', label: <Tips title={formatMessage({ id: 'app.code' })} helpText={formatMessage({ id: 'app.code.tip' })} /> },
+      { name: 'iid', type: 'string', label: <Tips title={formatMessage({ id: 'app.code' })} helpText={formatMessage({ id: 'app.code.tip' })} /> },
       { name: 'state', type: 'string', label: formatMessage({ id: 'merge.state' }) },
       { name: 'targetBranch', type: 'string', label: <Tips title={formatMessage({ id: 'app.branch' })} helpText={formatMessage({ id: 'app.branch.tip' })} /> },
       { name: 'createdAt', type: 'string', label: <Tips title={formatMessage({ id: 'create' })} helpText={formatMessage({ id: 'create.tip' })} /> },

@@ -4,8 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class InstanceEventVO {
+    @Encrypt
     @ApiModelProperty("这个实例事件所对应的commandId")
     private Long commandId;
     private String type;

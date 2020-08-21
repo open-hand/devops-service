@@ -1,13 +1,16 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/28.
@@ -90,6 +93,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,
+                                                     @Param("appServiceIds") Set<Long> appServiceIds,
                                                      @Param("isActive") Boolean isActive,
                                                      @Param("hasVersion") Boolean hasVersion,
                                                      @Param("type") String type,
@@ -104,9 +108,11 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                             @Param("params") List<String> params);
 
     List<AppServiceDTO> listProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
+                                                             @Param("appServiceIds") Set<Long> appServiceIds,
                                                              @Param("userId") Long userId);
 
     Integer countProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
+                                                  @Param("appServiceIds") Set<Long> appServiceIds,
                                                   @Param("userId") Long userId);
 
     List<AppServiceDTO> pageServiceByProjectId(@Param("projectId") Long projectId,
@@ -157,7 +163,23 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
      */
     List<AppServiceDTO> listAppServiceToCreatePipelineForMember(@Param("projectId") Long projectId,
                                                                 @Param("iamUserId") Long iamUserId,
+                                                                @Param("appServiceIds") Set<Long> appServiceIds,
                                                                 @Param("searchParam") Map<String, Object> searchParam,
                                                                 @Param("params") List<String> params);
+
+    /**
+     * 查询出指定项目下最近使用过的应用
+     *
+     * @param projectIds 项目ids
+     * @param time
+     * @return 应用id和最后更新时间
+     */
+    List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds,
+                                                              @Param("userId") Long userId,
+                                                              @Param("time") Date time);
+
+    List<AppServiceDTO> listByActiveAndProjects(@Param("projectIds") List<Long> projectIds);
+
+    List<ProjectAppSvcCountVO> countByProjectIds(@Param("projectIds") List<Long> projectIds);
 }
 

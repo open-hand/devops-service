@@ -31,7 +31,7 @@ export default ({ formatMessage, intlPrefix, projectId, groupOptionDs, clusterOp
     fields: [
       {
         name: 'clusterId',
-        type: 'number',
+        type: 'string',
         textField: 'name',
         label: formatMessage({ id: 'c7ncd.env.cluster.select' }),
         valueField: 'id',
@@ -63,7 +63,7 @@ export default ({ formatMessage, intlPrefix, projectId, groupOptionDs, clusterOp
       },
       {
         name: 'devopsEnvGroupId',
-        type: 'number',
+        type: 'string',
         textField: 'name',
         valueField: 'id',
         label: '选择分组',

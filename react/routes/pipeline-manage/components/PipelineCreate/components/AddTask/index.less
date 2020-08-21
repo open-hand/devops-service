@@ -1,8 +1,32 @@
+.addTaskForm {
+  .c7n-pro-select-multiple-block > div:not(:last-child) {
+    max-width: calc(45px);
+  }
+  &-select {
+    .c7n-pro-select {
+      ul {
+        display: flex;
+        flex-wrap: nowrap;
+      }
+    }
+  }
+  .c7n-pro-select-group-help {
+    .icon {
+      color: rgba(0, 0, 0, 0.54);
+    }
+  }
+  label.c7n-pro-checkbox-wrapper {
+    &:nth-of-type(2) {
+      margin-left: .7rem;
+    }
+  }
+}
+
 .AddTask_configStep {
-  border-top: 1px solid #d8d8d8;
   margin-left: -0.24rem;
   margin-right: -0.24rem;
   width: calc(100% + 0.48rem);
+  margin-top: -0.3rem;
   p {
     margin-left: 0.24rem;
     font-size: 16px;
@@ -19,6 +43,11 @@
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.08);
   border-radius: 4px;
   padding: 20px 16px;
+  label.c7n-pro-radio-wrapper {
+    &:nth-of-type(2) {
+      margin-left: .21rem;
+    }
+  }
   .c7n-pro-input-group-help {
     height: 36px;
   }
@@ -29,6 +58,7 @@
   .AddTask_stepItemsContainer {
     display: flex;
     overflow: auto;
+    height: .32rem;
     .AddTask_stepMapContent {
       display: flex;
       align-items: center;
@@ -36,6 +66,7 @@
         display: flex;
         width: 24px;
         height: 24px;
+        margin-left: 4px;
         box-shadow: 0 2px 4px 0 #cacae4;
         justify-content: center;
         align-items: center;
@@ -100,14 +131,18 @@
   }
 }
 .stepformContent {
-  align-items: center;
+  align-items: end;
   display: flex;
   justify-content: space-between;
   position: relative;
   .c7n-pro-validation-message {
     position: absolute;
-    right: 0;
-    bottom: 0;
+    left: 333px;
+    bottom: 20px;
+
+    &:nth-child(2) {
+      left: 0;
+    }
   }
 }
 .addTask_testConnect_success {
@@ -170,12 +205,22 @@
     font-weight: 500;
     color: rgba(63, 81, 181, 1);
   }
+  tr:last-of-type {
+    .c7n-pro-field-wrapper {
+      margin: 0;
+    }
+  }
   .dependRepo_form_borderline {
     height: 1px;
-    width: 100%;
+    width: 380px;
+    margin-left: -29px;
     background: #e0e0e0;
+  }
+}
+.matchType {
+  .c7n-pro-validation-message {
     position: absolute;
-    right: 0;
+    bottom: -20px;
   }
 }
 .addTask_authType {
@@ -197,5 +242,6 @@
   .icon-help {
     font-size: .13rem;
     margin-left: .02rem;
+    color: rgba(0, 0, 0, 0.36);
   }
 }

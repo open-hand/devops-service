@@ -1,11 +1,13 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
  */
 public class DevopsConfigVO {
-
+    @Encrypt
     private Long id;
 
     private String name;
@@ -16,6 +18,7 @@ public class DevopsConfigVO {
 
     private Long organizationId;
 
+    @Encrypt
     private Long appServiceId;
 
     private Boolean harborPrivate;

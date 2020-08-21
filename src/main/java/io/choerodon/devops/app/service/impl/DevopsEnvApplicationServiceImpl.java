@@ -1,12 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
+import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsEnvApplicationService;
+import io.choerodon.devops.app.service.PermissionHelper;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
+import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
@@ -15,14 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsEnvApplicationService;
-import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
-import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author lizongwei
@@ -37,11 +36,15 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private AppServiceService applicationService;
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
-        return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
+    public List<DevopsEnvApplicationVO> batchCreate(Long projectId, DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
+        permissionHelper.checkEnvBelongToProject(projectId, devopsEnvAppServiceVO.getEnvId());
+        permissionHelper.checkAppServicesBelongToProject(projectId, devopsEnvAppServiceVO.getAppServiceIds());
+        return devopsEnvAppServiceVO.getAppServiceIds().stream()
                 .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
                 .peek(e -> devopsEnvAppServiceMapper.insertIgnore(e))
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))

@@ -36,7 +36,7 @@ export default observer((props) => {
   }
 
   function LinkToComponent() {
-    const clusterRecord = treeDs.find((record) => record.get('id') === Number(parentId));
+    const clusterRecord = treeDs.find((record) => record.get('id') === parentId);
     const currentRecord = treeDs.find((record) => record.get('key') === key);
     if (clusterRecord) {
       mainStore.setClusterDefaultTab(COMPONENT_TAB);

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.C7nCertificationVO;
-import io.choerodon.devops.api.vo.CertificationRespVO;
-import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.ProjectCertificationVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -51,17 +49,17 @@ public class CertificationController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建证书")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @ModelAttribute C7nCertificationVO certification,
+            @ModelAttribute C7nCertificationCreateVO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
         certificationService.createCertification(projectId, certification, key, cert, false);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
@@ -75,23 +73,24 @@ public class CertificationController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除证书")
     @DeleteMapping
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书id", required = true)
             @RequestParam(value = "cert_id") Long certId) {
-        certificationService.deleteById(certId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        certificationService.deleteById(projectId, certId);
+        return ResponseEntity.noContent().build();
     }
 
 
     /**
      * 分页查询
      *
-     * @param projectId   项目id
-     * @param envId       环境ID
-     * @param pageable 分页参数
-     * @param params      查询参数
+     * @param projectId 项目id
+     * @param envId     环境ID
+     * @param pageable  分页参数
+     * @param params    查询参数
      * @return CertificationDTO page
      */
     @Permission(level = ResourceLevel.ORGANIZATION,
@@ -103,6 +102,7 @@ public class CertificationController {
     public ResponseEntity<Page<CertificationVO>> pageByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
@@ -129,6 +129,7 @@ public class CertificationController {
     public ResponseEntity<List<CertificationVO>> getActiveCertificationByDomain(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名")
@@ -153,6 +154,7 @@ public class CertificationController {
     public ResponseEntity<Boolean> checkCertNameUniqueInEnv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
@@ -178,6 +180,7 @@ public class CertificationController {
     public ResponseEntity<CertificationVO> queryByName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
@@ -202,6 +205,7 @@ public class CertificationController {
     public ResponseEntity<CertificationRespVO> queryById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "证书ID", required = true)
             @PathVariable(value = "cert_id") Long certId) {
         return Optional.ofNullable(certificationService.queryByCertId(certId))

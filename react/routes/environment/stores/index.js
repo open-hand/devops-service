@@ -14,13 +14,13 @@ export function useEnvironmentStore() {
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const {
-      AppState: { currentMenuType: { id } },
+      AppState: { currentMenuType: { id, organizationId, name: projectName } },
       intl: { formatMessage },
       children,
     } = props;
     const intlPrefix = 'c7ncd.env';
     const envStore = useStore();
-    const treeDs = useMemo(() => new DataSet(TreeDataSet(id, envStore, formatMessage, intlPrefix)), [id]);
+    const treeDs = useMemo(() => new DataSet(TreeDataSet({ projectId: id, store: envStore, formatMessage, intlPrefix, organizationId, projectName })), [id]);
 
     const value = {
       ...props,

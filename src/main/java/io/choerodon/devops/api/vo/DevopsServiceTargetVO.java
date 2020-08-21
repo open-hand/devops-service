@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: Runge
@@ -14,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class DevopsServiceTargetVO {
     private List<AppServiceInstanceInfoVO> instances;
 
+    @Encrypt
     private Long targetAppServiceId;
     private String targetAppServiceName;
     /**

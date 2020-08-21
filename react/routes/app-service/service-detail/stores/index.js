@@ -17,7 +17,6 @@ export function useServiceDetailStore() {
   return useContext(Store);
 }
 
-
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const {

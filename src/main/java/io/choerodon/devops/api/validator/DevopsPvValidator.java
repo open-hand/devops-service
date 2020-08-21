@@ -1,11 +1,12 @@
 package io.choerodon.devops.api.validator;
 
-import java.util.regex.Pattern;
-
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.kubernetes.LocalPvResource;
 import io.choerodon.devops.infra.enums.VolumeTypeEnum;
 import io.kubernetes.client.models.V1HostPathVolumeSource;
 import io.kubernetes.client.models.V1NFSVolumeSource;
+
+import java.util.regex.Pattern;
 
 public class DevopsPvValidator {
 
@@ -13,7 +14,7 @@ public class DevopsPvValidator {
 
     private static final String HOSTPATH_PATTERN = "^/([-\\w]+[.]*[-\\w]*/?)+";
 
-    private DevopsPvValidator(){
+    private DevopsPvValidator() {
 
     }
 
@@ -38,6 +39,16 @@ public class DevopsPvValidator {
                     throw new CommonException("pv.nfs.server.not.ip");
                 } else if (!Pattern.matches(SERVER_PATTERN, nfs.getServer())) {
                     throw new CommonException("pv.nfs.server.format.error");
+                }
+                break;
+            case LOCALPV:
+                LocalPvResource localPvResource = (LocalPvResource) object;
+                if (localPvResource.getPath() == null) {
+                    throw new CommonException("pv.local.path.not.found");
+                } else if (!Pattern.matches(HOSTPATH_PATTERN, localPvResource.getPath())) {
+                    throw new CommonException("pv.local.path.format.error");
+                } else if (localPvResource.getNodeName() == null) {
+                    throw new CommonException("pv.local.nodeName.not.found");
                 }
                 break;
         }

@@ -80,7 +80,7 @@ const collapseDetail = observer(({ loading }) => {
           <div className={`${prefixCls}-polaris-tabs-header-item`}>
             <span className={`${prefixCls}-polaris-tabs-header-text`}>{formatMessage({ id: `${intlPrefix}.belong.project` })}:</span>
             <Tooltip title={projectName}>
-              <span className={`${prefixCls}-polaris-tabs-header-text-project`}>{projectName}</span>
+              <span>{projectName}</span>
             </Tooltip>
           </div>
         )}

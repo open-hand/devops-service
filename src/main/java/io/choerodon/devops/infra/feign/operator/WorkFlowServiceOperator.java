@@ -40,4 +40,12 @@ public class WorkFlowServiceOperator {
             throw new CommonException("error.workflow.stop");
         }
     }
+
+    public String createCiCdPipeline(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
+        ResponseEntity<String> responseEntity = workFlowServiceClient.createCiCdPipeline(projectId, devopsPipelineDTO);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.workflow.create");
+        }
+        return responseEntity.getBody();
+    }
 }

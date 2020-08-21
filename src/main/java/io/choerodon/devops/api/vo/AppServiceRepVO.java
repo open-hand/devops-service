@@ -4,6 +4,9 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 
 /**
  * @author younger
@@ -11,6 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class AppServiceRepVO {
     @ApiModelProperty("应用服务id")
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("应用服务名称")
@@ -55,8 +59,9 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
 
+
     @ApiModelProperty("应用服务对应的harbor配置信息")
-    private DevopsConfigVO harbor;
+    private HarborRepoConfigDTO harborRepoConfigDTO;
 
     @ApiModelProperty("应用服务对应的chart配置信息")
     private DevopsConfigVO chart;
@@ -91,12 +96,12 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务类型")
     private String serviceType;
 
-    public DevopsConfigVO getHarbor() {
-        return harbor;
+    public HarborRepoConfigDTO getHarborRepoConfigDTO() {
+        return harborRepoConfigDTO;
     }
 
-    public void setHarbor(DevopsConfigVO harbor) {
-        this.harbor = harbor;
+    public void setHarborRepoConfigDTO(HarborRepoConfigDTO harborRepoConfigDTO) {
+        this.harborRepoConfigDTO = harborRepoConfigDTO;
     }
 
     public DevopsConfigVO getChart() {
@@ -314,4 +319,6 @@ public class AppServiceRepVO {
     public void setServiceType(String serviceType) {
         this.serviceType = serviceType;
     }
+
 }
+

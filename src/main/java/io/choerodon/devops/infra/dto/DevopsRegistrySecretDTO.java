@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import org.apache.logging.log4j.message.StringFormattedMessage;
 
 /**
  * Created by Sheep on 2019/3/14.
@@ -37,12 +38,13 @@ public class DevopsRegistrySecretDTO extends AuditDomain {
     private Boolean status;
     private Long objectVersionNumber;
     private Long projectId;
+    private String repoType;
 
 
     public DevopsRegistrySecretDTO() {
     }
 
-    public DevopsRegistrySecretDTO(Long envId, Long configId, String envCode, Long clusterId, String secretCode, String secretDetail, Long projectId) {
+    public DevopsRegistrySecretDTO(Long envId, Long configId, String envCode, Long clusterId, String secretCode, String secretDetail, Long projectId, String repoType) {
         this.clusterId = clusterId;
         this.envId = envId;
         this.namespace = envCode;
@@ -51,8 +53,18 @@ public class DevopsRegistrySecretDTO extends AuditDomain {
         this.secretDetail = secretDetail;
         this.status = false;
         this.projectId = projectId;
+        this.repoType = repoType;
+
     }
 
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
 
     public Long getId() {
         return id;

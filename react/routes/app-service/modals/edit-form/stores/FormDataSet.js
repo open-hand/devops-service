@@ -1,20 +1,10 @@
 import { axios } from '@choerodon/boot';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
-import forEach from 'lodash/forEach';
 
 function handleUpdate({ record, name, value }) {
   switch (name) {
-    case 'harborType':
-      forEach(['url', 'userName', 'password', 'email', 'project'], (item) => {
-        handleInitialValue(record, value === 'custom', record.get('harbor'), item);
-      });
-      if (value === 'default') {
-        record.set('harborStatus', '');
-      }
-      break;
     case 'chartType':
-      handleInitialValue(record, value === 'custom', record.get('chart'), 'chartUrl');
       if (value === 'default') {
         record.set('chartStatus', '');
       }
@@ -22,11 +12,6 @@ function handleUpdate({ record, name, value }) {
     case 'url':
     case 'userName':
     case 'password':
-    case 'email':
-    case 'project':
-      record.set('harborStatus', '');
-      break;
-    case 'chartUrl':
       record.set('chartStatus', '');
       break;
     default:
@@ -34,31 +19,25 @@ function handleUpdate({ record, name, value }) {
   }
 }
 
-function handleInitialValue(record, isCustom, data, item) {
-  if (isCustom && !isEmpty(data)) {
-    const config = data.config || {};
-    record.set(item, config[item === 'chartUrl' ? 'url' : item]);
+function handleLoad({ dataSet }) {
+  const record = dataSet.current;
+  if (!record) {
+    return;
   }
-  if (!isCustom) {
-    record.set(item, null);
+  const chart = record.get('chart');
+  if (!isEmpty(chart)) {
+    const { url, userName, password } = chart.config || {};
+    record.init('chartCustom', 'custom');
+    record.init('url', url);
+    record.init('userName', userName);
+    record.init('password', password);
+  } else {
+    record.init('chartCustom', 'default');
   }
 }
 
 function getRequestData(data, res) {
-  const { chartUrl, harborType, chartType } = data;
-  if (harborType === 'custom') {
-    if (isEmpty(res.harbor)) {
-      res.harbor = {
-        type: 'harbor',
-        custom: true,
-        config: {},
-      };
-    }
-    res.harbor.custom = true;
-    res.harbor.config = pick(data, ['url', 'userName', 'password', 'email', 'project']);
-  } else {
-    res.harbor = null;
-  }
+  const { url, userName, password, chartType } = data;
   if (chartType === 'custom') {
     if (isEmpty(res.chart)) {
       res.chart = {
@@ -67,24 +46,22 @@ function getRequestData(data, res) {
       };
     }
     res.chart.custom = true;
-    res.chart.config.url = chartUrl;
+    res.chart.config.url = url;
+    res.chart.config.userName = userName;
+    res.chart.config.password = password;
   } else {
     res.chart = null;
   }
-}
-
-function getHarborRequired({ record }) {
-  return record.status !== 'add' && record.get('harborType') === 'custom';
 }
 
 function getChartRequired({ record }) {
   return record.status !== 'add' && record.get('chartType') === 'custom';
 }
 
-export default (({ intlPrefix, formatMessage, projectId, appServiceId }) => {
+export default (({ intlPrefix, formatMessage, projectId, appServiceId, dockerDs }) => {
   async function checkName(value, name, record) {
     const pa = /^\S+$/;
-    if (value && value === record.get('oldName')) return true;
+    if (value && value === record.getPristineValue('name')) return true;
     if (value && pa.test(value)) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/check_name?name=${encodeURIComponent(value)}`);
@@ -101,12 +78,15 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId }) => {
     }
   }
 
-  function checkProject(value) {
-    const pa = /^[a-z0-9]([-_.a-z0-9]*[a-z0-9])?$/;
-    if (!value || (value && pa.test(value))) {
-      return true;
-    } else {
-      return formatMessage({ id: `${intlPrefix}.project.failed` });
+  function checkUserName(value, name, record) {
+    if (!value && record.get('password')) {
+      return formatMessage({ id: `${intlPrefix}.chart.check.failed` });
+    }
+  }
+
+  function checkPassword(value, name, record) {
+    if (!value && record.get('userName')) {
+      return formatMessage({ id: `${intlPrefix}.chart.check.failed` });
     }
   }
 
@@ -122,7 +102,7 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId }) => {
         method: 'get',
       },
       update: ({ data: [data] }) => {
-        const res = pick(data, ['id', 'name', 'chart', 'harbor', 'objectVersionNumber', 'imgUrl']);
+        const res = pick(data, ['id', 'name', 'chart', 'objectVersionNumber', 'imgUrl', 'harborRepoConfigDTO']);
         getRequestData(data, res);
         return ({
           url: `/devops/v1/projects/${projectId}/app_service`,
@@ -137,22 +117,17 @@ export default (({ intlPrefix, formatMessage, projectId, appServiceId }) => {
       { name: 'type', type: 'string' },
       { name: 'imgUrl', type: 'string' },
       { name: 'objectVersionNumber', type: 'number' },
-      { name: 'harbor', type: 'object' },
       { name: 'chart', type: 'object' },
-      { name: 'chartUrl', type: 'url', label: formatMessage({ id: 'address' }), dynamicProps: { required: getChartRequired } },
-      { name: 'url', type: 'url', label: formatMessage({ id: 'address' }), dynamicProps: { required: getHarborRequired } },
-      { name: 'userName', type: 'string', label: formatMessage({ id: 'loginName' }), dynamicProps: { required: getHarborRequired } },
-      { name: 'password', type: 'string', label: formatMessage({ id: 'password' }), dynamicProps: { required: getHarborRequired } },
-      { name: 'email', type: 'email', label: formatMessage({ id: 'mailbox' }), dynamicProps: { required: getHarborRequired } },
-      { name: 'project', type: 'string', label: 'Harbor Project', validator: checkProject },
-      { name: 'harborStatus', type: 'string', defaultValue: '' },
+      { name: 'url', type: 'url', label: formatMessage({ id: 'address' }), dynamicProps: { required: getChartRequired } },
+      { name: 'userName', type: 'string', label: formatMessage({ id: 'userName' }), validator: checkUserName },
+      { name: 'password', type: 'string', label: formatMessage({ id: 'password' }), validator: checkPassword },
       { name: 'chartStatus', type: 'string', defaultValue: '' },
       { name: 'chartType', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.helm` }) },
-      { name: 'harborType', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.docker` }) },
-      { name: 'oldName', type: 'string' },
+      { name: 'harborRepoConfigDTO', type: 'object', textField: 'repoName', valueField: 'repoId', label: formatMessage({ id: `${intlPrefix}.docker` }), options: dockerDs },
     ],
     events: {
       update: handleUpdate,
+      load: handleLoad,
     },
   });
 });

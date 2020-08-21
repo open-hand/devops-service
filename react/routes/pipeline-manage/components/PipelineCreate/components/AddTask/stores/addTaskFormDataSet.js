@@ -1,4 +1,4 @@
-export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore) => {
+export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore, organizationId, ZpkOptionsDs) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
@@ -45,14 +45,32 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       //
       // }),
     }, {
-      name: 'triggerRefs',
+      // name: 'pplx',
+      name: 'triggerType',
       type: 'string',
-      multiple: true,
-      label: '触发分支类型',
+      label: '匹配类型',
+      required: true,
+      defaultValue: 'refs',
+    }, {
+      // name: 'branchs',
+      name: 'triggerValue',
+      type: 'string',
+      label: '触发分支',
     }, {
       name: 'gjmb',
       type: 'string',
       label: '构建模板',
+    }, {
+      name: 'nexusMavenRepoIds',
+      type: 'string',
+      label: '项目依赖仓库',
+      textField: 'name',
+      multiple: true,
+      valueField: 'repositoryId',
+      lookupAxiosConfig: ({ params }) => ({
+        method: 'get',
+        url: `/rdupm/v1/nexus-repositorys/${organizationId}/project/${projectId}/ci/repo/list?repoType=MAVEN`,
+      }),
     }, {
       name: 'private',
       type: 'string',
@@ -65,6 +83,9 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       name: 'bzmc',
       type: 'string',
       label: '步骤名称',
+      dynamicProps: ({ record, name }) => ({
+        required: record.get('type') === 'build',
+      }),
     },
     //   {
     //   name: 'yhm',
@@ -112,6 +133,32 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       defaultValue: false,
     },
     {
+      name: 'zpk',
+      type: 'string',
+      label: '目标制品库',
+      textField: 'name',
+      valueField: 'repositoryId',
+      // multiple: true,
+      required: true,
+      options: ZpkOptionsDs,
+    },
+    {
+      name: 'jar_zpk',
+      type: 'string',
+      label: '目标制品库',
+      textField: 'name',
+      valueField: 'repositoryId',
+      // multiple: true,
+      required: true,
+      options: ZpkOptionsDs,
+    },
+    {
+      name: 'configType',
+      type: 'string',
+      label: '配置方式',
+      defaultValue: 'default',
+    },
+    {
       name: 'authType',
       type: 'string',
       label: 'SonarQube',
@@ -124,21 +171,21 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       type: 'string',
       label: 'SonarQube用户名',
       dynamicProps: ({ record, name }) => ({
-        required: record.get('type') === 'sonar' && record.get('authType') === 'username',
+        required: record.get('type') === 'sonar' && record.get('configType') === 'custom' && record.get('authType') === 'username',
       }),
     }, {
       name: 'password',
       type: 'string',
       label: '密码',
       dynamicProps: ({ record, name }) => ({
-        required: record.get('type') === 'sonar' && record.get('authType') === 'username',
+        required: record.get('type') === 'sonar' && record.get('configType') === 'custom' && record.get('authType') === 'username',
       }),
     }, {
       name: 'sonarUrl',
       type: 'string',
       label: 'SonarQube地址',
       dynamicProps: ({ record, name }) => ({
-        required: record.get('type') === 'sonar',
+        required: record.get('type') === 'sonar' && record.get('configType') === 'custom',
       }),
     }, {
       name: 'token',
@@ -155,7 +202,7 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
     }, {
       name: 'image',
       type: 'string',
-      label: '任务Runner镜像',
+      label: 'CI任务Runner镜像',
       dynamicProps: ({ record, name }) => ({
         required: record.get('type') !== 'custom',
       }),

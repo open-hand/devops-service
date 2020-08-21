@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.DevopsEnvResourceVO;
 import io.choerodon.devops.api.vo.InstanceEventVO;
+import io.choerodon.devops.api.vo.PodEventVO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 
@@ -59,10 +60,13 @@ public interface DevopsEnvResourceService {
 
     /**
      * 批量查询DevopsEnvResourceDTO 根据names
+     *
      * @param envId
      * @param type
      * @param names
      * @return
      */
     List<DevopsEnvResourceDTO> listEnvResourceByOptions(Long envId, String type, List<String> names);
+
+    List<PodEventVO> listPodEventBycommandId(Long commandId);
 }

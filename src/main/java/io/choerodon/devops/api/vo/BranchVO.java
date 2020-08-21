@@ -2,10 +2,12 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by Sheep on 2019/7/18.
@@ -25,6 +27,7 @@ public class BranchVO {
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
+    @Encrypt
     private Long issueId;
     private String issueCode;
     private String issueName;

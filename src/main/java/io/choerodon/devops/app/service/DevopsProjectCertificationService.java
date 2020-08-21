@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.ProjectCertificationCreateUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -27,7 +28,7 @@ public interface DevopsProjectCertificationService {
      */
     Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageable, String params);
 
-    void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
+    void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationCreateUpdateVO projectCertificationVO);
 
     boolean isNameUnique(Long projectId, String name);
 
@@ -41,7 +42,7 @@ public interface DevopsProjectCertificationService {
      */
     Page<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, Long selectedProjectId, PageRequest pageable, String params);
 
-    void deleteCert(Long certId);
+    void deleteCert(Long projectId, Long certId);
 
     void deletePermissionOfProject(Long projectId, Long certId);
 

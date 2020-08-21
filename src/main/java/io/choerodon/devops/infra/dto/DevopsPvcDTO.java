@@ -12,9 +12,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_pvc")
 public class DevopsPvcDTO extends AuditDomain {
+    public static final String ENCRYPT_KEY = "devops_pvc";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Encrypt(DevopsPvcDTO.ENCRYPT_KEY)
     private Long id;
 
     @ApiModelProperty("PVC名称")

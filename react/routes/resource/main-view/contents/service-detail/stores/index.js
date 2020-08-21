@@ -33,7 +33,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       return resourceStore.checkExist({
         projectId,
         type: 'service',
-        envId: parentId.split('-')[0],
+        envId: parentId.split('**')[0],
         id,
       }).then((isExist) => {
         if (!isExist) {

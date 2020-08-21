@@ -1,23 +1,24 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Creator: Runge
@@ -47,6 +48,8 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Override
     public DevopsEnvGroupVO update(DevopsEnvGroupVO devopsEnvGroupVO, Long projectId) {
+        DevopsEnvGroupDTO devopsEnvGroupDTOToCheck = devopsEnvGroupMapper.selectByPrimaryKey(devopsEnvGroupVO.getId());
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTOToCheck.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         devopsEnvGroupValidator.checkNameUnique(devopsEnvGroupVO.getId(), devopsEnvGroupVO.getName(), projectId);
         DevopsEnvGroupDTO devopsEnvGroupDTO = ConvertUtils.convertObject(devopsEnvGroupVO, DevopsEnvGroupDTO.class);
         devopsEnvGroupDTO.setProjectId(projectId);
@@ -80,12 +83,14 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
-    public void delete(Long id) {
+    public void delete(Long projectId, Long id) {
         DevopsEnvGroupDTO devopsEnvGroupDTO = baseQuery(id);
 
         if (devopsEnvGroupDTO == null) {
             return;
         }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         baseDelete(id);
         //删除环境组，将原环境组内所有环境的env_group_id置为null

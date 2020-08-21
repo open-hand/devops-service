@@ -1,25 +1,24 @@
 import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
-
+import JSONBigint from 'json-bigint';
 
 function formatData({ data, expandsKeys }) {
   const newData = [];
-  function flatData(value, gitlabProjectId) {
+  function flatData(value, gitlabProjectId, parentId) {
     forEach(value, (item) => {
-      const parentId = item.ciPipelineId;
-      const key = `${parentId ? `${parentId}-` : ''}${item.id}`;
+      const key = `${parentId ? `${parentId}-` : ''}${item.id || item.devopsPipelineRecordRelId}`;
       const newGitlabProjectId = item.gitlabProjectId || gitlabProjectId;
       const newItem = {
         ...item,
         key,
         parentId: parentId ? parentId.toString() : null,
-        status: item.latestExecuteStatus || item.status,
+        status: item.latestExecuteStatus || item.status || (item.ciStatus === 'success' && item.cdStatus ? item.cdStatus : item.ciStatus),
         expand: expandsKeys.includes(key),
         gitlabProjectId: newGitlabProjectId,
       };
       newData.push(newItem);
-      if (!isEmpty(item.pipelineRecordVOList)) {
-        flatData(item.pipelineRecordVOList, newGitlabProjectId);
+      if (!isEmpty(item.ciCdPipelineRecordVOS)) {
+        flatData(item.ciCdPipelineRecordVOS, newGitlabProjectId, item.id);
       }
       if (item.hasMoreRecords) {
         newData.push({
@@ -35,7 +34,7 @@ function formatData({ data, expandsKeys }) {
 
 export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
   autoCreate: false,
-  autoQuery: true,
+  autoQuery: false,
   selection: 'single',
   primaryKey: 'key',
   idField: 'key',
@@ -43,11 +42,11 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
   expandField: 'expand',
   transport: {
     read: {
-      url: `devops/v1/projects/${projectId}/ci_pipelines`,
+      url: `devops/v1/projects/${projectId}/cicd_pipelines`,
       method: 'get',
       transformResponse(response) {
         try {
-          const data = JSON.parse(response);
+          const data = JSONBigint.parse(response);
           if (data && data.failed) {
             return data;
           } else {
@@ -66,7 +65,7 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
       },
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/ci_pipelines/${data.id}`,
+      url: `/devops/v1/projects/${projectId}/cicd_pipelines/${data.id}`,
       method: 'delete',
     }),
   },
@@ -79,20 +78,29 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
       record.isSelected = true;
     },
     load: ({ dataSet }) => {
+      function selectFirstRecord() {
+        const newRecord = dataSet.records[0];
+        if (newRecord) {
+          newRecord.isSelected = true;
+          handleSelect(newRecord, mainStore, editBlockStore);
+        }
+      }
+
       mainStore.setPageList({});
-      const record = dataSet.records[0];
       const { key } = mainStore.getSelectedMenu;
       if (key) {
         const selectedRecord = dataSet.find((treeRecord) => key === treeRecord.get('key'));
+        const pattern = new URLSearchParams(window.location.hash);
+        const newPipelineId = pattern.get('pipelineId');
+        const newPipelineIdRecordId = pattern.get('pipelineIdRecordId');
         if (selectedRecord) {
           selectedRecord.isSelected = true;
           handleSelect(selectedRecord, mainStore, editBlockStore);
-          return;
+        } else if (!newPipelineId || !newPipelineIdRecordId) {
+          selectFirstRecord();
         }
-      }
-      if (record) {
-        record.isSelected = true;
-        handleSelect(record, mainStore, editBlockStore);
+      } else {
+        selectFirstRecord();
       }
     },
   },

@@ -31,6 +31,15 @@ public interface AppServiceService {
      */
     AppServiceRepVO create(Long projectId, AppServiceReqVO applicationReqDTO);
 
+    /**
+     * 内部查询项目下所有应用服务 / 不区分权限
+     *
+     * @param projectId 项目id
+     * @param params    查询参数
+     * @param pageable  分页参数
+     * @return 应用服务列表
+     */
+    Page<AppServiceRepVO> internalListAllInProject(Long projectId, String params, PageRequest pageable);
 
     /**
      * 项目下查询单个服务信息
@@ -87,7 +96,8 @@ public interface AppServiceService {
                                         String type,
                                         Boolean doPage,
                                         PageRequest pageable,
-                                        String params);
+                                        String params,
+                                        Boolean checkMember);
 
     /**
      * 处理服务创建逻辑
@@ -278,17 +288,19 @@ public interface AppServiceService {
     /**
      * 校验chart配置信息是否正确
      *
-     * @param url chartmusume地址
-     * @return Boolean
+     * @param url      ChartMuseum地址
+     * @param username 用户名
+     * @param password 密码
+     * @return true如果通过 (未通过则抛出错误信息)
      */
-    Boolean checkChart(String url);
+    Boolean checkChart(String url, @Nullable String username, @Nullable String password);
 
     /**
      * 查看sonarqube相关信息
      *
      * @param projectId    项目Id
      * @param appServiceId 服务id
-     * @return
+     * @return 信息
      */
     SonarContentsVO getSonarContent(Long projectId, Long appServiceId);
 
@@ -297,7 +309,7 @@ public interface AppServiceService {
      *
      * @param projectId    项目Id
      * @param appServiceId 服务id
-     * @return
+     * @return 报表
      */
     SonarTableVO getSonarTable(Long projectId, Long appServiceId, String type, Date startTime, Date endTime);
 
@@ -376,15 +388,25 @@ public interface AppServiceService {
 
     void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId);
 
+    /**
+     * 查询项目成员 项目下有权限的应用服务Id
+     *
+     * @param organizationId
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    Set<Long> getMemberAppServiceIds(Long organizationId, Long projectId, Long userId);
+
+
     void baseCheckApp(Long projectId, Long appServiceId);
 
     AppServiceDTO baseUpdate(AppServiceDTO appServiceDTO);
 
     AppServiceDTO baseQuery(Long appServiceId);
 
-    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
-            appMarket,
-                                          String type, Boolean doPage, PageRequest pageable, String params);
+    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
+                                          String type, Boolean doPage, PageRequest pageable, String params, Boolean checkMember);
 
     Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
                                                Boolean isProjectOwner, Long userId);
@@ -440,6 +462,8 @@ public interface AppServiceService {
     List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
+
+    AppServiceDTO queryByGitlabProjectId(Long gitlabProjectId);
 
     /**
      * 查询单个项目下的应用服务
@@ -566,4 +590,6 @@ public interface AppServiceService {
      * @return 地址
      */
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
+
+    void fixAppServiceVersion();
 }

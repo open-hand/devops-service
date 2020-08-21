@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.util;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
+import io.choerodon.devops.infra.enums.ClusterResourceType;
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
-import io.choerodon.devops.infra.enums.ClusterResourceType;
 
 public class ComponentValuesTemplateUtil {
     private static final String TEMPLATE = "/component/template/%s.yml";
@@ -54,7 +55,21 @@ public class ComponentValuesTemplateUtil {
 
         map.put("{{api-host}}", apiHost);
 
-        return FileUtil.replaceReturnString(in, map);
+        String values = FileUtil.replaceReturnString(in, map);
+        return filterTls(devopsPrometheusDTO.getEnableTls(), values);
     }
 
+    public static String filterTls(Boolean enableTls, String values) {
+        if (enableTls) {
+            return values;
+        } else {
+            Yaml yaml = new Yaml();
+            HashMap load = yaml.load(values);
+            ((HashMap) ((HashMap) load.get("grafana")).get("ingress")).remove("tls");
+            ((HashMap) ((HashMap) ((HashMap) load.get("grafana")).get("ingress")).get("annotations")).remove("kubernetes.io/tls-acme");
+            ((HashMap) ((HashMap) ((HashMap) load.get("grafana")).get("ingress")).get("annotations")).remove("certmanager.k8s.io/cluster-issuer");
+            ((HashMap) ((HashMap) ((HashMap) load.get("grafana")).get("ingress")).get("annotations")).remove("kubernetes.io/ingress.class");
+            return yaml.dumpAsMap(load);
+        }
+    }
 }

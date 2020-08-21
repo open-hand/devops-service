@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -8,6 +8,7 @@ import java.util.Date;
  * Description:
  */
 public class PipelineUserVO {
+    @Encrypt
     private Long id;
     private String loginName;
     private String realName;

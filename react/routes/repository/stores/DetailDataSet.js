@@ -1,33 +1,16 @@
-import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
 import pick from 'lodash/pick';
 
 function handleUpdate({ record, name, value }) {
   switch (name) {
-    case 'harborCustom':
-      forEach(['url', 'userName', 'password', 'email', 'project'], (item) => {
-        item !== 'project' && record.getField(item).set('required', value === 'custom');
-        handleInitialValue(record, value === 'custom', record.get('harbor'), item);
-      });
-      if (value === 'default') {
-        record.set('harborStatus', '');
-      }
-      break;
     case 'chartCustom':
-      record.getField('chartUrl').set('required', value === 'custom');
-      handleInitialValue(record, value === 'custom', record.get('chart'), 'chartUrl');
       if (value === 'default') {
         record.set('chartStatus', '');
       }
       break;
-    case 'url':
     case 'userName':
     case 'password':
-    case 'email':
-    case 'project':
-      record.set('harborStatus', '');
-      break;
-    case 'chartUrl':
+    case 'url':
       record.set('chartStatus', '');
       break;
     default:
@@ -35,31 +18,25 @@ function handleUpdate({ record, name, value }) {
   }
 }
 
-function handleInitialValue(record, isCustom, data, item) {
-  if (isCustom && !isEmpty(data)) {
-    const config = data.config || {};
-    record.set(item, config[item === 'chartUrl' ? 'url' : item]);
+function handleLoad({ dataSet }) {
+  const record = dataSet.current;
+  if (!record) {
+    return;
   }
-  if (!isCustom) {
-    record.set(item, null);
+  const chart = record.get('chart');
+  if (!isEmpty(chart)) {
+    const { url, userName, password } = chart.config || {};
+    record.init('chartCustom', 'custom');
+    record.init('url', url);
+    record.init('userName', userName);
+    record.init('password', password);
+  } else {
+    record.init('chartCustom', 'default');
   }
 }
 
 function getRequestData(data, res) {
-  const { chartUrl, harborCustom, chartCustom } = data;
-  if (harborCustom === 'custom') {
-    if (isEmpty(res.harbor)) {
-      res.harbor = {
-        type: 'harbor',
-        custom: true,
-        config: {},
-      };
-    }
-    res.harbor.custom = true;
-    res.harbor.config = pick(data, ['url', 'userName', 'password', 'email', 'project']);
-  } else {
-    res.harbor = null;
-  }
+  const { url, userName, password, chartCustom } = data;
   if (chartCustom === 'custom') {
     if (isEmpty(res.chart)) {
       res.chart = {
@@ -68,19 +45,24 @@ function getRequestData(data, res) {
       };
     }
     res.chart.custom = true;
-    res.chart.config.url = chartUrl;
+    res.chart.config.url = url;
+    res.chart.config.userName = userName;
+    res.chart.config.password = password;
   } else {
     res.chart = null;
   }
 }
 
 export default ((intlPrefix, formatMessage, url) => {
-  function checkProject(value) {
-    const pa = /^[a-z0-9]([-_.a-z0-9]*[a-z0-9])?$/;
-    if (!value || (value && pa.test(value))) {
-      return true;
-    } else {
-      return formatMessage({ id: `${intlPrefix}.project.failed` });
+  function checkUserName(value, name, record) {
+    if (!value && record.get('password')) {
+      return formatMessage({ id: `${intlPrefix}.name.check.failed` });
+    }
+  }
+
+  function checkPassword(value, name, record) {
+    if (!value && record.get('userName')) {
+      return formatMessage({ id: `${intlPrefix}.name.check.failed` });
     }
   }
 
@@ -89,13 +71,14 @@ export default ((intlPrefix, formatMessage, url) => {
     selection: false,
     paging: false,
     dataKey: null,
+    autoQueryAfterSubmit: false,
     transport: {
       read: {
         url,
         method: 'get',
       },
       update: ({ data: [data] }) => {
-        const res = pick(data, ['chart', 'harbor', 'harborPrivate']);
+        const res = pick(data, ['chart']);
         getRequestData(data, res);
 
         return ({
@@ -106,23 +89,24 @@ export default ((intlPrefix, formatMessage, url) => {
       },
     },
     fields: [
-      { name: 'harborCustom', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.harbor.config` }) },
-      { name: 'chartCustom', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.chart.config` }) },
-      { name: 'harbor', type: 'object' },
+      { name: 'chartCustom', type: 'string', defaultValue: 'default' },
       { name: 'chart', type: 'object' },
-      { name: 'chartUrl', type: 'url', label: formatMessage({ id: 'address' }) },
-      { name: 'url', type: 'url', label: formatMessage({ id: 'address' }) },
-      { name: 'userName', type: 'string', label: formatMessage({ id: 'loginName' }) },
-      { name: 'password', type: 'string', label: formatMessage({ id: 'password' }) },
-      { name: 'email', type: 'email', label: formatMessage({ id: 'mailbox' }) },
-      { name: 'project', type: 'string', label: 'Harbor Project', validator: checkProject },
-      { name: 'harborStatus', type: 'string', defaultValue: '' },
+      {
+        name: 'url',
+        type: 'url',
+        label: formatMessage({ id: 'address' }),
+        dynamicProps: {
+          required: ({ record }) => record.get('chartCustom') === 'custom',
+        },
+      },
+      { name: 'userName', type: 'string', label: formatMessage({ id: 'userName' }), validator: checkUserName },
+      { name: 'password', type: 'string', label: formatMessage({ id: 'password' }), validator: checkPassword },
       { name: 'chartStatus', type: 'string', defaultValue: '' },
-      { name: 'harborPrivate', type: 'boolean', defaultValue: false, label: formatMessage({ id: `${intlPrefix}.type` }) },
     ],
 
     events: {
       update: handleUpdate,
+      load: handleLoad,
     },
   });
 });

@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: Runge
  * Date: 2018/9/4
@@ -7,6 +9,7 @@ package io.choerodon.devops.api.vo;
  * Description:
  */
 public class DevopsEnvGroupVO {
+    @Encrypt
     private Long id;
     private Long projectId;
     private String name;

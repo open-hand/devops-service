@@ -36,4 +36,6 @@ public interface DevopsEnvUserPermissionService {
     void baseDelete(Long envId, Long userId);
 
     void batchDelete(List<Long> envIds, Long userId);
+
+    Boolean checkUserEnvPermission(Long envId, Long userId);
 }

@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
-import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
@@ -17,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.TargetUserDTO;
@@ -66,10 +66,12 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private HzeroMessageClient hzeroMessageClient;
     @Autowired
     private MessageClient messageClient;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
-    public ResourceCheckVO checkResourceDelete(Long envId, String objectType) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+    public ResourceCheckVO checkResourceDelete(Long projectId, Long envId, String objectType) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         ResourceCheckVO resourceCheckVO = new ResourceCheckVO();
         MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), MessageCodeConstants.RESOURCE_DELETE_CONFIRMATION, envId, objectType);
         if (Objects.isNull(messageSettingVO)) {
@@ -131,9 +133,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
 
     @Override
-    public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
+    public void sendMessage(Long projectId, Long envId, Long notificationId, Long objectId, String objectType) {
         // notificationId为messageSettingVO 的ID
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         String objectCode = getObjectCode(objectId, objectType);
 
         // 生成验证码，存放在redis
@@ -229,8 +231,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
 
     @Override
-    public void validateCaptcha(Long envId, Long objectId, String objectType, String captcha) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+    public void validateCaptcha(Long projectId, Long envId, Long objectId, String objectType, String captcha) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         String objectCode = getObjectCode(objectId, objectType);
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
         if (!captcha.equals(redisTemplate.opsForValue().get(resendKey))) {

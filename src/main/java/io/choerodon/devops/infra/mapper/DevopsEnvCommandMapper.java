@@ -1,13 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.sql.Date;
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.sql.Date;
+import java.util.List;
 
 public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDTO> {
 
@@ -16,6 +15,16 @@ public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDTO> 
     List<DevopsEnvCommandDTO> listInstanceCommand(@Param("objectType") String objectType, @Param("objectId") Long objectId);
 
     List<DevopsEnvCommandDTO> listByObject(@Param("objectType") String objectType, @Param("objectId") Long objectId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    /**
+     * 取出所有应用实例的操作记录
+     *
+     * @param objectType
+     * @param objectId
+     * @param startTime
+     * @return
+     */
+    List<DevopsEnvCommandDTO> listByInstanceIdsAndStartDate(@Param("objectType") String objectType, @Param("objectIds") List<Long> objectId, @Param("startTime") java.util.Date startTime);
 
     List<DevopsEnvCommandDTO> listAllInstanceCommandToMigrate();
 

@@ -20,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     }),
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'certName', type: 'string', label: formatMessage({ id: `${intlPrefix}.certificate.name` }) },
     { name: 'error', type: 'string' },
     { name: 'commandStatus', type: 'string' },

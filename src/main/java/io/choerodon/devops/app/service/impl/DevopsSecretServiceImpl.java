@@ -1,19 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
@@ -34,6 +22,17 @@ import io.choerodon.devops.infra.mapper.DevopsSecretMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -76,14 +75,16 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SecretRespVO createOrUpdate(SecretReqVO secretReqVO) {
+    public SecretRespVO createOrUpdate(Long projectId, SecretReqVO secretReqVO) {
         if (secretReqVO.getValue() == null || secretReqVO.getValue().size() == 0) {
             throw new CommonException("error.secret.value.is.null");
         }
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(secretReqVO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, secretReqVO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
@@ -263,7 +264,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteSecret(Long envId, Long secretId) {
+    public Boolean deleteSecret(Long projectId, Long envId, Long secretId) {
         DevopsSecretDTO devopsSecretDTO = baseQuery(secretId);
 
         if (devopsSecretDTO == null) {
@@ -272,7 +273,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
@@ -327,8 +328,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             v1ObjectMeta.setName(devopsSecretDTO.getName());
             v1Secret.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1Secret);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, userAttrDTO.getGitlabUserId(), secretId,
+            Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, gitlabEnvProjectId, DELETE, userAttrDTO.getGitlabUserId(), secretId,
                     SECRET, null, false, devopsEnvironmentDTO.getId(), path);
         }
         //删除成功发送web hook json

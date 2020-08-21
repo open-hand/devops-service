@@ -2,12 +2,15 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:27 2019/4/19
  * Description:
  */
 public class PipelineRecordListVO {
+    @Encrypt
     private Long id;
     private Date creationTime;
 

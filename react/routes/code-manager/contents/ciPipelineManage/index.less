@@ -12,6 +12,7 @@
 
     .c7n-status-link {
       display: contents;
+      cursor: pointer;
     }
 
     .c7n-text-status {
@@ -106,8 +107,16 @@
     margin-top: 16px;
   }
 
-  .c7n-link-decoration:hover {
-    text-decoration: underline;
+  .c7n-link-decoration {
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .c7n-link-icon {
+    cursor: pointer;
   }
 
   .c7n-icon-sm {

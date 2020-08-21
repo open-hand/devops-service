@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumeClaimPayload;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 public interface DevopsPvcService {
     /**
@@ -22,19 +22,20 @@ public interface DevopsPvcService {
     /**
      * 删除PVC
      *
-     * @param envId
-     * @param pvcId
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param pvcId     pvc id
      * @return
      */
-    boolean delete(Long envId, Long pvcId);
+    boolean delete(Long projectId, Long envId, Long pvcId);
 
     Page<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params);
 
     /**
      * 检查PVC名称唯一性
      *
-     * @param pvcName
-     * @param envId
+     * @param pvcName pvc名称
+     * @param envId   环境id
      */
     void baseCheckName(String pvcName, Long envId);
 

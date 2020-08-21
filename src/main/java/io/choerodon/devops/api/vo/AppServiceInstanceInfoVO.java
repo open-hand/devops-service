@@ -2,8 +2,9 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
-import org.nutz.json.JsonIgnore;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 展示实例详情页面的单个实例的信息
@@ -11,6 +12,7 @@ import org.nutz.json.JsonIgnore;
  * @author zmf
  */
 public class AppServiceInstanceInfoVO {
+    @Encrypt
     @ApiModelProperty("实例id")
     private Long id;
     @ApiModelProperty("实例code")
@@ -21,6 +23,7 @@ public class AppServiceInstanceInfoVO {
     @ApiModelProperty("实例的运行中的pod的数量")
     private Long podRunningCount;
     @ApiModelProperty("实例所属应用服务id")
+    @Encrypt
     private Long appServiceId;
     @ApiModelProperty("实例所属应用服务的名称")
     private String appServiceName;
@@ -29,6 +32,7 @@ public class AppServiceInstanceInfoVO {
      */
     @ApiModelProperty("实例所属应用服务的类型/normal_service,share_service")
     private String appServiceType;
+    @Encrypt
     private Long appServiceVersionId;
     private String versionName;
 
@@ -38,8 +42,11 @@ public class AppServiceInstanceInfoVO {
     private Long objectVersionNumber;
     @ApiModelProperty("实例所属环境是否连接")
     private Boolean connect;
+
+    @Encrypt
     @ApiModelProperty("实例最新的command的版本id")
     private Long commandVersionId;
+
     @ApiModelProperty("实例最新的command所对应的应用服务版本")
     private String commandVersion;
     @ApiModelProperty("实例最新的command所对应的操作类型")
@@ -50,8 +57,11 @@ public class AppServiceInstanceInfoVO {
     private String error;
     @ApiModelProperty("实例所属项目id")
     private Long projectId;
+
+    @Encrypt
     @ApiModelProperty("当前实例生效的commandId/可能为null")
     private Long effectCommandId;
+
     @ApiModelProperty("当前实例生效的版本/可能为null")
     private String effectCommandVersion;
     @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
@@ -59,6 +69,7 @@ public class AppServiceInstanceInfoVO {
 
     @JsonIgnore
     @ApiModelProperty(value = "集群id", hidden = true)
+    @Encrypt
     private Long clusterId;
 
     public Long getEffectCommandId() {

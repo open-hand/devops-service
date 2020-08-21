@@ -20,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     }),
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }) },
     { name: 'versionName', type: 'string', label: formatMessage({ id: 'version' }) },
     { name: 'appServiceName', type: 'string', label: formatMessage({ id: 'appService' }) },
@@ -29,7 +29,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'podCount', type: 'number' },
     { name: 'connect', type: 'string' },
     { name: 'error', type: 'string' },
-    { name: 'projectId', type: 'number' },
+    { name: 'projectId', type: 'string' },
   ],
   queryFields: [
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }) },

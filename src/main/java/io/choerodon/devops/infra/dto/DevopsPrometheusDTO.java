@@ -1,12 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.persistence.*;
 
 /**
  * @author: 25499
@@ -39,6 +38,9 @@ public class DevopsPrometheusDTO extends AuditDomain {
 
     @ApiModelProperty("集群id")
     private Long clusterId;
+
+    @ApiModelProperty("是否启用tls")
+    private Boolean enableTls;
 
     @ApiModelProperty("replacement")
     @Transient
@@ -147,5 +149,13 @@ public class DevopsPrometheusDTO extends AuditDomain {
 
     public void setClientName(String clientName) {
         this.clientName = clientName;
+    }
+
+    public Boolean getEnableTls() {
+        return enableTls;
+    }
+
+    public void setEnableTls(Boolean enableTls) {
+        this.enableTls = enableTls;
     }
 }

@@ -63,7 +63,7 @@ export default class StageCreateModal extends Component {
         const data = {
           stageName,
           triggerType,
-          stageUserRels: users ? _.map(users, (item) => Number(item)) : null,
+          stageUserRels: users ? _.map(users, (item) => item) : null,
         };
         if (_.isEmpty(stage)) {
           const currentIndex = store.getStageIndex + 1;

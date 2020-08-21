@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by n!Ck
  * Date: 2018/9/19
@@ -10,6 +12,7 @@ import java.util.List;
  * Description:
  */
 public class CommitFormUserVO {
+    @Encrypt
     private Long id;
     private String name;
     private String imgUrl;

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
@@ -7,6 +7,7 @@ import OptionsDataSet from './OptionsDataSet';
 import ProjectTableDataSet from './ProjectTableDataSet';
 import ProjectOptionsDataSet from './ProjectOptionsDataSet';
 import SelectDataSet from './SelectDataSet';
+import NodeNameDataSet from './NodeNameDataSet';
 
 const Store = createContext();
 
@@ -29,6 +30,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
         },
         {
           value: 'HostPath',
+        },
+        {
+          value: 'LocalPV',
         },
       ],
       selection: 'single',
@@ -65,7 +69,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const projectOptionsDs = useMemo(() => new DataSet(ProjectOptionsDataSet({ projectId })), [projectId]);
     const projectTableDs = useMemo(() => new DataSet(ProjectTableDataSet({ intlPrefix, formatMessage })), []);
     const selectDs = useMemo(() => new DataSet(SelectDataSet({ intlPrefix, formatMessage, projectOptionsDs })), []);
-    const formDs = useMemo(() => new DataSet(FormDataSet({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs, projectOptionsDs, projectTableDs })), [projectId]);
+    const nodeNameDs = useMemo(() => new DataSet((NodeNameDataSet({ projectId }))), [projectId]);
+    const formDs = useMemo(() => new DataSet(FormDataSet({ intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs, projectOptionsDs, projectTableDs, nodeNameDs })), [projectId]);
 
     const value = {
       ...props,

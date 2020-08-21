@@ -3,7 +3,7 @@ import { inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import debounce from 'lodash/debounce';
 import assign from 'lodash/assign';
-import { Button } from 'choerodon-ui';
+import { Button, Tooltip } from 'choerodon-ui';
 import { Choerodon } from '@choerodon/boot';
 
 import './index.less';
@@ -145,6 +145,8 @@ export default class Pods extends PureComponent {
       name,
       count: { sum },
       targetCount,
+      intl: { formatMessage },
+      instanceStatus,
     } = this.props;
     const { btnDisable, textDisplay } = this.state;
 
@@ -156,7 +158,7 @@ export default class Pods extends PureComponent {
       && sum !== currentPodTargetCount
       && connect
       && status === 'success';
-    const descIsEnable = !connect
+    const descIsEnable = instanceStatus === 'stopped' || !connect
       || currentPodTargetCount <= 1
       || status !== 'success';
 
@@ -169,19 +171,25 @@ export default class Pods extends PureComponent {
           {podType === 'deploymentVOS' && (
             <div className="c7ncd-pod-content c7ncd-pod-btn-wrap">
               <Button
-                disabled={!(connect && status === 'success')}
+                disabled={!(connect && status === 'success' && instanceStatus !== 'stopped')}
                 className="c7ncd-pod-btn"
                 size="small"
                 icon="expand_less"
                 onClick={this.handleIncrease}
               />
-              <Button
-                disabled={descIsEnable}
-                className="c7ncd-pod-btn"
-                size="small"
-                icon="expand_more"
-                onClick={this.handleDecrease}
-              />
+              <Tooltip
+                title={instanceStatus !== 'stopped' && connect && currentPodTargetCount === 1 && status === 'success' ? formatMessage({ id: 'c7ncd.deployment.pod.disabled.tops' }) : ''}
+                placement="bottom"
+              >
+                <Button
+                  disabled={descIsEnable}
+                  className="c7ncd-pod-btn"
+                  size="small"
+                  icon="expand_more"
+                  onClick={this.handleDecrease}
+                  style={{ padding: '0 !important' }}
+                />
+              </Tooltip>
             </div>
           )}
         </div>

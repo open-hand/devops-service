@@ -7,7 +7,9 @@ package io.choerodon.devops.infra.enums;
 public enum ClusterResourceType {
     PROMETHEUS("prometheus"),
     CERTMANAGER("cert-manager");
+
     private String type;
+
     ClusterResourceType(String type) {
         this.type = type;
     }

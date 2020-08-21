@@ -318,7 +318,6 @@ const ListView = withRouter(observer((props) => {
     });
   }
 
-
   function getHeader() {
     const disabled = !appListStore.getCanCreate;
     const disabledMessage = disabled ? formatMessage({ id: `${intlPrefix}.create.disabled` }) : '';
@@ -348,6 +347,22 @@ const ListView = withRouter(observer((props) => {
             <FormattedMessage id={`${intlPrefix}.import`} />
           </Button>
         </Tooltip>
+      </Permission>
+      <Permission
+        service={['choerodon.code.project.develop.app-service.ps.permission.update']}
+      >
+        <Button
+          icon="authority"
+          onClick={() => {
+            const {
+              history,
+              location,
+            } = props;
+            history.push(`/rducm/code-lib-management/assign${location.search}`);
+          }}
+        >
+          权限管理
+        </Button>
       </Permission>
       <Button
         icon="refresh"

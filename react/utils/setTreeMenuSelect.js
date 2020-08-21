@@ -18,11 +18,14 @@
  *
  * */
 
-export default (dataSet, store) => {
+export default (dataSet, store, getEnvItem) => {
   const selectRecord = (record) => {
     record.isSelected = true;
     const data = record.toData();
     store.setSelectedMenu(data);
+    if (getEnvItem) {
+      getEnvItem(record);
+    }
   };
 
   if (dataSet.length) {

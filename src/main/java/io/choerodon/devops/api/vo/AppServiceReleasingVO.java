@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionUploadPayload;
 
 
@@ -10,8 +12,9 @@ import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionUploadPaylo
  * Created by ernst on 2018/5/12.
  */
 public class AppServiceReleasingVO {
-
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long appServiceId;
     private String name;
     private String code;

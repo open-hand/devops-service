@@ -79,7 +79,7 @@ export default ({ intlPrefix, formatMessage, projectId, importStore }) => {
     paging: false,
     transport: {},
     fields: [
-      { name: 'id', type: 'number' },
+      { name: 'id', type: 'string' },
       {
         name: 'name',
         type: 'string',
@@ -111,7 +111,7 @@ export default ({ intlPrefix, formatMessage, projectId, importStore }) => {
       },
       {
         name: 'versionId',
-        type: 'number',
+        type: 'string',
         textField: 'version',
         valueField: 'id',
         dynamicProps: {

@@ -14,7 +14,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'createUserName', type: 'string', label: formatMessage({ id: 'creator' }) },
     { name: 'createUserRealName', type: 'string' },
     { name: 'createUserUrl', type: 'string' },
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
   ],
   queryFields: [],
 }));

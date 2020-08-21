@@ -76,4 +76,6 @@ public interface PipelineService {
     List<PipelineDTO> baseQueryByProjectId(Long projectId);
 
     void setPipelineRecordDetail(Boolean projectOwner, DevopsDeployRecordVO devopsDeployRecordVO);
+
+    PipelineDTO checkExistAndGet(Long pipelineId);
 }

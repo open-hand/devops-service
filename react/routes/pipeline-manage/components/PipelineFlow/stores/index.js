@@ -13,6 +13,8 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
     AppState: { currentMenuType: { projectId } },
+    histroy,
+    location,
   } = props;
   const {
     mainStore: {
@@ -24,6 +26,8 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
     ...props,
     getSelectedMenu,
     projectId,
+    histroy,
+    location,
   };
 
   return (

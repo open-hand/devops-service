@@ -32,6 +32,7 @@ const commonField = {
   reset: '重置',
   install: '安装',
   uninstall: '卸载',
+  copy: '复制',
 
   // 通用描述
   app: '应用',
@@ -178,6 +179,7 @@ const commonField = {
   'search.placeholder': '请输入搜索条件',
   all_instance: '所有实例',
   appService: '应用服务',
+  copy_success: '复制成功',
 
   // 资源树名称
   instances: '实例',
@@ -425,6 +427,7 @@ const deployment = {
   'c7ncd.deployment.choose.version': '选择版本',
   'c7ncd.deployment.polaris.empty.des': '当前环境下暂无实例，无法执行健康检查。',
   'c7ncd.deployment.polaris.check.empty': '该实例为空',
+  'c7ncd.deployment.pod.disabled.tops': '若想降至0，请直接点击“停用实例',
 
 };
 
@@ -453,6 +456,7 @@ const appService = {
   'c7ncd.appService.docker': 'Docker仓库配置',
   'c7ncd.appService.docker.default': '默认Docker仓库',
   'c7ncd.appService.docker.custom': '自定义Docker仓库',
+  'c7ncd.appService.docker.tips': '您可在此选择项目下制品库管理页面中已维护好的Docker仓库；选中后，该应用服务之后生成的镜像便会放于该仓库之中',
   'c7ncd.appService.helm': 'Helm仓库配置',
   'c7ncd.appService.helm.default': '默认Helm仓库',
   'c7ncd.appService.helm.custom': '自定义Helm仓库',
@@ -554,6 +558,7 @@ const appService = {
     '您可在此选择一个特定版本进行共享。选择后，则只有此版本会被共享出去',
   'c7ncd.appService.detail.scope.tips':
     '此处仅能选择共享至某个项目，或者选择共享至所有项目',
+  'c7ncd.appService.chart.check.failed': '用户名与密码需配对输入',
 };
 
 const envrionment = {
@@ -727,6 +732,10 @@ const repository = {
   'c7ncd.repository.tab.application': '应用配置',
   'c7ncd.repository.prompt.inform.title': '离开此页',
   'c7ncd.repository.prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
+  'c7ncd.repository.empty.title': 'Docker仓库配置',
+  'c7ncd.repository.empty.des': 'Docker仓库配置功能已迁移至【制品库管理】页面，请点击下方按钮跳转。',
+  'c7ncd.repository.empty.link': '跳转至制品库管理',
+  'c7ncd.repository.name.check.failed': '用户名与密码需配对输入',
 };
 
 const pvManager = {
@@ -740,6 +749,7 @@ const pvManager = {
   'c7ncd.pv.storage': '存储容量',
   'c7ncd.pv.path': '路径',
   'c7ncd.pv.ip': '服务器IP',
+  'c7ncd.pv.node.name': '节点名称',
   'c7ncd.pv.permission': '权限管理',
   'c7ncd.pv.share': 'PV公开范围',
   'c7ncd.pv.share.tips': 'PV公开范围仅能在已分配对应集群权限的项目中设置',
@@ -774,6 +784,7 @@ const pipelineManage = {
   'c7ncd.pipelineManage.execute': '全新执行',
   'c7ncd.pipelineManage.execute.cancel': '取消执行',
   'c7ncd.pipelineManage.execute.retry': '重试',
+  'c7ncd.pipelineManage.execute.audit': '人工审核',
   'c7ncd.pipelineManage.delete.title': '删除流水线',
   'c7ncd.pipelineManage.delete.des': '确定删除该条CI流水线吗？',
   'c7ncd.pipelineManage.stop.title': '停用流水线',
@@ -800,6 +811,23 @@ const pipelineManage = {
   'c7ncd.pipelineManage.record.empty.des.other': '未获取到此次执行的阶段信息',
   'c7ncd.pipelineManage.create.share.title': '共享目录设置',
   'c7ncd.pipelineManage.create.share.tips': '若勾选上传共享目录，则会将此任务中产生的工件或其它文件上传至共享目录，供之后的任务下载使用。若勾选下载共享目录，则会在此任务中下载使用该条流水线中已上传至共享目录中的工件',
+  'c7ncd.pipelineManage.settings.global': '全局CI变量配置',
+  'c7ncd.pipelineManage.settings.local': '流水线CI变量配置',
+  'c7ncd.pipelineManage.settings.add': '添加变量',
+  'c7ncd.pipelineManage.settings.values.reveal': '显示所有值',
+  'c7ncd.pipelineManage.settings.values.hide': '隐藏所有值',
+  'c7ncd.pipelineManage.settings.check.exist': '键值重复',
+  'c7ncd.pipelineManage.settings.check.failed': '只能有字母、数字和_组成',
+  'c7ncd.pipelineManage.settings.check.empty': '此项不能为空',
+  'c7ncd.pipelineManage.settings.project': '项目层',
+  'c7ncd.pipelineManage.settings.project.empty': '暂无项目层变量',
+  'c7ncd.pipelineManage.settings.app': '应用服务层',
+  'c7ncd.pipelineManage.settings.app.empty': '暂无应用服务层变量',
+  'c7ncd.pipelineManage.record.check.stage.des': '流水线“{name}”将要执行阶段【{stage}】，需要您进行审核。',
+  'c7ncd.pipelineManage.record.check.task.des': '流水线“{name}”目前暂停于阶段【{stage}】，需要您进行审核。',
+  'c7ncd.pipelineManage.canCheck.tips.success': '此任务已被{userName}审核',
+  'c7ncd.pipelineManage.canCheck.tips.stop': '此任务已被{userName}终止',
+  'c7ncd.pipelineManage.gitlab.runner': 'GitLab Runner配置指引',
 };
 
 const emptyPage = {
@@ -819,6 +847,13 @@ const emptyPage = {
   'empty.create.env': '创建环境',
   'empty.link.app': '跳转至应用服务',
   'empty.link.env': '跳转至环境配置',
+  'empty.link.code': '跳转至代码库管理',
+  'empty.title.code': '当前用户在该应用服务的GitLab权限为Guest，无法查看此页面。若想执行对应操作，请转至代码库管理界面申请更高的GitLab权限。',
+};
+
+const prompt = {
+  'prompt.inform.title': '离开此页',
+  'prompt.inform.message': '此页面修改项尚未保存，确定要离开此页面？',
 };
 
 // 文档地址前缀
@@ -1296,7 +1331,7 @@ const cluster = {
   'c7ncd.cluster.activate.title': '复制集群"{clsName}"的指令',
   'c7ncd.cluster.activate.coped': '已复制',
   'c7ncd.cluster.activate.desc': '复制下文代码至Kubernetes运行，与平台建立链接',
-  'c7ncd.cluster.activate.note': '注意：操作前请确保集群中helm指令为 v3.2.0 及以上版本。若未达到要求版本，请先更新helm指令后再进行后续操作',
+  'c7ncd.cluster.activate.note': '注意：操作前请确保集群中helm指令为 v3.2.0 及以上版本。若未达到要求版本，请先更新helm指令后再进行以下操作。',
   'c7ncd.cluster.check.failed':
     '只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
   'c7ncd.cluster.check.exist': '已存在',
@@ -1317,6 +1352,10 @@ const cluster = {
   'c7ncd.cluster.monitor.password': 'admin密码',
   'c7ncd.cluster.monitor.ingress': '域名地址',
   'c7ncd.cluster.monitor.pv': '选择存储',
+  'c7ncd.cluster.monitor.https': '是否安装https',
+  'c7ncd.cluster.monitor.https.true': '是',
+  'c7ncd.cluster.monitor.https.false': '否',
+  'c7ncd.cluster.monitor.https.tips': '若想安装https，需保证集群中cert-manager正常工作，否则会导致监控组件安装失败',
   'c7ncd.cluster.component.monitor': '监控组件',
   'c7ncd.cluster.component.monitor.des':
     '监控组件用于帮助监控集群中资源的使用情况。该组件包括了Prometheus、Grafana和AlertManager',
@@ -2767,6 +2806,7 @@ const zhCN = {
   ...emptyPage,
   ...pvManager,
   ...pipelineManage,
+  ...prompt,
 };
 
 export default zhCN;

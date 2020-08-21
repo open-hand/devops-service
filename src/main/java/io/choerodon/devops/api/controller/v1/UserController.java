@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ public class UserController {
     @ApiOperation(value = "重置用户的gitlab密码")
     @PutMapping("/{user_id}/git_password")
     public ResponseEntity<String> resetUserGitlabPassword(
+            @Encrypt
             @ApiParam(value = "猪齿鱼用户id", required = true)
             @PathVariable(value = "user_id") Long userId) {
         return new ResponseEntity<>(gitlabUserService.resetGitlabPassword(userId), HttpStatus.OK);

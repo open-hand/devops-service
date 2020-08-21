@@ -106,7 +106,7 @@ export default class FormView extends Component {
       },
       modal,
     } = this.props;
-    if (typeof id === 'number') {
+    if (id) {
       try {
         const res = await store.loadSingleData(projectId, id);
         if (handlePromptError(res)) {

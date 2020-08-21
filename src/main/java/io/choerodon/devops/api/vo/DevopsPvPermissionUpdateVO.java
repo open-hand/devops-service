@@ -1,16 +1,17 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.constraints.NotNull;
 import java.util.List;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /***
  * 添加pv权限分配：公开/仅对特定项目公开
  */
 public class DevopsPvPermissionUpdateVO {
 
-
+    @Encrypt
     @ApiModelProperty("pvId/必填")
     @NotNull(message = "error.pv.id.null")
     private Long pvId;

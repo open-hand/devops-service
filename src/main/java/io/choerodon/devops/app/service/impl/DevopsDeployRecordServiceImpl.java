@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -40,6 +41,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService {
     private static final String DEPLOY_STATUS = "deployStatus";
     private static final String DEPLOY_TYPE = "deployType";
+    private static final String PIPELINE_ID = "pipelineId";
     private static final String RUNNING = "running";
 
     @Autowired
@@ -96,6 +98,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             } else if (DeployType.AUTO.getType().equals(cast.get(DEPLOY_TYPE)) && RUNNING.equals(cast.get(DEPLOY_STATUS))) {
                 cast.put(DEPLOY_STATUS, RUNNING);
             }
+        }
+        Object pipelineId = cast.get(PIPELINE_ID);
+        if (pipelineId instanceof String) {
+            // 解密流水线id
+            cast.put(PIPELINE_ID, Long.valueOf(KeyDecryptHelper.decryptValueOrIgnore((String)pipelineId)));
         }
         maps.put(TypeUtil.SEARCH_PARAM, cast);
 

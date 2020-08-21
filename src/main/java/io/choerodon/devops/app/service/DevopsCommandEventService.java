@@ -19,9 +19,18 @@ public interface DevopsCommandEventService {
 
     /**
      * 根据commandIds 批量查询
+     *
      * @param commandIds
      * @param type
      * @return
      */
     List<DevopsCommandEventDTO> listByCommandIdsAndType(Set<Long> commandIds, String type);
+
+    /**
+     * 根据commandIds 批量查询
+     *
+     * @param commandId
+     * @return
+     */
+    List<DevopsCommandEventDTO> listByCommandId(Long commandId);
 }

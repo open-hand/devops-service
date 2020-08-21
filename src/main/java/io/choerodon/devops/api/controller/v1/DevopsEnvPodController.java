@@ -1,24 +1,28 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.DevopsServiceInstanceDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Optional;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -49,11 +53,14 @@ public class DevopsEnvPodController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
+            @Encrypt
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
+            @Encrypt
             @ApiParam(value = "应用id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
-            @ApiParam(value = "应用id")
+            @Encrypt
+            @ApiParam(value = "实例id")
             @RequestParam(value = "instance_id", required = false) Long instanceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
@@ -97,14 +104,16 @@ public class DevopsEnvPodController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除环境下的pod")
     @DeleteMapping("/{pod_id}")
-    public ResponseEntity deleteEnvPod(
+    public ResponseEntity<Void> deleteEnvPod(
             @ApiParam(value = "项目id")
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "podId")
             @PathVariable(value = "pod_id") Long podId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        devopsEnvPodService.deleteEnvPodById(envId, podId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        devopsEnvPodService.deleteEnvPodById(projectId, envId, podId);
+        return ResponseEntity.noContent().build();
     }
 }

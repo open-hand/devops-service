@@ -82,5 +82,4 @@ const MainView = injectIntl(observer((props) => {
   </Page>);
 }));
 
-
 export default MainView;

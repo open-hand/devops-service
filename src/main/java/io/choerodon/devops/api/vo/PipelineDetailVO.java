@@ -1,12 +1,16 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by Sheep on 2019/8/30.
  */
 public class PipelineDetailVO {
 
     private String stageName;
+    @Encrypt
     private Long taskRecordId;
+    @Encrypt
     private Long stageRecordId;
     private String type;
     private Boolean execute;

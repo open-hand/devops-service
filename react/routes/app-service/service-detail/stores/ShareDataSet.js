@@ -22,12 +22,12 @@ export default ((intlPrefix, formatMessage, projectId, id, organizationId) => ({
   fields: [
     { name: 'versionType', type: 'string', label: formatMessage({ id: `${intlPrefix}.version.type` }) },
     { name: 'version', type: 'string', textField: 'version', valueField: 'version', label: formatMessage({ id: `${intlPrefix}.version.specific` }) },
-    { name: 'id', type: 'number', label: formatMessage({ id: 'number' }) },
+    { name: 'id', type: 'string', label: formatMessage({ id: 'number' }) },
     { name: 'projectId', type: 'number' },
     { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.share.range` }) },
   ],
   queryFields: [
-    { name: 'id', type: 'number', label: formatMessage({ id: 'number' }) },
+    // { name: 'id', type: 'string', label: formatMessage({ id: 'number' }) },
     { name: 'version', type: 'string', textField: 'version', valueField: 'version', label: formatMessage({ id: `${intlPrefix}.version.specific` }) },
   ],
 }));

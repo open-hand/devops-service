@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -20,7 +20,7 @@ public interface DevopsCustomizeResourceService {
      * @param devopsCustomizeResourceReqVO 相关信息
      * @param contentFile                  内容文件
      */
-    void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO, MultipartFile contentFile);
+    void createOrUpdateResource(Long projectId, DevopsCustomizeResourceCreateOrUpdateVO devopsCustomizeResourceReqVO, MultipartFile contentFile);
 
 
     /**
@@ -31,9 +31,10 @@ public interface DevopsCustomizeResourceService {
 
 
     /**
+     * @param projectId  项目id
      * @param resourceId 资源id
      */
-    void deleteResource(Long resourceId);
+    void deleteResource(Long projectId, Long resourceId);
 
 
     /**
