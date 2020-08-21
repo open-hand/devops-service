@@ -43,8 +43,17 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceVersionServiceImpl.class);
 
-    private static final String DESTINATION_PATH = "devops";
-    private static final String STORE_PATH = "stores";
+    /**
+     * 存储chart包的文件路径模板
+     * devops-应用服务id-版本号-commit值前8位
+     */
+    private static final String DESTINATION_PATH_TEMPLATE = "devops-%s-%s-%s";
+    /**
+     * 解压chart包的文件路径模板
+     * stores-应用服务id-版本号-commit值前8位
+     */
+    private static final String STORE_PATH_TEMPLATE = "stores-%s-%s-%s";
+
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
     private static final String AUTHTYPE_PULL = "pull";
@@ -127,10 +136,15 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
-        String storeFilePath = STORE_PATH + version;
 
-        String destFilePath = DESTINATION_PATH + version;
+        // 取commit的一部分作为文件路径
+        String commitPart = commit == null ? "" : commit.substring(0, 8);
+
+        String storeFilePath = String.format(STORE_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
+        String destFilePath = String.format(DESTINATION_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
+
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
+
         //上传chart包到chartmuseum
         chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path));
 
