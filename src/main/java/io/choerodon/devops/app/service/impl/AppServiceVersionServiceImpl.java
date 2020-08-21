@@ -44,8 +44,17 @@ import io.choerodon.devops.infra.util.*;
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceVersionServiceImpl.class);
 
-    private static final String DESTINATION_PATH = "devops";
-    private static final String STORE_PATH = "stores";
+    /**
+     * 存储chart包的文件路径模板
+     * devops-应用服务id-版本号-commit值前8位
+     */
+    private static final String DESTINATION_PATH_TEMPLATE = "devops-%s-%s-%s";
+    /**
+     * 解压chart包的文件路径模板
+     * stores-应用服务id-版本号-commit值前8位
+     */
+    private static final String STORE_PATH_TEMPLATE = "stores-%s-%s-%s";
+
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
     private static final String AUTHTYPE_PULL = "pull";
@@ -120,15 +129,20 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setVersion(version);
         appServiceVersionDTO.setHarborConfigId(harborConfigId);
 
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART,AUTHTYPE_PULL);
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTHTYPE_PULL);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getCode() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
-        String storeFilePath = STORE_PATH + version;
 
-        String destFilePath = DESTINATION_PATH + version;
+        // 取commit的一部分作为文件路径
+        String commitPart = commit == null ? "" : commit.substring(0, 8);
+
+        String storeFilePath = String.format(STORE_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
+        String destFilePath = String.format(DESTINATION_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
+
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
+
         //上传chart包到chartmuseum
         chartUtil.uploadChart(helmUrl, organization.getCode(), projectDTO.getCode(), new File(path));
 
@@ -695,35 +709,35 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public void deleteByAppServiceId(Long appServiceId) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId, null);
-        if(!CollectionUtils.isEmpty(appServiceVersionDTOS)){
+        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
             Set<Long> valueIds = new HashSet<>();
             Set<Long> readmeIds = new HashSet<>();
             Set<Long> configIds = new HashSet<>();
             Set<Long> versionIds = new HashSet<>();
             appServiceVersionDTOS.forEach(appServiceVersionDTO -> {
                 versionIds.add(appServiceVersionDTO.getId());
-                if(appServiceVersionDTO.getValueId() != null){
+                if (appServiceVersionDTO.getValueId() != null) {
                     valueIds.add(appServiceVersionDTO.getValueId());
                 }
-                if(appServiceVersionDTO.getReadmeValueId() != null){
+                if (appServiceVersionDTO.getReadmeValueId() != null) {
                     readmeIds.add(appServiceVersionDTO.getReadmeValueId());
                 }
 
-                if(appServiceVersionDTO.getHarborConfigId() != null){
+                if (appServiceVersionDTO.getHarborConfigId() != null) {
                     configIds.add(appServiceVersionDTO.getHarborConfigId());
                 }
-                if(appServiceVersionDTO.getHelmConfigId() != null){
+                if (appServiceVersionDTO.getHelmConfigId() != null) {
                     configIds.add(appServiceVersionDTO.getHelmConfigId());
                 }
 
             });
-            if(!CollectionUtils.isEmpty(valueIds)){
+            if (!CollectionUtils.isEmpty(valueIds)) {
                 appServiceVersionValueService.deleteByIds(valueIds);
             }
-            if(!CollectionUtils.isEmpty(readmeIds)){
+            if (!CollectionUtils.isEmpty(readmeIds)) {
                 appServiceVersionReadmeMapper.deleteByIds(readmeIds);
             }
-            if(!CollectionUtils.isEmpty(configIds)){
+            if (!CollectionUtils.isEmpty(configIds)) {
                 devopsConfigService.deleteByConfigIds(configIds);
             }
             appServiceVersionMapper.deleteByIds(versionIds);
