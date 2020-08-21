@@ -65,4 +65,15 @@ public class DevopsTask {
         logger.info("begin to fix appservice version harbor data.");
         devopsCheckLogService.checkLog("0.23.0");
     }
+
+    /**
+     * 0.23.3修复devops_cd_audit和devops_cd_audit_record的 projectId字段数据
+     */
+    @JobTask(maxRetryCount = 3, code = "upgradeVersionTo23.3", description = "修复project_id字段")
+    @TimedTask(name = "upgradeVersionTo23.3", description = "修复project_id字段", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixProjectId(Map<String, Object> map) {
+        logger.info("begin to fix projectId ");
+        devopsCheckLogService.checkLog("0.23.3");
+    }
 }

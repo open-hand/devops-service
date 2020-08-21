@@ -10,13 +10,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
-import io.choerodon.devops.app.service.AppServiceVersionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
+import io.choerodon.devops.app.service.AppServiceVersionService;
+import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
+import io.choerodon.devops.app.service.DevopsCdAuditService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
@@ -39,6 +41,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private PipelineTaskMapper pipelineTaskMapper;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
+    @Autowired
+    private DevopsCdAuditService devopsCdAuditService;
+    @Autowired
+    private DevopsCdAuditRecordService devopsCdAuditRecordService;
 
     @Override
     public void checkLog(String version) {
@@ -82,6 +88,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("修复数据完成!!!!!!");
                 } else if("0.23.0-alpha.4".equals(version)){
 
+                } else if ("0.23.3".equals(version)) {
+                    LOGGER.info("修复数据开始");
+                    devopsCdAuditService.fixProjectId();
+                    devopsCdAuditRecordService.fixProjectId();
+                    LOGGER.info("修复数据完成!!!!!!");
                 } else {
                     LOGGER.info("version not matched");
                 }

@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.entity.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +24,8 @@ import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 
@@ -52,6 +52,10 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+    @Autowired
+    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+    @Autowired
+    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
     @Override
     public List<DevopsCdAuditRecordDTO> queryByStageRecordId(Long stageRecordId) {
@@ -170,5 +174,23 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         devopsCdAuditRecordDTO.setJobRecordId(jobRecordId);
         devopsCdAuditRecordDTO.setUserId(userId);
         return devopsCdAuditRecordMapper.selectOne(devopsCdAuditRecordDTO);
+    }
+
+    @Override
+    public void fixProjectId() {
+        List<DevopsCdAuditRecordDTO> devopsCdAuditDTOS = devopsCdAuditRecordMapper.selectAll();
+        Set<Long> stageRecordIds = devopsCdAuditDTOS.stream().filter(i->i.getStageRecordId()!=null).map(DevopsCdAuditRecordDTO::getStageRecordId).collect(Collectors.toSet());
+        Set<Long> jobRecordIds = devopsCdAuditDTOS.stream().filter(i->i.getJobRecordId()!=null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toSet());
+
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.selectByIds(StringUtils.join(stageRecordIds, ","));
+        List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.selectByIds(StringUtils.join(jobRecordIds, ","));
+
+        devopsCdStageRecordDTOS.forEach(i -> {
+            devopsCdAuditRecordMapper.updateProjectIdByStageRecordId(i.getProjectId(), i.getId());
+        });
+
+        devopsCdJobRecordDTOS.forEach(i -> {
+            devopsCdAuditRecordMapper.updateProjectIdByJobRecordId(i.getProjectId(), i.getId());
+        });
     }
 }
