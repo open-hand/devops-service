@@ -52,6 +52,9 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     @ApiModelProperty("流水线名称")
     private String pipelineName;
 
+    @Transient
+    private Long pipelineId;
+
     public Long getPipelineRecordId() {
         return pipelineRecordId;
     }
@@ -223,6 +226,15 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         this.commandId = commandId;
     }
 
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public DevopsCdJobRecordDTO setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -247,6 +259,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", pipelineRecordId=" + pipelineRecordId +
                 ", stageName='" + stageName + '\'' +
                 ", pipelineName='" + pipelineName + '\'' +
+                ", pipelineId=" + pipelineId +
                 "} ";
     }
 }

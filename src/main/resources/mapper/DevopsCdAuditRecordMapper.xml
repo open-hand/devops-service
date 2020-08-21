@@ -4,6 +4,7 @@
     <select id="listByProjectIdsAndUserId" resultType="io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO">
         SELECT * FROM devops_cd_audit_record
         WHERE user_id=#{userId}
+        AND status='not_audit'
         <if test="projectIds!=null and projectIds.size>0">
             AND project_id IN
             <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">

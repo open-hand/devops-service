@@ -50,9 +50,17 @@
     </select>
 
     <select id="listByIds" resultType="io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO">
-        SELECT dcsr.*,dcp.pipeline_name FROM devops_cd_stage_record dcsr
-        JOIN devops_cd_pipeline_record dcp ON dcp.id=dcsr.pipeline_record_id
-        WHERE dcsr.id IN
+        SELECT
+            dcsr.*,
+            dcpr.pipeline_name,
+            dcpr.pipeline_id
+        FROM
+            devops_cd_stage_record dcsr
+        JOIN
+            devops_cd_pipeline_record dcpr ON dcpr.id=dcsr.pipeline_record_id
+        WHERE
+            dcsr.id
+        IN
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>

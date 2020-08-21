@@ -153,55 +153,60 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         CommonExAssertUtil.assertNotNull(userId, "error.user.get");
         // 查出该用户待审批的流水线阶段(旧流水线)
         List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
-        if (pipelineRecordDTOList.size() == 0) {
-            return approvalVOList;
+        if (pipelineRecordDTOList.size() != 0) {
+            List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
+                    .filter(pipelineRecordDTO -> (pipelineRecordDTO.getRecordAudit() != null && pipelineRecordDTO.getRecordAudit().contains(String.valueOf(userId))) ||
+                            (pipelineRecordDTO.getStageAudit() != null && pipelineRecordDTO.getStageAudit().contains(String.valueOf(userId))) ||
+                            (pipelineRecordDTO.getTaskAudit() != null && pipelineRecordDTO.getTaskAudit().contains(String.valueOf(userId))))
+                    .collect(Collectors.toList());
+            pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
+                ApprovalVO approvalVO = new ApprovalVO()
+                        .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                        .setProjectId(pipelineRecordDTO.getProjectId())
+                        .setProjectName(projectNameMap.get(pipelineRecordDTO.getProjectId()).getName())
+                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
+                        .setPipelineId(pipelineRecordDTO.getPipelineId())
+                        .setPipelineRecordId(pipelineRecordDTO.getId())
+                        .setStageRecordId(pipelineRecordDTO.getStageRecordId())
+                        .setTaskRecordId(pipelineRecordDTO.getTaskRecordId());
+                approvalVOList.add(approvalVO);
+            });
         }
-        List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
-                .filter(pipelineRecordDTO -> (pipelineRecordDTO.getRecordAudit() != null && pipelineRecordDTO.getRecordAudit().contains(String.valueOf(userId))) ||
-                        (pipelineRecordDTO.getStageAudit() != null && pipelineRecordDTO.getStageAudit().contains(String.valueOf(userId))) ||
-                        (pipelineRecordDTO.getTaskAudit() != null && pipelineRecordDTO.getTaskAudit().contains(String.valueOf(userId))))
-                .collect(Collectors.toList());
-        pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
-            ApprovalVO approvalVO = new ApprovalVO()
-                    .setType(ApprovalTypeEnum.PIPE_LINE.getType())
-                    .setProjectId(pipelineRecordDTO.getProjectId())
-                    .setProjectName(projectNameMap.get(pipelineRecordDTO.getProjectId()).getName())
-                    .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
-                    .setPipelineId(pipelineRecordDTO.getPipelineId())
-                    .setPipelineRecordId(pipelineRecordDTO.getId())
-                    .setStageRecordId(pipelineRecordDTO.getStageRecordId())
-                    .setTaskRecordId(pipelineRecordDTO.getTaskRecordId());
-            approvalVOList.add(approvalVO);
-        });
 
         // 查处该用户待审批的流水线阶段(新流水线)
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
 
         List<Long> stageRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getStageRecordId() != null).map(DevopsCdAuditRecordDTO::getStageRecordId).collect(Collectors.toList());
-        List<DevopsCdStageRecordDTO> devopsCdStageDTOS = devopsCdStageRecordMapper.listByIds(stageRecordIds);
-        devopsCdStageDTOS.forEach(devopsCdStageRecordDTO -> {
-            ApprovalVO approvalVO = new ApprovalVO()
-                    .setType(ApprovalTypeEnum.PIPE_LINE.getType())
-                    .setProjectId(devopsCdStageRecordDTO.getProjectId())
-                    .setProjectName(projectNameMap.get(devopsCdStageRecordDTO.getProjectId()).getName())
-                    .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdStageRecordDTO.getPipelineName(), devopsCdStageRecordDTO.getStageName()))
-                    .setPipelineRecordId(devopsCdStageRecordDTO.getPipelineRecordId())
-                    .setStageRecordId(devopsCdStageRecordDTO.getId());
-            approvalVOList.add(approvalVO);
-        });
+        if (stageRecordIds.size() != 0) {
+            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.listByIds(stageRecordIds);
+            devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
+                ApprovalVO approvalVO = new ApprovalVO()
+                        .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                        .setProjectId(devopsCdStageRecordDTO.getProjectId())
+                        .setProjectName(projectNameMap.get(devopsCdStageRecordDTO.getProjectId()).getName())
+                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdStageRecordDTO.getPipelineName(), devopsCdStageRecordDTO.getStageName()))
+                        .setPipelineId(devopsCdStageRecordDTO.getPipelineId())
+                        .setPipelineRecordId(devopsCdStageRecordDTO.getPipelineRecordId())
+                        .setStageRecordId(devopsCdStageRecordDTO.getId());
+                approvalVOList.add(approvalVO);
+            });
+        }
 
         List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
-        List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
-        devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
-            ApprovalVO approvalVO = new ApprovalVO()
-                    .setType(ApprovalTypeEnum.PIPE_LINE.getType())
-                    .setProjectId(devopsCdJobRecordDTO.getProjectId())
-                    .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
-                    .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
-                    .setPipelineRecordId(devopsCdJobRecordDTO.getPipelineRecordId())
-                    .setStageRecordId(devopsCdJobRecordDTO.getId());
-            approvalVOList.add(approvalVO);
-        });
+        if (jobRecordIds.size() != 0) {
+            List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
+            devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
+                ApprovalVO approvalVO = new ApprovalVO()
+                        .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                        .setProjectId(devopsCdJobRecordDTO.getProjectId())
+                        .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
+                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
+                        .setPipelineRecordId(devopsCdJobRecordDTO.getPipelineRecordId())
+                        .setPipelineId(devopsCdJobRecordDTO.getPipelineId())
+                        .setStageRecordId(devopsCdJobRecordDTO.getId());
+                approvalVOList.add(approvalVO);
+            });
+        }
         return approvalVOList;
     }
 
