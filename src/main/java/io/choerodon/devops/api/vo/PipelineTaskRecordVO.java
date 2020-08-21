@@ -2,12 +2,18 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.annotation.WillDeleted;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:34 2019/4/14
  * Description:
  */
+@WillDeleted
 public class PipelineTaskRecordVO {
+    @Encrypt
     private Long id;
     private String name;
     private String status;
@@ -16,11 +22,14 @@ public class PipelineTaskRecordVO {
     private String appServiceName;
     private String envName;
     private Long appServiceId;
+    @Encrypt
     private Long envId;
     private String version;
     private String instanceName;
+    @Encrypt
     private Long taskId;
     private String instanceStatus;
+    @Encrypt
     private Long instanceId;
     private Boolean envPermission;
     private List<PipelineUserVO> userDTOList;

@@ -4,20 +4,23 @@ import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by Sheep on 2019/7/29.
  */
 public class DevopsDeployRecordVO {
-
+    @Encrypt
     private Long id;
     private Long projectId;
     private String deployType;
+    @Encrypt
     private Long deployId;
     private String env;
     private String deployStatus;
     private String pipelineName;
     private String pipelineTriggerType;
+    @Encrypt
     private Long deployCreatedBy;
     private String userName;
     private String userLoginName;
@@ -27,12 +30,15 @@ public class DevopsDeployRecordVO {
     private PipelineDetailVO pipelineDetailVO;
     private String errorInfo;
 
+    @Encrypt
     @ApiModelProperty("手动部署生成的实例id, 对于自动部署的纪录此值为空")
     private Long instanceId;
 
+    @Encrypt
     @ApiModelProperty("手动部署生成的实例的环境id, 对于自动部署的纪录此值为空")
     private Long envId;
 
+    @Encrypt
     @ApiModelProperty("手动部署的实例的应用服务id, 对于自动部署的纪录此值为空")
     private Long appServiceId;
 

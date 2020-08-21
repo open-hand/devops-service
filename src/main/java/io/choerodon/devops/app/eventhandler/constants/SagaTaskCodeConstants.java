@@ -63,9 +63,24 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_GITLAB_CI_PIPELINE = "devopsGitlabCiPipeline";
 
     /**
+     * gitlab pipeline事件
+     */
+    public static final String DEVOPS_GITLAB_CD_PIPELINE = "devopsGitlabCDPipeline";
+
+    /**
+     * 触发纯cd流水线
+     */
+    public static final String DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE = "devopsTriggerSimpleCdPipeline";
+
+    /**
      * 创建流水线自动部署实例
      */
     public static final String DEVOPS_PIPELINE_CREATE_INSTANCE = "devops-pipeline-create-instance";
+
+    /**
+     * 创建流水线环境自动部署实例
+     */
+    public static final String DEVOPS_PIPELINE_ENV_CREATE_INSTANCE = "devops-pipeline-env-create-instance";
 
     /**
      * 组织层创建用户
@@ -237,6 +252,12 @@ public class SagaTaskCodeConstants {
      * DevOps消费批量部署事件
      */
     public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-handle-batch-deployment";
+
+
+    /**
+     * devops 主机部署
+     */
+    public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
 
     private SagaTaskCodeConstants() {
     }

@@ -48,4 +48,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_user.groovy') {
             column(name: 'is_gitlab_admin', type: 'TINYINT UNSIGNED', remarks: '是否是gitlab的admin', defaultValue: '0', afterColumn: 'gitlab_user_id')
         }
     }
+
+    changeSet(author: 'zmf', id: '2020-05-14-add-index-gitlab-username') {
+        createIndex(indexName: "idx_devops_user_gitlab_user_name ", tableName: "devops_user") {
+            column(name: "gitlab_user_name")
+        }
+    }
 }

@@ -10,6 +10,9 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.annotation.WillDeleted;
 
 /**
  *
@@ -17,17 +20,23 @@ import io.swagger.annotations.ApiModelProperty;
  * @Date 2020/4/2 17:00
  */
 public class DevopsCiPipelineVO {
+    @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ApiModelProperty("流水线名称")
     @NotEmpty(message = "error.pipeline.name.cannot.be.null")
     private String name;
+
     @ApiModelProperty("项目id")
     private Long projectId;
+
+    @Encrypt
     @ApiModelProperty("流水线关联应用服务id")
     @NotNull(message = "error.pipeline.appSvc.id.cannot.be.null")
     private Long appServiceId;
+
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
     @ApiModelProperty("gitlab项目id/nullable")

@@ -6,6 +6,7 @@ import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     private static final String ERROR_PROJECT_QUERY_BY_ID = "error.project.query.by.id";
 
     @Override
-    public ResponseEntity<ProjectDTO> queryIamProject(Long projectId) {
+    public ResponseEntity<ProjectDTO> queryIamProject(Long projectId, Boolean withCategoryInfo, Boolean withUserInfo, Boolean withAgileInfo) {
         throw new CommonException(ERROR_PROJECT_QUERY_BY_ID, projectId);
     }
 
@@ -41,7 +42,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId) {
+    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId,Boolean withMoreInfo) {
         throw new CommonException("error.organization.get", organizationId);
     }
 
@@ -157,5 +158,15 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds) {
         throw new CommonException("error.get.user.labels", userId, projectIds == null ? null : projectIds.toString());
+    }
+
+    @Override
+    public ResponseEntity<List<ProjectDTO>> listOwnedProjects(Long organizationId, Long userId) {
+        throw new CommonException("error.query.project");
+    }
+
+    @Override
+    public ResponseEntity<List<UserVO>> listUserByCreationDate() {
+        throw new CommonException("error.list.user");
     }
 }

@@ -6,7 +6,7 @@ export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store,
   dataKey: null,
   transport: {
     read: {
-      url: `devops/v1/projects/${projectId}/ci_pipeline_records/${pipelineRecordId}/details`,
+      url: `/devops/v1/projects/${projectId}/cicd_pipelines_record/details?record_rel_id=${pipelineRecordId}`,
       method: 'get',
     },
   },
@@ -21,8 +21,8 @@ export default ({ formatMessage, intlPrefix, projectId, pipelineRecordId, store,
   ],
   events: {
     load: ({ dataSet }) => {
-      const { status, gitlabPipelineId } = store.getSelectedMenu;
-      if (dataSet.current.get('gitlabPipelineId') === gitlabPipelineId && dataSet.current.get('status') !== status) {
+      const { status, devopsPipelineRecordRelId } = store.getSelectedMenu;
+      if (dataSet.current.get('gitlabPipelineId') === devopsPipelineRecordRelId && dataSet.current.get('status') !== status) {
         refresh();
       }
     },

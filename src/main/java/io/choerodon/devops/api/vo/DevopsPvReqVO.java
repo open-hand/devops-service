@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -9,7 +10,7 @@ import java.util.List;
 
 
 public class DevopsPvReqVO {
-
+    @Encrypt
     @ApiModelProperty("pvId")
     private Long id;
 
@@ -25,6 +26,7 @@ public class DevopsPvReqVO {
     @ApiModelProperty("pv描述")
     private String description;
 
+    @Encrypt
     @NotNull(message = "error.pv.related.cluster.is.null")
     @ApiModelProperty("关联的集群Id")
     private Long clusterId;
@@ -40,6 +42,7 @@ public class DevopsPvReqVO {
     @ApiModelProperty(value = "创建还是更新", hidden = true)
     private String commandType;
 
+    @Encrypt
     @ApiModelProperty(value = "环境id", hidden = true)
     private Long envId;
 

@@ -5,13 +5,13 @@ export default ({ formatMessage }) => ({
   }],
   fields: [{
     name: 'deployTimeApps',
-    type: 'number',
+    type: 'string',
     multiple: true,
     label: formatMessage({ id: 'deploy.envName' }),
   }, {
     name: 'deployTimeName',
-    type: 'number',
+    type: 'string',
     label: formatMessage({ id: 'deploy.appName' }),
-    defaultValue: 0,
+    // defaultValue: 'all_appServices',
   }],
 });

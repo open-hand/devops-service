@@ -14,9 +14,11 @@ import ExecuteContent from './execute-content';
 import TreeItemName from '../../../../components/treeitem-name';
 import { usePipelineTreeStore } from './stores';
 import StatusTag from '../PipelineFlow/components/StatusTag';
+import AuditModal from '../audit-modal';
 
 const executeKey = Modal.key();
 const stopKey = Modal.key();
+const auditKey = Modal.key();
 
 const TreeItem = observer(({ record, search }) => {
   const {
@@ -53,20 +55,26 @@ const TreeItem = observer(({ record, search }) => {
     treeDs.query();
   }
 
-  function handleExecute() {
-    Modal.open({
-      key: executeKey,
-      title: formatMessage({ id: `${intlPrefix}.execute` }),
-      children: <ExecuteContent
-        appServiceId={record.get('appServiceId')}
-        gitlabProjectId={record.get('gitlabProjectId')}
-        pipelineId={record.get('id')}
-        refresh={refresh}
-        prefixCls={prefixCls}
-      />,
-      okText: formatMessage({ id: 'execute' }),
-      movable: false,
-    });
+  async function handleExecute() {
+    try {
+      await mainStore.checkLinkToGitlab(projectId, record.get('appServiceId'), 'CI_PIPELINE_NEW_PERFORM');
+      Modal.open({
+        key: executeKey,
+        title: formatMessage({ id: `${intlPrefix}.execute` }),
+        children: <ExecuteContent
+          appServiceId={record.get('appServiceId')}
+          appServiceName={record.get('appServiceName')}
+          gitlabProjectId={record.get('gitlabProjectId')}
+          pipelineId={record.get('id')}
+          refresh={refresh}
+          prefixCls={prefixCls}
+        />,
+        okText: formatMessage({ id: 'execute' }),
+        movable: false,
+      });
+    } catch (e) {
+      //
+    }
   }
   function handleChangeActive() {
     if (record.get('enabled')) {
@@ -110,10 +118,27 @@ const TreeItem = observer(({ record, search }) => {
       gitlabProjectId: record.get('gitlabProjectId'),
       recordId: record.get('gitlabPipelineId'),
       type,
+      devopsPipelineRecordRelId: record.get('devopsPipelineRecordRelId'),
     });
     if (res) {
       handleRefresh();
     }
+  }
+
+  function openAuditModal() {
+    const pipelineName = record.parent ? record.parent.get('name') : '';
+    Modal.open({
+      key: auditKey,
+      title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+      children: <AuditModal
+        cdRecordId={record.get('cdRecordId')}
+        name={pipelineName}
+        mainStore={mainStore}
+        onClose={handleRefresh}
+        checkData={record.get('devopsCdPipelineDeatilVO')}
+      />,
+      movable: false,
+    });
   }
 
   async function loadMoreRecord(deleteRecord) {
@@ -128,8 +153,9 @@ const TreeItem = observer(({ record, search }) => {
         deleteRecord.setState('isLoading', false);
         treeDs.remove(deleteRecord);
         forEach(recordData.list, (item) => {
-          item.key = `${parentId}-${item.id}`;
+          item.key = `${parentId}-${item.id || item.ciRecordId || item.cdRecordId}`;
           item.parentId = parentId;
+          item.status = item.status || (item.ciStatus === 'success' && item.cdStatus ? item.cdStatus : item.ciStatus);
           const treeRecord = treeDs.create(item);
           treeDs.push(treeRecord);
         });
@@ -156,7 +182,8 @@ const TreeItem = observer(({ record, search }) => {
       triggerType,
       id,
       parentId,
-      stageRecordVOList,
+      stageRecordVOS,
+      devopsPipelineRecordRelId,
     } = record.toData();
     if (includes(key, 'more')) {
       if (record.getState('isLoading')) {
@@ -195,19 +222,28 @@ const TreeItem = observer(({ record, search }) => {
             action: () => changeRecordExecute('retry'),
           }];
           break;
+        case 'not_audit':
+          if (record.get('devopsCdPipelineDeatilVO') && record.get('devopsCdPipelineDeatilVO').execute) {
+            actionData = [{
+              service: ['choerodon.code.project.develop.ci-pipeline.ps.audit'],
+              text: formatMessage({ id: `${intlPrefix}.execute.audit` }),
+              action: openAuditModal,
+            }];
+          }
+          break;
         default:
           break;
       }
       return (
         <div className={`${prefixCls}-sidebar-header-node`}>
           <span className={`${prefixCls}-sidebar-header-number`}>
-            <TreeItemName name={`#${gitlabPipelineId}`} search={search} headSpace={false} />
+            <TreeItemName name={`#${devopsPipelineRecordRelId}`} search={search} headSpace={false} />
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
-            {map(stageRecordVOList, ({ status: stageStatus }) => (
+            {map(stageRecordVOS, ({ status: stageStatus, triggerType: stageTriggerType = 'auto' }) => (
               <Fragment>
+                <span className={`${prefixCls}-sidebar-header-stage-line ${prefixCls}-sidebar-header-stage-line-${stageTriggerType}`} />
                 <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
-                <span className={`${prefixCls}-sidebar-header-stage-line`} />
               </Fragment>
             ))}
           </div>

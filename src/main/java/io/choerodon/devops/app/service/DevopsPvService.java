@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service;
 
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
@@ -11,6 +9,8 @@ import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 
 public interface DevopsPvService {
@@ -23,7 +23,7 @@ public interface DevopsPvService {
     /**
      * 删除PV
      */
-    Boolean deletePvById(Long pvId);
+    Boolean deletePvById(Long projectId, Long pvId);
 
     /**
      * 根据条件分页查询PV
@@ -54,7 +54,7 @@ public interface DevopsPvService {
      *
      * @param update
      */
-    void assignPermission(DevopsPvPermissionUpdateVO update);
+    void assignPermission(Long projectId, DevopsPvPermissionUpdateVO update);
 
     /**
      * 更新PV表中的权限校验字段
@@ -82,10 +82,11 @@ public interface DevopsPvService {
     /**
      * 根据项目id删除相对应的权限
      *
-     * @param pvId
-     * @param projectId
+     * @param projectId        pv 所属项目id
+     * @param pvId             pv id
+     * @param relatedProjectId 关联项目id
      */
-    void deleteRelatedProjectById(Long pvId, Long projectId);
+    void deleteRelatedProjectById(Long projectId, Long pvId, Long relatedProjectId);
 
     /**
      * 通过环境id和名称查找pvc

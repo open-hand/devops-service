@@ -8,9 +8,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
             }
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id')
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户id')
-            column(name: 'commit_sha', type: 'VARCHAR(128)', remarks: 'commit sha') {
-                        constraints(unique: true)
-                    }
+            column(name: 'commit_sha', type: 'VARCHAR(128)', remarks: 'commit sha')
             column(name: 'commit_content', type: 'VARCHAR(2000)', remarks: '提交内容')
             column(name: 'ref', type: 'VARCHAR(128)', remarks: '分支')
             column(name: 'commit_date', type: 'DATETIME', remarks: '提交时间')
@@ -44,7 +42,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
 
 
     changeSet(author: 'younger', id: '2019-05-27-add-index') {
-        createIndex(indexName: "gitlab_commit_idx_appid_commitdate ", tableName: "devops_gitlab_commit") {
+        createIndex(indexName: "idx_appid_commitdate ", tableName: "devops_gitlab_commit") {
             column(name: "app_id")
             column(name: "commit_date")
         }
@@ -52,5 +50,13 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
 
     changeSet(author: 'scp', id: '2019-07-29-rename-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_gitlab_commit')
+    }
+
+    changeSet(author: 'wanghao', id: '2020-07-05-add-index') {
+        createIndex(indexName: "idx_userid_appid_commitdate ", tableName: "devops_gitlab_commit") {
+            column(name: "user_id")
+            column(name: "app_service_id")
+            column(name: "commit_date")
+        }
     }
 }

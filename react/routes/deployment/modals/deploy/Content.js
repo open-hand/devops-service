@@ -45,7 +45,6 @@ const DeployModal = injectIntl(observer(({ form }) => {
     ChangeConfigValue(deployStore.getConfigValue);
   }, [deployStore.getConfigValue]);
   
-
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
     try {
@@ -120,13 +119,13 @@ const DeployModal = injectIntl(observer(({ form }) => {
         >
           {record.get('appServiceSource') === 'normal_service' ? (
             map(deployStore.getAppService[0] && deployStore.getAppService[0].appServiceList, ({ id, name, code }) => (
-              <Option value={`${id}__${code}`} key={id}>{name}</Option>
+              <Option value={`${id}**${code}`} key={id}>{name}</Option>
             ))
           ) : (
             map(deployStore.getAppService, ({ id: groupId, name: groupName, appServiceList }) => (
               <OptGroup label={groupName} key={groupId}>
                 {map(appServiceList, ({ id, name, code }) => (
-                  <Option value={`${id}__${code}`} key={id}>{name}</Option>
+                  <Option value={`${id}**${code}`} key={id}>{name}</Option>
                 ))}
               </OptGroup>
             ))

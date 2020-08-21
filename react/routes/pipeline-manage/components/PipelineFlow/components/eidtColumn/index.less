@@ -2,10 +2,9 @@
   flex: 0 1 auto;
   position: relative;
   min-width: 2.2rem;
-  min-height: 5.58rem;
-  background: rgba(245, 246, 250, 1);
   border-radius: 4px;
   padding: 12px;
+  min-height: calc(100vh - 3.9rem);
   & + & {
     margin-left: .4rem;
   }
@@ -15,10 +14,36 @@
     top: .53rem;
     color: rgba(82, 102, 212, 1);
   }
+  &-arrow {
+    position: absolute;
+    left: -0.4rem;
+    top: 0.87rem;
+    width: 0.3rem;
+    height: 1px;
+    border-bottom: 1px solid #6887e8;
+    span {
+      border: 6px solid transparent;
+      width: 0;
+      height: 0;
+      display: inline-block;
+      border-left: 10px solid #6887e8;
+      position: relative;
+      bottom: 0.07rem;
+      left: 0.3rem;
+    }
+
+    &-manual {
+      border-bottom: 1px dotted #f1b42d;
+
+      span {
+        border-left: 10px solid #f1b42d;
+      }
+    }
+  }
   &-header {
     display: flex;
     align-items: center;
-    & > span {
+    & > span:first-child {
       font-size: .15rem;
       font-family: PingFangSC-Medium, PingFang SC;
       font-weight: 500;
@@ -35,6 +60,16 @@
           margin-left: 12px;
         }
       }
+    }
+  }
+  &-stageType {
+    margin-top: 10px;
+    & > span:first-child {
+      font-size: 13px;
+      font-family: PingFangSC-Regular, PingFang SC;
+      font-weight: 400;
+      color: rgba(58, 52, 95, 1);
+      line-height: 12px;
     }
   }
   &-lists {
@@ -64,6 +99,48 @@
           margin-left: 8px;
         }
       }
+    }
+  }
+}
+
+.c7n-piplineManage-edit-title {
+
+  &-btn {
+    margin-left: .4rem;
+  }
+
+  &-text {
+    vertical-align: middle;
+  }
+}
+
+.addStageForm {
+  .c7n-pro-select-box {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.addStageForm-triggerType-select {
+  .c7n-pro-select-box {
+    .c7n-pro-radio-wrapper:nth-of-type(2) {
+      margin-left: 1.1rem;
+    }
+  }
+}
+.extra-addbutton {
+  position: relative;
+  top: 0.53rem;
+  color: #5266d4;
+  margin-right: 10px;
+  min-width: 0.24rem;
+}
+.addStageForm-cdAuditUserIds-select {
+  .c7n-pro-select-dropdown-menu-item-disabled {
+    label {
+      display: none;
     }
   }
 }

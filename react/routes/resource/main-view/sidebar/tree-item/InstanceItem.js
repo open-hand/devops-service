@@ -56,7 +56,7 @@ function InstanceItem({
   function freshMenu() {
     freshTree();
     const { getSelectedMenu: { itemType, parentId } } = resourceStore;
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     if (itemType === IST_GROUP && envId === parentId) {
       resourceStore.setUpTarget({
         type: IST_GROUP,
@@ -69,7 +69,7 @@ function InstanceItem({
     return resourceStore.checkExist({
       projectId,
       type: 'instance',
-      envId: record.get('parentId').split('-')[0],
+      envId: record.get('parentId').split('**')[0],
       id: record.get('id'),
     }).then((isExist) => {
       if (!isExist) {
@@ -113,7 +113,7 @@ function InstanceItem({
   function getSuffix() {
     const istId = record.get('id');
     const istName = record.get('name');
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     const envRecord = treeDs.find((eachRecord) => eachRecord.get('key') === envId);
     const connect = envRecord && envRecord.get('connect');
     if (!connect) {

@@ -2,6 +2,8 @@ import omit from 'lodash/omit';
 import isEmpty from 'lodash/isEmpty';
 import pick from 'lodash/pick';
 import map from 'lodash/map';
+import moment from 'moment';
+import setEnvRecentItem from '../../../utils/setEnvRecentItem';
 import { itemTypeMappings, viewTypeMappings, RES_TYPES, ENV_KEYS } from './mappings';
 
 const { IST_VIEW_TYPE, RES_VIEW_TYPE } = viewTypeMappings;
@@ -25,7 +27,7 @@ function formatResource({ value, expandsKeys, formatMessage }) {
     for (let j = 0; j < RES_TYPES.length; j++) {
       const type = RES_TYPES[j];
       const child = node[type];
-      const groupKey = `${envId}-${type}`;
+      const groupKey = `${envId}**${type}`;
       const group = {
         id: j,
         name: formatMessage({ id: type }),
@@ -39,9 +41,9 @@ function formatResource({ value, expandsKeys, formatMessage }) {
       const items = map(child, (item) => ({
         ...item,
         name: type === 'instances' ? item.code : item.name,
-        key: `${envId}-${item.id}-${type}`,
+        key: `${envId}**${item.id}**${type}`,
         itemType: type,
-        parentId: `${envId}-${type}`,
+        parentId: `${envId}**${type}`,
         expand: false,
       }));
       flatted.push(group, ...items);
@@ -58,7 +60,7 @@ function formatInstance({ value, expandsKeys }) {
     for (let i = 0; i < data.length; i++) {
       const node = data[i];
       const peerNode = omit(node, ['apps', 'instances']);
-      const key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
+      const key = prevKey ? `${prevKey}**${node.id}` : String(node.id);
 
       flatted.push({
         ...peerNode,
@@ -80,14 +82,33 @@ function formatInstance({ value, expandsKeys }) {
   return flatted;
 }
 
-function handleSelect(record, store) {
+function handleSelect({ record, store, projectId, organizationId, projectName }) {
   if (record) {
     const data = record.toData();
     store.setSelectedMenu(data);
+    const item = getParentRecord(record);
+    if (item && item.itemType === ENV_ITEM) {
+      const recentEnv = {
+        ...item,
+        projectId,
+        organizationId,
+        projectName,
+        clickTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+      };
+      setEnvRecentItem({ value: recentEnv });
+    }
   }
 }
 
-export default ({ store, type, projectId, formatMessage }) => {
+function getParentRecord(record) {
+  if (record.parent) {
+    return getParentRecord(record.parent);
+  } else {
+    return record.toData();
+  }
+}
+
+export default ({ store, type, projectId, formatMessage, organizationId, projectName }) => {
   const formatMaps = {
     [IST_VIEW_TYPE]: formatInstance,
     [RES_VIEW_TYPE]: formatResource,
@@ -105,7 +126,7 @@ export default ({ store, type, projectId, formatMessage }) => {
     expandField: 'expand',
     idField: 'key',
     fields: [
-      { name: 'id', type: 'number' },
+      { name: 'id', type: 'string' },
       { name: 'name', type: 'string' },
       { name: 'key', type: 'string' },
       { name: 'parentId', type: 'string' },
@@ -113,7 +134,7 @@ export default ({ store, type, projectId, formatMessage }) => {
     ],
     events: {
       select: ({ record }) => {
-        handleSelect(record, store);
+        handleSelect({ record, store, projectId, organizationId, projectName });
       },
       unSelect: ({ record }) => {
         // 禁用取消选中

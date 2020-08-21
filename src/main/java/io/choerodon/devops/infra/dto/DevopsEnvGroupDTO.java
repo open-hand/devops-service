@@ -1,20 +1,24 @@
 package io.choerodon.devops.infra.dto;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_env_group")
 public class DevopsEnvGroupDTO extends AuditDomain {
+
+    public static final String ENCRYPT_KEY = "devops_env_group";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Encrypt(DevopsEnvGroupDTO.ENCRYPT_KEY)
     private Long id;
     private Long projectId;
     private String name;

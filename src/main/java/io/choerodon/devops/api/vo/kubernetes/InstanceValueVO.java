@@ -2,6 +2,9 @@ package io.choerodon.devops.api.vo.kubernetes;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.devops.api.vo.ErrorLineVO;
 
 /**
@@ -18,7 +21,9 @@ public class InstanceValueVO {
     private List<Integer> newLines;
     private String deltaYaml;
     private String name;
-    private Long  id;
+    @Encrypt
+    @ApiModelProperty("部署配置id")
+    private Long id;
     private Long objectVersionNumber;
 
     public String getYaml() {

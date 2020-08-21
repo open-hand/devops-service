@@ -56,10 +56,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
 
     }
 
+    changeSet(author: 'n1ck', id: '2018-11-20-modify-column-collate') {
+        sql("ALTER TABLE devops_application MODIFY COLUMN `name` VARCHAR(64)")
+    }
+
     changeSet(author: 'younger', id: '2018-11-22-add-column') {
         addColumn(tableName: 'devops_application') {
             column(name: 'type', type: 'VARCHAR(50)', remarks: '应用类型', afterColumn: 'code')
         }
+        sql("UPDATE devops_application  da SET da.type = 'normal'")
     }
 
     changeSet(author: 'n1ck', id: '2018-11-23-add-column') {
@@ -101,5 +106,24 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
 
     changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-failed') {
         addDefaultValue(tableName: "devops_app_service", columnName: "is_failed", defaultValue: "0")
+    }
+
+    changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-app-service-active') {
+        addDefaultValue(tableName: "devops_app_service", columnName: "is_active", defaultValue: "1")
+    }
+
+    changeSet(author: 'zmf', id: '2020-05-13-app-add-uk', failOnError: false) {
+        addUniqueConstraint(tableName: 'devops_app_service', constraintName: 'app-service-token-uk', columnNames: 'token')
+    }
+    changeSet(author: 'wanghao', id: '2020-07-05-app-service-add--index') {
+        createIndex(indexName: "idx_last_update_by", tableName: "devops_app_service") {
+            column(name: "last_updated_by")
+            column(name: 'last_update_date')
+        }
+    }
+    changeSet(author: 'wanghao', id: '2020-07-06-app-service-add-index') {
+        createIndex(indexName: "idx_gitlab_project_id", tableName: "devops_app_service") {
+            column(name: 'gitlab_project_id')
+        }
     }
 }

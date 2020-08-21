@@ -28,6 +28,7 @@ export default class YamlEditor extends Component {
     onValueChange: PropTypes.func,
     modeChange: PropTypes.bool,
     showError: PropTypes.bool,
+    className: PropTypes.string,
   };
 
   static defaultProps = {
@@ -112,12 +113,14 @@ export default class YamlEditor extends Component {
       modeChange,
       readOnly,
       showError,
+      className,
     } = this.props;
     const { errorTip } = this.state;
 
     const wrapClass = classnames({
       'c7ncd-yaml-wrapper': true,
       'c7ncd-yaml-readonly': readOnly,
+      [className]: true,
     });
 
     return (
@@ -126,7 +129,7 @@ export default class YamlEditor extends Component {
           <CodeMirror
             modeChange={modeChange}
             options={this.options}
-            value={value}
+            value={value || ''}
             originValue={originValue}
             onChange={this.onChange}
             ref={(instance) => {

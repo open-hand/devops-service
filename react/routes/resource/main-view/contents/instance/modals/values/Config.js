@@ -30,14 +30,14 @@ const ValueModalContent = observer((
     if (isDisabled) return false;
     setIsLoading(true);
     const { id, parentId, projectId, appServiceVersionId, appServiceId } = vo;
-    const [envId] = parentId.split('-');
+    const [envId] = parentId.split('**');
 
     const data = {
       values: value || yaml || '',
       instanceId: id,
       type: 'update',
-      environmentId: Number(envId),
-      appServiceId: Number(appServiceId),
+      environmentId: envId,
+      appServiceId,
       appServiceVersionId,
     };
 

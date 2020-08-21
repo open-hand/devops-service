@@ -2,12 +2,18 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.annotation.WillDeleted;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:52 2019/4/4
  * Description:
  */
+@WillDeleted
 public class PipelineVO {
+    @Encrypt
     private Long id;
     private String name;
     private String triggerType;
@@ -18,6 +24,7 @@ public class PipelineVO {
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
+    @Encrypt
     private Long createdBy;
     private Boolean isExecute;
     private Boolean edit;

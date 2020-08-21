@@ -25,14 +25,12 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.PageInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -180,7 +178,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         List<Long> selectedIamUserIds = new ArrayList<>();
         if (!StringUtils.isEmpty(params)) {
             Map maps = JSONObject.parseObject(params, Map.class);
-            selectedIamUserIds = TypeUtil.cast(((JSONArray) maps.get("ids")).toJavaList(Long.class));
+            selectedIamUserIds = KeyDecryptHelper.decryptIdList((JSONArray) maps.get("ids"));
         }
         if (!CollectionUtils.isEmpty(selectedIamUserIds)) {
             List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.queryUsersByUserIds(selectedIamUserIds);
@@ -202,6 +200,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Override
     public List<DevopsProjectDTO> listAll() {
         return devopsProjectMapper.selectAll();
+    }
+
+    @Override
+    public List<GitlabProjectSimple> queryGitlabGroups(List<Long> projectIds) {
+       return devopsProjectMapper.selectByProjectIds(projectIds);
     }
 
     private UserVO userDTOTOVO(IamUserDTO iamUserDTOList) {

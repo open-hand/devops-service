@@ -1,10 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by younger on 2018/3/30.
  */
 public class AppServiceCodeVO {
-
+    @Encrypt
     private Long id;
     private String name;
     private String code;

@@ -1,12 +1,16 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author lizongwei
  * @date 2019/7/1
  */
 public class DevopsEnvApplicationVO {
-
+    @Encrypt
     private Long appServiceId;
+
+    @Encrypt
     private Long envId;
 
     public Long getAppServiceId() {

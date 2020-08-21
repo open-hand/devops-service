@@ -44,9 +44,9 @@ export default function useStore() {
       this.pageList = data;
     },
 
-    async changeRecordExecute({ projectId, gitlabProjectId, recordId, type }) {
+    async changeRecordExecute({ projectId, gitlabProjectId, recordId, type, devopsPipelineRecordRelId }) {
       try {
-        const res = await axios.post(`/devops/v1/projects/${projectId}/ci_pipeline_records/${recordId}/${type}?gitlab_project_id=${gitlabProjectId}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/cicd_pipelines_record/${type}?gitlab_project_id=${gitlabProjectId}&gitlab_pipeline_id=${recordId}${devopsPipelineRecordRelId ? `&record_rel_id=${devopsPipelineRecordRelId}` : ''}`);
         return handlePromptError(res);
       } catch (e) {
         Choerodon.handleResponseError(e);
@@ -56,12 +56,49 @@ export default function useStore() {
 
     async changePipelineActive({ projectId, pipelineId, type }) {
       try {
-        const res = await axios.put(`/devops/v1/projects/${projectId}/ci_pipelines/${pipelineId}/${type}`);
+        const res = await axios.put(`/devops/v1/projects/${projectId}/cicd_pipelines/${pipelineId}/${type}`);
         return handlePromptError(res);
       } catch (e) {
         Choerodon.handleResponseError(e);
         return false;
       }
+    },
+
+    checkLinkToGitlab(projectId, appServiceId, type) {
+      return axios.get(`/devops/v1/projects/${projectId}/member-check/${appServiceId}?type=${type || 'CI_PIPELINE_DETAIL'}`);
+    },
+
+    /**
+     ** 人工审核阶段或任务
+     * @param projectId
+     * @param cdRecordId
+     * @param stageRecordId
+     * @param result
+     */
+    auditStage({ projectId, cdRecordId, stageRecordId, result }) {
+      return axios.post(`devops/v1/projects/${projectId}/pipeline_records/${cdRecordId}/stage_records/${stageRecordId}/audit?result=${result}`);
+    },
+
+    /**
+     ** 人工审核阶段或任务
+     * @param projectId
+     * @param cdRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @param result
+     */
+    auditJob({ projectId, cdRecordId, stageRecordId, jobRecordId, result }) {
+      return axios.post(`/devops/v1/projects/${projectId}/pipeline_records/${cdRecordId}/stage_records/${stageRecordId}/job_records/${jobRecordId}/audit?result=${result}`);
+    },
+
+    /**
+     ** 人工审核预检，判断是否可以审核
+     * @param projectId
+     * @param cdRecordId
+     * @param data
+     */
+    canCheck(projectId, cdRecordId, data) {
+      return axios.post(`/devops/v1/projects/${projectId}/pipeline_records/${cdRecordId}/check_audit_status`, JSON.stringify(data));
     },
   }));
 }

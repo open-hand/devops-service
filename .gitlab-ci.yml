@@ -1,166 +1,194 @@
-image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
+include: https://api.choerodon.com.cn/devops/v1/projects/1529/ci_contents/pipelines/c52c3f9b-d469-4381-b540-4e88448317af/content.yaml
 
-stages:
-  - build
-  - release
- 
-build front:
-  stage: build
-  script:
-    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
-    - chmod -R 755 node_modules
-    - npm run compile
-    - echo "//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}">.npmrc
-    - npm publish --registry ${NPM_PUBLISH_REGISTRY}
-    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/7909/trigger/pipeline
-  except:
-    changes:
-      - pom.xml
-      - src/**/*
-      - docker/**/*
-      - chart/**/*
-      - init-database.sh
-      - .circleci/**/*
-      - .gitignore
-      - .github/**/*
-      - .gitlab-ci.yml
-      - "*.md"
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
-
-tag front:
-  stage: build
-  script:
-    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
-    - chmod -R 755 node_modules
-    - npm run compile
-    - echo "//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}">.npmrc
-    - npm publish --registry ${NPM_PUBLISH_REGISTRY}
-  only:
-    - tags
-
-build backend:
-  stage: build
-  script:
-    - update_pom_version
-    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -U
-    - >-
-        mvn --batch-mode verify sonar:sonar
-        -Dsonar.host.url=$SONAR_URL
-        -Dsonar.login=$SONAR_LOGIN
-        -Dsonar.gitlab.project_id=$CI_PROJECT_PATH
-        -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
-        -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
-        -Dsonar.analysis.serviceGroup=$GROUP_NAME
-        -Dsonar.analysis.commitId=$CI_COMMIT_SHA
-        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
-    - mvn package spring-boot:repackage
-    - mv target/app.jar $PWD/docker
-    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
-  except:
-    changes:
-      - .editorconfig
-      - .eslintrc.json
-      - .stylelintrc.json
-      - gulpfile.js
-      - package.json
-      - react/**/*
-      - .gitignore
-      - .github/**/*
-      - .gitlab-ci.yml
-      - "*.md"
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
-
-tag backend:
-  stage: build
-  script:
-    - update_pom_version
-    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -U
-    - >-
-        mvn --batch-mode verify sonar:sonar
-        -Dsonar.host.url=$SONAR_URL
-        -Dsonar.login=$SONAR_LOGIN
-        -Dsonar.gitlab.project_id=$CI_PROJECT_PATH
-        -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
-        -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
-        -Dsonar.analysis.serviceGroup=$GROUP_NAME
-        -Dsonar.analysis.commitId=$CI_COMMIT_SHA
-        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
-    - mvn package spring-boot:repackage
-    - mv target/app.jar $PWD/docker
-    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
-  only:
-    - tags
-
-build combine:
-  stage: build
-  script:
-    - update_pom_version
-    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -U
-    - >-
-        mvn --batch-mode verify sonar:sonar
-        -Dsonar.host.url=$SONAR_URL
-        -Dsonar.login=$SONAR_LOGIN
-        -Dsonar.gitlab.project_id=$CI_PROJECT_PATH
-        -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
-        -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
-        -Dsonar.analysis.serviceGroup=$GROUP_NAME
-        -Dsonar.analysis.commitId=$CI_COMMIT_SHA
-        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
-    - mvn package spring-boot:repackage
-    - mv target/app.jar docker
-    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
-    - chmod -R 755 node_modules
-    - npm run dist
-    - mv src/main/resources/lib/dist docker
-    - cp /usr/bin/kaniko $PWD/docker
-    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
-  only:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
-
-release backend:
-  stage: release
-  script:
-    - chart_build
-  except:
-    changes:
-      - .editorconfig
-      - .eslintrc.json
-      - .stylelintrc.json
-      - gulpfile.js
-      - package.json
-      - react/**/*
-      - .gitignore
-      - .github/**/*
-      - .gitlab-ci.yml
-      - "*.md"
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
-      
-release combine:
-  stage: release
-  script:
-    - chart_build
-  only:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /combine/
-
-tag combine:
-  stage: release
-  script:
-    - chart_build
-  only:
-    - tags
-
-.auto_devops: &auto_devops |
-  http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice"`
-  if [ "$http_status_code" != "200" ]; then
-    cat .auto_devops.sh
-    exit 1
-  fi
-  source .auto_devops.sh
-
-before_script:
-  - *auto_devops
+#image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
+#
+#stages:
+#  - build
+#  - release
+# 
+#build front:
+#  stage: build
+#  script:
+#    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
+#    - chmod -R 755 node_modules
+#    - npm run compile
+#    - echo "//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}">.npmrc
+#    - npm publish --registry ${NPM_PUBLISH_REGISTRY}
+#    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/7909/trigger/pipeline
+#  except:
+#    changes:
+#      - pom.xml
+#      - src/**/*
+#      - docker/**/*
+#      - chart/**/*
+#      - init-database.sh
+#      - .circleci/**/*
+#      - .gitignore
+#      - .github/**/*
+#      - .gitlab-ci.yml
+#      - "*.md"
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /combine/
+#
+#tag front:
+#  stage: build
+#  script:
+#    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
+#    - chmod -R 755 node_modules
+#    - npm run compile
+#    - echo "//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}">.npmrc
+#    - npm publish --registry ${NPM_PUBLISH_REGISTRY}
+#  only:
+#    - tags
+#
+#build backend:
+#  stage: build
+#  script:
+#    - update_pom_version
+#    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -U
+#    - >-
+#        mvn --batch-mode verify sonar:sonar
+#        -Dsonar.host.url=$SONAR_URL
+#        -Dsonar.login=$SONAR_LOGIN
+#        -Dsonar.gitlab.project_id=$CI_PROJECT_PATH
+#        -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+#        -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
+#        -Dsonar.analysis.serviceGroup=$GROUP_NAME
+#        -Dsonar.analysis.commitId=$CI_COMMIT_SHA
+#        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
+#    - mvn package spring-boot:repackage
+#    - mv target/app.jar $PWD/docker
+#    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+#  except:
+#    changes:
+#      - .editorconfig
+#      - .eslintrc.json
+#      - .stylelintrc.json
+#      - gulpfile.js
+#      - package.json
+#      - react/**/*
+#      - .gitignore
+#      - .github/**/*
+#      - .gitlab-ci.yml
+#      - "*.md"
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /combine/
+#
+#tag backend:
+#  stage: build
+#  script:
+#    - update_pom_version
+#    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -U
+#    - >-
+#        mvn --batch-mode verify sonar:sonar
+#        -Dsonar.host.url=$SONAR_URL
+#        -Dsonar.login=$SONAR_LOGIN
+#        -Dsonar.gitlab.project_id=$CI_PROJECT_PATH
+#        -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+#        -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
+#        -Dsonar.analysis.serviceGroup=$GROUP_NAME
+#        -Dsonar.analysis.commitId=$CI_COMMIT_SHA
+#        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
+#    - mvn package spring-boot:repackage
+#    - mv target/app.jar $PWD/docker
+#    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+#  only:
+#    - tags
+#
+#build combine:
+#  stage: build
+#  script:
+#    - update_pom_version
+#    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test -Dmaven.test.failure.ignore=true -DskipTests=true -U
+#    - >-
+#        mvn --batch-mode verify sonar:sonar
+#        -Dsonar.host.url=$SONAR_URL
+#        -Dsonar.login=$SONAR_LOGIN
+#        -Dsonar.gitlab.project_id=$CI_PROJECT_PATH
+#        -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+#        -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
+#        -Dsonar.analysis.serviceGroup=$GROUP_NAME
+#        -Dsonar.analysis.commitId=$CI_COMMIT_SHA
+#        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
+#    - mvn package spring-boot:repackage
+#    - mv target/app.jar docker
+#    - npm install --registry ${NPM_REPO} --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
+#    - chmod -R 755 node_modules
+#    - npm run dist
+#    - mv src/main/resources/lib/dist docker
+#    - cp /usr/bin/kaniko $PWD/docker
+#    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+#  only:
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /combine/
+#
+#release backend:
+#  stage: release
+#  script:
+#    - chart_build
+#  except:
+#    changes:
+#      - .editorconfig
+#      - .eslintrc.json
+#      - .stylelintrc.json
+#      - gulpfile.js
+#      - package.json
+#      - react/**/*
+#      - .gitignore
+#      - .github/**/*
+#      - .gitlab-ci.yml
+#      - "*.md"
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /combine/
+#      
+#release combine:
+#  stage: release
+#  script:
+#    - chart_build
+#  only:
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /combine/
+#
+#tag combine:
+#  stage: release
+#  script:
+#    - chart_build
+#  only:
+#    - tags
+#
+#maven-deploy-snapshot:
+#  stage: build
+#  script:
+#    - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_SNAPSHOT_REPOSITORY_ID}::default::${CHOERODON_SNAPSHOT_URL} -Ddeploy.classifier=exec
+#  except:
+#    changes:
+#      - .editorconfig
+#      - .eslintrc.json
+#      - .stylelintrc.json
+#      - gulpfile.js
+#      - package.json
+#      - react/**/*
+#      - .gitignore
+#      - .github/**/*
+#      - .gitlab-ci.yml
+#      - "*.md"
+#    variables:
+#      - $CI_COMMIT_MESSAGE =~ /combine/
+#
+#maven-deploy-release:
+#  stage: build
+#  script:
+#    - mvn clean install -Dmaven.springboot.skip=true -DskipTests=true deploy -DaltDeploymentRepository=${CHOERODON_RELEASE_REPOSITORY_ID}::default::${CHOERODON_RELEASE_URL} -Ddeploy.classifier=exec
+#  only:
+#    - tags
+#
+#.auto_devops: &auto_devops |
+#  http_status_code=`curl -o .auto_devops.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice"`
+#  if [ "$http_status_code" != "200" ]; then
+#    cat .auto_devops.sh
+#    exit 1
+#  fi
+#  source .auto_devops.sh
+#
+#before_script:
+#  - *auto_devops

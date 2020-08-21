@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -107,6 +108,7 @@ public class DevopsEnvGroupController {
             @ApiParam(value = "环境组名", required = true)
             @RequestParam String name,
             @ApiParam(value = "环境组id", required = false)
+            @Encrypt
             @RequestParam(value = "group_id", required = false) Long groupId) {
         return Optional.ofNullable(devopsEnvGroupService.checkName(name, projectId, groupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -124,12 +126,13 @@ public class DevopsEnvGroupController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境组删除")
     @DeleteMapping(value = "/{group_id}")
-    public ResponseEntity delete(
+    public ResponseEntity<Void> delete(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组ID", required = true)
+            @Encrypt
             @PathVariable(value = "group_id") Long groupId) {
-        devopsEnvGroupService.delete(groupId);
+        devopsEnvGroupService.delete(projectId, groupId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -139,9 +142,10 @@ public class DevopsEnvGroupController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境组存在检查")
     @GetMapping(value = "/{group_id}/check")
-    public ResponseEntity checkExist(
+    public ResponseEntity<Boolean> checkExist(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境组ID", required = true)
             @PathVariable(value = "group_id") Long groupId) {
         return Optional.ofNullable(devopsEnvGroupService.checkExist(groupId))

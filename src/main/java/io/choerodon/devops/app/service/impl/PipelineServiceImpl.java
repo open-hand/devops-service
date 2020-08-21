@@ -21,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -34,6 +35,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
@@ -190,6 +192,9 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PipelineReqVO update(Long projectId, PipelineReqVO pipelineReqVO) {
+        // check
+        CommonExAssertUtil.assertTrue(projectId.equals(checkExistAndGet(pipelineReqVO.getId()).getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         pipelineReqVO.setProjectId(projectId);
         PipelineDTO pipelineE = ConvertUtils.convertObject(pipelineReqVO, PipelineDTO.class);
         pipelineE = baseUpdate(projectId, pipelineE);
@@ -214,15 +219,14 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PipelineVO updateIsEnabled(Long projectId, Long pipelineId, Integer isEnabled) {
+        CommonExAssertUtil.assertTrue(projectId.equals(checkExistAndGet(pipelineId).getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return ConvertUtils.convertObject(baseUpdateWithEnabled(pipelineId, isEnabled), PipelineVO.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long projectId, Long pipelineId) {
-        if (pipelineMapper.selectByPrimaryKey(pipelineId) == null) {
-            return;
-        }
+        CommonExAssertUtil.assertTrue(projectId.equals(checkExistAndGet(pipelineId).getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         pipelineRecordService.baseQueryByPipelineId(pipelineId).forEach(t -> {
             t.setStatus(WorkFlowStatus.DELETED.toValue());
@@ -274,7 +278,9 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public void execute(Long projectId, Long pipelineId) {
-        PipelineDTO pipelineDTO = baseQueryById(pipelineId);
+        PipelineDTO pipelineDTO = checkExistAndGet(pipelineId);
+        CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         if (AUTO.equals(pipelineDTO.getTriggerType()) || !checkTriggerPermission(pipelineId)) {
             throw new CommonException("error.permission.trigger.pipeline");
         }
@@ -309,7 +315,7 @@ public class PipelineServiceImpl implements PipelineService {
             updateFirstStage(pipelineRecordDTO.getId());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
-            sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
+            sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId());
             pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordDTO.setErrorInfo(e.getMessage());
             pipelineRecordService.baseUpdate(pipelineRecordDTO);
@@ -319,6 +325,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public void batchExecute(Long projectId, Long[] pipelineIds) {
         for (Long pipelineId : pipelineIds) {
+            CommonExAssertUtil.assertTrue(projectId.equals(checkExistAndGet(pipelineId).getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
             execute(projectId, pipelineId);
         }
     }
@@ -375,7 +382,7 @@ public class PipelineServiceImpl implements PipelineService {
                     builder -> {
                     });
         } catch (Exception e) {
-            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
+            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
             long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
             stageRecordDTO.setExecutionTime(Long.toString(time));
@@ -388,9 +395,13 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<PipelineUserVO> audit(Long projectId, PipelineUserRecordRelationshipVO recordRelDTO) {
+
         List<PipelineUserVO> userDTOS = new ArrayList<>();
         String status;
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(recordRelDTO.getPipelineRecordId());
+
+        CommonExAssertUtil.assertTrue(projectId.equals(pipelineRecordE.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(recordRelDTO.getStageRecordId());
         String auditUser = "";
         if ("task".equals(recordRelDTO.getType())) {
@@ -462,7 +473,9 @@ public class PipelineServiceImpl implements PipelineService {
         CheckAuditVO auditDTO = new CheckAuditVO();
         switch (recordRelDTO.getType()) {
             case TASK: {
+
                 PipelineTaskRecordDTO pipelineTaskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(recordRelDTO.getTaskRecordId());
+                CommonExAssertUtil.assertTrue(projectId.equals(pipelineTaskRecordDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
                 if (!pipelineTaskRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                     if (pipelineTaskRecordDTO.getIsCountersigned() == 1) {
                         auditDTO.setIsCountersigned(1);
@@ -477,6 +490,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
             case STAGE: {
                 PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(recordRelDTO.getStageRecordId());
+                CommonExAssertUtil.assertTrue(projectId.equals(stageRecordDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
                 if (!stageRecordDTO.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                     auditDTO.setIsCountersigned(0);
                     auditDTO.setUserName(baseServiceClientOperator.queryUserByUserId(
@@ -499,7 +513,9 @@ public class PipelineServiceImpl implements PipelineService {
      */
     @Override
     public PipelineCheckDeployVO checkDeploy(Long projectId, Long pipelineId) {
-        PipelineDTO pipelineE = baseQueryById(pipelineId);
+        PipelineDTO pipelineE = checkExistAndGet(pipelineId);
+        CommonExAssertUtil.assertTrue(projectId.equals(pipelineE.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
         if (pipelineE.getIsEnabled() == 0) {
             throw new CommonException("error.pipeline.check.deploy");
         }
@@ -711,6 +727,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public void retry(Long projectId, Long pipelineRecordId) {
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(pipelineRecordId);
+        CommonExAssertUtil.assertTrue(projectId.equals(pipelineRecordE.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         //校验流水线中所有环境是否“已删除”或者“未连接”
         if (!checkEnvStatus(pipelineRecordE.getPipelineId(), pipelineRecordE)) {
             return;
@@ -841,6 +858,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public void failed(Long projectId, Long recordId) {
         PipelineRecordDTO recordE = pipelineRecordService.baseQueryById(recordId);
+        CommonExAssertUtil.assertTrue(projectId.equals(recordE.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         if (!recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
             throw new CommonException("error.pipeline.record.status");
         }
@@ -1577,6 +1595,16 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         devopsDeployRecordVO.setPipelineDetailVO(pipelineDetailVO);
+    }
+
+    @Override
+    public PipelineDTO checkExistAndGet(Long pipelineId) {
+        Assert.notNull(pipelineId, "error.pipelineId.is.null");
+        PipelineDTO pipelineDTO = pipelineMapper.selectByPrimaryKey(pipelineId);
+        if (pipelineDTO == null) {
+            throw new CommonException("error.pipeline.not.exist");
+        }
+        return pipelineDTO;
     }
 
     private PipelineAppServiceDeployVO deployDtoToVo(PipelineAppServiceDeployDTO appServiceDeployDTO) {

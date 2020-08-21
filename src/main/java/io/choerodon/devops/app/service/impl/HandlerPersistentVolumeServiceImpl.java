@@ -1,20 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1PersistentVolume;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
+import io.choerodon.devops.api.vo.kubernetes.LocalPvResource;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsPvService;
@@ -31,6 +19,17 @@ import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.models.V1PersistentVolume;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -186,6 +185,21 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
         } else if (pv.getSpec().getNfs() != null) {
             devopsPvReqVO.setType(PersistentVolumeType.NFS.getType());
             devopsPvReqVO.setValueConfig(new JSON().serialize(pv.getSpec().getNfs()));
+        }
+        if (pv.getSpec().getLocal() != null) {
+            devopsPvReqVO.setType(PersistentVolumeType.LOCAL_PV.getType());
+            LocalPvResource localPvResource = new LocalPvResource();
+            localPvResource.setPath(pv.getSpec().getLocal().getPath());
+            localPvResource.setNodeName(pv.getSpec()
+                    .getNodeAffinity()
+                    .getRequired()
+                    .getNodeSelectorTerms()
+                    .get(0)
+                    .getMatchExpressions()
+                    .get(0)
+                    .getValues()
+                    .get(0));
+            devopsPvReqVO.setValueConfig(new JSON().serialize(localPvResource));
         }
     }
 

@@ -1,11 +1,14 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 资源的基本信息，id和名称
  *
  * @author zmf
  */
 public class DevopsResourceBasicInfoVO {
+    @Encrypt
     private Long id;
     private String name;
     private String status;

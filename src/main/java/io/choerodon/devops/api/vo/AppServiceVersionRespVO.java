@@ -3,14 +3,17 @@ package io.choerodon.devops.api.vo;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 
 public class AppServiceVersionRespVO implements Serializable {
-
+    @Encrypt
     private Long id;
     private String version;
     private String commit;
     private String appServiceName;
     private String appServiceCode;
+    @Encrypt
     private Long appServiceId;
     private Boolean appServiceStatus;
     private Date creationDate;

@@ -5,7 +5,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -16,11 +18,16 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @Date 2020/4/7 22:18
  */
 public class DevopsCiPipelineRecordVO {
+    @Encrypt
     private Long id;
+
     @ApiModelProperty("gitlab流水线记录id")
     private Long gitlabPipelineId;
+
+    @Encrypt
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
+
     @ApiModelProperty("流水线状态")
     private String status;
     @ApiModelProperty("触发用户")
@@ -34,7 +41,7 @@ public class DevopsCiPipelineRecordVO {
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
     private List<DevopsCiStageRecordVO> stageRecordVOList;
-    private DevopsCiPipelineVO devopsCiPipelineVO;
+    private CiCdPipelineVO devopsCiPipelineVO;
 
     private IamUserDTO userDTO;
     @ApiModelProperty("提交信息")
@@ -43,6 +50,16 @@ public class DevopsCiPipelineRecordVO {
     @JsonIgnore
     @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
+
+    private Long gitlabProjectId;
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+    }
 
     public Long getId() {
         return id;
@@ -124,11 +141,11 @@ public class DevopsCiPipelineRecordVO {
         this.userDTO = userDTO;
     }
 
-    public DevopsCiPipelineVO getDevopsCiPipelineVO() {
+    public CiCdPipelineVO getDevopsCiPipelineVO() {
         return devopsCiPipelineVO;
     }
 
-    public void setDevopsCiPipelineVO(DevopsCiPipelineVO devopsCiPipelineVO) {
+    public void setDevopsCiPipelineVO(CiCdPipelineVO devopsCiPipelineVO) {
         this.devopsCiPipelineVO = devopsCiPipelineVO;
     }
 

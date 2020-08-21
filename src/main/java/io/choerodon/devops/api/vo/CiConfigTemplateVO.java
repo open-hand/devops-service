@@ -1,18 +1,20 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/3 9:57
+ * @since 2020/4/3 9:57
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CiConfigTemplateVO {
@@ -20,6 +22,9 @@ public class CiConfigTemplateVO {
     @NotEmpty(message = "error.step.name.cannot.be.null")
     private String name;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiJobScriptTypeEnum}
+     */
     @NotEmpty(message = "error.step.type.cannot.be.empty")
     @ApiModelProperty("步骤类型")
     private String type;
@@ -31,11 +36,18 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("执行脚本/Base64加密过, 解决特殊符号问题")
     private String script;
 
+    @Encrypt
+    @ApiModelProperty("项目下已有的maven仓库id列表/用于maven构建步骤")
+    private Set<Long> nexusMavenRepoIds;
+
     @ApiModelProperty("表单填写的Maven的依赖仓库")
     private List<MavenRepoVO> repos;
 
     @ApiModelProperty("直接粘贴的maven的settings内容 / 是base64加密过的字符串, 处理特殊字符")
     private String mavenSettings;
+
+    @ApiModelProperty("Maven发布jar到maven仓库的配置对象 / 上传软件包到制品库步骤需要")
+    private MavenDeployRepoSettings mavenDeployRepoSettings;
 
     @ApiModelProperty("Docker步骤的构建上下文")
     private String dockerContextDir;
@@ -116,5 +128,21 @@ public class CiConfigTemplateVO {
 
     public void setSkipDockerTlsVerify(Boolean skipDockerTlsVerify) {
         this.skipDockerTlsVerify = skipDockerTlsVerify;
+    }
+    
+    public MavenDeployRepoSettings getMavenDeployRepoSettings() {
+        return mavenDeployRepoSettings;
+    }
+
+    public void setMavenDeployRepoSettings(MavenDeployRepoSettings mavenDeployRepoSettings) {
+        this.mavenDeployRepoSettings = mavenDeployRepoSettings;
+    }
+
+    public Set<Long> getNexusMavenRepoIds() {
+        return nexusMavenRepoIds;
+    }
+
+    public void setNexusMavenRepoIds(Set<Long> nexusMavenRepoIds) {
+        this.nexusMavenRepoIds = nexusMavenRepoIds;
     }
 }

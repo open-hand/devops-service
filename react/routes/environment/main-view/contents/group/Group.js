@@ -286,13 +286,13 @@ const Group = observer(() => {
     switch (status) {
       case RUNNING:
         actionData = [{
-          service: ['choerodon.code.project.deploy.environment.ps.stop'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
-          action: () => openEffectModal(record),
-        }, {
           service: ['choerodon.code.project.deploy.environment.ps.modify'],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
           action: openModifyModal.bind(this, record),
+        }, {
+          service: ['choerodon.code.project.deploy.environment.ps.stop'],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
+          action: () => openEffectModal(record),
         }];
         break;
       case DISCONNECTED:

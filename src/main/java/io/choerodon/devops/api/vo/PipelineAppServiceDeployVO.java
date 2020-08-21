@@ -2,20 +2,28 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:35 2019/4/4
  * Description:
  */
 public class PipelineAppServiceDeployVO {
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long appServiceId;
     private List<String> triggerVersion;
+    @Encrypt
     private Long envId;
+    @Encrypt
     private Long instanceId;
+    @Encrypt
     private Long stageId;
     private String instanceName;
     private String value;
+    @Encrypt
     private Long valueId;
     private Long projectId;
     private String appServiceName;

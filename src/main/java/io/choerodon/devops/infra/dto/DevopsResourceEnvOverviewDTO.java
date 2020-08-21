@@ -1,9 +1,10 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.List;
-
 import io.choerodon.devops.api.vo.DevopsAppServiceInstanceViewVO;
 import io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 /**
  * 资源视图下环境目录信息
@@ -14,16 +15,23 @@ public class DevopsResourceEnvOverviewDTO {
     /**
      * 环境id
      */
+    @ApiModelProperty("环境id")
     private Long id;
     /**
      * 环境名称
      */
+    @ApiModelProperty("环境名称")
     private String name;
+
+    @ApiModelProperty("环境code")
+    private String code;
     /**
      * 环境是否连接
      */
+    @ApiModelProperty("环境是否连接")
     private Boolean connect;
 
+    @ApiModelProperty("集群id")
     private Long clusterId;
 
     /**
@@ -154,5 +162,14 @@ public class DevopsResourceEnvOverviewDTO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public DevopsResourceEnvOverviewDTO setCode(String code) {
+        this.code = code;
+        return this;
     }
 }

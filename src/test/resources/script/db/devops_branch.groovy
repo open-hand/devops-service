@@ -78,4 +78,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
     changeSet(author: 'scp', id: '2019-07-29-rename-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_branch')
     }
+
+    changeSet(author: 'lihao', id: '2020-06-29-devops_branch-add-index') {
+        createIndex(indexName: "idx_devops_branch_issueid", tableName: "devops_branch") {
+            column(name: "issue_id")
+        }
+    }
 }

@@ -22,14 +22,15 @@ public interface AppServiceVersionService {
     /**
      * 创建应用版本信息
      *
-     * @param token          token
-     * @param harborConfigId harborConfigId
      * @param image          类型
+     * @param harborConfigId harborConfigId
+     * @param token          token
      * @param version        版本
      * @param commit         commit
      * @param file           tgz包
+     * @param ref            分支名
      */
-    void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile file);
+    void create(String image, String harborConfigId, String repoType, String token, String version, String commit, MultipartFile file, String ref);
 
 
     /**
@@ -56,7 +57,7 @@ public interface AppServiceVersionService {
      *
      * @param projectId    项目id
      * @param appServiceId 应用id
-     * @param pageable  分页参数
+     * @param pageable     分页参数
      * @param version      模糊搜索参数
      * @return ApplicationVersionRespVO
      */
@@ -197,4 +198,8 @@ public interface AppServiceVersionService {
     Boolean isVersionUseConfig(Long configId, String configType);
 
     void deleteByAppServiceId(Long appServiceId);
+
+    void fixHarbor();
+
+    AppServiceVersionDTO queryByCommitShaAndRef(String commitSha, String gitlabTriggerRef);
 }

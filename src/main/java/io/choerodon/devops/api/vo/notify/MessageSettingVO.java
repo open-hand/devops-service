@@ -3,12 +3,14 @@ package io.choerodon.devops.api.vo.notify;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * User: Mr.Wang
  * Date: 2019/12/13
  */
 public class MessageSettingVO {
+    @Encrypt
     private Long id;
     @ApiModelProperty("通知类型（必填），用作tab分页，)")
     private String notifyType;
@@ -30,8 +32,11 @@ public class MessageSettingVO {
     private List<TargetUserDTO> targetUserDTOS;
     @ApiModelProperty(value = "消息设置的名字")
     private String name;
+
+    @Encrypt
     @ApiModelProperty(value = "环境的id")
     private Long envId;
+
     @ApiModelProperty(value = "是否发送短信")
     private Boolean smsEnable;
     @ApiModelProperty(value = "资源删除验证事件名字")

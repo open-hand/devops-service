@@ -16,10 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
@@ -34,6 +36,7 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.SendSettingEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -45,6 +48,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 12/5/19
  */
 @Service
+@Async
 public class SendNotificationServiceImpl implements SendNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationServiceImpl.class);
     private static final String PROJECT = "Project";
@@ -56,26 +60,39 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private String gitlabUrl;
 
     @Autowired
+    @Lazy
     private AppServiceService appServiceService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
+    @Lazy
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
     private AppServiceMapper appServiceMapper;
     @Autowired
+    @Lazy
     private UserAttrService userAttrService;
     @Autowired
+    @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
+    @Lazy
     private DevopsClusterService devopsClusterService;
     @Autowired
+    @Lazy
     private PipelineRecordService pipelineRecordService;
 
     @Autowired
     private MessageClient messageClient;
+    @Autowired
+    @Lazy
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+
+    @Autowired
+    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -760,11 +777,34 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
+    private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
+        DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(record.getPipelineId()));
+        //pipelineRecordId是relID
+        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+        recordRelDTO.setCdPipelineRecordId(record.getId());
+        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
+        params.put("pipelineIdRecordId", relDTO.getId().toString());
+        sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
+    }
+
     private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineId", record.getPipelineId())
                 .put("pipelineName", record.getPipelineName())
-                .put("pipelineRecordId", record.getId())
+                .put("projectId", record.getProjectId())
+                .put("projectName", projectDTO.getName())
+                .put("organizationId", projectDTO.getOrganizationId())
+                .put("stageId", stageId)
+                .put("triggerType", record.getTriggerType())
+                .put("stageName", stageName)
+                .putAll(params)
+                .build();
+    }
+
+    private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+        return StringMapBuilder.newBuilder()
+                .put("pipelineName", record.getPipelineName())
                 .put("projectId", record.getProjectId())
                 .put("projectName", projectDTO.getName())
                 .put("organizationId", projectDTO.getOrganizationId())
@@ -894,6 +934,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvUserPayload.getDevopsEnvironmentDTO();
+                    if (devopsEnvironmentDTO == null) {
+                        devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(Objects.requireNonNull(devopsEnvUserPayload.getEnvId()));
+                        if (devopsEnvironmentDTO == null) {
+                            return;
+                        }
+                    }
                     Map<String, String> params = constructParamsForEnv(devopsEnvironmentDTO, projectDTO.getOrganizationId());
                     List<Long> iamUserIds = devopsEnvUserPayload.getIamUserIds();
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
@@ -1047,12 +1093,58 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
                     Map<String, String> params = new HashMap<>();
                     params.put(STAGE_NAME, stageName);
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
                     sendPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
                 },
                 ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
+        );
+    }
+
+    @Override
+    public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId) {
+        LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, userIds, stageName, stageId);
+        doWithTryCatchAndLog(
+                () -> {
+                    List<Receiver> userList = new ArrayList<>();
+                    List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
+                    users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+                    Map<String, String> params = new HashMap<>();
+                    params.put(STAGE_NAME, stageName);
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(DetailsHelper.getUserDetails().getUserId());
+                    params.put("auditName", iamUserDTO.getLoginName());
+                    params.put("realName", iamUserDTO.getRealName());
+                    sendCdPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
+                },
+                ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
+        );
+    }
+
+    @Override
+    public void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params) {
+        doWithTryCatchAndLog(
+                () -> {
+                    String actualEmail = email;
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+                    if (iamUserDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("User", userId, LOGGER);
+                        return;
+                    }
+                    if (actualEmail == null) {
+                        actualEmail = iamUserDTO.getEmail();
+
+                    }
+                    sendCdPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
+                },
+                ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
+    }
+
+    @Override
+    public void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params) {
+        doWithTryCatchAndLog(
+                () -> sendCdPipelineMessage(pipelineRecordId, type, receivers, params, null, null),
+                ex -> LOGGER.info("Failed to sendPipelineNotice ", ex)
         );
     }
 
@@ -1100,6 +1192,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
                     }
+
                     messageClient.async().sendMessage(sender);
                 },
                 ex -> LOGGER.info("Failed to send message with code {}", sendSettingCode));

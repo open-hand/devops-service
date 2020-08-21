@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.constant;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -108,11 +110,25 @@ public class GitOpsConstants {
             "source ./.auto_devops.sh\n";
 
     /**
+     * 默认的sonar命令
+     */
+    public static final String DEFAULT_SONAR_TEMPLATE = "mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME} -Dmaven.test.failure.ignore=true -DskipTests=%s";
+
+    /**
+     * 默认的sonar scanner命令
+     */
+    public static final String DEFAULT_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
+
+    /**
      * 使用Token认证的sonar命令
      * SonarUrl
      * Token
      */
-    public static final String SONAR_TOKEN_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
+    public static final String SONAR_TOKEN_TEMPLATE = "mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME} -Dmaven.test.failure.ignore=true -DskipTests=%s";
+    /**
+     * 使用Token认证的sonar命令
+     */
+    public static final String SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
 
     /**
      * 使用用户名密码认证的sonar命令
@@ -120,7 +136,14 @@ public class GitOpsConstants {
      * SonarUsername sonar的用户名
      * SonarPassword
      */
-    public static final String SONAR_USER_PASSWORD_TEMPLATE = "mvn --batch-mode verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}";
+    public static final String SONAR_USER_PASSWORD_TEMPLATE = "mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME} -Dmaven.test.failure.ignore=true -DskipTests=%s";
+    /**
+     * 使用用户名密码认证的sonar scanner命令
+     * SonarUrl
+     * SonarUsername sonar的用户名
+     * SonarPassword
+     */
+    public static final String SONAR_USER_PASSWORD_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
 
     public static final String COMMA = ",";
 
@@ -202,4 +225,15 @@ public class GitOpsConstants {
     public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     public static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
+
+    /**
+     * 发布jar包的命令的变量锚点, 仓库名称
+     */
+    public static final String CHOERODON_MAVEN_REPO_ID = "${CHOERODON_MAVEN_REPOSITORY_ID}";
+    /**
+     * 发布jar包的命令的变量锚点, 仓库地址
+     */
+    public static final String CHOERODON_MAVEN_REPO_URL = "${CHOERODON_MAVEN_REPO_URL}";
+
+    public static final List<String> IGNORE_RESOURCES = Arrays.asList("ChoerodonIstioOperator", "IstioOperator", "VirtualService");
 }

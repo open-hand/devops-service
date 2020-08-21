@@ -32,13 +32,26 @@ const statusObj = {
     icon: 'skipped_a',
     text: '已跳过',
   },
+  not_audit: {
+    icon: 'timelapse',
+    text: '待审核',
+  },
+  stop: {
+    icon: 'remove_circle',
+    text: '已终止',
+  },
 };
 
 const statusDot = (props) => {
-  const { size, status } = props;
+  const { size, status, style, ...rest } = props;
   return (
     <Tooltip title={statusObj[status].text}>
-      <Icon type={statusObj[status].icon} style={{ fontSize: `${size}px` }} />
+      <Icon
+        {...rest}
+        type={statusObj[status].icon}
+        style={{ fontSize: `${size}px`, ...style }}
+        className={`c7n-piplineManage-detail-column-status-icon c7n-piplineManage-detail-column-status-icon-${status}`}
+      />
     </Tooltip>
   );
 };
@@ -50,6 +63,5 @@ statusDot.propTypes = {
 statusDot.defaultProps = {
   size: 12,
 };
-
 
 export default statusDot;

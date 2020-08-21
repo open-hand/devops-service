@@ -46,6 +46,18 @@ const tagObj = {
     color: 'rgba(216,216,216,1)',
     text: '未执行',
   },
+  not_audit: {
+    borderColor: 'rgba(255, 177, 0,.12)',
+    backgroundColor: 'rgba(255, 177, 0,.12)',
+    color: 'rgba(255, 177, 0,1)',
+    text: '待审核',
+  },
+  stop: {
+    borderColor: 'rgba(255, 112, 67, .12)',
+    backgroundColor: 'rgba(255, 112, 67, .12)',
+    color: 'rgba(255, 112, 67, 1)',
+    text: '已终止',
+  },
 };
 
 const renderTag = ({ status, size, className }) => {

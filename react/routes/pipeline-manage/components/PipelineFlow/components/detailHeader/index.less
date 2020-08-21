@@ -1,4 +1,6 @@
 .c7ncd-pipelineManage-optsDetail-header {
+  display: flex;
+  align-items: center;
   .c7n-tag-geekblue {
     background: #f0f5ff !important;
   }
@@ -9,6 +11,10 @@
     &:first-of-type {
       font-weight: 500;
       color: rgba(0, 0, 0, 1);
+      max-width: 1.5rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     &:nth-of-type(2) {
       font-weight: 400;
@@ -18,7 +24,7 @@
       i {
         font-size: 20px;
       }
-      &>a {
+      .c7ncd-pipelineManage-optsDetail-header-ref {
         color: currentcolor;
         cursor: pointer;
 

@@ -36,10 +36,34 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command.groovy') {
 
             }
 
+    changeSet(author: 'younger', id: '2018-10-25-update-data') {
+        preConditions(onFail: "MARK_RAN") {
+            tableExists(tableName: "devops_app_instance")
+            columnExists(tableName: "devops_app_instance",columnName:"app_version_id")
+            columnExists(tableName: "devops_app_instance",columnName:"command_id")
+            tableExists(tableName: "devops_env_command")
+            columnExists(tableName: "devops_env_command",columnName:"id")
+            columnExists(tableName: "devops_env_command",columnName:"object_version_id")
+        }
+                sql("update devops_app_instance A,devops_env_command B set B.object_version_id=A.app_version_id where A.command_id=B.id")
+            }
 
     changeSet(author: 'scp', id: '2019-06-05-idx-object-id') {
         createIndex(indexName: "idx_object_id ", tableName: "devops_env_command") {
             column(name: "object_id")
+            column(name: 'object')
         }
     }
+
+    changeSet(author: 'scp', id: '2019-06-05-modify-index') {
+
+        dropIndex(indexName: "idx_object_id", tableName: "devops_env_command")
+
+        createIndex(indexName: "idx_object_object_id ", tableName: "devops_env_command") {
+            column(name: "object_id")
+            column(name: 'object')
+        }
+    }
+
+
 }

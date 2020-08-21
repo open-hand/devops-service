@@ -1,14 +1,21 @@
 package io.choerodon.devops.api.vo;
 
+
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  15:37 2019/4/12
  * Description:
  */
 public class PipelineUserRecordRelationshipVO {
+    @Encrypt
     private Long userId;
+    @Encrypt
     private Long pipelineRecordId;
+    @Encrypt
     private Long stageRecordId;
+    @Encrypt
     private Long taskRecordId;
     private String type;
     private Boolean isApprove;

@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 带有扫描结果的环境数据
@@ -17,6 +18,7 @@ public class DevopsEnvWithPolarisResultVO {
     private Boolean internal;
     @ApiModelProperty("namespace下是否有error级别的配置项")
     private Boolean hasErrors;
+    @Encrypt
     @ApiModelProperty("环境id / 可为空")
     private Long envId;
     @ApiModelProperty("环境名称 / 可为空")

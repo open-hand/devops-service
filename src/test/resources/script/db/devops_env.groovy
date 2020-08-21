@@ -25,9 +25,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                 constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
         addUniqueConstraint(tableName: 'devops_env',
                 constraintName: 'uk_project_id_code', columnNames: 'project_id,code')
-        createIndex(indexName: "idx_project_id", tableName: "devops_env") {
-            column(name: "project_id")
-        }
     }
 
     changeSet(id: '2018-05-20-drop-constraint', author: 'younger') {
@@ -69,8 +66,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
 
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "idx_project_id", tableName: "devops_env")
-
         createIndex(indexName: "devops_env_idx_project_id", tableName: "devops_env") {
             column(name: "project_id")
         }
@@ -92,10 +87,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                 addColumn(tableName: 'devops_env') {
                     column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: '集群id', afterColumn: 'project_id')
                 }
-                dropUniqueConstraint(constraintName: "uk_project_id_code", tableName: "devops_env")
+                dropUniqueConstraint(constraintName: "uk_project_id_code",tableName: "devops_env")
                 addUniqueConstraint(tableName: 'devops_env',
                         constraintName: 'devops_envs_uk_cluster_id_code', columnNames: 'cluster_id,code')
             }
+
+    changeSet(author: 'n1ck',id: '2018-11-20-modicy-column') {
+        sql("ALTER TABLE devops_env MODIFY COLUMN `name` VARCHAR(32)")
+    }
 
     changeSet(author: 'younger', id: '2018-11-21-add-column') {
         addColumn(tableName: 'devops_env') {
@@ -108,18 +107,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     }
 
     changeSet(author: 'zmf', id: '2018-12-13-alter-unique-constraint') {
-        dropUniqueConstraint(constraintName: "uk_project_id_name", tableName: "devops_env")
+        dropUniqueConstraint(constraintName: "uk_project_id_name",tableName: "devops_env")
     }
 
 
-    changeSet(author: 'younger', id: '2019-04-08-drop-constraint') {
-        preConditions(onFail: 'MARK_RAN') {
-            indexExists(tableName: "devops_env", indexName: "devops_envs_uk_cluster_id_code")
-        }
-        dropUniqueConstraint(constraintName: "devops_envs_uk_cluster_id_code", tableName: "devops_env")
-        addUniqueConstraint(tableName: 'devops_env',
-                constraintName: 'devops_envs_uk_cluster_and_project_code', columnNames: 'cluster_id,project_id,code')
-    }
+    changeSet(author: 'younger', id: '2019-04-08-drop-constraint')
+            {
+                preConditions (onFail: 'MARK_RAN') {
+                    indexExists(tableName: "devops_env",indexName: "devops_envs_uk_cluster_id_code")
+                }
+                dropUniqueConstraint(constraintName: "devops_envs_uk_cluster_id_code", tableName: "devops_env")
+                addUniqueConstraint(tableName: 'devops_env',
+                        constraintName: 'devops_envs_uk_cluster_and_project_code', columnNames: 'cluster_id,project_id,code')
+            }
 
     changeSet(author: 'younger', id: '2019-07-30-drop-column') {
         dropColumn(columnName: "sequence", tableName: "devops_env")
@@ -131,9 +131,66 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
         }
     }
 
-    changeSet(author: 'yzj', id: '2019-10-29-add--column') {
+    changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-env-active') {
+        addDefaultValue(tableName: "devops_env", columnName: "is_active", defaultValue: "1")
+    }
+
+    changeSet(author: 'sheep', id: '2019-09-29-updateDataType') {
+        modifyDataType(tableName: 'devops_env', columnName: 'description', newDataType: 'VARCHAR(500)')
+    }
+
+    changeSet(author: 'scp', id: '2019-10-23-addColumn') {
         addColumn(tableName: 'devops_env') {
-            column(name: 'type', type: 'varchar(10)', defaultValue: 'user', remarks: '判断环境类型是否是user', afterColumn: 'is_failed')
+            column(name: 'type', type: 'varchar(10)', defaultValue: 'user', remarks: '环境类型', afterColumn: 'is_failed')
         }
+    }
+
+    changeSet(author: 'zmf', id: '2019-12-12-add-project-code-type-constraint') {
+        preConditions(onFail: 'MARK_RAN') {
+            columnExists(tableName: "devops_env", columnName:"project_id")
+            columnExists(tableName: "devops_env", columnName:"code")
+            columnExists(tableName: "devops_env", columnName:"type")
+            sqlCheck(expectedResult: "0", sql: """
+                SELECT COUNT(1)
+                FROM (SELECT 1
+                FROM devops_env duplication
+                WHERE duplication.project_id IS NOT NULL
+                AND duplication.code IS NOT NULL
+                AND duplication.type IS NOT NULL
+                GROUP BY duplication.project_id, duplication.code, duplication.type
+                HAVING COUNT(1) > 1) tmp""")
+        }
+        addUniqueConstraint(tableName: 'devops_env',
+                constraintName: 'devops_env_uk_project_code_type', columnNames: 'project_id,code,type')
+    }
+
+    changeSet(author: 'zmf', id: '2019-12-12-add-cluster-code-constraint') {
+        preConditions(onFail: 'MARK_RAN') {
+            columnExists(tableName: "devops_env", columnName:"cluster_id")
+            columnExists(tableName: "devops_env", columnName:"code")
+            sqlCheck(expectedResult: "0", sql: """
+                SELECT COUNT(1)
+                FROM (SELECT 1
+                FROM devops_env duplication
+                WHERE duplication.cluster_id IS NOT NULL
+                AND duplication.code IS NOT NULL
+                GROUP BY duplication.cluster_id, duplication.code
+                HAVING COUNT(1) > 1) tmp""")
+        }
+        addUniqueConstraint(tableName: 'devops_env',
+                constraintName: 'devops_env_uk_cluster_code', columnNames: 'cluster_id,code')
+    }
+
+    changeSet(author: 'zmf', id: '2019-12-12-drop-devops-env-constraint') {
+        preConditions(onFail: 'MARK_RAN') {
+            indexExists(tableName: "devops_env", indexName: "devops_envs_uk_cluster_and_project_code")
+            indexExists(tableName: "devops_env", indexName: "devops_env_uk_project_code_type")
+            indexExists(tableName: "devops_env", indexName: "devops_env_uk_cluster_code")
+        }
+        dropUniqueConstraint(constraintName: "devops_envs_uk_cluster_and_project_code", tableName: "devops_env")
+    }
+
+    changeSet(author: 'lihao', id: '2020-07-24-devops_env-modify-column') {
+        sql("ALTER TABLE devops_env MODIFY COLUMN `name` VARCHAR(128)")
     }
 }

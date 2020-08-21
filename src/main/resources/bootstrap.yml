@@ -1,5 +1,6 @@
 server:
   port: 8060
+  max-http-header-size: ${MAX_HTTP_HEADER_SIZE:10240}
 spring:
   application:
     name: devops-service

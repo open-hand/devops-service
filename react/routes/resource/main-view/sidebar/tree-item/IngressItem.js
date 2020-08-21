@@ -38,7 +38,7 @@ function IngressItem({
 
   function freshMenu() {
     freshTree();
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     if (itemType === INGRESS_GROUP && envId === parentId) {
       setUpTarget({
         type: INGRESS_GROUP,
@@ -53,7 +53,7 @@ function IngressItem({
   }
 
   function getEnvIsNotRunning() {
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     const envRecord = treeDs.find((item) => item.get('key') === envId);
     const connect = envRecord.get('connect');
     return !connect;
@@ -63,7 +63,7 @@ function IngressItem({
     return checkExist({
       projectId,
       type: 'ingress',
-      envId: record.get('parentId').split('-')[0],
+      envId: record.get('parentId').split('**')[0],
       id: record.get('id'),
     }).then((isExist) => {
       if (!isExist) {
@@ -82,7 +82,7 @@ function IngressItem({
           drawer: true,
           title: formatMessage({ id: 'domain.update.head' }),
           children: <DomainForm
-            envId={record.get('parentId').split('-')[0]}
+            envId={record.get('parentId').split('**')[0]}
             ingressId={record.get('id')}
             refresh={freshMenu}
             intlPrefix={intlPrefix}
@@ -97,7 +97,7 @@ function IngressItem({
   function getSuffix() {
     const id = record.get('id');
     const ingressName = record.get('name');
-    const [envId] = record.get('parentId').split('-');
+    const [envId] = record.get('parentId').split('**');
     const status = record.get('status');
     const disabled = getEnvIsNotRunning() || status === 'operating';
     if (disabled) {

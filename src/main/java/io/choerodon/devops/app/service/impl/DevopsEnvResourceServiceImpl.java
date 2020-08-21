@@ -10,6 +10,8 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -22,7 +24,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.util.CollectionUtils;
 
 /**
  * Created by younger on 2018/4/25.
@@ -30,6 +31,7 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
+    private static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
     private static final String LINE_SEPARATOR = "line.separator";
     private static final String NONE_LABEL = "<none>";
     private static JSON json = new JSON();
@@ -596,6 +598,72 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public List<DevopsEnvResourceDTO> listEnvResourceByOptions(Long envId, String type, List<String> names) {
-        return devopsEnvResourceMapper.listEnvResourceByOptions(envId,type,names);
+        return devopsEnvResourceMapper.listEnvResourceByOptions(envId, type, names);
+    }
+
+    @Override
+    public List<PodEventVO> listPodEventBycommandId(Long commandId) {
+
+        Assert.notNull(commandId, ERROR_COMMAND_ID_IS_NULL);
+
+        List<DevopsCommandEventDTO> devopsCommandEventDTOS = devopsCommandEventService.listByCommandId(commandId);
+        List<DevopsCommandEventDTO> commandEventTypeJob = devopsCommandEventDTOS.stream().filter(v -> ResourceType.JOB.getType().equals(v.getType())).collect(Collectors.toList());
+        List<DevopsCommandEventDTO> commandEventTypePod = devopsCommandEventDTOS.stream().filter(v -> ResourceType.POD.getType().equals(v.getType())).collect(Collectors.toList());
+
+        //获取实例中job的event
+        List<PodEventVO> podEventVOS = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(commandEventTypeJob)) {
+            LinkedHashMap<String, String> jobEvents = getDevopsCommandEvent(commandEventTypeJob);
+            jobEvents.forEach((key, value) -> {
+                PodEventVO podEventVO = new PodEventVO();
+                podEventVO.setName(key);
+                podEventVO.setEvent(value);
+                podEventVOS.add(podEventVO);
+            });
+        }
+        List<DevopsEnvResourceDTO> jobs = baseListByCommandId(commandId);
+        List<DevopsEnvCommandLogDTO> devopsEnvCommandLogES = devopsEnvCommandLogService
+                .baseListByDeployId(commandId);
+        for (int i = 0; i < jobs.size(); i++) {
+            DevopsEnvResourceDTO job = jobs.get(i);
+            DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO =
+                    devopsEnvResourceDetailService.baesQueryByMessageId(
+                            job.getResourceDetailId());
+            V1Job v1Job = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Job.class);
+            if (podEventVOS.size() < 4) {
+                //job日志
+                if (i <= devopsEnvCommandLogES.size() - 1) {
+                    if (podEventVOS.size() == i) {
+                        PodEventVO podEventVO = new PodEventVO();
+                        podEventVO.setName(v1Job.getMetadata().getName());
+                        podEventVOS.add(podEventVO);
+                    }
+                    podEventVOS.get(i).setLog(devopsEnvCommandLogES.get(i).getLog());
+                }
+                //获取job状态
+                if (i <= podEventVOS.size() - 1) {
+                    if (podEventVOS.size() == i) {
+                        PodEventVO podEventVO = new PodEventVO();
+                        podEventVOS.add(podEventVO);
+                    }
+                    setJobStatus(v1Job, podEventVOS.get(i));
+                }
+            }
+        }
+        //获取实例中pod的event
+        if (!CollectionUtils.isEmpty(commandEventTypePod)) {
+            LinkedHashMap<String, String> podEvents = getDevopsCommandEvent(commandEventTypePod);
+            int index = 0;
+            for (Map.Entry<String, String> entry : podEvents.entrySet()) {
+                PodEventVO podEventVO = new PodEventVO();
+                podEventVO.setName(entry.getKey());
+                podEventVO.setEvent(entry.getValue());
+                podEventVOS.add(podEventVO);
+                if (index++ >= 4) {
+                    break;
+                }
+            }
+        }
+        return podEventVOS;
     }
 }

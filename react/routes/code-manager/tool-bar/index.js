@@ -3,7 +3,9 @@ import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Header, Choerodon } from '@choerodon/boot';
-import { Button, Select, Form, Menu, Dropdown, Icon, UrlField, TextField } from 'choerodon-ui/pro';
+import {
+  Button, Select, Form, Menu, Dropdown, Icon, UrlField, TextField,
+} from 'choerodon-ui/pro';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Tooltip } from 'choerodon-ui';
 import _ from 'lodash';
@@ -46,15 +48,19 @@ const CodeManagerToolBar = injectIntl(inject('AppState')(observer((props) => {
       }
     });
   };
-  return <React.Fragment>
-    <Header>
-      {getSelfToolBar()}
-      <Button
-        onClick={refreshApp}
-        icon="refresh"
-      >{formatMessage({ id: 'refresh' })}</Button>
-    </Header>
-  </React.Fragment>;
+  return (
+    <>
+      <Header>
+        {getSelfToolBar()}
+        <Button
+          onClick={refreshApp}
+          icon="refresh"
+        >
+          {formatMessage({ id: 'refresh' })}
+        </Button>
+      </Header>
+    </>
+  );
 })));
 
 export default CodeManagerToolBar;
@@ -74,59 +80,73 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
           disabled
           defaultValue={(currentApp && currentApp.sshRepositoryUrl) || noRepoUrl}
           label={formatMessage({ id: 'repository.SSHaddress' })}
-          addonAfter={
+          addonAfter={(
             <CopyToClipboard
               text={(currentApp && currentApp.sshRepositoryUrl) || noRepoUrl}
               onCopy={handleCopy}
             >
               <Icon type="content_copy" style={{ cursor: 'pointer' }} />
             </CopyToClipboard>
-          }
+          )}
         />
         <TextField
           disabled
           defaultValue={(currentApp && currentApp.repoUrl) || noRepoUrl}
           label={formatMessage({ id: 'repository.HTTPSaddress' })}
-          addonAfter={
+          addonAfter={(
             <CopyToClipboard
               text={(currentApp && currentApp.repoUrl) || noRepoUrl}
               onCopy={handleCopy}
             >
               <Icon type="content_copy" style={{ cursor: 'pointer' }} />
             </CopyToClipboard>
-          }
+          )}
         />
       </Form>
     </div>
   );
+
+  function rendererAppServiceId({ value, text }) {
+    const record = appServiceDs.find((appServiceRecord) => appServiceRecord.get('id') === value);
+
+    try {
+      return `${text}(${record.get('code')})`;
+    } catch (e) {
+      return text;
+    }
+  }
 
   function renderAppServiceOption({ value, text }) {
     const record = appServiceDs.find((appServiceRecord) => appServiceRecord.get('id') === value);
     if (record) {
       return (
         <Tooltip title={record.get('code')}>
-          {text}
+          {rendererAppServiceId({ value, text })}
         </Tooltip>
       );
     }
+    return '';
   }
 
-  return <div style={{ paddingLeft: 24, display: 'flex', alignItems: 'center' }}>
-    <Form columns={2} style={{ maxWidth: '3.5rem' }}>
-      <Select
-        colSpan={1}
-        className="c7ncd-cm-select"
-        label={formatMessage({ id: 'c7ncd.deployment.app-service' })}
-        dataSet={selectAppDs}
-        notFoundContent={appServiceDs.length === 0 ? formatMessage({ id: 'ist.noApp' }) : '未找到应用服务'}
-        searchable
-        name="appServiceId"
-        clearButton={false}
-        disabled={appServiceDs.status !== 'ready' || appServiceDs.length === 0}
-        optionRenderer={renderAppServiceOption}
-      >
-        {
-          localStorage.getItem('recent-app') && <OptGroup label={formatMessage({ id: 'deploy.app-recent' })} key="app-recent">
+  return (
+    <div style={{ paddingLeft: 24, display: 'flex', alignItems: 'center' }}>
+      <Form columns={2} style={{ maxWidth: '5.5rem' }}>
+        <Select
+          colSpan={1}
+          className="c7ncd-cm-select"
+          label={formatMessage({ id: 'c7ncd.deployment.app-service' })}
+          dataSet={selectAppDs}
+          notFoundContent={appServiceDs.length === 0 ? formatMessage({ id: 'ist.noApp' }) : '未找到应用服务'}
+          searchable
+          name="appServiceId"
+          clearButton={false}
+          disabled={appServiceDs.status !== 'ready' || appServiceDs.length === 0}
+          optionRenderer={renderAppServiceOption}
+          renderer={rendererAppServiceId}
+        >
+          {
+          localStorage.getItem('recent-app') && (
+          <OptGroup label={formatMessage({ id: 'deploy.app-recent' })} key="app-recent">
             {
               _.map(JSON.parse(localStorage.getItem('recent-app'))[projectId], ({ id, code, name: opName }, index) => (
                 <Option
@@ -134,44 +154,49 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
                   key={index}
                 >
                   {opName}
-                </Option>))
+                </Option>
+              ))
             }
           </OptGroup>
+          )
         }
 
-        <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-          {
+          <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
+            {
             _.map(appServiceDs.toData(), ({ id, code, name: opName }, index) => (
               <Option
                 value={id}
                 key={index}
               >
                 {opName}
-              </Option>))
+              </Option>
+            ))
           }
-        </OptGroup>
+          </OptGroup>
 
-      </Select>
-    </Form>
-    <Dropdown
-      trigger={['click', 'focus']}
-      overlay={copyMenu}
-      placement="bottomRight"
-    >
-      <Button
-        funcType="raised"
-        disabled={!(currentApp && currentApp.repoUrl)}
-        className="c7ncd-copyBtn"
-        style={{ margin: '-0.15rem 0 0 0.2rem' }}
-      >
-        <span className="c7ncd-copyBtn-span">
-          {formatMessage({ id: 'repository.copyUrl' })}
-          <Icon
-            style={{ marginLeft: '.18rem' }}
-            type="arrow_drop_down"
-          />
-        </span>
-      </Button>
-    </Dropdown>
-  </div>;
+        </Select>
+        <Dropdown
+          trigger={['click', 'focus']}
+          overlay={copyMenu}
+          placement="bottomRight"
+          colSpan={1}
+        >
+          <Button
+            funcType="raised"
+            disabled={!(currentApp && currentApp.repoUrl)}
+            className="c7ncd-copyBtn"
+          >
+            <span className="c7ncd-copyBtn-span">
+              {formatMessage({ id: 'repository.copyUrl' })}
+              <Icon
+                style={{ marginLeft: '.18rem' }}
+                type="arrow_drop_down"
+              />
+            </span>
+          </Button>
+        </Dropdown>
+      </Form>
+
+    </div>
+  );
 })));

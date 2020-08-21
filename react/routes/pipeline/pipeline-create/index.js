@@ -114,7 +114,7 @@ export default class PipelineCreate extends Component {
           .createPipeline(projectId, {
             name,
             triggerType,
-            pipelineUserRels: triggerType === STAGE_FLOW_MANUAL ? _.map(users, (item) => Number(item)) : null,
+            pipelineUserRels: triggerType === STAGE_FLOW_MANUAL ? _.map(users, (item) => item) : null,
             pipelineStageVOs,
             projectId,
           })

@@ -20,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     }),
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc.name` }) },
     { name: 'status', type: 'string', label: formatMessage({ id: 'status' }) },
     { name: 'pvName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc.pv` }) },

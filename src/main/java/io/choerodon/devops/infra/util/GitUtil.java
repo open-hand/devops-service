@@ -225,6 +225,7 @@ public class GitUtil {
             cloneCommand.setDirectory(new File(path));
             return cloneCommand.call();
         } catch (GitAPIException e) {
+            LOGGER.debug("Failed to clone by ssh: path: {}, url: {}", path, url);
             throw new CommonException(e.getMessage(), e);
         }
     }

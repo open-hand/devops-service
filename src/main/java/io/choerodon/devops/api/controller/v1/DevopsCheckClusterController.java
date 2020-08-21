@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +29,10 @@ public class DevopsCheckClusterController {
     @ApiOperation(value = "验证用户是否拥有操作集群的权限")
     @GetMapping(value = "/clusterCheck")
     public ResponseEntity<Boolean> checkUserClusterPermission(
+            @Encrypt
             @ApiParam(value = "集群ID", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
+            @Encrypt
             @ApiParam(value = "用户ID", required = true)
             @RequestParam(value = "user_id") Long  userId) {
         return new ResponseEntity<>(devopsClusterService.checkUserClusterPermission(clusterId, userId), HttpStatus.OK);

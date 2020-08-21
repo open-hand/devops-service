@@ -10,10 +10,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
                 constraints(unique: true, uniqueConstraintName: 'uk_gitlab_group_id')
             }
 
-            column(name: 'gitlab_uuid', type: 'VARCHAR(50)')
-            column(name: 'harbor_uuid', type: 'VARCHAR(50)')
-            column(name: 'member_uuid', type: 'VARCHAR(50)')
-
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
@@ -28,11 +24,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
         }
     }
 
-    changeSet(author: 'runge', id: '2018-07-30-drop-column') {
-        dropColumn(columnName: 'gitlab_uuid', tableName: 'devops_project')
-        dropColumn(columnName: 'harbor_uuid', tableName: 'devops_project')
-        dropColumn(columnName: 'member_uuid', tableName: 'devops_project')
-    }
 
     changeSet(id: '2018-10-08-rename-column', author: 'younger') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'iam_project_id', oldColumnName: 'id', remarks: 'iam project id', tableName: 'devops_project')
@@ -46,15 +37,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
             column(name: 'harbor_project_user_name', type: 'VARCHAR(50)', afterColumn: 'devops_env_group_id',remarks: 'harbor项目默认用户')
             column(name: 'harbor_project_user_password', type: 'VARCHAR(50)',afterColumn: 'harbor_project_user_name', remarks: 'harbor项目默认用户密码')
             column(name: 'harbor_project_user_email', type: 'VARCHAR(50)', afterColumn: 'harbor_project_user_password',remarks: 'harbor项目默认用户邮箱')
-            column(name: 'harbor_project_is_private', type: 'TINYINT UNSIGNED', defaultValue: "0", afterColumn: 'harbor_project_user_email',remarks: 'harbor仓库是否私有。0公有，1私有')
+            column(name: 'harbor_project_is_private', type: 'TINYINT UNSIGNED', defaultValue: "1", afterColumn: 'harbor_project_user_email',remarks: 'harbor仓库是否私有。0公有，1私有')
         }
     }
+
     changeSet(author: 'lizhaozhong', id: '2019-12-25-add-column') {
         addColumn(tableName: 'devops_project') {
             column(name: 'harbor_user_id', type: 'BIGINT UNSIGNED', afterColumn: 'harbor_project_is_private',remarks: 'harbor用户id')
             column(name: 'harbor_pull_user_id', type: 'BIGINT UNSIGNED',afterColumn: 'harbor_user_id', remarks: '仅有pull权限的harbor用户id')
         }
     }
+
     changeSet(author: 'zmf', id: '2019-10-27-add-cluster-group-column') {
         addColumn(tableName: 'devops_project') {
             column(name: 'devops_cluster_env_group_id', type: 'BIGINT UNSIGNED', remarks: 'cluster env gitlab group id', afterColumn: 'devops_env_group_id')

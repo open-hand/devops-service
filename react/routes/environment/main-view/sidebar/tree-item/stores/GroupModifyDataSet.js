@@ -41,7 +41,7 @@ export default ({ formatMessage, intlPrefix, id }) => {
       },
       {
         name: 'id',
-        type: 'number',
+        type: 'string',
       },
     ],
   };

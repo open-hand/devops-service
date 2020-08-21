@@ -1,23 +1,11 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Functions;
 import feign.FeignException;
 import feign.RetryableException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
@@ -32,6 +20,19 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -45,6 +46,7 @@ public class GitlabServiceClientOperator {
     private static final String ERROR_RETRY_PIPELINE_FILED = "error.retry.pipeline.filed";
     private static final String ERROR_CANCEL_PIPELINE_FILED = "error.cancel.pipeline.filed";
     @Autowired
+    @Lazy
     private GitlabServiceClient gitlabServiceClient;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -170,16 +172,45 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public void createVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
+    public void createProjectVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
         GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
         gitlabTransferDTO.setKey(key);
         gitlabTransferDTO.setValue(value);
         gitlabServiceClient.addProjectVariable(gitlabProjectId, gitlabTransferDTO, protecteds, userId);
     }
 
-    public void batchAddProjectVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTODTOS) {
-        gitlabServiceClient.batchAddProjectVariable(gitlabProjectId, userId, variableDTODTOS);
+    public List<CiVariableVO> batchSaveGroupVariable(Integer gitlabGroupId, Integer userId, List<CiVariableVO> variableVOS) {
+        try {
+            return gitlabServiceClient.batchSaveGroupVariable(gitlabGroupId, userId, variableVOS).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
+
+    public List<CiVariableVO> batchSaveProjectVariable(Integer gitlabProjectId, Integer userId, List<CiVariableVO> ciVariableVOList) {
+        try {
+            return gitlabServiceClient.batchSaveProjectVariable(gitlabProjectId, userId, ciVariableVOList).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    public void batchDeleteGroupVariable(Integer gitlabGroupId, Integer userId, List<String> keys) {
+        try {
+            gitlabServiceClient.batchGroupDeleteVariable(gitlabGroupId, userId, keys);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    public void batchDeleteProjectVariable(Integer gitlabProjectId, Integer userId, List<String> keys) {
+        try {
+            gitlabServiceClient.batchProjectDeleteVariable(gitlabProjectId, userId, keys);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
 
     public List<String> listProjectToken(Integer gitlabProjectId, String name, Integer userId) {
         ResponseEntity<List<ImpersonationTokenDTO>> impersonationTokens;
@@ -423,13 +454,22 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public List<VariableDTO> listVariable(Integer projectId, Integer userId) {
+    public List<CiVariableVO> listAppServiceVariable(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.listVariable(projectId, userId).getBody();
+            return gitlabServiceClient.listAppServiceVariable(projectId, userId).getBody();
         } catch (FeignException e) {
-            throw new CommonException(e);
+            throw new CommonException("error.devops.ci.variable.key.list");
         }
     }
+
+    public List<CiVariableVO> listProjectVariable(Integer projectId, Integer userId) {
+        try {
+            return gitlabServiceClient.listProjectVariable(projectId, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException("error.devops.ci.variable.key.list");
+        }
+    }
+
 
     public List<DeployKeyDTO> listDeployKey(Integer projectId, Integer userId) {
         try {

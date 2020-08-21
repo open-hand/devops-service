@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: Runge
  * Date: 2018/8/9
@@ -9,7 +11,9 @@ import java.util.Date;
  * Description:
  */
 public class DevopsEnvFileErrorVO {
+    @Encrypt
     private Long id;
+    @Encrypt
     private Long envId;
     private String filePath;
     private String fileUrl;

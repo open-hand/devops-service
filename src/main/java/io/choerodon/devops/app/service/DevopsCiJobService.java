@@ -84,4 +84,6 @@ public interface DevopsCiJobService {
      * @param jobIds 猪齿鱼job id 列表
      */
     void deleteMavenSettingsRecordByJobIds(List<Long> jobIds);
+
+    SonarInfoVO getSonarConfig(Long projectId, Long appServiceId, String code);
 }

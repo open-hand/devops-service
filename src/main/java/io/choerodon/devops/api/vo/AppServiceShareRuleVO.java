@@ -4,6 +4,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 
@@ -14,8 +15,10 @@ import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
  */
 @AtLeastOneNotEmpty(fields = {"versionType", "version","appServiceId"}, message = "error.atleast.one.not.empty")
 public class AppServiceShareRuleVO {
+    @Encrypt
     private Long id;
 
+    @Encrypt
     @ApiModelProperty("应用服务Id/必填")
     @NotNull(message = "error.app.id.null")
     private Long appServiceId;

@@ -29,6 +29,6 @@ public class AgentExecSocketInterceptor extends AbstractSocketInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        return agentExecAndLogSocketHandler.beforeHandshake(request, response);
+        return agentExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
     }
 }

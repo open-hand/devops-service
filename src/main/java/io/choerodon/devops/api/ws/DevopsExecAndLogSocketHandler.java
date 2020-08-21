@@ -3,14 +3,12 @@ package io.choerodon.devops.api.ws;
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
 
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
@@ -29,19 +27,15 @@ public class DevopsExecAndLogSocketHandler {
     private AgentCommandService agentCommandService;
 
 
-    public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-
-        ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) serverHttpRequest;
-        HttpServletRequest request = servletRequest.getServletRequest();
-
+    public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse, Map<String, Object> attributes) {
         //校验ws连接参数是否正确
-        WebSocketTool.checkKey(request);
-        WebSocketTool.checkGroup(request);
-        WebSocketTool.checkEnv(request);
-        WebSocketTool.checkPodName(request);
-        WebSocketTool.checkContainerName(request);
-        WebSocketTool.checkLogId(request);
-        WebSocketTool.checkClusterId(request);
+        WebSocketTool.checkKey(attributes);
+        WebSocketTool.checkGroup(attributes);
+        WebSocketTool.checkEnv(attributes);
+        WebSocketTool.checkPodName(attributes);
+        WebSocketTool.checkContainerName(attributes);
+        WebSocketTool.checkLogId(attributes);
+        WebSocketTool.checkClusterId(attributes);
 
         return true;
     }

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.iam;
 import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by n!Ck
@@ -11,10 +12,13 @@ import io.swagger.annotations.ApiModelProperty;
  * Description:
  */
 public class RolePermissionVO {
+    @Encrypt
     @ApiModelProperty(value = "主键ID")
     private Long id;
+    @Encrypt
     @ApiModelProperty(value = "角色ID/必填")
     private Long roleId;
+    @Encrypt
     @ApiModelProperty(value = "权限ID/必填")
     @NotEmpty(message = "errpr.rolePermission.permissionId.empty")
     private Long permissionId;

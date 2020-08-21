@@ -1,12 +1,16 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  17:19 2019/8/5
  * Description:
  */
 public class ApplicationImportInternalVO {
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long versionId;
     private String type;
     private String appName;

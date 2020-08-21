@@ -7,9 +7,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file_resource.groovy') {
                 constraints(primaryKey: true)
             }
 
-            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境 ID ') {
-                constraints(unique: true)
-            }
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境 ID ')
             column(name: 'file_path', type: 'VARCHAR(512)', remarks: '文件路径')
             column(name: 'resource_type', type: 'VARCHAR(32)', remarks: '资源类型')
             column(name: 'resource_id', type: 'BIGINT UNSIGNED', remarks: '资源ID')
@@ -22,4 +20,9 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file_resource.groovy') {
         }
     }
 
+
+    changeSet(id: '2019-10-31-add-unique-constraint', author: 'zmf') {
+        addUniqueConstraint(tableName: 'devops_env_file_resource',
+                constraintName: 'file_resource_uk_env_type_resource_id', columnNames: 'env_id, resource_type, resource_id')
+    }
 }

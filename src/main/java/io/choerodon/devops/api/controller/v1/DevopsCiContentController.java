@@ -16,12 +16,12 @@ import io.choerodon.swagger.annotation.Permission;
  * 〈〉
  *
  * @author wanghao
- * @Date 2020/4/3 9:30
+ * @since 2020/4/3 9:30
  */
 @RestController
 @RequestMapping("/v1/projects/{project_id}/ci_contents")
 public class DevopsCiContentController {
-    private DevopsCiContentService devopsCiContentService;
+    private final DevopsCiContentService devopsCiContentService;
 
     public DevopsCiContentController(DevopsCiContentService devopsCiContentService) {
         this.devopsCiContentService = devopsCiContentService;

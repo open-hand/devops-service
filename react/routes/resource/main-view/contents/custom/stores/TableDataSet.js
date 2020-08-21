@@ -20,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     }),
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string', label: formatMessage({ id: 'name' }) },
     { name: 'k8sKind', type: 'string', label: formatMessage({ id: `${intlPrefix}.resource.type` }) },
     { name: 'commandErrors', type: 'string' },

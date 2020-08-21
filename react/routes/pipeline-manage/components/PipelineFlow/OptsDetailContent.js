@@ -7,7 +7,6 @@ import DetailHeader from './components/detailHeader';
 import DetailColumn from './components/detailColumn';
 import Loading from '../../../../components/loading';
 import EmptyPage from '../../../../components/empty-page';
-import { usePipelineFlowStore } from './stores';
 import { usePipelineManageStore } from '../../stores';
 
 export default observer((props) => {
@@ -17,12 +16,16 @@ export default observer((props) => {
     projectId,
     status: treeStatus,
     treeDs,
-    stageRecordVOList: treeStageRecordVOList,
+    stageRecordVOS: treeStageRecordVOList,
+    cdRecordId,
+    devopsPipelineRecordRelId,
   } = props;
-
   const {
     intl: { formatMessage },
     intlPrefix,
+    mainStore,
+    history,
+    location,
   } = usePipelineManageStore();
 
   const {
@@ -32,62 +35,65 @@ export default observer((props) => {
   } = detailStore;
 
   useEffect(() => {
-    loadDetailData(projectId, gitlabPipelineId);
-  }, [projectId, gitlabPipelineId]);
+    devopsPipelineRecordRelId && loadDetailData(projectId, devopsPipelineRecordRelId);
+  }, [projectId, cdRecordId, devopsPipelineRecordRelId]);
 
-  // stageRecordVOList: 各个详情阶段记录
+  // stageRecordVOS: 各个详情阶段记录,包括ci和cd的
   // devopsCipiplineVO: 本流水线记录得信息
 
   const {
-    stageRecordVOList,
-    devopsCiPipelineVO,
+    stageRecordVOS,
+    ciCdPipelineVO,
     status,
     gitlabPipelineId: pipelineRecordId,
     gitlabTriggerRef,
     commit,
+    devopsPipelineRecordRelId: recordDevopsPipelineRecordRelId,
   } = getDetailData;
 
   useEffect(() => {
     const treeStatusList = map(treeStageRecordVOList || [], 'status');
-    const detailStatusList = map(stageRecordVOList || [], 'status');
-    if (pipelineRecordId === gitlabPipelineId && (status !== treeStatus || !isEqual(detailStatusList, treeStatusList))) {
+    const detailStatusList = map(stageRecordVOS || [], 'status');
+    if (devopsPipelineRecordRelId === recordDevopsPipelineRecordRelId && (status !== treeStatus || !isEqual(detailStatusList, treeStatusList))) {
       treeDs && treeDs.query();
     }
   }, [pipelineRecordId]);
 
   const renderStage = () => (
-    stageRecordVOList && stageRecordVOList.length > 0 ? stageRecordVOList.map((item) => {
-      const { name, status: stageStatus, durationSeconds, sequence } = item;
+    stageRecordVOS && stageRecordVOS.length > 0 ? stageRecordVOS.map((item) => {
+      const { name, status: stageStatus, durationSeconds, sequence, stageId } = item;
       return (
         <DetailColumn
           key={sequence}
           piplineName={name}
           seconds={durationSeconds}
           piplineStatus={stageStatus}
+          stageId={stageId}
+          history={history}
+          location={location}
           {...item}
           {...props}
         />
       );
-    }) : (
-      <EmptyPage
-        title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
-        describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
-        access
-      />
-    )
+    }) : (<EmptyPage
+      title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
+      describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
+      access
+    />)
   );
 
   return (
     !getDetailLoading
       ? <div className="c7n-piplineManage">
         <DetailHeader
-          gitlabPipelineId={gitlabPipelineId}
-          parentName={devopsCiPipelineVO && devopsCiPipelineVO.name}
-          appServiceName={devopsCiPipelineVO && devopsCiPipelineVO.appServiceName}
+          devopsPipelineRecordRelId={devopsPipelineRecordRelId}
+          appServiceName={ciCdPipelineVO && ciCdPipelineVO.appServiceName}
+          appServiceId={ciCdPipelineVO && ciCdPipelineVO.appServiceId}
           aHref={commit && commit.gitlabProjectUrl}
           triggerRef={gitlabTriggerRef}
-
           status={status}
+          mainStore={mainStore}
+          projectId={projectId}
         />
         <div className="c7n-piplineManage-detail">
           {renderStage()}

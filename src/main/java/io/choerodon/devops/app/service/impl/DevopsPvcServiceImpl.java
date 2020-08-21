@@ -1,23 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-
 import com.google.gson.Gson;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
-import io.kubernetes.client.models.V1ResourceRequirements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -44,6 +27,22 @@ import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.models.V1ResourceRequirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
@@ -79,6 +78,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
 
     @Override
@@ -86,7 +87,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM,
             description = "Devops创建PVC", inputSchema = "{}")
     public DevopsPvcRespVO create(Long projectId, DevopsPvcReqVO devopsPvcReqVO) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcReqVO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsPvcReqVO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
@@ -113,7 +114,9 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean delete(Long envId, Long pvcId) {
+    public boolean delete(Long projectId, Long envId, Long pvcId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+
         DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(pvcId);
 
         if (devopsPvcDTO == null) {
@@ -121,8 +124,6 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
@@ -179,8 +180,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             v1ObjectMeta.setName(devopsPvcDTO.getName());
             v1PersistentVolumeClaim.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1PersistentVolumeClaim);
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId,
+            Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, gitlabEnvProjectId,
                     CommandType.DELETE.getType(), userAttrDTO.getGitlabUserId(),
                     pvcId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(),
                     null, false, devopsEnvironmentDTO.getId(), path);
@@ -278,6 +279,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         return devopsPvcDTO;
     }
 
+    @Override
     public void baseUpdate(DevopsPvcDTO devopsPvcDTO) {
         DevopsPvcDTO oldDevopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(devopsPvcDTO.getId());
         if (oldDevopsPvcDTO == null) {
@@ -372,6 +374,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 
+    @Override
     public void operatePvcBySaga(PersistentVolumeClaimPayload persistentVolumeClaimPayload) {
         try {
             // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆

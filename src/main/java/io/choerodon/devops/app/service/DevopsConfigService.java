@@ -16,24 +16,14 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 2019/03/11
  */
 public interface DevopsConfigService {
-
     /**
      * 项目下处理
-     *
-     * @param resourceId
-     * @param resourceType
-     * @param devopsConfigVO
-     * @return
      */
     void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVO);
 
 
     /**
      * 项目下根据类型查询配置
-     *
-     * @param resourceId
-     * @param resourceType
-     * @return
      */
     List<DevopsConfigVO> queryByResourceId(Long resourceId, String resourceType);
 
@@ -85,8 +75,5 @@ public interface DevopsConfigService {
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 
     void deleteByConfigIds(Set<Long> configIds);
-
-    Integer getHarborProjectId(List<ProjectDetail> projectDetailList, String harborProjectName);
-
 }
 

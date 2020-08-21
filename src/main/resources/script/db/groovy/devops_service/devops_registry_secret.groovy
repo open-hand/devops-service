@@ -54,4 +54,16 @@ databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
         addUniqueConstraint(tableName: 'devops_registry_secret',
                 constraintName: 'registry_secret_uk_config_cluster_namespace', columnNames: 'config_id,cluster_id,namespace,project_id')
     }
+    changeSet(author: 'wx', id: '2020-6-16-add-column') {
+        addColumn(tableName: 'devops_registry_secret') {
+            column(name: 'repo_type', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
+        }
+    }
+    changeSet(author: 'wx', id: '2020-6-23-update-column') {
+        sql("""
+              alter table 
+              devops_registry_secret 
+              modify secret_detail varchar(1500)
+            """)
+    }
 }

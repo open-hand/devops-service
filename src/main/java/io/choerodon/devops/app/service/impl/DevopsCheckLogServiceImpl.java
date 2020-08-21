@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
+import io.choerodon.devops.app.service.AppServiceVersionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCheckLogMapper devopsCheckLogMapper;
     @Autowired
     private PipelineTaskMapper pipelineTaskMapper;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
 
     @Override
     public void checkLog(String version) {
@@ -69,10 +72,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
-                if("0.21.1".equals(version)){
+                if ("0.21.1".equals(version)) {
                     LOGGER.info("修复数据开始!");
                     pipelineTaskMapper.deletePipelineTask();
                     LOGGER.info("修复数据完成!!!!!!");
+                } else if ("0.23.0".equals(version)) {
+                    LOGGER.info("修复数据开始!");
+                    appServiceVersionService.fixHarbor();
+                    LOGGER.info("修复数据完成!!!!!!");
+                } else if("0.23.0-alpha.4".equals(version)){
+
                 } else {
                     LOGGER.info("version not matched");
                 }

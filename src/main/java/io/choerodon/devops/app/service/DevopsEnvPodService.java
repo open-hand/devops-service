@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -53,6 +53,6 @@ public interface DevopsEnvPodService {
      */
     List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort);
 
-    void deleteEnvPodById(Long envId, Long podId);
+    void deleteEnvPodById(Long projectId, Long envId, Long podId);
 
 }

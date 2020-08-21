@@ -5,11 +5,13 @@ import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 import static org.hzero.websocket.constant.WebSocketConstant.Attributes.PROCESSOR;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 
+import org.hzero.core.util.StringPool;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.hzero.websocket.redis.BrokerServerSessionRedis;
 import org.hzero.websocket.registry.BaseSessionRegistry;
@@ -22,6 +24,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
+import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -135,7 +139,7 @@ public class WebSocketTool {
             try {
                 session.close();
             } catch (IOException e) {
-                LOGGER.warn("close web socket session failed {}", e);
+                LOGGER.warn("close web socket session failed", e);
             }
         }
     }
@@ -161,48 +165,49 @@ public class WebSocketTool {
     }
 
 
-    public static void checkGroup(HttpServletRequest request) {
-        checkParameter(request, GROUP);
+    public static void checkGroup(Map<String, Object> attributes) {
+        checkParameter(attributes, GROUP);
     }
 
-    public static void checkKey(HttpServletRequest request) {
-        checkParameter(request, KEY);
+    public static void checkKey(Map<String, Object> attributes) {
+        checkParameter(attributes, KEY);
     }
 
-    public static void checkEnv(HttpServletRequest request) {
-        checkParameter(request, ENV);
+    public static void checkEnv(Map<String, Object> attributes) {
+        checkParameter(attributes, ENV);
     }
 
-    public static void checkKind(HttpServletRequest request) {
-        checkParameter(request, KIND);
+    public static void checkKind(Map<String, Object> attributes) {
+        checkParameter(attributes, KIND);
     }
 
-    public static void checkName(HttpServletRequest request) {
-        checkParameter(request, NAME);
+    public static void checkName(Map<String, Object> attributes) {
+        checkParameter(attributes, NAME);
     }
 
-    public static void checkDescribeId(HttpServletRequest request) {
-        checkParameter(request, DESCRIBE_Id);
+    public static void checkDescribeId(Map<String, Object> attributes) {
+        checkParameter(attributes, DESCRIBE_Id);
     }
 
-    public static void checkPodName(HttpServletRequest request) {
-        checkParameter(request, POD_NAME);
+    public static void checkPodName(Map<String, Object> attributes) {
+        checkParameter(attributes, POD_NAME);
     }
 
-    public static void checkContainerName(HttpServletRequest request) {
-        checkParameter(request, CONTAINER_NAME);
+    public static void checkContainerName(Map<String, Object> attributes) {
+        checkParameter(attributes, CONTAINER_NAME);
     }
 
-    public static void checkLogId(HttpServletRequest request) {
-        checkParameter(request, LOG_ID);
+    public static void checkLogId(Map<String, Object> attributes) {
+        checkParameter(attributes, LOG_ID);
     }
 
-    public static void checkClusterId(HttpServletRequest request) {
-        checkParameter(request, CLUSTER_ID);
+    public static void checkClusterId(Map<String, Object> attributes) {
+        checkParameter(attributes, CLUSTER_ID);
     }
 
-    private static void checkParameter(HttpServletRequest request, String parameter) {
-        if (isEmptyOrTrimmedEmpty(request.getParameter(parameter))) {
+    private static void checkParameter(Map<String, Object> attributes, String parameter) {
+        Object value = attributes.get(parameter);
+        if (value == null || isEmptyOrTrimmedEmpty(String.valueOf(attributes.get(parameter)))) {
             throw new HandshakeFailureException(String.format(PARAMETER_NULL_TEMPLATE, parameter));
         }
     }
@@ -232,5 +237,46 @@ public class WebSocketTool {
             }
         }
         return a.toString();
+    }
+
+    public static void preProcessAttributeAboutKeyEncryption(Map<String, Object> attributes) {
+        Object clusterId = attributes.get(CLUSTER_ID);
+        Object group = attributes.get(GROUP);
+        Object key = attributes.get(KEY);
+        Object describeId = attributes.get(DESCRIBE_Id);
+
+        if (clusterId != null) {
+            attributes.put(CLUSTER_ID, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(clusterId)));
+        }
+        if (group != null) {
+            // 按照冒号分成两段
+            String[] values = String.valueOf(group).split(COLON, 2);
+            attributes.put(GROUP, values[0] + COLON + decryptKey(values[1]));
+        }
+        if (key != null) {
+            attributes.put(KEY, decryptKey(String.valueOf(key)));
+        }
+        if (describeId != null) {
+            attributes.put(KEY, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(describeId)));
+        }
+    }
+
+    private static String decryptKey(String key) {
+        Map<String, String> keyPairs = KeyParseUtil.parseKeyInOrder(key);
+        new HashSet<>(keyPairs.keySet()).forEach(k -> {
+            String value = keyPairs.get(k);
+            if (value != null) {
+                keyPairs.put(k, String.valueOf(KeyDecryptHelper.decryptValueOrIgnoreForWs(value)));
+            }
+        });
+        StringBuilder result = new StringBuilder();
+        keyPairs.forEach((k, v) -> {
+            result.append(k).append(COLON).append(v);
+            result.append(StringPool.DOT);
+        });
+        if (result.length() > 0) {
+            result.deleteCharAt(result.length() - 1);
+        }
+        return result.toString();
     }
 }

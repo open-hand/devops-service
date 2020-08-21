@@ -4,20 +4,24 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by Zenger on 2018/4/19.
  */
 public class DevopsServiceVO extends DevopsResourceDataInfoVO {
-
+    @Encrypt
     private Long id;
     private String name;
     private String status;
+    @Encrypt
     private Long envId;
     private String envName;
     private String type;
     private Boolean envStatus;
+    @Encrypt
     private Long appServiceId;
+    @Encrypt
     private Long appServiceProjectId;
     private String appServiceName;
     private String dns;

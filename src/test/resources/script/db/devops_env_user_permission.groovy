@@ -3,7 +3,9 @@ package script.db
 databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
     changeSet(author: 'n1ck', id: '2018-10-25-create-table') {
         createTable(tableName: "devops_env_user_permission", remarks: '环境用户权限表') {
-
+            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
+                constraints(primaryKey: true)
+            }
             column(name: 'login_name', type: 'VARCHAR(32)', remarks: '用户id')
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id')
             column(name: 'is_permitted', type: 'TINYINT UNSIGNED', remarks: '是否有权限', defaultValue: '0')
@@ -27,4 +29,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
         addUniqueConstraint(tableName: 'devops_env_user_permission',
                 constraintName: 'uk_iam_user_id_env_id', columnNames: 'iam_user_id,env_id')
     }
+
 }

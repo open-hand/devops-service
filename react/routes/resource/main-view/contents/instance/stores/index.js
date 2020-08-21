@@ -48,7 +48,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
     })), []);
 
-
     function freshTree() {
       treeDs.query();
     }
@@ -71,7 +70,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     }
 
     function checkIstExist() {
-      const [envId] = parentId.split('-');
+      const [envId] = parentId.split('**');
       return resourceStore.checkExist({
         projectId,
         type: 'instance',
@@ -92,7 +91,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
           baseDs.query();
           casesDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/${id}/events`;
           podsDs.transport.read = ({ data }) => {
-            const [envId, appId] = parentId.split('-');
+            const [envId, appId] = parentId.split('**');
             const postData = getTablePostData(data);
             const param = getViewType === 'instance' ? `&app_service_id=${appId}` : '';
             return {
@@ -102,7 +101,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
             };
           };
           podsDs.transport.destroy = ({ data }) => {
-            const [envId, appId] = parentId.split('-');
+            const [envId, appId] = parentId.split('**');
             const podId = data[0].id;
             return {
               url: `devops/v1/projects/${projectId}/pods/${podId}?env_id=${envId}`,
@@ -132,7 +131,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
       checkIstExist,
       instanceId: id,
-      envId: parentId.split('-')[0],
+      envId: parentId.split('**')[0],
       treeDs,
     };
     return (

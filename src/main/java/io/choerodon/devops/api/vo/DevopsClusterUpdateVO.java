@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 更新集群
@@ -10,6 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author zmf
  */
 public class DevopsClusterUpdateVO {
+    @Encrypt
     @ApiModelProperty("集群id/必需")
     @NotNull(message = "error.cluster.id.null")
     private Long id;

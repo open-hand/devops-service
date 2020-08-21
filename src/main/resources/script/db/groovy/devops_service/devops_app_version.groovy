@@ -29,7 +29,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
 
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "idx_app_id",tableName: "devops_app_version")
+        dropIndex(indexName: "idx_app_id", tableName: "devops_app_version")
 
         createIndex(indexName: "app_version_idx_app_id", tableName: "devops_app_version") {
             column(name: "app_id")
@@ -72,5 +72,21 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
         }
         dropColumn(columnName: "is_publish", tableName: "devops_app_service_version")
         dropColumn(columnName: "publish_time", tableName: "devops_app_service_version")
+    }
+
+    changeSet(author: 'wx', id: '2020-6-15-add-column') {
+        addColumn(tableName: 'devops_app_service_version') {
+            column(name: 'repo_type', type: 'VARCHAR(64)', afterColumn: 'id', remarks: '仓库类型(DEFAULT_REPO、CUSTOM_REPO)')
+        }
+        sql("""
+            UPDATE 
+            devops_app_service_version dasv 
+            set object_version_number=1
+            """)
+    }
+    changeSet(author: 'wanghao', id: '2020-7-07-add-column') {
+        addColumn(tableName: 'devops_app_service_version') {
+            column(name: 'ref', type: 'VARCHAR(64)', afterColumn: 'commit', remarks: 'gitlab commit ref')
+        }
     }
 }

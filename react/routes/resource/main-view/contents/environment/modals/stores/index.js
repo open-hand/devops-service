@@ -8,7 +8,6 @@ import OptionsDataSet from './OptionsDataSet';
 import { useResourceStore } from '../../../../../stores';
 import useDeployStore from '../../../../../../deployment/stores/useStore';
 
-
 const Store = createContext();
 
 export function useModalStore() {
@@ -31,7 +30,7 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
 
   const linkServiceDs = useMemo(() => new DataSet({
     fields: [
-      { name: 'appServiceId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app-service` }), required: true },
+      { name: 'appServiceId', type: 'string', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app-service` }), required: true },
     ],
   }), [projectId]);
 

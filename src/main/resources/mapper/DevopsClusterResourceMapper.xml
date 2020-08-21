@@ -2,7 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper">
     <select id="queryByClusterIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsClusterResourceDTO">
-       select * from devops_cluster_resource
-       where cluster_id = #{clusterId} AND type = #{type}
+        select *
+        from devops_cluster_resource
+        where cluster_id = #{clusterId}
+          AND type = #{type}
     </select>
 </mapper>

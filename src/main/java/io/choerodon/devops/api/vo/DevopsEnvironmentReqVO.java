@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
@@ -12,6 +13,7 @@ public class DevopsEnvironmentReqVO {
     @NotNull(message = "error.name.null")
     private String name;
 
+    @Encrypt
     @ApiModelProperty("集群ID / 必需")
     @NotNull(message = "error.cluster.id.null")
     private Long clusterId;
@@ -23,6 +25,7 @@ public class DevopsEnvironmentReqVO {
     @ApiModelProperty("环境描述 / 非必需")
     private String description;
 
+    @Encrypt
     @ApiModelProperty("环境分组ID / 非必需")
     private Long devopsEnvGroupId;
 

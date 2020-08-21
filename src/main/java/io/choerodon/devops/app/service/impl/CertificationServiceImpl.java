@@ -16,13 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
-import io.choerodon.devops.api.vo.C7nCertificationVO;
-import io.choerodon.devops.api.vo.CertificationRespVO;
-import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.ProjectCertificationVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -79,6 +77,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsIngressMapper devopsIngressMapper;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -101,14 +101,23 @@ public class CertificationServiceImpl implements CertificationService {
     private Gson gson = new Gson();
 
 
+    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
+        // TODO hzero 主键加密组件修复后删除
+        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
+        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getCertId()));
+        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getEnvId()));
+        certificationVO.setId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getId()));
+        return certificationVO;
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createCertification(Long projectId, C7nCertificationVO certificationDTO,
+    public void createCertification(Long projectId, C7nCertificationCreateVO c7nCertificationCreateVO,
                                     MultipartFile key, MultipartFile cert, Boolean isGitOps) {
-
+        C7nCertificationVO certificationDTO = processEncryptCertification(c7nCertificationCreateVO);
         Long envId = certificationDTO.getEnvId();
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -156,6 +165,8 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
+            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationDTO.getCertId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
             certificationDTO.setType(UPLOAD);
             type = certificationDTO.getType();
             certificationFileDTO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());
@@ -266,7 +277,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteById(Long certId) {
+    public void deleteById(Long projectId, Long certId) {
         CertificationDTO certificationDTO = baseQueryById(certId);
 
         if (certificationDTO == null) {
@@ -274,7 +285,7 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         Long certEnvId = certificationDTO.getEnvId();
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certEnvId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, certEnvId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 

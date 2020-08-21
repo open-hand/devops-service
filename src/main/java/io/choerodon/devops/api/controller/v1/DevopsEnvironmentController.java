@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,13 +45,13 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境信息", required = true)
             @RequestBody @Valid DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         devopsEnvironmentService.create(projectId, devopsEnvironmentReqVO);
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
 
@@ -109,27 +110,6 @@ public class DevopsEnvironmentController {
     }
 
     /**
-     * 项目下环境流水线查询环境
-     *
-     * @param projectId 项目id
-     * @param active    是否启用
-     * @return List
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下环境流水线查询环境")
-    @GetMapping("/list_by_groups")
-    public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listByProjectIdAndActiveWithGroup(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "是否启用", required = true)
-            @RequestParam Boolean active) {
-        return Optional.ofNullable(devopsEnvironmentService.listDevopsEnvGroupEnvs(projectId, active))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
-    }
-
-    /**
      * 项目下启用停用环境
      *
      * @param projectId     项目id
@@ -141,8 +121,8 @@ public class DevopsEnvironmentController {
     @ApiOperation(value = "项目下启用停用环境")
     @PutMapping("/{environment_id}/active")
     public ResponseEntity<Boolean> updateActive(
-            @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "environment_id") Long environmentId,
             @ApiParam(value = "是否启用", required = true)
@@ -166,6 +146,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<DevopsEnvironmentUpdateVO> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "environment_id") Long environmentId) {
         return new ResponseEntity<>(devopsEnvironmentService.query(environmentId), HttpStatus.OK);
@@ -186,6 +167,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<DevopsEnvironmentInfoVO> queryEnvInfo(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "environment_id") Long environmentId) {
         return new ResponseEntity<>(devopsEnvironmentService.queryInfoById(projectId, environmentId), HttpStatus.OK);
@@ -206,6 +188,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<DevopsEnvResourceCountVO> queryEnvResourceCount(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvResourceCount(envId))
@@ -227,6 +210,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<DevopsEnvironmentUpdateVO> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境信息", required = true)
             @RequestBody DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO) {
         return Optional.ofNullable(devopsEnvironmentService.update(devopsEnvironmentUpdateDTO, projectId))
@@ -247,6 +231,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<Boolean> checkCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "环境编码", required = true)
@@ -266,6 +251,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<List<DevopsEnvironmentRepVO>> listByProjectId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appServiceId))
@@ -289,7 +275,8 @@ public class DevopsEnvironmentController {
     public ResponseEntity<EnvSyncStatusVO> queryEnvSyncStatus(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "项目id", required = true)
+            @Encrypt
+            @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvSyncStatus(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -314,6 +301,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<Page<DevopsUserPermissionVO>> pageEnvUserPermissions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
@@ -341,10 +329,12 @@ public class DevopsEnvironmentController {
     public ResponseEntity<Page<DevopsEnvUserVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
             @ApiIgnore PageRequest pageable,
+            @Encrypt
             @ApiParam(value = "指定用户id")
             @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
@@ -364,15 +354,17 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除该用户在该环境下的权限")
     @DeleteMapping(value = "/{env_id}/permission")
-    public ResponseEntity deletePermissionOfUser(
+    public ResponseEntity<Void> deletePermissionOfUser(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
+            @Encrypt
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_id") Long userId) {
         devopsEnvironmentService.deletePermissionOfUser(projectId, envId, userId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -390,6 +382,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<List<DevopsEnvUserVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
@@ -407,15 +400,16 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{env_id}/permission")
-    public ResponseEntity updateEnvUserPermission(
+    public ResponseEntity<Void> updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody @Valid DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
-        devopsEnvironmentService.updateEnvUserPermission(devopsEnvPermissionUpdateVO);
-        return new ResponseEntity(HttpStatus.OK);
+        devopsEnvironmentService.updateEnvUserPermission(projectId, devopsEnvPermissionUpdateVO);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -429,9 +423,10 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除未连接/已停用/失败的环境")
     @DeleteMapping(value = "/{env_id}")
-    public ResponseEntity deleteDeactivatedEnvironment(
+    public ResponseEntity<Void> deleteDeactivatedEnvironment(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
         devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(projectId, envId);
@@ -490,9 +485,10 @@ public class DevopsEnvironmentController {
     public void retryByGitOps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境编码", required = true)
+            @Encrypt
+            @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        devopsEnvironmentService.retryGitOps(envId);
+        devopsEnvironmentService.retryGitOps(projectId, envId);
     }
 
     /**
@@ -527,6 +523,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<List<DevopsEnvironmentRepVO>> listByGroup(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "分组id")
             @RequestParam(value = "group_id", required = false) Long groupId) {
         return Optional.ofNullable(devopsEnvironmentService.listByGroup(projectId, groupId))
@@ -548,6 +545,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<Boolean> deleteCheck(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.deleteCheck(projectId, envId))
@@ -569,6 +567,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<Boolean> disableCheck(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.disableCheck(projectId, envId))
@@ -595,7 +594,9 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "对象类型,对象类型为空时，表示查询环境是否存在")
             @RequestParam(value = "type", required = false) String type,
             @ApiParam(value = "对象id")
+            @Encrypt
             @RequestParam(value = "object_id", required = false) Long objectId,
+            @Encrypt
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.checkExist(projectId, envId, objectId, type))
@@ -618,6 +619,7 @@ public class DevopsEnvironmentController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "环境是否失败", required = false)
             @RequestParam(value = "is_failed", required = false) Boolean isFailed,
+            @Encrypt
             @ApiParam(value = "集群id，传此值时表示查询集群下的环境，不传则查询项目下环境", required = false)
             @RequestParam(value = "cluster_id", required = false) Long clusterId) {
         return new ResponseEntity<>(devopsEnvironmentService.countEnvByOption(projectId, clusterId, isFailed), HttpStatus.OK);

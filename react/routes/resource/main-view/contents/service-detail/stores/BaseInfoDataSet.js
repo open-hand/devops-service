@@ -5,7 +5,7 @@ export default () => ({
   dataKey: null,
   fields: [
     { name: 'name', type: 'string' },
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'config', type: 'object' },
     { name: 'target', type: 'object' },
     { name: 'target', type: 'object' },

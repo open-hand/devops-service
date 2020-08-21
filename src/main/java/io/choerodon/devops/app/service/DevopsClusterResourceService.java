@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.api.vo.PrometheusStageVO;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
+
+import java.util.List;
 
 /**
  * @author zhaotianxin
@@ -22,7 +22,7 @@ public interface DevopsClusterResourceService {
      *
      * @param clusterId
      */
-    void createCertManager(Long clusterId);
+    void createCertManager(Long projectId, Long clusterId);
 
     /**
      * 修改cert-manager的状态
@@ -33,11 +33,11 @@ public interface DevopsClusterResourceService {
      */
     void updateCertMangerStatus(Long clusterId, String status, String error);
 
-    Boolean deleteCertManager(Long clusterId);
+    Boolean deleteCertManager(Long projectId, Long clusterId);
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
-    Boolean uninstallPrometheus(Long clusterId);
+    Boolean uninstallPrometheus(Long projectId, Long clusterId);
 
     List<ClusterResourceVO> listClusterResource(Long clusterId, Long projectId);
 
@@ -93,7 +93,7 @@ public interface DevopsClusterResourceService {
      *
      * @param clusterId
      */
-    void basedeletePrometheus(Long clusterId);
+    void baseDeletePrometheus(Long clusterId);
 
     String getGrafanaUrl(Long projectId, Long clusterId, String type);
 
@@ -121,6 +121,6 @@ public interface DevopsClusterResourceService {
      */
     void retryPrometheusInstance(Long instanceId, Long envId);
 
-    void retryInstallPrometheus(Long clusterId);
+    void retryInstallPrometheus(Long projectId, Long clusterId);
 
 }

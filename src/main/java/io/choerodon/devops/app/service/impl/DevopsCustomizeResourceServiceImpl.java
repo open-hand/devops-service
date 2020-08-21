@@ -12,6 +12,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.app.service.*;
@@ -69,16 +70,19 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO, MultipartFile contentFile) {
+    public void createOrUpdateResource(Long projectId, DevopsCustomizeResourceCreateOrUpdateVO createOrUpdateVO, MultipartFile contentFile) {
+        DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO = processKeyEncrypt(createOrUpdateVO);
 
         String content = devopsCustomizeResourceReqVO.getContent();
 
         String resourceFilePath = String.format(FILE_NAME_PATTERN, GenerateUUID.generateUUID().substring(0, 5));
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceReqVO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsCustomizeResourceReqVO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -153,6 +157,14 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     }
 
+    private DevopsCustomizeResourceReqVO processKeyEncrypt(DevopsCustomizeResourceCreateOrUpdateVO createOrUpdateVO) {
+        // TODO 待hzero兼容 ModelAttribute 注解后删除
+        DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO = ConvertUtils.convertObject(createOrUpdateVO, DevopsCustomizeResourceReqVO.class);
+        devopsCustomizeResourceReqVO.setEnvId(KeyDecryptHelper.decryptValue(createOrUpdateVO.getEnvId()));
+        devopsCustomizeResourceReqVO.setResourceId(KeyDecryptHelper.decryptValue(createOrUpdateVO.getResourceId()));
+        return devopsCustomizeResourceReqVO;
+    }
+
     @Override
     public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceDTO devopsCustomizeResourceDTO, Long envId, Long userId) {
 
@@ -164,14 +176,15 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
 
     @Override
-    public void deleteResource(Long resourceId) {
+    public void deleteResource(Long projectId, Long resourceId) {
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(resourceId);
 
         if (devopsCustomizeResourceDTO == null) {
             return;
         }
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsCustomizeResourceDTO.getEnvId());
+
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息

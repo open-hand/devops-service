@@ -7,11 +7,28 @@ import { useEditAppServiceStore } from './stores';
 
 const { Option } = Select;
 
-const Settings = injectIntl(observer(({ record, handleTestHarbor, handleTestChart }) => {
+const Settings = injectIntl(observer(({ record, handleTestChart }) => {
   const {
     intl: { formatMessage },
     intlPrefix,
   } = useEditAppServiceStore();
+
+  function renderOption({ record: optionRecord, value, text }) {
+    if (optionRecord.get('type') === 'DEFAULT_REPO') {
+      return `${text} (默认Docker仓库)`;
+    } else {
+      return text;
+    }
+  }
+
+  function renderInput({ value, text }) {
+    if (value && value.type === 'DEFAULT_REPO') {
+      return `${text} (默认Docker仓库)`;
+    } else {
+      return text;
+    }
+  }
+
   return (
     <div className="content-settings">
       <div className="content-settings-title">
@@ -25,43 +42,14 @@ const Settings = injectIntl(observer(({ record, handleTestHarbor, handleTestChar
         <FormattedMessage id={`${intlPrefix}.create.settings.tips`} />
       </div>
       <Form record={record}>
-        <SelectBox name="harborType">
-          <Option value="default">
-            {formatMessage({ id: `${intlPrefix}.docker.default` })}
-          </Option>
-          <Option value="custom">
-            {formatMessage({ id: `${intlPrefix}.docker.custom` })}
-          </Option>
-        </SelectBox>
-      </Form>
-      {record.get('harborType') === 'custom' && (<Fragment>
-        <Form record={record}>
-          <UrlField name="url" />
-          <TextField name="userName" />
-          <Password name="password" />
-          <EmailField name="email" />
-          <TextField name="project" />
-        </Form>
-        <div>
-          <Button
-            onClick={handleTestHarbor}
-            funcType="raised"
-            className="content-settings-button"
-          >
-            <FormattedMessage id={`${intlPrefix}.test`} />
-          </Button>
-          {record.get('harborStatus') && (
-            <span>
-              <Icon
-                type={record.get('harborStatus') === 'success' ? 'check_circle' : 'cancel'}
-                className={`content-settings-link-${record.get('harborStatus')}`}
-              />
-              {formatMessage({ id: `${intlPrefix}.test.${record.get('harborStatus')}` })}
-            </span>
-          )}
-        </div>
-      </Fragment>)}
-      <Form record={record}>
+        <Select
+          searchable
+          clearButton={false}
+          name="harborRepoConfigDTO"
+          optionRenderer={renderOption}
+          renderer={renderInput}
+          addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.docker.tips` })} />}
+        />
         <SelectBox name="chartType">
           <Option value="default">
             {formatMessage({ id: `${intlPrefix}.helm.default` })}
@@ -70,11 +58,13 @@ const Settings = injectIntl(observer(({ record, handleTestHarbor, handleTestChar
             {formatMessage({ id: `${intlPrefix}.helm.custom` })}
           </Option>
         </SelectBox>
+        {record.get('chartType') === 'custom' ? [
+          <UrlField name="url" />,
+          <TextField name="userName" />,
+          <Password name="password" />,
+        ] : null}
       </Form>
-      {record.get('chartType') === 'custom' && (<Fragment>
-        <Form record={record}>
-          <UrlField name="chartUrl" />
-        </Form>
+      {record.get('chartType') === 'custom' && (
         <div>
           <Button
             onClick={handleTestChart}
@@ -93,7 +83,7 @@ const Settings = injectIntl(observer(({ record, handleTestHarbor, handleTestChar
             </span>
           )}
         </div>
-      </Fragment>)}
+      )}
     </div>
   );
 }));

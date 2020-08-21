@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
 import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 public interface DevopsConfigMapService {
 
@@ -14,7 +14,7 @@ public interface DevopsConfigMapService {
 
     void deleteByGitOps(Long configMapId);
 
-    void delete(Long configMapId);
+    void delete(Long projectId, Long configMapId);
 
     void checkName(Long envId, String name);
 

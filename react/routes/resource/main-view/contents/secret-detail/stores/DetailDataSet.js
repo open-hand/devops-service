@@ -9,7 +9,7 @@ export default () => ({
     },
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string' },
     { name: 'description', type: 'string' },
     { name: 'key', type: 'object' },

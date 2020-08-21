@@ -9,7 +9,7 @@ export default () => ({
     },
   },
   fields: [
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'string' },
     { name: 'name', type: 'string' },
     { name: 'error', type: 'string' },
     { name: 'commandStatus', type: 'string' },

@@ -10,7 +10,6 @@ import AppTagCreateDataSet from './AppTagCreateDataSet';
 import { useCodeManagerStore } from '../../../stores';
 import useStore from './useStore';
 
-
 const AppTagStore = createContext();
 
 export function useAppTagStore() {
@@ -22,7 +21,7 @@ export const AppTagStoreProvider = injectIntl(inject('AppState')(observer((props
   const { appServiceDs, selectAppDs } = useCodeManagerStore();
   const appServiceId = selectAppDs.current.get('appServiceId');
   const tagStore = useStore();
-  const [appTagDs, appTagCreateDs] = useMemo(() => [new DataSet(AppTagDataSet(projectId, appServiceId)), new DataSet(AppTagCreateDataSet(formatMessage, projectId, appServiceId, tagStore))], [projectId, appServiceId]);
+  const [appTagDs, appTagCreateDs] = useMemo(() => [new DataSet(AppTagDataSet(projectId, appServiceId, tagStore)), new DataSet(AppTagCreateDataSet(formatMessage, projectId, appServiceId, tagStore))], [projectId, appServiceId]);
   
   useEffect(() => {
     if (!appServiceId) return;

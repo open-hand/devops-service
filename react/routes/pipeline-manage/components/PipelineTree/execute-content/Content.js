@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Form, Progress, Select, Icon } from 'choerodon-ui/pro';
+import { Form, Progress, Select, Icon, TextField } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { map, some, debounce } from 'lodash';
 import { axios, Choerodon } from '@choerodon/boot';
@@ -177,7 +177,13 @@ export default observer(() => {
   }
 
   return (
-    <Form dataSet={selectDs} style={{ width: 340 }} ref={changeRef}>
+    <Form
+      dataSet={selectDs}
+      // style={{ width: 340 }}
+      ref={changeRef}
+      columns={3}
+    >
+      <TextField name="appServiceName" disabled />
       <Select
         name="branch"
         searchable
@@ -187,6 +193,7 @@ export default observer(() => {
         clearButton={false}
         optionRenderer={renderBranchOptionOrigin}
         renderer={renderBranchOrigin}
+        colSpan={2}
       >
         <OptGroup
           label={formatMessage({ id: 'branch' })}
