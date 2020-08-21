@@ -37,8 +37,8 @@ public class ApprovalVO {
     @ApiModelProperty("pipeline record id")
     private Long pipelineRecordId;
 
-    @ApiModelProperty("pipeline record id，该字段不会被加密")
-    private Long pipelineRecordIdWithoutEncrypt;
+    @ApiModelProperty("ci 和 cd 关联关系id")
+    private Long devopsPipelineRecordRelId;
 
     @Encrypt
     @ApiModelProperty("pipeline stage id")
@@ -147,12 +147,12 @@ public class ApprovalVO {
         return this;
     }
 
-    public Long getPipelineRecordIdWithoutEncrypt() {
-        return pipelineRecordIdWithoutEncrypt;
+    public Long getDevopsPipelineRecordRelId() {
+        return devopsPipelineRecordRelId;
     }
 
-    public ApprovalVO setPipelineRecordIdWithoutEncrypt(Long pipelineRecordIdWithoutEncrypt) {
-        this.pipelineRecordIdWithoutEncrypt = pipelineRecordIdWithoutEncrypt;
+    public ApprovalVO setDevopsPipelineRecordRelId(Long devopsPipelineRecordRelId) {
+        this.devopsPipelineRecordRelId = devopsPipelineRecordRelId;
         return this;
     }
 
@@ -168,7 +168,7 @@ public class ApprovalVO {
                 ", mergeRequestUrl='" + mergeRequestUrl + '\'' +
                 ", pipelineId=" + pipelineId +
                 ", pipelineRecordId=" + pipelineRecordId +
-                ", pipelineRecordIdWithoutEncrypt=" + pipelineRecordIdWithoutEncrypt +
+                ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
                 ", stageRecordId=" + stageRecordId +
                 ", taskRecordId=" + taskRecordId +
                 '}';

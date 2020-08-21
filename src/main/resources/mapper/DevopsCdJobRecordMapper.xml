@@ -55,16 +55,19 @@
 
     <select id="listByIds" resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
         SELECT
-            dcjr.*,dcpr.pipeline_name,
+            dcjr.*,
+            dcpr.pipeline_name,
             dcsr.stage_name as stage_name,
-            dcsr.pipeline_record_id,
-            dcpr.pipeline_id
+            dcpr.pipeline_id,
+            dprr.id as devopsPipelineRecordRelId
         FROM
             devops_cd_job_record dcjr
         JOIN
             devops_cd_stage_record dcsr ON dcjr.stage_record_id=dcsr.id
         JOIN
             devops_cd_pipeline_record dcpr ON dcpr.id=dcsr.pipeline_record_id
+        JOIN
+            devops_pipeline_record_rel dprr ON dprr.cd_pipeline_record_id=dcpr.id
         WHERE
             dcjr.id
         IN

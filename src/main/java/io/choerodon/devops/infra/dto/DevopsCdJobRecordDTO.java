@@ -55,6 +55,10 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     @Transient
     private Long pipelineId;
 
+    @Transient
+    @ApiModelProperty("ci 和 cd 关联关系id")
+    private Long devopsPipelineRecordRelId;
+
     public Long getPipelineRecordId() {
         return pipelineRecordId;
     }
@@ -235,6 +239,15 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         return this;
     }
 
+    public Long getDevopsPipelineRecordRelId() {
+        return devopsPipelineRecordRelId;
+    }
+
+    public DevopsCdJobRecordDTO setDevopsPipelineRecordRelId(Long devopsPipelineRecordRelId) {
+        this.devopsPipelineRecordRelId = devopsPipelineRecordRelId;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -260,6 +273,7 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", stageName='" + stageName + '\'' +
                 ", pipelineName='" + pipelineName + '\'' +
                 ", pipelineId=" + pipelineId +
+                ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
                 "} ";
     }
 }

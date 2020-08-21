@@ -32,6 +32,10 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
     @ApiModelProperty("流水线id")
     private Long pipelineId;
 
+    @Transient
+    @ApiModelProperty("ci 和 cd 关联关系id")
+    private Long devopsPipelineRecordRelId;
+
     public String getPipelineName() {
         return pipelineName;
     }
@@ -114,6 +118,15 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
         return this;
     }
 
+    public Long getDevopsPipelineRecordRelId() {
+        return devopsPipelineRecordRelId;
+    }
+
+    public DevopsCdStageRecordDTO setDevopsPipelineRecordRelId(Long devopsPipelineRecordRelId) {
+        this.devopsPipelineRecordRelId = devopsPipelineRecordRelId;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdStageRecordDTO{" +
@@ -127,6 +140,7 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
                 ", stageName='" + stageName + '\'' +
                 ", pipelineName='" + pipelineName + '\'' +
                 ", pipelineId=" + pipelineId +
+                ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
                 "} ";
     }
 }

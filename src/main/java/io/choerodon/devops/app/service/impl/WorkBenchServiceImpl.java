@@ -186,7 +186,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
                         .setProjectName(projectNameMap.get(devopsCdStageRecordDTO.getProjectId()).getName())
                         .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdStageRecordDTO.getPipelineName(), devopsCdStageRecordDTO.getStageName()))
                         .setPipelineId(devopsCdStageRecordDTO.getPipelineId())
-                        .setPipelineRecordIdWithoutEncrypt(devopsCdStageRecordDTO.getPipelineRecordId())
+                        .setDevopsPipelineRecordRelId(devopsCdStageRecordDTO.getDevopsPipelineRecordRelId())
                         .setStageRecordId(devopsCdStageRecordDTO.getId());
                 approvalVOList.add(approvalVO);
             });
@@ -201,9 +201,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
                         .setProjectId(devopsCdJobRecordDTO.getProjectId())
                         .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
                         .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
-                        .setPipelineRecordIdWithoutEncrypt(devopsCdJobRecordDTO.getPipelineRecordId())
+                        .setDevopsPipelineRecordRelId(devopsCdJobRecordDTO.getDevopsPipelineRecordRelId())
                         .setPipelineId(devopsCdJobRecordDTO.getPipelineId())
-                        .setStageRecordId(devopsCdJobRecordDTO.getId());
+                        .setTaskRecordId(devopsCdJobRecordDTO.getId());
                 approvalVOList.add(approvalVO);
             });
         }
