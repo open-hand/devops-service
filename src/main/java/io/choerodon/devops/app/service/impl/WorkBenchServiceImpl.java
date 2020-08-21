@@ -161,7 +161,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
                     .collect(Collectors.toList());
             pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
-                        .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                        .setType(ApprovalTypeEnum.PIPELINE.getType())
                         .setProjectId(pipelineRecordDTO.getProjectId())
                         .setProjectName(projectNameMap.get(pipelineRecordDTO.getProjectId()).getName())
                         .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
@@ -181,12 +181,12 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.listByIds(stageRecordIds);
             devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
-                        .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                        .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
                         .setProjectId(devopsCdStageRecordDTO.getProjectId())
                         .setProjectName(projectNameMap.get(devopsCdStageRecordDTO.getProjectId()).getName())
                         .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdStageRecordDTO.getPipelineName(), devopsCdStageRecordDTO.getStageName()))
                         .setPipelineId(devopsCdStageRecordDTO.getPipelineId())
-                        .setPipelineRecordId(devopsCdStageRecordDTO.getPipelineRecordId())
+                        .setPipelineRecordIdWithoutEncrypt(devopsCdStageRecordDTO.getPipelineRecordId())
                         .setStageRecordId(devopsCdStageRecordDTO.getId());
                 approvalVOList.add(approvalVO);
             });
@@ -197,11 +197,11 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
             devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
-                        .setType(ApprovalTypeEnum.PIPE_LINE.getType())
+                        .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
                         .setProjectId(devopsCdJobRecordDTO.getProjectId())
                         .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
                         .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
-                        .setPipelineRecordId(devopsCdJobRecordDTO.getPipelineRecordId())
+                        .setPipelineRecordIdWithoutEncrypt(devopsCdJobRecordDTO.getPipelineRecordId())
                         .setPipelineId(devopsCdJobRecordDTO.getPipelineId())
                         .setStageRecordId(devopsCdJobRecordDTO.getId());
                 approvalVOList.add(approvalVO);
