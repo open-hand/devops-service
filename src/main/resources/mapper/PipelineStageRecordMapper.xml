@@ -40,7 +40,7 @@
                      JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
                      JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
                 WHERE dpr.status = 'pendingcheck'
-                  AND (dpsr.status='unexecuted' OR dptr.status='unexecuted')
+                  AND (dpsr.status='pendingcheck' OR dptr.status='pendingcheck')
                   AND dpr.project_id IN
         <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
             #{projectId}
