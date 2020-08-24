@@ -69,6 +69,8 @@
         JOIN
             devops_pipeline_record_rel dprr ON dprr.cd_pipeline_record_id=dcpr.id
         WHERE
+            dcjr.status='not_audit'
+        AND
             dcjr.id
         IN
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
