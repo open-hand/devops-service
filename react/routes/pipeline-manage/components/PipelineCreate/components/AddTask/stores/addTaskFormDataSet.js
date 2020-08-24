@@ -177,19 +177,19 @@ export default (
     {
       name: 'skipTests',
       type: 'boolean',
-      label: '是否执行Maven单侧',
-      defaultValue: true,
+      label: '是否执行Maven单测',
+      defaultValue: false,
     },
     {
       name: 'configType',
       type: 'string',
-      label: '配置方式',
+      label: 'SonarQube配置方式',
       defaultValue: 'default',
     },
     {
       name: 'authType',
       type: 'string',
-      label: 'SonarQube',
+      label: 'SonarQube账号配置',
       defaultValue: 'username',
       dynamicProps: ({ record, name }) => ({
         required: record.get('type') === 'sonar',

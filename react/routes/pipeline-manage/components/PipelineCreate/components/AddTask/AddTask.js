@@ -1259,8 +1259,8 @@ const AddTask = observer(() => {
         } if (record.get('scannerType') === 'SonarMaven') {
           return (
             <SelectBox name="skipTests" colSpan={2}>
-              <Option value>是</Option>
-              <Option value={false}>否</Option>
+              <Option value={false}>是</Option>
+              <Option value>否</Option>
             </SelectBox>
           );
         }
