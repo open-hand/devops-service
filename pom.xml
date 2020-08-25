@@ -77,12 +77,6 @@
 
         <dependency>
             <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-liquibase</artifactId>
-            <version>0.16.1.RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-asgard</artifactId>
         </dependency>
         <dependency>
@@ -282,13 +276,19 @@
             <version>1.4.197</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-liquibase</artifactId>
+            <version>0.16.1.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
         <!-- junit -->
-<!--        <dependency>-->
-<!--            <groupId>junit</groupId>-->
-<!--            <artifactId>junit</artifactId>-->
-<!--            <version>4.12</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>junit</groupId>-->
+        <!--            <artifactId>junit</artifactId>-->
+        <!--            <version>4.12</version>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
         <!--use powermock-->
 <!--        <dependency>-->
 <!--            <groupId>org.powermock</groupId>-->
