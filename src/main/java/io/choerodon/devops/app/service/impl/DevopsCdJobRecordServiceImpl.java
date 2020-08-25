@@ -77,6 +77,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    @Transactional
     public void updateStatusById(Long jobRecordId, String status) {
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
         if (status.equals(PipelineStatus.FAILED.toValue())
@@ -125,6 +126,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    @Transactional
     public void updateJobStatusNotAudit(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
         // 更新job状态为待审核
@@ -140,6 +142,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    @Transactional
     public void retryCdJob(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
         // 1. 更新流水线状态为执行中
@@ -158,6 +161,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    @Transactional
     public void updateJobStatusSuccess(Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
         devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());

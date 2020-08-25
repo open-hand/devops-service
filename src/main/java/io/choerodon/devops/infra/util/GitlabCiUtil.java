@@ -172,8 +172,12 @@ public class GitlabCiUtil {
      *
      * @return 命令
      */
-    public static String getDefaultSonarCommand() {
-        return DEFAULT_SONAR_TEMPLATE;
+    public static String getDefaultSonarCommand(Boolean skipTests) {
+        return String.format(DEFAULT_SONAR_TEMPLATE, skipTests);
+    }
+
+    public static String getDefaultSonarScannerCommand(String sources) {
+        return String.format(DEFAULT_SONAR_SCANNNER_TEMPLATE, sources);
     }
 
     /**
@@ -183,8 +187,13 @@ public class GitlabCiUtil {
      * @param token    认证的token
      * @return sonar命令
      */
-    public static String renderSonarCommand(String sonarUrl, String token) {
-        return String.format(SONAR_TOKEN_TEMPLATE, sonarUrl, token);
+    public static String renderSonarCommandForToken(String sonarUrl, String token, Boolean skipTests) {
+        return String.format(SONAR_TOKEN_TEMPLATE, sonarUrl, token, skipTests);
+    }
+
+
+    public static String renderSonarScannerCommandForToken(String sonarUrl, String token, String sources) {
+        return String.format(SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE, sonarUrl, token, sources);
     }
 
     /**
@@ -195,8 +204,12 @@ public class GitlabCiUtil {
      * @param sonarPassword sonar用户密码
      * @return sonar命令
      */
-    public static String renderSonarCommand(String sonarUrl, String sonarUsername, String sonarPassword) {
-        return String.format(SONAR_USER_PASSWORD_TEMPLATE, sonarUrl, sonarUsername, sonarPassword);
+    public static String renderSonarCommand(String sonarUrl, String sonarUsername, String sonarPassword, Boolean skipTests) {
+        return String.format(SONAR_USER_PASSWORD_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, skipTests);
+    }
+
+    public static String renderSonarScannerCommand(String sonarUrl, String sonarUsername, String sonarPassword, String sources) {
+        return String.format(SONAR_USER_PASSWORD_SONAR_SCANNNER_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, sources);
     }
 
     /**
