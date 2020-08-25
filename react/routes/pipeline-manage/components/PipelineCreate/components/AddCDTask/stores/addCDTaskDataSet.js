@@ -1,5 +1,5 @@
-import uuidV1 from "uuid/v1";
-import { axios } from "@choerodon/boot";
+import uuidV1 from 'uuid/v1';
+import { axios } from '@choerodon/boot';
 import forEach from 'lodash/forEach';
 
 function getDefaultInstanceName(appServiceCode) {
@@ -9,21 +9,24 @@ function getDefaultInstanceName(appServiceCode) {
 }
 
 async function checkName(value, projectId, record) {
-  if (!record.get("envId")) {
+  if (!record.get('envId')) {
+    return true;
+  }
+  if (record.get('deployType') === 'update') {
     return true;
   }
   try {
     const res = await axios.get(
       `/devops/v1/projects/${projectId}/app_service_instances/check_name?env_id=${record.get(
-        "envId"
-      )}&instance_name=${value}`
+        'envId',
+      )}&instance_name=${value}`,
     );
     if ((res && res.failed) || !res) {
-      return "格式有误";
+      return '格式有误';
     }
     return true;
   } catch (err) {
-    return "校验失败";
+    return '校验失败';
   }
 }
 
@@ -33,49 +36,49 @@ export default (
   organizationId,
   useStore,
   appServiceCode,
-  random
+  random,
 ) => ({
   autoCreate: true,
   fields: [
     {
-      name: "type",
-      type: "string",
-      label: "任务类型",
+      name: 'type',
+      type: 'string',
+      label: '任务类型',
       required: true,
-      defaultValue: "cdDeploy",
+      defaultValue: 'cdDeploy',
     },
     {
-      name: "name",
-      type: "string",
-      label: "任务名称",
+      name: 'name',
+      type: 'string',
+      label: '任务名称',
       required: true,
     },
     {
-      name: "glyyfw",
-      type: "string",
-      label: "关联应用服务",
+      name: 'glyyfw',
+      type: 'string',
+      label: '关联应用服务',
       required: true,
       disabled: true,
     },
     {
-      name: "triggerType",
-      type: "string",
-      label: "匹配类型",
+      name: 'triggerType',
+      type: 'string',
+      label: '匹配类型',
       required: true,
-      defaultValue: "refs",
+      defaultValue: 'refs',
     },
     {
-      name: "envId",
-      type: "string",
-      label: "环境名称",
+      name: 'envId',
+      type: 'string',
+      label: '环境名称',
       required: true,
-      textField: "name",
-      valueField: "id",
+      textField: 'name',
+      valueField: 'id',
       dynamicProps: {
-        required: ({ record }) => record.get("type") === "cdDeploy",
+        required: ({ record }) => record.get('type') === 'cdDeploy',
       },
       lookupAxiosConfig: () => ({
-        method: "get",
+        method: 'get',
         url: `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`,
         transformResponse: (res) => {
           let newRes = res;
@@ -90,58 +93,57 @@ export default (
     },
     {
       // name: 'bsms',
-      name: "deployType",
-      type: "string",
-      label: "部署模式",
-      defaultValue: "create",
+      name: 'deployType',
+      type: 'string',
+      label: '部署模式',
+      defaultValue: 'create',
     },
     {
-      name: "instanceName",
-      type: "string",
-      label: "实例名称",
+      name: 'instanceName',
+      type: 'string',
+      label: '实例名称',
       validator: (value, name, record) => checkName(value, projectId, record),
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdDeploy" &&
-          record.get("deployType") === "create",
+        required: ({ record }) => record.get('type') === 'cdDeploy'
+          && record.get('deployType') === 'create',
       },
       defaultValue: getDefaultInstanceName(appServiceCode),
     },
     {
-      name: "instanceId",
-      type: "string",
-      label: "选择要替换的实例",
-      textField: "code",
-      valueField: "id",
+      name: 'instanceId',
+      type: 'string',
+      label: '选择要替换的实例',
+      textField: 'code',
+      valueField: 'id',
       dynamicProps: {
-        required: ({ record }) => record.get("deployType") === "update",
-        disabled: ({ record }) => !record.get("envId"),
+        required: ({ record }) => record.get('deployType') === 'update',
+        disabled: ({ record }) => !record.get('envId'),
         lookupAxiosConfig: ({ record }) => ({
-          method: "get",
+          method: 'get',
           url:
-            record.get("envId") &&
-            `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get(
-              "appServiceId"
-            )}&env_id=${record.get("envId")}`,
+            record.get('envId')
+            && `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get(
+              'appServiceId',
+            )}&env_id=${record.get('envId')}`,
         }),
       },
     },
     {
-      name: "valueId",
-      type: "string",
-      label: "部署配置",
-      textField: "name",
-      valueField: "id",
+      name: 'valueId',
+      type: 'string',
+      label: '部署配置',
+      textField: 'name',
+      valueField: 'id',
       dynamicProps: {
-        required: ({ record }) => record.get("type") === "cdDeploy",
-        disabled: ({ record }) => !record.get("envId"),
+        required: ({ record }) => record.get('type') === 'cdDeploy',
+        disabled: ({ record }) => !record.get('envId'),
         lookupAxiosConfig: ({ record }) => ({
-          method: "get",
+          method: 'get',
           url:
-            record.get("envId") &&
-            `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get(
-              "appServiceId"
-            )}&env_id=${record.get("envId")}&random=${random}`,
+            record.get('envId')
+            && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get(
+              'appServiceId',
+            )}&env_id=${record.get('envId')}&random=${random}`,
           transformResponse: (res) => {
             let newRes = res;
             try {
@@ -157,86 +159,83 @@ export default (
       },
     },
     {
-      name: "hostIp",
-      type: "string",
-      label: "IP",
+      name: 'hostIp',
+      type: 'string',
+      label: 'IP',
       dynamicProps: {
-        required: ({ record }) => record.get("type") === "cdHost",
+        required: ({ record }) => record.get('type') === 'cdHost',
       },
     },
     {
-      name: "hostPort",
-      type: "string",
-      label: "端口",
+      name: 'hostPort',
+      type: 'string',
+      label: '端口',
       dynamicProps: {
-        required: ({ record }) => record.get("type") === "cdHost",
+        required: ({ record }) => record.get('type') === 'cdHost',
       },
     },
     {
-      name: "accountType",
-      type: "string",
-      label: "账号配置",
-      defaultValue: "accountPassword",
+      name: 'accountType',
+      type: 'string',
+      label: '账号配置',
+      defaultValue: 'accountPassword',
     },
     {
-      name: "userName",
-      type: "string",
-      label: "用户名",
+      name: 'userName',
+      type: 'string',
+      label: '用户名',
       dynamicProps: {
-        required: ({ record }) => record.get("type") === "cdHost",
+        required: ({ record }) => record.get('type') === 'cdHost',
       },
     },
     {
-      name: "password",
-      type: "string",
-      label: "密码",
+      name: 'password',
+      type: 'string',
+      label: '密码',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("accountType") === "accountPassword",
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('accountType') === 'accountPassword',
       },
     },
     {
-      name: "hostDeployType",
-      type: "string",
-      label: "部署模式",
-      defaultValue: "image",
+      name: 'hostDeployType',
+      type: 'string',
+      label: '部署模式',
+      defaultValue: 'image',
     },
     {
-      name: "deploySource",
-      type: "string",
-      label: "部署来源",
-      defaultValue: "matchDeploy",
+      name: 'deploySource',
+      type: 'string',
+      label: '部署来源',
+      defaultValue: 'matchDeploy',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          (record.get("hostDeployType") === "image" ||
-            record.get("hostDeployType") === "jar"),
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && (record.get('hostDeployType') === 'image'
+            || record.get('hostDeployType') === 'jar'),
       },
     },
     {
-      name: "pipelineTask",
-      type: "string",
-      label: "关联构建任务",
-      textField: "pipelineTask",
-      valueField: "pipelineTask",
+      name: 'pipelineTask',
+      type: 'string',
+      label: '关联构建任务',
+      textField: 'pipelineTask',
+      valueField: 'pipelineTask',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          ((record.get("hostDeployType") === "image" &&
-            record.get("deploySource") === "pipelineDeploy") ||
-            (record.get("hostDeployType") === "jar" &&
-              record.get("deploySource") === "pipelineDeploy")),
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && ((record.get('hostDeployType') === 'image'
+            && record.get('deploySource') === 'pipelineDeploy')
+            || (record.get('hostDeployType') === 'jar'
+              && record.get('deploySource') === 'pipelineDeploy')),
       },
     },
     {
-      name: "repoId",
-      type: "string",
-      label: "项目镜像仓库",
-      textField: "repoName",
-      valueField: "repoId",
+      name: 'repoId',
+      type: 'string',
+      label: '项目镜像仓库',
+      textField: 'repoName',
+      valueField: 'repoId',
       lookupAxiosConfig: () => ({
-        method: "get",
+        method: 'get',
         url: `/rdupm/v1/harbor-choerodon-repos/listImageRepo?projectId=${projectId}`,
         transformResponse: (data) => {
           let newData = data;
@@ -251,36 +250,34 @@ export default (
         },
       }),
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "image" &&
-          record.get("deploySource") === "matchDeploy",
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'image'
+          && record.get('deploySource') === 'matchDeploy',
       },
     },
     {
-      name: "imageId",
-      type: "string",
-      label: "镜像",
-      textField: "imageName",
-      valueField: "imageId",
+      name: 'imageId',
+      type: 'string',
+      label: '镜像',
+      textField: 'imageName',
+      valueField: 'imageId',
       dynamicProps: {
-        disabled: ({ record }) => !record.get("repoId"),
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "image" &&
-          record.get("deploySource") === "matchDeploy",
+        disabled: ({ record }) => !record.get('repoId'),
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'image'
+          && record.get('deploySource') === 'matchDeploy',
         lookupAxiosConfig: ({ record }) => ({
-          method: "get",
+          method: 'get',
           url:
-            record.get("repoId") &&
-            `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get(
-              "repoId"
-            )}&repoType=${(function() {
-              const { lookup } = record.getField("repoId");
+            record.get('repoId')
+            && `rdupm/v1/harbor-choerodon-repos/listHarborImage?repoId=${record.get(
+              'repoId',
+            )}&repoType=${(function () {
+              const { lookup } = record.getField('repoId');
               return lookup?.find(
-                (l) => String(l.repoId) === String(record.get("repoId"))
+                (l) => String(l.repoId) === String(record.get('repoId'))
               )?.repoType;
-            })()}`,
+            }())}`,
           transformResponse: (data) => {
             let newData = data;
             try {
@@ -296,93 +293,88 @@ export default (
       },
     },
     {
-      name: "matchType",
-      type: "string",
-      label: "匹配类型",
+      name: 'matchType',
+      type: 'string',
+      label: '匹配类型',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "image" &&
-          record.get("deploySource") === "matchDeploy",
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'image'
+          && record.get('deploySource') === 'matchDeploy',
       },
     },
     {
-      name: "matchContent",
-      type: "string",
-      label: "镜像版本匹配",
+      name: 'matchContent',
+      type: 'string',
+      label: '镜像版本匹配',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "image" &&
-          record.get("deploySource") === "matchDeploy",
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'image'
+          && record.get('deploySource') === 'matchDeploy',
       },
     },
     {
-      name: "containerName",
-      type: "string",
-      label: "容器名称",
+      name: 'containerName',
+      type: 'string',
+      label: '容器名称',
       required: true,
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "image" &&
-          (record.get("deploySource") === "matchDeploy" ||
-            record.get("deploySource") === "pipelineDeploy"),
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'image'
+          && (record.get('deploySource') === 'matchDeploy'
+            || record.get('deploySource') === 'pipelineDeploy'),
       },
     },
     {
-      name: "serverName",
-      type: "string",
-      label: "Nexus服务",
+      name: 'serverName',
+      type: 'string',
+      label: 'Nexus服务',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "jar" &&
-          record.get("deploySource") === "matchDeploy",
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'jar'
+          && record.get('deploySource') === 'matchDeploy',
       },
-      textField: "serverName",
-      valueField: "configId",
+      textField: 'serverName',
+      valueField: 'configId',
       lookupAxiosConfig: () => ({
-        method: "get",
+        method: 'get',
         url: `/devops/v1/nexus/choerodon/${organizationId}/project/${projectId}/nexus/server/list`,
       }),
     },
     {
-      name: "repositoryId",
-      type: "string",
-      label: "项目制品库",
-      textField: "neRepositoryName",
-      valueField: "repositoryId",
+      name: 'repositoryId',
+      type: 'string',
+      label: '项目制品库',
+      textField: 'neRepositoryName',
+      valueField: 'repositoryId',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "jar" &&
-          record.get("deploySource") === "matchDeploy",
-        disabled: ({ record }) => !record.get("serverName"),
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'jar'
+          && record.get('deploySource') === 'matchDeploy',
+        disabled: ({ record }) => !record.get('serverName'),
         lookupAxiosConfig: ({ record }) => ({
-          method: "get",
+          method: 'get',
           url:
-            record.get("serverName") &&
-            `rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/list?configId=${record.get(
-              "serverName"
+            record.get('serverName')
+            && `rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/list?configId=${record.get(
+              'serverName',
             )}`,
         }),
       },
     },
     {
-      name: "groupId",
-      type: "string",
-      label: "groupID",
-      textField: "name",
-      valueField: "value",
+      name: 'groupId',
+      type: 'string',
+      label: 'groupID',
+      textField: 'name',
+      valueField: 'value',
       dynamicProps: {
-        disabled: ({ record }) => !record.get("repositoryId"),
+        disabled: ({ record }) => !record.get('repositoryId'),
         lookupAxiosConfig: ({ record }) => ({
-          method: "get",
+          method: 'get',
           url:
-            record.get("repositoryId") &&
-            `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/groupId?repositoryId=${record.get(
-              "repositoryId"
+            record.get('repositoryId')
+            && `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/groupId?repositoryId=${record.get(
+              'repositoryId',
             )}`,
           transformResponse: (data) => {
             try {
@@ -396,30 +388,28 @@ export default (
             }
           },
         }),
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "jar" &&
-          record.get("deploySource") === "matchDeploy",
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'jar'
+          && record.get('deploySource') === 'matchDeploy',
       },
     },
     {
-      name: "artifactId",
-      type: "string",
-      label: "artifactID",
-      textField: "name",
-      valueField: "value",
+      name: 'artifactId',
+      type: 'string',
+      label: 'artifactID',
+      textField: 'name',
+      valueField: 'value',
       dynamicProps: {
-        disabled: ({ record }) => !record.get("repositoryId"),
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "jar" &&
-          record.get("deploySource") === "matchDeploy",
+        disabled: ({ record }) => !record.get('repositoryId'),
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'jar'
+          && record.get('deploySource') === 'matchDeploy',
         lookupAxiosConfig: ({ record }) => ({
-          method: "get",
+          method: 'get',
           url:
-            record.get("repositoryId") &&
-            `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get(
-              "repositoryId"
+            record.get('repositoryId')
+            && `/rdupm/v1/nexus-repositorys/choerodon/${organizationId}/project/${projectId}/repo/maven/artifactId?repositoryId=${record.get(
+              'repositoryId',
             )}`,
           transformResponse: (data) => {
             try {
@@ -437,38 +427,37 @@ export default (
       },
     },
     {
-      name: "versionRegular",
-      type: "string",
-      label: "jar包版本正则匹配",
+      name: 'versionRegular',
+      type: 'string',
+      label: 'jar包版本正则匹配',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdHost" &&
-          record.get("hostDeployType") === "jar" &&
-          record.get("deploySource") === "matchDeploy",
+        required: ({ record }) => record.get('type') === 'cdHost'
+          && record.get('hostDeployType') === 'jar'
+          && record.get('deploySource') === 'matchDeploy',
       },
     },
     {
-      name: "triggerValue",
-      type: "string",
-      label: "触发分支",
+      name: 'triggerValue',
+      type: 'string',
+      label: '触发分支',
     },
     {
-      name: "pageSize",
-      type: "number",
+      name: 'pageSize',
+      type: 'number',
       defaultValue: 20,
     },
     {
-      name: "cdAuditUserIds",
-      type: "object",
-      label: "审核人员",
+      name: 'cdAuditUserIds',
+      type: 'object',
+      label: '审核人员',
       dynamicProps: {
-        required: ({ record }) => record.get("type") === "cdAudit",
+        required: ({ record }) => record.get('type') === 'cdAudit',
       },
-      textField: "realName",
+      textField: 'realName',
       multiple: true,
-      valueField: "id",
+      valueField: 'id',
       lookupAxiosConfig: ({ params, dataSet }) => {
-        let cdAuditIdsArrayObj = dataSet.current?.get("cdAuditUserIds");
+        const cdAuditIdsArrayObj = dataSet.current?.get('cdAuditUserIds');
         let cdAuditIds = [];
         forEach(cdAuditIdsArrayObj, ({ id }) => {
           cdAuditIds.push(id);
@@ -477,12 +466,12 @@ export default (
           cdAuditIds = [...cdAuditIds, params.id];
         }
         return {
-          method: "post",
+          method: 'post',
           url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
           data: {
             param: [],
             searchParam: {
-              realName: params.realName || "",
+              realName: params.realName || '',
             },
             ids: cdAuditIds || [],
           },
@@ -491,12 +480,12 @@ export default (
             try {
               newRes = JSON.parse(res);
               if (
-                newRes.totalElements % 20 === 0 &&
-                newRes.content.length !== 0
+                newRes.totalElements % 20 === 0
+                && newRes.content.length !== 0
               ) {
                 newRes.content.push({
-                  id: "more",
-                  realName: "加载更多",
+                  id: 'more',
+                  realName: '加载更多',
                 });
               }
               return newRes;
@@ -508,13 +497,12 @@ export default (
       },
     },
     {
-      name: "countersigned",
-      type: "number",
-      label: "审核模式",
+      name: 'countersigned',
+      type: 'number',
+      label: '审核模式',
       dynamicProps: {
-        required: ({ record }) =>
-          record.get("type") === "cdAudit" &&
-          record.get("cdAuditUserIds")?.length > 1,
+        required: ({ record }) => record.get('type') === 'cdAudit'
+          && record.get('cdAuditUserIds')?.length > 1,
       },
     },
   ],
