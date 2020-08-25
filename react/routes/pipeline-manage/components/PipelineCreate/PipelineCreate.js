@@ -192,6 +192,9 @@ const PipelineCreate = observer(() => {
         appServiceCode={
           getAppServiceData()?.appServiceCode || editBlockStore.getMainData?.appServiceCode
         }
+        appServiceName={
+          getAppServiceData()?.appServiceName || editBlockStore.getMainData?.appServiceName
+        }
         appServiceType={getAppServiceData().type || editBlockStore.getMainData?.appServiceType}
         dataSource={dataSource}
       />

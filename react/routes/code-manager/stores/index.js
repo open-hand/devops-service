@@ -3,7 +3,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import { withRouter } from 'react-router-dom';
-import isEmpty from 'lodash/isEmpty';
+import { isEmpty, includes, filter } from 'lodash';
 import useStore from './useStore';
 import AppServiceDs from './AppServiceDataSet';
 import SelectAppDataSet from './SelectAppDataSet';
@@ -96,6 +96,25 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
           }
         });
     };
+
+    const updateLocalAppService = (appServiceList) => {
+      const recentAppList = localGet('recent-app');
+      if (recentAppList && recentAppList[projectId]) {
+        const recentApp = recentAppList[projectId] || [];
+        const codeArr = [];
+        recentApp.forEach((item) => {
+          if (item && item.id && item.code) {
+            codeArr.push(item.code);
+          }
+        });
+        const newData = filter(appServiceList, (item) => includes(codeArr, item.code));
+        if (newData && newData.length) {
+          recentAppList[projectId] = newData.slice(0, 5);
+          localSet('recent-app', JSON.stringify(recentAppList));
+        }
+      }
+    };
+
     const appServiceDs = useMemo(() => new DataSet(AppServiceDs({ projectId })), []);
     const selectAppDs = useMemo(() => new DataSet(SelectAppDataSet({ handleDataSetChange })), []);
     const codeManagerStore = useStore();
@@ -113,10 +132,12 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       appServiceDs.query().then((res) => {
         if (state && state.appServiceId) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', state.appServiceId);
-        } else if (recentAppList !== null && !isEmpty(recentAppList[projectId])) {
-          selectAppDs.current && selectAppDs.current.set('appServiceId', recentAppList[projectId][0]?.id);
-        } else if (res && res.length && res.length > 0) {
-          selectAppDs.current.set('appServiceId', res[0]?.id);
+          return;
+        }
+        if (res && res.length && res.length > 0) {
+          updateLocalAppService(res);
+          const newAppServiceId = recentAppList !== null && !isEmpty(recentAppList[projectId]) ? recentAppList[projectId][0]?.id : res[0]?.id;
+          selectAppDs.current.set('appServiceId', newAppServiceId);
         }
       });
     }, [projectId]);

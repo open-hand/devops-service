@@ -1,9 +1,8 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -24,6 +23,26 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
     private Long projectId;
     private Long stageId;
     private String stageName;
+
+    @Transient
+    @ApiModelProperty("流水线名称")
+    private String pipelineName;
+
+    @Transient
+    @ApiModelProperty("流水线id")
+    private Long pipelineId;
+
+    @Transient
+    @ApiModelProperty("ci 和 cd 关联关系id")
+    private Long devopsPipelineRecordRelId;
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
     public Long getId() {
         return id;
@@ -90,6 +109,24 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
         this.sequence = sequence;
     }
 
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public DevopsCdStageRecordDTO setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+        return this;
+    }
+
+    public Long getDevopsPipelineRecordRelId() {
+        return devopsPipelineRecordRelId;
+    }
+
+    public DevopsCdStageRecordDTO setDevopsPipelineRecordRelId(Long devopsPipelineRecordRelId) {
+        this.devopsPipelineRecordRelId = devopsPipelineRecordRelId;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdStageRecordDTO{" +
@@ -101,6 +138,9 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
                 ", projectId=" + projectId +
                 ", stageId=" + stageId +
                 ", stageName='" + stageName + '\'' +
-                '}';
+                ", pipelineName='" + pipelineName + '\'' +
+                ", pipelineId=" + pipelineId +
+                ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
+                "} ";
     }
 }

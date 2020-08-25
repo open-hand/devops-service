@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -9,5 +13,9 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @description
  */
 public interface DevopsCdAuditRecordMapper extends BaseMapper<DevopsCdAuditRecordDTO> {
-}
+    List<DevopsCdAuditRecordDTO> listByProjectIdsAndUserId(@Param("userId") Long userId, @Param("projectIds") List<Long> projectIds);
 
+    Integer updateProjectIdByStageRecordId(@Param("projectId") Long projectId, @Param("stageRecordId") Long stageRecordId);
+
+    Integer updateProjectIdByJobRecordId(@Param("projectId") Long projectId, @Param("jobRecordId") Long jobRecordId);
+}

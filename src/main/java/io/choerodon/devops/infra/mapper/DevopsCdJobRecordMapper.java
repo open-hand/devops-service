@@ -20,4 +20,6 @@ public interface DevopsCdJobRecordMapper extends BaseMapper<DevopsCdJobRecordDTO
 
     int updateNotAuditJobStatus(@Param("jobRecordId") Long jobRecordId,
                                 @Param("status") String status);
+
+    List<DevopsCdJobRecordDTO> listByIds(@Param("ids") List<Long> ids);
 }

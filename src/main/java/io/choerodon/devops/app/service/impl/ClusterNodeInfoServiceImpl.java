@@ -147,7 +147,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
     @Override
     public Page<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageable) {
-        long start = (long) (pageable.getPage() - 1) * (long) pageable.getSize();
+        // 现在分页从0开始了
+        long start = (long) (pageable.getPage()) * (long) pageable.getSize();
+        // stop不怕越界， redis会将边界之前的最后的那些元素返回
         long stop = start + (long) pageable.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, projectId);
 

@@ -297,7 +297,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCdStageDTO.setProjectId(projectId);
                 DevopsCdStageDTO cdStageDTO = devopsCdStageService.create(devopsCdStageDTO);
                 //保存审核人员信息,手动流转才有审核人员信息
-                createUserRel(devopsCdStageVO.getCdAuditUserIds(), null, cdStageDTO.getId(), null);
+                createUserRel(devopsCdStageVO.getCdAuditUserIds(), projectId, null, cdStageDTO.getId(), null);
                 // 保存cd job信息
                 if (!CollectionUtils.isEmpty(devopsCdStageVO.getJobList())) {
                     devopsCdStageVO.getJobList().forEach(devopsCdJobVO -> {
@@ -698,7 +698,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
             devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
             // 初始化cd流水线记录
-            devopsCdPipelineService.initPipelineRecordWithStageAndJob(pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), pipeline.getTag(), ciCdPipelineDTO);
+            devopsCdPipelineService.initPipelineRecordWithStageAndJob(projectId, pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), pipeline.getTag(), ciCdPipelineDTO);
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
@@ -1333,10 +1333,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return true;
     }
 
-    private void createUserRel(List<Long> cdAuditUserIds, Long pipelineId, Long stageId, Long jobId) {
+    private void createUserRel(List<Long> cdAuditUserIds, Long projectId, Long pipelineId, Long stageId, Long jobId) {
         if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
             cdAuditUserIds.forEach(t -> {
-                DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(pipelineId, stageId, jobId);
+                DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(projectId, pipelineId, stageId, jobId);
                 devopsCdAuditDTO.setUserId(t);
                 devopsCdAuditService.baseCreate(devopsCdAuditDTO);
             });
@@ -1376,7 +1376,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
-            createUserRel(t.getCdAuditUserIds(), null, null, jobId);
+            createUserRel(t.getCdAuditUserIds(), projectId, null, null, jobId);
         }
 
     }

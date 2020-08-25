@@ -28,4 +28,6 @@ public interface DevopsCdAuditRecordService {
     DevopsCdAuditRecordDTO queryByStageRecordIdAndUserId(Long stageRecordId, Long userId);
 
     DevopsCdAuditRecordDTO queryByJobRecordIdAndUserId(Long jobRecordId, Long userId);
+
+    void fixProjectId();
 }

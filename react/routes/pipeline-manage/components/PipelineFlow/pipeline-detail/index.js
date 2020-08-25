@@ -195,7 +195,9 @@ export default observer((props) => {
               <div key={`${stageId}-${jobId}`}>
                 {index && leftLineDom[stageIndex] ? leftLineDom[stageIndex][index] : null}
                 <div className={`c7ncd-pipeline-detail-job c7ncd-pipeline-detail-job-${stageType}`} id={`${id}-${stageIndex}-job-${index}`}>
-                  <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
+                  <Tooltip title={`【${jobTask[jobType]}】${jobName}`} placement="top">
+                    <div className="c7ncd-pipeline-detail-job-title">【{jobTask[jobType]}】{jobName}</div>
+                  </Tooltip>
                   {jobType !== 'custom' && getJobTask({ jobType, metadata, iamUserDTOS, jobTriggerValue, triggerValue, envName, countersigned })}
                 </div>
                 {index && stageIndex !== getStepData.length - 1 && rightLineDom[stageIndex] ? rightLineDom[stageIndex][index] : null}

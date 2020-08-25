@@ -24,4 +24,6 @@ public interface DevopsCdStageRecordMapper extends BaseMapper<DevopsCdStageRecor
                                                                       @Param("status") String status);
 
     List<DevopsCdStageRecordDTO> queryCreatedOrPendingAndRunning(@Param("pipelineRecordId") Long pipelineRecordId);
+
+    List<DevopsCdStageRecordDTO> listByIds(@Param("ids") List<Long> ids);
 }

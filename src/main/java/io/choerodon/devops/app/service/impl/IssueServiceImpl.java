@@ -45,6 +45,8 @@ public class IssueServiceImpl implements IssueService {
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private AppServiceMapper appServiceMapper;
+    @Autowired
+    private UserAttrService userAttrService;
 
 
     @Override
@@ -111,15 +113,19 @@ public class IssueServiceImpl implements IssueService {
         List<Long> authorIds = new ArrayList<>();
         List<Long> assigneeIds = new ArrayList<>();
         devopsMergeRequestDTOS.stream().forEach(devopsMergeRequestE -> {
-            authorIds.add(devopsMergeRequestE.getAuthorId());
-            assigneeIds.add(devopsMergeRequestE.getAssigneeId());
+            authorIds.add(userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId()));
+            assigneeIds.add(userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId()));
         });
         List<IamUserDTO> authors = baseServiceClientOperator.listUsersByIds(authorIds);
         List<IamUserDTO> assignees = baseServiceClientOperator.listUsersByIds(assigneeIds);
 
         devopsMergeRequestDTOS.forEach(devopsMergeRequestE -> {
-            Long authorId = devopsMergeRequestE.getAuthorId();
-            Long assigneeId = devopsMergeRequestE.getAssigneeId();
+            Long authorId = userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
+            Long assigneeId = userAttrService
+                    .queryUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
             CustomMergeRequestVO customMergeRequestVO = new CustomMergeRequestVO();
             customMergeRequestVO.setApplicationId(applicationId);
             if (authorId != null) {
@@ -131,7 +137,7 @@ public class IssueServiceImpl implements IssueService {
             if (assigneeId != null) {
                 assignees.stream()
                         .filter(userE -> userE.getId().equals(assigneeId))
-                        .forEach(assigneeUser -> customMergeRequestVO.setAssigneeName(assigneeUser.getLoginName()));
+                        .forEach(assigneeUser -> customMergeRequestVO.setAssigneeName(assigneeUser.getLoginName() + assigneeUser.getRealName()));
             }
             BeanUtils.copyProperties(devopsMergeRequestE, customMergeRequestVO);
             mergeRequests.add(customMergeRequestVO);

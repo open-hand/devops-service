@@ -37,6 +37,9 @@ public class ApprovalVO {
     @ApiModelProperty("pipeline record id")
     private Long pipelineRecordId;
 
+    @ApiModelProperty("ci 和 cd 关联关系id")
+    private Long devopsPipelineRecordRelId;
+
     @Encrypt
     @ApiModelProperty("pipeline stage id")
     private Long stageRecordId;
@@ -144,6 +147,15 @@ public class ApprovalVO {
         return this;
     }
 
+    public Long getDevopsPipelineRecordRelId() {
+        return devopsPipelineRecordRelId;
+    }
+
+    public ApprovalVO setDevopsPipelineRecordRelId(Long devopsPipelineRecordRelId) {
+        this.devopsPipelineRecordRelId = devopsPipelineRecordRelId;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "ApprovalVO{" +
@@ -156,6 +168,7 @@ public class ApprovalVO {
                 ", mergeRequestUrl='" + mergeRequestUrl + '\'' +
                 ", pipelineId=" + pipelineId +
                 ", pipelineRecordId=" + pipelineRecordId +
+                ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
                 ", stageRecordId=" + stageRecordId +
                 ", taskRecordId=" + taskRecordId +
                 '}';
