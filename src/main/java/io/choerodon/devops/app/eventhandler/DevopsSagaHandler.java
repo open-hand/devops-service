@@ -1,8 +1,23 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Objects;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.kubernetes.client.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
@@ -27,20 +42,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
-
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 
 /**
@@ -369,7 +370,7 @@ public class DevopsSagaHandler {
             pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
 
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            Long userId = GitUserNameUtil.getUserId().longValue();
+            Long userId = GitUserNameUtil.getUserId();
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
@@ -414,7 +415,7 @@ public class DevopsSagaHandler {
             devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
 
-            Long userId = GitUserNameUtil.getUserId().longValue();
+            Long userId = GitUserNameUtil.getUserId();
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());

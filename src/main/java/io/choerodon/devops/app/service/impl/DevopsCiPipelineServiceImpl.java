@@ -45,6 +45,9 @@ import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
+import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
+import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -1012,28 +1015,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Assert.notNull(jobId, "Ci job id is required.");
 
         if (JobTypeEnum.SONAR.value().equals(jobVO.getType())) {
-            // sonar配置转化为gitlab-ci配置
-            List<String> scripts = new ArrayList<>();
-            SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
-            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
-                // 查询默认的sonarqube配置
-                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
-                scripts.add(GitlabCiUtil.getDefaultSonarCommand());
-            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
-                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
-                    throw new CommonException("error.sonar.url.is.null");
-                }
-                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword()));
-                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
-                }
-            } else {
-                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
-            }
-
-            return scripts;
+            return calculateSonarScript(jobVO);
         } else if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // 将构建类型的stage中的job的每个step进行解析和转化
             CiConfigVO ciConfigVO = jobVO.getConfigVO();
@@ -1095,6 +1077,58 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * 计算sonar脚本
+     *
+     * @param jobVO
+     * @return
+     */
+    private List<String> calculateSonarScript(DevopsCiJobVO jobVO) {
+        // sonar配置转化为gitlab-ci配置
+        List<String> scripts = new ArrayList<>();
+        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
+        if (SonarScannerType.SONAR_SCANNER.value().equals(sonarQubeConfigVO.getScannerType())) {
+            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
+                // 查询默认的sonarqube配置
+                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
+                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
+                scripts.add(GitlabCiUtil.getDefaultSonarScannerCommand(sonarQubeConfigVO.getSources()));
+            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
+                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
+                    throw new CommonException("error.sonar.url.is.null");
+                }
+                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarScannerCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword(), sonarQubeConfigVO.getSources()));
+                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken(), sonarQubeConfigVO.getSources()));
+                }
+            } else {
+                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
+            }
+        } else if (SonarScannerType.SONAR_MAVEN.value().equals(sonarQubeConfigVO.getScannerType())) {
+            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
+                // 查询默认的sonarqube配置
+                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
+                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
+                scripts.add(GitlabCiUtil.getDefaultSonarCommand(sonarQubeConfigVO.getSkipTests()));
+            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
+                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
+                    throw new CommonException("error.sonar.url.is.null");
+                }
+                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword(), sonarQubeConfigVO.getSkipTests()));
+                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken(), sonarQubeConfigVO.getSkipTests()));
+                }
+            } else {
+                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
+            }
+        } else {
+            throw new CommonException(ResourceCheckConstant.ERROR_SONAR_SCANNER_TYPE_INVALID);
+        }
+        return scripts;
     }
 
     /**

@@ -1,11 +1,18 @@
-export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, projectId, AddTaskUseStore, organizationId, ZpkOptionsDs) => {
+export default (
+  PipelineCreateFormDataSet,
+  AppServiceOptionsDs,
+  appServiceId,
+  projectId,
+  AddTaskUseStore,
+  organizationId,
+  ZpkOptionsDs,
+) => {
   function checkImage(value, name, record) {
     const pa = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}(\/.+)*:.+$/;
     if (value && pa.test(value)) {
       return true;
-    } else {
-      return '请输入格式正确的image镜像';
     }
+    return '请输入格式正确的image镜像';
   }
   return ({
     autoCreate: true,
@@ -153,15 +160,36 @@ export default (PipelineCreateFormDataSet, AppServiceOptionsDs, appServiceId, pr
       options: ZpkOptionsDs,
     },
     {
+      name: 'scannerType',
+      type: 'string',
+      label: '检查类型',
+      dynamicProps: {
+        required: ({ record }) => record.get('type') === 'sonar',
+      },
+    }, {
+      name: 'sources',
+      type: 'string',
+      label: '扫描路径',
+      dynamicProps: {
+        required: ({ record }) => record.get('type') === 'sonar' && record.get('scannerType') === 'SonarScanner',
+      },
+    },
+    {
+      name: 'skipTests',
+      type: 'boolean',
+      label: '是否执行Maven单测',
+      defaultValue: false,
+    },
+    {
       name: 'configType',
       type: 'string',
-      label: '配置方式',
+      label: 'SonarQube配置方式',
       defaultValue: 'default',
     },
     {
       name: 'authType',
       type: 'string',
-      label: 'SonarQube',
+      label: 'SonarQube账号配置',
       defaultValue: 'username',
       dynamicProps: ({ record, name }) => ({
         required: record.get('type') === 'sonar',

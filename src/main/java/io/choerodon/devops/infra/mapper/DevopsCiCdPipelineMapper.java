@@ -55,4 +55,6 @@ public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
      * @return 流水线数据
      */
     CiCdPipelineDTO queryByToken(@Param("token") String token);
+
+    List<CiCdPipelineDTO> selectPipelineByProjectId(@Param("project_id") Long projectId);
 }
