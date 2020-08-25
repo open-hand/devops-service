@@ -163,7 +163,12 @@ export default observer(({ addStepDs, curType, optType, appServiceType, appServi
             renderer={({ text }) => text}
             maxTagCount={3}
             onChange={(value, oldvalue, form) => {
-              handleMore(null);
+              if(value){
+                const maxLength = value.length;
+                if(typeof value[maxLength-1] === 'string' && value[maxLength-1].indexOf('=') === 0){
+                  handleMore(null);
+                }
+              }
             }}
             onOption={({ dataSet, record }) => ({
               disabled: record.get('id') === 'more',
