@@ -541,7 +541,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 将构建类型的stage中的job的每个step进行解析和转化
             CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
             if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-                ciConfigVO.getConfig().forEach(c -> c.setScript(Base64Util.getBase64DecodedString(c.getScript())));
+                ciConfigVO.getConfig().forEach(c -> {
+                    if (!org.springframework.util.StringUtils.isEmpty(c.getScript())) {
+                        c.setScript(Base64Util.getBase64DecodedString(c.getScript()));
+                    }
+                });
             }
             devopsCiJobVO.setConfigVO(ciConfigVO);
             devopsCiJobVO.setMetadata(JSONObject.toJSONString(ciConfigVO));
