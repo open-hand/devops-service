@@ -1061,7 +1061,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(GitlabCiUtil.generateDockerScripts(
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
-                                        doTlsVerify == null || !doTlsVerify));
+                                        doTlsVerify == null || !doTlsVerify,
+                                        config.getDockerTagName()));
                                 break;
                             // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
                             case UPLOAD_JAR:
@@ -1076,7 +1077,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return result;
         } else if (JobTypeEnum.CHART.value().equals(jobVO.getType())) {
             // 生成chart步骤
-            return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
+            return GitlabCiUtil.generateChartBuildScripts(jobVO);
         }
         return Collections.emptyList();
     }
