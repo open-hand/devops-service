@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -449,6 +450,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 添加sonar
         for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
             if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+                if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+                    SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
+                    devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+                }
                 SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
                 if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
                     List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
@@ -464,10 +469,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                 devopsCiJobRecordVO.setCodeCoverage(v.getValue());
                             }
                         });
-                    }
-                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
-                        SonarQubeConfigVO sonarQubeConfigVO = objectMapper.convertValue(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
-                        devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
                     }
                     devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                 }
