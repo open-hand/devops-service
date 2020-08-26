@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 public class DevopsCdStageRecordVO extends StageRecordVO {
     @Encrypt
     private Long id;
@@ -21,6 +23,16 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
     private Long executionTime;
     private Long sequence;
 
+    //阶段已审核人员的信息 阶段间只有或签
+    private IamUserDTO iamUserDTO;
+
+    public IamUserDTO getIamUserDTO() {
+        return iamUserDTO;
+    }
+
+    public void setIamUserDTO(IamUserDTO iamUserDTO) {
+        this.iamUserDTO = iamUserDTO;
+    }
 
     public void setExecutionTime(Long executionTime) {
         this.executionTime = executionTime;

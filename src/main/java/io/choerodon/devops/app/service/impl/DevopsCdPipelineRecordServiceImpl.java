@@ -933,6 +933,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordDTO.getId());
             }
         }
+
         devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
 
     }
@@ -1040,6 +1041,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(collect))
                     devopsCdStageRecordVO.setDurationSeconds(collect.stream().reduce((aLong, aLong2) -> aLong + aLong2).get());
+                //增加阶段间审核人员信息
+                if (DeployType.MANUAL == DeployType.valueOf(devopsCdStageRecordVO.getTriggerType())) {
+                    List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+                    if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
+                        devopsCdAuditRecordDTOS.forEach(devopsCdAuditRecordDTO -> {
+                            if (AuditStatusEnum.PASSED == AuditStatusEnum.valueOf(devopsCdAuditRecordDTO.getStatus())) {
+                                IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(devopsCdAuditRecordDTO.getUserId());
+                                devopsCdStageRecordVO.setIamUserDTO(userDTO);
+                            }
+                        });
+                    }
+                }
             });
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
