@@ -1046,7 +1046,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                     if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
                         devopsCdAuditRecordDTOS.forEach(devopsCdAuditRecordDTO -> {
-                            if (AuditStatusEnum.PASSED == AuditStatusEnum.valueOf(devopsCdAuditRecordDTO.getStatus())) {
+                            if (AuditStatusEnum.PASSED == AuditStatusEnum.valueOf(devopsCdAuditRecordDTO.getStatus().toUpperCase())) {
                                 IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(devopsCdAuditRecordDTO.getUserId());
                                 devopsCdStageRecordVO.setIamUserDTO(userDTO);
                             }
