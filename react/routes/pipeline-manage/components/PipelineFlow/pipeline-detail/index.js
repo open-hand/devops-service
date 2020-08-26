@@ -87,7 +87,7 @@ export default observer((props) => {
             <span>
               触发分支：
               {jobTriggerValue === 'exact_exclude' ? '精确排除 ' : ''}
-              {triggerValue}
+              {triggerValue || '所有分支或tag'}
             </span>
           </div>
         </div>
@@ -111,7 +111,7 @@ export default observer((props) => {
               <span>
                 触发分支：
                 {jobTriggerValue === 'exact_exclude' ? '精确排除 ' : ''}
-                {triggerValue}
+                {triggerValue || '所有分支或tag'}
               </span>
             </div>
           );
@@ -132,7 +132,7 @@ export default observer((props) => {
               <span>
                 触发分支：
                 {jobTriggerValue === 'exact_exclude' ? '精确排除 ' : ''}
-                {triggerValue}
+                {triggerValue || '所有分支或tag'}
               </span>
             </div>
           );
