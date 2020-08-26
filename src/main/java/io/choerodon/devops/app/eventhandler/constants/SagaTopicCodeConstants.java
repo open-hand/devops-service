@@ -46,6 +46,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devops-create-application-service";
 
     /**
+     * Devops删除应用服务版本
+     */
+    public static final String DEVOPS_DELETE_APPLICATION_SERVICE_VERSION = "devops-delete-application-service-version";
+
+    /**
      * Devopsn导入应用服务（内部）
      */
     public static final String DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE = "devops-import-internal-application-service";
