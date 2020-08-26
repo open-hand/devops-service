@@ -1042,7 +1042,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (!CollectionUtils.isEmpty(collect))
                     devopsCdStageRecordVO.setDurationSeconds(collect.stream().reduce((aLong, aLong2) -> aLong + aLong2).get());
                 //增加阶段间审核人员信息
-                if (DeployType.MANUAL == DeployType.valueOf(devopsCdStageRecordVO.getTriggerType())) {
+                if (DeployType.MANUAL == DeployType.valueOf(devopsCdStageRecordVO.getTriggerType().toUpperCase())) {
                     List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                     if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
                         devopsCdAuditRecordDTOS.forEach(devopsCdAuditRecordDTO -> {
