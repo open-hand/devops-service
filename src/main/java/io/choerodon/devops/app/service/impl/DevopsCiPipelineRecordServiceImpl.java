@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.util.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,6 +156,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     return;
                 } else {
                     job.setType(devopsCiJobDTO.getType());
+                    job.setMetadata(devopsCiJobDTO.getMetadata());
                 }
             }
         }
@@ -247,6 +249,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 devopsCiJobRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
+                devopsCiJobRecordDTO.setMetadata(ciJobWebHookVO.getMetadata());
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
@@ -462,9 +465,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                             }
                         });
                     }
-
-                    SonarQubeConfigVO sonarQubeConfigVO = objectMapper.convertValue(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
-                    devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+                        SonarQubeConfigVO sonarQubeConfigVO = objectMapper.convertValue(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
+                        devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+                    }
                     devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                 }
             }
