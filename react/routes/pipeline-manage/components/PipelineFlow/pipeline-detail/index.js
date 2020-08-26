@@ -95,12 +95,19 @@ export default observer((props) => {
     }
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config } = newData || {};
+      const { sonarUrl, config, scannerType } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
           if (sonarUrl) {
-            content = <div className="c7ncd-pipeline-detail-job-task-sonar">{sonarUrl}</div>;
+            content = (
+              <div className="c7ncd-pipeline-detail-job-task-sonar">
+                <span>{sonarUrl}</span>
+                <span className="c7ncd-pipeline-detail-job-task-sonar-type">
+                  检查类型:<br />{scannerType}
+                </span>
+              </div>
+            );
           }
           break;
         case 'cdDeploy':
