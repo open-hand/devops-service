@@ -88,15 +88,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     private AppServiceService appServiceService;
 
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-
-    @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-
-    @Autowired
-    private UserAttrService userAttrService;
-
-    @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
 
