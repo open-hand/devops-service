@@ -22,12 +22,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.chart.ChartTagVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -104,7 +111,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private DevopsConfigMapper devopsConfigMapper;
     @Autowired
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
+    @Autowired
+    private AppServiceShareRuleMapper appServiceShareRuleMapper;
 
+    @Autowired
+    private TransactionalProducer producer;
 
     private static final Gson GSON = new Gson();
 
@@ -802,23 +813,83 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION, inputSchemaClass = CustomResourceVO.class, description = "批量删除应用服务版本")
     public void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        List<HarborImageTagDTO> deleteImagetags = new ArrayList<>();
+        List<ChartTagVO> deleteChartTags = new ArrayList<>();
         versionIds.forEach(id -> {
             // 删除应用服务版本
-
+            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(id);
             // 删除value
-
+            appServiceVersionValueService.baseDeleteById(appServiceVersionDTO.getValueId());
             // 删除readme
-
+            appServiceVersionReadmeMapper.deleteByPrimaryKey(appServiceVersionDTO.getReadmeValueId());
             // 删除共享规则
-
+            AppServiceShareRuleDTO record = new AppServiceShareRuleDTO();
+            record.setAppServiceId(appServiceDTO.getId());
+            record.setVersion(appServiceVersionDTO.getVersion());
+            List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(record);
+            if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
+                appServiceShareRuleDTOS.forEach(appServiceShareRuleDTO -> {
+                    appServiceShareRuleMapper.deleteByPrimaryKey(appServiceShareRuleDTO.getId());
+                });
+            }
             // 删除harbor镜像
-
+            if (DEFAULT_REPO.equals(appServiceVersionDTO.getRepoType())) {
+                HarborImageTagDTO harborImageTagDTO = caculateHarborImageTagDTO(appServiceDTO.getProjectId(), appServiceVersionDTO.getImage());
+                deleteImagetags.add(harborImageTagDTO);
+            }
             // 删除chart
-
+            ChartTagVO chartTagVO = caculateChartTag(tenant.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode(), appServiceVersionDTO);
+            deleteChartTags.add(chartTagVO);
         });
+        CustomResourceVO customResourceVO = new CustomResourceVO();
+        customResourceVO.setHarborImageTagDTOS(deleteImagetags);
+        customResourceVO.setChartTagVOS(deleteChartTags);
+
+        // 发送saga
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(appServiceDTO.getId())
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION),
+                builder -> builder
+                        .withJson(GSON.toJson(customResourceVO))
+                        .withRefId(appServiceDTO.getId().toString()));
+    }
+
+
+    private ChartTagVO caculateChartTag(String tenantNum, String projectCode, String chartName, AppServiceVersionDTO appServiceVersionDTO) {
+        ChartTagVO chartTagVO = new ChartTagVO();
+        chartTagVO.setOrgCode(tenantNum);
+        chartTagVO.setProjectCode(projectCode);
+        chartTagVO.setChartName(chartName);
+        chartTagVO.setChartVersion(appServiceVersionDTO.getVersion());
+        chartTagVO.setRepository(appServiceVersionDTO.getRepository());
+        return chartTagVO;
+    }
+
+    private HarborImageTagDTO caculateHarborImageTagDTO(Long projectId, String image) {
+        HarborImageTagDTO harborImageTagDTO = new HarborImageTagDTO();
+        // 镜像格式
+        // dockerhub.hand-china.com/emabc-emabc-edm/emabc-edm:2020.3.20-155740-dev
+        // -        域名或ip       /  项目code     / app code : image tag
+        int startFlag = image.indexOf("/");
+        int endFlag = image.lastIndexOf(":");
+
+        String repoName = image.substring(startFlag + 1, endFlag);
+        String tagName = image.substring(endFlag);
+
+        harborImageTagDTO.setRepoName(repoName);
+        harborImageTagDTO.setTagName(tagName);
+        harborImageTagDTO.setProjectId(projectId);
+        return harborImageTagDTO;
     }
 
     @Nullable

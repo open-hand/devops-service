@@ -12,20 +12,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-import io.choerodon.devops.infra.dto.harbor.User;
+import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -132,6 +133,18 @@ public class HarborServiceImpl implements HarborService {
             throw new CommonException("query.repo.config.is null.by.configId");
         }
         return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
+    }
+
+    @Override
+    public void batchDeleteImageTags(List<HarborImageTagDTO> deleteImagetags) {
+        deleteImagetags.forEach(tag -> {
+            ResponseEntity<Page<HarborImageTagVo>> pageResponseEntity = rdupmClient.pagingImageTag(tag.getProjectId(), tag.getRepoName(), tag.getTagName(), PageRequest.of(0, 5));
+            Page<HarborImageTagVo> pageResponseEntityBody = pageResponseEntity.getBody();
+            // 存在对应tag才删除
+            if (pageResponseEntityBody != null && !CollectionUtils.isEmpty(pageResponseEntityBody.getContent())) {
+                rdupmClient.deleteImageTag(tag.getRepoName(), tag.getTagName());
+            }
+        });
     }
 
     private AppServiceShareRuleDTO queryShareAppService(Long appServiceId) {

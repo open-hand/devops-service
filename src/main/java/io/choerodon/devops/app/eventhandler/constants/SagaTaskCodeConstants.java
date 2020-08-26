@@ -259,6 +259,16 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
 
+    /**
+     * devops 删除habor镜像
+     */
+    public static final String DEVOPS_DELETE_HABOR_IMAGE_TAGS = "devops-delete-habor-image-tags";
+    /**
+     * devops 删除chart versions
+     */
+    public static final String DEVOPS_DELETE_CHART_VERSIONS = "devops-delete-chart-versions";
+
+
     private SagaTaskCodeConstants() {
     }
 }
