@@ -5,11 +5,14 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
+import io.choerodon.devops.api.vo.CiConfigTemplateVO;
+import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
@@ -245,7 +248,7 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile文件路径
      * @param skipTlsVerify         是否跳过证书校验
      */
-    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify) {
+    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify, String dockerTagName) {
         List<String> commands = new ArrayList<>();
 
         // 在生成镜像的命令前保存镜像的元数据
@@ -255,7 +258,12 @@ public class GitlabCiUtil {
         commands.add("saveImageMetadata");
 
         // 默认跳过证书校验， 之后可以进行配置, 因为自签名的证书不方便进行证书校验
-        String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
+        String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:";
+        if (StringUtils.isEmpty(dockerTagName)) {
+            rawCommand = String.format("%s%s", rawCommand, "${CI_COMMIT_TAG}");
+        } else {
+            rawCommand = String.format("%s%s", rawCommand, dockerTagName);
+        }
         commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
         return commands;
     }
@@ -265,8 +273,16 @@ public class GitlabCiUtil {
      *
      * @return 脚本
      */
-    public static String generateChartBuildScripts() {
-        return GitOpsConstants.CHART_BUILD;
+    public static List<String> generateChartBuildScripts(DevopsCiJobVO jobVO) {
+        List<String> commands = new ArrayList<>();
+        if (jobVO.getConfigVO() != null) {
+            List<CiConfigTemplateVO> configTemplateVOS = jobVO.getConfigVO().getConfig();
+            if (!CollectionUtils.isEmpty(configTemplateVOS) && !StringUtils.isEmpty(configTemplateVOS.get(0).getChartName())) {
+                commands.add(String.format("CI_COMMIT_TAG=%s", configTemplateVOS.get(0).getChartName()));
+            }
+        }
+        commands.add(GitOpsConstants.CHART_BUILD);
+        return commands;
     }
 
 
