@@ -454,6 +454,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                 || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
                                 || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
                     }).collect(Collectors.toList());
+                    // 执行成功的添加覆盖率
+                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                        sonarContents.forEach(v -> {
+                            if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+                                devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+                            }
+                        });
+                    }
+
+                    SonarQubeConfigVO sonarQubeConfigVO = objectMapper.convertValue(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
+                    devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
                     devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                 }
             }

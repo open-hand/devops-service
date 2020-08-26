@@ -369,4 +369,19 @@ public class AppServiceVersionController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.versions.get"));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "批量删除应用服务版本")
+    @DeleteMapping(value = "/batch")
+    public ResponseEntity<List<AppServiceVersionVO>> batchDelete(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "应用服务id", required = true)
+            @RequestParam(value = "app_service_id") Long appServiceId,
+            @RequestBody Set<Long> versionIds
+    ) {
+        appServiceVersionService.batchDelete(projectId, appServiceId, versionIds);
+        return ResponseEntity.noContent().build();
+    }
 }
