@@ -3,9 +3,13 @@ package io.choerodon.devops.infra.feign.fallback;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
@@ -14,7 +18,6 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.feign.RdupmClient;
 
 /**
@@ -90,5 +93,15 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<HarborC7nRepoImageTagVo> listImageTag(String repoType, Long repoId, String imageName, String tagName) {
         throw new CommonException("error.query.nexus.repo.list.tag");
+    }
+
+    @Override
+    public ResponseEntity deleteImageTag(String repoName, String tagName) {
+        throw new CommonException("error.delete.image.tag");
+    }
+
+    @Override
+    public ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(Long projectId, String repoName, String tagName, PageRequest pageRequest) {
+        throw new CommonException("error.paging.image.tag");
     }
 }
