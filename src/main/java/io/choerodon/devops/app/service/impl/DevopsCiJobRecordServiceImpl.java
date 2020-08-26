@@ -123,6 +123,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         recordDTO.setTriggerUserId(iamUserId);
         if (!CollectionUtils.isEmpty(jobMap) && jobMap.get(jobDTO.getName()) != null) {
             recordDTO.setType(jobMap.get(jobDTO.getName()).getType());
+            recordDTO.setMetadata(jobMap.get(jobDTO.getName()).getMetadata());
         }
 
         devopsCiJobRecordMapper.insertSelective(recordDTO);
