@@ -801,6 +801,26 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionMapper.selectOne(appServiceVersionDTO);
     }
 
+    @Override
+    public void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        versionIds.forEach(id -> {
+            // 删除应用服务版本
+
+            // 删除value
+
+            // 删除readme
+
+            // 删除共享规则
+
+            // 删除harbor镜像
+
+            // 删除chart
+
+        });
+    }
+
     @Nullable
     private DevopsConfigDTO queryConfigByAppServiceId(Long appServiceId) {
         DevopsConfigDTO configDTO = new DevopsConfigDTO();

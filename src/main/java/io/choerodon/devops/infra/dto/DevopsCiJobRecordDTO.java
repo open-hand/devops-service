@@ -50,6 +50,9 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
 
+    @ApiModelProperty("详细信息")
+    private String metadata;
+
     public Long getId() {
         return id;
     }
@@ -144,5 +147,13 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
 
     public void setGitlabProjectId(Long gitlabProjectId) {
         this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 }
