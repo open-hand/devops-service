@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -138,7 +137,7 @@ public class HarborServiceImpl implements HarborService {
     @Override
     public void batchDeleteImageTags(List<HarborImageTagDTO> deleteImagetags) {
         deleteImagetags.forEach(tag -> {
-            ResponseEntity<Page<HarborImageTagVo>> pageResponseEntity = rdupmClient.pagingImageTag(tag.getProjectId(), tag.getRepoName(), tag.getTagName(), PageRequest.of(0, 5));
+            ResponseEntity<Page<HarborImageTagVo>> pageResponseEntity = rdupmClient.pagingImageTag(tag.getProjectId(), tag.getRepoName(), tag.getTagName());
             Page<HarborImageTagVo> pageResponseEntityBody = pageResponseEntity.getBody();
             // 存在对应tag才删除
             if (pageResponseEntityBody != null && !CollectionUtils.isEmpty(pageResponseEntityBody.getContent())) {
