@@ -176,8 +176,8 @@ public interface RdupmClient {
 
     @ApiOperation(value = "项目层/组织层--镜像TAG列表")
     @GetMapping(value = "/v1/harbor-image-tag/list/{projectId}")
-    ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(@PathVariable(value = "projectId") @ApiParam(value = "猪齿鱼项目ID") Long projectId,
-                                                          @ApiParam(value = "仓库名称") @RequestParam String repoName,
-                                                          @ApiParam(value = "版本号") @RequestParam(required = false) String tagName,
+    ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(@PathVariable(value = "projectId") Long projectId,
+                                                          @RequestParam(value = "repoName") String repoName,
+                                                          @RequestParam(value = "tagName", required = false) String tagName,
                                                           @ApiIgnore PageRequest pageRequest);
 }
