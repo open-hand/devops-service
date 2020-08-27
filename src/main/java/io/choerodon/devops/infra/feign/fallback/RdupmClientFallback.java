@@ -100,7 +100,7 @@ public class RdupmClientFallback implements RdupmClient {
         throw new CommonException("error.delete.image.tag");
     }
 
-    @Overrideapp_service_versions
+    @Override
     public ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(Long projectId, String repoName, String tagName, PageRequest pageRequest) {
         throw new CommonException("error.paging.image.tag");
     }
