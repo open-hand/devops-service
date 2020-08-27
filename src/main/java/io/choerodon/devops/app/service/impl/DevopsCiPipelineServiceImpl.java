@@ -315,16 +315,19 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
                 devopsCiStageDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                 DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
+                List<CiDockerTagNameVO> dockerTagNames = new ArrayList<>();
                 // 保存ci job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         // 不让数据库存加密的值
                         decryptCiBuildMetadata(devopsCiJobVO);
                         processCiJobVO(devopsCiJobVO);
+                        setChartVersionName(devopsCiJobVO, dockerTagNames);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                         devopsCiJobVO.setId(devopsCiJobService.create(devopsCiJobDTO).getId());
+                        getDockerTagName(devopsCiJobVO, dockerTagNames);
                     });
                 }
             });
@@ -334,6 +337,77 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
             initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+        }
+    }
+
+    private void getDockerTagName(DevopsCiJobVO devopsCiJobVO, List<CiDockerTagNameVO> dockerTagNames) {
+        // 自定义的chart和docker tag名
+        // 0.1 获取到docker任务Id 和规则
+        if (devopsCiJobVO.getType().equals(JobTypeEnum.BUILD.value())) {
+            if (devopsCiJobVO.getConfigJobTypes().contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+                List<CiConfigTemplateVO> configVOS = devopsCiJobVO.getConfigVO().getConfig();
+                Optional<CiConfigTemplateVO> optional = configVOS.stream().filter(t -> t.getType().equals(CiJobScriptTypeEnum.DOCKER.getType())).findFirst();
+                if (optional.isPresent()) {
+                    CiConfigTemplateVO templateVO = optional.get();
+                    if (templateVO.getCustomDockerTagName() != null && templateVO.getCustomDockerTagName()) {
+                        if (StringUtils.isEmpty(templateVO.getDockerTagName())) {
+                            throw new CommonException("error.docker.tag.name.empty");
+                        }
+                        CiDockerTagNameVO ciDockerTagNameVO = new CiDockerTagNameVO(devopsCiJobVO.getId(), devopsCiJobVO.getName(), templateVO.getDockerTagName());
+                        dockerTagNames.add(ciDockerTagNameVO);
+                    }
+                }
+            }
+        }
+    }
+
+    private void setChartVersionName(DevopsCiJobVO devopsCiJobVO, List<CiDockerTagNameVO> dockerTagNames) {
+        // chart任务 自定chart版本名
+        // 前端可能不会拿到最新的chartVersionName
+        // 更新metadata信息
+        if (devopsCiJobVO.getType().equals(JobTypeEnum.CHART.value())) {
+            List<CiConfigTemplateVO> configVOS = devopsCiJobVO.getConfigVO().getConfig();
+            if (!CollectionUtils.isEmpty(configVOS)) {
+                CiConfigTemplateVO ciConfigTemplateVO = configVOS.get(0);
+                if (ciConfigTemplateVO.getCustomChartVersionName() != null && ciConfigTemplateVO.getCustomChartVersionName()) {
+                    if (StringUtils.isEmpty(ciConfigTemplateVO.getDockerJobName()) && ciConfigTemplateVO.getDockerJobId() == null) {
+                        throw new CommonException("error.chart.docker.job.empty");
+                    }
+                    CiDockerTagNameVO ciDockerTagNameVO = null;
+                    // 创建根据名称判断 更新根据id
+                    if (devopsCiJobVO.getId() != null) {
+                        for (CiDockerTagNameVO t : dockerTagNames) {
+                            if (t.getDockerJobId().equals(devopsCiJobVO.getId())) {
+                                ciDockerTagNameVO = t;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (CiDockerTagNameVO t : dockerTagNames) {
+                            if (t.getDockerJobName().equals(devopsCiJobVO.getName())) {
+                                ciDockerTagNameVO = t;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (ciDockerTagNameVO == null) {
+                        // 找不到docker任务 chart自定义名称设置为默认
+                        ciConfigTemplateVO.setCustomChartVersionName(false);
+                    } else {
+                        ciConfigTemplateVO.setDockerJobId(ciDockerTagNameVO.getDockerJobId());
+                        ciConfigTemplateVO.setDockerJobName(ciDockerTagNameVO.getDockerJobName());
+                        ciConfigTemplateVO.setChartVersionName(ciDockerTagNameVO.getDockerTagName());
+                    }
+
+                    configVOS.clear();
+                    configVOS.add(ciConfigTemplateVO);
+                    CiConfigVO ciConfigVO = new CiConfigVO(configVOS);
+                    devopsCiJobVO.setConfigVO(ciConfigVO);
+                    String metadata = gson.toJson(ciConfigVO);
+                    devopsCiJobVO.setMetadata(metadata.replace("\"", "'"));
+                }
+            }
         }
     }
 
@@ -822,17 +896,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 更新
                 devopsCiStageService.update(devopsCiStageVO);
                 devopsCiJobService.deleteByStageId(devopsCiStageVO.getId());
+                List<CiDockerTagNameVO> dockerTagNames = new ArrayList<>();
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         decryptCiBuildMetadata(devopsCiJobVO);
                         processCiJobVO(devopsCiJobVO);
+                        setChartVersionName(devopsCiJobVO, dockerTagNames);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setId(null);
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobService.create(devopsCiJobDTO);
                         devopsCiJobVO.setId(devopsCiJobDTO.getId());
+                        getDockerTagName(devopsCiJobVO, dockerTagNames);
                     });
                 }
             } else {

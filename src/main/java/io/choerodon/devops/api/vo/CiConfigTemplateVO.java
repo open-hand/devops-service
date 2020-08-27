@@ -65,25 +65,48 @@ public class CiConfigTemplateVO {
     private String dockerTagName;
 
     @ApiModelProperty("是否自定义chart版本名")
-    private Boolean customChartName;
+    private Boolean customChartVersionName;
 
     @ApiModelProperty("自定义chart版本名")
-    private String chartName;
+    private String chartVersionName;
 
-    public Boolean getCustomChartName() {
-        return customChartName;
+    @ApiModelProperty("chart关联docker任务名")
+    private String dockerJobName;
+
+    @Encrypt
+    @ApiModelProperty("chart关联docker任务 Id")
+    private Long dockerJobId;
+
+    public Boolean getCustomChartVersionName() {
+        return customChartVersionName;
     }
 
-    public void setCustomChartName(Boolean customChartName) {
-        this.customChartName = customChartName;
+    public void setCustomChartVersionName(Boolean customChartVersionName) {
+        this.customChartVersionName = customChartVersionName;
     }
 
-    public String getChartName() {
-        return chartName;
+    public String getDockerJobName() {
+        return dockerJobName;
     }
 
-    public void setChartName(String chartName) {
-        this.chartName = chartName;
+    public void setDockerJobName(String dockerJobName) {
+        this.dockerJobName = dockerJobName;
+    }
+
+    public Long getDockerJobId() {
+        return dockerJobId;
+    }
+
+    public void setDockerJobId(Long dockerJobId) {
+        this.dockerJobId = dockerJobId;
+    }
+
+    public String getChartVersionName() {
+        return chartVersionName;
+    }
+
+    public void setChartVersionName(String chartVersionName) {
+        this.chartVersionName = chartVersionName;
     }
 
     public String getDockerTagName() {

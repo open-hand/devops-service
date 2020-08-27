@@ -277,8 +277,11 @@ public class GitlabCiUtil {
         List<String> commands = new ArrayList<>();
         if (jobVO.getConfigVO() != null) {
             List<CiConfigTemplateVO> configTemplateVOS = jobVO.getConfigVO().getConfig();
-            if (!CollectionUtils.isEmpty(configTemplateVOS) && !StringUtils.isEmpty(configTemplateVOS.get(0).getChartName())) {
-                commands.add(String.format("CI_COMMIT_TAG=%s", configTemplateVOS.get(0).getChartName()));
+            if (!CollectionUtils.isEmpty(configTemplateVOS) &&
+                    configTemplateVOS.get(0).getCustomChartVersionName() != null
+                    && configTemplateVOS.get(0).getCustomChartVersionName()
+                    && !StringUtils.isEmpty(configTemplateVOS.get(0).getCustomChartVersionName())) {
+                commands.add(String.format("CI_COMMIT_TAG=%s", configTemplateVOS.get(0).getCustomChartVersionName()));
             }
         }
         commands.add(GitOpsConstants.CHART_BUILD);
