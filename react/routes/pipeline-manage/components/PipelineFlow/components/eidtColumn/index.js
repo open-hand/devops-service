@@ -198,7 +198,7 @@ export default observer((props) => {
 
   async function editStage() {
     if (addStepDs.current && addStepDs.current.validate()) {
-      const cdAuditUserIdsArr = addStepDs.current.get('cdAuditUserIds').map((x) => x.id);
+      const cdAuditUserIdsArr = addStepDs.current.get('cdAuditUserIds').map((x) => (typeof x === 'object' ? x.id : x));
       eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), addStepDs.current.get('triggerType'), cdAuditUserIdsArr, true);
     } else {
       return false;
