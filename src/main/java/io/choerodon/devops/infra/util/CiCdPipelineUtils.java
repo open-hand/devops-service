@@ -75,12 +75,16 @@ public class CiCdPipelineUtils {
             return;
         }
         ciCdPipelineRecordVOS.forEach(ciCdPipelineRecordVO -> {
-            String relId = String.valueOf(ciCdPipelineRecordVO.getDevopsPipelineRecordRelId());
-            if (relId.length() >= VIEWID_DIGIT) {
-                ciCdPipelineRecordVO.setViewId(StringUtils.reverse(StringUtils.substring(StringUtils.reverse(relId), 0, VIEWID_DIGIT)));
-            } else {
-                ciCdPipelineRecordVO.setViewId(relId);
-            }
+            String handleId = handleId(ciCdPipelineRecordVO.getDevopsPipelineRecordRelId());
+            ciCdPipelineRecordVO.setViewId(handleId);
         });
+    }
+
+    public static String handleId(Long id) {
+        String relId = String.valueOf(id);
+        if (relId.length() >= VIEWID_DIGIT) {
+            return StringUtils.reverse(StringUtils.substring(StringUtils.reverse(relId), 0, VIEWID_DIGIT));
+        }
+        return relId;
     }
 }

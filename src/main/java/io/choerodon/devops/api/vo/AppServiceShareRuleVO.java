@@ -41,6 +41,16 @@ public class AppServiceShareRuleVO {
 
     private Long objectVersionNumber;
 
+    private String viewId;
+
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
+    }
+
     public String getProjectName() {
         return projectName;
     }
