@@ -379,7 +379,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "应用服务id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
-            @RequestBody Set<Long> versionIds
+            @Encrypt @RequestBody Set<Long> versionIds
     ) {
         appServiceVersionService.batchDelete(projectId, appServiceId, versionIds);
         return ResponseEntity.noContent().build();
