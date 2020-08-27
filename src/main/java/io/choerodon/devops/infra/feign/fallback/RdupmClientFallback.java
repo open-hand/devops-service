@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.feign.fallback;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 
 import io.choerodon.core.domain.Page;
@@ -101,7 +100,7 @@ public class RdupmClientFallback implements RdupmClient {
     }
 
     @Override
-    public ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(Long projectId, String repoName, String tagName, PageRequest pageRequest) {
+    public ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(Long projectId, String repoName, String tagName) {
         throw new CommonException("error.paging.image.tag");
     }
 }
