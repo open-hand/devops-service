@@ -42,6 +42,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
@@ -1048,7 +1049,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdAuditRecordDTOS.forEach(devopsCdAuditRecordDTO -> {
                             if (AuditStatusEnum.PASSED == AuditStatusEnum.valueOf(devopsCdAuditRecordDTO.getStatus().toUpperCase())) {
                                 IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(devopsCdAuditRecordDTO.getUserId());
-                                devopsCdStageRecordVO.setIamUserDTO(userDTO);
+                                UserVO userVO = new UserVO();
+                                userVO.setRealName(userDTO.getRealName());
+                                userVO.setLoginName(userDTO.getLoginName());
+                                userVO.setImageUrl(userDTO.getImageUrl());
+                                devopsCdStageRecordVO.setIamUserDTO(userVO);
                             }
                         });
                     }
