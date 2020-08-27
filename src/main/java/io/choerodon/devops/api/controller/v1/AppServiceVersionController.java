@@ -373,7 +373,7 @@ public class AppServiceVersionController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "批量删除应用服务版本")
     @DeleteMapping(value = "/batch")
-    public ResponseEntity<List<AppServiceVersionVO>> batchDelete(
+    public ResponseEntity<Void> batchDelete(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
