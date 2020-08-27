@@ -67,7 +67,7 @@ export default observer(
       const url = `/devops/v1/projects/${projectId}/users/list_users?page=0&size=${pageSize}`;
       let cdAuditsUserIds = [];
       forEach(addStepDs?.current?.get("cdAuditUserIds"), ({ id }) => {
-        cdAuditsUserIds.push(id);
+        id && cdAuditsUserIds.push(id);
       });
       const res = await axios.post(url, {
         param: [],

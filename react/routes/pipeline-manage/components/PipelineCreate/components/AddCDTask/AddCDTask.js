@@ -160,8 +160,10 @@ export default observer(() => {
           return false;
         }
       }
+      const cdAuditUserIds = ds.cdAuditUserIds.map((x) => x.id);
       const data = {
         ...ds,
+        cdAuditUserIds,
         triggerValue:
           typeof ds.triggerValue === "object"
             ? ds.triggerValue?.join(",")
@@ -608,7 +610,7 @@ export default observer(() => {
     let cdAuditsUserIds = [];
     jobDetail?.cdAuditUserIds &&
       jobDetail.cdAuditUserIds.forEach(({ id }) => {
-        cdAuditsUserIds.push(id);
+        id && cdAuditsUserIds.push(id);
       });
     const res = await axios.post(url, {
       param: [],
