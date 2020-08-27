@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Icon } from 'choerodon-ui';
 import StatusTag from '../StatusTag';
 
-const detailHeader = ({ devopsPipelineRecordRelId, status, triggerRef, appServiceName, aHref, mainStore, appServiceId, projectId }) => {
+const detailHeader = ({ viewId, status, triggerRef, appServiceName, aHref, mainStore, appServiceId, projectId }) => {
   async function linkToGitlab() {
     try {
       await mainStore.checkLinkToGitlab(projectId, appServiceId);
@@ -16,7 +16,7 @@ const detailHeader = ({ devopsPipelineRecordRelId, status, triggerRef, appServic
 
   return (
     <div className="c7ncd-pipelineManage-optsDetail-header">
-      <span>#{`${devopsPipelineRecordRelId}`}</span>
+      <span>#{`${viewId}`}</span>
       <span>
         (<Icon type="widgets_line" /><span>{appServiceName}</span>  -
         <Icon type="branch" />
@@ -33,7 +33,7 @@ const detailHeader = ({ devopsPipelineRecordRelId, status, triggerRef, appServic
 };
 
 detailHeader.propTypes = {
-  devopsPipelineRecordRelId: PropTypes.number.isRequired,
+  viewId: PropTypes.number.isRequired,
   status: PropTypes.string.isRequired,
 };
 

@@ -19,6 +19,7 @@ export default observer((props) => {
     stageRecordVOS: treeStageRecordVOList,
     cdRecordId,
     devopsPipelineRecordRelId,
+    viewId,
   } = props;
   const {
     intl: { formatMessage },
@@ -86,7 +87,7 @@ export default observer((props) => {
     !getDetailLoading
       ? <div className="c7n-piplineManage">
         <DetailHeader
-          devopsPipelineRecordRelId={devopsPipelineRecordRelId}
+          viewId={viewId}
           appServiceName={ciCdPipelineVO && ciCdPipelineVO.appServiceName}
           appServiceId={ciCdPipelineVO && ciCdPipelineVO.appServiceId}
           aHref={commit && commit.gitlabProjectUrl}
