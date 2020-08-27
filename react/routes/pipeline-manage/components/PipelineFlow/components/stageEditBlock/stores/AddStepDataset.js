@@ -1,80 +1,85 @@
-import { DataSet } from "choerodon-ui/pro";
-import { forEach } from "lodash";
+/* eslint-disable import/no-anonymous-default-export */
+import { DataSet } from 'choerodon-ui/pro';
+import { forEach } from 'lodash';
 
 export default (projectId) => ({
   autoCreate: true,
   fields: [
     {
-      name: "type",
-      type: "string",
-      label: "阶段属性",
+      name: 'type',
+      type: 'string',
+      label: '阶段属性',
       required: true,
-      textField: "text",
-      valueField: "value",
+      textField: 'text',
+      valueField: 'value',
       options: new DataSet({
         data: [
           {
-            value: "CI",
-            text: "CI阶段",
+            value: 'CI',
+            text: 'CI阶段',
           },
           {
-            value: "CD",
-            text: "CD阶段",
+            value: 'CD',
+            text: 'CD阶段',
           },
         ],
       }),
     },
     {
-      name: "step",
-      type: "string",
-      label: "阶段名称",
+      name: 'step',
+      type: 'string',
+      label: '阶段名称',
       required: true,
       maxLength: 15,
     },
     {
-      name: "parallel",
-      type: "number",
-      label: "任务设置",
+      name: 'parallel',
+      type: 'number',
+      label: '任务设置',
       required: true,
       disabled: true,
     },
     {
-      name: "triggerType",
-      type: "string",
-      label: "流转至此阶段",
-      defaultValue: "auto",
+      name: 'triggerType',
+      type: 'string',
+      label: '流转至此阶段',
+      defaultValue: 'auto',
     },
     {
-      name: "pageSize",
+      name: 'pageSize',
       defaultValue: 20,
-      type: "number",
+      type: 'number',
     },
     {
-      name: "cdAuditUserIds",
-      type: "object",
-      label: "审核人员",
+      name: 'cdAuditUserIds',
+      type: 'object',
+      label: '审核人员',
       dynamicProps: {
-        required: ({ record }) => record.get("triggerType") === "manual",
+        required: ({ record }) => record.get('triggerType') === 'manual',
       },
-      textField: "realName",
+      textField: 'realName',
       multiple: true,
-      valueField: "id",
+      valueField: 'id',
       lookupAxiosConfig: ({ params, dataSet }) => {
-        let cdAuditIdsArrayObj = dataSet.current?.get("cdAuditUserIds");
+        const cdAuditIdsArrayObj = dataSet.current?.get('cdAuditUserIds');
         let cdAuditIds = [];
-        forEach(cdAuditIdsArrayObj, ({ id }) => {
-          id && cdAuditIds.push(id);
+        forEach(cdAuditIdsArrayObj, (obj) => {
+          if (typeof obj === 'string') {
+            cdAuditIds.push(obj);
+          } else if (typeof obj === 'object') {
+            cdAuditIds.push(obj?.id);
+          }
         });
         if (params.realName && params.id) {
           cdAuditIds = [...cdAuditIds, params.id];
         }
         return {
-          method: "post",
+          method: 'post',
           url: `/devops/v1/projects/${projectId}/users/list_users?page=0&size=20`,
           data: {
             param: [],
             searchParam: {
-              realName: params.realName || "",
+              realName: params.realName || '',
             },
             ids: cdAuditIds || [],
           },
@@ -83,12 +88,12 @@ export default (projectId) => ({
             try {
               newRes = JSON.parse(res);
               if (
-                newRes.content.length % 20 === 0 &&
-                newRes.content.length !== 0
+                newRes.content.length % 20 === 0
+                && newRes.content.length !== 0
               ) {
                 newRes.content.push({
-                  id: "more",
-                  realName: "加载更多",
+                  id: 'more',
+                  realName: '加载更多',
                 });
               }
               return newRes;

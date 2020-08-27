@@ -459,8 +459,12 @@ export default (
       lookupAxiosConfig: ({ params, dataSet }) => {
         const cdAuditIdsArrayObj = dataSet.current?.get('cdAuditUserIds');
         let cdAuditIds = [];
-        forEach(cdAuditIdsArrayObj, ({ id }) => {
-          id && cdAuditIds.push(id);
+        forEach(cdAuditIdsArrayObj, (obj) => {
+          if (typeof obj === 'string') {
+            cdAuditIds.push(obj);
+          } else if (typeof obj === 'object') {
+            cdAuditIds.push(obj?.id);
+          }
         });
         if (params.realName && params.id) {
           cdAuditIds = [...cdAuditIds, params.id];
