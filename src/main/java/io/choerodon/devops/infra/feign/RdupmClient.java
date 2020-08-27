@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
+import io.choerodon.devops.api.vo.rdupm.ResponseVO;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
@@ -169,8 +170,8 @@ public interface RdupmClient {
 
     @ApiOperation(value = "项目层/组织层--删除镜像TAG")
     @DeleteMapping(value = "/v1/harbor-image-tag/delete")
-    ResponseEntity deleteImageTag(@ApiParam(value = "仓库名称") @RequestParam String repoName,
-                                  @ApiParam(value = "版本号") @RequestParam String tagName);
+    ResponseEntity<ResponseVO> deleteImageTag(@ApiParam(value = "仓库名称") @RequestParam String repoName,
+                                              @ApiParam(value = "版本号") @RequestParam String tagName);
 
     @ApiOperation(value = "项目层/组织层--镜像TAG列表")
     @GetMapping(value = "/v1/harbor-image-tag/list/{projectId}")

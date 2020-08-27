@@ -21,6 +21,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
+import io.choerodon.devops.api.vo.rdupm.ResponseVO;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
@@ -141,7 +142,11 @@ public class HarborServiceImpl implements HarborService {
             Page<HarborImageTagVo> pageResponseEntityBody = pageResponseEntity.getBody();
             // 存在对应tag才删除
             if (pageResponseEntityBody != null && !CollectionUtils.isEmpty(pageResponseEntityBody.getContent())) {
-                rdupmClient.deleteImageTag(tag.getRepoName(), tag.getTagName());
+                ResponseEntity<ResponseVO> responseEntity = rdupmClient.deleteImageTag(tag.getRepoName(), tag.getTagName());
+                if (responseEntity.getBody() != null && responseEntity.getBody().getFailed()) {
+                    throw new CommonException(responseEntity.getBody().getCode(), responseEntity.getBody().getMessage());
+                }
+
             }
         });
     }
