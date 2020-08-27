@@ -105,9 +105,9 @@ const Version = withRouter(observer((props) => {
           </Button>
         </Permission>
         <Permission
-          service={[]}
+          service={['choerodon.code.project.develop.app-service.ps.version.delete']}
         >
-          <Tooltip title={selectedRecordLength ? '' : '请在下方列表中选择服务版本'}>
+          <Tooltip title={selectedRecordLength ? '' : formatMessage({ id: `${intlPrefix}.version.delete.disable` })}>
             <Button
               icon="delete"
               onClick={handleDelete}
