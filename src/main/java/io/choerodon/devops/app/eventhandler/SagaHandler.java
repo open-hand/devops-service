@@ -336,9 +336,10 @@ public class SagaHandler {
             description = "处理删除habor镜像",
             sagaCode = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION,
             maxRetryCount = 5, seq = 10)
-    public void deleteHaborImageTags(String payload) {
+    public String deleteHaborImageTags(String payload) {
         CustomResourceVO customResourceVO = gson.fromJson(payload, CustomResourceVO.class);
         harborService.batchDeleteImageTags(customResourceVO.getHarborImageTagDTOS());
+        return payload;
     }
 
     /**
@@ -351,8 +352,9 @@ public class SagaHandler {
             description = "处理删除chart version",
             sagaCode = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION,
             maxRetryCount = 5, seq = 20)
-    public void deleteChartTags(String payload) {
+    public String deleteChartTags(String payload) {
         CustomResourceVO customResourceVO = gson.fromJson(payload, CustomResourceVO.class);
         chartService.batchDeleteChartVersion(customResourceVO.getChartTagVOS());
+        return payload;
     }
 }
