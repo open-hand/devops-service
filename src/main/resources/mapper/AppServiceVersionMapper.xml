@@ -174,7 +174,8 @@
         SELECT distinct
         dav.id,
         dav.version,
-        dav.creation_date
+        dav.creation_date,
+        dav.repo_type
         FROM
         devops_app_service_version dav
         <if test="share!=null and share==true">
