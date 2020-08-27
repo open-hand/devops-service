@@ -2,7 +2,7 @@
 
 import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tooltip } from 'choerodon-ui';
+import { Tooltip, Avatar } from 'choerodon-ui';
 import { Button, Modal } from 'choerodon-ui/pro';
 import { Choerodon, Permission } from '@choerodon/boot';
 import StatusDot from '../statusDot';
@@ -13,6 +13,7 @@ import { handlePromptError } from '../../../../../../utils';
 import StageType from '../stage-type';
 import StatusTag from '../StatusTag';
 import DepolyLog from '../deployLog';
+import UserInfo from '../../../../../../components/userInfo';
 
 const jobType = {
   build: {
@@ -460,6 +461,7 @@ export default observer((props) => {
     stageId,
     parallel,
     triggerType = 'auto',
+    iamUserDTO,
   } = props;
 
   useEffect(() => {}, []);
@@ -520,6 +522,15 @@ export default observer((props) => {
         </h6>
         {renderItem()}
       </div>
+      {iamUserDTO ? (
+        <UserInfo
+          avatar={iamUserDTO.imageUrl}
+          name={iamUserDTO.realName}
+          id={iamUserDTO.loginName}
+          showName={false}
+          className="c7n-piplineManage-detail-column-avatar"
+        />
+      ) : null}
       <div className="c7n-piplineManage-detail-column-type">
         {triggerType === 'auto' ? (
           <svg
