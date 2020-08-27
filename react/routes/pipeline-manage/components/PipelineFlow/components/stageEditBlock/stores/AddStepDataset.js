@@ -63,7 +63,7 @@ export default (projectId) => ({
         let cdAuditIdsArrayObj = dataSet.current?.get("cdAuditUserIds");
         let cdAuditIds = [];
         forEach(cdAuditIdsArrayObj, ({ id }) => {
-          cdAuditIds.push(id);
+          id && cdAuditIds.push(id);
         });
         if (params.realName && params.id) {
           cdAuditIds = [...cdAuditIds, params.id];
