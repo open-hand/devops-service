@@ -822,7 +822,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         List<HarborImageTagDTO> deleteImagetags = new ArrayList<>();
         List<ChartTagVO> deleteChartTags = new ArrayList<>();
         versionIds.forEach(id -> {
-            // 删除应用服务版本
+            // 查询应用服务版本
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(id);
             // 删除value
             appServiceVersionValueService.baseDeleteById(appServiceVersionDTO.getValueId());
@@ -838,14 +838,17 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                     appServiceShareRuleMapper.deleteByPrimaryKey(appServiceShareRuleDTO.getId());
                 });
             }
-            // 删除harbor镜像
+            // 计算删除harbor镜像列表
             if (DEFAULT_REPO.equals(appServiceVersionDTO.getRepoType())) {
                 HarborImageTagDTO harborImageTagDTO = caculateHarborImageTagDTO(appServiceDTO.getProjectId(), appServiceVersionDTO.getImage());
                 deleteImagetags.add(harborImageTagDTO);
             }
-            // 删除chart
+            // 计算删除chart列表
             ChartTagVO chartTagVO = caculateChartTag(tenant.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode(), appServiceVersionDTO);
             deleteChartTags.add(chartTagVO);
+
+            // 删除应用服务版本
+            appServiceVersionMapper.deleteByPrimaryKey(appServiceVersionDTO.getId());
         });
         CustomResourceVO customResourceVO = new CustomResourceVO();
         customResourceVO.setHarborImageTagDTOS(deleteImagetags);
