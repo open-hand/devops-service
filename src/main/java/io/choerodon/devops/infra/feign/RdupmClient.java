@@ -6,10 +6,8 @@ import java.util.Set;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
@@ -178,6 +176,5 @@ public interface RdupmClient {
     @GetMapping(value = "/v1/harbor-image-tag/list/{projectId}")
     ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(@PathVariable(value = "projectId") Long projectId,
                                                           @RequestParam(value = "repoName") String repoName,
-                                                          @RequestParam(value = "tagName", required = false) String tagName,
-                                                          @ApiIgnore PageRequest pageRequest);
+                                                          @RequestParam(value = "tagName", required = false) String tagName);
 }
