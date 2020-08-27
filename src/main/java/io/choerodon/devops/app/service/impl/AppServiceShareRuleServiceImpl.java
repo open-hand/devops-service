@@ -10,11 +10,13 @@ import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
+import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -89,6 +92,12 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
                 t.setProjectName(projectDTO.getName());
             }
         }).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(appServiceShareRuleVOS)) {
+            appServiceShareRuleVOS.forEach(appServiceShareRuleVO -> {
+                String handleId = CiCdPipelineUtils.handleId(appServiceShareRuleVO.getId());
+                appServiceShareRuleVO.setViewId(handleId);
+            });
+        }
         shareRuleVOPageInfo.setContent(appServiceShareRuleVOS);
         return shareRuleVOPageInfo;
     }
