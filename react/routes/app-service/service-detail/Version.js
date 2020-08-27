@@ -1,9 +1,13 @@
-import React from 'react';
-import { TabPage, Content, Breadcrumb, Permission } from '@choerodon/boot';
-import { Table } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import React, { useMemo } from 'react';
+import {
+  TabPage, Content, Breadcrumb, Permission,
+} from '@choerodon/boot';
+import {
+  Table, Tooltip, Button,
+} from 'choerodon-ui/pro';
 import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
+import { observer } from 'mobx-react-lite';
 import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
@@ -13,12 +17,17 @@ import './index.less';
 
 const { Column } = Table;
 
-const Version = withRouter((props) => {
-  const { prefixCls } = useAppTopStore();
+const Version = withRouter(observer((props) => {
+  const { prefixCls, intlPrefix } = useAppTopStore();
   const {
     detailDs,
     versionDs,
+    intl: { formatMessage },
   } = useServiceDetailStore();
+
+  const selectedRecordLength = useMemo(
+    () => versionDs.selected && versionDs.selected.length, [versionDs.selected],
+  );
 
   function refresh() {
     versionDs.query();
@@ -32,6 +41,7 @@ const Version = withRouter((props) => {
     if (detailDs.current) {
       return detailDs.current.get('name');
     }
+    return '';
   }
 
   function openDetail(appServiceIds) {
@@ -63,6 +73,21 @@ const Version = withRouter((props) => {
     // });
   }
 
+  function handleDelete() {
+    const selectedRecords = versionDs.selected;
+    const version = selectedRecords[0] ? selectedRecords[0].get('version') : '';
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.version.delete.title` }),
+      children: selectedRecords.length > 1
+        ? formatMessage({ id: `${intlPrefix}.version.delete.des` }, { version, length: selectedRecordLength })
+        : formatMessage({ id: `${intlPrefix}.version.delete.des.single` }, { version }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    versionDs.delete(selectedRecords, modalProps);
+  }
+
   return (
     <TabPage
       service={[]}
@@ -74,9 +99,23 @@ const Version = withRouter((props) => {
           <Button
             icon="authority"
             onClick={() => openDetail(props.match.params.id)}
+            className={`${prefixCls}-detail-content-version-btn`}
           >
             权限管理
           </Button>
+        </Permission>
+        <Permission
+          service={[]}
+        >
+          <Tooltip title={selectedRecordLength ? '' : '请在下方列表中选择服务版本'}>
+            <Button
+              icon="delete"
+              onClick={handleDelete}
+              disabled={!selectedRecordLength}
+            >
+              {formatMessage({ id: `${intlPrefix}.version.delete` })}
+            </Button>
+          </Tooltip>
         </Permission>
         <Button
           icon="refresh"
@@ -94,6 +133,6 @@ const Version = withRouter((props) => {
       </Content>
     </TabPage>
   );
-});
+}));
 
 export default Version;
