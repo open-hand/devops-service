@@ -889,7 +889,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         int endFlag = image.lastIndexOf(":");
 
         String repoName = image.substring(startFlag + 1, endFlag);
-        String tagName = image.substring(endFlag);
+        String tagName = image.substring(endFlag + 1);
 
         harborImageTagDTO.setRepoName(repoName);
         harborImageTagDTO.setTagName(tagName);
