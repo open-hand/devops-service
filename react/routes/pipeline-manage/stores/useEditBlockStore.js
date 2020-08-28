@@ -1,7 +1,7 @@
 import { useLocalStore } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
 
-export default function useStore() {
+export default function useStore(mainStore) {
   return useLocalStore(() => ({
     mainStore: [],
     get getMainData() {
@@ -28,8 +28,11 @@ export default function useStore() {
       this.setLoading(true);
       this.loadDetail(projectId, pipelineId).then((res) => {
         if (res) {
-          this.setStepData(res.devopsCiStageVOS.concat(res.devopsCdStageVOS), false);
-          this.setMainData(res);
+          const { id: selectedId } = mainStore.getSelectedMenu;
+          if (selectedId === pipelineId) {
+            this.setStepData(res.devopsCiStageVOS.concat(res.devopsCdStageVOS), false);
+            this.setMainData(res);
+          }
           this.setLoading(false);
         }
       });

@@ -2,7 +2,7 @@ import { useLocalStore } from 'mobx-react-lite';
 import { axios, Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../utils';
 
-export default function useStore() {
+export default function useStore(mainStore) {
   return useLocalStore(() => ({
     detailData: {},
     loadDetail(projectId, gitlabPipelineId) {
@@ -13,7 +13,10 @@ export default function useStore() {
       this.setDetailLoading(true);
       this.loadDetail(projectId, gitlabPipelineId).then((res) => {
         if (handlePromptError(res)) {
-          this.setDetailData(res);
+          const { devopsPipelineRecordRelId } = mainStore.getSelectedMenu;
+          if (devopsPipelineRecordRelId === gitlabPipelineId) {
+            this.setDetailData(res);
+          }
           this.setDetailLoading(false);
         }
       }).catch((e) => {
