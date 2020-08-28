@@ -351,7 +351,7 @@ public class SagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_DELETE_CHART_VERSIONS,
             description = "处理删除chart version",
             sagaCode = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION,
-            maxRetryCount = 5, seq = 20)
+            maxRetryCount = 5, seq = 10)
     public String deleteChartTags(String payload) {
         CustomResourceVO customResourceVO = gson.fromJson(payload, CustomResourceVO.class);
         chartService.batchDeleteChartVersion(customResourceVO.getChartTagVOS());
