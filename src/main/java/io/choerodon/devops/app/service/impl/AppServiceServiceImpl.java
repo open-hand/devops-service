@@ -1000,6 +1000,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 params.put("{{ SONAR_LOGIN }}", "");
                 params.put("{{ SONAR_URL }}", "");
             }
+            params.put("{{ SONAR_PROJECT_KEY }}", organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + ":" + appServiceDTO.getCode());
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
             params.put("{{ PRO_CODE }}", projectDTO.getCode());
