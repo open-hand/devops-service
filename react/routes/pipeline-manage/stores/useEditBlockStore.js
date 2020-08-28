@@ -74,8 +74,10 @@ export default function useStore(mainStore) {
     },
 
     addNewStep(index, data, edit) {
+      const { cdAuditUserIds } = data;
       const stepObj = {
         ...data,
+        cdAuditUserIds: cdAuditUserIds && cdAuditUserIds.map((x) => (typeof x === 'object' ? x.id : x)),
         name: data.step,
         jobList: [],
       };
