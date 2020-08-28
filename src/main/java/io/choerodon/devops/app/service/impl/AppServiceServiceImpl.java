@@ -77,12 +77,15 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.RoleDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -212,7 +215,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
     private DevopsCiCdPipelineMapper DevopsCiCdPipelineMapper;
-
+    @Autowired
+    private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
 
     static {
         InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
@@ -1741,11 +1745,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageable, String
             searchParam) {
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-
-        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
-        roleAssignmentSearchVO.setEnabled(true);
         Map<String, Object> searchParamMap;
+        RdmMemberQueryDTO queryDTO = new RdmMemberQueryDTO();
         // 处理搜索参数
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
             Map maps = gson.fromJson(searchParam, Map.class);
@@ -1754,31 +1755,23 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (!CollectionUtils.isEmpty(list)) {
                 String[] arrayParams = new String[list.size()];
                 list.toArray(arrayParams);
-                roleAssignmentSearchVO.setParam(arrayParams);
+                queryDTO.setParams(arrayParams[0]);
             }
             if (!CollectionUtils.isEmpty(searchParamMap)) {
                 if (searchParamMap.get(LOGIN_NAME) != null) {
                     String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
-                    roleAssignmentSearchVO.setLoginName(loginName);
+                    queryDTO.setLoginName(loginName);
+
                 }
                 if (searchParamMap.get(REAL_NAME) != null) {
                     String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
-                    roleAssignmentSearchVO.setRealName(realName);
+                    queryDTO.setRealName(realName);
                 }
             }
         }
-
-        List<DevopsUserPermissionVO> allProjectMembers = ConvertUtils.convertList(
-                baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue()), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, false));
-        List<DevopsUserPermissionVO> allProjectOwners = ConvertUtils.convertList(
-                baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue()), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, true));
-        if (!appServiceDTO.getSkipCheckPermission()) {
-            List<AppServiceUserRelDTO> userPermissionDTOS = appServiceUserRelMapper.listAllUserPermissionByAppId(appServiceId);
-            List<Long> assigned = userPermissionDTOS.stream().map(AppServiceUserRelDTO::getIamUserId).collect(Collectors.toList());
-            allProjectMembers = allProjectMembers.stream().filter(member -> assigned.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId))
-                    .collect(Collectors.toList());
-        }
-        return combineOwnerAndMember(allProjectMembers, allProjectOwners, pageable);
+        queryDTO.setRepositoryIds(Collections.singleton(appServiceId));
+        Page<RdmMemberViewDTO> permissionVOPage = PageInfoUtil.createPageFromList(new ArrayList<>(hrdsCodeRepoClientOperator.listMembers(null, projectId, queryDTO)), pageable);
+        return ConvertUtils.convertPage(permissionVOPage, this::remDTOToPermissionVO);
     }
 
     @Override
@@ -1879,6 +1872,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void updatePermission(Long projectId, Long appServiceId, AppServicePermissionVO applicationPermissionVO) {
+        // 该方法已经没有使用
         // 创建gitlabUserPayload
         AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
 
@@ -2967,6 +2961,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException("error.app.project.notMatch");
         }
     }
+
     private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         for (AppServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
@@ -3020,6 +3015,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
         return appServiceRepVO;
+    }
+
+    private DevopsUserPermissionVO remDTOToPermissionVO(RdmMemberViewDTO rdmMemberViewDTO) {
+        DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
+        BeanUtils.copyProperties(rdmMemberViewDTO.getUser(), devopsUserPermissionVO);
+        devopsUserPermissionVO.setIamUserId(rdmMemberViewDTO.getUserId());
+        return devopsUserPermissionVO;
     }
 
 
