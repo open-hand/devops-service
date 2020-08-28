@@ -169,7 +169,7 @@ public interface RdupmClient {
                                                          @ApiParam(value = "镜像版本号,模糊查询") @RequestParam(required = false, value = "tagName") String tagName);
 
     @ApiOperation(value = "项目层/组织层--删除镜像TAG")
-    @DeleteMapping(value = "/v1/harbor-image-tag/delete")
+    @DeleteMapping(value = "/v1/harbor-choerodon-repos/image-tag/delete")
     ResponseEntity<ResponseVO> deleteImageTag(@ApiParam(value = "仓库名称") @RequestParam(name = "repoName") String repoName,
                                               @ApiParam(value = "版本号") @RequestParam(name = "tagName") String tagName);
 
