@@ -38,6 +38,16 @@ public class GitlabCi {
     @ApiModelProperty("before_script")
     private List<String> beforeScript;
 
+    @ApiModelProperty("The version for docker and chart")
+    private String versionName;
+
+    public String getVersionName() {
+        return versionName;
+    }
+
+    public void setVersionName(String versionName) {
+        this.versionName = versionName;
+    }
 
     public String getInclude() {
         return include;

@@ -42,4 +42,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
         renameTable(newTableName: 'devops_cicd_pipeline', oldTableName: 'devops_ci_pipeline')
 
     }
+    changeSet(author: 'scp', id: '2020-08-28-add-version-name'){
+        addColumn(tableName: 'devops_cicd_pipeline') {
+            column(name: 'version_name', type: 'VARCHAR(100)', remarks: '自定义版本名称')
+        }
+    }
 }
