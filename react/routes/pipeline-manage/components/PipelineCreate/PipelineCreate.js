@@ -79,20 +79,23 @@ const PipelineCreate = observer(() => {
         return false;
       }
       if (dataSource) {
-        await axios.put(`/devops/v1/projects/${projectId}/cicd_pipelines/${dataSource.id}`, data);
-        editBlockStore.loadData(projectId, dataSource.id);
-        refreshTree();
-        return true;
-      }
-      return createUseStore.axiosCreatePipeline(data, id).then((res) => {
-        if (res.failed) {
-          message.error(res.message);
+        try {
+          await axios.put(`/devops/v1/projects/${projectId}/cicd_pipelines/${dataSource.id}`, data);
+          editBlockStore.loadData(projectId, dataSource.id);
+          refreshTree();
+          return true;
+        } catch (e) {
           return false;
         }
+      }
+      try {
+        const res = await createUseStore.axiosCreatePipeline(data, id);
         res.id && mainStore.setSelectedMenu({ key: String(res.id) });
         refreshTree();
         return true;
-      });
+      } catch (e) {
+        return false;
+      }
     }
     return false;
   };
