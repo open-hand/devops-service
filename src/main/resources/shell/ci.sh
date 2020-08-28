@@ -16,6 +16,8 @@ export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
 export DOCKER_PWD=$DOCKER_PASSWORD
 # 获取的组织编码-项目编码(harbor Project地址)
 export GROUP_NAME={{ GROUP_NAME }}
+# 获取的组织编码-项目编码(harbor Project地址)
+export SONAR_PROJECT_KEY={{ SONAR_PROJECT_KEY }}
 # SONARQUBE的地址
 export SONAR_URL={{ SONAR_URL }}
 # SONARQUBE的token
