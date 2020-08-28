@@ -315,19 +315,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
                 devopsCiStageDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                 DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
-                List<CiDockerTagNameVO> dockerTagNames = new ArrayList<>();
                 // 保存ci job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         // 不让数据库存加密的值
                         decryptCiBuildMetadata(devopsCiJobVO);
                         processCiJobVO(devopsCiJobVO);
-                        setChartVersionName(devopsCiJobVO, dockerTagNames);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                         devopsCiJobVO.setId(devopsCiJobService.create(devopsCiJobDTO).getId());
-                        getDockerTagName(devopsCiJobVO, dockerTagNames);
                     });
                 }
             });
@@ -896,20 +893,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 更新
                 devopsCiStageService.update(devopsCiStageVO);
                 devopsCiJobService.deleteByStageId(devopsCiStageVO.getId());
-                List<CiDockerTagNameVO> dockerTagNames = new ArrayList<>();
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         decryptCiBuildMetadata(devopsCiJobVO);
                         processCiJobVO(devopsCiJobVO);
-                        setChartVersionName(devopsCiJobVO, dockerTagNames);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setId(null);
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobService.create(devopsCiJobDTO);
                         devopsCiJobVO.setId(devopsCiJobDTO.getId());
-                        getDockerTagName(devopsCiJobVO, dockerTagNames);
                     });
                 }
             } else {
@@ -993,6 +987,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         gitlabCi.setStages(stages);
+        gitlabCi.setVersionName(ciCdPipelineVO.getVersionName());
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
             if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(job -> {
@@ -1138,8 +1133,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 result.addAll(GitlabCiUtil.generateDockerScripts(
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
-                                        doTlsVerify == null || !doTlsVerify,
-                                        config.getDockerTagName()));
+                                        doTlsVerify == null || !doTlsVerify));
                                 break;
                             // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
                             case UPLOAD_JAR:
@@ -1154,7 +1148,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return result;
         } else if (JobTypeEnum.CHART.value().equals(jobVO.getType())) {
             // 生成chart步骤
-            return GitlabCiUtil.generateChartBuildScripts(jobVO);
+            return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
         }
         return Collections.emptyList();
     }
@@ -1282,6 +1276,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void buildBeforeScript(GitlabCi gitlabCi) {
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
+        if (StringUtils.isEmpty(gitlabCi.getVersionName())) {
+            beforeScripts.add(String.format("CI_COMMIT_TAG=%s", gitlabCi.getVersionName()));
+        }
         // 如果有job启用了缓存设置, 就创建缓存目录
         // 如果全部都是自定义任务, 这个map是空的
         if (!CollectionUtils.isEmpty(gitlabCi.getJobs())) {

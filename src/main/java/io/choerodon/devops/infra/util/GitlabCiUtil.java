@@ -248,7 +248,7 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile文件路径
      * @param skipTlsVerify         是否跳过证书校验
      */
-    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify, String dockerTagName) {
+    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify) {
         List<String> commands = new ArrayList<>();
 
         // 在生成镜像的命令前保存镜像的元数据
@@ -258,12 +258,7 @@ public class GitlabCiUtil {
         commands.add("saveImageMetadata");
 
         // 默认跳过证书校验， 之后可以进行配置, 因为自签名的证书不方便进行证书校验
-        String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:";
-        if (StringUtils.isEmpty(dockerTagName)) {
-            rawCommand = String.format("%s%s", rawCommand, "${CI_COMMIT_TAG}");
-        } else {
-            rawCommand = String.format("%s%s", rawCommand, dockerTagName);
-        }
+        String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
         commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
         return commands;
     }
@@ -273,21 +268,9 @@ public class GitlabCiUtil {
      *
      * @return 脚本
      */
-    public static List<String> generateChartBuildScripts(DevopsCiJobVO jobVO) {
-        List<String> commands = new ArrayList<>();
-        if (jobVO.getConfigVO() != null) {
-            List<CiConfigTemplateVO> configTemplateVOS = jobVO.getConfigVO().getConfig();
-            if (!CollectionUtils.isEmpty(configTemplateVOS) &&
-                    configTemplateVOS.get(0).getCustomChartVersionName() != null
-                    && configTemplateVOS.get(0).getCustomChartVersionName()
-                    && !StringUtils.isEmpty(configTemplateVOS.get(0).getCustomChartVersionName())) {
-                commands.add(String.format("CI_COMMIT_TAG=%s", configTemplateVOS.get(0).getCustomChartVersionName()));
-            }
-        }
-        commands.add(GitOpsConstants.CHART_BUILD);
-        return commands;
+    public static String generateChartBuildScripts() {
+        return GitOpsConstants.CHART_BUILD;
     }
-
 
     public static String generateCreateCacheDir(String cacheDir) {
         return "mkdir -p " + Objects.requireNonNull(cacheDir);

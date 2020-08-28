@@ -153,7 +153,7 @@ public interface RdupmClient {
                                                                @PathVariable(name = "projectId") Long projectId,
                                                                @ApiParam(value = "服务配Id", required = true)
                                                                @RequestParam(name = "configId") Long configId,
-                                                               String type);
+                                                               @RequestParam(name = "type") String type);
 
 
     @ApiOperation(value = "根据项目ID获取镜像仓库列表")
@@ -170,8 +170,8 @@ public interface RdupmClient {
 
     @ApiOperation(value = "项目层/组织层--删除镜像TAG")
     @DeleteMapping(value = "/v1/harbor-image-tag/delete")
-    ResponseEntity<ResponseVO> deleteImageTag(@ApiParam(value = "仓库名称") @RequestParam String repoName,
-                                              @ApiParam(value = "版本号") @RequestParam String tagName);
+    ResponseEntity<ResponseVO> deleteImageTag(@ApiParam(value = "仓库名称") @RequestParam(name = "repoName") String repoName,
+                                              @ApiParam(value = "版本号") @RequestParam(name = "tagName") String tagName);
 
     @ApiOperation(value = "项目层/组织层--镜像TAG列表")
     @GetMapping(value = "/v1/harbor-image-tag/list/{projectId}")
