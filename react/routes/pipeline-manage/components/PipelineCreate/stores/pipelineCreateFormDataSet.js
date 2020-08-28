@@ -112,6 +112,17 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource, math
       validator: checkImage,
       defaultValue: createUseStore.getDefaultImage,
     }, {
+      name: 'bbcl',
+      type: 'boolean',
+      label: '版本策略',
+    }, {
+      name: 'versionName',
+      type: 'string',
+      label: 'Tag命名规则',
+      dynamicProps: {
+        required: ({ record }) => record.get('bbcl'),
+      },
+    }, {
       name: 'triggerType',
       type: 'string',
       label: '触发方式',
