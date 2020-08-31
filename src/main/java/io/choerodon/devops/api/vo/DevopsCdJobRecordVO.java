@@ -1,8 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -284,13 +281,6 @@ public class DevopsCdJobRecordVO {
 
     public void setFinishedDate(Date finishedDate) {
         this.finishedDate = finishedDate;
-    }
-
-    public void setJobExecuteTime() {
-        if (this.startedDate == null || this.finishedDate == null) return;
-        LocalDateTime start = startedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime finished = finishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        this.durationSeconds = Duration.between(start, finished).getSeconds();
     }
 
     public Long getDeployInfoId() {

@@ -743,33 +743,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return receiver;
     }
 
-    @Override
-    @Async
-    public void sendPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params) {
-        doWithTryCatchAndLog(
-                () -> sendPipelineMessage(pipelineRecordId, type, receivers, params, null, null),
-                ex -> LOGGER.info("Failed to sendPipelineNotice ", ex)
-        );
-    }
-
-    @Override
-    public void sendPipelineNotice(Long pipelineRecordId, String type, Long userId, @Nullable String email, @Nullable Map<String, String> params) {
-        doWithTryCatchAndLog(
-                () -> {
-                    String actualEmail = email;
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-                    if (iamUserDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("User", userId, LOGGER);
-                        return;
-                    }
-                    if (actualEmail == null) {
-                        actualEmail = iamUserDTO.getEmail();
-
-                    }
-                    sendPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
-                },
-                ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
-    }
 
     private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
@@ -1077,30 +1050,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
     }
 
-    @Override
-    @Async
-    public void sendPipelineAuditMassage(String type, String auditUser, Long pipelineRecordId, String stageName, Long stageId) {
-        LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, auditUser, stageName, stageId);
-        doWithTryCatchAndLog(
-                () -> {
-                    List<Long> userIds = new ArrayList<>();
-                    if (auditUser != null && !auditUser.isEmpty()) {
-                        userIds = TypeUtil.stringArrayToLong(auditUser.split(COMMA));
-                        userIds.remove(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                    }
-                    List<Receiver> userList = new ArrayList<>();
-                    List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
-                    users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
-                    Map<String, String> params = new HashMap<>();
-                    params.put(STAGE_NAME, stageName);
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-                    params.put("auditName", iamUserDTO.getLoginName());
-                    params.put("realName", iamUserDTO.getRealName());
-                    sendPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
-                },
-                ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
-        );
-    }
 
     @Override
     public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId) {

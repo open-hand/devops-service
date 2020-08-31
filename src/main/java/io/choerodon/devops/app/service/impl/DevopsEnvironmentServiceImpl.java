@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -36,6 +37,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -261,6 +263,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setIamProjectId(projectId);
         gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
 
+        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
+
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
@@ -273,7 +277,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 builder -> {
                 }
         );
-        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
     }
 
     private static boolean isCodePatternValid(String code) {
@@ -837,11 +840,18 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsProjectDTO gitlabGroupE = devopsProjectService.baseQueryByGitlabEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
+
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", gitlabProjectPayload.getPath());
+
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupE.getIamProjectId());
+        CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
+
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
-        GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(organizationDTO.getTenantNum()
-                + "-" + projectDTO.getCode() + "-gitops", devopsEnvironmentDTO.getCode(), gitlabProjectPayload.getUserId());
+        GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
+                organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "-gitops",
+                devopsEnvironmentDTO.getCode(),
+                gitlabProjectPayload.getUserId());
         if (gitlabProjectDO == null || gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(
                     gitlabProjectPayload.getGroupId(),

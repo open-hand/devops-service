@@ -28,22 +28,6 @@ public class DevopsCdPipelineAuditController {
     private DevopsCdPipelineService devopsCdPipelineService;
 
     /**
-     * 审核手动流转阶段
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "审核手动流转阶段")
-    @PostMapping("/stage_records/{stage_record_id}/audit")
-    public ResponseEntity<AuditResultVO> auditStage(
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
-            @Encrypt
-            @PathVariable(value = "stage_record_id") Long stageRecordId,
-            @RequestParam(value = "result") String result) {
-        return ResponseEntity.ok(devopsCdPipelineService.auditStage(projectId, pipelineRecordId, stageRecordId, result));
-    }
-
-    /**
      * 审核人工卡点任务
      */
     @Permission(level = ResourceLevel.ORGANIZATION)

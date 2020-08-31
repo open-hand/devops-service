@@ -176,22 +176,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         // 查处该用户待审批的流水线阶段(新流水线)
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
 
-        List<Long> stageRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getStageRecordId() != null).map(DevopsCdAuditRecordDTO::getStageRecordId).collect(Collectors.toList());
-        if (stageRecordIds.size() != 0) {
-            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.listByIds(stageRecordIds);
-            devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
-                ApprovalVO approvalVO = new ApprovalVO()
-                        .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
-                        .setProjectId(devopsCdStageRecordDTO.getProjectId())
-                        .setProjectName(projectNameMap.get(devopsCdStageRecordDTO.getProjectId()).getName())
-                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdStageRecordDTO.getPipelineName(), devopsCdStageRecordDTO.getStageName()))
-                        .setPipelineId(devopsCdStageRecordDTO.getPipelineId())
-                        .setDevopsPipelineRecordRelId(devopsCdStageRecordDTO.getDevopsPipelineRecordRelId())
-                        .setStageRecordId(devopsCdStageRecordDTO.getId());
-                approvalVOList.add(approvalVO);
-            });
-        }
-
         List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
         if (jobRecordIds.size() != 0) {
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);

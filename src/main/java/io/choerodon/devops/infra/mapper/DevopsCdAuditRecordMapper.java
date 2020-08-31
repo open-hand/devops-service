@@ -15,7 +15,5 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsCdAuditRecordMapper extends BaseMapper<DevopsCdAuditRecordDTO> {
     List<DevopsCdAuditRecordDTO> listByProjectIdsAndUserId(@Param("userId") Long userId, @Param("projectIds") List<Long> projectIds);
 
-    Integer updateProjectIdByStageRecordId(@Param("projectId") Long projectId, @Param("stageRecordId") Long stageRecordId);
-
     Integer updateProjectIdByJobRecordId(@Param("projectId") Long projectId, @Param("jobRecordId") Long jobRecordId);
 }

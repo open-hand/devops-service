@@ -128,7 +128,6 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
         url: `/devops/v1/projects/${projectId}/app_service/list_by_active`,
         method: 'get',
       });
-      const recentAppList = localGet('recent-app');
       appServiceDs.query().then((res) => {
         if (state && state.appServiceId) {
           selectAppDs.current && selectAppDs.current.set('appServiceId', state.appServiceId);
@@ -136,6 +135,7 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
         }
         if (res && res.length && res.length > 0) {
           updateLocalAppService(res);
+          const recentAppList = localGet('recent-app');
           const newAppServiceId = recentAppList !== null && !isEmpty(recentAppList[projectId]) ? recentAppList[projectId][0]?.id : res[0]?.id;
           selectAppDs.current.set('appServiceId', newAppServiceId);
         }
