@@ -10,7 +10,5 @@ public interface DevopsCdAuditService {
 
     List<DevopsCdAuditDTO> baseListByOptions(Long pipelineId, Long stageId, Long jobId);
 
-    void baseDelete(DevopsCdAuditDTO devopsCdAuditDTO);
-
     void fixProjectId();
 }

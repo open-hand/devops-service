@@ -24,23 +24,15 @@ public class DevopsCdAuditDTO extends AuditDomain {
     private Long userId;
     private Long projectId;
     private Long pipelineId;
-    private Long cdStageId;
     private Long cdJobId;
 
     public DevopsCdAuditDTO() {
 
     }
 
-    public DevopsCdAuditDTO(Long pipelineId, Long cdStageId, Long cdJobId) {
-        this.pipelineId = pipelineId;
-        this.cdStageId = cdStageId;
-        this.cdJobId = cdJobId;
-    }
-
-    public DevopsCdAuditDTO(Long projectId, Long pipelineId, Long cdStageId, Long cdJobId) {
+    public DevopsCdAuditDTO(Long projectId, Long pipelineId, Long cdJobId) {
         this.projectId = projectId;
         this.pipelineId = pipelineId;
-        this.cdStageId = cdStageId;
         this.cdJobId = cdJobId;
     }
 
@@ -68,14 +60,6 @@ public class DevopsCdAuditDTO extends AuditDomain {
         this.pipelineId = pipelineId;
     }
 
-    public Long getCdStageId() {
-        return cdStageId;
-    }
-
-    public void setCdStageId(Long cdStageId) {
-        this.cdStageId = cdStageId;
-    }
-
     public Long getCdJobId() {
         return cdJobId;
     }
@@ -100,7 +84,6 @@ public class DevopsCdAuditDTO extends AuditDomain {
                 ", userId=" + userId +
                 ", projectId=" + projectId +
                 ", pipelineId=" + pipelineId +
-                ", cdStageId=" + cdStageId +
                 ", cdJobId=" + cdJobId +
                 '}';
     }

@@ -292,9 +292,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(devopsCdStageVO, DevopsCdStageDTO.class);
                 devopsCdStageDTO.setPipelineId(ciCdPipelineDTO.getId());
                 devopsCdStageDTO.setProjectId(projectId);
-                DevopsCdStageDTO cdStageDTO = devopsCdStageService.create(devopsCdStageDTO);
-                //保存审核人员信息,手动流转才有审核人员信息
-                createUserRel(devopsCdStageVO.getCdAuditUserIds(), projectId, null, cdStageDTO.getId(), null);
+                devopsCdStageService.create(devopsCdStageDTO);
                 // 保存cd job信息
                 if (!CollectionUtils.isEmpty(devopsCdStageVO.getJobList())) {
                     devopsCdStageVO.getJobList().forEach(devopsCdJobVO -> {
@@ -421,13 +419,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
             jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
             devopsCdStageVO.setJobList(jobMapOrDefault);
-            //如果是手动流转需要返回人员信息
-            if (TriggerTypeEnum.MANUAL.value().equals(devopsCdStageVO.getTriggerType())) {
-                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, devopsCdStageVO.getId(), null);
-                if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
-                    devopsCdStageVO.setCdAuditUserIds(devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList()));
-                }
-            }
         });
         // cd stage排序
         devopsCdStageVOS = devopsCdStageVOS.stream().sorted(Comparator.comparing(DevopsCdStageVO::getSequence)).collect(Collectors.toList());
@@ -785,7 +776,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //cd stage 先删除，后新增
         List<DevopsCdStageDTO> cdStageDTOS = devopsCdStageService.queryByPipelineId(ciCdPipelineDTO.getId());
         cdStageDTOS.forEach(devopsCdStageDTO -> {
-            //删除cd的阶段以及关联的审核人员数据
+            //删除cd的阶段
             devopsCdStageService.deleteById(devopsCdStageDTO.getId());
             devopsCdJobService.deleteByStageId(devopsCdStageDTO.getId());
         });
@@ -1303,10 +1294,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return true;
     }
 
-    private void createUserRel(List<Long> cdAuditUserIds, Long projectId, Long pipelineId, Long stageId, Long jobId) {
+    private void createUserRel(List<Long> cdAuditUserIds, Long projectId, Long pipelineId, Long jobId) {
         if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
             cdAuditUserIds.forEach(t -> {
-                DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(projectId, pipelineId, stageId, jobId);
+                DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(projectId, pipelineId, jobId);
                 devopsCdAuditDTO.setUserId(t);
                 devopsCdAuditService.baseCreate(devopsCdAuditDTO);
             });
@@ -1346,7 +1337,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
-            createUserRel(t.getCdAuditUserIds(), projectId, null, null, jobId);
+            createUserRel(t.getCdAuditUserIds(), projectId, pipelineId, jobId);
         }
 
     }

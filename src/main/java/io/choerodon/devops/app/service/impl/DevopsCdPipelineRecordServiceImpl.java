@@ -259,27 +259,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             // 在workflow 是先渲染阶段 在渲染阶段任务
             if (i != stageRecordDTOList.size() - 1) {
                 stageDTO.setNextStageTriggerType(stageRecordDTOList.get(i + 1).getTriggerType());
-                if (stageRecordDTOList.get(i + 1).getTriggerType().equals(DeployType.MANUAL.getType())) {
-                    List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTOList.get(i + 1).getId());
-                    if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
-                        throw new CommonException("error.audit.stage.noUser");
-                    }
-                    List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
-                    stageDTO.setUsernames(users);
-                    stageDTO.setMultiAssign(users.size() > 1);
-                }
-            }
-            // ci cd 间的审核任务 放在流水线
-            if (!isRetry && i == 0) {
-                if (stageRecordDTO.getTriggerType().equals(DeployType.MANUAL.getType())) {
-                    List<DevopsCdAuditRecordDTO> stageAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordDTO.getId());
-                    if (CollectionUtils.isEmpty(stageAuditRecordDTOS)) {
-                        throw new CommonException("error.audit.stage.noUser");
-                    }
-                    List<String> users = stageAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
-                    devopsPipelineDTO.setUserNames(users);
-                    devopsPipelineDTO.setMultiAssign(users.size() > 1);
-                }
             }
             devopsPipelineStageDTOS.add(stageDTO);
         }
@@ -885,13 +864,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 //封装审核数据
                 List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
                 for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
-                    //查询Cd job
-                    List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
-                    List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                    //计算job耗时
-                    devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
-                        devopsCdJobRecordVO.setJobExecuteTime();
-                    });
                     //计算satge耗时
                     if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
                         Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
@@ -915,13 +887,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordDTOS.get(0);
             // 继续判断阶段中是否还有待审核的任务
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.NOT_AUDIT.toValue());
-            if (CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
-                DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByStageRecordIdAndUserId(devopsCdStageRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
-                devopsCdPipelineDeatilVO.setType("stage");
-                devopsCdPipelineDeatilVO.setStageName(devopsCdStageRecordDTO.getStageName());
-                devopsCdPipelineDeatilVO.setExecute(devopsCdAuditRecordDTO != null && AuditStatusEnum.NOT_AUDIT.value().equals(devopsCdAuditRecordDTO.getStatus()));
-                devopsCdPipelineDeatilVO.setStageRecordId(devopsCdStageRecordDTO.getId());
-            } else {
+            if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
                 DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordDTOS.get(0);
                 DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = devopsCdAuditRecordService.queryByJobRecordIdAndUserId(devopsCdJobRecordDTO.getId(), DetailsHelper.getUserDetails().getUserId());
                 devopsCdPipelineDeatilVO.setType("task");
@@ -1010,7 +976,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             return null;
         }
         AppServiceDTO serviceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineDTO.getAppServiceId());
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
         devopsCdPipelineRecordVO.setGitlabProjectId(serviceDTO.getGitlabProjectId());
         //查询流水线信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(cdPipelineRecordDTO.getPipelineId());
@@ -1080,8 +1045,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void calculateJob(DevopsCdPipelineRecordVO devopsCdStageRecordVO, List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
         devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
-            //计算job耗时
-            devopsCdJobRecordVO.setJobExecuteTime();
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
                 DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordVO.getDeployInfoId());
@@ -1208,10 +1171,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 //查询Cd job
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                //计算job耗时
-                devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
-                    devopsCdJobRecordVO.setJobExecuteTime();
-                });
                 //计算cd阶段的状态， cd下的所有job状态都是未执行 那么cd的状态是未执行
                 Set<String> strings = devopsCdJobRecordVOS.stream().map(devopsCdJobRecordVO -> devopsCdJobRecordVO.getStatus()).collect(Collectors.toSet());
                 if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
