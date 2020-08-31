@@ -1,3 +1,5 @@
+/* eslint-disable no-param-reassign */
+
 import React, { useMemo, useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { runInAction } from 'mobx';
@@ -34,7 +36,7 @@ const TreeMenu = observer(() => {
    */
   function expandParents(record, expendedKeys) {
     if (!record.isExpanded) {
-      const children = record.children;
+      const { children, parent } = record;
 
       if (children && children.length) {
         const key = record.get('key');
@@ -42,7 +44,6 @@ const TreeMenu = observer(() => {
         record.isExpanded = true;
       }
 
-      const parent = record.parent;
       if (parent && !parent.isExpanded) {
         expandParents(parent, expendedKeys);
       }
@@ -74,9 +75,11 @@ const TreeMenu = observer(() => {
         const pipelineName = treeRecord.get('name');
         const appServiceName = treeRecord.get('appServiceName');
         const parentId = treeRecord.get('parentId');
-        const id = parentId && treeRecord.get('gitlabPipelineId') ? treeRecord.get('gitlabPipelineId').toString() : null;
+        const id = parentId && treeRecord.get('viewId') ? treeRecord.get('viewId').toString() : null;
         if (value) {
-          if (!parentId && (toUpper(pipelineName).indexOf(toUpper(value)) > -1 || toUpper(appServiceName).indexOf(toUpper(value)) > -1)) {
+          if (!parentId && (toUpper(pipelineName).indexOf(toUpper(value)) > -1
+            || toUpper(appServiceName).indexOf(toUpper(value)) > -1)
+          ) {
             expandParents(treeRecord, expandedKeys);
           } else if (parentId && toUpper(id).indexOf(toUpper(value)) > -1) {
             expandParents(treeRecord, expandedKeys);
@@ -94,28 +97,30 @@ const TreeMenu = observer(() => {
     mainStore.setExpandedKeys(keys);
   }
 
-  return <nav style={bounds} className={`${prefixCls}-sidebar`}>
-    <TextField
-      className={`${prefixCls}-sidebar-search`}
-      placeholder={formatMessage({ id: 'search.placeholder' })}
-      clearButton
-      name="search"
-      prefix={<Icon type="search" />}
-      value={mainStore.getSearchValue}
-      onChange={handleSearch}
-    />
-    <ScrollArea
-      vertical
-      // className="c7ncd-menu-scroll"
-    >
-      <Tree
-        dataSet={treeDs}
-        renderer={nodeRenderer}
-        onExpand={handleExpanded}
-        className={`${prefixCls}-sidebar-tree`}
+  return (
+    <nav style={bounds} className={`${prefixCls}-sidebar`}>
+      <TextField
+        className={`${prefixCls}-sidebar-search`}
+        placeholder={formatMessage({ id: 'search.placeholder' })}
+        clearButton
+        name="search"
+        prefix={<Icon type="search" />}
+        value={mainStore.getSearchValue}
+        onChange={handleSearch}
       />
-    </ScrollArea>
-  </nav>;
+      <ScrollArea
+        vertical
+        // className="c7ncd-menu-scroll"
+      >
+        <Tree
+          dataSet={treeDs}
+          renderer={nodeRenderer}
+          onExpand={handleExpanded}
+          className={`${prefixCls}-sidebar-tree`}
+        />
+      </ScrollArea>
+    </nav>
+  );
 });
 
 export default TreeMenu;
