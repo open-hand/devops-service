@@ -886,6 +886,9 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             try {
                 List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+                // 获取push代码所需的access token
+                String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
+
                 for (Ref ref : refs) {
                     String branchName;
                     if (ref.getName().contains(Constants.R_HEADS)) {
@@ -905,8 +908,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                         repositoryGit.checkout().setCreateBranch(true).setName(branchName).setStartPoint(ref.getName()).call();
                     }
 
-                    // 获取push代码所需的access token
-                    String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
 
                     BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
                     if (branchDTO.getName() == null) {
@@ -933,8 +934,16 @@ public class AppServiceServiceImpl implements AppServiceService {
                         }
                     }
                 }
+
+                // 将所有的tag推送到远程
+                List<Ref> tags = repositoryGit.tagList().call();
+                for (Ref tag: tags) {
+                    gitUtil.pushLocalTag(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, tag.getName());
+                }
+
             } catch (GitAPIException e) {
-                LOGGER.error("GitAPIException: {}", e);
+                LOGGER.error("Failed to import external application.");
+                LOGGER.error("GitAPIException: ", e);
             }
 
             releaseResources(applicationWorkDir, repositoryGit);
