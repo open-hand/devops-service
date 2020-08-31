@@ -71,6 +71,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
+    private static final Integer MAX_LOG_MSG_LENGTH = 65535;
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
@@ -691,6 +692,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmJobLog(String key, String msg, Long clusterId) {
+        int length = msg.length();
+        msg = length > MAX_LOG_MSG_LENGTH ? msg.substring(length - MAX_LOG_MSG_LENGTH, length) : msg;
+
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
