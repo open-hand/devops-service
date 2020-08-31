@@ -3020,7 +3020,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsUserPermissionVO remDTOToPermissionVO(RdmMemberViewDTO rdmMemberViewDTO) {
         DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
         BeanUtils.copyProperties(rdmMemberViewDTO.getUser(), devopsUserPermissionVO);
-        devopsUserPermissionVO.setIamUserId(rdmMemberViewDTO.getUserId());
+        devopsUserPermissionVO.setIamUserId(rdmMemberViewDTO.getUser().getUserId());
         return devopsUserPermissionVO;
     }
 
