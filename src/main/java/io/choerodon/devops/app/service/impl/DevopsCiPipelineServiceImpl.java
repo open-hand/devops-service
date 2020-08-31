@@ -19,6 +19,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -92,6 +94,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+    private final DevopsCiJobMapper devopsCiJobMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private final DevopsCiStageService devopsCiStageService;
     private final DevopsCiJobService devopsCiJobService;
@@ -129,6 +132,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 这里的懒加载是为了避免循环依赖
             @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
             DevopsCiStageService devopsCiStageService,
+            @Lazy DevopsCiJobMapper devopsCiJobMapper,
             @Lazy DevopsCiJobService devopsCiJobService,
             DevopsCiContentService devopsCiContentService,
             @Lazy GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -191,6 +195,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
         this.devopsDeployValueMapper = devopsDeployValueMapper;
+        this.devopsCiJobMapper = devopsCiJobMapper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -1439,6 +1444,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
+            if (cdHostDeployConfigVO.getImageDeploy() != null
+                    && cdHostDeployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())
+                    && cdHostDeployConfigVO.getImageDeploy().getPipelineTaskId() == null) {
+                cdHostDeployConfigVO.getImageDeploy().setPipelineTaskId(getCiJobId(pipelineId, cdHostDeployConfigVO.getImageDeploy().getPipelineTask()));
+            }
+            if (cdHostDeployConfigVO.getJarDeploy() != null
+                    && cdHostDeployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())
+                    && cdHostDeployConfigVO.getJarDeploy().getPipelineTaskId() == null) {
+                cdHostDeployConfigVO.getJarDeploy().setPipelineTaskId(getCiJobId(pipelineId, cdHostDeployConfigVO.getJarDeploy().getPipelineTask()));
+            }
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
@@ -1456,6 +1471,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             createUserRel(t.getCdAuditUserIds(), projectId, null, null, jobId);
         }
 
+    }
+
+    /**
+     * 主机部署 关联ci任务
+     * 对于创建或更新根据任务名称获取id
+     *
+     * @param pipelineId
+     * @param ciJobName
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
+    public Long getCiJobId(Long pipelineId, String ciJobName) {
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(pipelineId);
+        devopsCiJobDTO.setName(ciJobName);
+        List<DevopsCiJobDTO> ciJobDTOList = devopsCiJobMapper.select(devopsCiJobDTO);
+        if (CollectionUtils.isEmpty(ciJobDTOList)) {
+            throw new CommonException("error.get.ci.job.id");
+        }
+        return ciJobDTOList.get(0).getId();
     }
 
     private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {

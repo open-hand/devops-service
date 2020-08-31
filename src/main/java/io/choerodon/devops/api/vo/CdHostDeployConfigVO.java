@@ -32,6 +32,9 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("流水线部署 流水线任务名称")
         private String pipelineTask;
 
+        @ApiModelProperty("流水线部署 流水线任务Id")
+        private Long pipelineTaskId;
+
         @ApiModelProperty("仓库名")
         private String repoName;
 
@@ -60,6 +63,14 @@ public class CdHostDeployConfigVO {
 
         @ApiModelProperty("容器名称")
         private String containerName;
+
+        public Long getPipelineTaskId() {
+            return pipelineTaskId;
+        }
+
+        public void setPipelineTaskId(Long pipelineTaskId) {
+            this.pipelineTaskId = pipelineTaskId;
+        }
 
         public String getDeploySource() {
             return deploySource;
@@ -157,6 +168,9 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("流水线部署 流水线任务名称")
         private String pipelineTask;
 
+        @ApiModelProperty("流水线部署 流水线任务Id")
+        private Long pipelineTaskId;
+
         @ApiModelProperty("服务名")
         private String serverName;
         @ApiModelProperty("仓库名")
@@ -177,6 +191,14 @@ public class CdHostDeployConfigVO {
 
         @ApiModelProperty("部署values")
         private String value;
+
+        public Long getPipelineTaskId() {
+            return pipelineTaskId;
+        }
+
+        public void setPipelineTaskId(Long pipelineTaskId) {
+            this.pipelineTaskId = pipelineTaskId;
+        }
 
         public String getValue() {
             return value;

@@ -5,6 +5,7 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.GsonBuilder;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -156,6 +157,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
+
+    @Autowired
+    private DevopsCiJobMapper devopsCiJobMapper;
 
     @Value("${choerodon.online:true}")
     private Boolean online;
@@ -332,7 +336,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
                     throw new CommonException("error.no.gitlab.pipeline.id");
                 }
-                CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
+                String jobName = devopsCiJobMapper.selectByPrimaryKey(imageDeploy.getPipelineTaskId()).getName();
+                CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), jobName);
                 HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
                 c7nImageDeployDTO.setHarborUrl(harborRepoDTO.getHarborRepoConfig().getRepoUrl());
                 if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
@@ -548,7 +553,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (ObjectUtils.isEmpty(cdPipelineRecordDTO.getGitlabPipelineId())) {
                     throw new CommonException("error.no.gitlab.pipeline.id");
                 }
-                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getGitlabPipelineId(), jarDeploy.getPipelineTask());
+                String jobName = devopsCiJobMapper.selectByPrimaryKey(jarDeploy.getPipelineTaskId()).getName();
+                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getGitlabPipelineId(), jobName);
                 nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
                 groupId = ciPipelineMavenDTO.getGroupId();
                 artifactId = ciPipelineMavenDTO.getArtifactId();
