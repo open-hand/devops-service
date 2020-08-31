@@ -175,7 +175,8 @@
         dav.id,
         dav.version,
         dav.creation_date,
-        dav.repo_type
+        dav.repo_type,
+        dav.last_update_date
         FROM
         devops_app_service_version dav
         <if test="share!=null and share==true">
@@ -209,7 +210,7 @@
         )) tmp
         <choose>
             <when test="index != null and index !='' and appServiceVersionId!=null and appServiceVersionId!=''">
-                ORDER BY tmp.id != ${appServiceVersionId}, tmp.id DESC
+                ORDER BY tmp.id != ${appServiceVersionId}, tmp.last_update_date DESC
             </when>
             <when test="index != null and index !=''">
                 ORDER BY tmp.id DESC
