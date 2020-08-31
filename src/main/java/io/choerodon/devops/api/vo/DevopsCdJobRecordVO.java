@@ -6,10 +6,10 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 public class DevopsCdJobRecordVO {
     @Encrypt
@@ -40,6 +40,7 @@ public class DevopsCdJobRecordVO {
     //自动部署记录详情
     private CdAuto cdAuto;
     private Audit audit;
+    private Long deployInfoId;
 
     public Long getJobId() {
         return jobId;
@@ -290,5 +291,13 @@ public class DevopsCdJobRecordVO {
         LocalDateTime start = startedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         LocalDateTime finished = finishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         this.durationSeconds = Duration.between(start, finished).getSeconds();
+    }
+
+    public Long getDeployInfoId() {
+        return deployInfoId;
+    }
+
+    public void setDeployInfoId(Long deployInfoId) {
+        this.deployInfoId = deployInfoId;
     }
 }

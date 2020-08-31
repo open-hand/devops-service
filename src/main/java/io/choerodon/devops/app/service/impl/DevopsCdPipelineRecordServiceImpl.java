@@ -3,20 +3,18 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
-import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import org.apache.commons.lang.BooleanUtils;
@@ -1086,12 +1084,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdJobRecordVO.setJobExecuteTime();
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
-                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = null;
-                try {
-                    devopsCdEnvDeployInfoDTO = objectMapper.readValue(devopsCdJobRecordVO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordVO.getDeployInfoId());
                 //部署环境 应用服务 生成版本 实例名称
                 DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
                 cdAuto.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId()).getName());
