@@ -31,7 +31,7 @@ public class HrdsCodeRepoClientFallback implements HrdsCodeRepoClient {
     }
 
     @Override
-    public ResponseEntity<List<RdmMemberViewDTO>> listMembers(Long organizationId, Long projectId, RdmMemberQueryDTO query) {
+    public ResponseEntity<List<RdmMemberViewDTO>> listMembers(Long organizationId, Long projectId, Set<Long> repositoryIds, String repositoryName, String realName, String loginName, String params, Boolean enabled, Boolean syncGitlabFlag, Boolean glExpiresFlag) {
         throw new CommonException("error.list.code.users.appService");
     }
 }

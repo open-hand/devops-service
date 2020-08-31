@@ -39,11 +39,9 @@ public class HrdsCodeRepoClientOperator {
             organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
-        queryDTO.setEnabled(true);
-        queryDTO.setSyncGitlabFlag(true);
-        queryDTO.setGlExpiresFlag(true);
         ResponseEntity<List<RdmMemberViewDTO>> response = rdupmClient.listMembers(
-                Objects.requireNonNull(organizationId), projectId, queryDTO);
+                Objects.requireNonNull(organizationId), projectId, queryDTO.getRepositoryIds(), queryDTO.getRepositoryName(),
+                queryDTO.getRealName(), queryDTO.getLoginName(), queryDTO.getParams(), true, true, true);
         if (response == null) {
             throw new CommonException("error.list.code.app.user.list", projectId, queryDTO);
         }
