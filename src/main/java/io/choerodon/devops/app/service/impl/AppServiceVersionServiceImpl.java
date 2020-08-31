@@ -195,7 +195,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (newApplicationVersion != null) {
             try {
                 // 重新上传chart包后更新values
-                updateValues(newApplicationVersion.getValueId(), values);
+                updateValues(newApplicationVersion.getValueId(), values, newApplicationVersion);
             } finally {
                 FileUtil.deleteDirectories(storeFilePath);
             }
@@ -231,7 +231,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
     }
 
-    private void updateValues(Long oldValuesId, String values) {
+    private void updateValues(Long oldValuesId, String values, AppServiceVersionDTO applicationVersion) {
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         appServiceVersionValueDTO.setId(oldValuesId);
 
@@ -245,6 +245,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (!Objects.equals(old.getValue(), values)) {
             appServiceVersionValueDTO.setValue(values);
             appServiceVersionValueService.baseUpdate(appServiceVersionValueDTO);
+            applicationVersion.setLastUpdateDate(new Date());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, applicationVersion, "error.version.update");
         }
     }
 
