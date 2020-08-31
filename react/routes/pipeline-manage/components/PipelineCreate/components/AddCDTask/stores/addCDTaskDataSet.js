@@ -1,5 +1,6 @@
 import uuidV1 from 'uuid/v1';
 import { axios } from '@choerodon/boot';
+import JSONbig from 'json-bigint';
 
 function getDefaultInstanceName(appServiceCode) {
   return appServiceCode
@@ -70,7 +71,7 @@ export default (
       transformResponse: (res) => {
         let newRes = res;
         try {
-          newRes = JSON.parse(res);
+          newRes = JSONbig.parse(res);
           return newRes.filter((r) => r.permission);
         } catch (e) {
           return newRes;
@@ -104,6 +105,15 @@ export default (
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
         url: record.get('envId') && `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}`,
+        transformResponse: (res) => {
+          let newRes = res;
+          try {
+            newRes = JSONbig.parse(res);
+            return newRes;
+          } catch (e) {
+            return newRes;
+          }
+        },
       }),
     },
   }, {
@@ -121,7 +131,7 @@ export default (
         transformResponse: (res) => {
           let newRes = res;
           try {
-            newRes = JSON.parse(res);
+            newRes = JSONbig.parse(res);
             useStore.setValueIdList(newRes);
             return newRes;
           } catch (e) {
