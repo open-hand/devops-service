@@ -6,10 +6,7 @@ import java.util.Set;
 import org.hzero.core.util.Results;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
@@ -58,13 +55,19 @@ public interface HrdsCodeRepoClient {
      *
      * @param organizationId
      * @param projectId
-     * @param query          查询条件
      * @return
      */
     @GetMapping("/v1/organizations/{organizationId}/projects/{projectId}/gitlab/repositories/members/list")
     ResponseEntity<List<RdmMemberViewDTO>> listMembers(@PathVariable("organizationId") Long organizationId,
                                                        @PathVariable("projectId") Long projectId,
-                                                       RdmMemberQueryDTO query);
+                                                       @RequestParam(name = "repositoryIds") Set<Long> repositoryIds,
+                                                       @RequestParam(name = "repositoryName") String repositoryName,
+                                                       @RequestParam(name = "realName") String realName,
+                                                       @RequestParam(name = "loginName") String loginName,
+                                                       @RequestParam(name = "params") String params,
+                                                       @RequestParam(name = "enabled") Boolean enabled,
+                                                       @RequestParam(name = "syncGitlabFlag") Boolean syncGitlabFlag,
+                                                       @RequestParam(name = "glExpiresFlag") Boolean glExpiresFlag);
 
 
 }
