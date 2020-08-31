@@ -108,7 +108,6 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
 
   function rendererAppServiceId({ value, text }) {
     const record = appServiceDs.find((appServiceRecord) => appServiceRecord.get('id') === value);
-
     try {
       return `${text}(${record.get('code')})`;
     } catch (e) {
@@ -142,7 +141,7 @@ export const SelectApp = injectIntl(inject('AppState')(observer((props) => {
           clearButton={false}
           disabled={appServiceDs.status !== 'ready' || appServiceDs.length === 0}
           optionRenderer={renderAppServiceOption}
-          renderer={rendererAppServiceId}
+          renderer={({ text }) => text}
         >
           {
           localStorage.getItem('recent-app') && (

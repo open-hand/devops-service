@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-template-curly-in-string */
 import React, { useEffect, useState, useCallback } from 'react';
 import {
@@ -17,7 +19,6 @@ import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import Tips from '../../../../../../components/new-tips';
 import './index.less';
-import forEach from 'lodash/forEach';
 
 let currentSize = 10;
 
@@ -68,13 +69,13 @@ export default observer(() => {
   const [branchsList, setBranchsList] = useState([]);
   const [valueIdValues, setValueIdValues] = useState('');
   const [customValues, setCustomValues] = useState(
-    '# 自定义ssh指令\n# 比如部署镜像\n# 需要包括部署镜像指令以及二次触发部署的停用删除逻辑\ndocker stop mynginx & docker rm mynginx & docker run --name mynginx -d nginx:latest'
+    '# 自定义ssh指令\n# 比如部署镜像\n# 需要包括部署镜像指令以及二次触发部署的停用删除逻辑\ndocker stop mynginx & docker rm mynginx & docker run --name mynginx -d nginx:latest',
   );
   const [imageDeployValues, setImageDeployValues] = useState(
-    '# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}\n# jar包下载存放目录为：/temp-jar/xxx.jar 日志存放目录为：/temp-log/xxx.log\n# 请确保用户有该目录操作权限'
+    '# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}\n# jar包下载存放目录为：/temp-jar/xxx.jar 日志存放目录为：/temp-log/xxx.log\n# 请确保用户有该目录操作权限',
   );
   const [jarValues, setJarValues] = useState(
-    '# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} '
+    '# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} ',
   );
   const [testStatus, setTestStatus] = useState('');
   const [accountKeyValue, setAccountKeyValue] = useState('');
@@ -209,7 +210,7 @@ export default observer(() => {
       } else if (jobDetail.type === 'cdAudit') {
         if (jobDetail.metadata) {
           const { cdAuditUserIds } = JSON.parse(
-            jobDetail.metadata.replace(/'/g, '"')
+            jobDetail.metadata.replace(/'/g, '"'),
           );
           newCdAuditUserIds = cdAuditUserIds && [...cdAuditUserIds];
         }
@@ -232,10 +233,10 @@ export default observer(() => {
     }
     ADDCDTaskDataSet.current.set(
       'glyyfw',
-      appServiceId ||
-        PipelineCreateFormDataSet.getField('appServiceId').getText(
-          PipelineCreateFormDataSet.current.get('appServiceId')
-        )
+      appServiceId
+        || PipelineCreateFormDataSet.getField('appServiceId').getText(
+          PipelineCreateFormDataSet.current.get('appServiceId'),
+        ),
     );
     handleClickMore();
   }, [ADDCDTaskDataSet, PipelineCreateFormDataSet, appServiceId, jobDetail]);
@@ -310,65 +311,67 @@ export default observer(() => {
     return res[testStatus];
   };
 
-  const handleTestConnect = async () =>
-    new Promise((resolve) => {
-      const {
-        hostIp,
-        hostPort,
-        userName,
-        password,
-        accountType,
-      } = ADDCDTaskDataSet.toData()[0];
-      axios
-        .post(
-          `/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`,
-          {
-            hostIp,
-            hostPort,
-            userName,
-            password,
-            accountType,
-            accountKey: accountKeyValue && Base64.encode(accountKeyValue),
-          }
-        )
-        .then((res) => {
-          setTestStatus(res ? 'success' : 'error');
-          resolve(res);
-        })
-        .catch(() => {
-          setTestStatus('error');
-          resolve(false);
-        });
-    });
+  const handleTestConnect = async () => new Promise((resolve) => {
+    const {
+      hostIp,
+      hostPort,
+      userName,
+      password,
+      accountType,
+    } = ADDCDTaskDataSet.toData()[0];
+    axios
+      .post(
+        `/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`,
+        {
+          hostIp,
+          hostPort,
+          userName,
+          password,
+          accountType,
+          accountKey: accountKeyValue && Base64.encode(accountKeyValue),
+        },
+      )
+      .then((res) => {
+        setTestStatus(res ? 'success' : 'error');
+        resolve(res);
+      })
+      .catch(() => {
+        setTestStatus('error');
+        resolve(false);
+      });
+  });
 
   const renderRelatedJobOpts = () => {
     const currentHostDeployType = ADDCDTaskDataSet?.current?.get(
       'hostDeployType'
     );
-    const tempArr =
-      pipelineStageMainSource &&
-      pipelineStageMainSource.length > 0 &&
-      pipelineStageMainSource.map((item) => item?.jobList.slice());
+    const tempArr = pipelineStageMainSource
+      && pipelineStageMainSource.length > 0
+      && pipelineStageMainSource.map((item) => item?.jobList.slice());
     const jobArr = tempArr
       ? tempArr.length > 0 && [].concat.apply(...tempArr)
       : [];
     let filterArr;
     if (jobArr && currentHostDeployType && currentHostDeployType === 'image') {
       filterArr = jobArr.filter(
-        (x) => x.configJobTypes?.includes('docker') && x.type === 'build'
+        (x) => x.configJobTypes?.includes('docker') && x.type === 'build',
       );
     } else if (currentHostDeployType === 'jar') {
       filterArr = jobArr.filter(
-        (x) =>
-          (x.configJobTypes?.includes('maven_deploy') ||
-            x.configJobTypes?.includes('upload_jar')) &&
-          x.type === 'build'
+        (x) => (x.configJobTypes?.includes('maven_deploy')
+            || x.configJobTypes?.includes('upload_jar'))
+          && x.type === 'build',
       );
     }
+    if (filterArr && filterArr.length > 0) {
+      if (typeof filterArr[0] === 'object') {
+        ADDCDTaskDataSet.current.set('pipelineTask', filterArr[0].name);
+      }
+    }
     return (
-      filterArr &&
-      filterArr.length > 0 &&
-      filterArr.map((item) => <Option value={item.name}>{item.name}</Option>)
+      filterArr
+      && filterArr.length > 0
+      && filterArr.map((item) => <Option value={item.name}>{item.name}</Option>)
     );
   };
 
@@ -540,8 +543,8 @@ export default observer(() => {
             <Option value="accountKey">用户名与密钥</Option>
           </SelectBox>
           <TextField colSpan={1} newLine name="userName" />
-          {ADDCDTaskDataSet?.current?.get('accountType') ===
-          'accountPassword' ? (
+          {ADDCDTaskDataSet?.current?.get('accountType')
+          === 'accountPassword' ? (
             <Password colSpan={1} name="password" />
           ) : (
             [
@@ -561,9 +564,9 @@ export default observer(() => {
           <div colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
             <Button
               disabled={
-                !ADDCDTaskDataSet.current.get('hostIp') ||
-                !ADDCDTaskDataSet.current.get('hostPort') ||
-                !ADDCDTaskDataSet.current.get('userName')
+                !ADDCDTaskDataSet.current.get('hostIp')
+                || !ADDCDTaskDataSet.current.get('hostPort')
+                || !ADDCDTaskDataSet.current.get('userName')
               }
               onClick={handleTestConnect}
               style={{ marginRight: 20 }}
@@ -594,7 +597,8 @@ export default observer(() => {
             <Option value="jar">jar包部署</Option>
             <Option value="customize">自定义命令</Option>
           </SelectBox>
-          ,{getModeDom()}
+          ,
+          {getModeDom()}
         </Form>,
       ],
     };
@@ -640,21 +644,21 @@ export default observer(() => {
     }
   }
 
-  const renderderAuditUsersList = ({ text, record }) =>
-    (text === '加载更多' ? (
-      <a
-        style={{ display: 'block', width: '100%', height: '100%' }}
-        onClick={handleClickMore}
+  const renderderAuditUsersList = ({ text, record }) => (text === '加载更多' ? (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+    <a
+      style={{ display: 'block', width: '100%', height: '100%' }}
+      onClick={handleClickMore}
       >
-        {text}
-      </a>
-    ) : (
-      `${text}(${record.get('loginName')})`
-    ));
+      {text}
+    </a>
+  ) : (
+    `${text}(${record.get('loginName')})`
+  ));
 
   const getBranchsList = useCallback(async () => {
     const url = `devops/v1/projects/${projectId}/app_service/${PipelineCreateFormDataSet.current.get(
-      'appServiceId'
+      'appServiceId',
     )}/git/page_branch_by_options?page=1&size=${currentSize}`;
     const res = await axios.post(url);
     if (res.content.length % 10 === 0 && res.content.length !== 0) {
@@ -670,26 +674,26 @@ export default observer(() => {
           c.value = c.branchName;
         }
         return c;
-      })
+      }),
     );
   }, [PipelineCreateFormDataSet, projectId]);
 
-  const renderderBranchs = ({ text }) =>
-    (text === '加载更多' ? (
-      <a
-        style={{ width: '100%', height: '100%', display: 'block' }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          currentSize += 10;
-          getBranchsList();
-        }}
+  const renderderBranchs = ({ text }) => (text === '加载更多' ? (
+  // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+    <a
+      style={{ width: '100%', height: '100%', display: 'block' }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        currentSize += 10;
+        getBranchsList();
+      }}
       >
-        {text}
-      </a>
-    ) : (
-      text
-    ));
+      {text}
+    </a>
+  ) : (
+    text
+  ));
 
   function renderTriggerTypeTips() {
     const type = ADDCDTaskDataSet.current.get('triggerType');
@@ -703,7 +707,7 @@ export default observer(() => {
     }
   }
 
-  const renderer = ({ record, text, value }) => (
+  const renderer = ({ record, text }) => (
     <span>
       {text && (
         <i
@@ -723,30 +727,27 @@ export default observer(() => {
     </span>
   );
 
-  const optionRenderer = ({ record, text, value }) =>
-    renderer({ record, text, value });
+  const optionRenderer = ({ record, text, value }) => renderer({ record, text, value });
 
   return (
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
         <Select
-          onChange={(data) =>
-            ADDCDTaskDataSet.loadData([
-              {
-                type: data,
-                glyyfw:
-                  appServiceId ||
-                  PipelineCreateFormDataSet.getField('appServiceId').getText(
-                    PipelineCreateFormDataSet.current.get('appServiceId')
+          onChange={(data) => ADDCDTaskDataSet.loadData([
+            {
+              type: data,
+              glyyfw:
+                  appServiceId
+                  || PipelineCreateFormDataSet.getField('appServiceId').getText(
+                    PipelineCreateFormDataSet.current.get('appServiceId'),
                   ),
-                triggerType: 'refs',
-                deployType: 'create',
-                accountType: 'accountPassword',
-                hostDeployType: 'image',
-                deploySource: 'pipelineDeploy',
-              },
-            ])
-          }
+              triggerType: 'refs',
+              deployType: 'create',
+              accountType: 'accountPassword',
+              hostDeployType: 'image',
+              deploySource: 'pipelineDeploy',
+            },
+          ])}
           colSpan={1}
           name="type"
         >
@@ -760,9 +761,7 @@ export default observer(() => {
           <Select
             name="triggerType"
             className="addcdTask-triggerType"
-            onChange={() =>
-              ADDCDTaskDataSet.current.set('triggerValue', undefined)
-            }
+            onChange={() => ADDCDTaskDataSet.current.set('triggerValue', undefined)}
             colSpan={1}
             clearButton={false}
           >
@@ -843,20 +842,18 @@ export default observer(() => {
                 name="cdAuditUserIds"
                 maxTagCount={3}
                 searchMatcher="realName"
-                onOption={({ dataSet, record }) => ({
+                onOption={({ record }) => ({
                   disabled: record.get('id') === 'more',
                 })}
-                onChange={(value, oldvalue, form) => {
+                onChange={() => {
                   handleClickMore(null);
                 }}
                 optionRenderer={renderderAuditUsersList}
-                renderer={({ text, value }) => {
-                  return (
-                    <Tooltip title={`${text}(${value.loginName})`}>
-                      {text}
-                    </Tooltip>
-                  );
-                }}
+                renderer={({ text, value }) => (
+                  <Tooltip title={`${text}(${value.loginName})`}>
+                    {text}
+                  </Tooltip>
+                )}
               />
             </div>
             {ADDCDTaskDataSet?.current?.get('cdAuditUserIds')?.length > 1 && (
