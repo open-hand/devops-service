@@ -213,7 +213,7 @@
                 ORDER BY tmp.id != ${appServiceVersionId}, tmp.last_update_date DESC
             </when>
             <when test="index != null and index !=''">
-                ORDER BY tmp.id DESC
+                ORDER BY tmp.last_update_date DESC
             </when>
         </choose>
     </select>
