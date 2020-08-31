@@ -263,6 +263,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setIamProjectId(projectId);
         gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
 
+        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
+
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
@@ -275,7 +277,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 builder -> {
                 }
         );
-        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
     }
 
     private static boolean isCodePatternValid(String code) {
