@@ -142,6 +142,14 @@ export default observer(() => {
       if (ds.type !== 'cdAudit') {
         data.metadata = getMetadata(ds);
       }
+      // 如果部署模式是新建 则删掉多余的实例id
+      if (ds.deployType && ds.deployType === 'create') {
+        delete data.instanceId;
+      } else {
+        // 如果是替换 则除了传id 还需要传对应的name
+        const instanceNaMe = ADDCDTaskDataSet?.getField('instanceId')?.props?.lookup?.find(i => i.id === data.instanceId)?.code;
+        data.instanceName = instanceNaMe;
+      }
 
       handleOk(data);
       return true;
@@ -661,7 +669,7 @@ export default observer(() => {
               <Option value="update">替换实例</Option>
             </SelectBox>,
             <p className="addcdTask-text" colSpan={2}>
-              <Icon style={{ color: '#F44336' }} type="error" />
+              <Icon style={{ color: '#f44336' }} type="error" />
               替换实例会更新该实例的镜像及配置信息，请确认要替换的实例选择无误。
             </p>,
             ADDCDTaskDataSet?.current?.get('deployType') === 'create' ? (
