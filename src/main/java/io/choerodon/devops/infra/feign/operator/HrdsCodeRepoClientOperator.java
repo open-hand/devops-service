@@ -41,7 +41,7 @@ public class HrdsCodeRepoClientOperator {
         }
         ResponseEntity<List<RdmMemberViewDTO>> response = rdupmClient.listMembers(
                 Objects.requireNonNull(organizationId), projectId, queryDTO.getRepositoryIds(), queryDTO.getRepositoryName(),
-                queryDTO.getRealName(), queryDTO.getLoginName(), queryDTO.getParams(), true, true, true);
+                queryDTO.getRealName(), queryDTO.getLoginName(), queryDTO.getParams(), true, true, false);
         if (response == null) {
             throw new CommonException("error.list.code.app.user.list", projectId, queryDTO);
         }
