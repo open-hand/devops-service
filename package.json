@@ -22,7 +22,6 @@
     "clean-install": "rm -rf node_modules && rm package-lock.json && npm i --registry https://nexus.choerodon.com.cn/repository/choerodon-npm && chmod -R u+x node_modules"
   },
   "dependencies": {
-    "choerodon-ui": "0.8.x",
     "diff-match-patch": "^1.0.4",
     "echarts": "^4.2.1",
     "echarts-for-react": "^2.0.12",
@@ -51,8 +50,14 @@
   "devDependencies": {
     "@choerodon/boot": "0.22.0",
     "@choerodon/master": "0.24.0",
+    "@types/react": "^16.9.44",
+    "@types/react-router": "^5.1.8",
+    "@types/react-router-dom": "^5.1.5",
+    "@typescript-eslint/eslint-plugin": "^3.7.1",
+    "@typescript-eslint/parser": "^3.7.1",
     "babel-eslint": "8.2.6",
     "babel-preset-c7n-app": "^0.0.1",
+    "choerodon-ui": "0.8.x",
     "del": "^4.1.1",
     "eslint": "^7.7.0",
     "eslint-config-airbnb": "^18.2.0",
