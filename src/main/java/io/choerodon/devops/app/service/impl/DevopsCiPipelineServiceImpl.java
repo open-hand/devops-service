@@ -992,7 +992,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         gitlabCi.setStages(stages);
-        gitlabCi.setVersionName(ciCdPipelineVO.getVersionName());
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
             if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
                 stageVO.getJobList().forEach(job -> {
@@ -1011,7 +1010,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 });
             }
         });
-        buildBeforeScript(gitlabCi);
+        buildBeforeScript(gitlabCi, ciCdPipelineVO.getVersionName());
         return gitlabCi;
     }
 
@@ -1279,10 +1278,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return cache;
     }
 
-    private void buildBeforeScript(GitlabCi gitlabCi) {
+    private void buildBeforeScript(GitlabCi gitlabCi, String versionName) {
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
-        if (!StringUtils.isEmpty(gitlabCi.getVersionName())) {
-            beforeScripts.add(String.format("CI_COMMIT_TAG=%s", gitlabCi.getVersionName()));
+        if (!StringUtils.isEmpty(versionName)) {
+            beforeScripts.add(String.format("CI_COMMIT_TAG=%s", versionName));
         }
         // 如果有job启用了缓存设置, 就创建缓存目录
         // 如果全部都是自定义任务, 这个map是空的
