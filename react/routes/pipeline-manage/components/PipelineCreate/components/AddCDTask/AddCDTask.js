@@ -7,6 +7,7 @@ import { Icon, Spin } from 'choerodon-ui';
 import { axios } from '@choerodon/boot';
 import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
+import JSONbig from 'json-bigint';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import Tips from '../../../../../../components/new-tips';
@@ -190,7 +191,7 @@ export default observer(() => {
       const newJobDetail = {
         ...jobDetail,
         ...extra,
-        ...(jobDetail.metadata ? JSON.parse(jobDetail.metadata.replace(/'/g, '"')) : {}),
+        ...(jobDetail.metadata ? JSONbig.parse(jobDetail.metadata.replace(/'/g, '"')) : {}),
         cdAuditUserIds: newCdAuditUserIds && [...newCdAuditUserIds],
         triggerValue: jobDetail.triggerType === 'regex' ? jobDetail.triggerValue : jobDetail.triggerValue?.split(','),
       };
