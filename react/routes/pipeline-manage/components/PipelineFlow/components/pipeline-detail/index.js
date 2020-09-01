@@ -1,13 +1,13 @@
 /* eslint-disable consistent-return */
 /* eslint-disable max-len */
-import React, { useEffect, Fragment, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import forEach from 'lodash/forEach';
 import { Tooltip } from 'choerodon-ui/pro';
-import { usePipelineFlowStore } from '../stores';
-import StageType from '../components/stage-type';
-import Loading from '../../../../../components/loading';
+import { usePipelineManageStore } from '../../../../stores';
+import StageType from '../stage-type';
+import Loading from '../../../../../../components/loading';
 
 import './index.less';
 
@@ -24,10 +24,12 @@ const jobTask = {
 
 export default observer((props) => {
   const {
+    mainStore: { getSelectedMenu },
     projectId,
-    stepStore,
-    getSelectedMenu: { id, name, appServiceName },
-  } = usePipelineFlowStore();
+    editBlockStore,
+  } = usePipelineManageStore();
+
+  const { id, name, appServiceName } = getSelectedMenu;
 
   const [leftLineDom, setLeftLineDom] = useState([]);
   const [rightLineDom, setRightLineDom] = useState([]);
@@ -36,7 +38,7 @@ export default observer((props) => {
     getStepData,
     loadData,
     getLoading,
-  } = stepStore || {};
+  } = editBlockStore || {};
 
   useEffect(() => {
     id && loadData(projectId, id);
