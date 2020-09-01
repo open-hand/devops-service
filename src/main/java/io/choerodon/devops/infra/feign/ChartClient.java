@@ -37,5 +37,5 @@ public interface ChartClient {
     Call<ChartDeleteResponseVO> getChartVersion(@Path("orgCode") String orgCode,
                                                 @Path("proCode") String proCode,
                                                 @Path("chartName") String chartName,
-                                                @Path("chartName") String chartVersion);
+                                                @Path("chartVersion") String chartVersion);
 }
