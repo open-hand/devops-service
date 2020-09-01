@@ -1,11 +1,13 @@
 package io.choerodon.devops.infra.util;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hzero.core.base.BaseConstants;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
@@ -25,6 +27,7 @@ public final class JsonHelper {
         OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat(BaseConstants.Pattern.DATETIME));
     }
 
     /**
