@@ -126,7 +126,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     private final DevopsDeployValueMapper devopsDeployValueMapper;
-    private final DevopsCiJobMapper devopsCiJobMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -148,7 +147,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
             AppServiceMapper appServiceMapper,
-            DevopsCiJobMapper devopsCiJobMapper,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
             CiCdPipelineMapper ciCdPipelineMapper,
             DevopsCdStageService devopsCdStageService,

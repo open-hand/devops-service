@@ -336,8 +336,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
                     throw new CommonException("error.no.gitlab.pipeline.id");
                 }
-                String jobName = devopsCiJobMapper.selectByPrimaryKey(imageDeploy.getPipelineTaskId()).getName();
-                CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), jobName);
+                CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
                 HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
                 c7nImageDeployDTO.setHarborUrl(harborRepoDTO.getHarborRepoConfig().getRepoUrl());
                 if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
@@ -553,8 +552,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (ObjectUtils.isEmpty(cdPipelineRecordDTO.getGitlabPipelineId())) {
                     throw new CommonException("error.no.gitlab.pipeline.id");
                 }
-                String jobName = devopsCiJobMapper.selectByPrimaryKey(jarDeploy.getPipelineTaskId()).getName();
-                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getGitlabPipelineId(), jobName);
+                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getGitlabPipelineId(), jarDeploy.getPipelineTask());
                 nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
                 groupId = ciPipelineMavenDTO.getGroupId();
                 artifactId = ciPipelineMavenDTO.getArtifactId();
