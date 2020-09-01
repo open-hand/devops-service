@@ -879,6 +879,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         chartTagVO.setChartName(chartName);
         chartTagVO.setChartVersion(appServiceVersionDTO.getVersion());
         chartTagVO.setRepository(appServiceVersionDTO.getRepository());
+        chartTagVO.setAppServiceId(appServiceVersionDTO.getAppServiceId());
         return chartTagVO;
     }
 

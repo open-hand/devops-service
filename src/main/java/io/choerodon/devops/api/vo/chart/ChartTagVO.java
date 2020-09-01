@@ -13,6 +13,7 @@ public class ChartTagVO {
     private String projectCode;
     private String chartName;
     private String chartVersion;
+    private Long appServiceId;
 
     public String getOrgCode() {
         return orgCode;
@@ -52,5 +53,13 @@ public class ChartTagVO {
 
     public void setRepository(String repository) {
         this.repository = repository;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }
