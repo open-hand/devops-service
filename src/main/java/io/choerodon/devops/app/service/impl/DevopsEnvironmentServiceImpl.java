@@ -247,34 +247,34 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 organizationDTO.getTenantNum() + "/" + projectDTO.getCode() + "/" + devopsEnvironmentReqVO.getCode());
         devopsEnvironmentDTO.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentDTO.setEnvIdRsaPub(sshKeys.get(1));
-        Long envId = baseCreate(devopsEnvironmentDTO).getId();
-        devopsEnvironmentDTO.setId(envId);
-
-        EnvGitlabProjectPayload gitlabProjectPayload = new EnvGitlabProjectPayload();
-        gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()));
-        gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        gitlabProjectPayload.setPath(devopsEnvironmentReqVO.getCode());
-        gitlabProjectPayload.setOrganizationId(organizationDTO.getTenantId());
-        gitlabProjectPayload.setType(ENV);
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
-        gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
-        gitlabProjectPayload.setRealName(iamUserDTO.getRealName());
-        gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
-        gitlabProjectPayload.setIamProjectId(projectId);
-        gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
-
-        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
 
         producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_ENV)
-                        .withPayloadAndSerialize(gitlabProjectPayload)
-                        .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
-                        .withRefType("env")
-                        .withSourceId(projectId),
+                StartSagaBuilder.newBuilder(),
                 builder -> {
+                    Long envId = baseCreate(devopsEnvironmentDTO).getId();
+                    devopsEnvironmentDTO.setId(envId);
+
+                    EnvGitlabProjectPayload gitlabProjectPayload = new EnvGitlabProjectPayload();
+                    gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()));
+                    gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    gitlabProjectPayload.setPath(devopsEnvironmentReqVO.getCode());
+                    gitlabProjectPayload.setOrganizationId(organizationDTO.getTenantId());
+                    gitlabProjectPayload.setType(ENV);
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
+                    gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
+                    gitlabProjectPayload.setRealName(iamUserDTO.getRealName());
+                    gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
+                    gitlabProjectPayload.setIamProjectId(projectId);
+                    gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
+
+                    agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
+
+                    builder.withLevel(ResourceLevel.PROJECT)
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_ENV)
+                            .withPayloadAndSerialize(gitlabProjectPayload)
+                            .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
+                            .withRefType("env")
+                            .withSourceId(projectId);
                 }
         );
     }
