@@ -112,6 +112,8 @@ export default (
             return newRes;
           } catch (e) {
             return newRes;
+          } finally {
+            useStore.setInstanceIdList(newRes);
           }
         },
       }),

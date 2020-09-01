@@ -62,6 +62,14 @@ export default observer(() => {
   function getMetadata(ds) {
     if (ds.type === 'cdDeploy') {
       ds.value = Base64.encode(valueIdValues);
+      // 如果部署模式是新建 则删掉多余的实例id
+      if (ds.deployType && ds.deployType === 'create') {
+        delete ds.instanceId;
+      } else {
+        // 如果是替换 则除了传id 还需要传对应的name
+        const instanceNaMe = ADDCDTaskUseStore.getInstanceIdList?.find(i => i.id === ds.instanceId)?.code;
+        ds.instanceName = instanceNaMe;
+      }
     }
     if (ds.type === 'cdHost') {
       ds.hostConnectionVO = {
@@ -123,6 +131,7 @@ export default observer(() => {
         }
       }
     }
+
     ds.appServiceId = PipelineCreateFormDataSet.current.get('appServiceId');
     return JSON.stringify(ds).replace(/"/g, "'");
   }
@@ -143,15 +152,6 @@ export default observer(() => {
       if (ds.type !== 'cdAudit') {
         data.metadata = getMetadata(ds);
       }
-      // 如果部署模式是新建 则删掉多余的实例id
-      if (ds.deployType && ds.deployType === 'create') {
-        delete data.instanceId;
-      } else {
-        // 如果是替换 则除了传id 还需要传对应的name
-        const instanceNaMe = ADDCDTaskDataSet?.getField('instanceId')?.props?.lookup?.find(i => i.id === data.instanceId)?.code;
-        data.instanceName = instanceNaMe;
-      }
-
       handleOk(data);
       return true;
     }
