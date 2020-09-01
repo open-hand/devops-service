@@ -126,6 +126,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     private final DevopsDeployValueMapper devopsDeployValueMapper;
+    private final DevopsCiJobMapper devopsCiJobMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -147,6 +148,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
             AppServiceMapper appServiceMapper,
+            DevopsCiJobMapper devopsCiJobMapper,
             DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
             CiCdPipelineMapper ciCdPipelineMapper,
             DevopsCdStageService devopsCdStageService,
@@ -1444,16 +1446,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
-            if (cdHostDeployConfigVO.getImageDeploy() != null
-                    && cdHostDeployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())
-                    && cdHostDeployConfigVO.getImageDeploy().getPipelineTaskId() == null) {
-                cdHostDeployConfigVO.getImageDeploy().setPipelineTaskId(getCiJobId(pipelineId, cdHostDeployConfigVO.getImageDeploy().getPipelineTask()));
-            }
-            if (cdHostDeployConfigVO.getJarDeploy() != null
-                    && cdHostDeployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())
-                    && cdHostDeployConfigVO.getJarDeploy().getPipelineTaskId() == null) {
-                cdHostDeployConfigVO.getJarDeploy().setPipelineTaskId(getCiJobId(pipelineId, cdHostDeployConfigVO.getJarDeploy().getPipelineTask()));
-            }
+            checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName());
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
@@ -1500,6 +1493,25 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             appServiceDeployDTO.setTriggerVersion(String.join(",", appServiceDeployVO.getTriggerVersion()));
         }
         return appServiceDeployDTO;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
+    public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName) {
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        if (deployConfigVO.getImageDeploy() != null
+                && deployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
+            devopsCiJobDTO.setName(deployConfigVO.getImageDeploy().getPipelineTask());
+        }
+        if (deployConfigVO.getJarDeploy() != null
+                && deployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
+            devopsCiJobDTO.setName(deployConfigVO.getJarDeploy().getPipelineTask());
+        }
+        if (!StringUtils.isEmpty(devopsCiJobDTO.getName())) {
+            if (CollectionUtils.isEmpty(devopsCiJobMapper.select(devopsCiJobDTO))) {
+                throw new CommonException("error.cd.host.job.union.ci.job", devopsCiJobDTO.getName(), cdHostName);
+            }
+        }
     }
 
     /**
