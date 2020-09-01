@@ -221,8 +221,32 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 }
             } else {
                 // ci未完成，则重试ci
+                // 更新cd阶段状态为created
+                if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
+                    updateCanceledStageAndJob2Created(cdPipelineRecordId);
+                }
                 devopsCiPipelineRecordService.retry(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
             }
+        }
+    }
+
+    private void updateCanceledStageAndJob2Created(Long cdPipelineRecordId) {
+        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(cdPipelineRecordId);
+        if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
+            devopsCdStageRecordDTOS.forEach(stage -> {
+                if (PipelineStatus.CANCELED.toValue().equals(stage.getStatus())) {
+                    devopsCdStageRecordService.updateStatusById(stage.getId(), PipelineStatus.CREATED.toValue());
+                    List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(stage.getId());
+                    if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
+                        devopsCdJobRecordDTOS.forEach(job -> {
+                            if (PipelineStatus.CANCELED.toValue().equals(job.getStatus())) {
+                                devopsCdJobRecordService.updateStatusById(job.getId(), PipelineStatus.CREATED.toValue());
+                            }
+                        });
+
+                    }
+                }
+            });
         }
     }
 
