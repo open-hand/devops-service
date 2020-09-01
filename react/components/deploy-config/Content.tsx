@@ -26,8 +26,10 @@ function DeployConfigForm() {
     if (isError) return false;
 
     try {
-      if ((await formDs.submit()) !== false) {
-        refresh();
+      const res = await formDs.submit();
+      if (res && res.list) {
+        const { id } = res.list[0] || {};
+        refresh(id);
         return true;
       }
       return false;
