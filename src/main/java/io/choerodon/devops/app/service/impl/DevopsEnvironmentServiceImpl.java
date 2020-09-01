@@ -249,7 +249,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setEnvIdRsaPub(sshKeys.get(1));
 
         producer.apply(
-                StartSagaBuilder.newBuilder(),
+                StartSagaBuilder.newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_ENV)
+                        .withSourceId(projectId),
                 builder -> {
                     Long envId = baseCreate(devopsEnvironmentDTO).getId();
                     devopsEnvironmentDTO.setId(envId);
@@ -269,12 +272,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
                     agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
 
-                    builder.withLevel(ResourceLevel.PROJECT)
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_ENV)
-                            .withPayloadAndSerialize(gitlabProjectPayload)
+                    builder.withPayloadAndSerialize(gitlabProjectPayload)
                             .withRefId(String.valueOf(devopsEnvironmentDTO.getId()))
-                            .withRefType("env")
-                            .withSourceId(projectId);
+                            .withRefType("env");
                 }
         );
     }
