@@ -116,6 +116,7 @@ public class RetrofitHandler {
                 okHttpClientBuilder.hostnameVerifier((requestedHost, remoteServerSession) -> {
                     return requestedHost.equalsIgnoreCase(remoteServerSession.getPeerHost()); // Compliant
                 });
+                okHttpClientBuilder.followRedirects(true);
                 return okHttpClientBuilder.build();
             } else {
                 return RetrofitHandler.buildWithToken(token);
@@ -140,6 +141,7 @@ public class RetrofitHandler {
             Request request = requestBuilder.build();
             return chain.proceed(request);
         });
+        okHttpClientBuilder.followRedirects(true);
         return okHttpClientBuilder.build();
     }
 
