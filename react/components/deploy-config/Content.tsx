@@ -18,6 +18,7 @@ function DeployConfigForm() {
     modal,
     configId,
     refresh,
+    store,
   } = useFormStore();
   const [isError, setValueError] = useState(false);
 
@@ -51,7 +52,7 @@ function DeployConfigForm() {
       <YamlEditor
         readOnly={false}
         value={record.get('value')}
-        originValue={record.getPristineValue('value')}
+        originValue={store.getValue || record.getPristineValue('value') || record.get('value')}
         onValueChange={changeValue}
         handleEnableNext={setValueError}
       />

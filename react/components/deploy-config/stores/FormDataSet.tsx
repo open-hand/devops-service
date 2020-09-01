@@ -60,6 +60,7 @@ export default ({
     autoCreate: false,
     autoQuery: false,
     paging: false,
+    autoQueryAfterSubmit: false,
     fields: [{
       name: 'name',
       type: 'string' as FieldType,

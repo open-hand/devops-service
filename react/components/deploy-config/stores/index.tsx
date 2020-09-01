@@ -5,7 +5,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import FormDataSet from '@/components/deploy-config/stores/FormDataSet';
-import useStore from '@/components/deploy-config/stores/useStore';
+import useStore, { StoreProps } from '@/components/deploy-config/stores/useStore';
 import AppOptionDataSet from './AppOptionDataSet';
 
 interface ContextProps {
@@ -17,6 +17,7 @@ interface ContextProps {
   modal: any,
   refresh(): void,
   configId?: string,
+  store: StoreProps,
 }
 
 const Store = createContext({} as ContextProps);
@@ -68,6 +69,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       formatMessage,
       appOptionDs,
       store,
+      formDs,
     };
     return (
       <Store.Provider value={value}>
