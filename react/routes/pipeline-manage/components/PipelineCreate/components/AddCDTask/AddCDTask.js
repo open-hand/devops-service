@@ -10,11 +10,13 @@ import {
   Password,
   Tooltip,
   Button,
+  Modal,
 } from 'choerodon-ui/pro';
 import { Icon, Spin } from 'choerodon-ui';
 import { axios } from '@choerodon/boot';
 import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
+import DeployConfig from '@/components/deploy-config';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import Tips from '../../../../../../components/new-tips';
@@ -79,6 +81,10 @@ export default observer(() => {
   );
   const [testStatus, setTestStatus] = useState('');
   const [accountKeyValue, setAccountKeyValue] = useState('');
+
+  useEffect(() => {
+    ADDCDTaskUseStore.setValueIdRandom(Math.random());
+  }, []);
 
   function getMetadata(ds) {
     if (ds.type === 'cdDeploy') {
@@ -379,6 +385,33 @@ export default observer(() => {
     return record.get('pipelineTask').indexOf(text) !== -1;
   }
 
+  const handleClickCreateValue = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    Modal.open({
+      key: Modal.key(),
+      drawer: true,
+      style: {
+        width: '3.8rem',
+      },
+      children: <DeployConfig
+        envId={ADDCDTaskDataSet.current.get('envId')}
+        refresh={(id) => {
+          ADDCDTaskUseStore.setValueIdRandom(Math.random());
+          ADDCDTaskDataSet.current.set('valueId', id);
+          const origin = ADDCDTaskUseStore.getValueIdList;
+          setValueIdValues(origin.find((i) => String(i.id) === String(id)).value);
+        }}
+      />,
+      title: '创建部署配置',
+    });
+  };
+
+  const rendererValueId = ({ value, text, record }) => (text === '创建部署配置' ? (
+    <a style={{ width: '100%', display: 'inline-block' }} role="none" onClick={(e) => handleClickCreateValue(e)}>{text}</a>) : text);
+
+  const optionRenderValueId = ({ value, text, record }) => rendererValueId({ text });
+
   const getOtherConfig = () => {
     function getModeDom() {
       const currentDepoySource = ADDCDTaskDataSet?.current?.get('deploySource');
@@ -515,6 +548,8 @@ export default observer(() => {
               const origin = ADDCDTaskUseStore.getValueIdList;
               setValueIdValues(origin.find((i) => i.id === data).value);
             }}
+            optionRenderer={optionRenderValueId}
+            renderer={rendererValueId}
           />
           <YamlEditor
             colSpan={3}
@@ -649,7 +684,7 @@ export default observer(() => {
     <a
       style={{ display: 'block', width: '100%', height: '100%' }}
       onClick={handleClickMore}
-      >
+    >
       {text}
     </a>
   ) : (
@@ -688,7 +723,7 @@ export default observer(() => {
         currentSize += 10;
         getBranchsList();
       }}
-      >
+    >
       {text}
     </a>
   ) : (

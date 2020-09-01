@@ -143,14 +143,22 @@ export default (
             record.get('envId')
             && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get(
               'appServiceId',
-            )}&env_id=${record.get('envId')}&random=${random}`,
+            )}&env_id=${record.get('envId')}&random=${random}&createValueRandom=${useStore.getValueIdRandom}`,
           transformResponse: (res) => {
             let newRes = res;
             try {
               newRes = JSON.parse(res);
+              newRes.push({
+                name: '创建部署配置',
+                id: 'create',
+              });
               useStore.setValueIdList(newRes);
               return newRes;
             } catch (e) {
+              newRes.push({
+                name: '创建部署配置',
+                id: 'create',
+              });
               useStore.setValueIdList(newRes);
               return newRes;
             }
