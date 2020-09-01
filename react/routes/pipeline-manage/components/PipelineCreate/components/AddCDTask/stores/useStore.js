@@ -8,6 +8,16 @@ export default function useStore() {
 
     imageList: [],
 
+    valueIdRandom: undefined,
+
+    get getValueIdRandom() {
+      return this.valueIdRandom;
+    },
+
+    setValueIdRandom(data) {
+      this.valueIdRandom = data;
+    },
+
     get getImageList() {
       return this.imageList;
     },
