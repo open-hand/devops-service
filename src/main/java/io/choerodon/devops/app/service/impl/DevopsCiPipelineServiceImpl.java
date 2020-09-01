@@ -1281,7 +1281,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void buildBeforeScript(GitlabCi gitlabCi) {
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
-        if (StringUtils.isEmpty(gitlabCi.getVersionName())) {
+        if (!StringUtils.isEmpty(gitlabCi.getVersionName())) {
             beforeScripts.add(String.format("CI_COMMIT_TAG=%s", gitlabCi.getVersionName()));
         }
         // 如果有job启用了缓存设置, 就创建缓存目录
