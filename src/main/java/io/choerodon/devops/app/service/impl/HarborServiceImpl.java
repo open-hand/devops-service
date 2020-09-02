@@ -5,6 +5,7 @@ import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -58,6 +59,8 @@ public class HarborServiceImpl implements HarborService {
     private String username;
     @Value("${services.harbor.password}")
     private String password;
+    @Value("${services.harbor.delete.period.seconds: 20}")
+    private Long seconds;
 
     @Override
     public User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String name) {
@@ -148,6 +151,13 @@ public class HarborServiceImpl implements HarborService {
                 }
 
             }
+            // 删除后，睡眠20s，减小habor压力
+            try {
+                TimeUnit.SECONDS.sleep(seconds);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         });
     }
 
