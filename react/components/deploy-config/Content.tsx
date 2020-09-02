@@ -30,8 +30,8 @@ function DeployConfigForm() {
     try {
       const res = await formDs.submit();
       if (res && res.list) {
-        const { id } = res.list[0] || {};
-        refresh(id);
+        const { id, value } = res.list[0];
+        refresh({ valueId: id, value });
         return true;
       }
       return false;
