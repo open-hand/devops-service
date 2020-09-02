@@ -398,11 +398,11 @@ export default observer(() => {
         envId={ADDCDTaskDataSet.current.get('envId')}
         appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
         appServiceName={appServiceId}
-        refresh={(id) => {
+        refresh={({ valueId, value }) => {
           ADDCDTaskUseStore.setValueIdRandom(Math.random());
-          ADDCDTaskDataSet.current.set('valueId', id);
-          const origin = ADDCDTaskUseStore.getValueIdList;
-          setValueIdValues(origin.find((i) => String(i.id) === String(id)).value);
+          ADDCDTaskDataSet.current.set('valueId', valueId);
+          // const origin = ADDCDTaskUseStore.getValueIdList;
+          setValueIdValues(value);
         }}
       />,
       title: '创建部署配置',
