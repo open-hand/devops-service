@@ -258,7 +258,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             // 5. 审核任务处理
             // 在workflow 是先渲染阶段 在渲染阶段任务
             if (i != stageRecordDTOList.size() - 1) {
-                stageDTO.setNextStageTriggerType(stageRecordDTOList.get(i + 1).getTriggerType());
+                stageDTO.setNextStageTriggerType(TriggerTypeEnum.AUTO.value());
             }
             devopsPipelineStageDTOS.add(stageDTO);
         }

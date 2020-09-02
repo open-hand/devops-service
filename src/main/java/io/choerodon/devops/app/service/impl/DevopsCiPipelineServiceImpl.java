@@ -1318,6 +1318,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 将从Audit-domain中继承的这个字段设置为空， 不然会将一些不需要的字段也序列化到输出到json
             devopsCdEnvDeployInfoDTO.set_innerMap(null);
             devopsCdEnvDeployInfoDTO.setProjectId(projectId);
+            // 删除 前端传输的metadata中 多余数据
+            updateExtraInfoToNull(devopsCdEnvDeployInfoDTO);
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
@@ -1340,6 +1342,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             createUserRel(t.getCdAuditUserIds(), projectId, pipelineId, jobId);
         }
 
+    }
+
+    private void updateExtraInfoToNull(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
+        devopsCdEnvDeployInfoDTO.setId(null);
+        devopsCdEnvDeployInfoDTO.setCreatedBy(null);
+        devopsCdEnvDeployInfoDTO.setCreationDate(null);
+        devopsCdEnvDeployInfoDTO.setLastUpdatedBy(null);
+        devopsCdEnvDeployInfoDTO.setLastUpdateDate(null);
     }
 
     private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {
