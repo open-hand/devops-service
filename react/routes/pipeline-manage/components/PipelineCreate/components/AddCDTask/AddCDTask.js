@@ -392,10 +392,12 @@ export default observer(() => {
       key: Modal.key(),
       drawer: true,
       style: {
-        width: '3.8rem',
+        width: '740px',
       },
       children: <DeployConfig
         envId={ADDCDTaskDataSet.current.get('envId')}
+        appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
+        appServiceName={appServiceId}
         refresh={(id) => {
           ADDCDTaskUseStore.setValueIdRandom(Math.random());
           ADDCDTaskDataSet.current.set('valueId', id);
