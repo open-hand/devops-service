@@ -15,7 +15,7 @@ interface ContextProps {
   formDs: DataSet,
   projectId: number,
   modal: any,
-  refresh(arg?: string): void,
+  refresh(arg?: any): void,
   configId?: string,
   store: StoreProps,
   appServiceId?: string,
