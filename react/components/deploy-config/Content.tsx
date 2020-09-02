@@ -19,6 +19,8 @@ function DeployConfigForm() {
     configId,
     refresh,
     store,
+    appServiceId,
+    appServiceName,
   } = useFormStore();
   const [isError, setValueError] = useState(false);
 
@@ -67,7 +69,7 @@ function DeployConfigForm() {
         <Form dataSet={formDs}>
           <TextField name="name" autoFocus />
           <TextArea name="description" resize={'vertical' as ResizeType} />
-          {configId
+          {configId || (appServiceId && appServiceName)
             ? <TextField name="appServiceName" disabled />
             : (
               <Select

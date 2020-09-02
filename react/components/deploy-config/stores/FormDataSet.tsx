@@ -13,6 +13,8 @@ interface FormProps {
   configId?: string,
   store: StoreProps,
   appOptionDs: DataSet,
+  appServiceId?: string,
+  appServiceName?: string,
 }
 
 interface UpdateProps {
@@ -22,7 +24,15 @@ interface UpdateProps {
 }
 
 export default ({
-  formatMessage, intlPrefix, projectId, envId, configId, store, appOptionDs,
+  formatMessage,
+  intlPrefix,
+  projectId,
+  envId,
+  configId,
+  store,
+  appOptionDs,
+  appServiceId,
+  appServiceName,
 }: FormProps): DataSetProps => {
   const handleUpdate = async ({ name, value, record }: UpdateProps) => {
     if (name === 'appServiceId' && value) {
@@ -82,12 +92,14 @@ export default ({
       label: '应用服务',
       required: true,
       options: appOptionDs,
+      defaultValue: appServiceId,
     }, {
       name: 'appServiceName',
       type: 'string' as FieldType,
       label: '应用服务',
       readOnly: true,
       ignore: 'always' as FieldIgnore,
+      defaultValue: appServiceName,
     }, {
       name: 'value',
       type: 'string' as FieldType,
