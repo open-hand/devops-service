@@ -12,6 +12,9 @@ async function checkName(value, projectId, record) {
   if (!record.get('envId')) {
     return true;
   }
+  if (!(record.get('type') === 'cdDeploy' && record.get('deployType') === 'create')) {
+    return true;
+  }
   try {
     const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?env_id=${record.get('envId')}&instance_name=${value}`);
     if ((res && res.failed) || !res) {
