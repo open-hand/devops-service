@@ -35,6 +35,7 @@ import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.*;
@@ -698,6 +699,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref) {
         BranchDTO branchDTO = gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(gitlabUserId.intValue());
+        // 管理员跳过权限校验
+        if (Boolean.TRUE.equals(gitLabUserDTO.getAdmin())) {
+            return;
+        }
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), gitlabUserId.intValue());
         if (memberDTO == null || memberDTO.getId() == null) {
             memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
