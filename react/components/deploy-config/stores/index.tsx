@@ -18,6 +18,8 @@ interface ContextProps {
   refresh(arg?: string): void,
   configId?: string,
   store: StoreProps,
+  appServiceId?: string,
+  appServiceName?: string,
 }
 
 const Store = createContext({} as ContextProps);
@@ -34,6 +36,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intl: { formatMessage },
       envId,
       configId,
+      appServiceId,
+      appServiceName,
     } = props;
     const intlPrefix = 'c7ncd.deployment';
 
@@ -50,8 +54,22 @@ export const StoreProvider = injectIntl(inject('AppState')(
         configId,
         store,
         appOptionDs,
+        appServiceId,
+        appServiceName,
       })), [projectId, envId],
     );
+
+    const loadValue = async () => {
+      const record = formDs.current;
+      if (record) {
+        try {
+          const res = await store.loadValue(projectId, appServiceId);
+          record.set('value', res);
+        } catch (e) {
+          record.set('value', '');
+        }
+      }
+    };
 
     useEffect(() => {
       if (configId) {
@@ -59,6 +77,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       } else {
         appOptionDs.query();
         formDs.create();
+        if (appServiceId) {
+          loadValue();
+        }
       }
     }, [projectId, envId, configId]);
 
