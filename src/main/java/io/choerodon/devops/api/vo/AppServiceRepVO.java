@@ -87,9 +87,6 @@ public class AppServiceRepVO {
     @ApiModelProperty("最近更新者登录名")
     private String updateLoginName;
 
-    @ApiModelProperty("此应用服务是够跳过权限检查，true表示允许项目下所有的项目成员及项目所有者访问")
-    private Boolean skipCheckPermission;
-
     @ApiModelProperty("是否是空仓库(是否没有分支)")
     private Boolean emptyRepository;
 
@@ -297,14 +294,6 @@ public class AppServiceRepVO {
 
     public void setUpdateLoginName(String updateLoginName) {
         this.updateLoginName = updateLoginName;
-    }
-
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
     }
 
     public Boolean getEmptyRepository() {

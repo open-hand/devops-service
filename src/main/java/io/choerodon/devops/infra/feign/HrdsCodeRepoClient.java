@@ -3,18 +3,14 @@ package io.choerodon.devops.infra.feign;
 import java.util.List;
 import java.util.Set;
 
-import org.hzero.core.util.Results;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
-import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.fallback.HzeroMessageServiceClientFallBack;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp

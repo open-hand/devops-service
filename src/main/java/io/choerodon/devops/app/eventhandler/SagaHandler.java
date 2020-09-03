@@ -111,26 +111,6 @@ public class SagaHandler {
         return msg;
     }
 
-//    /**
-//     * 创建harbor项目事件
-//     */
-//    //todo
-//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_HARBOR,
-//            description = "devops 创建 Harbor",
-//            sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
-//            maxRetryCount = 3,
-//            seq = 5)
-//    public String handleHarborEvent(String msg) {
-//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-//        HarborPayload harborPayload = new HarborPayload(
-//                projectPayload.getProjectId(),
-//                projectPayload.getOrganizationCode() + "-" + projectPayload.getProjectCode()
-//        );
-//        loggerInfo(harborPayload);
-//        harborService.createHarborForProject(harborPayload);
-//        return msg;
-//    }
-
     /**
      * 角色同步事件
      */

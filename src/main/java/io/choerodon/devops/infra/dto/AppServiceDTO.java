@@ -1,11 +1,12 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.persistence.*;
 
 /**
  * if (!isSynchro) {
@@ -44,7 +45,6 @@ public class AppServiceDTO extends AuditDomain {
     private Long hookId;
     private Boolean isFailed;
     private String type;
-    private Boolean isSkipCheckPermission;
     private String imgUrl;
     // TODO delete the field
     @Deprecated
@@ -106,14 +106,6 @@ public class AppServiceDTO extends AuditDomain {
 
     public void setSonarUrl(String sonarUrl) {
         this.sonarUrl = sonarUrl;
-    }
-
-    public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
     }
 
     public String getRepoUrl() {
@@ -237,14 +229,6 @@ public class AppServiceDTO extends AuditDomain {
         isFailed = failed;
     }
 
-    public Boolean getIsSkipCheckPermission() {
-        return isSkipCheckPermission;
-    }
-
-    public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
-    }
-
     public String getType() {
         return type;
     }
@@ -310,7 +294,6 @@ public class AppServiceDTO extends AuditDomain {
                 ", hookId=" + hookId +
                 ", isFailed=" + isFailed +
                 ", type='" + type + '\'' +
-                ", isSkipCheckPermission=" + isSkipCheckPermission +
                 ", imgUrl='" + imgUrl + '\'' +
                 ", mktAppId=" + mktAppId +
                 ", publishLevel='" + publishLevel + '\'' +
