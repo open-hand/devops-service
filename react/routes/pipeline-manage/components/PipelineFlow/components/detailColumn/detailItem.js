@@ -8,6 +8,7 @@ import DepolyLog from '../deployLog';
 import StatusDot from '../statusDot';
 import CodeQuality from '../codeQuality';
 import CodeLog from '../codeLog';
+import { usePipelineManageStore } from '../../../../stores';
 
 const jobType = {
   build: {
@@ -58,19 +59,21 @@ function renderDuration(value) {
 
 const DetailItem = (props) => {
   const {
-    durationSeconds,
-    itemStatus,
-    startedDate,
-    finishedDate,
-    type,
-    projectId,
-    gitlabJobId,
     detailStore: {
       retryJob,
       getDetailData,
       retryCdJob, // retryCdJob是部署类型任务的重试
     },
-    name,
+  } = usePipelineManageStore();
+  const {
+    jobDurationSeconds,
+    jobStatus,
+    startedDate,
+    finishedDate,
+    itemType,
+    projectId,
+    gitlabJobId,
+    jobName,
     handleRefresh,
     cdAuto, // cd阶段job独有的
     audit, // cd阶段job独有的
@@ -116,7 +119,7 @@ const DetailItem = (props) => {
       jobRecordId,
     };
     Modal.open({
-      title: `查看${jobType[type].name}日志`,
+      title: `查看${jobType[itemType].name}日志`,
       key: Modal.key(),
       style: {
         width: 'calc(100vw - 3.52rem)',
@@ -217,7 +220,7 @@ const DetailItem = (props) => {
             style={{ color: '#3F51B5', cursor: 'pointer' }}
             onClick={linkTo}
           >
-            {(itemStatus !== 'created' && instanceName) || '-'}
+            {(jobStatus !== 'created' && instanceName) || '-'}
           </span>
         </div>
       </main>
@@ -332,11 +335,11 @@ const DetailItem = (props) => {
   );
 
   function getRetryBtnDisabled() {
-    const successAndFailed = itemStatus === 'success' || itemStatus === 'failed';
-    if (type === 'cdDeploy') {
+    const successAndFailed = jobStatus === 'success' || jobStatus === 'failed';
+    if (itemType === 'cdDeploy') {
       return !successAndFailed;
     }
-    return !(successAndFailed || itemStatus === 'canceled');
+    return !(successAndFailed || jobStatus === 'canceled');
   }
 
   return (
@@ -344,14 +347,14 @@ const DetailItem = (props) => {
       <header>
         <StatusDot
           size={13}
-          status={itemStatus}
+          status={jobStatus}
           style={{ lineHeight: '22px' }}
         />
         <div className="c7n-piplineManage-detail-column-item-sub">
-          <Tooltip title={name}>
+          <Tooltip title={jobName}>
             <span>
-              {type && `【${jobType[type].name}】`}
-              {name}
+              {itemType && `【${jobType[itemType].name}】`}
+              {jobName}
             </span>
           </Tooltip>
           {startedDate && finishedDate && (
@@ -365,13 +368,13 @@ const DetailItem = (props) => {
           )}
         </div>
       </header>
-      {type === 'cdDeploy' && renderCdAuto()}
-      {type === 'cdAudit' && renderCdAudit()}
-      {type === 'chart' && renderChart()}
-      {type === 'cdHost' && renderCdHost()}
-      {type === 'sonar' && renderSonar()}
+      {itemType === 'cdDeploy' && renderCdAuto()}
+      {itemType === 'cdAudit' && renderCdAudit()}
+      {itemType === 'chart' && renderChart()}
+      {itemType === 'cdHost' && renderCdHost()}
+      {itemType === 'sonar' && renderSonar()}
       <footer>
-        {type !== 'cdAudit' && type !== 'cdHost' && (
+        {itemType !== 'cdAudit' && itemType !== 'cdHost' && (
           <Permission
             service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}
           >
@@ -381,14 +384,14 @@ const DetailItem = (props) => {
                 shape="circle"
                 size="small"
                 icon="description-o"
-                disabled={itemStatus === 'created' || itemStatus === 'skipped'}
-                onClick={type !== 'cdDeploy' ? openDescModal : openCdLog}
+                disabled={jobStatus === 'created' || jobStatus === 'skipped'}
+                onClick={itemType !== 'cdDeploy' ? openDescModal : openCdLog}
                 color="primary"
               />
             </Tooltip>
           </Permission>
         )}
-        {type !== 'cdAudit' && (
+        {itemType !== 'cdAudit' && (
           <Permission
             service={[
               'choerodon.code.project.develop.ci-pipeline.ps.job.retry',
@@ -403,7 +406,7 @@ const DetailItem = (props) => {
                 icon="refresh"
                 color="primary"
                 onClick={
-                  type === 'cdDeploy' || type === 'cdHost' || type === 'cdAudit'
+                  itemType === 'cdDeploy' || itemType === 'cdHost' || itemType === 'cdAudit'
                     ? handleCdJobRetry
                     : handleJobRetry
                 }
@@ -411,7 +414,7 @@ const DetailItem = (props) => {
             </Tooltip>
           </Permission>
         )}
-        {type === 'sonar' && (
+        {itemType === 'sonar' && (
           <Permission
             service={[
               'choerodon.code.project.develop.ci-pipeline.ps.job.sonarqube',
@@ -432,7 +435,7 @@ const DetailItem = (props) => {
         <span className="c7n-piplineManage-detail-column-item-time">
           <span>任务耗时：</span>
           <span>
-            {durationSeconds ? `${renderDuration(durationSeconds)}` : '-'}
+            {jobDurationSeconds ? `${renderDuration(jobDurationSeconds)}` : '-'}
           </span>
         </span>
       </footer>

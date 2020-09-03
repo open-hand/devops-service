@@ -35,9 +35,13 @@ export default observer((props) => {
     piplineStageStatus,
     jobRecordVOList,
     stageSeconds,
-    type,
+    stageType,
     parallel,
     triggerType = 'auto',
+    handleRefresh,
+    history,
+    location,
+    stageId,
   } = props;
 
   const renderItem = () => {
@@ -51,24 +55,36 @@ export default observer((props) => {
     return hasJobs
       ? lists.map((item) => {
         const {
-          status, gitlabJobId, stage, id: jobRecordId,
+          status,
+          gitlabJobId,
+          id: jobRecordId,
+          durationSeconds,
+          startedDate,
+          finishedDate,
+          type,
+          name,
+          ...rest
         } = item;
         return (
-          // <DetailItem
-          //   key={gitlabJobId}
-          //   piplineName={stage}
-          //   itemStatus={status}
-          //   jobRecordId={jobRecordId}
-          //   {...props}
-          //   {...item}
-          // />
-          111
+          <DetailItem
+            key={gitlabJobId}
+            jobStatus={status}
+            jobRecordId={jobRecordId}
+            handleRefresh={handleRefresh}
+            history={history}
+            location={location}
+            stageId={stageId}
+            jobDurationSeconds={durationSeconds}
+            itemType={type}
+            jobName={name}
+            {...rest}
+          />
         );
       })
       : '无执行详情...';
   };
 
-  const realType = type?.toUpperCase();
+  const realType = stageType?.toUpperCase();
 
   return (
     <div
@@ -93,7 +109,7 @@ export default observer((props) => {
               parallel || realType === 'CI' ? 'parallel' : 'serial'
             }`}
           >
-            {parallel || realType === 'CI' ? '任务并行' : '任务串行'}
+            { parallel || realType === 'CI' ? '任务并行' : '任务串行'}
           </span>
         </h6>
         {renderItem()}

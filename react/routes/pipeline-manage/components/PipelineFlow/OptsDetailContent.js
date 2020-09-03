@@ -24,6 +24,7 @@ export default observer((props) => {
 
   const {
     getSelectedMenu,
+    handleRefresh,
   } = usePipelineFlowStore();
 
   const {
@@ -68,7 +69,7 @@ export default observer((props) => {
   const renderStage = () => (
     stageRecordVOS && stageRecordVOS.length > 0 ? stageRecordVOS.map((item) => {
       const {
-        name, status: stageStatus, durationSeconds, sequence, stageId,
+        name, status: stageStatus, durationSeconds, sequence, type, jobRecordVOList, stageId,
       } = item;
       return (
         <DetailColumn
@@ -76,11 +77,12 @@ export default observer((props) => {
           piplineStageName={name}
           stageSeconds={durationSeconds}
           piplineStageStatus={stageStatus}
-          stageId={stageId}
           history={history}
           location={location}
-          {...item}
-          {...props}
+          handleRefresh={handleRefresh}
+          stageType={type}
+          jobRecordVOList={jobRecordVOList}
+          stageId={stageId}
         />
       );
     }) : (
