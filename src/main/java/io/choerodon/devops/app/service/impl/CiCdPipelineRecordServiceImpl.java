@@ -475,6 +475,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         // 排序
         ciCdPipelineRecordVOPage.setContent(ciCdPipelineRecordVOS);
         CiCdPipelineUtils.recordListSort(ciCdPipelineRecordVOPage.getContent());
+        //填充viewId
+        CiCdPipelineUtils.fillViewId(ciCdPipelineRecordVOPage.getContent());
         return ciCdPipelineRecordVOPage;
     }
 

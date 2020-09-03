@@ -12,4 +12,6 @@ public interface DevopsProjectOverview {
     CountVO getCommitCount(Long projectId);
 
     CountVO getDeployCount(Long projectId);
+
+    CountVO getCiCount(Long projectId);
 }

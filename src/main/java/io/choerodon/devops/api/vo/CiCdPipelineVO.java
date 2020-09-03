@@ -38,8 +38,10 @@ public class CiCdPipelineVO {
 
     private Long gitlabProjectId;
     @ApiModelProperty("runner镜像地址")
-
     private String image;
+
+    @ApiModelProperty("自定义版本名称")
+    private String versionName;
     @ApiModelProperty("是否启用/nullable")
     private Boolean enabled;
     @ApiModelProperty("流水线触发方式")
@@ -92,6 +94,13 @@ public class CiCdPipelineVO {
         this.ciCdPipelineRecordVOS = ciCdPipelineRecordVOS;
     }
 
+    public String getVersionName() {
+        return versionName;
+    }
+
+    public void setVersionName(String versionName) {
+        this.versionName = versionName;
+    }
 
     public Long getTime() {
         return time;

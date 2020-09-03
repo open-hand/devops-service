@@ -316,6 +316,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        Boolean shareAppService = false;
+        if (!appServiceDTO.getProjectId().equals(projectId)) {
+            shareAppService = true;
+        }
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
         List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
         if (!devopsConfigVOS.isEmpty()) {
@@ -326,8 +330,12 @@ public class AppServiceServiceImpl implements AppServiceService {
             });
         }
         //url地址拼接
-        if (appServiceDTO.getGitlabProjectId() != null) {
+        if (appServiceDTO.getGitlabProjectId() != null && !shareAppService) {
             appServiceRepVO.setRepoUrl(concatRepoUrl(organizationDTO.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode()));
+        }
+        if (shareAppService) {
+            ProjectDTO shareProjectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            appServiceRepVO.setShareProjectName(shareProjectDTO.getName());
         }
         //添加harbor的配置信息
         HarborRepoDTO selectedHarborConfig = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
@@ -677,7 +685,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
         }
 
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(),false);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         List<Long> userIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
         userIds.addAll(applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
@@ -882,6 +890,9 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             try {
                 List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+                // 获取push代码所需的access token
+                String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
+
                 for (Ref ref : refs) {
                     String branchName;
                     if (ref.getName().contains(Constants.R_HEADS)) {
@@ -901,8 +912,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                         repositoryGit.checkout().setCreateBranch(true).setName(branchName).setStartPoint(ref.getName()).call();
                     }
 
-                    // 获取push代码所需的access token
-                    String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
 
                     BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
                     if (branchDTO.getName() == null) {
@@ -929,8 +938,16 @@ public class AppServiceServiceImpl implements AppServiceService {
                         }
                     }
                 }
+
+                // 将所有的tag推送到远程
+                List<Ref> tags = repositoryGit.tagList().call();
+                for (Ref tag: tags) {
+                    gitUtil.pushLocalTag(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, tag.getName());
+                }
+
             } catch (GitAPIException e) {
-                LOGGER.error("GitAPIException: {}", e);
+                LOGGER.error("Failed to import external application.");
+                LOGGER.error("GitAPIException: ", e);
             }
 
             releaseResources(applicationWorkDir, repositoryGit);
@@ -996,6 +1013,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 params.put("{{ SONAR_LOGIN }}", "");
                 params.put("{{ SONAR_URL }}", "");
             }
+            params.put("{{ SONAR_PROJECT_KEY }}", organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + ":" + appServiceDTO.getCode());
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
             params.put("{{ PRO_CODE }}", projectDTO.getCode());
@@ -1251,7 +1269,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public SonarContentsVO getSonarContent(Long projectId, Long appServiceId) {
         try {
-//todo            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
         } catch (GitlabAccessInvalidException e) {
             return null;
         }

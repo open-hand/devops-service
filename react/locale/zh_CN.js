@@ -559,6 +559,11 @@ const appService = {
   'c7ncd.appService.detail.scope.tips':
     '此处仅能选择共享至某个项目，或者选择共享至所有项目',
   'c7ncd.appService.chart.check.failed': '用户名与密码需配对输入',
+  'c7ncd.appService.version.delete': '删除版本',
+  'c7ncd.appService.version.delete.title': '删除服务版本',
+  'c7ncd.appService.version.delete.des': '确定要删除“{version}”等{length}个服务版本吗？删除后，将不可恢复。',
+  'c7ncd.appService.version.delete.des.single': '确定要删除“{version}”服务版本吗？删除后，将不可恢复。',
+  'c7ncd.appService.version.delete.disable': '请在下方列表中选择服务版本',
 };
 
 const envrionment = {

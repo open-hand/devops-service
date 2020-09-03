@@ -4,24 +4,24 @@ import java.util.List;
 import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
+import io.choerodon.devops.api.vo.rdupm.ResponseVO;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
-import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
-
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
+import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
 
 /**
  * User: Mr.Wang
@@ -153,7 +153,7 @@ public interface RdupmClient {
                                                                @PathVariable(name = "projectId") Long projectId,
                                                                @ApiParam(value = "服务配Id", required = true)
                                                                @RequestParam(name = "configId") Long configId,
-                                                               String type);
+                                                               @RequestParam(name = "type") String type);
 
 
     @ApiOperation(value = "根据项目ID获取镜像仓库列表")
@@ -168,4 +168,14 @@ public interface RdupmClient {
                                                          @ApiParam(value = "镜像名称", required = true) @RequestParam("imageName") String imageName,
                                                          @ApiParam(value = "镜像版本号,模糊查询") @RequestParam(required = false, value = "tagName") String tagName);
 
+    @ApiOperation(value = "项目层/组织层--删除镜像TAG")
+    @DeleteMapping(value = "/v1/harbor-choerodon-repos/image-tag/delete")
+    ResponseEntity<ResponseVO> deleteImageTag(@ApiParam(value = "仓库名称") @RequestParam(name = "repoName") String repoName,
+                                              @ApiParam(value = "版本号") @RequestParam(name = "tagName") String tagName);
+
+    @ApiOperation(value = "项目层/组织层--镜像TAG列表")
+    @GetMapping(value = "/v1/harbor-image-tag/list/{projectId}")
+    ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(@PathVariable(value = "projectId") Long projectId,
+                                                          @RequestParam(value = "repoName") String repoName,
+                                                          @RequestParam(value = "tagName", required = false) String tagName);
 }

@@ -19,6 +19,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -46,6 +48,9 @@ import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
+import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
+import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -90,6 +95,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+    private final DevopsCiJobMapper devopsCiJobMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private final DevopsCiStageService devopsCiStageService;
     private final DevopsCiJobService devopsCiJobService;
@@ -127,6 +133,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 这里的懒加载是为了避免循环依赖
             @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
             DevopsCiStageService devopsCiStageService,
+            @Lazy DevopsCiJobMapper devopsCiJobMapper,
             @Lazy DevopsCiJobService devopsCiJobService,
             DevopsCiContentService devopsCiContentService,
             @Lazy GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -189,6 +196,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
         this.devopsDeployValueMapper = devopsDeployValueMapper;
+        this.devopsCiJobMapper = devopsCiJobMapper;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
@@ -330,6 +338,77 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
             initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+        }
+    }
+
+    private void getDockerTagName(DevopsCiJobVO devopsCiJobVO, List<CiDockerTagNameVO> dockerTagNames) {
+        // 自定义的chart和docker tag名
+        // 0.1 获取到docker任务Id 和规则
+        if (devopsCiJobVO.getType().equals(JobTypeEnum.BUILD.value())) {
+            if (devopsCiJobVO.getConfigJobTypes().contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+                List<CiConfigTemplateVO> configVOS = devopsCiJobVO.getConfigVO().getConfig();
+                Optional<CiConfigTemplateVO> optional = configVOS.stream().filter(t -> t.getType().equals(CiJobScriptTypeEnum.DOCKER.getType())).findFirst();
+                if (optional.isPresent()) {
+                    CiConfigTemplateVO templateVO = optional.get();
+                    if (templateVO.getCustomDockerTagName() != null && templateVO.getCustomDockerTagName()) {
+                        if (StringUtils.isEmpty(templateVO.getDockerTagName())) {
+                            throw new CommonException("error.docker.tag.name.empty");
+                        }
+                        CiDockerTagNameVO ciDockerTagNameVO = new CiDockerTagNameVO(devopsCiJobVO.getId(), devopsCiJobVO.getName(), templateVO.getDockerTagName());
+                        dockerTagNames.add(ciDockerTagNameVO);
+                    }
+                }
+            }
+        }
+    }
+
+    private void setChartVersionName(DevopsCiJobVO devopsCiJobVO, List<CiDockerTagNameVO> dockerTagNames) {
+        // chart任务 自定chart版本名
+        // 前端可能不会拿到最新的chartVersionName
+        // 更新metadata信息
+        if (devopsCiJobVO.getType().equals(JobTypeEnum.CHART.value())) {
+            List<CiConfigTemplateVO> configVOS = devopsCiJobVO.getConfigVO().getConfig();
+            if (!CollectionUtils.isEmpty(configVOS)) {
+                CiConfigTemplateVO ciConfigTemplateVO = configVOS.get(0);
+                if (ciConfigTemplateVO.getCustomChartVersionName() != null && ciConfigTemplateVO.getCustomChartVersionName()) {
+                    if (StringUtils.isEmpty(ciConfigTemplateVO.getDockerJobName()) && ciConfigTemplateVO.getDockerJobId() == null) {
+                        throw new CommonException("error.chart.docker.job.empty");
+                    }
+                    CiDockerTagNameVO ciDockerTagNameVO = null;
+                    // 创建根据名称判断 更新根据id
+                    if (devopsCiJobVO.getId() != null) {
+                        for (CiDockerTagNameVO t : dockerTagNames) {
+                            if (t.getDockerJobId().equals(devopsCiJobVO.getId())) {
+                                ciDockerTagNameVO = t;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (CiDockerTagNameVO t : dockerTagNames) {
+                            if (t.getDockerJobName().equals(devopsCiJobVO.getName())) {
+                                ciDockerTagNameVO = t;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (ciDockerTagNameVO == null) {
+                        // 找不到docker任务 chart自定义名称设置为默认
+                        ciConfigTemplateVO.setCustomChartVersionName(false);
+                    } else {
+                        ciConfigTemplateVO.setDockerJobId(ciDockerTagNameVO.getDockerJobId());
+                        ciConfigTemplateVO.setDockerJobName(ciDockerTagNameVO.getDockerJobName());
+                        ciConfigTemplateVO.setChartVersionName(ciDockerTagNameVO.getDockerTagName());
+                    }
+
+                    configVOS.clear();
+                    configVOS.add(ciConfigTemplateVO);
+                    CiConfigVO ciConfigVO = new CiConfigVO(configVOS);
+                    devopsCiJobVO.setConfigVO(ciConfigVO);
+                    String metadata = gson.toJson(ciConfigVO);
+                    devopsCiJobVO.setMetadata(metadata.replace("\"", "'"));
+                }
+            }
         }
     }
 
@@ -556,6 +635,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 CiCdPipelineRecordVO lastCiCdPipelineRecordVO = ciCdPipelineVO.getCiCdPipelineRecordVOS().get(0);
                 ciCdPipelineVO.setLatestExecuteStatus(lastCiCdPipelineRecordVO.getStatus());
                 ciCdPipelineVO.setLatestExecuteDate(lastCiCdPipelineRecordVO.getCreatedDate());
+                //填充显示编号
+                CiCdPipelineUtils.fillViewId(ciCdPipelineVO.getCiCdPipelineRecordVOS());
             }
         });
         return ciCdPipelineVOS;
@@ -930,7 +1011,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 });
             }
         });
-        buildBeforeScript(gitlabCi);
+        buildBeforeScript(gitlabCi, ciCdPipelineVO.getVersionName());
         return gitlabCi;
     }
 
@@ -1013,28 +1094,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Assert.notNull(jobId, "Ci job id is required.");
 
         if (JobTypeEnum.SONAR.value().equals(jobVO.getType())) {
-            // sonar配置转化为gitlab-ci配置
-            List<String> scripts = new ArrayList<>();
-            SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
-            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
-                // 查询默认的sonarqube配置
-                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
-                scripts.add(GitlabCiUtil.getDefaultSonarCommand());
-            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
-                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
-                    throw new CommonException("error.sonar.url.is.null");
-                }
-                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword()));
-                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken()));
-                }
-            } else {
-                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
-            }
-
-            return scripts;
+            return calculateSonarScript(jobVO);
         } else if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
             // 将构建类型的stage中的job的每个step进行解析和转化
             CiConfigVO ciConfigVO = jobVO.getConfigVO();
@@ -1096,6 +1156,58 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * 计算sonar脚本
+     *
+     * @param jobVO
+     * @return
+     */
+    private List<String> calculateSonarScript(DevopsCiJobVO jobVO) {
+        // sonar配置转化为gitlab-ci配置
+        List<String> scripts = new ArrayList<>();
+        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
+        if (SonarScannerType.SONAR_SCANNER.value().equals(sonarQubeConfigVO.getScannerType())) {
+            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
+                // 查询默认的sonarqube配置
+                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
+                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
+                scripts.add(GitlabCiUtil.getDefaultSonarScannerCommand(sonarQubeConfigVO.getSources()));
+            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
+                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
+                    throw new CommonException("error.sonar.url.is.null");
+                }
+                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarScannerCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword(), sonarQubeConfigVO.getSources()));
+                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken(), sonarQubeConfigVO.getSources()));
+                }
+            } else {
+                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
+            }
+        } else if (SonarScannerType.SONAR_MAVEN.value().equals(sonarQubeConfigVO.getScannerType())) {
+            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
+                // 查询默认的sonarqube配置
+                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
+                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
+                scripts.add(GitlabCiUtil.getDefaultSonarCommand(sonarQubeConfigVO.getSkipTests()));
+            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
+                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
+                    throw new CommonException("error.sonar.url.is.null");
+                }
+                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword(), sonarQubeConfigVO.getSkipTests()));
+                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
+                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken(), sonarQubeConfigVO.getSkipTests()));
+                }
+            } else {
+                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
+            }
+        } else {
+            throw new CommonException(ResourceCheckConstant.ERROR_SONAR_SCANNER_TYPE_INVALID);
+        }
+        return scripts;
     }
 
     /**
@@ -1167,8 +1279,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return cache;
     }
 
-    private void buildBeforeScript(GitlabCi gitlabCi) {
+    private void buildBeforeScript(GitlabCi gitlabCi, String versionName) {
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
+        if (!StringUtils.isEmpty(versionName)) {
+            beforeScripts.add(String.format("CI_COMMIT_TAG=%s", versionName));
+        }
         // 如果有job启用了缓存设置, 就创建缓存目录
         // 如果全部都是自定义任务, 这个map是空的
         if (!CollectionUtils.isEmpty(gitlabCi.getJobs())) {
@@ -1331,6 +1446,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
+            checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName());
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
@@ -1350,6 +1466,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     }
 
+    /**
+     * 主机部署 关联ci任务
+     * 对于创建或更新根据任务名称获取id
+     *
+     * @param pipelineId
+     * @param ciJobName
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
+    public Long getCiJobId(Long pipelineId, String ciJobName) {
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(pipelineId);
+        devopsCiJobDTO.setName(ciJobName);
+        List<DevopsCiJobDTO> ciJobDTOList = devopsCiJobMapper.select(devopsCiJobDTO);
+        if (CollectionUtils.isEmpty(ciJobDTOList)) {
+            throw new CommonException("error.get.ci.job.id");
+        }
+        return ciJobDTOList.get(0).getId();
+    }
+
     private void updateExtraInfoToNull(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
         devopsCdEnvDeployInfoDTO.setId(null);
         devopsCdEnvDeployInfoDTO.setCreatedBy(null);
@@ -1365,6 +1501,25 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             appServiceDeployDTO.setTriggerVersion(String.join(",", appServiceDeployVO.getTriggerVersion()));
         }
         return appServiceDeployDTO;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
+    public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName) {
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        if (deployConfigVO.getImageDeploy() != null
+                && deployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
+            devopsCiJobDTO.setName(deployConfigVO.getImageDeploy().getPipelineTask());
+        }
+        if (deployConfigVO.getJarDeploy() != null
+                && deployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
+            devopsCiJobDTO.setName(deployConfigVO.getJarDeploy().getPipelineTask());
+        }
+        if (!StringUtils.isEmpty(devopsCiJobDTO.getName())) {
+            if (CollectionUtils.isEmpty(devopsCiJobMapper.select(devopsCiJobDTO))) {
+                throw new CommonException("error.cd.host.job.union.ci.job", devopsCiJobDTO.getName(), cdHostName);
+            }
+        }
     }
 
     /**

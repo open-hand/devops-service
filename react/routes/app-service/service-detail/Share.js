@@ -45,7 +45,7 @@ const Share = withRouter((props) => {
     }
   }
 
-  function renderNumber({ value }) {
+  function renderNumber({ value, record }) {
     return (
       <ClickText
         value={`#${value}`}
@@ -106,27 +106,6 @@ const Share = withRouter((props) => {
       location,
     } = props;
     history.push(`/rducm/code-lib-management/assign${location.search}&appServiceIds=${appServiceIds}`);
-    // Modal.open({
-    //   key: modalKey1,
-    //   title: <Tips
-    //     helpText={formatMessage({ id: `${intlPrefix}.detail.allocation.tips` })}
-    //     title={formatMessage({ id: `${intlPrefix}.permission.manage` })}
-    //   />,
-    //   children: <ServicePermission
-    //     dataSet={permissionDs}
-    //     baseDs={detailDs}
-    //     store={appServiceStore}
-    //     nonePermissionDs={nonePermissionDs}
-    //     intlPrefix="c7ncd.deployment"
-    //     prefixCls={prefixCls}
-    //     formatMessage={formatMessage}
-    //     projectId={id}
-    //     refresh={refresh}
-    //   />,
-    //   drawer: true,
-    //   style: modalStyle,
-    //   okText: formatMessage({ id: 'save' }),
-    // });
   }
 
   function renderButtons() {
@@ -187,7 +166,7 @@ const Share = withRouter((props) => {
       <Breadcrumb title={getTitle()} />
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={shareDs} filter={handleTableFilter} pristine>
-          <Column name="id" renderer={renderNumber} align="left" sortable />
+          <Column name="viewId" renderer={renderNumber} align="left" sortable />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="versionType" />
           <Column name="version" sortable />

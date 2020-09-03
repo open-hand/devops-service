@@ -37,6 +37,8 @@ public class DevopsCdJobRecordVO {
     //自动部署记录详情
     private CdAuto cdAuto;
     private Audit audit;
+    //主机部署详情
+    private CdHostDeployConfigVO cdHostDeployConfigVO;
     private Long deployInfoId;
 
     public Long getJobId() {
@@ -161,6 +163,14 @@ public class DevopsCdJobRecordVO {
         public void setInstanceName(String instanceName) {
             this.instanceName = instanceName;
         }
+    }
+
+    public CdHostDeployConfigVO getCdHostDeployConfigVO() {
+        return cdHostDeployConfigVO;
+    }
+
+    public void setCdHostDeployConfigVO(CdHostDeployConfigVO cdHostDeployConfigVO) {
+        this.cdHostDeployConfigVO = cdHostDeployConfigVO;
     }
 
     public Long getDurationSeconds() {

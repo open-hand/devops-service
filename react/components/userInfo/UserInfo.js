@@ -14,6 +14,7 @@ class UserInfo extends PureComponent {
     ]),
     showName: PropTypes.bool,
     showTooltip: PropTypes.bool,
+    className: PropTypes.string,
   };
 
   static defaultProps = {
@@ -23,7 +24,7 @@ class UserInfo extends PureComponent {
   };
 
   render() {
-    const { avatar, name, id, showName, showTooltip, size } = this.props;
+    const { avatar, name, id, showName, showTooltip, size, className } = this.props;
     
     const ava = avatar
 
@@ -31,7 +32,7 @@ class UserInfo extends PureComponent {
       : <span className={`c7ncd-userinfo-avatar-txt c7ncd-userinfo-avatar-${size}`}>{(name || '').toUpperCase().substring(0, 1)}</span>;
 
     return (
-      <div className="c7ncd-userinfo-wrap">
+      <div className={`c7ncd-userinfo-wrap ${className || ''}`}>
         {name && (<Fragment>
           {showTooltip ? <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
             {ava}

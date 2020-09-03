@@ -96,6 +96,17 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务类型")
     private String serviceType;
 
+    @ApiModelProperty("来源项目名")
+    private String shareProjectName;
+
+    public String getShareProjectName() {
+        return shareProjectName;
+    }
+
+    public void setShareProjectName(String shareProjectName) {
+        this.shareProjectName = shareProjectName;
+    }
+
     public HarborRepoConfigDTO getHarborRepoConfigDTO() {
         return harborRepoConfigDTO;
     }

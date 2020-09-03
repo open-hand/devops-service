@@ -3,21 +3,21 @@ package io.choerodon.devops.app.service.impl;
 import io.choerodon.devops.api.vo.CountVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DeployDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.agile.SprintDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 @Service
 public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
@@ -53,6 +53,12 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
+
+    @Autowired
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+
+    @Autowired
+    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     @Override
     public Map<String, Long> getEnvStatusCount(Long projectId) {
@@ -166,6 +172,44 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         CountVO result = new CountVO();
 
         result.setDate(creationDates);
+        result.setCount(count);
+        return result;
+    }
+
+    @Override
+    public CountVO getCiCount(Long projectId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
+        if (sprintDTO.getSprintId() == null) {
+            return new CountVO();
+        }
+        //根据项目的id查询项目下所有的流水线的id
+        List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsCiCdPipelineMapper.selectPipelineByProjectId(projectDTO.getId());
+        if (CollectionUtils.isEmpty(ciCdPipelineDTOS)) {
+            return new CountVO();
+        }
+        //查询流水线在这个冲刺中的部署次数
+        List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = new ArrayList<>();
+        ciCdPipelineDTOS.forEach(ciCdPipelineDTO -> {
+            //当前冲刺下流水线的触发次数
+            devopsPipelineRecordRelDTOS.addAll(devopsPipelineRecordRelMapper.selectBySprint(ciCdPipelineDTO.getId(),
+                    new java.sql.Date(sprintDTO.getStartDate().getTime()),
+                    new java.sql.Date(sprintDTO.getEndDate().getTime())));
+
+        });
+        if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
+            return new CountVO();
+        }
+        Map<String, Long> dateCount = devopsPipelineRecordRelDTOS.stream().map(DevopsPipelineRecordRelDTO::getCreationDate).map(simpleDateFormat::format)
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
+
+
+        List<String> date = dateCount.keySet().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        List<Long> count = new ArrayList<>();
+        date.forEach(d -> count.add(dateCount.get(d)));
+        CountVO result = new CountVO();
+        result.setDate(date);
         result.setCount(count);
         return result;
     }

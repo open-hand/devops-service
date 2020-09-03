@@ -47,8 +47,23 @@ public class DevopsCiJobRecordVO {
     @ApiModelProperty("release阶段生成chart的版本")
     private String chartVersion;
 
+    private String sonarScannerType;
+
+    private String codeCoverage;
+
     @ApiModelProperty("ci中返回sonar")
     private List<SonarContentVO> sonarContentVOS;
+
+    @ApiModelProperty("详细信息")
+    private String metadata;
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
 
     public List<SonarContentVO> getSonarContentVOS() {
         return sonarContentVOS;
@@ -152,5 +167,21 @@ public class DevopsCiJobRecordVO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getSonarScannerType() {
+        return sonarScannerType;
+    }
+
+    public void setSonarScannerType(String sonarScannerType) {
+        this.sonarScannerType = sonarScannerType;
+    }
+
+    public String getCodeCoverage() {
+        return codeCoverage;
+    }
+
+    public void setCodeCoverage(String codeCoverage) {
+        this.codeCoverage = codeCoverage;
     }
 }

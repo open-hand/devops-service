@@ -7,8 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.util.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,6 +157,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     return;
                 } else {
                     job.setType(devopsCiJobDTO.getType());
+                    job.setMetadata(devopsCiJobDTO.getMetadata());
                 }
             }
         }
@@ -247,6 +250,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 devopsCiJobRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
+                devopsCiJobRecordDTO.setMetadata(ciJobWebHookVO.getMetadata());
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
@@ -446,6 +450,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 添加sonar
         for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
             if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+                if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+                    SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
+                    devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+                }
                 SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
                 if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
                     List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
@@ -454,6 +462,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                 || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
                                 || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
                     }).collect(Collectors.toList());
+                    // 执行成功的添加覆盖率
+                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                        sonarContents.forEach(v -> {
+                            if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+                                devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+                            }
+                        });
+                    }
                     devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                 }
             }

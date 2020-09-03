@@ -45,4 +45,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
     changeSet(author: 'wanghao', id: '2020-04-19-add-not-null-cons') {
         addNotNullConstraint(tableName: "devops_ci_job_record", columnName: "name", columnDataType: "VARCHAR(255)")
     }
+    changeSet(author: 'wanghao', id: '2020-08-26-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: "metadata", type: "TEXT", afterColumn: 'duration_seconds')
+        }
+    }
 }

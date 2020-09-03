@@ -19,6 +19,7 @@ public class CiJobWebHookVO {
     private Date startedAt;
     private Date finishedAt;
     private GitlabWebHookUserVO user;
+    private String metadata;
 
     public Long getId() {
         return id;
@@ -90,5 +91,13 @@ public class CiJobWebHookVO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 }

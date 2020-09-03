@@ -1,4 +1,6 @@
+/* eslint-disable import/no-anonymous-default-export */
 import { DataSet } from 'choerodon-ui/pro';
+import { forEach } from 'lodash';
 
 export default (projectId) => ({
   autoCreate: true,

@@ -1050,7 +1050,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
     }
 
-
     @Override
     public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId) {
         LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, userIds, stageName, stageId);

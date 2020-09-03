@@ -40,6 +40,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
@@ -153,6 +154,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
+
+    @Autowired
+    private DevopsCiJobMapper devopsCiJobMapper;
 
     @Value("${choerodon.online:true}")
     private Boolean online;
@@ -897,6 +901,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordDTO.getId());
             }
         }
+
         devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
 
     }
@@ -1067,7 +1072,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     appServiceInstanceDTO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
                     AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
                     if (!Objects.isNull(serviceInstanceDTO)) {
-                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())){
+                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
                             cdAuto.setInstanceName(serviceInstanceDTO.getCode());
                         }
                         cdAuto.setInstanceId(serviceInstanceDTO.getId());
@@ -1106,6 +1111,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     audit.setStatus(devopsCdJobRecordVO.getStatus());
                 }
                 devopsCdJobRecordVO.setAudit(audit);
+            }
+            //如果是主机部署 显示主机部署模式(镜像，jar，自定义)，来源，关联构建任务
+            if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordVO.getType())) {
+                CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdHostDeployConfigVO.class);
+                devopsCdJobRecordVO.setCdHostDeployConfigVO(cdHostDeployConfigVO);
             }
         });
 

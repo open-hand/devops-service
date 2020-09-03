@@ -471,6 +471,26 @@ public class GitUtil {
         }
     }
 
+    /**
+     * 将本地已经存在的单个tag推送到远程仓库
+     *
+     * @param git         Git对象
+     * @param repoUrl     仓库地址
+     * @param accessToken 访问token
+     * @param tagName  要推送的tag名
+     */
+    public void pushLocalTag(Git git, String repoUrl, String accessToken, String tagName) {
+        try {
+            // 推代码
+            git.push().add(tagName)
+                    .setRemote(repoUrl)
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
+                    .call();
+        } catch (GitAPIException e) {
+            throw new CommonException(ERROR_GIT_PUSH, e);
+        }
+    }
+
     public void commitAndPushForMaster(Git git, String repoUrl, String commitMessage, String accessToken) {
         try {
             git.add().addFilepattern(".").call();
