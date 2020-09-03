@@ -19,13 +19,11 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 
@@ -53,56 +51,13 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     @Autowired
-    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
-    @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-
-    @Override
-    public List<DevopsCdAuditRecordDTO> queryByStageRecordId(Long stageRecordId) {
-        DevopsCdAuditRecordDTO auditRecordDTO = new DevopsCdAuditRecordDTO();
-        auditRecordDTO.setStageRecordId(stageRecordId);
-        return devopsCdAuditRecordMapper.select(auditRecordDTO);
-    }
 
     @Override
     public List<DevopsCdAuditRecordDTO> queryByJobRecordId(Long jobRecordId) {
         DevopsCdAuditRecordDTO auditRecordDTO = new DevopsCdAuditRecordDTO();
         auditRecordDTO.setJobRecordId(jobRecordId);
         return devopsCdAuditRecordMapper.select(auditRecordDTO);
-    }
-
-    @Override
-    public void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecord, Long devopsCdPipelineRecordId) {
-        // 查询审核人员
-        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = queryByStageRecordId(devopsCdStageRecord.getId());
-        if (CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
-            return;
-        }
-        // 发送审核通知
-        List<Receiver> userList = new ArrayList<>();
-        List<Long> userIds = devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
-        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
-
-        userIds.forEach(id -> {
-            IamUserDTO iamUserDTO = userDTOMap.get(id);
-            if (iamUserDTO != null) {
-                Receiver user = new Receiver();
-                user.setEmail(iamUserDTO.getEmail());
-                user.setUserId(iamUserDTO.getId());
-                user.setPhone(iamUserDTO.getPhone());
-                user.setTargetUserTenantId(iamUserDTO.getOrganizationId());
-                userList.add(user);
-            }
-        });
-        HashMap<String, String> params = new HashMap<>();
-        params.put(STAGE_NAME, devopsCdStageRecord.getStageName());
-        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
-        recordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordId);
-        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
-        params.put(REL_ID, relDTO.getId().toString());
-        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(relDTO.getPipelineId()));
-        sendNotificationService.sendCdPipelineNotice(devopsCdStageRecord.getPipelineRecordId(), MessageCodeConstants.PIPELINE_STAGE_AUDIT, userList, params);
     }
 
     @Override
@@ -155,17 +110,6 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     }
 
     @Override
-    public DevopsCdAuditRecordDTO queryByStageRecordIdAndUserId(Long stageRecordId, Long userId) {
-        Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
-        Assert.notNull(userId, ResourceCheckConstant.ERROR_USER_ID_IS_NULL);
-
-        DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
-        devopsCdAuditRecordDTO.setStageRecordId(stageRecordId);
-        devopsCdAuditRecordDTO.setUserId(userId);
-        return devopsCdAuditRecordMapper.selectOne(devopsCdAuditRecordDTO);
-    }
-
-    @Override
     public DevopsCdAuditRecordDTO queryByJobRecordIdAndUserId(Long jobRecordId, Long userId) {
         Assert.notNull(jobRecordId, PipelineCheckConstant.ERROR_JOB_RECORD_ID_IS_NULL);
         Assert.notNull(userId, ResourceCheckConstant.ERROR_USER_ID_IS_NULL);
@@ -179,15 +123,9 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     @Override
     public void fixProjectId() {
         List<DevopsCdAuditRecordDTO> devopsCdAuditDTOS = devopsCdAuditRecordMapper.selectAll();
-        Set<Long> stageRecordIds = devopsCdAuditDTOS.stream().filter(i->i.getStageRecordId()!=null).map(DevopsCdAuditRecordDTO::getStageRecordId).collect(Collectors.toSet());
         Set<Long> jobRecordIds = devopsCdAuditDTOS.stream().filter(i->i.getJobRecordId()!=null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toSet());
 
-        List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.selectByIds(StringUtils.join(stageRecordIds, ","));
         List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.selectByIds(StringUtils.join(jobRecordIds, ","));
-
-        devopsCdStageRecordDTOS.forEach(i -> {
-            devopsCdAuditRecordMapper.updateProjectIdByStageRecordId(i.getProjectId(), i.getId());
-        });
 
         devopsCdJobRecordDTOS.forEach(i -> {
             devopsCdAuditRecordMapper.updateProjectIdByJobRecordId(i.getProjectId(), i.getId());

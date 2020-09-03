@@ -8,7 +8,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_audit.groovy') {
             }
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户Id')
             column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
-            column(name: 'cd_stage_id', type: 'BIGINT UNSIGNED', remarks: '阶段Id')
             column(name: 'cd_job_id', type: 'BIGINT UNSIGNED', remarks: '任务Id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")

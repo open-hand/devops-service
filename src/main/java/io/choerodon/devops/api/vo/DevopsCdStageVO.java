@@ -26,7 +26,6 @@ public class DevopsCdStageVO {
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
-    private String triggerType;
     @Encrypt
     private List<Long> cdAuditUserIds;
     private Boolean parallel;
@@ -102,14 +101,6 @@ public class DevopsCdStageVO {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
-    }
-
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
     }
 
     public List<Long> getCdAuditUserIds() {

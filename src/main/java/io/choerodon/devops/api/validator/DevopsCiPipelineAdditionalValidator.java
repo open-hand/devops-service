@@ -185,11 +185,18 @@ public class DevopsCiPipelineAdditionalValidator {
         devopsCiJobVO.setMetadata(metadata);
 
         Yaml yaml = new Yaml();
-        Object load = yaml.load(metadata);
+        Object load;
+        try {
+            load = yaml.load(metadata);
+        } catch (Exception ex) {
+            throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+        }
+
         // 不是yaml格式报错
         if (!(load instanceof Map)) {
             throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
         }
+
         // 校验自定义yaml的 job name和stage name 是否匹配
         ((Map<String, Object>) load).forEach((key, value) -> {
             if (org.apache.commons.lang3.StringUtils.isBlank(key)) {

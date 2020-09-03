@@ -85,14 +85,16 @@ export default function useStore(mainStore) {
       if (edit) {
         this.dataSource2.splice(index + 1, 0, stepObj);
         this.dataSource2 = this.dataSource2.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       } else {
         this.dataSource.splice(index + 1, 0, stepObj);
         this.dataSource = this.dataSource.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       }
     },
@@ -105,10 +107,12 @@ export default function useStore(mainStore) {
             this.dataSource2.splice(index, 1);
             return true;
           }
+          return false;
         });
         this.dataSource2 = this.dataSource2.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       } else {
         this.dataSource.forEach((item, index) => {
@@ -116,34 +120,34 @@ export default function useStore(mainStore) {
             this.dataSource.splice(index, 1);
             return true;
           }
+          return false;
         });
         this.dataSource = this.dataSource.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       }
     },
-    eidtStep(sequence, newName, curType, triggerType, cdAuditUserIds, edit) {
+    eidtStep(sequence, newName, curType, edit) {
       this.setHasModify(true, edit);
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource2[index].name = newName;
             this.dataSource2[index].type = curType;
-            this.dataSource2[index].triggerType = triggerType;
-            this.dataSource2[index].cdAuditUserIds = [...cdAuditUserIds];
             return true;
           }
+          return false;
         });
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
             this.dataSource[index].name = newName;
             this.dataSource[index].type = curType;
-            this.dataSource[index].triggerType = triggerType;
-            this.dataSource[index].cdAuditUserIds = [...cdAuditUserIds];
             return true;
           }
+          return false;
         });
       }
     },
@@ -152,6 +156,7 @@ export default function useStore(mainStore) {
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
+            // eslint-disable-next-line no-param-reassign
             data.sequence = this.dataSource2[index].jobList.length;
             if (this.dataSource2[index].jobList) {
               this.dataSource2[index].jobList.push(data);
@@ -163,6 +168,7 @@ export default function useStore(mainStore) {
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
+            // eslint-disable-next-line no-param-reassign
             data.sequence = this.dataSource[index].jobList.length;
             if (this.dataSource[index].jobList) {
               this.dataSource[index].jobList.push(data);

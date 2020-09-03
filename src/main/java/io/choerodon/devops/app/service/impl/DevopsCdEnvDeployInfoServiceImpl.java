@@ -52,14 +52,8 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
             throw new CommonException(ERROR_PARAM_IS_INVALID);
         }
         // 保存记录
-        if (devopsCdEnvDeployInfoDTO.getId() != null) {
-            if (devopsCdEnvDeployInfoMapper.updateByPrimaryKeySelective(devopsCdEnvDeployInfoDTO) != 1) {
-                throw new CommonException(ERROR_UPDATE_DEPLOY_INFO);
-            }
-        } else {
-            if (devopsCdEnvDeployInfoMapper.insertSelective(devopsCdEnvDeployInfoDTO) != 1) {
-                throw new CommonException(ERROR_SAVE_DEPLOY_INFO);
-            }
+        if (devopsCdEnvDeployInfoMapper.insertSelective(devopsCdEnvDeployInfoDTO) != 1) {
+            throw new CommonException(ERROR_SAVE_DEPLOY_INFO);
         }
         return devopsCdEnvDeployInfoMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getId());
     }

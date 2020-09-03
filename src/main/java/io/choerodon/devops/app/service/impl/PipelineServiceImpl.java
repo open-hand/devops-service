@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE;
+
 import static java.util.Comparator.comparing;
 
 import java.util.*;
@@ -96,8 +97,6 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
-    private HzeroMessageClient hzeroMessageClient;
-    @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
@@ -123,8 +122,6 @@ public class PipelineServiceImpl implements PipelineService {
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private PermissionHelper permissionHelper;
-    @Autowired
-    private SendNotificationService sendNotificationService;
 
     @Override
     public Page<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageable) {
@@ -315,7 +312,10 @@ public class PipelineServiceImpl implements PipelineService {
             updateFirstStage(pipelineRecordDTO.getId());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
+<<<<<<< HEAD
             sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId());
+=======
+>>>>>>> origin/hotfix-0.23.4
             pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordDTO.setErrorInfo(e.getMessage());
             pipelineRecordService.baseUpdate(pipelineRecordDTO);
@@ -382,7 +382,10 @@ public class PipelineServiceImpl implements PipelineService {
                     builder -> {
                     });
         } catch (Exception e) {
+<<<<<<< HEAD
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
+=======
+>>>>>>> origin/hotfix-0.23.4
             PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
             long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
             stageRecordDTO.setExecutionTime(Long.toString(time));
@@ -425,8 +428,6 @@ public class PipelineServiceImpl implements PipelineService {
                         if (!checkCouAllApprove(userDTOS, taskRecordDTO.getTaskId(), recordRelDTO.getTaskRecordId())) {
                             break;
                         }
-                    } else {
-                        sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordDTO.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
@@ -455,7 +456,6 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
-                    sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, auditUser, recordRelDTO.getPipelineRecordId(), stageRecordDTO.getStageName(), stageRecordDTO.getStageId());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -879,13 +879,8 @@ public class PipelineServiceImpl implements PipelineService {
                 break;
             }
         }
-        sendFailedSiteMessage(recordId, recordE.getCreatedBy());
     }
 
-    private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
-        sendNotificationService.sendPipelineNotice(pipelineRecordId,
-                MessageCodeConstants.PIPELINE_FAILED, userId, null, null);
-    }
 
     /**
      * 校验会签任务是否全部审核过
@@ -1182,7 +1177,6 @@ public class PipelineServiceImpl implements PipelineService {
                 LOGGER.info("任务成功了");
                 recordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
                 pipelineRecordService.baseUpdate(recordE);
-                sendNotificationService.sendPipelineNotice(recordE.getId(), MessageCodeConstants.PIPELINE_SUCCESS, recordE.getCreatedBy(), null, null);
             } else {
                 //更新下一个阶段状态
                 startNextStageRecord(stageRecordId, recordE);
@@ -1233,7 +1227,6 @@ public class PipelineServiceImpl implements PipelineService {
                 }
                 HashMap<String, String> params = new HashMap<>();
                 params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
-                sendNotificationService.sendPipelineNotice(recordE.getId(), MessageCodeConstants.PIPELINE_AUDIT, userList, params);
                 updateStatus(recordE.getId(), null, WorkFlowStatus.PENDINGCHECK.toValue(), null);
             }
         } else {
@@ -1258,8 +1251,6 @@ public class PipelineServiceImpl implements PipelineService {
             startNextStageRecord(stageRecordId, pipelineRecordDTO);
         } else {
             updateStatus(pipelineRecordId, null, WorkFlowStatus.SUCCESS.toValue(), null);
-            sendNotificationService.sendPipelineNotice(pipelineRecordId,
-                    MessageCodeConstants.PIPELINE_SUCCESS, pipelineRecordDTO.getCreatedBy(), null, null);
         }
     }
 
@@ -1284,7 +1275,6 @@ public class PipelineServiceImpl implements PipelineService {
             }
             HashMap<String, String> params = new HashMap<>();
             params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
-            sendNotificationService.sendPipelineNotice(pipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
         }
     }
 
@@ -1472,7 +1462,6 @@ public class PipelineServiceImpl implements PipelineService {
                 approveWorkFlow(pipelineRecordDTO.getProjectId(), pipelineRecordService.baseQueryById(recordRelDTO.getPipelineRecordId()).getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
             } catch (Exception e) {
                 result = false;
-                sendFailedSiteMessage(recordRelDTO.getPipelineRecordId(), pipelineRecordDTO.getCreatedBy());
             }
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
@@ -1481,7 +1470,6 @@ public class PipelineServiceImpl implements PipelineService {
         } else {
             status = WorkFlowStatus.STOP.toValue();
             auditUser = auditUser.contains(pipelineRecordDTO.getCreatedBy().toString()) ? auditUser : auditUser + "," + pipelineRecordDTO.getCreatedBy();
-            sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, auditUser, pipelineRecordDTO.getId(), pipelineStageRecordDTO.getStageName(), pipelineStageRecordDTO.getStageId());
         }
         return status;
     }
