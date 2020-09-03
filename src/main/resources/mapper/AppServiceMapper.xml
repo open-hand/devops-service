@@ -649,9 +649,6 @@
             <if test="appService.imgUrl != null">
                 img_url = #{appService.imgUrl,jdbcType=VARCHAR},
             </if>
-            <if test="appService.skipCheckPermission != null">
-                is_skip_check_permission = #{appService.skipCheckPermission,jdbcType=TINYINT},
-            </if>
             <if test="appService.gitlabProjectId != null">
                 gitlab_project_id = #{appService.gitlabProjectId,jdbcType=BIGINT},
             </if>
