@@ -14,7 +14,7 @@ export default function useStore(mainStore) {
       this.loadDetail(projectId, gitlabPipelineId).then((res) => {
         if (handlePromptError(res)) {
           const { devopsPipelineRecordRelId } = mainStore.getSelectedMenu;
-          if (devopsPipelineRecordRelId === gitlabPipelineId) {
+          if (String(devopsPipelineRecordRelId) === String(gitlabPipelineId)) {
             this.setDetailData(res);
           }
           this.setDetailLoading(false);
@@ -43,7 +43,7 @@ export default function useStore(mainStore) {
       return axios.get(`/devops/v1/projects/${projectId}/ci_jobs/gitlab_projects/${gitlabProjectId}/gitlab_jobs/${jobId}/retry`);
     },
     retryCdJob(projectId, pipelineRecordId) {
-      return axios.get(`devops/v1/projects/${projectId}/cicd_pipelines_record/retry_cd_task?cd_pipeline_record_id=${pipelineRecordId}`)
+      return axios.get(`devops/v1/projects/${projectId}/cicd_pipelines_record/retry_cd_task?cd_pipeline_record_id=${pipelineRecordId}`);
     },
   }));
 }
