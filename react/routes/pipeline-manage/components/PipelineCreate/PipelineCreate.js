@@ -199,9 +199,13 @@ const PipelineCreate = observer(() => {
                 <Option value={false}>平台默认</Option>
                 <Option value>自定义</Option>
               </SelectBox>
-              <Tooltip title="此处版本策略指的是流水线中生成的应用服务版本的名称策略；
-选择为平台默认后，便会默认使用“时间戳+分支名”的命名规则；
-若选择为自定义，则支持用户输入一个固定或动态的参数作为版本命名规则"
+              <Tooltip title={(
+                <div>
+                  <p style={{ margin: 0 }}>此处版本策略指的是流水线中生成的应用服务版本的名称策略;</p>
+                  <p style={{ margin: 0 }}>选择为平台默认后，便会默认使用“时间戳+分支名”的命名规则;</p>
+                  <p style={{ margin: 0 }}>若选择为自定义，则支持用户输入一个固定或动态的参数作为版本命名规则</p>
+                </div>
+              )}
               >
                 <Icon
                   type="help"
@@ -219,14 +223,16 @@ const PipelineCreate = observer(() => {
                 newLine
                 colSpan={2}
                 addonAfter={(
-                  <Tips helpText={(
-                    <p>
-                      {`自定义命名规则支持输入固定参数例如：0.1.0，那么之后流水线生成的版本名称，将永远为固定的0.1.0。
-同时，支持使用动态参数及各种变量，例如：\${CI_PIPELINE_ID}-\${C7N_BRANCH} ，则表示命名规则为：gitlab流水线id+分支名。
+                  <Tips helpText={[
+                    <p style={{ margin: 0 }}>
+                      自定义命名规则支持输入固定参数例如：0.1.0，那么之后流水线生成的版本名称，将永远为固定的0.1.0。
+                    </p>,
+                    <p style={{ margin: 0 }}>
+                      {`同时，支持使用动态参数及各种变量，例如：\${CI_PIPELINE_ID}-\${C7N_BRANCH} ，则表示命名规则为：gitlab流水线id+分支名。
 更多支持的变量，请参考 `}
                       <a style={{ color: 'cornflowerblue' }} target="_blank" href="https://docs.gitlab.com/ee/ci/variables/predefined_variables.html">GitLab变量</a>
-                    </p>
-)}
+                    </p>,
+                  ]}
                   />
 )}
                 name="versionName"
