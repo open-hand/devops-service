@@ -3,12 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
-<<<<<<< HEAD
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.GsonBuilder;
-
-=======
->>>>>>> origin/hotfix-0.23.4
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -1015,22 +1009,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(collect))
                     devopsCdStageRecordVO.setDurationSeconds(collect.stream().reduce((aLong, aLong2) -> aLong + aLong2).get());
-                //增加阶段间审核人员信息
-                if (DeployType.MANUAL == DeployType.valueOf(devopsCdStageRecordVO.getTriggerType().toUpperCase())) {
-                    List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
-                    if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
-                        devopsCdAuditRecordDTOS.forEach(devopsCdAuditRecordDTO -> {
-                            if (AuditStatusEnum.PASSED == AuditStatusEnum.valueOf(devopsCdAuditRecordDTO.getStatus().toUpperCase())) {
-                                IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(devopsCdAuditRecordDTO.getUserId());
-                                UserVO userVO = new UserVO();
-                                userVO.setRealName(userDTO.getRealName());
-                                userVO.setLoginName(userDTO.getLoginName());
-                                userVO.setImageUrl(userDTO.getImageUrl());
-                                devopsCdStageRecordVO.setIamUserDTO(userVO);
-                            }
-                        });
-                    }
-                }
             });
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {

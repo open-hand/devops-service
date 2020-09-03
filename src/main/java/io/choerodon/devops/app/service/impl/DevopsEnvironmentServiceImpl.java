@@ -10,7 +10,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
-<<<<<<< HEAD
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -21,8 +20,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-=======
->>>>>>> origin/hotfix-0.23.4
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -56,26 +53,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-<<<<<<< HEAD
-=======
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
->>>>>>> origin/hotfix-0.23.4
 
 /**
  * Created by younger on 2018/4/9.

@@ -3,11 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>devops-service</artifactId>
-<<<<<<< HEAD
     <version>0.24.0-SNAPSHOT</version>
-=======
-    <version>0.23.4.RELEASE</version>
->>>>>>> origin/hotfix-0.23.4
     <packaging>jar</packaging>
     <url>https://github.com/choerodon/devops-service</url>
 

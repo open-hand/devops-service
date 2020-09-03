@@ -1466,7 +1466,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     }
 
-<<<<<<< HEAD
     /**
      * 主机部署 关联ci任务
      * 对于创建或更新根据任务名称获取id
@@ -1485,14 +1484,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException("error.get.ci.job.id");
         }
         return ciJobDTOList.get(0).getId();
-=======
+    }
+
     private void updateExtraInfoToNull(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
         devopsCdEnvDeployInfoDTO.setId(null);
         devopsCdEnvDeployInfoDTO.setCreatedBy(null);
         devopsCdEnvDeployInfoDTO.setCreationDate(null);
         devopsCdEnvDeployInfoDTO.setLastUpdatedBy(null);
         devopsCdEnvDeployInfoDTO.setLastUpdateDate(null);
->>>>>>> origin/hotfix-0.23.4
     }
 
     private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {

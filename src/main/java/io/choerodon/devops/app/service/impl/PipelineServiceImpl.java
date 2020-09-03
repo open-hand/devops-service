@@ -312,10 +312,6 @@ public class PipelineServiceImpl implements PipelineService {
             updateFirstStage(pipelineRecordDTO.getId());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
-<<<<<<< HEAD
-            sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId());
-=======
->>>>>>> origin/hotfix-0.23.4
             pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordDTO.setErrorInfo(e.getMessage());
             pipelineRecordService.baseUpdate(pipelineRecordDTO);
@@ -382,10 +378,6 @@ public class PipelineServiceImpl implements PipelineService {
                     builder -> {
                     });
         } catch (Exception e) {
-<<<<<<< HEAD
-            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
-=======
->>>>>>> origin/hotfix-0.23.4
             PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
             long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
             stageRecordDTO.setExecutionTime(Long.toString(time));

@@ -37,12 +37,9 @@ public class DevopsCdJobRecordVO {
     //自动部署记录详情
     private CdAuto cdAuto;
     private Audit audit;
-<<<<<<< HEAD
     //主机部署详情
     private CdHostDeployConfigVO cdHostDeployConfigVO;
-=======
     private Long deployInfoId;
->>>>>>> origin/hotfix-0.23.4
 
     public Long getJobId() {
         return jobId;

@@ -1050,34 +1050,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
     }
 
-<<<<<<< HEAD
-    @Override
-    @Async
-    public void sendPipelineAuditMassage(String type, String auditUser, Long pipelineRecordId, String stageName, Long stageId) {
-        LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, auditUser, stageName, stageId);
-        doWithTryCatchAndLog(
-                () -> {
-                    List<Long> userIds = new ArrayList<>();
-                    if (auditUser != null && !auditUser.isEmpty()) {
-                        userIds = TypeUtil.stringArrayToLong(auditUser.split(COMMA));
-                        userIds.remove(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                    }
-                    List<Receiver> userList = new ArrayList<>();
-                    List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
-                    users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
-                    Map<String, String> params = new HashMap<>();
-                    params.put(STAGE_NAME, stageName);
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
-                    params.put("auditName", iamUserDTO.getLoginName());
-                    params.put("realName", iamUserDTO.getRealName());
-                    sendPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
-                },
-                ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
-        );
-    }
-=======
->>>>>>> origin/hotfix-0.23.4
-
     @Override
     public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId) {
         LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, userIds, stageName, stageId);
