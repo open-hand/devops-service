@@ -1246,7 +1246,13 @@ const AddTask = observer(() => {
     }
     return [
       <p className="c7ncd-sonarqube-title" colSpan={4} newLine>SonarQube</p>,
-      <Select name="scannerType" colSpan={2}>
+      <Select 
+        name="scannerType" 
+        colSpan={2}
+        addonAfter={
+          <Tips helpText="SonarScanner支持扫描任意类型的project，SonarMaven只支持扫描Maven类型的project" />
+        }
+      >
         <Option value="SonarScanner">SonarScanner</Option>
         <Option value="SonarMaven">SonarMaven</Option>
       </Select>,
@@ -1254,7 +1260,13 @@ const AddTask = observer(() => {
         const record = AddTaskFormDataSet.current;
         if (record.get('scannerType') === 'SonarScanner') {
           return (
-            <TextField name="sources" colSpan={2} />
+            <TextField 
+              name="sources" 
+              colSpan={2} 
+              addonAfter={
+                <Tips helpText="此处指的是项目下的相对路径，比如'src'。多个路径使用','隔开" />
+              }
+            />
           );
         } if (record.get('scannerType') === 'SonarMaven') {
           return (
