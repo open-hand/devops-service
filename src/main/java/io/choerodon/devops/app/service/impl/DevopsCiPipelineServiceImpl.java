@@ -782,7 +782,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(gitlabUserId.intValue());
         // 管理员跳过权限校验
-        if (Boolean.TRUE.equals(gitLabUserDTO.getAdmin())) {
+        if (Boolean.TRUE.equals(gitLabUserDTO.getIsAdmin())) {
             return;
         }
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), gitlabUserId.intValue());
