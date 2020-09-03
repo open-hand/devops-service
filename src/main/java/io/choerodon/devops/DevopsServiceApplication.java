@@ -36,4 +36,5 @@ public class DevopsServiceApplication {
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
+    
 }
