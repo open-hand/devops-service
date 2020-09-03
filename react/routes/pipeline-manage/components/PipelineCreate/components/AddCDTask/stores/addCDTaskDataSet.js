@@ -1,6 +1,7 @@
 import uuidV1 from 'uuid/v1';
 import { axios } from '@choerodon/boot';
 import forEach from 'lodash/forEach';
+import JSONbig from 'json-bigint';
 
 function getDefaultInstanceName(appServiceCode) {
   return appServiceCode
@@ -12,7 +13,7 @@ async function checkName(value, projectId, record) {
   if (!record.get('envId')) {
     return true;
   }
-  if (record.get('deployType') === 'update') {
+  if (!(record.get('type') === 'cdDeploy' && record.get('deployType') === 'create')) {
     return true;
   }
   try {
@@ -83,7 +84,8 @@ export default (
         transformResponse: (res) => {
           let newRes = res;
           try {
-            newRes = JSON.parse(res);
+            newRes = JSONbig.parse(res);
+            useStore.setValueIdList(newRes.filter((r) => r.permission));
             return newRes.filter((r) => r.permission);
           } catch (e) {
             return newRes;

@@ -8,7 +8,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_audit_record.groovy') {
             }
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户Id')
             column(name: 'pipeline_record_id', type: 'BIGINT UNSIGNED', remarks: '流水线记录Id')
-            column(name: 'stage_record_id', type: 'BIGINT UNSIGNED', remarks: '阶段记录Id')
             column(name: 'job_record_id', type: 'BIGINT UNSIGNED', remarks: '任务记录Id')
             column(name: 'status', type: 'VARCHAR(64)', remarks: '人工审核的结果（拒绝或通过）')
 
@@ -25,5 +24,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_audit_record.groovy') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id', beforeColumn: "user_id")
         }
     }
-
 }

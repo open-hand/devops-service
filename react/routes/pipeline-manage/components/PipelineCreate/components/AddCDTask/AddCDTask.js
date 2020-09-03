@@ -17,6 +17,7 @@ import { axios } from '@choerodon/boot';
 import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
 import DeployConfig from '@/components/deploy-config';
+import JSONbig from 'json-bigint';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import Tips from '../../../../../../components/new-tips';
@@ -70,15 +71,9 @@ export default observer(() => {
 
   const [branchsList, setBranchsList] = useState([]);
   const [valueIdValues, setValueIdValues] = useState('');
-  const [customValues, setCustomValues] = useState(
-    '# 自定义ssh指令\n# 比如部署镜像\n# 需要包括部署镜像指令以及二次触发部署的停用删除逻辑\ndocker stop mynginx & docker rm mynginx & docker run --name mynginx -d nginx:latest',
-  );
-  const [imageDeployValues, setImageDeployValues] = useState(
-    '# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}\n# jar包下载存放目录为：/temp-jar/xxx.jar 日志存放目录为：/temp-log/xxx.log\n# 请确保用户有该目录操作权限',
-  );
-  const [jarValues, setJarValues] = useState(
-    '# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar} ',
-  );
+  const [customValues, setCustomValues] = useState('# 自定义ssh指令\n# 比如部署镜像\n# 需要包括部署镜像指令以及二次触发部署的停用删除逻辑\ndocker stop mynginx & docker rm mynginx & docker run --name mynginx -d nginx:latest');
+  const [imageDeployValues, setImageDeployValues] = useState('# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}');
+  const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar}\n# jar包下载存放目录为：/temp-jar/xxx.jar 日志存放目录为：/temp-log/xxx.log\n# 请确保用户有该目录操作权限 ');
   const [testStatus, setTestStatus] = useState('');
   const [accountKeyValue, setAccountKeyValue] = useState('');
 
@@ -89,6 +84,15 @@ export default observer(() => {
   function getMetadata(ds) {
     if (ds.type === 'cdDeploy') {
       ds.value = Base64.encode(valueIdValues);
+      // 如果部署模式是新建 则删掉多余的实例id
+      if (ds.deployType && ds.deployType === 'create') {
+        delete ds.instanceId;
+      } else {
+        // 如果是替换 则除了传id 还需要传对应的name
+        const instanceNaMe = ADDCDTaskUseStore.getInstanceIdList
+          ?.find((i) => i.id === ds.instanceId)?.code;
+        ds.instanceName = instanceNaMe;
+      }
     }
     if (ds.type === 'cdHost') {
       ds.hostConnectionVO = {
@@ -154,6 +158,7 @@ export default observer(() => {
         }
       }
     }
+
     ds.appServiceId = PipelineCreateFormDataSet.current.get('appServiceId');
     return JSON.stringify(ds).replace(/"/g, "'");
   }
@@ -179,7 +184,6 @@ export default observer(() => {
       if (ds.type !== 'cdAudit') {
         data.metadata = getMetadata(ds);
       }
-
       handleOk(data);
       return true;
     }
@@ -225,9 +229,7 @@ export default observer(() => {
       const newJobDetail = {
         ...jobDetail,
         ...extra,
-        ...(jobDetail.metadata
-          ? JSON.parse(jobDetail.metadata.replace(/'/g, '"'))
-          : {}),
+        ...(jobDetail.metadata ? JSONbig.parse(jobDetail.metadata.replace(/'/g, '"')) : {}),
         cdAuditUserIds: newCdAuditUserIds && [...newCdAuditUserIds],
         triggerValue:
           jobDetail.triggerType === 'regex'

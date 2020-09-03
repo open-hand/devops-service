@@ -196,10 +196,10 @@ export default observer((props) => {
     return false;
   }
 
+  // eslint-disable-next-line consistent-return
   async function editStage() {
     if (addStepDs.current && addStepDs.current.validate()) {
-      const cdAuditUserIdsArr = addStepDs.current.get('cdAuditUserIds').map((x) => (typeof x === 'object' ? x.id : x));
-      eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), addStepDs.current.get('triggerType'), cdAuditUserIdsArr, true);
+      eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), true);
     } else {
       return false;
     }
@@ -234,11 +234,8 @@ export default observer((props) => {
     const title = optType === 'create' ? '添加阶段' : '修改阶段信息';
     const okText = optType === 'create' ? '添加' : '修改';
     if (optType === 'edit') {
-      const { triggerType, cdAuditUserIds } = editBlockStore.getStepData2.filter((x) => x.sequence === sequence)[0];
       addStepDs.current.set('step', name);
       addStepDs.current.set('type', curType || 'CI');
-      addStepDs.current.set('triggerType', triggerType);
-      addStepDs.current.set('cdAuditUserIds', cdAuditUserIds && [...cdAuditUserIds]);
     }
     const optsFun = optType === 'create' ? () => createNewStage(firstIf) : editStage;
     Modal.open({
@@ -360,7 +357,6 @@ export default observer((props) => {
     >
       <div className="c7n-piplineManage-edit-column-header">
         <span>{name}</span>
-        {/* <StageType type={type} parallel={parallel} /> */}
         <span className={`c7n-piplineManage-stage-type c7n-piplineManage-stage-type-${realType}`}>
           {realType}
         </span>
@@ -418,7 +414,7 @@ export default observer((props) => {
         onClick={() => openAddStageModal({ optType: 'create', curType: type })}
       />
       <div
-        className={`c7n-piplineManage-edit-column-arrow c7n-piplineManage-edit-column-arrow-${stageTriggerType}`}
+        className="c7n-piplineManage-edit-column-arrow"
       >
         <span />
       </div>

@@ -11,7 +11,6 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
     @Encrypt
     private Long id;
     private List<DevopsCdJobRecordVO> jobRecordVOList;
-    private String triggerType;
     @Encrypt
     private Long pipelineId;
     private Boolean parallel;
@@ -65,14 +64,6 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
         this.id = id;
     }
 
-
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
-    }
 
     public Long getPipelineId() {
         return pipelineId;

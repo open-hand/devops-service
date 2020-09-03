@@ -17,6 +17,15 @@ export default function useStore() {
     setValueIdRandom(data) {
       this.valueIdRandom = data;
     },
+    instanceIdList: [],
+
+    get getInstanceIdList() {
+      return this.instanceIdList;
+    },
+
+    setInstanceIdList(data) {
+      this.instanceIdList = data;
+    },
 
     get getImageList() {
       return this.imageList;

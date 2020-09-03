@@ -37,6 +37,7 @@ import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.*;
@@ -300,9 +301,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(devopsCdStageVO, DevopsCdStageDTO.class);
                 devopsCdStageDTO.setPipelineId(ciCdPipelineDTO.getId());
                 devopsCdStageDTO.setProjectId(projectId);
-                DevopsCdStageDTO cdStageDTO = devopsCdStageService.create(devopsCdStageDTO);
-                //保存审核人员信息,手动流转才有审核人员信息
-                createUserRel(devopsCdStageVO.getCdAuditUserIds(), projectId, null, cdStageDTO.getId(), null);
+                devopsCdStageService.create(devopsCdStageDTO);
                 // 保存cd job信息
                 if (!CollectionUtils.isEmpty(devopsCdStageVO.getJobList())) {
                     devopsCdStageVO.getJobList().forEach(devopsCdJobVO -> {
@@ -500,13 +499,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
             jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
             devopsCdStageVO.setJobList(jobMapOrDefault);
-            //如果是手动流转需要返回人员信息
-            if (TriggerTypeEnum.MANUAL.value().equals(devopsCdStageVO.getTriggerType())) {
-                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, devopsCdStageVO.getId(), null);
-                if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
-                    devopsCdStageVO.setCdAuditUserIds(devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList()));
-                }
-            }
         });
         // cd stage排序
         devopsCdStageVOS = devopsCdStageVOS.stream().sorted(Comparator.comparing(DevopsCdStageVO::getSequence)).collect(Collectors.toList());
@@ -788,6 +780,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref) {
         BranchDTO branchDTO = gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(gitlabUserId.intValue());
+        // 管理员跳过权限校验
+        if (Boolean.TRUE.equals(gitLabUserDTO.getAdmin())) {
+            return;
+        }
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), gitlabUserId.intValue());
         if (memberDTO == null || memberDTO.getId() == null) {
             memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
@@ -866,7 +863,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //cd stage 先删除，后新增
         List<DevopsCdStageDTO> cdStageDTOS = devopsCdStageService.queryByPipelineId(ciCdPipelineDTO.getId());
         cdStageDTOS.forEach(devopsCdStageDTO -> {
-            //删除cd的阶段以及关联的审核人员数据
+            //删除cd的阶段
             devopsCdStageService.deleteById(devopsCdStageDTO.getId());
             devopsCdJobService.deleteByStageId(devopsCdStageDTO.getId());
         });
@@ -940,7 +937,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 将构建类型的stage中的job的每个step进行解析和转化
             CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
             if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-                ciConfigVO.getConfig().forEach(c -> c.setScript(Base64Util.getBase64DecodedString(c.getScript())));
+                ciConfigVO.getConfig().forEach(c -> {
+                    if (!org.springframework.util.StringUtils.isEmpty(c.getScript())) {
+                        c.setScript(Base64Util.getBase64DecodedString(c.getScript()));
+                    }
+                });
             }
             devopsCiJobVO.setConfigVO(ciConfigVO);
             devopsCiJobVO.setMetadata(JSONObject.toJSONString(ciConfigVO));
@@ -1414,10 +1415,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return true;
     }
 
-    private void createUserRel(List<Long> cdAuditUserIds, Long projectId, Long pipelineId, Long stageId, Long jobId) {
+    private void createUserRel(List<Long> cdAuditUserIds, Long projectId, Long pipelineId, Long jobId) {
         if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
             cdAuditUserIds.forEach(t -> {
-                DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(projectId, pipelineId, stageId, jobId);
+                DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(projectId, pipelineId, jobId);
                 devopsCdAuditDTO.setUserId(t);
                 devopsCdAuditService.baseCreate(devopsCdAuditDTO);
             });
@@ -1438,6 +1439,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 将从Audit-domain中继承的这个字段设置为空， 不然会将一些不需要的字段也序列化到输出到json
             devopsCdEnvDeployInfoDTO.set_innerMap(null);
             devopsCdEnvDeployInfoDTO.setProjectId(projectId);
+            // 删除 前端传输的metadata中 多余数据
+            updateExtraInfoToNull(devopsCdEnvDeployInfoDTO);
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
@@ -1458,7 +1461,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
-            createUserRel(t.getCdAuditUserIds(), projectId, null, null, jobId);
+            createUserRel(t.getCdAuditUserIds(), projectId, pipelineId, jobId);
         }
 
     }
@@ -1481,6 +1484,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException("error.get.ci.job.id");
         }
         return ciJobDTOList.get(0).getId();
+    }
+
+    private void updateExtraInfoToNull(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
+        devopsCdEnvDeployInfoDTO.setId(null);
+        devopsCdEnvDeployInfoDTO.setCreatedBy(null);
+        devopsCdEnvDeployInfoDTO.setCreationDate(null);
+        devopsCdEnvDeployInfoDTO.setLastUpdatedBy(null);
+        devopsCdEnvDeployInfoDTO.setLastUpdateDate(null);
     }
 
     private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {

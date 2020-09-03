@@ -4,6 +4,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -71,6 +72,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
+    private static final Integer MAX_LOG_MSG_LENGTH = 60000;
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
@@ -691,6 +693,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmJobLog(String key, String msg, Long clusterId) {
+        byte[] bytes = msg.getBytes();
+        byte[] result = new byte[MAX_LOG_MSG_LENGTH];
+
+        if (bytes.length > MAX_LOG_MSG_LENGTH) {
+            System.arraycopy(bytes, bytes.length - MAX_LOG_MSG_LENGTH, result, 0, MAX_LOG_MSG_LENGTH);
+        } else {
+            result = bytes;
+        }
+
+        msg = new String(result);
+
+
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));

@@ -3,15 +3,18 @@ package io.choerodon.devops.infra.feign;
 import java.util.List;
 import java.util.Set;
 
+import org.hzero.core.util.Results;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.fallback.HzeroMessageServiceClientFallBack;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author scp
@@ -46,4 +49,25 @@ public interface HrdsCodeRepoClient {
     ResponseEntity<List<RepositoryPrivilegeViewDTO>> listRepositoriesByPrivilege(@PathVariable("organizationId") Long organizationId,
                                                                                  @PathVariable("projectId") Long projectId,
                                                                                  @RequestBody Set<Long> userIds);
+
+    /**
+     * 查询应用服务下有权限的成员 包括项目所有者
+     *
+     * @param organizationId
+     * @param projectId
+     * @return
+     */
+    @GetMapping("/v1/organizations/{organizationId}/projects/{projectId}/gitlab/repositories/members/list")
+    ResponseEntity<List<RdmMemberViewDTO>> listMembers(@PathVariable("organizationId") Long organizationId,
+                                                       @PathVariable("projectId") Long projectId,
+                                                       @RequestParam(name = "repositoryIds") Set<Long> repositoryIds,
+                                                       @RequestParam(name = "repositoryName") String repositoryName,
+                                                       @RequestParam(name = "realName") String realName,
+                                                       @RequestParam(name = "loginName") String loginName,
+                                                       @RequestParam(name = "params") String params,
+                                                       @RequestParam(name = "enabled") Boolean enabled,
+                                                       @RequestParam(name = "syncGitlabFlag") Boolean syncGitlabFlag,
+                                                       @RequestParam(name = "glExpiresFlag") Boolean glExpiresFlag);
+
+
 }

@@ -85,7 +85,10 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
                 || status.equals(PipelineStatus.STOP.toValue())) {
             cdJobRecordDTO.setFinishedDate(new Date());
             if (cdJobRecordDTO.getStartedDate() != null) {
-                cdJobRecordDTO.setDurationSeconds((new Date().getTime() - cdJobRecordDTO.getStartedDate().getTime()) / 1000);
+
+                long timeSeconds = (new Date().getTime() - cdJobRecordDTO.getStartedDate().getTime()) / 1000;
+                //执行时间太短为0s，则取1s
+                cdJobRecordDTO.setDurationSeconds(timeSeconds > 0 ? timeSeconds : 1L);
             }
         }
         if (status.equals(PipelineStatus.RUNNING.toValue())) {

@@ -186,7 +186,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdStageRecordDTO.setStageName(devopsCdStageDTO.getName());
         devopsCdStageRecordDTO.setSequence(devopsCdStageDTO.getSequence());
         devopsCdStageRecordDTO.setProjectId(devopsCdStageDTO.getProjectId());
-        devopsCdStageRecordDTO.setTriggerType(devopsCdStageDTO.getTriggerType());
         devopsCdStageRecordService.save(devopsCdStageRecordDTO);
 
         return devopsCdStageRecordService.queryById(devopsCdStageRecordDTO.getId());
@@ -210,18 +209,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdJobRecordService.save(devopsCdJobRecordDTO);
 
         return devopsCdJobRecordService.queryById(devopsCdJobRecordDTO.getId());
-    }
-
-    private void addStageAuditRecord(Long projectId, Long stageId, Long stageRecordId) {
-        List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, stageId, null);
-        devopsCdAuditDTOS.forEach(audit -> {
-            DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
-            devopsCdAuditRecordDTO.setStageRecordId(stageRecordId);
-            devopsCdAuditRecordDTO.setUserId(audit.getUserId());
-            devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.NOT_AUDIT.value());
-            devopsCdAuditRecordDTO.setProjectId(projectId);
-            devopsCdAuditRecordService.save(devopsCdAuditRecordDTO);
-        });
     }
 
     private void addJobAuditRecord(Long projectId, Long jobId, Long jobRecordId) {
@@ -293,15 +280,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info(">>>>>>>>>>>>>>>>>>>> update first stage status<<<<<<<<<<<<<<<<<<<<<<<<<<");
         DevopsCdStageRecordDTO devopsCdStageRecord = devopsCdStageRecordService.queryFirstByPipelineRecordId(pipelineRecordId);
         LOGGER.info("current stage is {}", devopsCdStageRecord);
-        if (TriggerTypeEnum.MANUAL.value().equals(devopsCdStageRecord.getTriggerType())) {
-            devopsCdStageRecordService.updateStageStatusNotAudit(pipelineRecordId, devopsCdStageRecord.getId());
-        } else {
-            // 更新阶段状态为执行中
-            devopsCdStageRecord.setStatus(PipelineStatus.RUNNING.toValue());
-            devopsCdStageRecordService.update(devopsCdStageRecord);
-            // 更新第一个job的状态
-            updateFirstJob(pipelineRecordId, devopsCdStageRecord);
-        }
+
+        // 更新阶段状态为执行中
+        devopsCdStageRecord.setStatus(PipelineStatus.RUNNING.toValue());
+        devopsCdStageRecordService.update(devopsCdStageRecord);
+        // 更新第一个job的状态
+        updateFirstJob(pipelineRecordId, devopsCdStageRecord);
     }
 
     private void updateFirstJob(Long pipelineRecordId, DevopsCdStageRecordDTO devopsCdStageRecord) {
@@ -365,10 +349,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
             devopsCdStageDTOList.forEach(stage -> {
                 DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
-                // 手动流转阶段，添加审核人员记录
-                if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
-                    addStageAuditRecord(projectId, stage.getId(), devopsCdStageRecordDTO.getId());
-                }
+
                 // 保存job执行记录
                 List<DevopsCdJobDTO> devopsCdJobDTOS = executeJobMap.get(stage.getId());
                 devopsCdJobDTOS.forEach(job -> {
@@ -444,7 +425,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);
             } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQuery(devopsCdEnvDeployInfoDTO.getInstanceId());
+                AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
                 if (instanceE == null) {
                     addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);
                 } else {
@@ -462,7 +443,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
                     AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
                     if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
+                        // 如果实例id和code不匹配则更新
+                        if (!instanceE.getId().equals(devopsCdEnvDeployInfoDTO.getInstanceId())) {
+                            devopsCdEnvDeployInfoDTO.setInstanceId(instanceE.getId());
+                        }
+                        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
+
                         appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId());
+
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
                         return;
                     }
@@ -546,88 +534,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         return PipelineStatus.FAILED.toValue();
     }
 
-    @Override
-    @Transactional
-    public AuditResultVO auditStage(Long projectId, Long pipelineRecordId, Long stageRecordId, String result) {
-        AuditResultVO auditResultVO = new AuditResultVO();
-        auditResultVO.setCountersigned(0);
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        // 1. 查询审核人员
-        CustomUserDetails details = DetailsHelper.getUserDetails();
-        LOGGER.info("user {} audit stage : pipelineRecordId: {}, stageRecordId: {}, result: {}", details.getUserId(), pipelineRecordId, stageRecordId, result);
-
-        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(stageRecordId);
-        Map<Long, DevopsCdAuditRecordDTO> auditRecordDTOMap = devopsCdAuditRecordDTOS.stream().collect(Collectors.toMap(DevopsCdAuditRecordDTO::getUserId, v -> v));
-        List<Long> userIds = devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList());
-        DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = auditRecordDTOMap.get(details.getUserId());
-        // 找不到对应记录，则说明用户没有审核权限
-        if (devopsCdAuditRecordDTO == null) {
-            throw new CommonException(ERROR_PERMISSION_MISMATCH_FOR_AUDIT);
-        }
-        // 状态不是待审核，抛出错误信息
-        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(stageRecordId);
-        boolean audited = devopsCdAuditRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus()) || AuditStatusEnum.PASSED.value().equals(v.getStatus()));
-        if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdStageRecordDTO.getStatus()) || audited) {
-            throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
-        }
-        if (AuditStatusEnum.PASSED.value().equals(result)) {
-            // 审核通过
-            // 1. 工作流任务审核通过
-            try {
-                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
-            } catch (Exception e) {
-                LOGGER.error("Approve stage failed: {}", e.getMessage());
-                // 更新阶段状态为失败
-                devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.FAILED.toValue());
-                // 更新流水线状态为失败
-                devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.FAILED.toValue());
-                // 停止流水线
-                workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
-                // 发送失败通知
-                sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                        MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
-            }
-
-            // 更新审核状态为通过
-            devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
-            devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
-
-            // 1. 查询阶段的第一个任务
-            DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryFirstByStageRecordId(stageRecordId);
-            // 2. 判断阶段的第一个任务是否是人工卡点任务，人工卡点任务则更新状态为待审核
-            if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
-                devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, stageRecordId, devopsCdJobRecordDTO.getId());
-            } else {
-                // 3. 更新阶段状态为执行中
-                devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
-                // 4. 更新流水线状态为执行中
-                devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
-            }
-            sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_SUCCESS, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
-        } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
-            // 审核不通过
-            // 更新审核状态为不通过
-            devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.REFUSED.value());
-            devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
-            // 1. 停止流水线
-            workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
-            // 2. 更新后续阶段以及任务状态为终止
-            List<DevopsCdStageRecordDTO> afterStageRecordList = devopsCdStageRecordService.queryByPipelineRecordId(pipelineRecordId).stream()
-                    .filter(v -> v.getSequence() >= devopsCdStageRecordDTO.getSequence())
-                    .collect(Collectors.toList());
-            afterStageRecordList.forEach(v -> {
-                devopsCdStageRecordService.updateStageStatusStop(v.getId());
-            });
-            // 3. 更新流水线状态为终止
-            devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.STOP.toValue());
-            // 4. 发送审核记录通知
-            sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
-        } else {
-            throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
-        }
-        return auditResultVO;
-    }
-
     private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
         Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
                 .subscribe(new Observer<String>() {
@@ -683,7 +589,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 2.1 如果下一个阶段为空，则说明已经执行到了最后一个阶段， 则需要更新流水线状态为success
             // 2.2 如果存在下一个阶段，则判断阶段是自动流转还是手动流转
             // 2.2.1 自动流转：判断阶段的第一个任务是不是人工卡点任务， 人工卡点任务则更新任务状态为待审核，以及通知审核人员
-            // 2.2.2 手动流转：更新任务状态为待审核，通知审核人员
             List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(pipelineRecordId);
             Optional<DevopsCdStageRecordDTO> optionalNextStage = devopsCdStageRecordDTOS.stream()
                     .filter(v -> !v.getId().equals(currentStage.getId()))
@@ -693,18 +598,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             DevopsCdStageRecordDTO nextStage = optionalNextStage.orElse(null);
             // 存在下一个阶段
             if (nextStage != null) {
-                if (TriggerTypeEnum.MANUAL.value().equals(nextStage.getTriggerType())) {
-                    // 手动流转
-                    devopsCdStageRecordService.updateStageStatusNotAudit(pipelineRecordId, nextStage.getId());
-                } else {
-                    // 自动流转
-                    DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryFirstByStageRecordId(nextStage.getId());
-                    if (devopsCdJobRecordDTO == null) {
-                        return;
-                    }
-                    if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
-                        devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, nextStage.getId(), devopsCdJobRecordDTO.getId());
-                    }
+                DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryFirstByStageRecordId(nextStage.getId());
+                if (devopsCdJobRecordDTO == null) {
+                    return;
+                }
+                if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
+                    devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, nextStage.getId(), devopsCdJobRecordDTO.getId());
                 }
             } else {
                 // 已经是最后一个阶段了
@@ -887,23 +786,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     public AduitStatusChangeVO checkAuditStatus(Long projectId, Long pipelineRecordId, AuditCheckVO auditCheckVO) {
         AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
         aduitStatusChangeVO.setAuditStatusChanged(false);
-        if ("stage".equals(auditCheckVO.getSourceType())) {
-            DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(auditCheckVO.getSourceId());
-            List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByStageRecordId(auditCheckVO.getSourceId());
-            boolean audited = devopsCdAuditRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()) || AuditStatusEnum.REFUSED.value().equals(v.getStatus()));
-            if (!PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdStageRecordDTO.getStatus()) || audited) {
-                List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList = devopsCdAuditRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
-                calculatAuditUserName(devopsCdAuditRecordDTOList, aduitStatusChangeVO);
-                if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOList)) {
-                    aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
-                } else {
-                    aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
-                }
-
-            }
-            aduitStatusChangeVO.setCountersigned(0);
-            return aduitStatusChangeVO;
-        } else if ("task".equals(auditCheckVO.getSourceType())) {
+        if ("task".equals(auditCheckVO.getSourceType())) {
             DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(auditCheckVO.getSourceId());
             List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(auditCheckVO.getSourceId());
             if (PipelineStatus.STOP.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
@@ -1020,10 +903,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
                 executeStageList.forEach(stage -> {
                     DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
-                    // 手动流转阶段，添加审核人员记录
-                    if (TriggerTypeEnum.MANUAL.value().equals(stage.getTriggerType())) {
-                        addStageAuditRecord(projectId, stage.getId(), devopsCdStageRecordDTO.getId());
-                    }
                     // 保存job执行记录
                     List<DevopsCdJobDTO> devopsCdJobDTOS = executeJobMap.get(stage.getId());
                     devopsCdJobDTOS.forEach(job -> {

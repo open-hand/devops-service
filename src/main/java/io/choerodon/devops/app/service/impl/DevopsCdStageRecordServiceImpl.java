@@ -114,19 +114,6 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
     @Override
     @Transactional
-    public void updateStageStatusNotAudit(Long pipelineRecordId, Long stageRecordId) {
-        // 更新阶段状态为待审核
-        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
-        devopsCdStageRecordDTO.setStatus(PipelineStatus.NOT_AUDIT.toValue());
-        update(devopsCdStageRecordDTO);
-        // 更新流水线状态为待审核
-        devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.NOT_AUDIT.toValue());
-        // 通知审核人员
-        devopsCdAuditRecordService.sendStageAuditMessage(devopsCdStageRecordDTO, pipelineRecordId);
-    }
-
-    @Override
-    @Transactional
     public void deleteByPipelineRecordId(Long pipelineRecordId) {
         Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();

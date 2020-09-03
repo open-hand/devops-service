@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
 
 /**
  * @author scp
@@ -13,19 +12,13 @@ import io.choerodon.devops.infra.dto.DevopsCdStageRecordDTO;
  */
 public interface DevopsCdAuditRecordService {
 
-    List<DevopsCdAuditRecordDTO> queryByStageRecordId(Long stageRecordId);
-
     List<DevopsCdAuditRecordDTO> queryByJobRecordId(Long jobRecordId);
-
-    void sendStageAuditMessage(DevopsCdStageRecordDTO devopsCdStageRecordDTO, Long devopsCdPipelineRecordId);
 
     void sendJobAuditMessage(Long pipelineRecordId, DevopsCdJobRecordDTO devopsCdJobRecordDTO);
 
     void update(DevopsCdAuditRecordDTO devopsCdAuditRecordDTO);
 
     void save(DevopsCdAuditRecordDTO devopsCdAuditRecordDTO);
-
-    DevopsCdAuditRecordDTO queryByStageRecordIdAndUserId(Long stageRecordId, Long userId);
 
     DevopsCdAuditRecordDTO queryByJobRecordIdAndUserId(Long jobRecordId, Long userId);
 

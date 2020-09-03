@@ -1,8 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -28,8 +31,6 @@ public class DevopsCdStageDTO extends AuditDomain {
     private Long sequence;
     @ApiModelProperty("阶段类型")
     private String type;
-    @ApiModelProperty("触发方式")
-    private String triggerType;
     @ApiModelProperty("项目ID")
     private Long projectId;
 
@@ -71,14 +72,6 @@ public class DevopsCdStageDTO extends AuditDomain {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
     }
 
     public Long getProjectId() {

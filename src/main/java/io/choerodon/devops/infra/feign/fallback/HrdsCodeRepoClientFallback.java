@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
 
 /**
@@ -26,5 +28,10 @@ public class HrdsCodeRepoClientFallback implements HrdsCodeRepoClient {
     @Override
     public ResponseEntity<List<RepositoryPrivilegeViewDTO>> listRepositoriesByPrivilege(Long organizationId, Long projectId, Set<Long> userIds) {
         throw new CommonException("error.get.gitlab.project.appService");
+    }
+
+    @Override
+    public ResponseEntity<List<RdmMemberViewDTO>> listMembers(Long organizationId, Long projectId, Set<Long> repositoryIds, String repositoryName, String realName, String loginName, String params, Boolean enabled, Boolean syncGitlabFlag, Boolean glExpiresFlag) {
+        throw new CommonException("error.list.code.users.appService");
     }
 }
