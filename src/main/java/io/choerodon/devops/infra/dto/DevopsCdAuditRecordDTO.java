@@ -24,7 +24,6 @@ public class DevopsCdAuditRecordDTO extends AuditDomain {
     private Long userId;
     private Long projectId;
     private Long pipelineRecordId;
-    private Long stageRecordId;
     private Long jobRecordId;
     private String status;
 
@@ -50,14 +49,6 @@ public class DevopsCdAuditRecordDTO extends AuditDomain {
 
     public void setPipelineRecordId(Long pipelineRecordId) {
         this.pipelineRecordId = pipelineRecordId;
-    }
-
-    public Long getStageRecordId() {
-        return stageRecordId;
-    }
-
-    public void setStageRecordId(Long stageRecordId) {
-        this.stageRecordId = stageRecordId;
     }
 
     public Long getJobRecordId() {
@@ -92,7 +83,6 @@ public class DevopsCdAuditRecordDTO extends AuditDomain {
                 ", userId=" + userId +
                 ", projectId=" + projectId +
                 ", pipelineRecordId=" + pipelineRecordId +
-                ", stageRecordId=" + stageRecordId +
                 ", jobRecordId=" + jobRecordId +
                 ", status='" + status + '\'' +
                 '}';

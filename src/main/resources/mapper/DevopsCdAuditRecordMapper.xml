@@ -13,12 +13,6 @@
         </if>
     </select>
 
-    <update id="updateProjectIdByStageRecordId">
-        UPDATE devops_cd_audit_record
-        SET project_id =#{projectId}
-        WHERE stage_record_id=#{stageRecordId}
-    </update>
-
     <update id="updateProjectIdByJobRecordId">
         UPDATE devops_cd_audit_record
         SET project_id =#{projectId}

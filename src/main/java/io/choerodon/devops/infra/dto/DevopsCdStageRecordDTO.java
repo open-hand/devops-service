@@ -19,7 +19,6 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
     private Long pipelineRecordId;
     private Long sequence;
     private String status;
-    private String triggerType;
     private Long projectId;
     private Long stageId;
     private String stageName;
@@ -66,14 +65,6 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
     }
 
     public Long getProjectId() {
@@ -134,7 +125,6 @@ public class DevopsCdStageRecordDTO extends AuditDomain {
                 ", pipelineRecordId=" + pipelineRecordId +
                 ", sequence=" + sequence +
                 ", status='" + status + '\'' +
-                ", triggerType='" + triggerType + '\'' +
                 ", projectId=" + projectId +
                 ", stageId=" + stageId +
                 ", stageName='" + stageName + '\'' +

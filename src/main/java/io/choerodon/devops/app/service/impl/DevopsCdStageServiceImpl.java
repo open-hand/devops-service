@@ -11,7 +11,6 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsCdAuditDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
@@ -50,9 +49,6 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
     @Transactional
     public void deleteById(Long stageId) {
         devopsCdStageMapper.deleteByPrimaryKey(stageId);
-        DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO();
-        devopsCdAuditDTO.setCdStageId(stageId);
-        devopsCdAuditMapper.delete(devopsCdAuditDTO);
     }
 
     @Override

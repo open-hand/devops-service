@@ -90,6 +90,18 @@ public class GitUserNameUtil {
         }
         UserAttrService userAttrService = ApplicationContextHelper.getContext().getBean(UserAttrService.class);
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
+        // 用户可能会在gitlab修改username，修改后devops这边查不到用户信息，此时应该去gitlab查，再更新devops数据
+        if (userAttrE == null) {
+            GitlabServiceClientOperator gitlabServiceClientOperator = ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class);
+            GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByUserName(username);
+            if (gitLabUserDTO == null) {
+                return null;
+            } else {
+                userAttrE = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
+                userAttrE.setGitlabUserName(username);
+                userAttrService.baseUpdate(userAttrE);
+            }
+        }
         return userAttrE.getIamUserId();
     }
 }

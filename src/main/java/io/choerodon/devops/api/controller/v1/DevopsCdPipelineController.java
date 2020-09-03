@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
-import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -30,28 +28,6 @@ public class DevopsCdPipelineController {
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
-    private UserAttrService userAttrService;
-
-//    /**
-//     * 启动cd流水线
-//     */
-//    @Permission(permissionPublic = true)
-//    @ApiOperation(value = "启动cd流水线")
-//    @PostMapping("/trigger_cd_pipeline")
-//    public ResponseEntity<Void> triggerCdPipeline(@RequestParam(value = "token") String token,
-//                                                  @RequestParam(value = "commit") String commit,
-//                                                  @RequestParam(value = "ref") String ref,
-//                                                  @RequestParam(value = "gitlab_user_id") Long gitlabUserId,
-//                                                  @Encrypt
-//                                                  @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
-//        // 设置用户上下文
-//        Long iamUserId = userAttrService.queryUserIdByGitlabUserId(gitlabUserId);
-//        CustomContextUtil.setDefaultIfNull(iamUserId);
-//
-//        devopsCdPipelineService.triggerCdPipeline(token, commit, ref, gitlabPipelineId);
-//        return Results.success();
-//    }
 
     /**
      * 主机模式镜像部署接口
