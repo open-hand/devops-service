@@ -118,7 +118,7 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource, math
     }, {
       name: 'versionName',
       type: 'string',
-      label: 'Tag命名规则',
+      label: '命名规则',
       dynamicProps: {
         required: ({ record }) => record.get('bbcl'),
       },
