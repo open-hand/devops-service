@@ -270,9 +270,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Transactional
     public CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
-        Long iamUserId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
-        checkUserPermission(ciCdPipelineVO.getAppServiceId(), iamUserId);
         ciCdPipelineVO.setProjectId(projectId);
         checkNonCiPipelineBefore(ciCdPipelineVO.getAppServiceId());
 
@@ -705,9 +703,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
-        // 校验用户是否有应用服务权限
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        checkUserPermission(appServiceDTO.getId(), userId);
         // 删除流水线
         if (ciCdPipelineMapper.deleteByPrimaryKey(pipelineId) != 1) {
             throw new CommonException(DELETE_PIPELINE_FAILED);
@@ -821,19 +816,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    /**
-     * 校验用户是否拥有应用服务权限
-     *
-     * @param appServiceId 应用服务id
-     * @param iamUserId    用户id
-     */
-    private void checkUserPermission(Long appServiceId, Long iamUserId) {
-        if (!appServiceService.checkAppServicePermissionForUser(appServiceId, iamUserId)) {
-            throw new CommonException(ERROR_USER_HAVE_NO_APP_PERMISSION);
-        }
-
-    }
-
     private static String buildIncludeYaml(String ciFileIncludeUrl) {
         GitlabCi gitlabCi = new GitlabCi();
         gitlabCi.setInclude(ciFileIncludeUrl);
@@ -846,8 +828,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_UPDATE);
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineVO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        checkUserPermission(ciCdPipelineVO.getAppServiceId(), userId);
         // 校验自定义任务格式
         CiCdPipelineDTO ciCdPipelineDTO = ConvertUtils.convertObject(ciCdPipelineVO, CiCdPipelineDTO.class);
         ciCdPipelineDTO.setId(pipelineId);
