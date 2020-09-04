@@ -38,8 +38,10 @@ export default observer((props) => {
 
   function getContent() {
     const { getComponentList } = contentStore;
-    const length = getComponentList.length;
-    const content = map(getComponentList, ({ message, type, status, operate }, index) => {
+    const { length } = getComponentList;
+    const content = map(getComponentList, ({
+      message, type, status, operate,
+    }, index) => {
       const componentType = type === 'prometheus' ? 'monitor' : 'cert';
       return (
         <ComponentCard
@@ -68,6 +70,7 @@ export default observer((props) => {
               text: formatMessage({ id: 'install' }),
               onClick: () => installMonitor(message ? 'edit' : 'create', true),
               disabled,
+              loading: false,
             },
           ];
           break;
@@ -102,11 +105,13 @@ export default observer((props) => {
               text: formatMessage({ id: 'edit' }),
               onClick: () => installMonitor('edit'),
               disabled,
+              loading: false,
             },
             {
               text: formatMessage({ id: 'uninstall' }),
               onClick: uninstallMonitor,
               disabled,
+              loading: false,
             },
           ];
           break;
@@ -120,6 +125,7 @@ export default observer((props) => {
               text: formatMessage({ id: 'install' }),
               onClick: handleInstallCert,
               disabled,
+              loading: false,
             },
           ];
           break;
@@ -147,6 +153,7 @@ export default observer((props) => {
               text: formatMessage({ id: 'uninstall' }),
               onClick: uninstallCert,
               disabled,
+              loading: false,
             },
           ];
           break;
@@ -214,7 +221,12 @@ export default observer((props) => {
             onOk: handleUninstallCert,
             okProps: { color: 'red' },
             cancelProps: { color: 'dark' },
-            footer: (okBtn, cancelBtn) => <div>{cancelBtn}{okBtn}</div>,
+            footer: (okBtn, cancelBtn) => (
+              <div>
+                {cancelBtn}
+                {okBtn}
+              </div>
+            ),
           });
         } else {
           deleteModal.update({
@@ -234,17 +246,17 @@ export default observer((props) => {
   async function handleUninstallCert() {
     if (await contentStore.uninstallCert(projectId, clusterId)) {
       refresh();
-    } else {
-      return false;
+      return true;
     }
+    return false;
   }
 
   async function handleUninstallMonitor() {
     if (await contentStore.uninstallMonitor(projectId, clusterId)) {
       refresh();
-    } else {
-      return false;
+      return true;
     }
+    return false;
   }
 
   return (
