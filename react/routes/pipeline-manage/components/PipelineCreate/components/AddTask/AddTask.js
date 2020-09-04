@@ -15,6 +15,7 @@ import YamlEditor from '../../../../../../components/yamlEditor';
 import emptyImg from '../../../../../../components/empty-page/image/owner.png';
 import DependRepo from './DependRepo';
 import { useAddTaskStore } from './stores';
+import JSONbig from 'json-bigint';
 
 import './index.less';
 
@@ -150,8 +151,7 @@ const AddTask = observer(() => {
         if (!['custom', 'chart'].includes(jobDetail.type)) {
           const {
             config, authType, username, token, password, sonarUrl, configType, scannerType, sources, skipTests,
-          } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
-          debugger;
+          } = JSONbig.parse(jobDetail.metadata.replace(/'/g, '"'));
           let uploadFilePattern;
           let dockerContextDir;
           let dockerFilePath;
