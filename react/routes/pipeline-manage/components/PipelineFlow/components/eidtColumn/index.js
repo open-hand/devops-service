@@ -39,6 +39,7 @@ const EditItem = (props) => {
     image,
     openVariableModal,
     stageType,
+    appServiceCode,
   } = props;
 
   const { name, type } = jobDetail;
@@ -90,8 +91,9 @@ const EditItem = (props) => {
           random={Math.random()}
           jobDetail={jobDetail}
           pipelineStageMainSource={getStepData2}
-          appServiceId={!edit && appServiceName}
-          appServiceName={!edit && appServiceName}
+          appServiceId={appServiceName}
+          appServiceName={appServiceName}
+          appServiceCode={appServiceCode}
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           handleOk={handleEditOk}
         />
@@ -218,6 +220,7 @@ export default observer((props) => {
             edit={edit}
             appServiceId={appServiceId}
             appServiceName={appServiceName}
+            appServiceCode={appServiceCode}
             AppServiceOptionsDs={edit && AppServiceOptionsDs}
             PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
             jobDetail={item}
