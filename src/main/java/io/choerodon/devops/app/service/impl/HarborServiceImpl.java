@@ -133,7 +133,7 @@ public class HarborServiceImpl implements HarborService {
             harborRepoDTO = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType).getBody();
         }
         if (Objects.isNull(harborRepoDTO) || Objects.isNull(harborRepoDTO.getHarborRepoConfig())) {
-            throw new CommonException("query.repo.config.is null.by.configId");
+            throw new CommonException("query.repo.config.is.null.by.configId");
         }
         return repoDTOToDevopsConfigDTO(harborRepoDTO, operateType);
     }
