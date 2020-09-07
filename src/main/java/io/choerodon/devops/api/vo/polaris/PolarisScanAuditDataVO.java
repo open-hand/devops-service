@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.polaris;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -14,6 +15,7 @@ import io.choerodon.devops.api.vo.ClusterSummaryInfoVO;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PolarisScanAuditDataVO {
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     @ApiModelProperty("扫描时间")
     private Date auditTime;
     @ApiModelProperty("集群信息")
