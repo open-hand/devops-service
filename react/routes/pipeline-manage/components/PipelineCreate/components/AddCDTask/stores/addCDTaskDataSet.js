@@ -519,5 +519,13 @@ export default (
           && record.get('cdAuditUserIds')?.length > 1,
       },
     },
+    {
+      // TODO 修改该对象的字段
+      name: 'sfzshxjdyrw',
+      type: 'boolean',
+      label: '是否阻塞后续阶段与任务',
+      // TODO 默认为否 注意后期后端字段更改
+      defaultValue: false,
+    },
   ],
 });
