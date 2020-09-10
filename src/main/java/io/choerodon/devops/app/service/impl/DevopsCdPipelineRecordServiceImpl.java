@@ -357,7 +357,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Session session = null;
         try {
             session = ssh.startSession();
-            String loginExec = String.format("docker login -u %s -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
+            String loginExec = String.format("docker login -u '%s' -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
             LOGGER.info(loginExec);
             Session.Command cmd = session.exec(loginExec);
 
