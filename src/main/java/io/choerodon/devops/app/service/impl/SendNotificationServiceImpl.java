@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static org.hzero.core.base.BaseConstants.Symbol.COMMA;
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -753,6 +751,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+        LOGGER.info(">>>>>>>>>>>>>>>> sendCdPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCdPipelineRecordDTO is {}", record.toString());
         params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(record.getPipelineId()));
         //pipelineRecordId是relID
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
