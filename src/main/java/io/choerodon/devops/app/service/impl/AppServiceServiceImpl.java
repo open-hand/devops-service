@@ -1301,7 +1301,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             }
             Map<String, String> queryMap = new HashMap<>();
-            queryMap.put("componentKey", key);
+            queryMap.put("component", key);
             Response<SonarComponent> sonarAnalysisDate = sonarClient.getSonarAnalysisDate(queryMap).execute();
             if (sonarAnalysisDate.raw().code() == 200 && sonarAnalysisDate.body() != null) {
                 sonarContentsVO.setDate(sonarAnalysisDate.body().getAnalysisDate());
