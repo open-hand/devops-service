@@ -121,4 +121,12 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
      * @return 信息
      */
     List<AppServiceInstanceDTO> queryByInstanceIds(@Param("instanceIds") List<Long> instanceIds);
+
+    /**
+     * 查询实例的版本
+     *
+     * @param appServiceInstanceId 实例的id
+     * @return 版本
+     */
+    AppServiceVersionDTO queryVersion(Long appServiceInstanceId);
 }

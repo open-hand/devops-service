@@ -233,10 +233,12 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             if (appServiceVersionDTO == null && "update".equals(type)) {
                 AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
                         .baseQueryByCodeAndEnv(c7nHelmRelease.getMetadata().getName(), envId);
-                AppServiceVersionDTO versionUnShared = appServiceVersionService.baseQuery(appServiceInstanceDTO.getAppServiceId());
-                if (Objects.equals(versionUnShared.getVersion(), c7nHelmRelease.getSpec().getChartVersion())) {
-                    appServiceVersionDTO = versionUnShared;
-                    releaseAppServiceId = versionUnShared.getAppServiceId();
+                // 查出上次部署的版本
+                AppServiceVersionDTO lastVersion = appServiceInstanceService.queryVersion(appServiceInstanceDTO.getId());
+                // 如果上次版本和这次版本一致, 允许这次部署, 用的是上次部署的版本
+                if (Objects.equals(lastVersion.getVersion(), c7nHelmRelease.getSpec().getChartVersion())) {
+                    appServiceVersionDTO = lastVersion;
+                    releaseAppServiceId = lastVersion.getAppServiceId();
                 }
             }
 

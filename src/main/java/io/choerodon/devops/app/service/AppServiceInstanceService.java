@@ -11,6 +11,7 @@ import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.AppServiceInstanceOverViewDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DeployDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -363,4 +364,12 @@ public interface AppServiceInstanceService {
      * @param batchDeploymentPayload 批量部署信息
      */
     void batchDeploymentSaga(BatchDeploymentPayload batchDeploymentPayload);
+
+    /**
+     * 查询实例的版本
+     *
+     * @param appServiceInstanceId 实例的id
+     * @return 版本
+     */
+    AppServiceVersionDTO queryVersion(Long appServiceInstanceId);
 }
