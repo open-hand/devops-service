@@ -1429,8 +1429,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public AppServiceVersionDTO queryVersion(Long appServiceInstanceId) {
-
-        return null;
+        return appServiceInstanceMapper.queryVersion(appServiceInstanceId);
     }
 
     private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {
