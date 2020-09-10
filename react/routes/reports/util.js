@@ -57,7 +57,6 @@ function dateSplitAndPad(start, end, date) {
   return dateArr;
 }
 
-
 /**
  * 提取出对象的键和值，并形成对应的两个数组
  * @param obj
@@ -95,7 +94,7 @@ function getAxis(startTime, endTime, oldxAxis = [], oldyAxis = {}) {
     );
   }
   const yAxis = {};
-  _.foreach(oldyAxis, (value, key) => {
+  _.forEach(oldyAxis, (value, key) => {
     yAxis[key] = [];
     const data = oldyAxis[key] || [];
     if (oldxAxis.length) {
