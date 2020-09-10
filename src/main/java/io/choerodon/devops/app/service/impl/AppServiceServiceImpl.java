@@ -463,9 +463,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceMapper.deleteByPrimaryKey(appServiceId);
     }
-
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            description = "Devops更新gitlab用户", inputSchema = "{}")
     @Override
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
@@ -638,25 +635,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             destination.setContent(new ArrayList<>());
         }
         return destination;
-    }
-
-
-    @Override
-    public Page<AppServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageable, String params) {
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean isProjectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userAttrDTO);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-
-        Map maps = gson.fromJson(params, Map.class);
-        Page<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
-                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwnerOrRoot, userAttrDTO.getIamUserId()));
-        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-
-        initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getContent(), urlSlash);
-
-        return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
 
     @Override
@@ -2038,15 +2016,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         return PageInfoUtil.listAsPage(list);
-    }
-
-    @Override
-    public Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
-                                                      Boolean isProjectOwner, Long userId) {
-        Map maps = gson.fromJson(params, Map.class);
-        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
-                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userId));
     }
 
     @Override

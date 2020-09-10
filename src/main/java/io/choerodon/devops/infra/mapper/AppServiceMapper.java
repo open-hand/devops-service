@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.LatestAppServiceVO;
-import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.mybatis.common.BaseMapper;
-
-import org.apache.ibatis.annotations.Param;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by younger on 2018/3/28.
@@ -29,12 +29,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceDTO> listByProjectId(@Param("projectId") Long projectId,
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("params") List<String> params);
-
-    List<AppServiceDTO> listCodeRepository(@Param("projectId") Long projectId,
-                                           @Param("searchParam") Map<String, Object> searchParam,
-                                           @Param("params") List<String> param,
-                                           @Param("isProjectOwner") Boolean isProjectOwner,
-                                           @Param("userId") Long userId);
 
     List<AppServiceDTO> listByEnvId(@Param("projectId") Long projectId,
                                     @Param("envId") Long envId,
@@ -128,15 +122,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     int updateIsActiveNullToTrue();
 
     List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
-
-    /**
-     * 根据gitlabGroupId和iamUserId获取
-     * 在整个项目组用权限的应用对应的gitlabProjectId
-     *
-     * @return
-     */
-    List<Long> listGitlabProjectIdByAppPermission(@Param("gitlabGroupId") Long gitlabGroupId,
-                                                  @Param("iamUserId") Long iamUserId);
 
     List<AppServiceDTO> queryAppServicesHavingVersions(@Param("projectId") Long projectId);
 

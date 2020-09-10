@@ -583,34 +583,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public Page<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageable,
-                                                        String searchParam, Boolean isProjectOwner,
-                                                        Long userId) {
-        Sort sort = pageable.getSort();
-        if (sort != null) {
-            List<Sort.Order> newOrders = new ArrayList<>();
-            sort.iterator().forEachRemaining(s -> {
-                String property = s.getProperty();
-                if (property.equals("version")) {
-                    property = "dav.version";
-                } else if (property.equals("creationDate")) {
-                    property = "dav.creation_date";
-                }
-                newOrders.add(new Sort.Order(s.getDirection(), property));
-            });
-            pageable.setSort(new Sort(newOrders));
-        }
-
-        Page<AppServiceVersionDTO> applicationVersionDTOPageInfo;
-        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-        applicationVersionDTOPageInfo = PageHelper
-                .doPageAndSort(pageable, () -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
-                        TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
-        return applicationVersionDTOPageInfo;
-    }
-
-    @Override
     public void baseUpdate(AppServiceVersionDTO appServiceVersionDTO) {
         if (appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO) != 1) {
             throw new CommonException("error.version.update");

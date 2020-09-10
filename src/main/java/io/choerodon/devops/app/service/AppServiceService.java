@@ -227,16 +227,6 @@ public interface AppServiceService {
     Page<AppServiceReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageable, String params);
 
     /**
-     * 项目下分页查询代码仓库
-     *
-     * @param projectId 项目id
-     * @param pageable  分页参数
-     * @param params    查询参数
-     * @return page of ApplicationRepDTO
-     */
-    Page<AppServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageable, String params);
-
-    /**
      * valid the repository url and access token
      *
      * @param gitPlatformType git platform type
@@ -377,10 +367,6 @@ public interface AppServiceService {
 
     Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
                                           String type, Boolean doPage, PageRequest pageable, String params, Boolean checkMember);
-
-    Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
-                                               Boolean isProjectOwner, Long userId);
-
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
