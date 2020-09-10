@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -640,7 +641,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId,false,false,false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
@@ -1299,6 +1300,13 @@ public class AppServiceServiceImpl implements AppServiceService {
                     sonarContentsVO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
                 }
             }
+            Map<String, String> queryMap = new HashMap<>();
+            queryMap.put("componentKey", key);
+            Response<SonarComponent> sonarAnalysisDate = sonarClient.getSonarAnalysisDate(queryMap).execute();
+            if (sonarAnalysisDate.raw().code() == 200 && sonarAnalysisDate.body() != null) {
+                sonarContentsVO.setDate(sonarAnalysisDate.body().getAnalysisDate());
+            }
+            sonarContentsVO.setDate(getTimestampTimeV17(sonarContentsVO.getDate()));
 
             //分类型对sonarqube project查询返回的结果进行处理
             sonarComponentResponse.body().getComponent().getMeasures().forEach(measure -> {
@@ -1545,6 +1553,27 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException(e);
         }
         return sonarContentsVO;
+    }
+
+    public String getTimestampTimeV17(String str) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
+        Date date = null;
+        try {
+            date = dateFormat.parse(str);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return str;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        GregorianCalendar ca = new GregorianCalendar(TimeZone.getTimeZone("GMT 00:00"));
+        ca.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH),
+                cal.get(Calendar.HOUR), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        format.setTimeZone(TimeZone.getDefault());
+        return format.format(ca.getTime());
     }
 
     @Override
