@@ -48,7 +48,7 @@ const FormView = observer(() => {
 
   useEffect(() => {
     async function callBack() {
-      if (typeof id === 'number') {
+      if (id) {
         const res = await FormDataSet.query();
         const dataSourceCurrent = _.map(res.value, (value, key) => new ConfigNode(key, value));
         KeyValueDataSet.loadData(dataSourceCurrent);
