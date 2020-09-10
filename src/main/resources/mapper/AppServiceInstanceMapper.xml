@@ -638,7 +638,7 @@
     <select id="queryVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT dasv.*
         FROM devops_app_service_instance dasi
-                 INNER JOIN devops_env_command command ON dasi.id = command.object_id AND command.object = 'instance'
+                 INNER JOIN devops_env_command command ON dasi.command_id = command.id
                  INNER JOIN devops_app_service_version dasv ON command.object_version_id = dasv.id
         WHERE dasi.id = #{appServiceInstanceId};
     </select>
