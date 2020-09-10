@@ -452,7 +452,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId());
 
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
-                        devopsCdStageRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
                         return;
                     }
 
