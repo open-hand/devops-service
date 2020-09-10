@@ -88,7 +88,7 @@
             </if>
             <include refid="sqlparam"/>
         </where>
-        <if test="index != ''">
+        <if test="doSort">
             ORDER BY da.is_active desc,
             (
             da.is_synchro = 1

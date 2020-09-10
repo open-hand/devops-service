@@ -93,7 +93,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                      @Param("type") String type,
                                                      @Param("searchParam") Map<String, Object> searchParam,
                                                      @Param("params") List<String> params,
-                                                     @Param("index") String index,
+                                                     @Param("doSort") Boolean doSort,
                                                      @Param("userId") Long userId);
 
 
