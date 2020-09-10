@@ -288,7 +288,10 @@ const AddTask = observer(() => {
   const handleAdd = async () => {
     const result = await AddTaskFormDataSet.validate();
     if (result) {
-      if (AddTaskFormDataSet.current.get('type') === 'sonar' && AddTaskFormDataSet.current.get('configType') === 'custom') {
+      if (AddTaskFormDataSet.current.get('type') === 'sonar'
+        && AddTaskFormDataSet.current.get('configType') === 'custom'
+        && AddTaskFormDataSet.current.get('authType') === 'username'
+      ) {
         const connet = await handleTestConnect();
         if (!connet) {
           return false;
@@ -604,6 +607,10 @@ const AddTask = observer(() => {
       setTestConnect(res);
       setConnectLoading(false);
       resolve(res);
+    }).catch((e) => {
+      setTestConnect(false);
+      setConnectLoading(false);
+      resolve(false);
     });
   });
 
@@ -1246,8 +1253,8 @@ const AddTask = observer(() => {
     }
     return [
       <p className="c7ncd-sonarqube-title" colSpan={4} newLine>SonarQube</p>,
-      <Select 
-        name="scannerType" 
+      <Select
+        name="scannerType"
         colSpan={2}
         addonAfter={
           <Tips helpText="SonarScanner支持扫描任意类型的project，SonarMaven只支持扫描Maven类型的project" />
@@ -1260,9 +1267,9 @@ const AddTask = observer(() => {
         const record = AddTaskFormDataSet.current;
         if (record.get('scannerType') === 'SonarScanner') {
           return (
-            <TextField 
-              name="sources" 
-              colSpan={2} 
+            <TextField
+              name="sources"
+              colSpan={2}
               addonAfter={
                 <Tips helpText="此处指的是项目下的相对路径，比如'src'。多个路径使用','隔开" />
               }
