@@ -967,7 +967,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .put("resourceId", resourceId)
                 .put("resourceName", resourceName)
                 .put("k8sKind", k8sKind)
-                .put("projectid", projectId)
+                .put("projectId", projectId)
                 .put("projectName", projectName)
                 .put("envId", envId)
                 .put("envName", envName)
