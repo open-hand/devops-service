@@ -1,6 +1,13 @@
 import { map } from 'lodash';
 import getTablePostData from '../../../../utils/getTablePostData';
 
+function handleLoad({ dataSet }) {
+  dataSet.forEach((record) => {
+    // eslint-disable-next-line no-param-reassign
+    record.selectable = record.get('deleteFlag');
+  });
+}
+
 export default ((formatMessage, projectId, id) => ({
   autoQuery: true,
   pageSize: 10,
@@ -27,4 +34,7 @@ export default ((formatMessage, projectId, id) => ({
   queryFields: [
     { name: 'version', type: 'string', label: formatMessage({ id: 'version' }) },
   ],
+  events: {
+    load: handleLoad,
+  },
 }));
