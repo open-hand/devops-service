@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -568,10 +569,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 return;
             }
 
+            String finalResourceName = StringUtils.isEmpty(resourceName) ? devopsEnvironmentDTO.getName() : resourceName;
+
             Map<String, String> params = StringMapBuilder.newBuilder()
                     .put("projectName", Objects.requireNonNull(projectDTO.getName()))
                     .put("envName", Objects.requireNonNull(devopsEnvironmentDTO.getName()))
-                    .put("resourceName", Objects.requireNonNull(resourceName))
+                    .put("resourceName", Objects.requireNonNull(finalResourceName))
                     .putAll(webHookParams)
                     .build();
 
