@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
@@ -388,6 +389,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
+            execPullImage(cmd);
             LOGGER.info("docker pull status:{}", cmd.getExitStatus());
             if (cmd.getExitStatus() != 0) {
                 throw new CommonException(ERROR_DOCKER_PULL);
@@ -395,6 +397,25 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } finally {
             assert session != null;
             session.close();
+        }
+    }
+
+    /**
+     * 解决pull 镜像时间较长
+     * 等3分钟
+     */
+    private void execPullImage(Session.Command cmd) {
+        for (int i = 0; i < 30; i++) {
+            if (cmd.getExitStatus() == null) {
+                LOGGER.info("Pulling the image!!!");
+                try {
+                    cmd.join(6, TimeUnit.SECONDS);
+                } catch (ConnectionException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                break;
+            }
         }
     }
 
