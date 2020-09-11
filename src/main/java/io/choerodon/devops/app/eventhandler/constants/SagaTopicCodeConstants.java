@@ -61,11 +61,6 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_APP_DELETE = "devops-app-delete";
 
     /**
-     * Devops更新gitlab用户
-     */
-    public static final String DEVOPS_UPDATE_GITLAB_USERS = "devops-update-gitlab-users";
-
-    /**
      * 同步iam应用状态
      */
     public static final String DEVOPS_SYNC_APP_ACTIVE = "devops-sync-app-active";

@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static org.hzero.core.base.BaseConstants.Symbol.COMMA;
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -19,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -570,10 +569,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 return;
             }
 
+            String finalResourceName = StringUtils.isEmpty(resourceName) ? devopsEnvironmentDTO.getName() : resourceName;
+
             Map<String, String> params = StringMapBuilder.newBuilder()
                     .put("projectName", Objects.requireNonNull(projectDTO.getName()))
                     .put("envName", Objects.requireNonNull(devopsEnvironmentDTO.getName()))
-                    .put("resourceName", Objects.requireNonNull(resourceName))
+                    .put("resourceName", Objects.requireNonNull(finalResourceName))
                     .putAll(webHookParams)
                     .build();
 
@@ -753,6 +754,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+        LOGGER.info(">>>>>>>>>>>>>>>> sendCdPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCdPipelineRecordDTO is {}", record.toString());
         params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(record.getPipelineId()));
         //pipelineRecordId是relID
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
@@ -968,7 +970,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .put("resourceId", resourceId)
                 .put("resourceName", resourceName)
                 .put("k8sKind", k8sKind)
-                .put("projectid", projectId)
+                .put("projectId", projectId)
                 .put("projectName", projectName)
                 .put("envId", envId)
                 .put("envName", envName)

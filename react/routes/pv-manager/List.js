@@ -1,6 +1,10 @@
 import React, { useCallback, Fragment } from 'react';
-import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Table, Modal, Spin, Tooltip } from 'choerodon-ui/pro';
+import {
+  Page, Content, Header, Permission, Action, Breadcrumb, Choerodon,
+} from '@choerodon/boot';
+import {
+  Table, Modal, Spin, Tooltip,
+} from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -27,10 +31,11 @@ const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
 const statusStyle = {
-  width: 56,
+  minWidth: 56,
   marginRight: 8,
   height: '.16rem',
   lineHeight: '.16rem',
+  maxWidth: '50%',
 };
 
 const AppService = withRouter(observer((props) => {
@@ -72,7 +77,7 @@ const AppService = withRouter(observer((props) => {
       default:
     }
     return (
-      <Fragment>
+      <>
         <StatusTag
           name={status}
           color={color}
@@ -81,18 +86,20 @@ const AppService = withRouter(observer((props) => {
         <Tooltip title={value} placement="topLeft">
           {value}
         </Tooltip>
-      </Fragment>
+      </>
 
     );
   }
 
   function renderPvcName({ value, record }) {
     const status = record.get('status');
-    return <StatusIcon
-      name={value}
-      status={status === 'Released' ? 'deleted' : 'success'}
-      width={0.08}
-    />;
+    return (
+      <StatusIcon
+        name={value}
+        status={status === 'Released' ? 'deleted' : 'success'}
+        width={0.08}
+      />
+    );
   }
 
   function renderActions({ record }) {
@@ -141,7 +148,7 @@ const AppService = withRouter(observer((props) => {
 
   function renderCluster({ value, record }) {
     return (
-      <Fragment>
+      <>
         <span>
           <StatusDot
             size="small"
@@ -150,7 +157,7 @@ const AppService = withRouter(observer((props) => {
           &nbsp;
           {value}
         </span>
-      </Fragment>
+      </>
     );
   }
 

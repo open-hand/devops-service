@@ -442,35 +442,6 @@ public class AppServiceController {
 //    }
 
     /**
-     * 项目下分页查询代码仓库
-     *
-     * @param projectId 项目id
-     * @param pageable  分页参数
-     * @param params    参数
-     * @return Page
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下分页查询代码仓库")
-    @CustomPageRequest
-    @PostMapping("/page_code_repository")
-    public ResponseEntity<Page<AppServiceRepVO>> pageCodeRepository(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC)
-            @ApiIgnore PageRequest pageable,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.pageCodeRepository(projectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
-    }
-
-
-    /**
      * 校验harbor配置信息是否正确
      *
      * @param url      harbor地址

@@ -2,7 +2,6 @@ package io.choerodon.devops.app.eventhandler;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
@@ -28,12 +27,9 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
-import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -212,40 +208,6 @@ public class DevopsSagaHandler {
         }
         return data;
     }
-
-    /**
-     * GitOps 用户权限分配处理
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            description = "GitOps 用户权限分配处理",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            maxRetryCount = 3,
-            seq = 1)
-    public String updateGitlabUser(String data) {
-        LOGGER.info("DevopsSagaHandler.DEVOPS_UPDATE_GITLAB_USERS:{}", data);
-        DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
-        try {
-            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
-            if (CollectionUtils.isEmpty(devOpsUserPayload.getIamUserIds())) {
-                LOGGER.info("updateGitlabUser: empty users -> skip...");
-            }
-            //如果是用户是组织层的root，则跳过权限跟新
-            devOpsUserPayload.getIamUserIds().forEach(userId -> {
-                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-                if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
-                    updateUserPermissionService
-                            .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
-                                    Arrays.asList(userId), devOpsUserPayload.getOption());
-                }
-            });
-
-        } catch (Exception e) {
-            LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds());
-            throw e;
-        }
-        return data;
-    }
-
 
     /**
      * devops处理环境权限分配相应的gitlab操作

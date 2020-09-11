@@ -43,6 +43,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private static final String DEPLOY_TYPE = "deployType";
     private static final String PIPELINE_ID = "pipelineId";
     private static final String RUNNING = "running";
+    private static final String ENV_ID = "env";
 
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
@@ -104,6 +105,13 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             // 解密流水线id
             cast.put(PIPELINE_ID, Long.valueOf(KeyDecryptHelper.decryptValueOrIgnore((String)pipelineId)));
         }
+
+        // 解密查询参数中的环境id
+        Object envId = cast.get(ENV_ID);
+        if (envId instanceof String) {
+            cast.put(ENV_ID, Long.valueOf(KeyDecryptHelper.decryptValueOrIgnore((String) envId)));
+        }
+
         maps.put(TypeUtil.SEARCH_PARAM, cast);
 
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsDeployRecordMapper.listByProjectId(projectId,

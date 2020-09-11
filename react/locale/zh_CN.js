@@ -564,6 +564,7 @@ const appService = {
   'c7ncd.appService.version.delete.des': '确定要删除“{version}”等{length}个服务版本吗？删除后，将不可恢复。',
   'c7ncd.appService.version.delete.des.single': '确定要删除“{version}”服务版本吗？删除后，将不可恢复。',
   'c7ncd.appService.version.delete.disable': '请在下方列表中选择服务版本',
+  'c7ncd.appService.version.tips': '无法删除存在关联实例或共享规则的服务版本',
 };
 
 const envrionment = {
@@ -1352,6 +1353,8 @@ const cluster = {
   'c7ncd.cluster.empty.describe': '当前项目下无集群，请创建',
   'c7ncd.cluster.monitor.empty.des': '暂未安装监控组件，若想查看集群的监控情况，请转至组件管理页面安装',
   'c7ncd.cluster.monitor.install': '安装监控组件',
+  'c7ncd.cluster.monitor.edit': '修改监控组件',
+  'c7ncd.cluster.monitor.create': '安装监控组件',
   'c7ncd.cluster.certManager.install': '安装CertManager',
   'c7ncd.cluster.monitor.link': '转至组件管理',
   'c7ncd.cluster.monitor.password': 'admin密码',

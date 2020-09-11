@@ -6,6 +6,7 @@
     <select id="queryPrometheusWithPvById" resultType="io.choerodon.devops.api.vo.DevopsPrometheusVO">
         SELECT
         dpro.id,
+        dpro.enable_tls,
         dpro.admin_password,
         dpro.grafana_domain,
         dpro.object_version_number,

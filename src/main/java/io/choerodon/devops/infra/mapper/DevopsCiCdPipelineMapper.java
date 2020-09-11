@@ -27,13 +27,6 @@ public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
                                                      @Param("name") String name);
 
     /**
-     * 为项目成员查询项目下流水线集合
-     */
-    List<DevopsCiPipelineVO> queryByProjectIdAndNameForProjectMember(@Param("projectId") Long projectId,
-                                                                     @Param("memberId") Long memberId,
-                                                                     @Param("name") String name);
-
-    /**
      * 根据id查询流水线（包含关联应用服务name,gitlab_project_id）
      */
     CiCdPipelineVO queryById(@Param("ciPipelineId") Long ciPipelineId);

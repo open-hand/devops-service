@@ -13,7 +13,6 @@
         da.gitlab_project_id,
         da.uuid,
         da.is_failed,
-        da.is_skip_check_permission,
         da.creation_date,
         da.created_by,
         da.last_updated_by
@@ -56,7 +55,6 @@
         da.gitlab_project_id,
         da.uuid,
         da.is_failed,
-        da.is_skip_check_permission,
         da.creation_date,
         da.created_by,
         da.last_updated_by
@@ -90,7 +88,7 @@
             </if>
             <include refid="sqlparam"/>
         </where>
-        <if test="index != ''">
+        <if test="doSort">
             ORDER BY da.is_active desc,
             (
             da.is_synchro = 1
@@ -331,34 +329,6 @@
         FROM devops_app_service da
         JOIN devops_app_service_share_rule dam ON da.id = dam.app_service_id
         WHERE da.code = #{code}
-    </select>
-
-    <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT da.id,
-        da.project_id,
-        da.name,
-        da.code,
-        da.is_active,
-        da.is_synchro,
-        da.gitlab_project_id,
-        da.is_skip_check_permission,
-        da.uuid
-        FROM devops_app_service da
-        WHERE da.project_id = #{projectId}
-        AND da.is_active = 1
-        AND da.gitlab_project_id IS NOT NULL
-        <if test='isProjectOwner != null'>
-            <if test='isProjectOwner == false'>
-                AND (da.is_skip_check_permission = 1 OR (
-                da.is_skip_check_permission = 0
-                AND (da.id IN (SELECT daur.app_service_id
-                FROM devops_app_service_user_rel daur
-                WHERE daur.iam_user_id
-                = #{userId}
-                ))))
-            </if>
-        </if>
-        <include refid="sqlparam"/>
     </select>
 
     <select id="listByGitLabProjectIds" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -605,23 +575,6 @@
         WHERE das.is_active IS NULL
     </update>
 
-    <select id="listGitlabProjectIdByAppPermission" resultType="java.lang.Long">
-        SELECT das.gitlab_project_id
-        FROM devops_app_service das
-        JOIN devops_project dp ON dp.devops_app_group_id = #{gitlabGroupId}
-        AND dp.iam_project_id = das.project_id
-        WHERE das.is_skip_check_permission = 1
-        OR (
-        das.is_skip_check_permission = 0
-        AND EXISTS(
-        SELECT daur.app_service_id
-        FROM devops_app_service_user_rel daur
-        WHERE daur.app_service_id = das.id
-        AND daur.iam_user_id = #{iamUserId}
-        )
-        )
-    </select>
-
     <update id="updateByIdSelectiveWithoutAudit" parameterType="io.choerodon.devops.infra.dto.AppServiceDTO">
         UPDATE devops_app_service
         <set>
@@ -712,7 +665,6 @@
         AND das.is_failed = FALSE
         AND das.is_synchro = TRUE
         AND das.is_active = TRUE
-        AND das.is_skip_check_permission = TRUE
         AND dcp.id IS NULL
         AND db.branch_name = 'master'
         <if test="appServiceIds != null and appServiceIds.size > 0">
@@ -735,7 +687,6 @@
         AND das.is_failed = FALSE
         AND das.is_synchro = TRUE
         AND das.is_active = TRUE
-        AND das.is_skip_check_permission = FALSE
         AND dcp.id IS NULL
         AND db.branch_name = 'master'
         <if test="appServiceIds != null and appServiceIds.size > 0">

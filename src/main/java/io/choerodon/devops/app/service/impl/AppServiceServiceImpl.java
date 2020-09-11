@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -463,9 +464,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceMapper.deleteByPrimaryKey(appServiceId);
     }
-
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            description = "Devops更新gitlab用户", inputSchema = "{}")
     @Override
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
@@ -640,29 +638,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         return destination;
     }
 
-
-    @Override
-    public Page<AppServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageable, String params) {
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean isProjectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userAttrDTO);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-
-        Map maps = gson.fromJson(params, Map.class);
-        Page<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
-                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwnerOrRoot, userAttrDTO.getIamUserId()));
-        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-
-        initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getContent(), urlSlash);
-
-        return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
-    }
-
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId,false,false,false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
@@ -1321,6 +1300,13 @@ public class AppServiceServiceImpl implements AppServiceService {
                     sonarContentsVO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
                 }
             }
+            Map<String, String> queryMap = new HashMap<>();
+            queryMap.put("component", key);
+            Response<SonarComponent> sonarAnalysisDate = sonarClient.getSonarAnalysisDate(queryMap).execute();
+            if (sonarAnalysisDate.raw().code() == 200 && sonarAnalysisDate.body() != null) {
+                sonarContentsVO.setDate(sonarAnalysisDate.body().getAnalysisDate());
+            }
+            sonarContentsVO.setDate(getTimestampTimeV17(sonarContentsVO.getDate()));
 
             //分类型对sonarqube project查询返回的结果进行处理
             sonarComponentResponse.body().getComponent().getMeasures().forEach(measure -> {
@@ -1567,6 +1553,27 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException(e);
         }
         return sonarContentsVO;
+    }
+
+    public String getTimestampTimeV17(String str) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
+        Date date = null;
+        try {
+            date = dateFormat.parse(str);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return str;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        GregorianCalendar ca = new GregorianCalendar(TimeZone.getTimeZone("GMT 00:00"));
+        ca.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH),
+                cal.get(Calendar.HOUR), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        format.setTimeZone(TimeZone.getDefault());
+        return format.format(ca.getTime());
     }
 
     @Override
@@ -2029,24 +2036,15 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), userId));
+                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId));
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), userId);
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId);
             }
         }
 
         return PageInfoUtil.listAsPage(list);
-    }
-
-    @Override
-    public Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
-                                                      Boolean isProjectOwner, Long userId) {
-        Map maps = gson.fromJson(params, Map.class);
-        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
-                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userId));
     }
 
     @Override

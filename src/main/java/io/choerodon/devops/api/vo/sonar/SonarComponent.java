@@ -9,7 +9,15 @@ public class SonarComponent {
 
     private Component component;
     private List<SonarPeriod> periods;
+    private String analysisDate;
 
+    public String getAnalysisDate() {
+        return analysisDate;
+    }
+
+    public void setAnalysisDate(String analysisDate) {
+        this.analysisDate = analysisDate;
+    }
 
     public Component getComponent() {
         return component;

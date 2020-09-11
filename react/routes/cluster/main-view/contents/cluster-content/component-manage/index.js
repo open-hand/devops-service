@@ -178,7 +178,7 @@ export default observer((props) => {
       key: monitorInstallKey,
       style: modalStyle,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.monitor.install` }),
+      title: formatMessage({ id: `${intlPrefix}.monitor.${type}` }),
       children: <MonitorCreate
         prefixCls={prefixCls}
         intlPrefix={intlPrefix}
@@ -187,7 +187,7 @@ export default observer((props) => {
         clusterId={clusterId}
         showPassword={showPassword}
       />,
-      okText: formatMessage({ id: 'install' }),
+      okText: formatMessage({ id: type === 'edit' ? 'save' : 'install' }),
     });
   }
 

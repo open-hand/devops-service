@@ -401,9 +401,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         //获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
 
-        // 如果部署任务是阶段第一个任务，先修改阶段为运行中
-        devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
-
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
@@ -604,11 +601,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 }
                 if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
                     devopsCdJobRecordService.updateJobStatusNotAudit(pipelineRecordId, nextStage.getId(), devopsCdJobRecordDTO.getId());
+                } else {
+                    devopsCdStageRecordService.updateStatusById(nextStage.getId(), PipelineStatus.RUNNING.toValue());
                 }
             } else {
                 // 已经是最后一个阶段了
                 devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
-                sendNotificationService.sendCdPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
+                sendNotificationService.sendCdPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
             }
         }
     }

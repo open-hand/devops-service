@@ -139,10 +139,6 @@ public interface AppServiceVersionService {
 
     AppServiceVersionDTO baseQueryByAppServiceIdAndVersion(Long appServiceId, String version);
 
-    Page<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageable,
-                                                 String searchParam, Boolean isProjectOwner,
-                                                 Long userId);
-
     void baseUpdate(AppServiceVersionDTO appServiceVersionDTO);
 
     List<AppServiceVersionDTO> baseListUpgradeVersion(Long appServiceServiceId);

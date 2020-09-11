@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -23,6 +24,7 @@ import io.choerodon.devops.infra.feign.RdupmClient;
  * User: Mr.Wang
  * Date: 2020/6/11
  */
+@Component
 public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<List<HarborCustomRepo>> listAllCustomRepoByProject(Long projectId) {
