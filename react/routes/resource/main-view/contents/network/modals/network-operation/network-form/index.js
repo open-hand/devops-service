@@ -31,8 +31,9 @@ function FormContent() {
   modal.handleOk(async () => {
     if (await formDs.submit() !== false) {
       refresh();
+    } else {
+      return false;
     }
-    return false;
   });
 
   function createPortGroup() {

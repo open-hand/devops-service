@@ -51,13 +51,12 @@ function FormContent() {
   }
 
   function targetPortOptionRenderer({ record, text, value }) {
-    return value;
+    return <Tooltip title={value}>{value}</Tooltip>;
   }
 
   function targetPortOptionsFilter(record) {
     return !!record.get('portName');
   }
-
 
   function labelOptionRenderer({ record, text, value }) {
     return `${record.get('meaning')}`;
