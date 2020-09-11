@@ -24,7 +24,6 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -53,9 +52,6 @@ public class AppServiceInstanceController {
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private AppServiceInstanceValidator appServiceInstanceValidator;
-    @Autowired
-    private SendNotificationService sendNotificationService;
-
 
     /**
      * 根据实例id获取实例信息
@@ -426,16 +422,6 @@ public class AppServiceInstanceController {
         return Optional.ofNullable(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
-    }
-
-    @ApiOperation(value = "部署服务")
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @GetMapping(value = "/test")
-    public void test() {
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(91849782812901376L);
-        sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO, appServiceInstanceDTO.getCreatedBy(), null);
     }
 
     /**
