@@ -11,15 +11,16 @@ export default ({ organizationId, projectId }) => ({
       url: `/rdupm/v1/nexus-repositorys/${organizationId}/project/${projectId}/ci/repo/list?repoType=MAVEN&type=hosted`,
       method: 'get',
       transformResponse: (res) => {
-        let newRes = JSONbig.parse(res);
+        let newRes = res;
         try {
+          newRes = JSONbig.parse(res);
           newRes = newRes.map((item) => {
-            item.repositoryId = String(JSONbig.parse(item.repositoryId));
+            item.repositoryId = String(item.repositoryId);
             return item;
           });
           return newRes;
         } catch (e) {
-          throw new Error(e);
+          return newRes;
         }
       },
     },
