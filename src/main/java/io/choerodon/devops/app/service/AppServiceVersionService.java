@@ -206,6 +206,6 @@ public interface AppServiceVersionService {
      * @param appServiceId
      * @param versionIds
      */
-    void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds);
+    Set<AppServiceVersionDTO> batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds);
 
 }

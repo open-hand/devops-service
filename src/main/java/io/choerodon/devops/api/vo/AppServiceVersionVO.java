@@ -15,6 +15,7 @@ public class AppServiceVersionVO {
     private Long appServiceId;
     private Date creationDate;
     private String repoType;
+    private Boolean deleteFlag;
 
     public Long getId() {
         return id;
@@ -54,5 +55,13 @@ public class AppServiceVersionVO {
 
     public void setRepoType(String repoType) {
         this.repoType = repoType;
+    }
+
+    public Boolean getDeleteFlag() {
+        return deleteFlag;
+    }
+
+    public void setDeleteFlag(Boolean deleteFlag) {
+        this.deleteFlag = deleteFlag;
     }
 }

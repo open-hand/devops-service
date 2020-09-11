@@ -22,6 +22,7 @@ import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -373,7 +374,7 @@ public class AppServiceVersionController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "批量删除应用服务版本")
     @DeleteMapping(value = "/batch")
-    public ResponseEntity<Void> batchDelete(
+    public ResponseEntity<Set<AppServiceVersionDTO>> batchDelete(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -381,7 +382,6 @@ public class AppServiceVersionController {
             @RequestParam(value = "app_service_id") Long appServiceId,
             @Encrypt @RequestBody Set<Long> versionIds
     ) {
-        appServiceVersionService.batchDelete(projectId, appServiceId, versionIds);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(appServiceVersionService.batchDelete(projectId, appServiceId, versionIds));
     }
 }
