@@ -15,7 +15,7 @@ public class AppServiceVersionVO {
     private Long appServiceId;
     private Date creationDate;
     private String repoType;
-    private Boolean deleteFlag;
+    private Boolean deleteFlag = true;
 
     public Long getId() {
         return id;

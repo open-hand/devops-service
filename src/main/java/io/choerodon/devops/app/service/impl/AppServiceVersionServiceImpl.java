@@ -837,10 +837,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public Set<AppServiceVersionDTO> batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         // 校验版本是否能够删除
-        Set<AppServiceVersionDTO> deleteErrorVersion = checkVersion(appServiceId, versionIds);
-        if (!CollectionUtils.isEmpty(deleteErrorVersion)) {
-            return deleteErrorVersion;
-        }
+        checkVersion(appServiceId, versionIds);
 
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -912,8 +909,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         versionIds.forEach(v -> {
             AppServiceVersionDTO appServiceVersionDTO = map.get(v);
             if (appServiceVersionDTO != null) {
-                deleteErrorVersion.add(appServiceVersionDTO);
-                return;
+                throw new CommonException("error.delete.version.invalid.status");
             }
             // 是否存在共享规则
             AppServiceVersionDTO versionDTO = appServiceVersionMapper.selectByPrimaryKey(v);
@@ -922,7 +918,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             record.setVersion(versionDTO.getVersion());
             List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(record);
             if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
-                deleteErrorVersion.add(versionDTO);
+                throw new CommonException("error.delete.version.invalid.status");
             }
 
         });
