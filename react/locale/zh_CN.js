@@ -564,6 +564,7 @@ const appService = {
   'c7ncd.appService.version.delete.des': '确定要删除“{version}”等{length}个服务版本吗？删除后，将不可恢复。',
   'c7ncd.appService.version.delete.des.single': '确定要删除“{version}”服务版本吗？删除后，将不可恢复。',
   'c7ncd.appService.version.delete.disable': '请在下方列表中选择服务版本',
+  'c7ncd.appService.version.tips': '无法删除存在关联实例或共享规则的服务版本',
 };
 
 const envrionment = {
