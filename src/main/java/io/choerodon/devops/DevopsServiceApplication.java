@@ -47,28 +47,4 @@ public class DevopsServiceApplication {
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
-
-    @Primary
-    @Bean
-    public Decoder feignDecoder() {
-        HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter(customObjectMapper());
-        ObjectFactory<HttpMessageConverters> objectFactory = () -> new HttpMessageConverters(jacksonConverter);
-        return new ResponseEntityDecoder(new SpringDecoder(objectFactory));
-    }
-
-    @Primary
-    @Bean
-    public Encoder feignEncoder() {
-        HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter(customObjectMapper());
-        ObjectFactory<HttpMessageConverters> objectFactory = () -> new HttpMessageConverters(jacksonConverter);
-        return new SpringEncoder(objectFactory);
-    }
-
-    public ObjectMapper customObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        //Customize as much as you want
-        return objectMapper;
-    }
-
-
 }
