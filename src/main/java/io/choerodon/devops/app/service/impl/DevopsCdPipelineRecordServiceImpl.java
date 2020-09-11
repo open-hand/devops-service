@@ -86,6 +86,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STOP = "stop";
+    private static final Integer WAIT_SECONDS = 6;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
@@ -367,6 +368,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             LOGGER.info("docker login status:{}", cmd.getExitStatus());
 
             if (cmd.getExitStatus() != 0) {
@@ -409,7 +411,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (cmd.getExitStatus() == null) {
                 LOGGER.info("Pulling the image!!!");
                 try {
-                    cmd.join(6, TimeUnit.SECONDS);
+                    cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
                 } catch (ConnectionException e) {
                     e.printStackTrace();
                 }
@@ -443,6 +445,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             LOGGER.info("docker run status:{}", cmd.getExitStatus());
             if (cmd.getExitStatus() != 0) {
                 throw new CommonException(ERROR_DOCKER_RUN);
@@ -469,6 +472,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             LOGGER.info("docker stop status:{}", cmd.getExitStatus());
         } finally {
             assert session != null;
@@ -635,6 +639,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 final Session.Command cmd = session.exec(stopJar.toString());
                 LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
                 LOGGER.info(IOUtils.readFully(cmd.getErrorStream()).toString());
+                cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             } finally {
                 assert session != null;
                 session.close();
@@ -677,7 +682,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             LOGGER.info(cmdStr.toString());
 
             final Session.Command cmd = session.exec(cmdStr.toString());
-            cmd.join(5, TimeUnit.SECONDS);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
 
@@ -710,10 +715,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             LOGGER.info(values);
             final Session.Command cmd = session.exec(values);
-            cmd.join(5, TimeUnit.SECONDS);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
         } finally {
