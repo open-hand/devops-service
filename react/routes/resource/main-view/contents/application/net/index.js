@@ -91,7 +91,7 @@ const Networking = observer(() => {
       node.push(
         <div className="net-target-item">
           <span>{targetAppServiceName}</span>
-        </div>
+        </div>,
       );
     } else if (instances && instances.length) {
       _.forEach(instances, ({ id: itemId, code, status }) => {
@@ -118,7 +118,7 @@ const Networking = observer(() => {
         <div className="net-target-item" key={key}>
           <span>{key}</span>=<span>{value}</span>
         </div>,
-      ),);
+      ));
     }
     if (endPoints) {
       const targetIps = _.split(_.keys(endPoints)[0], ',');
@@ -127,7 +127,7 @@ const Networking = observer(() => {
         <div className="net-target-item" key={index}>
           <span>{item}</span>
         </div>,
-      ),);
+      ));
       _.map(portList, (item, index) => {
         port.push(
           <div className="net-target-item" key={index}>
