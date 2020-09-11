@@ -834,7 +834,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     @Transactional
     @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION, inputSchemaClass = CustomResourceVO.class, description = "批量删除应用服务版本")
-    public Set<AppServiceVersionDTO> batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds) {
+    public void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         // 校验版本是否能够删除
         checkVersion(appServiceId, versionIds);
@@ -880,7 +880,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 builder -> builder
                         .withJson(GSON.toJson(customResourceVO))
                         .withRefId(appServiceDTO.getId().toString()));
-        return new HashSet<>();
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {
