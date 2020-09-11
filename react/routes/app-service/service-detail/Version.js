@@ -12,6 +12,7 @@ import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
+import Tips from '../../../components/new-tips';
 
 import './index.less';
 
@@ -28,6 +29,13 @@ const Version = withRouter(observer((props) => {
   const selectedRecordLength = useMemo(
     () => versionDs.selected && versionDs.selected.length, [versionDs.selected],
   );
+
+  const versionHeader = useMemo(() => (
+    <Tips
+      title={formatMessage({ id: 'version' })}
+      helpText={formatMessage({ id: `${intlPrefix}.version.tips` })}
+    />
+  ), []);
 
   function refresh() {
     versionDs.query();
@@ -88,6 +96,10 @@ const Version = withRouter(observer((props) => {
     versionDs.delete(selectedRecords, modalProps);
   }
 
+  function getVersionHeader() {
+
+  }
+
   return (
     <TabPage
       service={[]}
@@ -127,7 +139,7 @@ const Version = withRouter(observer((props) => {
       <Breadcrumb title={getTitle()} />
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={versionDs}>
-          <Column name="version" sortable />
+          <Column name="version" sortable header={versionHeader} />
           <Column name="creationDate" renderer={renderTime} sortable />
         </Table>
       </Content>
