@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
 
 /**
@@ -10,6 +12,7 @@ import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
  * @since 2020/9/9 9:55
  */
 public class CdApiTestConfigVO extends DevopsCdEnvDeployInfoDTO {
+    @Encrypt
     private Long apiTestTaskId;
     private String apiTestTaskName;
     private Boolean blockAfterJob;
