@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.test.ApiTestExecuteVO;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.feign.TestServiceClient;
 
@@ -37,9 +38,25 @@ public class TestServiceClientoperator {
         apiTestExecuteVO.setTaskId(taskId);
         ResponseEntity<ApiTestTaskRecordDTO> entity = testServiceClient.executeTask(projectId, apiTestExecuteVO);
 
-        LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", projectId, taskId);
         if (entity != null && !entity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.execute.api.test.task");
+        }
+        return entity == null ? null : entity.getBody();
+    }
+
+    /**
+     * 查询api测试任务记录
+     *
+     * @param projectId
+     * @param taskRecordId
+     * @return
+     */
+    public ApiTestTaskRecordVO queryById(Long projectId, Long taskRecordId) {
+
+        ResponseEntity<ApiTestTaskRecordVO> entity = testServiceClient.queryById(projectId, taskRecordId);
+
+        if (entity != null && !entity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.query.api.test.task.record");
         }
         return entity == null ? null : entity.getBody();
     }

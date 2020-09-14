@@ -40,6 +40,8 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     private Long deployInfoId;
     private Long commandId;
 
+    private Long apiTestTaskRecordId;
+
     @Transient
     @ApiModelProperty("流水线记录id")
     private Long pipelineRecordId;
@@ -274,6 +276,15 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", pipelineName='" + pipelineName + '\'' +
                 ", pipelineId=" + pipelineId +
                 ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
+                ", apiTestTaskRecordId=" + apiTestTaskRecordId +
                 "} ";
+    }
+
+    public Long getApiTestTaskRecordId() {
+        return apiTestTaskRecordId;
+    }
+
+    public void setApiTestTaskRecordId(Long apiTestTaskRecordId) {
+        this.apiTestTaskRecordId = apiTestTaskRecordId;
     }
 }
