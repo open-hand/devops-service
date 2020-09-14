@@ -17,8 +17,11 @@ export default observer(() => {
     selectDs,
     store,
     modal,
-    refresh,
+    pipelineId,
     prefixCls,
+    mainStore,
+    refresh,
+    record,
   } = useExecuteContentStore();
 
   const [branchPage, setBranchPage] = useState(1);
@@ -38,12 +41,14 @@ export default observer(() => {
   modal.handleOk(async () => {
     try {
       if (await selectDs.submit() !== false) {
+        mainStore.setExpandedKeys([pipelineId]);
+        mainStore.setSelectedMenu(record.toData());
         refresh();
       } else {
         return false;
       }
     } catch (e) {
-      return false;
+      throw new Error(e);
     }
   });
 

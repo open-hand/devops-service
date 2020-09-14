@@ -66,8 +66,10 @@ const TreeItem = observer(({ record, search }) => {
           appServiceName={record.get('appServiceName')}
           gitlabProjectId={record.get('gitlabProjectId')}
           pipelineId={record.get('id')}
+          record={record}
           refresh={refresh}
           prefixCls={prefixCls}
+          mainStore={mainStore}
         />,
         okText: formatMessage({ id: 'execute' }),
         movable: false,
