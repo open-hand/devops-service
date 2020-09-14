@@ -44,6 +44,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientoperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.CustomContextUtil;
@@ -129,6 +130,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private TestServiceClientoperator testServiceClientoperator;
 
     @Override
     @Transactional
@@ -916,6 +919,28 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
 
         }
+    }
+
+    @Override
+    public void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+
+        if (!JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordDTO.getType())) {
+            throw new CommonException("error.invalid.job.type");
+        }
+        CdApiTestConfigVO cdApiTestConfigVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+        try {
+            testServiceClientoperator.executeTask(devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+        } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+            // 更新记录状态为失败
+            devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
+        }
+
+        // 更新记录状态为执行中
+        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
+
+
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {
