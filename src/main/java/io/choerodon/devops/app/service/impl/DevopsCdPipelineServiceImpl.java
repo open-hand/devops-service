@@ -33,6 +33,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.PipelineConstants;
@@ -40,6 +41,7 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -528,10 +530,22 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public String getDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
-        if (jobRecordDTO != null) {
+
+        if (jobRecordDTO == null) {
+            return PipelineStatus.FAILED.toValue();
+        }
+        // api测试任务状态需要去test-manager查询
+        if (JobTypeEnum.CD_API_TEST.value().equals(jobRecordDTO.getType())) {
+            ApiTestTaskRecordVO apiTestTaskRecordVO = null;
+            try {
+                apiTestTaskRecordVO = testServiceClientoperator.queryById(jobRecordDTO.getProjectId(), jobRecordDTO.getApiTestTaskRecordId());
+            } catch (Exception e) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", jobRecordDTO.getProjectId(), jobRecordDTO.getApiTestTaskRecordId());
+            }
+            return apiTestTaskRecordVO == null ? PipelineStatus.FAILED.toValue() : apiTestTaskRecordVO.getStatus();
+        } else {
             return jobRecordDTO.getStatus();
         }
-        return PipelineStatus.FAILED.toValue();
     }
 
     private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
@@ -922,6 +936,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     @Override
+    @Transactional
     public void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
 
@@ -929,16 +944,21 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             throw new CommonException("error.invalid.job.type");
         }
         CdApiTestConfigVO cdApiTestConfigVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+        ApiTestTaskRecordDTO taskRecordDTO;
+
+        // 更新记录状态为执行中
+        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
         try {
-            testServiceClientoperator.executeTask(devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+            taskRecordDTO = testServiceClientoperator.executeTask(devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+
+            DevopsCdJobRecordDTO devopsCdJobRecordDTO1 = devopsCdJobRecordService.queryById(jobRecordId);
+            devopsCdJobRecordDTO1.setApiTestTaskRecordId(taskRecordDTO.getId());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO1);
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
             // 更新记录状态为失败
             devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
         }
-
-        // 更新记录状态为执行中
-        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
 
 
     }

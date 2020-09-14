@@ -6,6 +6,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 public class DevopsCdJobRecordVO {
@@ -40,6 +41,8 @@ public class DevopsCdJobRecordVO {
     //主机部署详情
     private CdHostDeployConfigVO cdHostDeployConfigVO;
     private Long deployInfoId;
+    private Long apiTestTaskRecordId;
+    private ApiTestTaskRecordVO apiTestTaskRecordVO;
 
     public Long getJobId() {
         return jobId;
@@ -299,5 +302,21 @@ public class DevopsCdJobRecordVO {
 
     public void setDeployInfoId(Long deployInfoId) {
         this.deployInfoId = deployInfoId;
+    }
+
+    public ApiTestTaskRecordVO getApiTestTaskRecordVO() {
+        return apiTestTaskRecordVO;
+    }
+
+    public void setApiTestTaskRecordVO(ApiTestTaskRecordVO apiTestTaskRecordVO) {
+        this.apiTestTaskRecordVO = apiTestTaskRecordVO;
+    }
+
+    public Long getApiTestTaskRecordId() {
+        return apiTestTaskRecordId;
+    }
+
+    public void setApiTestTaskRecordId(Long apiTestTaskRecordId) {
+        this.apiTestTaskRecordId = apiTestTaskRecordId;
     }
 }
