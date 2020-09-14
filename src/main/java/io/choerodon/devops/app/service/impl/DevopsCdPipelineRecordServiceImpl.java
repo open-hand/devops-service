@@ -651,8 +651,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
-        cmdStr.append("mkdir -p /temp-jar && ");
-        cmdStr.append("mkdir -p /temp-log && ");
+        if (StringUtils.isEmpty(jarDeploy.getWorkingPath())) {
+            cmdStr.append("mkdir -p /temp/jar && ");
+            cmdStr.append("mkdir -p /temp/log && ");
+        } else {
+            String workingPath = jarDeploy.getWorkingPath().endsWith("/") ? jarDeploy.getWorkingPath().substring(0, jarDeploy.getWorkingPath().length() - 1) : jarDeploy.getWorkingPath();
+            cmdStr.append(String.format("mkdir -p %s/jar && ", workingPath));
+            cmdStr.append(String.format("mkdir -p %s/log && ", workingPath));
+        }
+
         Session session = null;
         try {
             session = ssh.startSession();
