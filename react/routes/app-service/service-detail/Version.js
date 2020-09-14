@@ -3,11 +3,12 @@ import {
   TabPage, Content, Breadcrumb, Permission,
 } from '@choerodon/boot';
 import {
-  Table, Tooltip, Button,
+  Table, Tooltip, Button, CheckBox,
 } from 'choerodon-ui/pro';
 import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import filter from 'lodash/filter';
 import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
@@ -29,13 +30,6 @@ const Version = withRouter(observer((props) => {
   const selectedRecordLength = useMemo(
     () => versionDs.selected && versionDs.selected.length, [versionDs.selected],
   );
-
-  const versionHeader = useMemo(() => (
-    <Tips
-      title={formatMessage({ id: 'version' })}
-      helpText={formatMessage({ id: `${intlPrefix}.version.tips` })}
-    />
-  ), []);
 
   function refresh() {
     versionDs.query();
@@ -96,8 +90,41 @@ const Version = withRouter(observer((props) => {
     versionDs.delete(selectedRecords, modalProps);
   }
 
-  function getVersionHeader() {
+  function renderCheckboxHeader() {
+    const indeterminate = versionDs.some((record) => record.selectable && record.isSelected);
+    const isSelectAll = !versionDs.some((record) => record.selectable && !record.isSelected);
+    return (
+      <CheckBox
+        checked={isSelectAll && indeterminate}
+        indeterminate={!isSelectAll && indeterminate}
+        onChange={(value) => {
+          versionDs.forEach((record) => {
+            if (record.selectable) {
+              // eslint-disable-next-line no-param-reassign
+              record.isSelected = value;
+            }
+          });
+        }}
+      />
+    );
+  }
 
+  function renderCheckbox({ record }) {
+    return (
+      <Tooltip
+        title={!record.selectable ? formatMessage({ id: `${intlPrefix}.version.tips` }) : ''}
+        placement="top"
+      >
+        <CheckBox
+          checked={record.isSelected}
+          disabled={!record.selectable}
+          onChange={(value) => {
+            // eslint-disable-next-line no-param-reassign
+            record.isSelected = value;
+          }}
+        />
+      </Tooltip>
+    );
   }
 
   return (
@@ -137,9 +164,10 @@ const Version = withRouter(observer((props) => {
         </Button>
       </HeaderButtons>
       <Breadcrumb title={getTitle()} />
-      <Content className={`${prefixCls}-detail-content`}>
+      <Content className={`${prefixCls}-detail-content ${prefixCls}-detail-content-version`}>
         <Table dataSet={versionDs}>
-          <Column name="version" sortable header={versionHeader} />
+          <Column header={renderCheckboxHeader} renderer={renderCheckbox} width={50} />
+          <Column name="version" sortable />
           <Column name="creationDate" renderer={renderTime} sortable />
         </Table>
       </Content>
