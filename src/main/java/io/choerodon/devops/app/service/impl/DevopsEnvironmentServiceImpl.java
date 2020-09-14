@@ -881,6 +881,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvironmentDTO.setHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
         }
         if (!gitlabServiceClientOperator.getFile(gitlabProjectDO.getId(), MASTER, README)) {
+            LOGGER.info("Add readme for env with id {}", devopsEnvironmentDTO.getId());
             gitlabServiceClientOperator.createFile(gitlabProjectDO.getId(),
                     README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
         }
