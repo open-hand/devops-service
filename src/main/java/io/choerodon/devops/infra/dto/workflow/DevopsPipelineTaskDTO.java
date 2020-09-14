@@ -24,6 +24,8 @@ public class DevopsPipelineTaskDTO {
      */
     private Long sign;
 
+    private Boolean blockAfterJob;
+
     public Long getTaskRecordId() {
         return taskRecordId;
     }
@@ -70,5 +72,13 @@ public class DevopsPipelineTaskDTO {
 
     public void setMultiAssign(Boolean multiAssign) {
         this.multiAssign = multiAssign;
+    }
+
+    public Boolean getBlockAfterJob() {
+        return blockAfterJob;
+    }
+
+    public void setBlockAfterJob(Boolean blockAfterJob) {
+        this.blockAfterJob = blockAfterJob;
     }
 }

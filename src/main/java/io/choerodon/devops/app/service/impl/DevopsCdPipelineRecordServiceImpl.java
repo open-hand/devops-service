@@ -40,7 +40,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
@@ -250,6 +249,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         List<String> taskUsers = jobAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
                         taskDTO.setUsernames(taskUsers);
                         taskDTO.setMultiAssign(taskUsers.size() > 1);
+                    } else if (jobRecordDTO.getType().equals(JobTypeEnum.CD_API_TEST.value())) {
+                        CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(jobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+                        taskDTO.setBlockAfterJob(cdApiTestConfigVO.getBlockAfterJob());
                     }
                     taskDTO.setTaskType(jobRecordDTO.getType());
                     if (jobRecordDTO.getCountersigned() != null) {

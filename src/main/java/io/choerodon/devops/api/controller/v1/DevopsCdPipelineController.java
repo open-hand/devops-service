@@ -113,4 +113,17 @@ public class DevopsCdPipelineController {
         return Results.success(devopsCdPipelineService.getDeployStatus(pipelineRecordId, stageRecordId, jobRecordId));
     }
 
+    /**
+     * 执行API测试任务
+     */
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "执行api测试")
+    @PostMapping(value = "/execute_api_test_task")
+    public ResponseEntity<Void> executeApiTestTask(
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @RequestParam(value = "job_record_id") Long jobRecordId) {
+        devopsCdPipelineService.executeApiTestTask(pipelineRecordId, stageRecordId, jobRecordId);
+        return Results.success();
+    }
 }

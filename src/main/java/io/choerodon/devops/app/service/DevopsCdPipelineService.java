@@ -65,4 +65,13 @@ public interface DevopsCdPipelineService {
     void trigerSimpleCDPipeline(PipelineWebHookVO pipelineWebHookVO);
 
     void initPipelineRecordWithStageAndJob(Long projectId, Long gitlabPipelineId, String commitSha, String ref, Boolean tag, CiCdPipelineDTO devopsCiPipelineDTO);
+
+    /**
+     * 执行api测试任务
+     *
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     */
+    void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 }
