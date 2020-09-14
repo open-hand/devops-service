@@ -1098,6 +1098,46 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         );
     }
 
+    @Override
+    public void sendInstanceStatusUpdate(String code, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String preStatus, String currentStatus) {
+        doWithTryCatchAndLog(
+                () -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceInstanceDTO.getProjectId());
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+                    AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceInstanceDTO.getAppServiceId());
+                    List<Receiver> receivers = new ArrayList<>();
+
+                    Map<String, String> webHookParams = StringMapBuilder.newBuilder()
+                            .put("projectName", projectDTO.getProgramName())
+                            .put("envName", devopsEnvironmentDTO.getName())
+                            .put("instanceId", appServiceInstanceDTO.getId())
+                            .put("envId", devopsEnvironmentDTO.getName()).build();
+
+                    if (MessageCodeConstants.CREATE_INSTANCE_SUCCESS.equalsIgnoreCase(code) || MessageCodeConstants.CREATE_INSTANCE_FAIL.equalsIgnoreCase(code)) {
+                        webHookParams.put("currentStatus", currentStatus);
+                        webHookParams.put("appName", appServiceDTO.getName());
+                        webHookParams.put("deployVersion", appServiceInstanceDTO.getAppServiceVersion());
+                        //实例部署失败还有站内信和邮件
+                        receivers = ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(appServiceInstanceDTO.getCreatedBy())));
+
+                    }
+                    if (MessageCodeConstants.UPDATE_INSTANCE_SUCCESS.equalsIgnoreCase(code) || MessageCodeConstants.CREATE_INSTANCE_FAIL.equalsIgnoreCase(code)) {
+                        webHookParams.put("currentStatus", currentStatus);
+                        webHookParams.put("deployPreStatus", preStatus);
+                        webHookParams.put("appName", appServiceDTO.getName());
+                        webHookParams.put("deployVersion", appServiceInstanceDTO.getAppServiceVersion());
+                    }
+                    if (MessageCodeConstants.ENABLE_INSTANCE.equalsIgnoreCase(code) || MessageCodeConstants.STOP_INSTANCE.equalsIgnoreCase(code)) {
+                        webHookParams.put("currentStatus", currentStatus);
+                    }
+
+                    sendNotices(code, receivers, webHookParams, projectDTO.getId());
+                },
+                ex -> LOGGER.info("Failed to send message WhenInstanceCreationFailure.", ex)
+        );
+    }
+
+
     private Receiver constructReceiver(Long userId) {
         IamUserDTO user = baseServiceClientOperator.queryUserByUserId(userId);
         return constructReceiver(userId, user.getEmail(), user.getPhone(), user.getOrganizationId());
