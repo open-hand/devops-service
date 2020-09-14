@@ -164,7 +164,7 @@ const Version = withRouter(observer((props) => {
         </Button>
       </HeaderButtons>
       <Breadcrumb title={getTitle()} />
-      <Content className={`${prefixCls}-detail-content ${prefixCls}-detail-content-version`}>
+      <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={versionDs}>
           <Column header={renderCheckboxHeader} renderer={renderCheckbox} width={50} />
           <Column name="version" sortable />
