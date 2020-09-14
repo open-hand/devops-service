@@ -220,4 +220,8 @@ public interface SendNotificationService {
 
     void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params);
 
+    /**
+     * 实例状态变更发送webhook josn
+     */
+    void sendInstanceStatusUpdate(String code, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String preStatus, String currentStatus);
 }

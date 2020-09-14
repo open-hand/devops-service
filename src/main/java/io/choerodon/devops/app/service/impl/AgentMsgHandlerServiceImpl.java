@@ -41,6 +41,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -745,7 +746,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
                     && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
                 logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
-                sendNotificationService.sendWhenInstanceCreationFailure(instanceDTO, instanceDTO.getCreatedBy(), devopsEnvCommandDTO.getId());
+                //todo  部署资源通知里面的 实例部署失败，资源创建失败需要剔除与实例相关的发送
+//                sendNotificationService.sendWhenInstanceCreationFailure(instanceDTO, instanceDTO.getCreatedBy(), devopsEnvCommandDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(MessageCodeConstants.CREATE_INSTANCE_FAIL, instanceDTO, devopsEnvCommandDTO, null, InstanceStatus.FAILED.getStatus());
             }
             if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus))
                     && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
