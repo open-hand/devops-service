@@ -178,6 +178,17 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("部署values")
         private String value;
 
+        @ApiModelProperty("工作目录,默认值/temp")
+        private String workingPath;
+
+        public String getWorkingPath() {
+            return workingPath;
+        }
+
+        public void setWorkingPath(String workingPath) {
+            this.workingPath = workingPath;
+        }
+
         public String getValue() {
             return value;
         }
