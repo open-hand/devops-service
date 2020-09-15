@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
+import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -65,5 +66,22 @@ public class DevopsCdJobRecordController {
                                                                @Encrypt
                                                                @PathVariable(value = "job_record_id") Long jobRecordId) {
         return ResponseEntity.ok(devopsCdJobRecordService.queryDeployJobLogs(projectId, pipelineRecordId, stageRecordId, jobRecordId));
+    }
+
+    /**
+     * 重试cd_job
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看主机部署日志")
+    @GetMapping("/log/{job_record_id}")
+    public ResponseEntity<String> getHostLog(
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+            @Encrypt
+            @PathVariable(value = "stage_record_id") Long stageRecordId,
+            @Encrypt
+            @PathVariable(value = "job_record_id") Long jobRecordId) {
+        return Results.success(devopsCdJobRecordService.getHostLogById(jobRecordId));
     }
 }

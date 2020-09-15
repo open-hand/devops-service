@@ -111,6 +111,20 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    public void updateLogById(Long jobRecordId, StringBuilder log) {
+        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
+        cdJobRecordDTO.setLog(log.toString());
+        if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+        }
+    }
+
+    @Override
+    public String getHostLogById(Long jobRecordId) {
+        return devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId).getLog();
+    }
+
+    @Override
     public DevopsCdJobRecordDTO queryById(Long id) {
         Assert.notNull(id, PipelineCheckConstant.ERROR_JOB_RECORD_ID_IS_NULL);
         return devopsCdJobRecordMapper.selectByPrimaryKey(id);
