@@ -1,8 +1,21 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.google.common.base.Functions;
-import feign.FeignException;
 import feign.RetryableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
@@ -20,19 +33,6 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -63,7 +63,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setGitlabUserReqDTO(userReqDTO);
             gitlabTransferDTO.setPassword(password);
             userDOResponseEntity = gitlabServiceClient.createUser(projectsLimit, gitlabTransferDTO);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             LOGGER.info("error.gitlab.user.create");
             throw new CommonException(e.getMessage(), e);
         }
@@ -74,7 +74,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
         try {
             userDTOResponseEntity = gitlabServiceClient.queryUserByUserName(userName);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return null;
         }
         return userDTOResponseEntity.getBody();
@@ -84,7 +84,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
         try {
             userDTOResponseEntity = gitlabServiceClient.queryAdminUser();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         return userDTOResponseEntity.getBody();
@@ -95,7 +95,7 @@ public class GitlabServiceClientOperator {
         try {
             userDTOResponseEntity = gitlabServiceClient.updateGitLabUser(
                     userId, projectsLimit, userReqDTO);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         return userDTOResponseEntity.getBody();
@@ -112,7 +112,7 @@ public class GitlabServiceClientOperator {
         user.setPassword(Objects.requireNonNull(password));
         try {
             gitlabServiceClient.updateUserPasswordByUserId(Objects.requireNonNull(userId), user);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -121,7 +121,7 @@ public class GitlabServiceClientOperator {
 
         try {
             gitlabServiceClient.enableUser(userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -129,7 +129,7 @@ public class GitlabServiceClientOperator {
     public void disableUser(Integer userId) {
         try {
             gitlabServiceClient.disableUser(userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -138,7 +138,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
         try {
             userDTOResponseEntity = gitlabServiceClient.queryUserById(userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         return userDTOResponseEntity.getBody();
@@ -182,7 +182,7 @@ public class GitlabServiceClientOperator {
     public List<CiVariableVO> batchSaveGroupVariable(Integer gitlabGroupId, Integer userId, List<CiVariableVO> variableVOS) {
         try {
             return gitlabServiceClient.batchSaveGroupVariable(gitlabGroupId, userId, variableVOS).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -190,7 +190,7 @@ public class GitlabServiceClientOperator {
     public List<CiVariableVO> batchSaveProjectVariable(Integer gitlabProjectId, Integer userId, List<CiVariableVO> ciVariableVOList) {
         try {
             return gitlabServiceClient.batchSaveProjectVariable(gitlabProjectId, userId, ciVariableVOList).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -198,7 +198,7 @@ public class GitlabServiceClientOperator {
     public void batchDeleteGroupVariable(Integer gitlabGroupId, Integer userId, List<String> keys) {
         try {
             gitlabServiceClient.batchGroupDeleteVariable(gitlabGroupId, userId, keys);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -206,7 +206,7 @@ public class GitlabServiceClientOperator {
     public void batchDeleteProjectVariable(Integer gitlabProjectId, Integer userId, List<String> keys) {
         try {
             gitlabServiceClient.batchProjectDeleteVariable(gitlabProjectId, userId, keys);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -217,7 +217,7 @@ public class GitlabServiceClientOperator {
         try {
             impersonationTokens = gitlabServiceClient
                     .listProjectToken(userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             gitUtil.deleteWorkingDirectory(name);
             gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
@@ -233,7 +233,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
             impersonationToken = gitlabServiceClient.createProjectToken(userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             gitUtil.deleteWorkingDirectory(name);
             gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
@@ -252,7 +252,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
             impersonationToken = gitlabServiceClient.createProjectToken(userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return null;
         }
         return impersonationToken.getBody().getToken();
@@ -262,7 +262,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<GroupDTO> groupDTOResponseEntity;
         try {
             groupDTOResponseEntity = gitlabServiceClient.queryGroupByName(groupName, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         if (groupDTOResponseEntity != null) {
@@ -276,7 +276,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<GroupDTO> groupDTOResponseEntity;
         try {
             groupDTOResponseEntity = gitlabServiceClient.createGroup(groupDTO, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         return groupDTOResponseEntity.getBody();
@@ -351,7 +351,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setCommitMessage(commitMessage);
             fileCreationVO.setUserId(userId);
             gitlabServiceClient.deleteFile(projectId, fileCreationVO);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.file.delete", e, path);
         }
     }
@@ -359,7 +359,7 @@ public class GitlabServiceClientOperator {
     public void deleteProjectByName(String groupName, String projectName, Integer userId) {
         try {
             gitlabServiceClient.deleteProjectByName(groupName, projectName, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.app.delete", e);
         }
     }
@@ -367,7 +367,7 @@ public class GitlabServiceClientOperator {
     public Boolean getFile(Integer projectId, String branch, String filePath) {
         try {
             gitlabServiceClient.getFile(projectId, branch, filePath);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return false;
         }
         return true;
@@ -382,7 +382,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setPushAccessLevel(pushAccessLevel);
             gitlabServiceClient.createProtectedBranch(
                     projectId, gitlabTransferDTO, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.branch.create", e);
         }
     }
@@ -390,7 +390,7 @@ public class GitlabServiceClientOperator {
     public void deleteProjectById(Integer projectId, Integer userId) {
         try {
             gitlabServiceClient.deleteProjectById(projectId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -403,7 +403,7 @@ public class GitlabServiceClientOperator {
     public ProjectHookDTO createWebHook(Integer projectId, Integer userId, ProjectHookDTO projectHookDTO) {
         try {
             return gitlabServiceClient.createProjectHook(projectId, userId, projectHookDTO).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.projecthook.create", e);
 
         }
@@ -414,7 +414,7 @@ public class GitlabServiceClientOperator {
         try {
             projectHookResponseEntity = gitlabServiceClient
                     .updateProjectHook(projectId, hookId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
         }
         return projectHookResponseEntity.getBody();
@@ -424,7 +424,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient
                     .createProject(groupId, projectName, userId, visibility).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.gitlab.project.create", e);
 
         }
@@ -433,7 +433,7 @@ public class GitlabServiceClientOperator {
     public GitlabProjectDTO queryProjectById(Integer projectId) {
         try {
             return gitlabServiceClient.queryProjectById(projectId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -441,7 +441,7 @@ public class GitlabServiceClientOperator {
     public GitlabProjectDTO queryProjectByName(String groupName, String projectName, Integer userId) {
         try {
             return gitlabServiceClient.queryProjectByName(userId, groupName, projectName).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -449,7 +449,7 @@ public class GitlabServiceClientOperator {
     public List<ProjectHookDTO> listProjectHook(Integer projectId, Integer userId) {
         try {
             return gitlabServiceClient.listProjectHook(projectId, userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -457,7 +457,7 @@ public class GitlabServiceClientOperator {
     public List<CiVariableVO> listAppServiceVariable(Integer projectId, Integer userId) {
         try {
             return gitlabServiceClient.listAppServiceVariable(projectId, userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.devops.ci.variable.key.list");
         }
     }
@@ -465,7 +465,7 @@ public class GitlabServiceClientOperator {
     public List<CiVariableVO> listProjectVariable(Integer projectId, Integer userId) {
         try {
             return gitlabServiceClient.listProjectVariable(projectId, userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.devops.ci.variable.key.list");
         }
     }
@@ -474,7 +474,7 @@ public class GitlabServiceClientOperator {
     public List<DeployKeyDTO> listDeployKey(Integer projectId, Integer userId) {
         try {
             return gitlabServiceClient.listDeploykey(projectId, userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -485,7 +485,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setTitle(title);
             gitlabTransferDTO.setSshKey(key);
             gitlabServiceClient.createDeploykey(projectId, gitlabTransferDTO, canPush, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.deploykey.create", e);
         }
     }
@@ -518,7 +518,7 @@ public class GitlabServiceClientOperator {
     public List<GitlabProjectDTO> listProjectByUser(Integer userId) {
         try {
             return gitlabServiceClient.listProjectByUser(userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.project.get.by.userId", e);
         }
     }
@@ -532,7 +532,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setTitle(title);
             gitlabTransferDTO.setDescription(description);
             return gitlabServiceClient.createMergeRequest(projectId, gitlabTransferDTO, userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -556,7 +556,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setMsg(msg);
             gitlabTransferDTO.setReleaseNotes(releaseNotes);
             gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
         }
     }
@@ -570,7 +570,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setTagName(tag);
             gitlabTransferDTO.setReleaseNotes(releaseNotes);
             return gitlabServiceClient.updateTag(gitLabProjectId, gitlabTransferDTO, userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
         }
     }
@@ -578,7 +578,7 @@ public class GitlabServiceClientOperator {
     public void deleteTag(Integer gitLabProjectId, String tag, Integer userId) {
         try {
             gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("delete gitlab tag failed: " + e.getMessage(), e);
         }
     }
@@ -592,13 +592,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setSourceBranch(baseBranch);
             responseEntity =
                     gitlabServiceClient.createBranch(projectId, gitlabTransferDTO, userId);
-        } catch (FeignException e) {
-            if (e.status() == 403) {
-                throw new CommonException("user gitlab role no permission create branch", e);
-            }
-            if (e.status() == 500) {
-                throw new CommonException("error.branch.insert", e);
-            }
+        } catch (Exception e) {
             throw new CommonException("error.branch.create", e);
         }
         return responseEntity.getBody();
@@ -608,7 +602,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<List<BranchDTO>> responseEntity;
         try {
             responseEntity = gitlabServiceClient.listBranch(projectId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.branch.get", e);
         }
         List<BranchDTO> branches = responseEntity.getBody();
@@ -724,7 +718,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<List<TagDTO>> tagResponseEntity;
         try {
             tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.tags.get", e);
         }
         return tagResponseEntity.getBody();
@@ -734,7 +728,7 @@ public class GitlabServiceClientOperator {
     public BranchDTO queryBranch(Integer gitlabProjectId, String branch) {
         try {
             return gitlabServiceClient.queryBranch(gitlabProjectId, branch).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.branch.get", e);
 
         }
@@ -747,7 +741,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setFrom(from);
             gitlabTransferDTO.setTo(to);
             return gitlabServiceClient.queryCompareResult(gitlabProjectId, gitlabTransferDTO).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.diffs.get", e);
         }
     }
@@ -773,7 +767,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setBranchName(branchName);
             gitlabTransferDTO.setSince(date);
             return gitlabServiceClient.getCommits(gitLabProjectId, gitlabTransferDTO).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -782,7 +776,7 @@ public class GitlabServiceClientOperator {
     public List<BranchDTO> listBranch(Integer gitlabProjectId, Integer userId) {
         try {
             return gitlabServiceClient.listBranch(gitlabProjectId, userId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -792,7 +786,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<List<GitlabPipelineDTO>> responseEntity;
         try {
             responseEntity = gitlabServiceClient.listPipeline(projectId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return new ArrayList<>();
         }
         return responseEntity.getBody();
@@ -804,7 +798,7 @@ public class GitlabServiceClientOperator {
         try {
             responseEntity =
                     gitlabServiceClient.pagePipeline(projectId, page, size, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return new ArrayList<>();
         }
         return responseEntity.getBody();
@@ -815,7 +809,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<GitlabPipelineDTO> responseEntity;
         try {
             responseEntity = gitlabServiceClient.queryPipeline(projectId, pipelineId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         return responseEntity.getBody();
@@ -826,7 +820,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<CommitDTO> responseEntity;
         try {
             responseEntity = gitlabServiceClient.queryCommit(projectId, sha, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return null;
         }
         return responseEntity.getBody();
@@ -838,7 +832,7 @@ public class GitlabServiceClientOperator {
         try {
             responseEntity = gitlabServiceClient.listJobs(Objects.requireNonNull(projectId),
                     Objects.requireNonNull(pipelineId), userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return new ArrayList<>();
         }
         return responseEntity.getBody();
@@ -849,7 +843,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<Pipeline> pipeline;
         try {
             pipeline = gitlabServiceClient.retryPipeline(projectId, pipelineId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(ERROR_RETRY_PIPELINE_FILED);
         }
         return pipeline.getBody();
@@ -860,7 +854,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<Pipeline> pipeline;
         try {
             pipeline = gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(ERROR_CANCEL_PIPELINE_FILED);
         }
         return pipeline.getBody();
@@ -871,7 +865,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<List<CommitStatusDTO>> commitStatuse;
         try {
             commitStatuse = gitlabServiceClient.listCommitStatus(projectId, sha, useId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return Collections.emptyList();
         }
         return commitStatuse.getBody();
@@ -883,7 +877,7 @@ public class GitlabServiceClientOperator {
             List<CommitDTO> commitDTOS = new LinkedList<>();
             commitDTOS.addAll(gitlabServiceClient.listCommits(projectId, page, size, userId).getBody());
             return commitDTOS;
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
         }
     }
@@ -898,7 +892,7 @@ public class GitlabServiceClientOperator {
                 commitDTOS.addAll(responseEntity.getBody());
                 return commitDTOS;
             }
-        } catch (FeignException e) {
+        } catch (Exception e) {
             if (FeignResponseStatusCodeParse.parseStatusCode(e.getMessage()) == 404) {
                 return null;
             }
@@ -921,10 +915,7 @@ public class GitlabServiceClientOperator {
     public void deleteBranch(Integer projectId, String branchName, Integer userId) {
         try {
             gitlabServiceClient.deleteBranch(projectId, branchName, userId);
-        } catch (FeignException e) {
-            if (e.status() == 403) {
-                throw new CommonException("error.user.gitlab.role.no.permission.delete.branch");
-            }
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -932,7 +923,7 @@ public class GitlabServiceClientOperator {
     public List<MemberDTO> listMemberByProject(Integer projectId) {
         try {
             return gitlabServiceClient.listMemberByProject(projectId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -940,7 +931,7 @@ public class GitlabServiceClientOperator {
     public String getAdminToken() {
         try {
             return gitlabServiceClient.getAdminToken().getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
 
@@ -958,7 +949,7 @@ public class GitlabServiceClientOperator {
         try {
             ResponseEntity<Boolean> responseEntity = gitlabServiceClient.assignAdmin(Objects.requireNonNull(gitlabUserId));
             result = responseEntity == null ? Boolean.FALSE : responseEntity.getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
 
@@ -973,7 +964,7 @@ public class GitlabServiceClientOperator {
         try {
             ResponseEntity<Boolean> responseEntity = gitlabServiceClient.deleteAdmin(Objects.requireNonNull(gitlabUserId));
             result = responseEntity == null ? Boolean.FALSE : responseEntity.getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
 
@@ -1012,7 +1003,7 @@ public class GitlabServiceClientOperator {
                 return Collections.emptyList();
             }
             return resp.getBody();
-        } catch (FeignException ex) {
+        } catch (Exception ex) {
             throw new CommonException(ex);
         }
     }
@@ -1090,7 +1081,7 @@ public class GitlabServiceClientOperator {
             pathContent.forEach((filePath, fileContent) -> actions.add(new CommitActionDTO(CommitActionDTO.Action.CREATE, filePath, fileContent)));
             CommitPayloadDTO commitPayloadDTO = new CommitPayloadDTO(Objects.requireNonNull(branch), Objects.requireNonNull(commitMessage), actions);
             gitlabServiceClient.createCommit(Objects.requireNonNull(gitlabProjectId), Objects.requireNonNull(gitlabUserId), commitPayloadDTO);
-        } catch (FeignException ex) {
+        } catch (Exception ex) {
             throw new CommonException("error.manipulate.gitlab.files");
         }
     }
@@ -1098,7 +1089,7 @@ public class GitlabServiceClientOperator {
     public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
         try {
             return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -1107,7 +1098,7 @@ public class GitlabServiceClientOperator {
         ResponseEntity<Pipeline> pipeline;
         try {
             pipeline = gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
         }
         return pipeline.getBody();
