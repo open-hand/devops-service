@@ -121,7 +121,55 @@ export default (
         },
       }),
     },
-  }, {
+  },
+  {
+    // name: 'bsms',
+    name: 'deployType',
+    type: 'string',
+    label: '部署模式',
+    defaultValue: 'create',
+  },
+  {
+    name: 'instanceName',
+    type: 'string',
+    label: '实例名称',
+    validator: (value, name, record) => checkName(value, projectId, record),
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdDeploy'
+          && record.get('deployType') === 'create',
+    },
+    defaultValue: getDefaultInstanceName(appServiceCode),
+  },
+  {
+    name: 'instanceId',
+    type: 'string',
+    label: '选择要替换的实例',
+    textField: 'code',
+    valueField: 'id',
+    dynamicProps: {
+      required: ({ record }) => record.get('deployType') === 'update',
+      disabled: ({ record }) => !record.get('envId'),
+      lookupAxiosConfig: ({ record }) => ({
+        method: 'get',
+        url:
+            record.get('envId')
+            && `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get(
+              'appServiceId',
+            )}&env_id=${record.get('envId')}&random=${random}`,
+        transformResponse: (res) => {
+          let newRes = res;
+          try {
+            newRes = JSONbig.parse(newRes);
+            useStore.setInstanceList(newRes);
+            return newRes;
+          } catch (e) {
+            return newRes;
+          }
+        },
+      }),
+    },
+  },
+  {
     name: 'valueId',
     type: 'string',
     label: '部署配置',
@@ -132,19 +180,39 @@ export default (
       disabled: ({ record }) => !record.get('envId'),
       lookupAxiosConfig: ({ record }) => ({
         method: 'get',
-        url: record.get('envId') && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get('appServiceId')}&env_id=${record.get('envId')}&random=${random}`,
+        url:
+            record.get('envId')
+            && `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${PipelineCreateFormDataSet.current.get(
+              'appServiceId',
+            )}&env_id=${record.get('envId')}&random=${random}&createValueRandom=${useStore.getValueIdRandom}`,
         transformResponse: (res) => {
           let newRes = res;
           try {
-            newRes = JSONbig.parse(res);
+            newRes = JSON.parse(res);
+            newRes.push({
+              name: '创建部署配置',
+              id: 'create',
+            });
             useStore.setValueIdList(newRes);
             return newRes;
           } catch (e) {
+            newRes.push({
+              name: '创建部署配置',
+              id: 'create',
+            });
             useStore.setValueIdList(newRes);
             return newRes;
           }
         },
       }),
+    },
+  },
+  {
+    name: 'hostIp',
+    type: 'string',
+    label: 'IP',
+    dynamicProps: {
+      required: ({ record }) => record.get('type') === 'cdHost',
     },
   }, {
     name: 'hostIp',
