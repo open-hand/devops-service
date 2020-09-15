@@ -236,4 +236,9 @@ public class GitOpsConstants {
     public static final String CHOERODON_MAVEN_REPO_URL = "${CHOERODON_MAVEN_REPO_URL}";
 
     public static final List<String> IGNORE_RESOURCES = Arrays.asList("ChoerodonIstioOperator", "IstioOperator", "VirtualService");
+
+    /**
+     * ip的正则表达式
+     */
+    public static final String IP_PATTERN = "^((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}$";
 }

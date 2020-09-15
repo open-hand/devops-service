@@ -12,6 +12,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             column(name: 'type', type: 'VARCHAR(63)', remarks: '主机类型') {
                 constraints(nullable: false)
             }
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
+                constraints(nullable: false)
+            }
             column(name: 'host_status', type: 'VARCHAR(63)', remarks: '主机状态') {
                 constraints(nullable: false)
             }
@@ -21,7 +24,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             column(name: 'host_ip', type: 'VARCHAR(15)', remarks: '主机ip') {
                 constraints(nullable: false)
             }
-            column(name: 'ssh_port', type: 'VARCHAR(5)', remarks: '主机ssh的端口') {
+            column(name: 'ssh_port', type: 'SMALLINT UNSIGNED', remarks: '主机ssh的端口') {
                 constraints(nullable: false)
             }
             column(name: 'auth_type', type: 'VARCHAR(63)', remarks: '认证类型') {
@@ -33,7 +36,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             column(name: 'password', type: 'VARCHAR(2048)', remarks: '密码/rsa秘钥') {
                 constraints(nullable: false)
             }
-            column(name: 'jmeter_port', type: 'VARCHAR(5)', remarks: 'jmeter进程的端口号') {
+            column(name: 'jmeter_port', type: 'SMALLINT UNSIGNED', remarks: 'jmeter进程的端口号') {
                 constraints(nullable: true)
             }
             column(name: 'jmeter_path', type: 'VARCHAR(512)', remarks: 'jmeter二进制文件的路径') {
@@ -46,5 +49,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
+
+        addUniqueConstraint(tableName: 'devops_host',
+                constraintName: 'uk_project_host_name', columnNames: 'project_id,name')
+        addUniqueConstraint(tableName: 'devops_host',
+                constraintName: 'uk_project_ip_port', columnNames: 'project_id,host_ip,ssh_port')
+        addUniqueConstraint(tableName: 'devops_host',
+                constraintName: 'uk_project_ip_jmeter_port', columnNames: 'project_id,host_ip,jmeter_port')
     }
 }
