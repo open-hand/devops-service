@@ -1,10 +1,22 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
@@ -15,18 +27,6 @@ import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -126,7 +126,7 @@ public class BaseServiceClientOperator {
             ResponseEntity<Page<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
                     FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
             return pageInfoResponseEntity.getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
@@ -171,7 +171,7 @@ public class BaseServiceClientOperator {
         try {
             return baseServiceClient
                     .listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, labelName).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.user.get.byGitlabLabel");
         }
     }
@@ -184,7 +184,7 @@ public class BaseServiceClientOperator {
                 return null;
             }
             return userDOResponseEntity.getBody().getContent().get(0);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             LOGGER.error("get user by email {} error", email);
             return null;
         }
@@ -251,7 +251,7 @@ public class BaseServiceClientOperator {
         Boolean isGitlabProjectOwner;
         try {
             isGitlabProjectOwner = baseServiceClient.checkIsGitlabProjectOwner(userId, projectId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         return isGitlabProjectOwner;
@@ -261,7 +261,7 @@ public class BaseServiceClientOperator {
         Boolean isGitLabOrgOwner;
         try {
             isGitLabOrgOwner = baseServiceClient.checkIsGitlabOrgOwner(userId, projectId).getBody();
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException(e);
         }
         return isGitLabOrgOwner;

@@ -1,5 +1,13 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.List;
+import java.util.Map;
+import javax.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
@@ -7,13 +15,6 @@ import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -44,7 +45,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<GitLabUserDTO> queryUserByUserName(String username) {
-        return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.user.get");
     }
 
     @Override
@@ -124,12 +125,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<GitlabPipelineDTO>> listPipeline(Integer projectId, Integer userId) {
-        return new ResponseEntity("error.pipeline.select", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.pipeline.select");
     }
 
     @Override
     public ResponseEntity<List<GitlabPipelineDTO>> pagePipeline(Integer projectId, Integer page, Integer size, Integer userId) {
-        return new ResponseEntity("error.pipelines.select", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.pipelines.select");
     }
 
     @Override
@@ -139,7 +140,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<JobDTO>> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
-        return new ResponseEntity("error.job.select", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.job.select");
     }
 
     @Override
@@ -154,7 +155,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<CommitDTO>> listCommits(Integer projectId, Integer mergeRequestId, Integer userId) {
-        return new ResponseEntity("error.mr.commits.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.mr.commits.get");
     }
 
     @Override
@@ -170,7 +171,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<CommitDTO> queryCommit(Integer projectId, String sha, Integer userId) {
 
-        return new ResponseEntity("error.commit.select", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.commit.select");
     }
 
     @Override
@@ -201,7 +202,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<RepositoryFileDTO> getFile(Integer projectId, String commit, String filePath) {
-        return new ResponseEntity("error.file.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.file.get");
     }
 
 
