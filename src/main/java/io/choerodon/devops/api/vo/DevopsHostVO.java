@@ -1,12 +1,6 @@
-package io.choerodon.devops.infra.dto;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 主机配置
@@ -14,10 +8,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author zmf
  * @since 2020/9/14
  */
-@Table(name = "devops_host")
-public class DevopsHostDTO extends AuditDomain {
-    @Id
-    @GeneratedValue
+public class DevopsHostVO {
+    @ApiModelProperty("主键")
     private Long id;
 
     @ApiModelProperty("主机名称")
@@ -28,9 +20,6 @@ public class DevopsHostDTO extends AuditDomain {
      */
     @ApiModelProperty("主机类型")
     private String type;
-
-    @ApiModelProperty("项目id")
-    private Long projectId;
 
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
@@ -48,7 +37,7 @@ public class DevopsHostDTO extends AuditDomain {
     private String hostIp;
 
     @ApiModelProperty("主机ssh的端口")
-    private Integer sshPort;
+    private String sshPort;
 
     /**
      * {@link io.choerodon.devops.infra.enums.CdHostAccountType}
@@ -59,11 +48,8 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("用户名")
     private String username;
 
-    @ApiModelProperty("密码/rsa秘钥")
-    private String password;
-
     @ApiModelProperty("jmeter进程的端口号")
-    private Integer jmeterPort;
+    private String jmeterPort;
 
     @ApiModelProperty("jmeter二进制文件的路径")
     private String jmeterPath;
@@ -92,14 +78,6 @@ public class DevopsHostDTO extends AuditDomain {
         this.type = type;
     }
 
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
     public String getHostStatus() {
         return hostStatus;
     }
@@ -124,6 +102,14 @@ public class DevopsHostDTO extends AuditDomain {
         this.hostIp = hostIp;
     }
 
+    public String getSshPort() {
+        return sshPort;
+    }
+
+    public void setSshPort(String sshPort) {
+        this.sshPort = sshPort;
+    }
+
     public String getAuthType() {
         return authType;
     }
@@ -140,27 +126,11 @@ public class DevopsHostDTO extends AuditDomain {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Integer getSshPort() {
-        return sshPort;
-    }
-
-    public void setSshPort(Integer sshPort) {
-        this.sshPort = sshPort;
-    }
-
-    public Integer getJmeterPort() {
+    public String getJmeterPort() {
         return jmeterPort;
     }
 
-    public void setJmeterPort(Integer jmeterPort) {
+    public void setJmeterPort(String jmeterPort) {
         this.jmeterPort = jmeterPort;
     }
 
