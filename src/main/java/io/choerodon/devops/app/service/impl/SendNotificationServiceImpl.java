@@ -1099,7 +1099,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendInstanceStatusUpdate(String code, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String preStatus, String currentStatus) {
+    public void sendInstanceStatusUpdate(String code, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String currentStatus) {
         doWithTryCatchAndLog(
                 () -> {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceInstanceDTO.getProjectId());
@@ -1123,7 +1123,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     }
                     if (MessageCodeConstants.UPDATE_INSTANCE_SUCCESS.equalsIgnoreCase(code) || MessageCodeConstants.CREATE_INSTANCE_FAIL.equalsIgnoreCase(code)) {
                         webHookParams.put("currentStatus", currentStatus);
-                        webHookParams.put("deployPreStatus", preStatus);
                         webHookParams.put("appName", appServiceDTO.getName());
                         webHookParams.put("deployVersion", appServiceInstanceDTO.getAppServiceVersion());
                     }
