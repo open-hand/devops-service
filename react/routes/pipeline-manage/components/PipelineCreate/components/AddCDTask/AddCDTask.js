@@ -89,9 +89,9 @@ export default observer(() => {
         delete ds.instanceId;
       } else {
         // 如果是替换 则除了传id 还需要传对应的name
-        const instanceNaMe = ADDCDTaskUseStore.getInstanceIdList
+        const instanceName = ADDCDTaskUseStore.getInstanceList
           ?.find((i) => i.id === ds.instanceId)?.code;
-        ds.instanceName = instanceNaMe;
+        ds.instanceName = instanceName;
       }
     }
     if (ds.type === 'cdHost') {

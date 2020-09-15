@@ -8,6 +8,16 @@ export default function useStore() {
 
     imageList: [],
 
+    instanceList: [],
+
+    get getInstanceList() {
+      return this.instanceIdList;
+    },
+
+    setInstanceList(data) {
+      this.instanceIdList = data;
+    },
+
     valueIdRandom: undefined,
 
     get getValueIdRandom() {
