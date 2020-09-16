@@ -8,7 +8,9 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.Functions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.utils.ConvertUtils;
@@ -40,6 +42,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private BaseServiceClientOperator baseServiceClientOperator;
 
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         // 补充校验参数
@@ -51,10 +54,33 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
+        devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
+        devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
         return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
-        // TODO 再次异步校准状态
     }
 
+    @Async
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void asyncBatchCorrectStatus(Long projectId, List<Long> hostIds) {
+        // TODO 待优化
+        hostIds.forEach(hostId -> {
+            DevopsHostDTO hostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+            if (hostDTO == null) {
+                return;
+            }
+            DevopsHostConnectionTestVO devopsHostConnectionTestVO = ConvertUtils.convertObject(hostDTO, DevopsHostConnectionTestVO.class);
+
+            DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
+            hostDTO.setHostStatus(result.getSshStatus());
+            hostDTO.setHostCheckError(result.getHostCheckError());
+            hostDTO.setJmeterStatus(result.getJmeterStatus());
+            hostDTO.setJmeterCheckError(result.getJmeterCheckError());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostMapper, hostDTO, "error.update.host");
+        });
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public DevopsHostVO updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
@@ -72,7 +98,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostDTO toUpdate = ConvertUtils.convertObject(devopsHostUpdateRequestVO, DevopsHostDTO.class);
         toUpdate.setId(devopsHostDTO.getId());
         toUpdate.setObjectVersionNumber(devopsHostDTO.getObjectVersionNumber());
-        devopsHostMapper.updateByPrimaryKeySelective(toUpdate);
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostMapper, toUpdate, "error.update.host");
         return queryHost(projectId, hostId);
     }
 
@@ -81,6 +107,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return ConvertUtils.convertObject(devopsHostMapper.selectByPrimaryKey(hostId), DevopsHostVO.class);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteHost(Long projectId, Long hostId) {
         // TODO 校验是否可删除
