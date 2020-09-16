@@ -13,6 +13,10 @@ interface ContextProps {
   projectId: number,
   listDs: DataSet,
   searchDs: DataSet,
+  hostTabKeys:{
+    key:string,
+    text:string,
+  }[],
 }
 
 const Store = createContext({} as ContextProps);
@@ -43,6 +47,17 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     selection: 'single' as DataSetSelection,
   }), []);
 
+  const hostTabKeys = useMemo(() => [
+    {
+      key: 'test',
+      text: '测试主机',
+    },
+    {
+      key: 'deploy',
+      text: '部署主机',
+    },
+  ], []);
+
   const listDs = useMemo(() => new DataSet(ListDataSet({ projectId })), [projectId]);
   const searchDs = useMemo(() => new DataSet(SearchDataSet({ projectId, statusDs })), [projectId]);
 
@@ -53,6 +68,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     formatMessage,
     listDs,
     searchDs,
+    hostTabKeys,
   };
   return (
     <Store.Provider value={value}>

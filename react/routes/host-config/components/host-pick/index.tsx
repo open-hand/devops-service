@@ -8,22 +8,17 @@ import './index.less';
 interface Props {
   onChange?(value: string): void,
   defaultActiveKey?: string,
+  hostTabKeys: {
+    key:string,
+    text:string,
+  }[],
 }
 
 const HostPick: FC<Props> = memo(({
   onChange,
   defaultActiveKey = 'test',
+  hostTabKeys,
 }) => {
-  const keys = useMemo(() => [
-    {
-      key: 'test',
-      text: '测试主机',
-    },
-    {
-      key: 'deploy',
-      text: '部署主机',
-    },
-  ], []);
   const [activeKey, setActiveKey] = useState(defaultActiveKey);
 
   const handleClick = (value: string) => {
@@ -33,7 +28,7 @@ const HostPick: FC<Props> = memo(({
     }
   };
 
-  const getContent = () => keys.map(({ key, text }) => (
+  const getContent = () => hostTabKeys.map(({ key, text }) => (
     <>
       <div
         key={key}

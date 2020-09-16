@@ -18,6 +18,7 @@ const ContentHeader: React.FC<any> = observer((): any => {
     intlPrefix,
     formatMessage,
     searchDs,
+    hostTabKeys,
   } = useHostConfigStore();
 
   const handleChange = () => {
@@ -29,7 +30,7 @@ const ContentHeader: React.FC<any> = observer((): any => {
 
   return (
     <div className={`${prefixCls}-content-search`}>
-      <HostPick onChange={handleChange} />
+      <HostPick onChange={handleChange} hostTabKeys={hostTabKeys} />
       <Form
         dataSet={searchDs}
         columns={6}
