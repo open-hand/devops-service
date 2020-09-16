@@ -15,6 +15,8 @@ interface ContextProps {
   projectId: number,
   formDs: DataSet,
   modal: any,
+  refresh(): void,
+  hostId?: string,
 }
 
 const Store = createContext({} as ContextProps);
@@ -37,7 +39,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     data: [
       {
         text: formatMessage({ id: `${intlPrefix}.type.test` }),
-        value: 'test',
+        value: 'distribute_test',
       },
       {
         text: formatMessage({ id: `${intlPrefix}.type.deploy` }),
@@ -50,11 +52,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     data: [
       {
         text: formatMessage({ id: `${intlPrefix}.account.password` }),
-        value: 'password',
+        value: 'accountPassword',
       },
       {
         text: formatMessage({ id: `${intlPrefix}.account.token` }),
-        value: 'token',
+        value: 'publickey',
       },
     ],
     selection: 'single' as DataSetSelection,
@@ -66,6 +68,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
       projectId,
       typeDs,
       accountDs,
+      hostId,
     })), [projectId],
   );
 
@@ -75,7 +78,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     } else {
       formDs.create();
     }
-  });
+  }, [projectId, hostId]);
 
   const value = {
     ...props,

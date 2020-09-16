@@ -5,6 +5,12 @@ import './index.less';
 
 const JmeterGuide: React.FC<any> = (): any => {
   const prefixCls = 'c7ncd-host-jmeter-guide';
+  const text = useMemo(() => ('./jmeter-server \n' +
+    '-Djava.rmi.server.hostname=${你的主机ip地址} \n' +
+    '-Dserver.rmi.ssl.disable=true \n' +
+    '-Dserver.rmi.port=1099 \n' +
+    '-Dserver.rmi.localport=1099 \n' +
+    '-Dserver_port=1099. '), []);
   const [isExpand, setExpand] = useState(false);
 
   const handleExpand = () => {
@@ -42,17 +48,7 @@ const JmeterGuide: React.FC<any> = (): any => {
         <span className={`${prefixCls}-content-item`}>
           5. 执行以下命令(注意变量替换):
           <span className={`${prefixCls}-content-item-text`}>
-            ./jmeter-server
-            <br />
-            -Djava.rmi.server.hostname=
-            <br />
-            -Dserver.rmi.ssl.disable=true
-            <br />
-            -Dserver.rmi.port=1099
-            <br />
-            -Dserver.rmi.localport=1099
-            <br />
-            -Dserver_port=1099.
+            {text}
           </span>
         </span>
         <span className={`${prefixCls}-content-failed`}>
