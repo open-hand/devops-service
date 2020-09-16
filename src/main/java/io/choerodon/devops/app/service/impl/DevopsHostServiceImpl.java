@@ -5,16 +5,17 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
-import io.choerodon.devops.api.vo.DevopsHostCreateRequestVO;
-import io.choerodon.devops.api.vo.DevopsHostUpdateRequestVO;
-import io.choerodon.devops.api.vo.DevopsHostVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.DevopsHostType;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
+import io.choerodon.devops.infra.util.JmeterUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.SshUtil;
 
 /**
  * @author zmf
@@ -40,6 +41,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
+        // TODO 再次异步校准状态
     }
 
     @Override
@@ -80,5 +82,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         devopsHostMapper.deleteByPrimaryKey(hostId);
+    }
+
+    @Override
+    public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
+        DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
+        boolean sshConnected = SshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
+        result.setSshStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+        boolean jmeterConnected = JmeterUtil.testJmeterConnections(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
+        result.setJmeterStatus(jmeterConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+        return result;
     }
 }
