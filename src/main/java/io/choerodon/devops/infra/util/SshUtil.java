@@ -61,7 +61,7 @@ public class SshUtil {
     private static void addAuth(SSHClient ssh, String hostIp, Integer sshPort, String authType, String username, String password) throws IOException {
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
         ssh.connect(hostIp, sshPort);
-        if (CdHostAccountType.PASSWORD.value().equals(authType)) {
+        if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(authType)) {
             ssh.authPassword(username, password);
         } else {
             KeyProvider keyProvider = ssh.loadKeys(password, null, null);
