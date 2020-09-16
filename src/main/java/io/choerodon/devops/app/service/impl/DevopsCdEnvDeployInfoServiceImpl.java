@@ -24,6 +24,7 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_ENV_ID_IS_NULL = "error.env.id.is.null";
     private static final String ERROR_VALUE_ID_IS_NULL = "error.value.id.is.null";
+    private static final String ERROR_INSTANCE_NAME_IS_NULL = "error.instance.name.id.is.null";
     private static final String ERROR_PARAM_IS_INVALID = "error.param.is.invalid";
 
     private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "error.deploy.info.id.is.null";
@@ -40,6 +41,8 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
         Assert.notNull(devopsCdEnvDeployInfoDTO.getAppServiceId(), ERROR_APP_SVC_ID_IS_NULL);
         Assert.notNull(devopsCdEnvDeployInfoDTO.getEnvId(), ERROR_ENV_ID_IS_NULL);
         Assert.notNull(devopsCdEnvDeployInfoDTO.getValueId(), ERROR_VALUE_ID_IS_NULL);
+        Assert.notNull(devopsCdEnvDeployInfoDTO.getInstanceName(), ERROR_INSTANCE_NAME_IS_NULL);
+
         if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
             if (devopsCdEnvDeployInfoDTO.getInstanceName() == null || devopsCdEnvDeployInfoDTO.getInstanceId() != null) {
                 throw new CommonException(ERROR_PARAM_IS_INVALID);
