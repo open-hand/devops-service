@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+import React from 'react';
 import { Tooltip } from 'choerodon-ui';
 import { Button, Modal } from 'choerodon-ui/pro';
 import { Choerodon, Permission } from '@choerodon/boot';
@@ -64,14 +66,15 @@ const DetailItem = (props) => {
       getDetailData,
       retryCdJob, // retryCdJob是部署类型任务的重试
     },
+    projectId,
   } = usePipelineManageStore();
+
   const {
     jobDurationSeconds,
     jobStatus,
     startedDate,
     finishedDate,
     itemType,
-    projectId,
     gitlabJobId,
     jobName,
     handleRefresh,

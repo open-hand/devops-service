@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Spin } from 'choerodon-ui';
 import map from 'lodash/map';
 import isEqual from 'lodash/isEqual';
 import DetailHeader from './components/detailHeader';
@@ -55,6 +54,7 @@ export default observer((props) => {
     gitlabTriggerRef,
     commit,
     devopsPipelineRecordRelId: recordDevopsPipelineRecordRelId,
+    cdRecordId,
   } = getDetailData;
 
   useEffect(() => {
@@ -83,6 +83,7 @@ export default observer((props) => {
           stageType={type}
           jobRecordVOList={jobRecordVOList}
           stageId={stageId}
+          cdRecordId={cdRecordId}
         />
       );
     }) : (

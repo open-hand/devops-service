@@ -42,7 +42,9 @@ export default observer((props) => {
     history,
     location,
     stageId,
+    cdRecordId,
   } = props;
+
 
   const renderItem = () => {
     const hasJobs = jobRecordVOList && jobRecordVOList.length > 0;
@@ -77,7 +79,10 @@ export default observer((props) => {
             jobDurationSeconds={durationSeconds}
             itemType={type}
             jobName={name}
+            gitlabJobId={gitlabJobId}
+            cdRecordId={cdRecordId}
             {...rest}
+            // {...props}
           />
         );
       })
