@@ -19,6 +19,7 @@ interface ContextProps {
     key:string,
     text:string,
   }[],
+  refresh():void,
 }
 
 const Store = createContext({} as ContextProps);
