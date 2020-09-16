@@ -23,5 +23,9 @@ export default ({ projectId }: ListProps): DataSetProps => ({
         params: [],
       },
     }),
+    destroy: ({ data: [data] }) => ({
+      url: apis.getDeleteHostUrl(projectId, data.id),
+      method: 'delete',
+    }),
   },
 });

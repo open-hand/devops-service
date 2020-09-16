@@ -28,6 +28,7 @@ const HostsItem:React.FC<any> = ({
     prefixCls,
     formatMessage,
     intlPrefix,
+    refresh,
   } = useHostConfigStore();
 
   const getMainStatus = useMemo(() => {
@@ -44,8 +45,8 @@ const HostsItem:React.FC<any> = ({
     record.set('hostStatus', 'operating');
   }
 
-  function handleDelete() {
-    listDs.delete(record, {
+  async function handleDelete() {
+    const modalProps = {
       key: Modal.key(),
       title: '删除主机',
       children: '确定要删除该主机配置吗？',
@@ -56,7 +57,11 @@ const HostsItem:React.FC<any> = ({
       cancelProps: {
         color: '#000',
       },
-    });
+    };
+    const res = await listDs.delete(record, modalProps);
+    if (res && res.success) {
+      refresh();
+    }
   }
 
   function handleModify() {
