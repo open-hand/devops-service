@@ -42,7 +42,7 @@ public class DevopsHostVO {
     private String hostIp;
 
     @ApiModelProperty("主机ssh的端口")
-    private String sshPort;
+    private Integer sshPort;
 
     /**
      * {@link io.choerodon.devops.infra.enums.CdHostAccountType}
@@ -54,7 +54,7 @@ public class DevopsHostVO {
     private String username;
 
     @ApiModelProperty("jmeter进程的端口号")
-    private String jmeterPort;
+    private Integer jmeterPort;
 
     @ApiModelProperty("jmeter二进制文件的路径")
     private String jmeterPath;
@@ -116,14 +116,6 @@ public class DevopsHostVO {
         this.hostIp = hostIp;
     }
 
-    public String getSshPort() {
-        return sshPort;
-    }
-
-    public void setSshPort(String sshPort) {
-        this.sshPort = sshPort;
-    }
-
     public String getAuthType() {
         return authType;
     }
@@ -140,11 +132,19 @@ public class DevopsHostVO {
         this.username = username;
     }
 
-    public String getJmeterPort() {
+    public Integer getSshPort() {
+        return sshPort;
+    }
+
+    public void setSshPort(Integer sshPort) {
+        this.sshPort = sshPort;
+    }
+
+    public Integer getJmeterPort() {
         return jmeterPort;
     }
 
-    public void setJmeterPort(String jmeterPort) {
+    public void setJmeterPort(Integer jmeterPort) {
         this.jmeterPort = jmeterPort;
     }
 
