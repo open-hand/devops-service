@@ -9,5 +9,5 @@ export default ({ projectId }: ListProps): DataSetProps => ({
   autoCreate: false,
   selection: false,
   paging: true,
-  pageSize: 20,
+  pageSize: 10,
 });

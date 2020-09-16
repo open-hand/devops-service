@@ -838,6 +838,7 @@ const pipelineManage = {
 
 const hostConfig = {
   'c7ncd.host.config.add': '创建主机',
+  'c7ncd.host.config.modify': '修改主机',
   'c7ncd.host.config.adjustment': '校准服务器状态',
   'c7ncd.host.config.status': '主机状态',
   'c7ncd.host.config.name': '主机名称',

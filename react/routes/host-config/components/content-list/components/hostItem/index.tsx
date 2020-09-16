@@ -1,28 +1,66 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { Action } from '@choerodon/boot';
 import UserInfo from '@/components/userInfo';
 import TimePopover from '@/components/timePopover';
+import { Tooltip, Modal } from 'choerodon-ui/pro';
 import StatusTagOutLine from '../../components/statusTagOutLine';
 import eventStopProp from '../../../../../../utils/eventStopProp';
 import { useHostConfigStore } from '../../../../stores';
+import CreateHost from '../../../create-host';
 
-interface HostsItemProps {
-}
-
-const HostsItem:React.FC<HostsItemProps> = () => {
+const HostsItem:React.FC<any> = ({
+  name,
+  jmeterStatus,
+  hostIp,
+  sshPort,
+  username,
+  jmeterPort,
+  jmeterPath,
+  imgUrl,
+  date,
+  listDs,
+  record,
+}) => {
   const {
     prefixCls,
     formatMessage,
+    intlPrefix,
   } = useHostConfigStore();
 
-  function handleCheck() {}
+  function handleCheck() {
+    record.set('jmeterStatus', 'operating');
+  }
 
-  function handleDelete() {}
+  function handleDelete() {
+    listDs.delete(record, {
+      key: Modal.key(),
+      title: '删除主机',
+      children: '确定要删除该主机配置吗？',
+      okText: formatMessage({ id: 'delete' }),
+      okProps: {
+        color: 'red',
+      },
+      cancelProps: {
+        color: '#000',
+      },
+    });
+  }
 
-  function handleModify() {}
+  function handleModify() {
+    Modal.open({
+      key: Modal.key(),
+      title: formatMessage({ id: `${intlPrefix}.modify` }),
+      style: {
+        width: 380,
+      },
+      drawer: true,
+      children: <CreateHost />,
+      okText: formatMessage({ id: 'save' }),
+    });
+  }
 
-  const actionData = [
+  const getActionData = useCallback(() => (jmeterStatus !== 'operating' ? [
     {
       service: [],
       text: '校准状态',
@@ -38,24 +76,26 @@ const HostsItem:React.FC<HostsItemProps> = () => {
       text: formatMessage({ id: 'delete' }),
       action: handleDelete,
     },
-  ];
+  ] : []), [jmeterStatus]);
 
   return (
     <div className={`${prefixCls}-content-list-item`}>
       <div className={`${prefixCls}-content-list-item-header`}>
         <div className={`${prefixCls}-content-list-item-header-left`}>
           <div className={`${prefixCls}-content-list-item-header-left-top`}>
-            <StatusTagOutLine status="success" />
-            <span className={`${prefixCls}-content-list-item-header-left-top-name`}>
-              主机001
-            </span>
+            <StatusTagOutLine status={jmeterStatus} />
+            <Tooltip title={name} placement="top">
+              <span className={`${prefixCls}-content-list-item-header-left-top-name`}>
+                {name}
+              </span>
+            </Tooltip>
           </div>
           <div className={`${prefixCls}-content-list-item-header-left-bottom`}>
             <div>
               <UserInfo
-                name="翁恺敏"
+                name={username}
                 showName={false}
-                avatar="https://minio.choerodon.com.cn/iam-service/file_11b8ef213e724602abd9facf66c0271a_u%3D2233506214%2C1519914781"
+                avatar={imgUrl}
               />
             </div>
             <div>
@@ -65,17 +105,19 @@ const HostsItem:React.FC<HostsItemProps> = () => {
                   color: 'rgba(58, 52, 95, 1)',
                   marginLeft: '4px',
                 }}
-                content="2020-09-04 14:27:23"
+                content={date}
               />
             </div>
           </div>
         </div>
-        <div className={`${prefixCls}-content-list-item-header-right`}>
-          <Action
-            data={actionData}
-            onClick={eventStopProp}
-          />
-        </div>
+        {jmeterStatus !== 'operating' && (
+          <div className={`${prefixCls}-content-list-item-header-right`}>
+            <Action
+              data={getActionData()}
+              onClick={eventStopProp}
+            />
+          </div>
+        )}
       </div>
       <main className={`${prefixCls}-content-list-item-main`}>
         <div className={`${prefixCls}-content-list-item-main-item`}>
@@ -83,7 +125,7 @@ const HostsItem:React.FC<HostsItemProps> = () => {
             IP与端口
           </span>
           <span>
-            172.23.40.37:22
+            {`${hostIp}：${sshPort}`}
           </span>
         </div>
         <div className={`${prefixCls}-content-list-item-main-item`}>
@@ -91,7 +133,7 @@ const HostsItem:React.FC<HostsItemProps> = () => {
             Jmeter端口
           </span>
           <span>
-            8080
+            {jmeterPort}
           </span>
         </div>
         <div className={`${prefixCls}-content-list-item-main-item`}>
@@ -99,8 +141,7 @@ const HostsItem:React.FC<HostsItemProps> = () => {
             Jmeter路径
           </span>
           <span>
-            /home/apache-jmeter -
-            4.0：8080
+            {jmeterPath}
           </span>
         </div>
       </main>

@@ -1,7 +1,8 @@
-export type statusKinds = 'success' | 'pending' | 'failed' | 'default';
+export type statusKinds = 'success' | 'operating' | 'failed' | 'default';
 
 export type statusObj = {
   text:string,
+  hoverText:string,
   bgColor:string,
   fontColor:string,
 }

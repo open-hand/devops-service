@@ -1,3 +1,4 @@
+import { Tooltip } from 'choerodon-ui/pro/lib';
 import React from 'react';
 
 import { StatusTagOutLineProps, statusKindsMap } from '../../interface';
@@ -11,21 +12,25 @@ const statusKindMap:statusKindsMap = {
     text: '成功',
     bgColor: 'rgba(31, 194, 187, 0.12)',
     fontColor: 'rgba(31, 194, 187, 1)',
+    hoverText: '测试连接：成功',
   },
-  pending: {
+  failed: {
     text: '失败',
     bgColor: 'rgba(247, 103, 118, 0.12)',
     fontColor: 'rgba(247, 103, 118, 1)',
+    hoverText: '测试连接：失败',
   },
-  failed: {
+  operating: {
     text: '连接中',
     bgColor: 'rgba(77, 144, 254, 0.12)',
     fontColor: 'rgba(77, 144, 254, 1)',
+    hoverText: '测试连接中',
   },
   default: {
     text: 'unknown',
     bgColor: 'rgba(216, 216, 216, 0.12)',
     fontColor: 'rgb(216, 216, 216)',
+    hoverText: '',
   },
 };
 
@@ -33,16 +38,18 @@ const StatusTag:React.FC<StatusTagOutLineProps> = ({
   fontSize,
   status,
 }) => (
-  <span
-    className={`${prefixCls}-statusTagOutLine`}
-    style={{
-      color: statusKindMap[status].fontColor,
-      backgroundColor: statusKindMap[status].bgColor,
-      fontSize: `${fontSize}px`,
-    }}
-  >
-    {statusKindMap[status].text}
-  </span>
+  <Tooltip title={statusKindMap[status].hoverText} placement="topRight">
+    <span
+      className={`${prefixCls}-statusTagOutLine`}
+      style={{
+        color: statusKindMap[status].fontColor,
+        backgroundColor: statusKindMap[status].bgColor,
+        fontSize: `${fontSize}px`,
+      }}
+    >
+      {statusKindMap[status].text}
+    </span>
+  </Tooltip>
 );
 
 StatusTag.defaultProps = {
