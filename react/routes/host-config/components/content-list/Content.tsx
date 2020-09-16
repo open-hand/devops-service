@@ -83,13 +83,12 @@ const ContentList: React.FC<any> = observer((): any => {
     prefixCls, intlPrefix, formatMessage, listDs,
   } = useHostConfigStore();
 
-  // if (listDs && listDs.status !== 'loading' && !listDs.length) {
-  //   return <EmptyPage />;
-  // }
-
   useEffect(() => {
-    listDs.loadData(data.concat(data).concat(data).concat(data));
   }, []);
+
+  if (listDs && listDs.status !== 'loading' && !listDs.length) {
+    return <EmptyPage />;
+  }
 
   return (
     <>

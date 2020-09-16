@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { Action } from '@choerodon/boot';
 import UserInfo from '@/components/userInfo';
@@ -10,15 +10,17 @@ import { useHostConfigStore } from '../../../../stores';
 import CreateHost from '../../../create-host';
 
 const HostsItem:React.FC<any> = ({
-  name,
-  jmeterStatus,
-  hostIp,
-  sshPort,
-  username,
-  jmeterPort,
-  jmeterPath,
-  imgUrl,
-  date,
+  sshPort, // 主机ssh的端口
+  hostStatus, // 主机状态
+  hostIp, // 主机ip
+  name, // 主机名称
+  id, // 主键
+  jmeterPort, // jmeter进程的端口号
+  jmeterStatus, // jmeter状态
+  authType, // 认证类型
+  type, // 主机类型 deploy / distribute_test
+  jmeterPath, // jmeter二进制文件的路径
+  username, // 用户名
   listDs,
   record,
 }) => {
@@ -28,8 +30,18 @@ const HostsItem:React.FC<any> = ({
     intlPrefix,
   } = useHostConfigStore();
 
+  const getMainStatus = useMemo(() => {
+    if (jmeterStatus === 'success' && hostStatus === 'success') {
+      return 'success';
+    }
+    if (jmeterStatus === 'failed' || hostStatus === 'failed') {
+      return 'failed';
+    }
+    return 'operating';
+  }, [jmeterStatus, hostStatus]);
+
   function handleCheck() {
-    record.set('jmeterStatus', 'operating');
+    record.set('hostStatus', 'operating');
   }
 
   function handleDelete() {
@@ -55,12 +67,12 @@ const HostsItem:React.FC<any> = ({
         width: 380,
       },
       drawer: true,
-      children: <CreateHost />,
+      children: <CreateHost hostId={id} />,
       okText: formatMessage({ id: 'save' }),
     });
   }
 
-  const getActionData = useCallback(() => (jmeterStatus !== 'operating' ? [
+  const getActionData = useCallback(() => (getMainStatus !== 'operating' ? [
     {
       service: [],
       text: '校准状态',
@@ -76,14 +88,14 @@ const HostsItem:React.FC<any> = ({
       text: formatMessage({ id: 'delete' }),
       action: handleDelete,
     },
-  ] : []), [jmeterStatus]);
+  ] : []), [getMainStatus]);
 
   return (
     <div className={`${prefixCls}-content-list-item`}>
       <div className={`${prefixCls}-content-list-item-header`}>
         <div className={`${prefixCls}-content-list-item-header-left`}>
           <div className={`${prefixCls}-content-list-item-header-left-top`}>
-            <StatusTagOutLine status={jmeterStatus} />
+            <StatusTagOutLine status={getMainStatus} />
             <Tooltip title={name} placement="top">
               <span className={`${prefixCls}-content-list-item-header-left-top-name`}>
                 {name}
@@ -95,7 +107,7 @@ const HostsItem:React.FC<any> = ({
               <UserInfo
                 name={username}
                 showName={false}
-                avatar={imgUrl}
+                avatar="https://minio.choerodon.com.cn/iam-service/file_11b8ef213e724602abd9facf66c0271a_u%3D2233506214%2C1519914781"
               />
             </div>
             <div>
@@ -105,12 +117,12 @@ const HostsItem:React.FC<any> = ({
                   color: 'rgba(58, 52, 95, 1)',
                   marginLeft: '4px',
                 }}
-                content={date}
+                content="2020-09-04 14:27:23"
               />
             </div>
           </div>
         </div>
-        {jmeterStatus !== 'operating' && (
+        {getMainStatus !== 'operating' && (
           <div className={`${prefixCls}-content-list-item-header-right`}>
             <Action
               data={getActionData()}
@@ -125,25 +137,31 @@ const HostsItem:React.FC<any> = ({
             IP与端口
           </span>
           <span>
-            {`${hostIp}：${sshPort}`}
+            {hostIp && sshPort ? `${hostIp}：${sshPort}` : '-'}
           </span>
         </div>
-        <div className={`${prefixCls}-content-list-item-main-item`}>
-          <span>
-            Jmeter端口
-          </span>
-          <span>
-            {jmeterPort}
-          </span>
-        </div>
-        <div className={`${prefixCls}-content-list-item-main-item`}>
-          <span>
-            Jmeter路径
-          </span>
-          <span>
-            {jmeterPath}
-          </span>
-        </div>
+        {
+          type === 'distribute_test' && (
+            <>
+              <div className={`${prefixCls}-content-list-item-main-item`}>
+                <span>
+                  Jmeter端口
+                </span>
+                <span>
+                  {jmeterPort}
+                </span>
+              </div>
+              <div className={`${prefixCls}-content-list-item-main-item`}>
+                <span>
+                  Jmeter路径
+                </span>
+                <span>
+                  {jmeterPath}
+                </span>
+              </div>
+            </>
+          )
+        }
       </main>
     </div>
   );

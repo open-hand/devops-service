@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, {
+  createContext, useCallback, useContext, useMemo,
+} from 'react';
 import { injectIntl } from 'react-intl';
 import { inject } from 'mobx-react';
 import { DataSet } from 'choerodon-ui/pro';
@@ -61,6 +63,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
   const listDs = useMemo(() => new DataSet(ListDataSet({ projectId })), [projectId]);
   const searchDs = useMemo(() => new DataSet(SearchDataSet({ projectId, statusDs })), [projectId]);
 
+  const refresh = useCallback(async (callback?:CallableFunction) => {
+    await listDs.query();
+    typeof callback === 'function' && callback();
+  }, [listDs]);
+
   const value = {
     ...props,
     intlPrefix,
@@ -69,6 +76,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     listDs,
     searchDs,
     hostTabKeys,
+    refresh,
   };
   return (
     <Store.Provider value={value}>
