@@ -1,10 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Map;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
@@ -14,10 +18,9 @@ import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.DevopsHostType;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.JmeterUtil;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.SshUtil;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author zmf
@@ -124,5 +127,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         condition.setHostIp(Objects.requireNonNull(ip));
         condition.setJmeterPort(Objects.requireNonNull(jmeterPort));
         return devopsHostMapper.selectCount(condition) == 0;
+    }
+
+    @Override
+    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, @Nullable String options) {
+        Map<String, Object> maps = TypeUtil.castMapParams(options);
+        return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))), DevopsHostVO.class);
     }
 }
