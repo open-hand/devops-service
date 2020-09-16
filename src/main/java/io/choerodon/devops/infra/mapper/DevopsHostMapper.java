@@ -21,7 +21,7 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      * @param params      模糊搜索参数
      * @return 主机列表
      */
-    List<DevopsHostDTO> listByOptions(@Param("project_id") Long projectId,
+    List<DevopsHostDTO> listByOptions(@Param("projectId") Long projectId,
                                       @Param("searchParam") Map<String, Object> searchParam,
                                       @Param("params") List<String> params);
 }
