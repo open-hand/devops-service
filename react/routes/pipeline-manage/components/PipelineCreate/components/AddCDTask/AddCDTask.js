@@ -435,10 +435,10 @@ export default observer(() => {
         >
           <Select style={{ flex: 1 }} name={addCDTaskDataSetMap.host} />
           <div style={{ flex: 1, marginLeft: 16 }}>
-            <TextField style={{ width: '100%' }} name={addCDTaskDataSetMap.ip} />
+            <TextField style={{ width: '100%' }} name="hostIp" />
           </div>
           <div style={{ flex: 1, marginLeft: 16 }}>
-            <TextField style={{ width: '100%' }} name={addCDTaskDataSetMap.port} />
+            <TextField style={{ width: '100%' }} name="hostPort" />
           </div>
         </div>,
       ];

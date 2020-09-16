@@ -198,27 +198,17 @@ export default (
       defaultValue: addCDTaskDataSetMap.alreadyhost,
     },
     {
-      name: addCDTaskDataSetMap.port,
-      type: 'string',
-      label: '端口',
-      disabled: true,
-    },
-    {
       name: addCDTaskDataSetMap.host,
       type: 'string',
       label: '主机',
-    },
-    {
-      name: addCDTaskDataSetMap.ip,
-      type: 'string',
-      label: 'IP',
-      disabled: true,
     },
     {
       name: 'hostIp',
       type: 'string',
       label: 'IP',
       dynamicProps: {
+        disabled: ({ record }) => record.get(addCDTaskDataSetMap.hostSource)
+          === addCDTaskDataSetMap.alreadyhost,
         required: ({ record }) => record.get('type') === 'cdHost',
       },
     },
@@ -227,6 +217,8 @@ export default (
       type: 'string',
       label: '端口',
       dynamicProps: {
+        disabled: ({ record }) => record.get(addCDTaskDataSetMap.hostSource)
+          === addCDTaskDataSetMap.alreadyhost,
         required: ({ record }) => record.get('type') === 'cdHost',
       },
     },
