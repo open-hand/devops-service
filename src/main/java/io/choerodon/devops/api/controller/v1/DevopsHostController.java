@@ -10,10 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -59,6 +63,19 @@ public class DevopsHostController {
             @ApiParam(value = "主机id", required = true)
             @Encrypt @PathVariable("host_id") Long hostId) {
         return Results.success(devopsHostService.queryHost(projectId, hostId));
+    }
+
+    @ApiOperation("分页查询主机")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/page_by_options")
+    @CustomPageRequest
+    public ResponseEntity<Page<DevopsHostVO>> pageByOptions(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数", required = false)
+            @RequestBody(required = false) String options) {
+        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, options));
     }
 
     @ApiOperation("删除主机")
@@ -109,11 +126,11 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/check/jmeter_unique")
     public ResponseEntity<Boolean> checkIpJmeterPortUnique(@ApiParam(value = "项目id", required = true)
-                                                    @PathVariable("project_id") Long projectId,
-                                                    @ApiParam(value = "主机ip", required = true)
-                                                    @RequestParam("ip") String ip,
-                                                    @ApiParam(value = "ssh端口", required = true)
-                                                    @RequestParam("jmeter_port") Integer jmeterPort) {
+                                                           @PathVariable("project_id") Long projectId,
+                                                           @ApiParam(value = "主机ip", required = true)
+                                                           @RequestParam("ip") String ip,
+                                                           @ApiParam(value = "ssh端口", required = true)
+                                                           @RequestParam("jmeter_port") Integer jmeterPort) {
         return Results.success(devopsHostService.isIpJmeterPortUnique(projectId, ip, jmeterPort));
     }
 }

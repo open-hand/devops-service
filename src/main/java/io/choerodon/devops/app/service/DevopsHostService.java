@@ -1,6 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import javax.annotation.Nullable;
+
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author zmf
@@ -79,4 +83,14 @@ public interface DevopsHostService {
      * @return true表示唯一
      */
     boolean isIpJmeterPortUnique(Long projectId, String ip, Integer jmeterPort);
+
+    /**
+     * 分页查询主机
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param options     查询参数
+     * @return 一页主机数据
+     */
+    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, @Nullable String options);
 }
