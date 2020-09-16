@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.DevopsHostCreateRequestVO;
-import io.choerodon.devops.api.vo.DevopsHostUpdateRequestVO;
-import io.choerodon.devops.api.vo.DevopsHostVO;
+import io.choerodon.devops.api.vo.*;
 
 /**
  * @author zmf
@@ -43,4 +41,13 @@ public interface DevopsHostService {
      * @param hostId    主机id
      */
     void deleteHost(Long projectId, Long hostId);
+
+    /**
+     * 测试主机连接情况
+     *
+     * @param projectId                  项目id
+     * @param devopsHostConnectionTestVO 主机连接信息
+     * @return 连接结果
+     */
+    DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO);
 }

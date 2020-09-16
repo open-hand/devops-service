@@ -20,13 +20,13 @@ public enum DevopsHostStatus {
      */
     OPERATING("operating");
 
-    private final String values;
+    private final String value;
 
-    DevopsHostStatus(String values) {
-        this.values = values;
+    DevopsHostStatus(String value) {
+        this.value = value;
     }
 
-    public String getValues() {
-        return values;
+    public String getValue() {
+        return value;
     }
 }

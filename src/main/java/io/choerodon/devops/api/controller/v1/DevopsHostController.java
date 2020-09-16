@@ -12,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsHostCreateRequestVO;
-import io.choerodon.devops.api.vo.DevopsHostUpdateRequestVO;
-import io.choerodon.devops.api.vo.DevopsHostVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -73,5 +71,15 @@ public class DevopsHostController {
             @Encrypt @PathVariable("host_id") Long hostId) {
         devopsHostService.deleteHost(projectId, hostId);
         return Results.success();
+    }
+
+    @ApiOperation("测试主机连接状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/connection-test")
+    public ResponseEntity<DevopsHostConnectionTestResultVO> testConnection(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @RequestBody @Valid DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
+        return Results.success(devopsHostService.testConnection(projectId, devopsHostConnectionTestVO));
     }
 }
