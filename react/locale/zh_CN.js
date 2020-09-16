@@ -836,6 +836,28 @@ const pipelineManage = {
   'c7ncd.pipelineManage.gitlab.runner': 'GitLab Runner配置指引',
 };
 
+const hostConfig = {
+  'c7ncd.host.config.add': '创建主机',
+  'c7ncd.host.config.modify': '修改主机',
+  'c7ncd.host.config.adjustment': '校准服务器状态',
+  'c7ncd.host.config.status': '主机状态',
+  'c7ncd.host.config.name': '主机名称',
+  'c7ncd.host.config.type': '主机类型',
+  'c7ncd.host.config.type.test': '测试主机',
+  'c7ncd.host.config.type.deploy': '部署主机',
+  'c7ncd.host.config.port': 'SSH端口',
+  'c7ncd.host.config.account': '账号配置',
+  'c7ncd.host.config.account.password': '用户名与密码',
+  'c7ncd.host.config.account.token': '用户名与密钥',
+  'c7ncd.host.config.token': '密钥',
+  'c7ncd.host.config.jmeter': 'Jmeter配置',
+  'c7ncd.host.config.jmeter.port': 'Jmeter端口',
+  'c7ncd.host.config.jmeter.path': 'Jmeter路径',
+  'c7ncd.host.config.port.check.failed': '端口必须在1-65535之间',
+  'c7ncd.host.config.port.unique.failed': 'IP与SSH端口号的组合已存在',
+  'c7ncd.host.config.port.unique.failed.jmeterPort': 'IP与Jmeter端口号的组合已存在',
+};
+
 const emptyPage = {
   'empty.title.app': '暂无应用服务',
   'empty.title.env': '暂无环境',
@@ -2815,6 +2837,7 @@ const zhCN = {
   ...pvManager,
   ...pipelineManage,
   ...prompt,
+  ...hostConfig,
 };
 
 export default zhCN;
