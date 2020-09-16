@@ -54,6 +54,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
+        devopsHostDTO.setProjectId(projectId);
         devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
         devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
         return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
