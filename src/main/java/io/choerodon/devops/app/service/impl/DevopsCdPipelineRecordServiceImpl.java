@@ -161,6 +161,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private TestServiceClientoperator testServiceClientoperator;
 
+    @Autowired
+    private DevopsHostMapper devopsHostMapper;
+
     @Value("${choerodon.online:true}")
     private Boolean online;
 
@@ -501,6 +504,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3.
 //        ssh.loadKnownHosts();
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
+        //根据主机来源获取主机连接信息
+        if (HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
+            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostConnectionVO.getHostId());
+            dtoToHostConnVo(hostConnectionVO, devopsHostDTO);
+        }
+
         ssh.connect(hostConnectionVO.getHostIp(), TypeUtil.objToInteger(hostConnectionVO.getHostPort()));
         if (hostConnectionVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
@@ -508,6 +517,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());
             KeyProvider keyProvider = ssh.loadKeys(str, null, null);
             ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
+        }
+    }
+
+    private void dtoToHostConnVo(HostConnectionVO hostConnectionVO, DevopsHostDTO devopsHostDTO) {
+        if (devopsHostDTO != null) {
+            hostConnectionVO.setHostIp(devopsHostDTO.getHostIp());
+            hostConnectionVO.setHostPort(String.valueOf(devopsHostDTO.getSshPort()));
+            hostConnectionVO.setAccountType(devopsHostDTO.getAuthType());
+            hostConnectionVO.setUserName(devopsHostDTO.getUsername());
+            hostConnectionVO.setPassword(devopsHostDTO.getPassword());
+            hostConnectionVO.setAccountKey(devopsHostDTO.getPassword());
         }
     }
 
