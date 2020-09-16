@@ -24,7 +24,6 @@ const ContentList: React.FC<any> = observer((): any => {
   // if (listDs && listDs.status !== 'loading' && !listDs.length) {
   //   return <EmptyPage />;
   // }
-
   return (
     <div className={`${prefixCls}-content-list`}>
       {/* {listDs.map((record) => (

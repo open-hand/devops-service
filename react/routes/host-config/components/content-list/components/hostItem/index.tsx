@@ -5,7 +5,7 @@ import UserInfo from '@/components/userInfo';
 import TimePopover from '@/components/timePopover';
 import StatusTagOutLine from '../../components/statusTagOutLine';
 import eventStopProp from '../../../../../../utils/eventStopProp';
-import {useHostConfigStore} from '../../../../stores';
+import { useHostConfigStore } from '../../../../stores';
 
 interface HostsItemProps {
 }
