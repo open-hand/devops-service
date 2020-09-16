@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
@@ -19,6 +20,13 @@ public interface DevopsHostService {
      * @return 创建后的主机
      */
     DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO);
+
+    /**
+     * 异步批量校准主机状态
+     *
+     * @param hostId 主机id
+     */
+    void asyncBatchCorrectStatus(Long projectId, List<Long> hostId);
 
     /**
      * 更新主机

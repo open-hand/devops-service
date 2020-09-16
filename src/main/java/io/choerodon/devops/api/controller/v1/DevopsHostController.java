@@ -16,6 +16,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -38,7 +39,9 @@ public class DevopsHostController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "创建主机相关参数")
             @RequestBody @Valid DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        return new ResponseEntity<>(devopsHostService.createHost(projectId, devopsHostCreateRequestVO), HttpStatus.OK);
+        DevopsHostVO resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
+        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsList(resp.getId()));
+        return Results.success(resp);
     }
 
     @ApiOperation("更新主机")
@@ -51,7 +54,9 @@ public class DevopsHostController {
             @Encrypt @PathVariable("host_id") Long hostId,
             @ApiParam(value = "更新主机相关参数")
             @RequestBody @Valid DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
-        return new ResponseEntity<>(devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO), HttpStatus.OK);
+        DevopsHostVO resp = devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
+        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsList(resp.getId()));
+        return Results.success(resp);
     }
 
     @ApiOperation("查询单个主机")
