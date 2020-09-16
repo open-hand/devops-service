@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -89,8 +91,38 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
         boolean sshConnected = SshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
         result.setSshStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
-        boolean jmeterConnected = JmeterUtil.testJmeterConnections(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
-        result.setJmeterStatus(jmeterConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+
+        // 如果是测试类型的主机, 再测试下jmeter的状态
+        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equals(devopsHostConnectionTestVO.getType())) {
+            boolean jmeterConnected = JmeterUtil.testJmeterConnections(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
+            result.setJmeterStatus(jmeterConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+        }
         return result;
+    }
+
+    @Override
+    public boolean isNameUnique(Long projectId, String name) {
+        DevopsHostDTO condition = new DevopsHostDTO();
+        condition.setProjectId(Objects.requireNonNull(projectId));
+        condition.setName(Objects.requireNonNull(name));
+        return devopsHostMapper.selectCount(condition) == 0;
+    }
+
+    @Override
+    public boolean isSshIpPortUnique(Long projectId, String ip, Integer sshPort) {
+        DevopsHostDTO condition = new DevopsHostDTO();
+        condition.setProjectId(Objects.requireNonNull(projectId));
+        condition.setHostIp(Objects.requireNonNull(ip));
+        condition.setSshPort(Objects.requireNonNull(sshPort));
+        return devopsHostMapper.selectCount(condition) == 0;
+    }
+
+    @Override
+    public boolean isIpJmeterPortUnique(Long projectId, String ip, Integer jmeterPort) {
+        DevopsHostDTO condition = new DevopsHostDTO();
+        condition.setProjectId(Objects.requireNonNull(projectId));
+        condition.setHostIp(Objects.requireNonNull(ip));
+        condition.setJmeterPort(Objects.requireNonNull(jmeterPort));
+        return devopsHostMapper.selectCount(condition) == 0;
     }
 }

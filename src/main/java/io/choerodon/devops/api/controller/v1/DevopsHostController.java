@@ -75,11 +75,45 @@ public class DevopsHostController {
 
     @ApiOperation("测试主机连接状态")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/connection-test")
+    @PostMapping("/connection_test")
     public ResponseEntity<DevopsHostConnectionTestResultVO> testConnection(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @RequestBody @Valid DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
         return Results.success(devopsHostService.testConnection(projectId, devopsHostConnectionTestVO));
+    }
+
+    @ApiOperation("校验名称唯一性")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/check/name_unique")
+    public ResponseEntity<Boolean> checkName(@ApiParam(value = "项目id", required = true)
+                                             @PathVariable("project_id") Long projectId,
+                                             @ApiParam(value = "主机名称", required = true)
+                                             @RequestParam("name") String name) {
+        return Results.success(devopsHostService.isNameUnique(projectId, name));
+    }
+
+    @ApiOperation("校验ip和ssh端口唯一性")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/check/ssh_unique")
+    public ResponseEntity<Boolean> checkIpSshUnique(@ApiParam(value = "项目id", required = true)
+                                                    @PathVariable("project_id") Long projectId,
+                                                    @ApiParam(value = "主机ip", required = true)
+                                                    @RequestParam("ip") String ip,
+                                                    @ApiParam(value = "ssh端口", required = true)
+                                                    @RequestParam("ssh_port") Integer sshPort) {
+        return Results.success(devopsHostService.isSshIpPortUnique(projectId, ip, sshPort));
+    }
+
+    @ApiOperation("校验ip和jmeter端口唯一性")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/check/jmeter_unique")
+    public ResponseEntity<Boolean> checkIpJmeterPortUnique(@ApiParam(value = "项目id", required = true)
+                                                    @PathVariable("project_id") Long projectId,
+                                                    @ApiParam(value = "主机ip", required = true)
+                                                    @RequestParam("ip") String ip,
+                                                    @ApiParam(value = "ssh端口", required = true)
+                                                    @RequestParam("jmeter_port") Integer jmeterPort) {
+        return Results.success(devopsHostService.isIpJmeterPortUnique(projectId, ip, jmeterPort));
     }
 }
