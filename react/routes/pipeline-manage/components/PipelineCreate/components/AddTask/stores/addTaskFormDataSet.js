@@ -190,7 +190,7 @@ export default (
       label: 'SonarQube账号配置',
       defaultValue: 'username',
       dynamicProps: ({ record, name }) => ({
-        required: record.get('type') === 'sonar',
+        required: record.get('type') === 'sonar' && record.get('configType') === 'custom',
       }),
     }, {
       name: 'username',
