@@ -10,7 +10,6 @@ import org.hibernate.validator.constraints.Range;
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CdHostAccountType;
-import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.DevopsHostType;
 
 /**
@@ -29,20 +28,6 @@ public class DevopsHostCreateRequestVO {
     @EnumCheck(message = "error.host.type.invalid", enumClass = DevopsHostType.class)
     @ApiModelProperty("主机类型")
     private String type;
-
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
-     */
-    @EnumCheck(message = "error.host.status.invalid", enumClass = DevopsHostStatus.class)
-    @ApiModelProperty("主机状态")
-    private String hostStatus;
-
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
-     */
-    @EnumCheck(message = "error.jmeter.status.invalid", enumClass = DevopsHostStatus.class, skipNull = true)
-    @ApiModelProperty("jmeter状态")
-    private String jmeterStatus;
 
     @Pattern(regexp = GitOpsConstants.IP_PATTERN, message = "error.host.ip.invalid")
     @ApiModelProperty("主机ip")
@@ -87,22 +72,6 @@ public class DevopsHostCreateRequestVO {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getHostStatus() {
-        return hostStatus;
-    }
-
-    public void setHostStatus(String hostStatus) {
-        this.hostStatus = hostStatus;
-    }
-
-    public String getJmeterStatus() {
-        return jmeterStatus;
-    }
-
-    public void setJmeterStatus(String jmeterStatus) {
-        this.jmeterStatus = jmeterStatus;
     }
 
     public String getHostIp() {

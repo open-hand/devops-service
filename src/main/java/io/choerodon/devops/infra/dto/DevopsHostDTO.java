@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.annotation.Nullable;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -37,6 +38,14 @@ public class DevopsHostDTO extends AuditDomain {
      */
     @ApiModelProperty("主机状态")
     private String hostStatus;
+
+    @Nullable
+    @ApiModelProperty("主机连接错误信息")
+    private String hostCheckError;
+
+    @Nullable
+    @ApiModelProperty("jmeter_check_error")
+    private String jmeterCheckError;
 
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
@@ -170,5 +179,23 @@ public class DevopsHostDTO extends AuditDomain {
 
     public void setJmeterPath(String jmeterPath) {
         this.jmeterPath = jmeterPath;
+    }
+
+    @Nullable
+    public String getHostCheckError() {
+        return hostCheckError;
+    }
+
+    public void setHostCheckError(@Nullable String hostCheckError) {
+        this.hostCheckError = hostCheckError;
+    }
+
+    @Nullable
+    public String getJmeterCheckError() {
+        return jmeterCheckError;
+    }
+
+    public void setJmeterCheckError(@Nullable String jmeterCheckError) {
+        this.jmeterCheckError = jmeterCheckError;
     }
 }

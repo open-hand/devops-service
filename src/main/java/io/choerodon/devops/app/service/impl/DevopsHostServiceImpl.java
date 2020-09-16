@@ -100,6 +100,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             boolean jmeterConnected = JmeterUtil.testJmeterConnections(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
             result.setJmeterStatus(jmeterConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
         }
+
+        // TODO 设置真正的错误信息
+        result.setJmeterCheckError("failed to check jmeter");
+        result.setHostCheckError("failed to check host");
         return result;
     }
 

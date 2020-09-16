@@ -22,20 +22,6 @@ public class DevopsHostUpdateRequestVO {
     @ApiModelProperty("主机名称")
     private String name;
 
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
-     */
-    @EnumCheck(message = "error.host.status.invalid", enumClass = DevopsHostStatus.class)
-    @ApiModelProperty("主机状态")
-    private String hostStatus;
-
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
-     */
-    @EnumCheck(message = "error.jmeter.status.invalid", enumClass = DevopsHostStatus.class, skipNull = true)
-    @ApiModelProperty("jmeter状态")
-    private String jmeterStatus;
-
     @Pattern(regexp = GitOpsConstants.IP_PATTERN, message = "error.host.ip.invalid")
     @ApiModelProperty("主机ip")
     private String hostIp;
@@ -67,26 +53,6 @@ public class DevopsHostUpdateRequestVO {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getHostStatus() {
-        return hostStatus;
-    }
-
-    public void setHostStatus(String hostStatus) {
-        this.hostStatus = hostStatus;
-    }
-
-    public String getJmeterStatus() {
-        return jmeterStatus;
-    }
-
-    public void setJmeterStatus(String jmeterStatus) {
-        this.jmeterStatus = jmeterStatus;
     }
 
     public String getHostIp() {
@@ -143,5 +109,9 @@ public class DevopsHostUpdateRequestVO {
 
     public void setJmeterPath(String jmeterPath) {
         this.jmeterPath = jmeterPath;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
