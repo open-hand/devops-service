@@ -87,6 +87,19 @@ feign:
           isolation:
             thread:
               timeoutInMilliseconds: 30000
+    enabled: true
+hystrix:
+  shareSecurityContext: true
+  command:
+    default:
+      circuitBreaker:
+        sleepWindowInMilliseconds: 100000
+        forceClosed: true
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 600000
+
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
