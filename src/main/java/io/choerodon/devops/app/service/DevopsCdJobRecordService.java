@@ -28,6 +28,10 @@ public interface DevopsCdJobRecordService {
 
     void updateStatusById(Long jobRecordId, String status);
 
+    void updateLogById(Long jobRecordId, StringBuilder log);
+
+    String getHostLogById(Long jobRecordId);
+
     DevopsCdJobRecordDTO queryById(Long id);
 
     void updateJobStatusFailed(Long jobRecordId);
