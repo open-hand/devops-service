@@ -10,6 +10,16 @@ export default function useStore() {
 
     valueIdRandom: undefined,
 
+    apiTestArray: [],
+
+    get getApiTestArray() {
+      return this.apiTestArray;
+    },
+
+    setApiTestArray(data) {
+      this.apiTestArray = data;
+    },
+
     get getValueIdRandom() {
       return this.valueIdRandom;
     },

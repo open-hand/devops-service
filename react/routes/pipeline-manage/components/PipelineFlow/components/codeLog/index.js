@@ -9,7 +9,9 @@ import 'xterm/dist/xterm.css';
 import './index.less';
 
 export default observer((props) => {
-  const { gitlabJobId, projectId, gitlabProjectId } = props;
+  const {
+    gitlabJobId, projectId, gitlabProjectId, type, cdRecordId, stageRecordId, jobRecordId,
+  } = props;
   const term = new Terminal({
     fontSize: 13,
     fontWeight: 400,
@@ -19,10 +21,18 @@ export default observer((props) => {
 
   async function loadData() {
     try {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/ci_jobs/gitlab_projects/${gitlabProjectId}/gitlab_jobs/${gitlabJobId}/trace`);
-      if (res && !res.failed) {
-        const newRes = res.split(/\n/);
-        forEach(newRes, (item) => term.writeln(item));
+      if (type === 'cdHost') {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/pipeline_records/${cdRecordId}/stage_records/${stageRecordId}/job_records/log/${jobRecordId}`);
+        if (res && !res.failed) {
+          const newRes = res.split(/\n/);
+          forEach(newRes, (item) => term.writeln(item));
+        }
+      } else {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/ci_jobs/gitlab_projects/${gitlabProjectId}/gitlab_jobs/${gitlabJobId}/trace`);
+        if (res && !res.failed) {
+          const newRes = res.split(/\n/);
+          forEach(newRes, (item) => term.writeln(item));
+        }
       }
     } catch (e) {
       Choerodon.handleResponseError(e);

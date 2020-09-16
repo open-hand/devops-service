@@ -2,6 +2,7 @@ import uuidV1 from 'uuid/v1';
 import { axios } from '@choerodon/boot';
 import forEach from 'lodash/forEach';
 import JSONbig from 'json-bigint';
+import addCDTaskDataSetMap from './addCDTaskDataSetMap';
 
 function getDefaultInstanceName(appServiceCode) {
   return appServiceCode
@@ -60,6 +61,28 @@ export default (
       label: '关联应用服务',
       required: true,
       disabled: true,
+    },
+    {
+      name: addCDTaskDataSetMap.apiTestMission,
+      type: 'string',
+      label: 'API测试任务',
+      textField: 'name',
+      valueField: 'id',
+      required: true,
+      lookupAxiosConfig: () => ({
+        method: 'get',
+        url: `/test/v1/projects/${projectId}/api_test/tasks/paging?random=${random}`,
+        transformResponse: (res) => {
+          let newRes = res;
+          try {
+            newRes = JSON.parse(res);
+            useStore.setApiTestArray(newRes.content);
+            return newRes;
+          } catch (e) {
+            return newRes;
+          }
+        },
+      }),
     },
     {
       name: 'triggerType',
@@ -169,6 +192,29 @@ export default (
       },
     },
     {
+      name: addCDTaskDataSetMap.hostSource,
+      type: 'string',
+      label: '主机来源',
+      defaultValue: addCDTaskDataSetMap.alreadyhost,
+    },
+    {
+      name: addCDTaskDataSetMap.port,
+      type: 'string',
+      label: '端口',
+      disabled: true,
+    },
+    {
+      name: addCDTaskDataSetMap.host,
+      type: 'string',
+      label: '主机',
+    },
+    {
+      name: addCDTaskDataSetMap.ip,
+      type: 'string',
+      label: 'IP',
+      disabled: true,
+    },
+    {
       name: 'hostIp',
       type: 'string',
       label: 'IP',
@@ -223,6 +269,12 @@ export default (
           && (record.get('hostDeployType') === 'image'
             || record.get('hostDeployType') === 'jar'),
       },
+    },
+    {
+      name: 'workingPath',
+      type: 'string',
+      label: '工作目录',
+      defaultValue: '/temp',
     },
     {
       name: 'pipelineTask',
@@ -520,12 +572,10 @@ export default (
       },
     },
     {
-      // TODO 修改该对象的字段
-      name: 'sfzshxjdyrw',
+      name: addCDTaskDataSetMap.whetherBlock,
       type: 'boolean',
       label: '是否阻塞后续阶段与任务',
-      // TODO 默认为否 注意后期后端字段更改
-      defaultValue: false,
+      defaultValue: true,
     },
   ],
 });
