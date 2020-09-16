@@ -87,10 +87,11 @@ public interface DevopsHostService {
     /**
      * 分页查询主机
      *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param options     查询参数
+     * @param projectId       项目id
+     * @param pageRequest     分页参数
+     * @param withUpdaterInfo 是否需要更新者信息
+     * @param options         查询参数
      * @return 一页主机数据
      */
-    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, @Nullable String options);
+    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options);
 }
