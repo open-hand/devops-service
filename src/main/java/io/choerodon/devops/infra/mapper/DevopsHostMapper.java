@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -24,4 +25,12 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
     List<DevopsHostDTO> listByOptions(@Param("projectId") Long projectId,
                                       @Param("searchParam") Map<String, Object> searchParam,
                                       @Param("params") List<String> params);
+
+    /**
+     * 批量设置主机状态为处理中
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id数据
+     */
+    void batchSetStatusOperating(@Param("projectId") Long projectId, @Param("hostIds") Set<Long> hostIds);
 }

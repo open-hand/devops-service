@@ -62,4 +62,14 @@ public class DevopsHostConnectionTestResultVO {
     public void setJmeterCheckError(@Nullable String jmeterCheckError) {
         this.jmeterCheckError = jmeterCheckError;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsHostConnectionTestResultVO{" +
+                "sshStatus='" + sshStatus + '\'' +
+                ", jmeterStatus='" + jmeterStatus + '\'' +
+                ", hostCheckError='" + hostCheckError + '\'' +
+                ", jmeterCheckError='" + jmeterCheckError + '\'' +
+                '}';
+    }
 }
