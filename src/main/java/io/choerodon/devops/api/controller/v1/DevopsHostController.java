@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Set;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -7,7 +8,6 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -40,7 +40,7 @@ public class DevopsHostController {
             @ApiParam(value = "创建主机相关参数")
             @RequestBody @Valid DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         DevopsHostVO resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsList(resp.getId()));
+        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()));
         return Results.success(resp);
     }
 
@@ -55,7 +55,7 @@ public class DevopsHostController {
             @ApiParam(value = "更新主机相关参数")
             @RequestBody @Valid DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
         DevopsHostVO resp = devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsList(resp.getId()));
+        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()));
         return Results.success(resp);
     }
 
@@ -140,5 +140,17 @@ public class DevopsHostController {
                                                            @ApiParam(value = "ssh端口", required = true)
                                                            @RequestParam("jmeter_port") Integer jmeterPort) {
         return Results.success(devopsHostService.isIpJmeterPortUnique(projectId, ip, jmeterPort));
+    }
+
+    @ApiOperation("批量校准主机状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/batch_correct")
+    public ResponseEntity<Void> batchCorrect(@ApiParam(value = "项目id", required = true)
+                                             @PathVariable("project_id") Long projectId,
+                                             @ApiParam(value = "主机id集合", required = true)
+                                             @Encrypt @RequestBody Set<Long> hostIds) {
+        devopsHostService.batchSetStatusOperating(projectId, hostIds);
+        devopsHostService.asyncBatchCorrectStatus(projectId, hostIds);
+        return Results.success();
     }
 }

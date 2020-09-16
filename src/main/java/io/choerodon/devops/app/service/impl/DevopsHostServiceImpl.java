@@ -3,20 +3,25 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Functions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -34,6 +39,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsHostServiceImpl implements DevopsHostService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
+
     @Autowired
     private DevopsHostMapper devopsHostMapper;
     @Autowired
@@ -60,10 +67,21 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
     }
 
-    @Async
+    @Override
+    public void batchSetStatusOperating(Long projectId, Set<Long> hostIds) {
+        LOGGER.debug("batchSetStatusOperating: projectId: {}, hostIds: {}", projectId, hostIds);
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return;
+        }
+        // 这里不需要校验host属于这个项目，因为让项目id参与SQL条件了
+        devopsHostMapper.batchSetStatusOperating(projectId, hostIds);
+    }
+
+    @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void asyncBatchCorrectStatus(Long projectId, List<Long> hostIds) {
+    public void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds) {
+        LOGGER.debug("asyncBatchCorrectStatus: projectId: {}, hostIds: {}", projectId, hostIds);
         // TODO 待优化
         hostIds.forEach(hostId -> {
             DevopsHostDTO hostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
@@ -78,6 +96,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             hostDTO.setJmeterStatus(result.getJmeterStatus());
             hostDTO.setJmeterCheckError(result.getJmeterCheckError());
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostMapper, hostDTO, "error.update.host");
+            LOGGER.debug("connection result for host with id {} is {}", hostId, result);
         });
     }
 

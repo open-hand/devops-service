@@ -12,22 +12,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 
 /**
- * 配置专用的异步任务线程池
+ * 校准主机状态的异步任务线程池
  *
  * @author zmf
  * @since 2020/6/9
  */
 @Configuration
-public class CiPipelineAsyncTheadPoolConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CiPipelineAsyncTheadPoolConfig.class);
+public class HostStatusAsyncTheadPoolConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostStatusAsyncTheadPoolConfig.class);
 
     @Bean
-    @Qualifier(GitOpsConstants.PIPELINE_EXECUTOR)
-    public AsyncTaskExecutor syncPipeline(@Value("${devops.ci.pipeline.sync.executor.corePoolSize:5}") Integer corePoolSize,
-                                          @Value("${devops.ci.pipeline.sync.executor.maxPoolSize:8}") Integer maxPoolSize) {
-        LOGGER.info("Create AsyncTaskExecutor for ci-pipeline. The coreSize is {} and the maxSize is {}", corePoolSize, maxPoolSize);
+    @Qualifier(GitOpsConstants.HOST_STATUS_EXECUTOR)
+    public AsyncTaskExecutor syncPipeline(@Value("${devops.host.status.executor.corePoolSize:5}") Integer corePoolSize,
+                                          @Value("${devops.host.status.executor.maxPoolSize:8}") Integer maxPoolSize) {
+        LOGGER.info("Create AsyncTaskExecutor for host status. The coreSize is {} and the maxSize is {}", corePoolSize, maxPoolSize);
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setThreadNamePrefix(GitOpsConstants.PIPELINE_EXECUTOR);
+        executor.setThreadNamePrefix(GitOpsConstants.HOST_STATUS_EXECUTOR);
         executor.setMaxPoolSize(maxPoolSize);
         executor.setCorePoolSize(corePoolSize);
         return executor;
