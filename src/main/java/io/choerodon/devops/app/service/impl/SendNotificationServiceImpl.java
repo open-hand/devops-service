@@ -29,11 +29,9 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.EnvironmentType;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.SendSettingEnum;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.*;
@@ -1097,6 +1095,66 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 ex -> LOGGER.info("Failed to sendPipelineNotice ", ex)
         );
     }
+
+    @Override
+    public void sendInstanceStatusUpdate(AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String currentStatus) {
+        doWithTryCatchAndLog(
+                () -> {
+                    String code = "";
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceInstanceDTO.getProjectId());
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+                    AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceInstanceDTO.getAppServiceId());
+                    List<Receiver> receivers = new ArrayList<>();
+                    Map<String, String> webHookParams = StringMapBuilder.newBuilder()
+                            .put("projectName", projectDTO.getProgramName())
+                            .put("envName", devopsEnvironmentDTO.getName())
+                            .put("instanceId", appServiceInstanceDTO.getId())
+                            .put("instanceName", appServiceInstanceDTO.getCode())
+                            .put("envId", devopsEnvironmentDTO.getName()).build();
+                    switch (CommandType.valueOf(devopsEnvCommandDTO.getCommandType().toUpperCase())) {
+                        case CREATE:
+                            webHookParams.put("currentStatus", currentStatus);
+                            webHookParams.put("deployVersion", appServiceInstanceDTO.getAppServiceVersion());
+                            //成功
+                            if (InstanceStatus.FAILED != InstanceStatus.valueOf(currentStatus.toUpperCase())) {
+                                code = MessageCodeConstants.CREATE_INSTANCE_SUCCESS;
+                            }
+                            //失败
+                            if (InstanceStatus.FAILED == InstanceStatus.valueOf(currentStatus.toUpperCase())) {
+                                code = MessageCodeConstants.CREATE_INSTANCE_FAIL;
+                                //实例部署失败还有站内信和邮件
+                                receivers = ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(appServiceInstanceDTO.getCreatedBy())));
+
+                            }
+                            break;
+                        case UPDATE:
+                            webHookParams.put("currentStatus", currentStatus);
+                            webHookParams.put("deployVersion", appServiceInstanceDTO.getAppServiceVersion());
+                            //成功
+                            if (InstanceStatus.FAILED != InstanceStatus.valueOf(currentStatus.toUpperCase())) {
+                                code = MessageCodeConstants.UPDATE_INSTANCE_SUCCESS;
+                            }
+                            //失败
+                            if (InstanceStatus.FAILED == InstanceStatus.valueOf(currentStatus.toUpperCase())) {
+                                code = MessageCodeConstants.UPDATE_INSTANCE_FAIL;
+                            }
+                            break;
+                        case STOP:
+                            webHookParams.put("currentStatus", currentStatus);
+                            code = MessageCodeConstants.STOP_INSTANCE;
+                            break;
+                        case RESTART:
+                            webHookParams.put("currentStatus", currentStatus);
+                            code = MessageCodeConstants.ENABLE_INSTANCE;
+                            break;
+
+                    }
+                    sendNotices(code, receivers, webHookParams, projectDTO.getId());
+                },
+                ex -> LOGGER.info("Failed to send message WhenInstanceStatusUpdate.", ex)
+        );
+    }
+
 
     private Receiver constructReceiver(Long userId) {
         IamUserDTO user = baseServiceClientOperator.queryUserByUserId(userId);

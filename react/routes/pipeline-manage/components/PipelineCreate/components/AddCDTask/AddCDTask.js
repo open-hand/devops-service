@@ -640,6 +640,18 @@ export default observer(() => {
           {getModeDom()}
         </Form>,
       ],
+      // TODO 修改api测试value
+      apiceshi: [
+        <div className="addcdTask-divided" />,
+        <p className="addcdTask-title">执行设置</p>,
+        // TODO 修改字段名
+        <Form style={{ marginTop: 20 }} columns={2} dataSet={ADDCDTaskDataSet}>
+          <SelectBox name="sfzshxjdyrw">
+            <Option value>是</Option>
+            <Option value={false}>否</Option>
+          </SelectBox>
+        </Form>,
+      ],
     };
     return obj[ADDCDTaskDataSet?.current?.get('type')];
   };
@@ -793,7 +805,10 @@ export default observer(() => {
           <Option value="cdDeploy">部署</Option>
           <Option value="cdHost">主机部署</Option>
           <Option value="cdAudit">人工卡点</Option>
+          {/* TODO  修改value值 */}
+          <Option value="apiceshi">API测试</Option>
         </Select>
+        {/* TODO API测试修改任务名称为下拉选择 */}
         <TextField colSpan={2} name="name" />
         <TextField colSpan={1} name="glyyfw" />
         <div className="addcdTask-wrap" colSpan={2}>

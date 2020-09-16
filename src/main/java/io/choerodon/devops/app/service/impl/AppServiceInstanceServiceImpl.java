@@ -731,7 +731,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
                 AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
                 appServiceInstanceDTO.setProjectId(instanceSagaPayload.getProjectId());
-                sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                        .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, InstanceStatus.RUNNING.getStatus());
             }
         } catch (Exception e) {
             //有异常更新实例以及command的状态
@@ -746,7 +748,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
             if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
                 //创建实例资源失败，发送webhook json
-                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO, appServiceInstanceDTO.getCreatedBy(), null);
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                        .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
             }
             // 更新的超时情况暂未处理
         }
@@ -1447,22 +1451,22 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-
-        if (CommandType.RESTART.getType().equals(type)) {
-            if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
-                throw new CommonException("error.instance.not.stop");
-            }
-        } else {
-            if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
-                throw new CommonException("error.instance.not.running");
-            }
-        }
-
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                 .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandDTO.setCommandType(type);
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandDTO.setId(null);
+        if (CommandType.RESTART.getType().equals(type)) {
+            if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
+                throw new CommonException("error.instance.not.stop");
+            }
+            sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
+        } else {
+            if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+                throw new CommonException("error.instance.not.running");
+            }
+            sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
+        }
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 

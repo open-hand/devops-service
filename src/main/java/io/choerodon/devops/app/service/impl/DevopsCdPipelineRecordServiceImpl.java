@@ -41,7 +41,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
@@ -60,6 +60,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientoperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -158,7 +159,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private CiPipelineMavenService ciPipelineMavenService;
 
     @Autowired
-    private DevopsCiJobMapper devopsCiJobMapper;
+    private TestServiceClientoperator testServiceClientoperator;
 
     @Value("${choerodon.online:true}")
     private Boolean online;
@@ -252,6 +253,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         List<String> taskUsers = jobAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
                         taskDTO.setUsernames(taskUsers);
                         taskDTO.setMultiAssign(taskUsers.size() > 1);
+                    } else if (jobRecordDTO.getType().equals(JobTypeEnum.CD_API_TEST.value())) {
+                        CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(jobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+                        taskDTO.setBlockAfterJob(cdApiTestConfigVO.getBlockAfterJob());
                     }
                     taskDTO.setTaskType(jobRecordDTO.getType());
                     if (jobRecordDTO.getCountersigned() != null) {
@@ -649,8 +653,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
-        cmdStr.append("mkdir -p /temp-jar && ");
-        cmdStr.append("mkdir -p /temp-log && ");
+        if (StringUtils.isEmpty(jarDeploy.getWorkingPath())) {
+            cmdStr.append("mkdir -p /temp/jar && ");
+            cmdStr.append("mkdir -p /temp/log && ");
+        } else {
+            String workingPath = jarDeploy.getWorkingPath().endsWith("/") ? jarDeploy.getWorkingPath().substring(0, jarDeploy.getWorkingPath().length() - 1) : jarDeploy.getWorkingPath();
+            cmdStr.append(String.format("mkdir -p %s/jar && ", workingPath));
+            cmdStr.append(String.format("mkdir -p %s/log && ", workingPath));
+        }
+
         Session session = null;
         try {
             session = ssh.startSession();
@@ -1142,6 +1153,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdHostDeployConfigVO.class);
                 devopsCdJobRecordVO.setCdHostDeployConfigVO(cdHostDeployConfigVO);
             }
+
+            if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordVO.getType())) {
+                ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordVO.getProjectId(), devopsCdJobRecordVO.getApiTestTaskRecordId());
+                devopsCdJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
+            }
+
         });
 
     }

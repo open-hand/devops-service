@@ -11,6 +11,7 @@ function handleLoad({ dataSet }) {
 export default ((formatMessage, projectId, id) => ({
   autoQuery: true,
   pageSize: 10,
+  selection: false,
   transport: {
     read: ({ data }) => {
       const postData = getTablePostData(data);

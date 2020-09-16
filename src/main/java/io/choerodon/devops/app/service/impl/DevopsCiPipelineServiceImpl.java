@@ -1437,6 +1437,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (t.getCdAuditUserIds().size() == 1) {
                 devopsCdJobDTO.setCountersigned(1);
             }
+        } else if (JobTypeEnum.CD_API_TEST.value().equals(t.getType())) {
+            // 使用能够解密主键加密的json工具解密
+            CdApiTestConfigVO cdApiTestConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
+            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
         }
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();

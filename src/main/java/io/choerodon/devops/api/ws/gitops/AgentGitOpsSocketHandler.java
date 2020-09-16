@@ -17,9 +17,9 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.hzero.websocket.redis.BrokerServerSessionRedis;
+import org.hzero.websocket.redis.BrokerSessionRedis;
+import org.hzero.websocket.registry.GroupSessionRegistry;
 import org.hzero.websocket.registry.UserSessionRegistry;
-import org.hzero.websocket.vo.ClientVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -339,7 +339,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
     private void doRemoveRedisKeyOfThisMicroService() {
         // 获取本实例所有的连接的web socket session 的 session id
         // （这里获取的是包括所有通过group方式连接的，也就是包括前端以及agent的）
-        List<String> sessionIds = BrokerServerSessionRedis.getCache(UserSessionRegistry.getBrokerId()).stream().map(ClientVO::getSessionId).collect(Collectors.toList());
+        List<String> sessionIds = BrokerSessionRedis.getSessionIds(GroupSessionRegistry.getBrokerId());
 
         // 获取集群连接情况数据
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(CLUSTER_SESSION);
@@ -351,7 +351,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
             }
         });
         // 清除这个实例的redis key
-        BrokerServerSessionRedis.clearRedisCacheByBrokerId(UserSessionRegistry.getBrokerId());
+        BrokerSessionRedis.clearCache(GroupSessionRegistry.getBrokerId());
     }
 
     private Long getClusterIdFromRegisterKey(String registerKey) {
