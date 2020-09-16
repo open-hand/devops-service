@@ -73,9 +73,12 @@ public class DevopsHostController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "是否带有更新者信息", required = false)
+            @RequestParam(value = "with_updater_info", required = false, defaultValue = "false")
+                    Boolean withUpdaterInfo,
             @ApiParam(value = "查询参数", required = false)
             @RequestBody(required = false) String options) {
-        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, options));
+        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, options));
     }
 
     @ApiOperation("删除主机")

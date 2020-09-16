@@ -1,6 +1,11 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 主机配置
@@ -53,6 +58,15 @@ public class DevopsHostVO {
 
     @ApiModelProperty("jmeter二进制文件的路径")
     private String jmeterPath;
+
+    @ApiModelProperty("更新者信息")
+    private IamUserDTO updaterInfo;
+
+    @ApiModelProperty("最后更新时间")
+    private Date lastUpdateDate;
+
+    @JsonIgnore
+    private Long lastUpdatedBy;
 
     public Long getId() {
         return id;
@@ -140,5 +154,29 @@ public class DevopsHostVO {
 
     public void setJmeterPath(String jmeterPath) {
         this.jmeterPath = jmeterPath;
+    }
+
+    public IamUserDTO getUpdaterInfo() {
+        return updaterInfo;
+    }
+
+    public void setUpdaterInfo(IamUserDTO updaterInfo) {
+        this.updaterInfo = updaterInfo;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
     }
 }
