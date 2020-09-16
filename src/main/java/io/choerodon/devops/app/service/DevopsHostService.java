@@ -50,4 +50,33 @@ public interface DevopsHostService {
      * @return 连接结果
      */
     DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO);
+
+    /**
+     * 校验名称
+     *
+     * @param projectId 项目id
+     * @param name      主机名称
+     * @return true表示
+     */
+    boolean isNameUnique(Long projectId, String name);
+
+    /**
+     * ip + sshPort 是否在项目下唯一
+     *
+     * @param projectId 项目id
+     * @param ip        主机ip
+     * @param sshPort   ssh端口
+     * @return true表示唯一
+     */
+    boolean isSshIpPortUnique(Long projectId, String ip, Integer sshPort);
+
+    /**
+     * ip + jmeterPort 是否在项目下唯一
+     *
+     * @param projectId  项目id
+     * @param ip         主机ip
+     * @param jmeterPort jmeter端口
+     * @return true表示唯一
+     */
+    boolean isIpJmeterPortUnique(Long projectId, String ip, Integer jmeterPort);
 }
