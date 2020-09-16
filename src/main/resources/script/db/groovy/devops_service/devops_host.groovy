@@ -57,4 +57,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
         addUniqueConstraint(tableName: 'devops_host',
                 constraintName: 'uk_project_ip_jmeter_port', columnNames: 'project_id,host_ip,jmeter_port')
     }
+
+    changeSet(author: 'zmf', id: '2020-09-16-add-error-message') {
+        addColumn(tableName: 'devops_host') {
+            column(name: 'host_check_error', type: 'VARCHAR(1024)', remarks: '主机连接错误信息', afterColumn: 'host_status') {
+                constraints(nullable: true)
+            }
+            column(name: 'jmeter_check_error', type: 'VARCHAR(1024)', remarks: 'jmeter连接错误信息', afterColumn: 'jmeter_status') {
+                constraints(nullable: true)
+            }
+        }
+    }
 }
