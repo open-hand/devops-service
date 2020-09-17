@@ -108,6 +108,17 @@ public class DevopsHostController {
         return Results.success(devopsHostService.testConnection(projectId, devopsHostConnectionTestVO));
     }
 
+    @ApiOperation("通过id测试部署类型主机的连接状态/阻塞形式")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/connection_test_by_id")
+    public ResponseEntity<Boolean> testConnectionByIdForDeployHost(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "主机id", required = true)
+            @Encrypt @RequestParam("host_id") Long hostId) {
+        return Results.success(devopsHostService.testConnectionByIdForDeployHost(projectId, hostId));
+    }
+
     @ApiOperation("校验名称唯一性")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/check/name_unique")

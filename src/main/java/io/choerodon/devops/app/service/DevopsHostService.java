@@ -72,6 +72,15 @@ public interface DevopsHostService {
     DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO);
 
     /**
+     * 通过id测试部署主机连接情况
+     *
+     * @param projectId 项目id
+     * @param hostId    主机id
+     * @return true表示连接成功
+     */
+    Boolean testConnectionByIdForDeployHost(Long projectId, Long hostId);
+
+    /**
      * 校验名称
      *
      * @param projectId 项目id
