@@ -20,6 +20,7 @@ const HostConfig: React.FC<any> = observer((): any => {
     prefixCls,
     intlPrefix,
     formatMessage,
+    refresh,
   } = useHostConfigStore();
 
   const handleAdjustment = () => {
@@ -34,7 +35,7 @@ const HostConfig: React.FC<any> = observer((): any => {
         width: 380,
       },
       drawer: true,
-      children: <CreateHost />,
+      children: <CreateHost refresh={refresh} />,
       okText: formatMessage({ id: 'create' }),
     });
   };
@@ -50,6 +51,8 @@ const HostConfig: React.FC<any> = observer((): any => {
           >
             {formatMessage({ id: `${intlPrefix}.add` })}
           </Button>
+        </Permission>
+        <Permission>
           <Button
             color={'primary' as ButtonColor}
             icon="refresh"
@@ -58,6 +61,13 @@ const HostConfig: React.FC<any> = observer((): any => {
             {formatMessage({ id: `${intlPrefix}.adjustment` })}
           </Button>
         </Permission>
+        <Button
+          color={'primary' as ButtonColor}
+          icon="refresh"
+          onClick={refresh}
+        >
+          {formatMessage({ id: 'refresh' })}
+        </Button>
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>

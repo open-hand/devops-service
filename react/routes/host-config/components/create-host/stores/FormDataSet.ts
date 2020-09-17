@@ -32,6 +32,9 @@ export default ({
   hostId,
 }: FormProps): DataSetProps => {
   async function checkName(value: any, name: any, record: any) {
+    if (value && record.getPristineValue(name) && value === record.getPristineValue(name)) {
+      return true;
+    }
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && value === record.getPristineValue(name)) {
       return true;
@@ -70,6 +73,13 @@ export default ({
   }
 
   async function checkPort(value: any, name: any, record: any) {
+    if (value && record.getPristineValue(name)
+      && value === record.getPristineValue(name)
+      && record.get('hostIp') && record.getPristineValue('hostIp')
+      && record.get('hostIp') === record.getPristineValue('hostIp')
+    ) {
+      return true;
+    }
     const p = /^([1-9]\d*|0)$/;
     const data = {
       typeMsg: '',
@@ -107,6 +117,7 @@ export default ({
   return ({
     autoCreate: false,
     selection: false,
+    autoQueryAfterSubmit: false,
     transport: {
       read: {
         url: HostConfigApis.getHostDetail(projectId, hostId),
@@ -187,9 +198,9 @@ export default ({
       {
         name: 'jmeterPort',
         type: 'string' as FieldType,
-        validator: checkPort,
         dynamicProps: {
           required: ({ record }) => record.get('type') === 'distribute_test',
+          validator: ({ record }) => record.get('type') === 'distribute_test' && checkPort,
         },
         label: formatMessage({ id: `${intlPrefix}.jmeter.port` }),
       },

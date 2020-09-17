@@ -72,7 +72,7 @@ const HostsItem:React.FC<any> = ({
         width: 380,
       },
       drawer: true,
-      children: <CreateHost hostId={id} />,
+      children: <CreateHost hostId={id} refresh={refresh} />,
       okText: formatMessage({ id: 'save' }),
     });
   }
