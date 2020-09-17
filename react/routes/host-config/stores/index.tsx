@@ -83,6 +83,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     hostTabKeys,
     refresh,
     mainStore,
+    projectId,
   };
   return (
     <Store.Provider value={value}>
