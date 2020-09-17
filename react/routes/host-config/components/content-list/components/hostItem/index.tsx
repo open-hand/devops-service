@@ -64,6 +64,19 @@ const HostsItem:React.FC<any> = ({
     }
   };
 
+  async function deleteRerord():Promise<boolean> {
+    try {
+      const res = await apis.getDeleteHostUrl(projectId, id);
+      if (res && res.failed) {
+        return false;
+      }
+      refresh();
+      return true;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async function handleDelete() {
     const modalProps = {
       key: Modal.key(),
@@ -71,7 +84,7 @@ const HostsItem:React.FC<any> = ({
         formatMessage={formatMessage}
         hostId={id}
         projectId={projectId}
-        handleDelete={() => listDs.delete(record)}
+        handleDelete={deleteRerord}
       />,
       footer: null,
     };
