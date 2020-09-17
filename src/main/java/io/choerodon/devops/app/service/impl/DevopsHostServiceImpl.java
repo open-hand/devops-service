@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -43,6 +40,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsHostServiceImpl implements DevopsHostService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
+    /**
+     * 多少毫秒内的间隔处于处理中的纪录再次校准状态时会被跳过
+     * 例如, 上次更新时间为30秒前的并状态为处理中的纪录不会再次校准了, 会跳过此次异步校准
+     */
+    private static final long SKIP_CORRECT_INTERNAL = 60 * 1000;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -75,6 +77,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void batchSetStatusOperating(Long projectId, Set<Long> hostIds) {
         LOGGER.debug("batchSetStatusOperating: projectId: {}, hostIds: {}", projectId, hostIds);
@@ -90,22 +93,56 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds) {
         LOGGER.debug("asyncBatchCorrectStatus: projectId: {}, hostIds: {}", projectId, hostIds);
-        // TODO 待优化
         hostIds.forEach(hostId -> {
-            DevopsHostDTO hostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-            if (hostDTO == null) {
-                return;
-            }
-            DevopsHostConnectionTestVO devopsHostConnectionTestVO = ConvertUtils.convertObject(hostDTO, DevopsHostConnectionTestVO.class);
+            try {
+                DevopsHostDTO hostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+                if (hostDTO == null) {
+                    return;
+                }
 
-            DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
-            hostDTO.setHostStatus(result.getHostStatus());
-            hostDTO.setHostCheckError(result.getHostCheckError());
-            hostDTO.setJmeterStatus(result.getJmeterStatus());
-            hostDTO.setJmeterCheckError(result.getJmeterCheckError());
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostMapper, hostDTO, "error.update.host");
-            LOGGER.debug("connection result for host with id {} is {}", hostId, result);
+                // 过滤测试中的主机
+                if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(hostDTO.getType())) {
+                    if (DevopsHostStatus.OPERATING.getValue().equals(hostDTO.getHostStatus())) {
+                        if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
+                            return;
+                        }
+                    }
+                } else {
+                    if (isDistributeHostOperating(hostDTO.getHostStatus(), hostDTO.getJmeterStatus())) {
+                        if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
+                            return;
+                        }
+                    }
+                }
+
+                // 设置上下文, 以免丢失更新者信息
+                CustomContextUtil.setUserContext(hostDTO.getLastUpdatedBy());
+                DevopsHostConnectionTestVO devopsHostConnectionTestVO = ConvertUtils.convertObject(hostDTO, DevopsHostConnectionTestVO.class);
+
+                DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
+                hostDTO.setHostStatus(result.getHostStatus());
+                hostDTO.setHostCheckError(result.getHostCheckError());
+                hostDTO.setJmeterStatus(result.getJmeterStatus());
+                hostDTO.setJmeterCheckError(result.getJmeterCheckError());
+                // 不对更新涉及的纪录结果进行判断
+                devopsHostMapper.updateByPrimaryKeySelective(hostDTO);
+                LOGGER.debug("connection result for host with id {} is {}", hostId, result);
+            } catch (Exception ex) {
+                LOGGER.warn("Failed to correct status for host with id {}", hostId);
+                LOGGER.warn("The ex is ", ex);
+            }
         });
+    }
+
+    private boolean toSkipCorrect(Date lastUpdateDate) {
+        return System.currentTimeMillis() - lastUpdateDate.getTime() < SKIP_CORRECT_INTERNAL;
+    }
+
+    private boolean isDistributeHostOperating(String hostStatus, String jmeterStatus) {
+        // 测试主机, 任意一个状态失败则失败, 两个状态都成功则成功, 否则都是处理中
+        return !DevopsHostStatus.FAILED.getValue().equals(hostStatus)
+                && !DevopsHostStatus.FAILED.getValue().equals(jmeterStatus)
+                && !(DevopsHostStatus.SUCCESS.getValue().equals(hostStatus) && DevopsHostStatus.SUCCESS.getValue().equals(jmeterStatus));
     }
 
     @Transactional(rollbackFor = Exception.class)
