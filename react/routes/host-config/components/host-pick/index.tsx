@@ -16,7 +16,7 @@ interface Props {
 
 const HostPick: FC<Props> = memo(({
   onChange,
-  defaultActiveKey = 'test',
+  defaultActiveKey = 'distribute_test',
   hostTabKeys,
 }) => {
   const [activeKey, setActiveKey] = useState(defaultActiveKey);

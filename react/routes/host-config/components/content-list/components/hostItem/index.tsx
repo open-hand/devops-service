@@ -21,6 +21,8 @@ const HostsItem:React.FC<any> = ({
   type, // 主机类型 deploy / distribute_test
   jmeterPath, // jmeter二进制文件的路径
   username, // 用户名
+  lastUpdateDate,
+  updaterInfo,
   listDs,
   record,
 }) => {
@@ -32,11 +34,17 @@ const HostsItem:React.FC<any> = ({
   } = useHostConfigStore();
 
   const getMainStatus = useMemo(() => {
-    if (jmeterStatus === 'success' && hostStatus === 'success') {
-      return 'success';
+    if (type === 'deploy') {
+      return hostStatus;
     }
-    if (jmeterStatus === 'failed' || hostStatus === 'failed') {
-      return 'failed';
+    if (type === 'distribute_test') {
+      if (jmeterStatus === 'success' && hostStatus === 'success') {
+        return 'success';
+      }
+      if (jmeterStatus === 'failed' || hostStatus === 'failed') {
+        return 'failed';
+      }
+      return 'operating';
     }
     return 'operating';
   }, [jmeterStatus, hostStatus]);
@@ -112,7 +120,7 @@ const HostsItem:React.FC<any> = ({
               <UserInfo
                 name={username}
                 showName={false}
-                avatar="https://minio.choerodon.com.cn/iam-service/file_11b8ef213e724602abd9facf66c0271a_u%3D2233506214%2C1519914781"
+                avatar={updaterInfo?.imageUrl}
               />
             </div>
             <div>
@@ -122,7 +130,7 @@ const HostsItem:React.FC<any> = ({
                   color: 'rgba(58, 52, 95, 1)',
                   marginLeft: '4px',
                 }}
-                content="2020-09-04 14:27:23"
+                content={lastUpdateDate}
               />
             </div>
           </div>

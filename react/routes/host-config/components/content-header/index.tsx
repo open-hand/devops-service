@@ -19,13 +19,22 @@ const ContentHeader: React.FC<any> = observer((): any => {
     formatMessage,
     searchDs,
     hostTabKeys,
+    listDs,
+    mainStore,
   } = useHostConfigStore();
 
-  const handleChange = () => {
+  const handleChange = (key:string) => {
+    listDs.setQueryParameter('type', key);
+    mainStore.setCurrentTabKey(key);
+    listDs.query();
   };
 
   const handleSearch = () => {
-
+    const { params, status }:any = searchDs.toData()[0];
+    listDs.setQueryParameter('type', mainStore.getCurrentTabKey);
+    listDs.setQueryParameter('params', params);
+    listDs.setQueryParameter('status', status);
+    listDs.query();
   };
 
   return (
@@ -37,11 +46,11 @@ const ContentHeader: React.FC<any> = observer((): any => {
         className={`${prefixCls}-content-search-form`}
       >
         <TextField name="params" colSpan={3} placeholder="请输入搜索条件" />
-        <Select name="status" colSpan={2} />
+        <Select name="status" colSpan={2} onClear={handleSearch} />
         <Button
           funcType={'flat' as FuncType}
           color={'primary' as ButtonColor}
-          // onClick={() => handleAdd(false)}
+          onClick={() => handleSearch()}
         >
           {formatMessage({ id: 'search' })}
         </Button>

@@ -7,6 +7,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import ListDataSet from '@/routes/host-config/stores/ListDataSet';
 import { DataSetSelection } from 'choerodon-ui/pro/lib/data-set/enum';
 import SearchDataSet from '@/routes/host-config/stores/SearchDataSet';
+import useStore from './useStore';
 
 interface ContextProps {
   prefixCls: string,
@@ -20,6 +21,7 @@ interface ContextProps {
     text:string,
   }[],
   refresh():void,
+  mainStore:any,
 }
 
 const Store = createContext({} as ContextProps);
@@ -52,7 +54,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
 
   const hostTabKeys = useMemo(() => [
     {
-      key: 'test',
+      key: 'distribute_test',
       text: '测试主机',
     },
     {
@@ -60,6 +62,8 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
       text: '部署主机',
     },
   ], []);
+
+  const mainStore = useStore();
 
   const listDs = useMemo(() => new DataSet(ListDataSet({ projectId })), [projectId]);
   const searchDs = useMemo(() => new DataSet(SearchDataSet({ projectId, statusDs })), [projectId]);
@@ -78,6 +82,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     searchDs,
     hostTabKeys,
     refresh,
+    mainStore,
   };
   return (
     <Store.Provider value={value}>
