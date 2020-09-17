@@ -8,6 +8,7 @@ import StatusTagOutLine from '../../components/statusTagOutLine';
 import eventStopProp from '../../../../../../utils/eventStopProp';
 import { useHostConfigStore } from '../../../../stores';
 import CreateHost from '../../../create-host';
+import DeleteCheck from '../deleteCheck';
 import apis from '../../../../apis';
 
 const HostsItem:React.FC<any> = ({
@@ -66,24 +67,15 @@ const HostsItem:React.FC<any> = ({
   async function handleDelete() {
     const modalProps = {
       key: Modal.key(),
-      title: '删除主机',
-      children: '确定要删除该主机配置吗？',
-      okText: formatMessage({ id: 'delete' }),
-      okProps: {
-        color: 'red',
-      },
-      cancelProps: {
-        color: '#000',
-      },
+      children: <DeleteCheck
+        formatMessage={formatMessage}
+        hostId={id}
+        projectId={projectId}
+        handleDelete={() => listDs.delete(record)}
+      />,
+      footer: null,
     };
-    try {
-      const res = await listDs.delete(record, modalProps);
-      if (res && res.success) {
-        refresh();
-      }
-    } catch (error) {
-      throw new Error(error);
-    }
+    Modal.open(modalProps);
   }
 
   function handleModify() {
@@ -132,7 +124,7 @@ const HostsItem:React.FC<any> = ({
           <div className={`${prefixCls}-content-list-item-header-left-bottom`}>
             <div>
               <UserInfo
-                name={username}
+                name={updaterInfo?.ldap ? `${updaterInfo?.realName}(${updaterInfo?.loginName})` : `${updaterInfo?.loginName}(${updaterInfo?.email})`}
                 showName={false}
                 avatar={updaterInfo?.imageUrl}
               />

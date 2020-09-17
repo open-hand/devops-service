@@ -18,7 +18,7 @@ export default ({ projectId, statusDs }: ListProps): DataSetProps => ({
       textField: 'text',
       valueField: 'value',
       options: statusDs,
-      label: '主机状态',
+      // label: '主机状态',
     },
   ],
 });
