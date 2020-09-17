@@ -105,7 +105,9 @@ export default observer((props) => {
     }
     if (metadata) {
       const newData = JSON.parse(metadata.replace(/'/g, '"'));
-      const { sonarUrl, config, scannerType } = newData || {};
+      const {
+        sonarUrl, config, scannerType, blockAfterJob,
+      } = newData || {};
       let content;
       switch (type) {
         case 'sonar':
@@ -173,6 +175,20 @@ export default observer((props) => {
             ))
           ) : null;
           break;
+        case 'cdApiTest':
+          content = (
+            <div className="c7ncd-pipeline-detail-job-task-deploy">
+              <span className="c7ncd-pipeline-detail-job-task-deploy-item">
+                是否阻塞：
+                {blockAfterJob ? '是' : '否'}
+              </span>
+              <span>
+                触发分支：
+                {jobTriggerValue === 'exact_exclude' ? '精确排除 ' : ''}
+                {triggerValue || '所有分支或tag'}
+              </span>
+            </div>
+          );
         default:
       }
       return content && <div className="c7ncd-pipeline-detail-job-task">{content}</div>;
