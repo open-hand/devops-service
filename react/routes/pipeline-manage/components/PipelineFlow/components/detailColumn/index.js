@@ -45,7 +45,6 @@ export default observer((props) => {
     cdRecordId,
   } = props;
 
-
   const renderItem = () => {
     const hasJobs = jobRecordVOList && jobRecordVOList.length > 0;
     const lists = hasJobs
