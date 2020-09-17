@@ -10,6 +10,16 @@ export default function useStore() {
 
     instanceList: [],
 
+    hostList: [],
+
+    get getHostList() {
+      return this.hostList;
+    },
+
+    setHostList(data) {
+      this.hostList = data;
+    },
+
     get getInstanceList() {
       return this.instanceIdList;
     },

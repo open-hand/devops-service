@@ -101,6 +101,8 @@ export default observer(() => {
     }
     if (ds.type === 'cdHost') {
       ds.hostConnectionVO = {
+        [addCDTaskDataSetMap.hostSource]: ds[addCDTaskDataSetMap.hostSource],
+        [addCDTaskDataSetMap.host]: ds[addCDTaskDataSetMap.host],
         hostIp: ds.hostIp,
         hostPort: ds.hostPort,
         accountType: ds.accountType,
@@ -206,7 +208,7 @@ export default observer(() => {
         const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         value && setValueIdValues(Base64.decode(value));
       } else if (jobDetail.type === 'cdHost') {
-        const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+        const metadata = JSONbig.parse(jobDetail.metadata.replace(/'/g, '"'));
         extra = {
           ...metadata?.hostConnectionVO,
           ...metadata?.jarDeploy,
@@ -332,10 +334,14 @@ export default observer(() => {
       userName,
       password,
       accountType,
+      [addCDTaskDataSetMap.host]: host,
     } = ADDCDTaskDataSet.toData()[0];
     axios
       .post(
-        `/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`,
+        ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.hostSource)
+        === addCDTaskDataSetMap.alreadyhost
+          ? `/devops/v1/projects/${projectId}/hosts/connection_test_by_id?host_id=${host}`
+          : `/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`,
         {
           hostIp,
           hostPort,
@@ -433,7 +439,15 @@ export default observer(() => {
           }}
           newLine
         >
-          <Select style={{ flex: 1 }} name={addCDTaskDataSetMap.host} />
+          <Select
+            style={{ flex: 1 }}
+            name={addCDTaskDataSetMap.host}
+            onChange={(value2) => {
+              const item = ADDCDTaskUseStore.getHostList.find((i) => i.id == value2);
+              ADDCDTaskDataSet.current.set('hostIp', item.hostIp);
+              ADDCDTaskDataSet.current.set('hostPort', item.sshPort);
+            }}
+          />
           <div style={{ flex: 1, marginLeft: 16 }}>
             <TextField style={{ width: '100%' }} name="hostIp" />
           </div>
