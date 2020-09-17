@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -39,6 +41,14 @@ public class DevopsHostVO {
      */
     @ApiModelProperty("jmeter状态")
     private String jmeterStatus;
+
+    @Nullable
+    @ApiModelProperty("主机连接错误信息")
+    private String hostCheckError;
+
+    @Nullable
+    @ApiModelProperty("jmeter连接错误信息")
+    private String jmeterCheckError;
 
     @ApiModelProperty("主机ip")
     private String hostIp;
@@ -180,5 +190,23 @@ public class DevopsHostVO {
 
     public void setLastUpdatedBy(Long lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    @Nullable
+    public String getHostCheckError() {
+        return hostCheckError;
+    }
+
+    public void setHostCheckError(@Nullable String hostCheckError) {
+        this.hostCheckError = hostCheckError;
+    }
+
+    @Nullable
+    public String getJmeterCheckError() {
+        return jmeterCheckError;
+    }
+
+    public void setJmeterCheckError(@Nullable String jmeterCheckError) {
+        this.jmeterCheckError = jmeterCheckError;
     }
 }
