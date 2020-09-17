@@ -48,7 +48,7 @@ public class DevopsHostDTO extends AuditDomain {
     private String hostCheckError;
 
     @Nullable
-    @ApiModelProperty("jmeter_check_error")
+    @ApiModelProperty("jmeter连接错误信息")
     private String jmeterCheckError;
 
     /**
