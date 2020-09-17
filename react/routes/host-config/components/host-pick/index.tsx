@@ -22,9 +22,11 @@ const HostPick: FC<Props> = memo(({
   const [activeKey, setActiveKey] = useState(defaultActiveKey);
 
   const handleClick = (value: string) => {
-    setActiveKey(value);
-    if (onChange) {
-      onChange(value);
+    if (value !== activeKey) {
+      setActiveKey(value);
+      if (onChange) {
+        onChange(value);
+      }
     }
   };
 

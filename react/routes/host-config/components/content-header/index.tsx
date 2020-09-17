@@ -4,11 +4,10 @@ import {
   Page, Header, Breadcrumb, Content, Permission,
 } from '@choerodon/boot';
 import {
-  Button, Form, Select, TextField,
+  Button, Form, Icon, Select, TextField,
 } from 'choerodon-ui/pro';
-import map from 'lodash/map';
-import countBy from 'lodash/countBy';
 import { ButtonColor, FuncType } from 'choerodon-ui/pro/lib/button/enum';
+import { LabelLayoutType } from 'choerodon-ui/pro/lib/form/Form';
 import { useHostConfigStore } from '../../stores';
 import HostPick from '../host-pick';
 
@@ -24,7 +23,10 @@ const ContentHeader: React.FC<any> = observer((): any => {
   } = useHostConfigStore();
 
   const handleChange = (key:string) => {
+    searchDs.reset();
     listDs.setQueryParameter('type', key);
+    listDs.setQueryParameter('params', '');
+    listDs.setQueryParameter('status', '');
     mainStore.setCurrentTabKey(key);
     listDs.query();
   };
@@ -40,21 +42,41 @@ const ContentHeader: React.FC<any> = observer((): any => {
   return (
     <div className={`${prefixCls}-content-search`}>
       <HostPick onChange={handleChange} hostTabKeys={hostTabKeys} />
-      <Form
-        dataSet={searchDs}
-        columns={6}
-        className={`${prefixCls}-content-search-form`}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+      }}
       >
-        <TextField name="params" colSpan={3} placeholder="请输入搜索条件" />
-        <Select name="status" colSpan={2} onClear={handleSearch} />
+        <Form
+          dataSet={searchDs}
+          columns={6}
+          className={`${prefixCls}-content-search-form`}
+          labelLayout={'horizontal' as LabelLayoutType}
+        >
+          <TextField
+            clearButton
+            name="params"
+            colSpan={3}
+            placeholder="请输入搜索条件"
+            prefix={<Icon type="search" style={{ color: '#CACAE4', lineHeight: '22px' }} />}
+          />
+          <Select
+            label="主机状态:"
+            name="status"
+            colSpan={3}
+            placeholder="请选择"
+          />
+        </Form>
         <Button
           funcType={'flat' as FuncType}
           color={'primary' as ButtonColor}
           onClick={() => handleSearch()}
+          className={`${prefixCls}-content-search-btn`}
+          disabled={listDs.status === 'loading'}
         >
           {formatMessage({ id: 'search' })}
         </Button>
-      </Form>
+      </div>
     </div>
   );
 });

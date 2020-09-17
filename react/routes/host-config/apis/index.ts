@@ -40,4 +40,9 @@ export default class HostConfigApi {
   static batchCorrect(projectId:number, data: any) {
     return axios.post(`/devops/v1/projects/${projectId}/hosts/batch_correct`, JSON.stringify(data));
   }
+
+  // 检查主机是否能被删除
+  static checkHostDeletable(projectId:number, hostId:string) {
+    return axios.get(`devops/v1/projects/${projectId}/hosts/check/delete?host_id=${hostId}`);
+  }
 }
