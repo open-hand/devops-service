@@ -190,15 +190,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteHost(Long projectId, Long hostId) {
-        if (!checkHostDelete(projectId, hostId)) {
-            throw new CommonException("error.delete.host.already.referenced.in.pipeline");
-        }
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         if (devopsHostDTO == null) {
             return;
         }
 
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        if (!checkHostDelete(projectId, hostId)) {
+            throw new CommonException("error.delete.host.already.referenced.in.pipeline");
+        }
 
         devopsHostMapper.deleteByPrimaryKey(hostId);
     }
