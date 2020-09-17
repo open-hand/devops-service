@@ -60,7 +60,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.feign.operator.TestServiceClientoperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -159,7 +159,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private CiPipelineMavenService ciPipelineMavenService;
 
     @Autowired
-    private TestServiceClientoperator testServiceClientoperator;
+    private TestServiceClientOperator testServiceClientoperator;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;

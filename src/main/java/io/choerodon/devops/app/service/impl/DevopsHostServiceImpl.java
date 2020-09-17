@@ -29,6 +29,7 @@ import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
@@ -57,6 +58,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsCdJobMapper devopsCdJobMapper;
+    @Autowired
+    private TestServiceClientOperator testServiceClientOperator;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -209,16 +212,19 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
         boolean sshConnected = SshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
         result.setHostStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+        if (!sshConnected) {
+            result.setHostCheckError("failed to check ssh, please ensure network and authentication is valid");
+        }
 
         // 如果是测试类型的主机, 再测试下jmeter的状态
         if (DevopsHostType.DISTRIBUTE_TEST.getValue().equals(devopsHostConnectionTestVO.getType())) {
-            boolean jmeterConnected = JmeterUtil.testJmeterConnections(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
+            boolean jmeterConnected = testServiceClientOperator.testJmeterConnection(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
             result.setJmeterStatus(jmeterConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+            if (!jmeterConnected) {
+                result.setJmeterCheckError("failed to check jmeter， please ensure network and jmeter server running");
+            }
         }
 
-        // TODO 设置真正的错误信息
-        result.setJmeterCheckError("failed to check jmeter");
-        result.setHostCheckError("failed to check host");
         return result;
     }
 

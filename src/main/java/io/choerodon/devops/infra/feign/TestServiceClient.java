@@ -3,10 +3,7 @@ package io.choerodon.devops.infra.feign;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.test.ApiTestExecuteVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
@@ -36,4 +33,9 @@ public interface TestServiceClient {
     @GetMapping("/v1/projects/{project_id}/api-test-records/{record_id}")
     ResponseEntity<ApiTestTaskRecordVO> queryById(@PathVariable("project_id") Long projectId,
                                                   @PathVariable("record_id") Long recordId);
+
+    @ApiOperation("测试jmeter服务器是够可用于分布式测试 / devops-service用")
+    @GetMapping("/v1/distribute_hosts/connection_test")
+    ResponseEntity<Boolean> testConnection(@RequestParam("host_ip") String hostIp,
+                                           @RequestParam("jmeter_port") Integer jmeterPort);
 }
