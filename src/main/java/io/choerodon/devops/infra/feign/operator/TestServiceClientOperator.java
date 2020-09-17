@@ -20,9 +20,9 @@ import io.choerodon.devops.infra.feign.TestServiceClient;
  * @since 2020/9/14 9:28
  */
 @Component
-public class TestServiceClientoperator {
+public class TestServiceClientOperator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestServiceClientoperator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestServiceClientOperator.class);
     @Autowired
     private TestServiceClient testServiceClient;
 
@@ -59,5 +59,19 @@ public class TestServiceClientoperator {
             throw new CommonException("error.query.api.test.task.record");
         }
         return entity == null ? null : entity.getBody();
+    }
+
+    public boolean testJmeterConnection(String hostIp, Integer jmeterPort) {
+        try {
+            ResponseEntity<Boolean> result = testServiceClient.testConnection(hostIp, jmeterPort);
+            if (result.getStatusCode().is2xxSuccessful()) {
+                return Boolean.TRUE.equals(result.getBody());
+            }
+        } catch (Exception ex) {
+            LOGGER.debug("TestServiceClientOperator: Failed to test jmeter connection for host {} and port {}", hostIp, jmeterPort);
+            LOGGER.debug("The ex is", ex);
+            return false;
+        }
+        return false;
     }
 }

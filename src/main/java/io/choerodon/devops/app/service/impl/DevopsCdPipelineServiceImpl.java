@@ -46,7 +46,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.TestServiceClientoperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.CustomContextUtil;
@@ -133,7 +133,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
-    private TestServiceClientoperator testServiceClientoperator;
+    private TestServiceClientOperator testServiceClientoperator;
 
     @Override
     @Transactional
