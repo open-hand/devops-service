@@ -101,17 +101,17 @@ const HostsItem:React.FC<any> = ({
 
   const getActionData = useCallback(() => (getMainStatus !== 'operating' ? [
     {
-      service: [],
+      service: ['choerodon.code.project.deploy.host.ps.correct'],
       text: '校准状态',
       action: handleCorrect,
     },
     {
-      service: [],
+      service: ['choerodon.code.project.deploy.host.ps.edit'],
       text: '修改',
       action: handleModify,
     },
     {
-      service: [],
+      service: ['choerodon.code.project.deploy.host.ps.delete'],
       text: formatMessage({ id: 'delete' }),
       action: handleDelete,
     },
