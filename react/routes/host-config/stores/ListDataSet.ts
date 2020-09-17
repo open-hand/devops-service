@@ -13,16 +13,20 @@ export default ({ projectId }: ListProps): DataSetProps => ({
   paging: true,
   pageSize: 10,
   transport: {
-    read: ({ data, params, dataSet }) => ({
-      url: apis.getLoadHostsDetailsUrl(projectId),
-      method: 'post',
-      data: {
-        searchParam: {
-          type: 'deploy',
+    read: ({ data }) => {
+      const { type, params, status } = data;
+      return {
+        url: apis.getLoadHostsDetailsUrl(projectId),
+        method: 'post',
+        data: {
+          searchParam: {
+            type: type || 'distribute_test',
+            status,
+          },
+          params: params ? [params] : [],
         },
-        params: [],
-      },
-    }),
+      };
+    },
     destroy: ({ data: [data] }) => ({
       url: apis.getDeleteHostUrl(projectId, data.id),
       method: 'delete',

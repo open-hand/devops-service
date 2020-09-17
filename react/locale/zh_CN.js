@@ -95,6 +95,7 @@ const commonField = {
   noRepeat: '不可重复',
 
   // public
+  search: '搜索',
   detail: '详情',
   operate: '操作',
   cancel: '取消',
