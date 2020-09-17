@@ -8,6 +8,7 @@ import StatusTagOutLine from '../../components/statusTagOutLine';
 import eventStopProp from '../../../../../../utils/eventStopProp';
 import { useHostConfigStore } from '../../../../stores';
 import CreateHost from '../../../create-host';
+import apis from '../../../../apis';
 
 const HostsItem:React.FC<any> = ({
   sshPort, // 主机ssh的端口
@@ -31,6 +32,7 @@ const HostsItem:React.FC<any> = ({
     formatMessage,
     intlPrefix,
     refresh,
+    projectId,
   } = useHostConfigStore();
 
   const getMainStatus = useMemo(() => {
@@ -49,9 +51,17 @@ const HostsItem:React.FC<any> = ({
     return 'operating';
   }, [jmeterStatus, hostStatus]);
 
-  function handleCheck() {
-    record.set('hostStatus', 'operating');
-  }
+  const handleCorrect = async ():Promise<void> => {
+    try {
+      const res = await apis.batchCorrect(projectId, [id]);
+      if (res && res.failed) {
+        return;
+      }
+      refresh();
+    } catch (e) {
+      throw new Error(e);
+    }
+  };
 
   async function handleDelete() {
     const modalProps = {
@@ -66,9 +76,13 @@ const HostsItem:React.FC<any> = ({
         color: '#000',
       },
     };
-    const res = await listDs.delete(record, modalProps);
-    if (res && res.success) {
-      refresh();
+    try {
+      const res = await listDs.delete(record, modalProps);
+      if (res && res.success) {
+        refresh();
+      }
+    } catch (error) {
+      throw new Error(error);
     }
   }
 
@@ -89,7 +103,7 @@ const HostsItem:React.FC<any> = ({
     {
       service: [],
       text: '校准状态',
-      action: handleCheck,
+      action: handleCorrect,
     },
     {
       service: [],
