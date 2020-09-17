@@ -153,6 +153,16 @@ public class DevopsHostController {
         return Results.success(devopsHostService.isIpJmeterPortUnique(projectId, ip, jmeterPort));
     }
 
+    @ApiOperation("校验主机能否被删除")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/check/delete")
+    public ResponseEntity<Boolean> checkHostDelete(@ApiParam(value = "项目id", required = true)
+                                                   @PathVariable("project_id") Long projectId,
+                                                   @ApiParam(value = "主机id", required = true)
+                                                   @RequestParam("host_id") Long hostId) {
+        return Results.success(devopsHostService.checkHostDelete(projectId, hostId));
+    }
+
     @ApiOperation("批量校准主机状态")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/batch_correct")
