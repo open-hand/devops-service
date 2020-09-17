@@ -223,5 +223,5 @@ public interface SendNotificationService {
     /**
      * 实例状态变更发送webhook josn
      */
-    void sendInstanceStatusUpdate(String code, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String preStatus, String currentStatus);
+    void sendInstanceStatusUpdate(AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String currentStatus);
 }

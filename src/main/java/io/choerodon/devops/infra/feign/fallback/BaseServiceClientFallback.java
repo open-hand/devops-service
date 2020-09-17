@@ -1,5 +1,13 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
@@ -9,14 +17,6 @@ import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by younger on 2018/3/29.
@@ -68,7 +68,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<Page<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
-        return new ResponseEntity("error.user.get.byEmail", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.user.get.byEmail");
     }
 
     @Override
@@ -78,7 +78,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<Page<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageable, String name, String code, Boolean enabled, String params) {
-        return null;
+        throw new CommonException("error.page.projects.byOrgId");
     }
 
     public ResponseEntity<String> completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {

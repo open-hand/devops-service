@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.enums.HostSourceEnum;
+
 /**
  * @author scp
  * @date 2020/7/8
@@ -25,6 +27,32 @@ public class HostConnectionVO {
 
     @ApiModelProperty("账号配置类型")
     private String accountType;
+
+
+    @ApiModelProperty("主机id")
+    private Long hostId;
+
+    /**
+     * {@link HostSourceEnum}
+     */
+    @ApiModelProperty("主机来源")
+    private String hostSource;
+
+    public Long getHostId() {
+        return hostId;
+    }
+
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
+    }
+
+    public String getHostSource() {
+        return hostSource;
+    }
+
+    public void setHostSource(String hostSource) {
+        this.hostSource = hostSource;
+    }
 
     public String getAccountKey() {
         return accountKey;

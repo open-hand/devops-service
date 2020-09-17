@@ -13,10 +13,8 @@ import java.util.stream.Collectors;
 
 import org.hzero.core.util.StringPool;
 import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.hzero.websocket.redis.BrokerServerSessionRedis;
 import org.hzero.websocket.registry.BaseSessionRegistry;
 import org.hzero.websocket.registry.GroupSessionRegistry;
-import org.hzero.websocket.vo.ClientVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -112,21 +110,6 @@ public class WebSocketTool {
      */
     public static boolean isEmptyOrTrimmedEmpty(String content) {
         return StringUtils.isEmpty(content) || content.trim().isEmpty();
-    }
-
-    /**
-     * 获取本地监听这个group的Session
-     *
-     * @param group group
-     * @return 本地关联这个group的ws session
-     */
-    public static List<WebSocketSession> getLocalSessionsByGroup(String group) {
-        String brokerId = BaseSessionRegistry.getBrokerId();
-        List<ClientVO> clientList = BrokerServerSessionRedis.getCache(brokerId, group);
-        return clientList.stream()
-                .map(ClientVO::getSessionId)
-                .map(GroupSessionRegistry::getSession)
-                .collect(Collectors.toList());
     }
 
     /**

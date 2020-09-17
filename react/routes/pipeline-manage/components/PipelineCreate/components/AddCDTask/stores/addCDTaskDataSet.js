@@ -149,7 +149,17 @@ export default (
             record.get('envId')
             && `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?app_service_id=${PipelineCreateFormDataSet.current.get(
               'appServiceId',
-            )}&env_id=${record.get('envId')}`,
+            )}&env_id=${record.get('envId')}&random=${random}`,
+          transformResponse: (res) => {
+            let newRes = res;
+            try {
+              newRes = JSONbig.parse(newRes);
+              useStore.setInstanceList(newRes);
+              return newRes;
+            } catch (e) {
+              return newRes;
+            }
+          },
         }),
       },
     },
