@@ -857,6 +857,9 @@ const hostConfig = {
   'c7ncd.host.config.port.check.failed': '端口必须在1-65535之间',
   'c7ncd.host.config.port.unique.failed.sshPort': 'IP与SSH端口号的组合已存在',
   'c7ncd.host.config.port.unique.failed.jmeterPort': 'IP与Jmeter端口号的组合已存在',
+  'c7ncd.host.config.batch.correct.title': '批量校准状态',
+  'c7ncd.host.config.batch.correct.des': '确定对页面中所有的主机执行测试连接的操作吗？',
+  'c7ncd.host.config.batch.correct': '校准',
 };
 
 const emptyPage = {

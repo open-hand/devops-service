@@ -13,6 +13,7 @@ import { LabelLayout } from 'choerodon-ui/pro/lib/form/enum';
 import ContentHeader from '@/routes/host-config/components/content-header';
 import ContentList from '@/routes/host-config/components/content-list';
 import CreateHost from '@/routes/host-config/components/create-host';
+import HostConfigApis from '@/routes/host-config/apis';
 import { useHostConfigStore } from './stores';
 
 const HostConfig: React.FC<any> = observer((): any => {
@@ -21,10 +22,29 @@ const HostConfig: React.FC<any> = observer((): any => {
     intlPrefix,
     formatMessage,
     refresh,
+    listDs,
+    projectId,
   } = useHostConfigStore();
 
-  const handleAdjustment = () => {
+  const handleCorrect = async () => {
+    try {
+      const postData = map(listDs.toData(), 'id');
+      await HostConfigApis.batchCorrect(projectId, postData);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
 
+  const handleAdjustment = () => {
+    Modal.open({
+      key: Modal.key(),
+      title: formatMessage({ id: `${intlPrefix}.batch.correct.title` }),
+      children: formatMessage({ id: `${intlPrefix}.batch.correct.des` }),
+      movable: false,
+      okText: formatMessage({ id: `${intlPrefix}.batch.correct` }),
+      onOk: handleCorrect,
+    });
   };
 
   const handleAdd = () => {
