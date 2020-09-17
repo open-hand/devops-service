@@ -13,7 +13,7 @@ public class DevopsHostConnectionTestResultVO {
      * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
      */
     @ApiModelProperty("ssh校验结果")
-    private String sshStatus;
+    private String hostStatus;
 
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
@@ -29,12 +29,12 @@ public class DevopsHostConnectionTestResultVO {
     @ApiModelProperty("jmeter_check_error / 可为空")
     private String jmeterCheckError;
 
-    public String getSshStatus() {
-        return sshStatus;
+    public String getHostStatus() {
+        return hostStatus;
     }
 
-    public void setSshStatus(String sshStatus) {
-        this.sshStatus = sshStatus;
+    public void setHostStatus(String hostStatus) {
+        this.hostStatus = hostStatus;
     }
 
     public String getJmeterStatus() {
@@ -66,7 +66,7 @@ public class DevopsHostConnectionTestResultVO {
     @Override
     public String toString() {
         return "DevopsHostConnectionTestResultVO{" +
-                "sshStatus='" + sshStatus + '\'' +
+                "hostStatus='" + hostStatus + '\'' +
                 ", jmeterStatus='" + jmeterStatus + '\'' +
                 ", hostCheckError='" + hostCheckError + '\'' +
                 ", jmeterCheckError='" + jmeterCheckError + '\'' +

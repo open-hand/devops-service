@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @since 2020/9/14
  */
 public class DevopsHostVO {
+    @Encrypt
     @ApiModelProperty("主键")
     private Long id;
 
