@@ -234,7 +234,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return Boolean.TRUE;
         }
         for (DevopsCdJobDTO cdJobDTO : devopsCdJobDTOS) {
-            CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(cdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
+            CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(cdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
             if (!HostDeployType.CUSTOMIZE_DEPLOY.getValue().equalsIgnoreCase(cdHostDeployConfigVO.getHostDeployType().trim())) {
                 continue;
             }
