@@ -37,6 +37,14 @@ public interface DevopsHostService {
     void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds);
 
     /**
+     * 校正一个主机的状态
+     *
+     * @param projectId 项目id
+     * @param hostId    主机id
+     */
+    void correctStatus(Long projectId, Long hostId);
+
+    /**
      * 更新主机
      *
      * @param projectId                 项目id
@@ -121,9 +129,10 @@ public interface DevopsHostService {
     Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options);
 
     /**
-     *  能否删除主机
-     * @param projectId    项目id
-     * @param hostId  主机id
+     * 能否删除主机
+     *
+     * @param projectId 项目id
+     * @param hostId    主机id
      * @return true表示能删除
      */
     boolean checkHostDelete(Long projectId, Long hostId);
