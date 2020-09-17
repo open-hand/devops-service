@@ -18,17 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.enums.DevopsHostStatus;
-import io.choerodon.devops.infra.enums.DevopsHostType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -49,6 +51,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsCdJobMapper devopsCdJobMapper;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -137,8 +141,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteHost(Long projectId, Long hostId) {
-        // TODO 校验是否可删除
-
+        if (!checkHostDelete(projectId, hostId)) {
+            throw new CommonException("error.delete.host.already.referenced.in.pipeline");
+        }
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         if (devopsHostDTO == null) {
             return;
@@ -217,6 +222,34 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             fillUpdaterInfo(result);
         }
         return result;
+    }
+
+    @Override
+    public boolean checkHostDelete(Long projectId, Long hostId) {
+        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
+        devopsCdJobDTO.setProjectId(projectId);
+        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.select(devopsCdJobDTO);
+        if (CollectionUtils.isEmpty(devopsCdJobDTOS)) {
+            return Boolean.TRUE;
+        }
+        List<DevopsCdJobDTO> cdJobDTOS = devopsCdJobDTOS.stream().filter(cdJobDTO -> JobTypeEnum.CD_HOST.value().equalsIgnoreCase(cdJobDTO.getType().trim())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(cdJobDTOS)) {
+            return Boolean.TRUE;
+        }
+        for (DevopsCdJobDTO cdJobDTO : cdJobDTOS) {
+            CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(cdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
+            if (!HostDeployType.CUSTOMIZE_DEPLOY.getValue().equalsIgnoreCase(cdHostDeployConfigVO.getHostDeployType().trim())) {
+                continue;
+            }
+            HostConnectionVO hostConnectionVO = cdHostDeployConfigVO.getHostConnectionVO();
+            if (!HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource().trim())) {
+                continue;
+            }
+            if (hostConnectionVO.getHostId().equals(hostId)) {
+                return Boolean.FALSE;
+            }
+        }
+        return Boolean.TRUE;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

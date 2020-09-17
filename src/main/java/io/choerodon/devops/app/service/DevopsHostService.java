@@ -119,4 +119,12 @@ public interface DevopsHostService {
      * @return 一页主机数据
      */
     Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options);
+
+    /**
+     *  能否删除主机
+     * @param projectId    项目id
+     * @param hostId  主机id
+     * @return true表示能删除
+     */
+    boolean checkHostDelete(Long projectId, Long hostId);
 }
