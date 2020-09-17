@@ -201,6 +201,13 @@ export default (
       name: addCDTaskDataSetMap.host,
       type: 'string',
       label: '主机',
+      lookupAxiosConfig: () => ({
+        method: 'post',
+        url: `/devops/v1/projects/${projectId}/hosts/page_by_options`,
+        data: {
+          type: 'deploy',
+        },
+      }),
     },
     {
       name: 'hostIp',
