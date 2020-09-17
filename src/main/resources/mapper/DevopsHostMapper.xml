@@ -15,14 +15,14 @@
             <if test="searchParam.status != null">
                 <choose>
                     <when test="searchParam.status == 'success'">
-                        AND dh.host_status = 'success' AND dh.jmeter_status = 'success'
+                        AND ((dh.type = 'distribute_test' AND dh.host_status = 'success' AND dh.jmeter_status = 'success' ) OR (dh.type = 'deploy' AND dh.host_status = 'success'))
                     </when>
                     <when test="searchParam.status == 'failed'">
-                        AND dh.host_status = 'failed' OR dh.jmeter_status = 'failed'
+                        AND ((dh.type = 'distribute_test' AND (dh.host_status = 'failed' OR dh.jmeter_status = 'failed')) OR (dh.type = 'deploy' AND dh.host_status = 'failed'))
                     </when>
                     <otherwise>
-                        AND (dh.host_status != 'success' AND dh.jmeter_status != 'success')
-                        AND dh.host_status != 'failed' AND dh.jmeter_status != 'failed'
+                        AND ((dh.type = 'distribute_test' AND (dh.host_status != 'success' OR dh.jmeter_status != 'success')
+                        AND dh.host_status != 'failed' AND dh.jmeter_status != 'failed') OR (dh.type = 'deploy' AND dh.host_status = 'operating'))
                     </otherwise>
                 </choose>
             </if>
