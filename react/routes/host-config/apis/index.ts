@@ -36,4 +36,8 @@ export default class HostConfigApi {
   static getDeleteHostUrl(projectId:number, hostId:string) {
     return `devops/v1/projects/${projectId}/hosts/${hostId}`;
   }
+
+  static batchCorrect(projectId:number, data: any) {
+    return axios.post(`/devops/v1/projects/${projectId}/hosts/batch_correct`, JSON.stringify(data));
+  }
 }

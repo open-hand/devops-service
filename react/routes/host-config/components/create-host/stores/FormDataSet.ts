@@ -14,12 +14,29 @@ interface FormProps {
   hostId: string,
 }
 
+function setStatus(record: any) {
+  if (record) {
+    const hostStatus = record.get('hostStatus');
+    const jmeterStatus = record.get('jmeterStatus');
+    // eslint-disable-next-line no-nested-ternary
+    const status = [hostStatus, jmeterStatus].includes('failed') ? 'failed' : hostStatus === 'success' && jmeterStatus === 'success' ? 'success' : 'operating';
+    record.init('status', record.get('type') === 'deploy' ? hostStatus : status);
+  }
+}
+
+function handleLoad({ dataSet }: { dataSet: DataSet }) {
+  setStatus(dataSet.current);
+}
+
 function handleUpdate({ name, record }: { name: string, record: any }) {
   if (name === 'hostIp') {
     record.get('sshPort') && record.getField('sshPort').checkValidity();
     if (record.get('type') === 'distribute_test' && record.get('jmeterPort')) {
       record.getField('jmeterPort').checkValidity();
     }
+  }
+  if (name === 'type') {
+    setStatus(record);
   }
 }
 
@@ -124,7 +141,7 @@ export default ({
         method: 'get',
       },
       create: ({ data: [data] }) => {
-        const postData = omit(data, ['__status', '__id', 'status', 'jmeterStatus', 'sshStatus']);
+        const postData = omit(data, ['__status', '__id', 'status', 'jmeterStatus', 'hostStatus']);
         return ({
           url: HostConfigApis.createHost(projectId),
           method: 'post',
@@ -132,7 +149,7 @@ export default ({
         });
       },
       update: ({ data: [data] }) => {
-        const postData = omit(data, ['__status', '__id', 'status', 'jmeterStatus', 'sshStatus']);
+        const postData = omit(data, ['__status', '__id', 'status', 'jmeterStatus', 'hostStatus']);
         return ({
           url: HostConfigApis.editHost(projectId, hostId),
           method: 'put',
@@ -215,6 +232,7 @@ export default ({
       },
     ],
     events: {
+      load: handleLoad,
       update: handleUpdate,
     },
   });
