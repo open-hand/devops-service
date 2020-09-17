@@ -56,13 +56,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getJmeterPort());
-        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostCreateRequestVO.getType())) {
-            devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostCreateRequestVO.getJmeterPort());
-        }
 
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
-        devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
+
+        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostCreateRequestVO.getType())) {
+            devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostCreateRequestVO.getJmeterPort());
+            devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
+        }
+
         devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
         return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
     }
@@ -111,11 +113,14 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostUpdateRequestVO.getName());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getJmeterPort());
-        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType())) {
-            devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostUpdateRequestVO.getJmeterPort());
-        }
 
         DevopsHostDTO toUpdate = ConvertUtils.convertObject(devopsHostUpdateRequestVO, DevopsHostDTO.class);
+        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType())) {
+            devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostUpdateRequestVO.getJmeterPort());
+            toUpdate.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
+        }
+
+        toUpdate.setHostStatus(DevopsHostStatus.OPERATING.getValue());
         toUpdate.setId(devopsHostDTO.getId());
         toUpdate.setObjectVersionNumber(devopsHostDTO.getObjectVersionNumber());
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostMapper, toUpdate, "error.update.host");
