@@ -7,6 +7,8 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
@@ -15,6 +17,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author zmf
  * @since 2020/9/14
  */
+@ModifyAudit
+@VersionAudit
 @Table(name = "devops_host")
 public class DevopsHostDTO extends AuditDomain {
     @Id
