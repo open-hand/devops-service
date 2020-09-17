@@ -166,6 +166,19 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public Boolean testConnectionByIdForDeployHost(Long projectId, Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        if (devopsHostDTO == null) {
+            return false;
+        }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(DevopsHostType.DEPLOY.getValue().equals(devopsHostDTO.getType()), "error.host.type.invalid");
+
+        return SshUtil.sshConnect(devopsHostDTO.getHostIp(), devopsHostDTO.getSshPort(), devopsHostDTO.getAuthType(), devopsHostDTO.getUsername(), devopsHostDTO.getPassword());
+    }
+
+    @Override
     public boolean isNameUnique(Long projectId, String name) {
         DevopsHostDTO condition = new DevopsHostDTO();
         condition.setProjectId(Objects.requireNonNull(projectId));
