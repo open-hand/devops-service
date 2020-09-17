@@ -228,15 +228,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public boolean checkHostDelete(Long projectId, Long hostId) {
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setProjectId(projectId);
+        devopsCdJobDTO.setType(JobTypeEnum.CD_HOST.value());
         List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.select(devopsCdJobDTO);
         if (CollectionUtils.isEmpty(devopsCdJobDTOS)) {
             return Boolean.TRUE;
         }
-        List<DevopsCdJobDTO> cdJobDTOS = devopsCdJobDTOS.stream().filter(cdJobDTO -> JobTypeEnum.CD_HOST.value().equalsIgnoreCase(cdJobDTO.getType().trim())).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(cdJobDTOS)) {
-            return Boolean.TRUE;
-        }
-        for (DevopsCdJobDTO cdJobDTO : cdJobDTOS) {
+        for (DevopsCdJobDTO cdJobDTO : devopsCdJobDTOS) {
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(cdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
             if (!HostDeployType.CUSTOMIZE_DEPLOY.getValue().equalsIgnoreCase(cdHostDeployConfigVO.getHostDeployType().trim())) {
                 continue;
