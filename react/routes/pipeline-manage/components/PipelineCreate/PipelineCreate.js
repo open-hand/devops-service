@@ -1,9 +1,9 @@
 import { axios } from '@choerodon/boot';
 import React, {
-  useEffect, useState, Fragment, useRef,
+  useEffect, useState,
 } from 'react';
 import {
-  Form, TextField, Select, SelectBox, Modal, Button, DataSet,
+  Form, TextField, Select, SelectBox,
 } from 'choerodon-ui/pro';
 import { message, Icon, Tooltip } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
@@ -36,7 +36,7 @@ const PipelineCreate = observer(() => {
   useEffect(() => {
     if (dataSource) {
       const {
-        name, appServiceId, image, stageList, versionName,
+        name, appServiceId, image, versionName,
       } = dataSource;
       PipelineCreateFormDataSet.loadData([{
         name,

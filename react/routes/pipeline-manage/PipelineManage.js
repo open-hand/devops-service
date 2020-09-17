@@ -1,11 +1,12 @@
+/* eslint-disable max-len */
 import React, {
-  Fragment, useRef, useState, Suspense, useEffect,
+  useRef, Suspense,
 } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  Page, Header, Breadcrumb, Content, Permission,
+  Page, Header, Breadcrumb, Content,
 } from '@choerodon/boot';
-import { Button, Modal } from 'choerodon-ui/pro';
+import { Modal } from 'choerodon-ui/pro';
 import PipelineTree from './components/PipelineTree';
 import PipelineFlow from './components/PipelineFlow';
 import DragBar from '../../components/drag-bar';
@@ -32,7 +33,7 @@ const settingsModalStyle = {
   width: 740,
 };
 
-const PipelineManage = observer((props) => {
+const PipelineManage = observer(() => {
   const {
     intl: { formatMessage },
     intlPrefix,
@@ -41,15 +42,17 @@ const PipelineManage = observer((props) => {
     mainStore,
     editBlockStore,
     detailStore,
-    detailStore: {
-      loadDetailData, getDetailData,
-    },
-    editBlockStore: {
-      getMainData, loadData, getHasModify, setHasModify,
-    },
     treeDs,
     projectId,
   } = usePipelineManageStore();
+
+  const {
+    getMainData, loadData, setHasModify,
+  } = editBlockStore;
+
+  const {
+    loadDetailData, getDetailData,
+  } = detailStore;
 
   const handleCreatePipeline = () => {
     Modal.open({
@@ -78,7 +81,7 @@ const PipelineManage = observer((props) => {
     await treeDs.query();
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
-    const { gitlabPipelineId, devopsPipelineRecordRelId } = getDetailData;
+    const { devopsPipelineRecordRelId } = getDetailData;
     if (!parentId) {
       id && loadData(projectId, id);
     } else {
@@ -151,7 +154,7 @@ const PipelineManage = observer((props) => {
   }
 
   function openAuditModal() {
-    const { devopsCdPipelineDeatilVO, parentId } = getSelectedMenu;
+    const { devopsCdPipelineDeatilVO } = getSelectedMenu;
     const {
       cdRecordId,
       devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO,
@@ -172,7 +175,6 @@ const PipelineManage = observer((props) => {
   }
 
   function openSettingsModal(type) {
-    const { id } = getMainData;
     const { appServiceId, appServiceName } = getSelectedMenu;
     Modal.open({
       key: settingsKey,
@@ -321,11 +323,7 @@ const PipelineManage = observer((props) => {
             <PipelineTree handleRefresh={handleRefresh} />
             <div className={`${prefixCls}-main ${prefixCls}-animate`}>
               <PipelineFlow
-                stepStore={editBlockStore}
-                detailStore={detailStore}
                 handleRefresh={handleRefresh}
-                treeDs={treeDs}
-                mainStore={mainStore}
               />
             </div>
           </div>
