@@ -2,15 +2,11 @@ const map = {
   // 主机来源name
   hostSource: 'hostSource',
   // 已有主机
-  alreadyhost: 'alreadyhost',
+  alreadyhost: 'existHost',
   // 自定义主机
-  customhost: 'customhost',
+  customhost: 'customHost',
   // 主机
-  host: 'host',
-  // ip
-  ip: 'ip',
-  // 端口
-  port: 'port',
+  host: 'hostId',
   // Api测试
   apiTest: 'cdApiTest',
   // api测试任务

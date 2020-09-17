@@ -19,6 +19,7 @@ const jobTask = {
   cdDeploy: '部署',
   cdHost: '主机部署',
   cdAudit: '人工卡点',
+  cdApiTest: 'API测试',
 };
 
 export default observer((props) => {

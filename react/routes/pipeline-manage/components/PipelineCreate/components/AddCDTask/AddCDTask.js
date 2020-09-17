@@ -18,6 +18,7 @@ import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
 import DeployConfig from '@/components/deploy-config';
 import JSONbig from 'json-bigint';
+import addCDTaskDataSetMap from './stores/addCDTaskDataSetMap';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import Tips from '../../../../../../components/new-tips';
@@ -94,6 +95,10 @@ export default observer(() => {
         ds.instanceName = instanceName;
       }
     }
+    if (ds.type === addCDTaskDataSetMap.apiTest) {
+      ds.apiTestTaskName = ADDCDTaskUseStore.getApiTestArray
+        .find((i) => i.id == ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.apiTestMission)).name;
+    }
     if (ds.type === 'cdHost') {
       ds.hostConnectionVO = {
         hostIp: ds.hostIp,
@@ -156,6 +161,7 @@ export default observer(() => {
             value: Base64.encode(jarValues),
           };
         }
+        ds.jarDeploy.workingPath = ds.workingPath;
       }
     }
 
@@ -164,7 +170,7 @@ export default observer(() => {
   }
 
   const handleAdd = async () => {
-    const result = await ADDCDTaskDataSet.validate();
+    const result = await ADDCDTaskDataSet.current.validate(true);
     if (result) {
       const ds = JSON.parse(JSON.stringify(ADDCDTaskDataSet.toData()[0]));
       if (ds.type === 'cdHost') {
@@ -416,6 +422,56 @@ export default observer(() => {
 
   const optionRenderValueId = ({ value, text, record }) => rendererValueId({ text });
 
+  const renderHostSetting = () => {
+    const value = ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.hostSource);
+    if (value === addCDTaskDataSetMap.alreadyhost) {
+      return [
+        <div
+          colSpan={2}
+          style={{
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative',
+          }}
+          newLine
+        >
+          <Select style={{ flex: 1 }} name={addCDTaskDataSetMap.host} />
+          <div style={{ flex: 1, marginLeft: 16 }}>
+            <TextField style={{ width: '100%' }} name="hostIp" />
+          </div>
+          <div style={{ flex: 1, marginLeft: 16 }}>
+            <TextField style={{ width: '100%' }} name="hostPort" />
+          </div>
+        </div>,
+      ];
+    }
+    return [
+      <TextField newLine colSpan={1} name="hostIp" />,
+      <TextField colSpan={1} name="hostPort" />,
+      <SelectBox colSpan={1} name="accountType" className="addcdTask-mode">
+        <Option value="accountPassword">用户名与密码</Option>
+        <Option value="accountKey">用户名与密钥</Option>
+      </SelectBox>,
+      <TextField colSpan={1} newLine name="userName" />,
+        ADDCDTaskDataSet?.current?.get('accountType')
+        === 'accountPassword' ? (
+          <Password colSpan={1} name="password" />
+          ) : (
+            [
+              <p newLine colSpan={1} className="addcdTask-accountKeyP">
+                密钥
+              </p>,
+              <YamlEditor
+                colSpan={2}
+                newLine
+                readOnly={false}
+                value={accountKeyValue}
+                modeChange={false}
+                onValueChange={(data) => setAccountKeyValue(data)}
+              />,
+            ]
+          ),
+    ];
+  };
+
   const getOtherConfig = () => {
     function getModeDom() {
       const currentDepoySource = ADDCDTaskDataSet?.current?.get('deploySource');
@@ -524,6 +580,15 @@ export default observer(() => {
           currentDepoySource === 'matchDeploy' && (
             <TextField colSpan={6} name="versionRegular" />
           ),
+          <TextField
+            addonAfter={(
+              <Tips helpText="默认工作目录为：/temp，而默认的jar包下载存放目录为：/temp/jar/xxx.jar，默认日志存放目录为：/temp/log/xxx.log
+若此处填写了自定义工作目录，即表示，jar包下载存放目录为：工作目录/jar/xxx.jar 日志存放目录为：工作目录/log/xxx.log"
+              />
+            )}
+            colSpan={3}
+            name="workingPath"
+          />,
           <YamlEditor
             colSpan={6}
             newLine
@@ -575,37 +640,20 @@ export default observer(() => {
           columns={2}
           dataSet={ADDCDTaskDataSet}
         >
-          <TextField colSpan={1} name="hostIp" />
-          <TextField colSpan={1} name="hostPort" />
-          <SelectBox colSpan={1} name="accountType" className="addcdTask-mode">
-            <Option value="accountPassword">用户名与密码</Option>
-            <Option value="accountKey">用户名与密钥</Option>
+          <SelectBox style={{ top: '10px' }} colSpan={1} name={addCDTaskDataSetMap.hostSource}>
+            <Option value={addCDTaskDataSetMap.alreadyhost}>已有主机</Option>
+            <Option value={addCDTaskDataSetMap.customhost}>自定义主机</Option>
           </SelectBox>
-          <TextField colSpan={1} newLine name="userName" />
-          {ADDCDTaskDataSet?.current?.get('accountType')
-          === 'accountPassword' ? (
-            <Password colSpan={1} name="password" />
-          ) : (
-            [
-              <p newLine colSpan={1} className="addcdTask-accountKeyP">
-                密钥
-              </p>,
-              <YamlEditor
-                colSpan={2}
-                newLine
-                readOnly={false}
-                value={accountKeyValue}
-                modeChange={false}
-                onValueChange={(data) => setAccountKeyValue(data)}
-              />,
-            ]
-          )}
-          <div colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
+          {renderHostSetting()}
+          <div newLine colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
             <Button
               disabled={
-                !ADDCDTaskDataSet.current.get('hostIp')
+                ADDCDTaskDataSet.current.get(
+                  addCDTaskDataSetMap.hostSource,
+                ) === addCDTaskDataSetMap.customhost
+                  ? (!ADDCDTaskDataSet.current.get('hostIp')
                 || !ADDCDTaskDataSet.current.get('hostPort')
-                || !ADDCDTaskDataSet.current.get('userName')
+                || !ADDCDTaskDataSet.current.get('userName')) : !ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.host)
               }
               onClick={handleTestConnect}
               style={{ marginRight: 20 }}
@@ -640,13 +688,11 @@ export default observer(() => {
           {getModeDom()}
         </Form>,
       ],
-      // TODO 修改api测试value
-      apiceshi: [
+      [addCDTaskDataSetMap.apiTest]: [
         <div className="addcdTask-divided" />,
         <p className="addcdTask-title">执行设置</p>,
-        // TODO 修改字段名
         <Form style={{ marginTop: 20 }} columns={2} dataSet={ADDCDTaskDataSet}>
-          <SelectBox name="sfzshxjdyrw">
+          <SelectBox name={addCDTaskDataSetMap.whetherBlock}>
             <Option value>是</Option>
             <Option value={false}>否</Option>
           </SelectBox>
@@ -797,6 +843,9 @@ export default observer(() => {
               accountType: 'accountPassword',
               hostDeployType: 'image',
               deploySource: 'pipelineDeploy',
+              [addCDTaskDataSetMap.hostSource]: addCDTaskDataSetMap.alreadyhost,
+              workingPath: '/temp',
+              name: ADDCDTaskDataSet.current.get('name') || undefined,
             },
           ])}
           colSpan={1}
@@ -805,10 +854,8 @@ export default observer(() => {
           <Option value="cdDeploy">部署</Option>
           <Option value="cdHost">主机部署</Option>
           <Option value="cdAudit">人工卡点</Option>
-          {/* TODO  修改value值 */}
-          <Option value="apiceshi">API测试</Option>
+          <Option value={addCDTaskDataSetMap.apiTest}>API测试</Option>
         </Select>
-        {/* TODO API测试修改任务名称为下拉选择 */}
         <TextField colSpan={2} name="name" />
         <TextField colSpan={1} name="glyyfw" />
         <div className="addcdTask-wrap" colSpan={2}>
@@ -857,6 +904,11 @@ export default observer(() => {
             </Select>
           )}
         </div>
+        {
+          ADDCDTaskDataSet.current.get('type') === addCDTaskDataSetMap.apiTest && (
+            <Select newLine colSpan={1} name={addCDTaskDataSetMap.apiTestMission} />
+          )
+        }
         {ADDCDTaskDataSet?.current?.get('type') === 'cdDeploy' && [
           <Select
             colSpan={1}
