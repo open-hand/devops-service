@@ -52,24 +52,26 @@ const CreateHost: React.FC<any> = observer((): any => {
       } else {
         record.set('jmeterStatus', 'operating');
       }
-      record.set('sshStatus', 'operating');
+      record.set('hostStatus', 'operating');
       const res = await HostConfigApis.testConnection(projectId, postData);
       modal.update({
         okProps: { disabled: false },
       });
       if (res) {
-        const { sshStatus, jmeterStatus } = res;
+        const { hostStatus, jmeterStatus, hostCheckError, jmeterCheckError } = res;
         // eslint-disable-next-line no-nested-ternary
-        const status = [sshStatus, jmeterStatus].includes('failed') ? 'failed' : sshStatus === 'success' && jmeterStatus === 'success' ? 'success' : 'operating';
-        record.set('sshStatus', sshStatus);
+        const status = [hostStatus, jmeterStatus].includes('failed') ? 'failed' : hostStatus === 'success' && jmeterStatus === 'success' ? 'success' : 'operating';
+        record.set('hostStatus', hostStatus);
         record.set('jmeterStatus', jmeterStatus);
-        record.set('status', postData.type === 'deploy' ? sshStatus : status);
+        record.set('hostCheckError', hostCheckError);
+        record.set('jmeterCheckError', jmeterCheckError);
+        record.set('status', postData.type === 'deploy' ? hostStatus : status);
       }
       return true;
     } catch (e) {
       const record = formDs.current;
       if (record) {
-        record.set('sshStatus', 'wait');
+        record.set('hostStatus', 'wait');
         record.set('jmeterStatus', 'wait');
         record.set('status', 'wait');
       }
