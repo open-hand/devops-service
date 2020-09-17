@@ -93,7 +93,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             DevopsHostConnectionTestVO devopsHostConnectionTestVO = ConvertUtils.convertObject(hostDTO, DevopsHostConnectionTestVO.class);
 
             DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
-            hostDTO.setHostStatus(result.getSshStatus());
+            hostDTO.setHostStatus(result.getHostStatus());
             hostDTO.setHostCheckError(result.getHostCheckError());
             hostDTO.setJmeterStatus(result.getJmeterStatus());
             hostDTO.setJmeterCheckError(result.getJmeterCheckError());
@@ -151,7 +151,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
         DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
         boolean sshConnected = SshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
-        result.setSshStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+        result.setHostStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
 
         // 如果是测试类型的主机, 再测试下jmeter的状态
         if (DevopsHostType.DISTRIBUTE_TEST.getValue().equals(devopsHostConnectionTestVO.getType())) {
