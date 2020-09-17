@@ -68,7 +68,9 @@ export default (
       label: 'API测试任务',
       textField: 'name',
       valueField: 'id',
-      required: true,
+      dynamicProps: {
+        required: ({ record }) => record.get('type') === addCDTaskDataSetMap.apiTest,
+      },
       lookupAxiosConfig: () => ({
         method: 'get',
         url: `/test/v1/projects/${projectId}/api_test/tasks/paging?random=${random}`,
@@ -211,11 +213,23 @@ export default (
       name: addCDTaskDataSetMap.host,
       type: 'string',
       label: '主机',
+      textField: 'name',
+      valueField: 'id',
       lookupAxiosConfig: () => ({
         method: 'post',
-        url: `/devops/v1/projects/${projectId}/hosts/page_by_options`,
+        url: `/devops/v1/projects/${projectId}/hosts/page_by_options?random=${random}`,
         data: {
           type: 'deploy',
+        },
+        transformResponse: (res) => {
+          let newRes = res;
+          try {
+            newRes = JSONbig.parse(newRes);
+            useStore.setHostList(newRes.content);
+            return newRes;
+          } catch (e) {
+            return newRes;
+          }
         },
       }),
     },
@@ -250,7 +264,7 @@ export default (
       type: 'string',
       label: '用户名',
       dynamicProps: {
-        required: ({ record }) => record.get('type') === 'cdHost',
+        required: ({ record }) => record.get('type') === 'cdHost' && record.get(addCDTaskDataSetMap.hostSource) === addCDTaskDataSetMap.customhost,
       },
     },
     {
@@ -259,7 +273,7 @@ export default (
       label: '密码',
       dynamicProps: {
         required: ({ record }) => record.get('type') === 'cdHost'
-          && record.get('accountType') === 'accountPassword',
+          && record.get('accountType') === 'accountPassword' && record.get(addCDTaskDataSetMap.hostSource) === addCDTaskDataSetMap.customhost,
       },
     },
     {
