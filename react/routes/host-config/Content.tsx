@@ -61,9 +61,9 @@ const HostConfig: React.FC<any> = observer((): any => {
   };
 
   return (
-    <Page>
+    <Page service={['choerodon.code.project.deploy.host.ps.default']}>
       <Header>
-        <Permission service={[]}>
+        <Permission service={['choerodon.code.project.deploy.host.ps.create']}>
           <Button
             color={'primary' as ButtonColor}
             icon="add"
@@ -72,7 +72,7 @@ const HostConfig: React.FC<any> = observer((): any => {
             {formatMessage({ id: `${intlPrefix}.add` })}
           </Button>
         </Permission>
-        <Permission>
+        <Permission service={['choerodon.code.project.deploy.host.ps.correct']}>
           <Button
             color={'primary' as ButtonColor}
             icon="refresh"
