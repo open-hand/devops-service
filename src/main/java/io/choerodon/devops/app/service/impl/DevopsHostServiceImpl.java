@@ -257,7 +257,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!devopsHostDTO.getName().equals(devopsHostUpdateRequestVO.getName())) {
             devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostUpdateRequestVO.getName());
         }
-        boolean ipChanged = devopsHostDTO.getHostIp().equals(devopsHostUpdateRequestVO.getHostIp());
+        boolean ipChanged = !devopsHostDTO.getHostIp().equals(devopsHostUpdateRequestVO.getHostIp());
         if (ipChanged || !devopsHostDTO.getSshPort().equals(devopsHostUpdateRequestVO.getSshPort())) {
             devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
         }
