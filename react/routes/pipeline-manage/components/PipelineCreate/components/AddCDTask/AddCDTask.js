@@ -74,7 +74,14 @@ export default observer(() => {
   const [valueIdValues, setValueIdValues] = useState('');
   const [customValues, setCustomValues] = useState('# 自定义ssh指令\n# 比如部署镜像\n# 需要包括部署镜像指令以及二次触发部署的停用删除逻辑\ndocker stop mynginx & docker rm mynginx & docker run --name mynginx -d nginx:latest');
   const [imageDeployValues, setImageDeployValues] = useState('# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}');
-  const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar}\n# jar包下载存放目录为：/temp-jar/xxx.jar 日志存放目录为：/temp-log/xxx.log\n# 请确保用户有该目录操作权限 ');
+  const [jarValues, setJarValues] = useState('# java -jar指令\n'
+    + '# 不可删除${jar}\n'
+    + '# java -jar 后台运行参数会自动添加 不需要在重复添加\n'
+    + '# 其余参数可参考可根据需要添加\n'
+    + 'java -jar ${jar}\n'
+    + '# 默认工作目录，/temp，jar包下载存放目录为：/temp/jar/xxx.jar 日志存放目录为：/temp/log/xxx.log\n'
+    + '# 填写工作目录，jar包下载存放目录为：工作目录/jar/xxx.jar 日志存放目录为：工作目录/log/xxx.log\n'
+    + '# 请确保用户有该目录操作权限');
   const [testStatus, setTestStatus] = useState('');
   const [accountKeyValue, setAccountKeyValue] = useState('');
 
