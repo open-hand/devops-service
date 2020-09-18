@@ -14,6 +14,9 @@
   display: flex;
   align-items: center;
 
+  &-wait {
+    border: 1px solid #cacae4;
+  }
   &-success {
     border: 1px solid #1fc2bb;
   }
@@ -24,6 +27,7 @@
     position: relative;
     width: 328px;
     height: 66px;
+    border: none;
 
     &::before {
       content: '';
@@ -32,8 +36,8 @@
       top: 0;
       right: 0;
       bottom: 0;
-      border: 1px solid #6887e8;
-      border-image: linear-gradient(to right, rgba(104, 135, 232, 0.2), rgba(104, 135, 232, 1)) 30 30;
+      border: 2px solid #6887e8;
+      //border-image: linear-gradient(to right, rgba(104, 135, 232, 0.2), rgba(104, 135, 232, 1)) 30 30;
       animation: borderAround 1.5s infinite linear;
     }
 
@@ -156,5 +160,6 @@
   &-failed-icon {
     font-size: .12rem;
     margin-left: .02rem;
+    vertical-align: inherit;
   }
 }

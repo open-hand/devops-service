@@ -68,7 +68,7 @@ const HostConfig: React.FC<any> = observer((): any => {
         <Permission service={['choerodon.code.project.deploy.host.ps.create']}>
           <Button
             color={'primary' as ButtonColor}
-            icon="add"
+            icon="playlist_add"
             onClick={handleAdd}
           >
             {formatMessage({ id: `${intlPrefix}.add` })}

@@ -18,9 +18,12 @@ function setStatus(record: any) {
   if (record) {
     const hostStatus = record.get('hostStatus');
     const jmeterStatus = record.get('jmeterStatus');
-    // eslint-disable-next-line no-nested-ternary
-    const status = [hostStatus, jmeterStatus].includes('failed') ? 'failed' : hostStatus === 'success' && jmeterStatus === 'success' ? 'success' : 'operating';
-    record.init('status', record.get('type') === 'deploy' ? hostStatus : status);
+    const status = record.get('status');
+    if (status && status !== 'wait') {
+      // eslint-disable-next-line no-nested-ternary
+      const newStatus = [hostStatus, jmeterStatus].includes('failed') ? 'failed' : hostStatus === 'success' && jmeterStatus === 'success' ? 'success' : 'operating';
+      record.init('status', record.get('type') === 'deploy' ? hostStatus : newStatus);
+    }
   }
 }
 
@@ -52,11 +55,10 @@ export default ({
     if (value && record.getPristineValue(name) && value === record.getPristineValue(name)) {
       return true;
     }
-    const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && value === record.getPristineValue(name)) {
       return true;
     }
-    if (value && pa.test(value)) {
+    if (value) {
       try {
         const res = await HostConfigApis.checkName(projectId, value);
         if ((res && res.failed) || !res) {
@@ -66,9 +68,8 @@ export default ({
       } catch (err) {
         return formatMessage({ id: 'checkNameFail' });
       }
-    } else {
-      return formatMessage({ id: 'checkCodeReg' });
     }
+    return true;
   }
 
   async function checkPortUnique(ip: string, port: any, type: string) {
@@ -91,7 +92,7 @@ export default ({
 
   async function checkPort(value: any, name: any, record: any) {
     if (value && record.getPristineValue(name)
-      && value === record.getPristineValue(name)
+      && String(value) === String(record.getPristineValue(name))
       && record.get('hostIp') && record.getPristineValue('hostIp')
       && record.get('hostIp') === record.getPristineValue('hostIp')
     ) {
@@ -119,14 +120,6 @@ export default ({
         return true;
       }
       return formatMessage({ id: data.failedMsg });
-    }
-    return true;
-  }
-
-  function checkPath(value: any) {
-    const p = /^([\/] [\w-]+)*$/;
-    if (value && !p.test(value)) {
-      return formatMessage({ id: 'network.ip.check.failed' });
     }
     return true;
   }
@@ -224,7 +217,7 @@ export default ({
       {
         name: 'jmeterPath',
         type: 'string' as FieldType,
-        // validator: checkPath,
+        pattern: /^(\/[\w\W]+)+$/,
         dynamicProps: {
           required: ({ record }) => record.get('type') === 'distribute_test',
         },

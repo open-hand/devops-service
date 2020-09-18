@@ -22,9 +22,10 @@ const TestConnect: React.FC<any> = observer(({ handleTestConnection }): any => {
     formDs,
   } = useCreateHostStore();
 
+  const record = useMemo(() => formDs && formDs.current, [formDs.current]);
+
   const getContent = () => {
-    if (formDs && formDs.current) {
-      const record = formDs.current;
+    if (record) {
       const hostStatus = record.get('hostStatus') || 'wait';
       if (record.get('type') === 'distribute_test') {
         const jmeterStatus: string = record.get('jmeterStatus') || 'wait';
@@ -37,7 +38,7 @@ const TestConnect: React.FC<any> = observer(({ handleTestConnection }): any => {
                 <span>
                   主机连接
                   <Tooltip title={record.get('hostCheckError')}>
-                    <Icon type="cancel" className={`${prefixCls}-test-failed-icon`} />
+                    <Icon type="info" className={`${prefixCls}-test-failed-icon`} />
                   </Tooltip>
                 </span>
               ) : '主机连接'}
@@ -49,7 +50,7 @@ const TestConnect: React.FC<any> = observer(({ handleTestConnection }): any => {
                 <span>
                   Jmeter检测
                   <Tooltip title={record.get('jmeterCheckError')}>
-                    <Icon type="cancel" />
+                    <Icon type="info" className={`${prefixCls}-test-failed-icon`} />
                   </Tooltip>
                 </span>
               ) : 'Jmeter检测'}
@@ -95,10 +96,11 @@ const TestConnect: React.FC<any> = observer(({ handleTestConnection }): any => {
   };
 
   return (
-    <div className={`${prefixCls}-test ${prefixCls}-test${formDs && formDs.current && formDs.current.get('status') ? `-${formDs.current.get('status')}` : ''}`}>
+    <div className={`${prefixCls}-test ${prefixCls}-test${record && record.get('status') ? `-${record.get('status')}` : ''}`}>
       <Button
         onClick={handleTestConnection}
         className={`${prefixCls}-test-btn`}
+        disabled={record && record.get('status') === 'operating'}
       >
         测试连接
       </Button>

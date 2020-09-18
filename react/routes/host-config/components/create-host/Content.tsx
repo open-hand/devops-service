@@ -39,7 +39,9 @@ const CreateHost: React.FC<any> = observer((): any => {
     try {
       const validate = await formDs.validate();
       const record = formDs.current;
-      if (!validate || !record) {
+      // @ts-ignore
+      // 单独再次校验密码是因为：修改时无任何操作，formDs.validate() 返回为true
+      if (!validate || !record || await record.getField('password').checkValidity() === false) {
         return false;
       }
       const postData = pick(record.toData(), ['type', 'authType', 'hostIp', 'sshPort', 'username', 'password', 'jmeterPort']);
@@ -58,7 +60,9 @@ const CreateHost: React.FC<any> = observer((): any => {
         okProps: { disabled: false },
       });
       if (res) {
-        const { hostStatus, jmeterStatus, hostCheckError, jmeterCheckError } = res;
+        const {
+          hostStatus, jmeterStatus, hostCheckError, jmeterCheckError,
+        } = res;
         // eslint-disable-next-line no-nested-ternary
         const status = [hostStatus, jmeterStatus].includes('failed') ? 'failed' : hostStatus === 'success' && jmeterStatus === 'success' ? 'success' : 'operating';
         record.set('hostStatus', hostStatus);
@@ -92,6 +96,7 @@ const CreateHost: React.FC<any> = observer((): any => {
         <Tips
           title={formatMessage({ id: `${intlPrefix}.account` })}
           className={`${prefixCls}-module-title ${prefixCls}-module-title-radio`}
+          showHelp={false}
         />
         <SelectBox name="authType" />
         <TextField name="username" />
@@ -102,6 +107,7 @@ const CreateHost: React.FC<any> = observer((): any => {
           <Tips
             title={formatMessage({ id: `${intlPrefix}.jmeter` })}
             className={`${prefixCls}-module-title`}
+            showHelp={false}
           />,
           <TextField name="jmeterPort" />,
           <TextField name="jmeterPath" />,
