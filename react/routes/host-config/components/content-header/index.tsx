@@ -6,9 +6,12 @@ import {
 import {
   Button, Form, Icon, Select, TextField,
 } from 'choerodon-ui/pro';
-import { ButtonColor, FuncType } from 'choerodon-ui/pro/lib/button/enum';
-import { LabelLayoutType } from 'choerodon-ui/pro/lib/form/Form';
+import {
+  ButtonColor, FuncType, LabelLayoutType,
+} from '../../../../interface';
+
 import { useHostConfigStore } from '../../stores';
+
 import HostPick from '../host-pick';
 
 const ContentHeader: React.FC<any> = observer((): any => {
@@ -59,18 +62,20 @@ const ContentHeader: React.FC<any> = observer((): any => {
             colSpan={3}
             placeholder="请输入搜索条件"
             prefix={<Icon type="search" style={{ color: '#CACAE4', lineHeight: '22px' }} />}
+            onClear={handleSearch}
           />
           <Select
             label="主机状态:"
             name="status"
             colSpan={3}
             placeholder="请选择"
+            onClear={handleSearch}
           />
         </Form>
         <Button
           funcType={'flat' as FuncType}
           color={'primary' as ButtonColor}
-          onClick={() => handleSearch()}
+          onClick={handleSearch}
           className={`${prefixCls}-content-search-btn`}
           disabled={listDs.status === 'loading'}
         >

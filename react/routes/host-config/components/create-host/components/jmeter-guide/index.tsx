@@ -5,12 +5,12 @@ import './index.less';
 
 const JmeterGuide: React.FC<any> = (): any => {
   const prefixCls = 'c7ncd-host-jmeter-guide';
-  const text = useMemo(() => ('./jmeter-server \n' +
-    '-Djava.rmi.server.hostname=${你的主机ip地址} \n' +
-    '-Dserver.rmi.ssl.disable=true \n' +
-    '-Dserver.rmi.port=1099 \n' +
-    '-Dserver.rmi.localport=1099 \n' +
-    '-Dserver_port=1099. '), []);
+  const text = useMemo(() => ('./jmeter-server \n'
+    + '-Djava.rmi.server.hostname=${你的主机ip地址} \n'
+    + '-Dserver.rmi.ssl.disable=true \n'
+    + '-Dserver.rmi.port=1099 \n'
+    + '-Dserver.rmi.localport=1099 \n'
+    + '-Dserver_port=1099. '), []);
   const [isExpand, setExpand] = useState(false);
 
   const handleExpand = () => {
