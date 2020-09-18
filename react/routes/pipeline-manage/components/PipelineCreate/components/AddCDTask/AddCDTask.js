@@ -214,6 +214,10 @@ export default observer(() => {
           ...metadata?.jarDeploy,
           ...metadata?.imageDeploy,
         };
+        // 如果初始值没有主机来源值 说明是老数据 前端默认将主机来源设置成自定义
+        if (!extra[addCDTaskDataSetMap.hostSource]) {
+          extra[addCDTaskDataSetMap.hostSource] = addCDTaskDataSetMap.customhost;
+        }
         if (extra?.accountKey) {
           setAccountKeyValue(Base64.decode(extra.accountKey));
         }
@@ -654,7 +658,16 @@ export default observer(() => {
           columns={2}
           dataSet={ADDCDTaskDataSet}
         >
-          <SelectBox style={{ top: '10px' }} colSpan={1} name={addCDTaskDataSetMap.hostSource}>
+          <SelectBox
+            style={{ top: '16px' }}
+            colSpan={1}
+            name={addCDTaskDataSetMap.hostSource}
+            onChange={() => {
+              ADDCDTaskDataSet.current.set(addCDTaskDataSetMap.host, undefined);
+              ADDCDTaskDataSet.current.set('hostIp', undefined);
+              ADDCDTaskDataSet.current.set('hostPort', undefined);
+            }}
+          >
             <Option value={addCDTaskDataSetMap.alreadyhost}>已有主机</Option>
             <Option value={addCDTaskDataSetMap.customhost}>自定义主机</Option>
           </SelectBox>
