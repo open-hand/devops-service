@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import com.google.common.base.Functions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -84,20 +84,46 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void batchSetStatusOperating(Long projectId, Set<Long> hostIds) {
+    public Set<Long> batchSetStatusOperating(Long projectId, Set<Long> hostIds) {
         LOGGER.debug("batchSetStatusOperating: projectId: {}, hostIds: {}", projectId, hostIds);
         if (CollectionUtils.isEmpty(hostIds)) {
-            return;
+            return Collections.emptySet();
         }
-        // 这里不需要校验host属于这个项目，因为让项目id参与SQL条件了
-        devopsHostMapper.batchSetStatusOperating(projectId, hostIds);
+
+        // 过滤出需要进行校准的主机
+        List<DevopsHostDTO> hosts = filterHostsToCorrect(devopsHostMapper.listByProjectIdAndIds(projectId, hostIds));
+        if (CollectionUtils.isEmpty(hosts)) {
+            return Collections.emptySet();
+        }
+
+        // 分类测试主机和部署的主机
+        List<DevopsHostDTO> deployHosts = new ArrayList<>();
+        List<DevopsHostDTO> testHosts = new ArrayList<>();
+        hosts.forEach(host -> {
+            if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(host.getType())) {
+                deployHosts.add(host);
+            } else {
+                testHosts.add(host);
+            }
+        });
+
+        // 设置状态为处理中
+        if (!CollectionUtils.isEmpty(deployHosts)) {
+            devopsHostMapper.batchSetStatusOperating(projectId, deployHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), false);
+        }
+        if (!CollectionUtils.isEmpty(testHosts)) {
+            devopsHostMapper.batchSetStatusOperating(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true);
+        }
+
+        return hosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet());
     }
 
     @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
     @Override
     public void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds) {
         LOGGER.debug("asyncBatchCorrectStatus: projectId: {}, hostIds: {}", projectId, hostIds);
-        hostIds.forEach(hostId -> ((DevopsHostService) AopContext.currentProxy()).correctStatus(projectId, hostId));
+        // 这么调用, 是解决事务代理不生效问题
+        hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, hostId));
     }
 
     @Transactional
@@ -109,22 +135,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             if (hostDTO == null) {
                 return;
             }
-
-            // 过滤测试中的主机
-            if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(hostDTO.getType())) {
-                if (DevopsHostStatus.OPERATING.getValue().equals(hostDTO.getHostStatus())) {
-                    if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
-                        return;
-                    }
-                }
-            } else {
-                if (isDistributeHostOperating(hostDTO.getHostStatus(), hostDTO.getJmeterStatus())) {
-                    if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
-                        return;
-                    }
-                }
-            }
-
 
             // 设置上下文, 以免丢失更新者信息
             CustomContextUtil.setDefaultIfNull(hostDTO.getLastUpdatedBy());
@@ -147,6 +157,34 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 CustomContextUtil.clearContext();
             }
         }
+    }
+
+    /**
+     * 过滤出需要进行校准的主机
+     *
+     * @param hosts 主机
+     * @return 需要进行校准的主机
+     */
+    private List<DevopsHostDTO> filterHostsToCorrect(List<DevopsHostDTO> hosts) {
+        return hosts.stream().filter(hostDTO -> {
+            // 过滤测试中的主机
+            if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(hostDTO.getType())) {
+                if (DevopsHostStatus.OPERATING.getValue().equals(hostDTO.getHostStatus())) {
+                    if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
+                        LOGGER.info("Skip operating deploy host with id {}", hostDTO.getId());
+                        return false;
+                    }
+                }
+            } else {
+                if (isDistributeHostOperating(hostDTO.getHostStatus(), hostDTO.getJmeterStatus())) {
+                    if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
+                        LOGGER.info("Skip operating distribute-test host with id {}", hostDTO.getId());
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
     }
 
     private boolean toSkipCorrect(Date lastUpdateDate) {

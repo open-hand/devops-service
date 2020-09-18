@@ -26,8 +26,9 @@ public interface DevopsHostService {
      *
      * @param projectId 项目id
      * @param hostIds   主机id数据
+     * @return 返回要校准的主机数据
      */
-    void batchSetStatusOperating(Long projectId, Set<Long> hostIds);
+    Set<Long> batchSetStatusOperating(Long projectId, Set<Long> hostIds);
 
     /**
      * 异步批量校准主机状态
