@@ -219,7 +219,10 @@ export default (
         method: 'post',
         url: `/devops/v1/projects/${projectId}/hosts/page_by_options?random=${random}`,
         data: {
-          type: 'deploy',
+          searchParam: {
+            type: 'deploy',
+          },
+          params: [],
         },
         transformResponse: (res) => {
           let newRes = res;
