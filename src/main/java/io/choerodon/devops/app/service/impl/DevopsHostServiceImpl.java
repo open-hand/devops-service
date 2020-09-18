@@ -74,6 +74,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostCreateRequestVO.getType())) {
             devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostCreateRequestVO.getJmeterPort());
             devopsHostAdditionalCheckValidator.validIpAndJmeterPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getJmeterPort());
+            devopsHostAdditionalCheckValidator.validJmeterPath(devopsHostCreateRequestVO.getJmeterPath());
             devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
         }
 
@@ -253,13 +254,21 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 补充校验参数
-        devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostUpdateRequestVO.getName());
-        devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
+        if (!devopsHostDTO.getName().equals(devopsHostUpdateRequestVO.getName())) {
+            devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostUpdateRequestVO.getName());
+        }
+        boolean ipChanged = devopsHostDTO.getHostIp().equals(devopsHostUpdateRequestVO.getHostIp());
+        if (ipChanged || !devopsHostDTO.getSshPort().equals(devopsHostUpdateRequestVO.getSshPort())) {
+            devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
+        }
 
         DevopsHostDTO toUpdate = ConvertUtils.convertObject(devopsHostUpdateRequestVO, DevopsHostDTO.class);
         if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType())) {
             devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostUpdateRequestVO.getJmeterPort());
-            devopsHostAdditionalCheckValidator.validIpAndJmeterPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getJmeterPort());
+            if (ipChanged || !devopsHostDTO.getJmeterPort().equals(devopsHostUpdateRequestVO.getJmeterPort())) {
+                devopsHostAdditionalCheckValidator.validIpAndJmeterPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getJmeterPort());
+            }
+            devopsHostAdditionalCheckValidator.validJmeterPath(devopsHostUpdateRequestVO.getJmeterPath());
             toUpdate.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
         }
 
