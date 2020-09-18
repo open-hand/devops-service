@@ -51,7 +51,6 @@ export default observer((props) => {
     gitlabTriggerRef,
     commit,
     devopsPipelineRecordRelId: recordDevopsPipelineRecordRelId,
-    cdRecordId,
     viewId: loadViewId,
   } = getDetailData;
 
