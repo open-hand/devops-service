@@ -1,9 +1,7 @@
 import React, {
   FC, ReactNode, useCallback, useEffect, useState,
 } from 'react';
-import Loading from '@/components/loading';
 import { Spin } from 'choerodon-ui/pro';
-import { useHostConfigStore } from '@/routes/host-config/stores';
 import apis from '../../../../apis';
 
 interface DeleteCheckProps {

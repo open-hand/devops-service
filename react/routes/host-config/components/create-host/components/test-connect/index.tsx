@@ -1,10 +1,10 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import {Button, Icon, Tooltip} from 'choerodon-ui/pro';
+import { Button, Icon, Tooltip } from 'choerodon-ui/pro';
 import { Steps } from 'choerodon-ui';
-import { Size } from 'choerodon-ui/lib/_util/enum';
 import { useCreateHostStore } from '@/routes/host-config/components/create-host/stores';
+import { Size } from '../../../../../../interface';
 
 import './index.less';
 

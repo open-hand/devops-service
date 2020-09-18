@@ -4,16 +4,14 @@ import {
   Page, Header, Breadcrumb, Content, Permission,
 } from '@choerodon/boot';
 import {
-  Button, Modal, Select, TextField,
+  Button, Modal,
 } from 'choerodon-ui/pro';
 import map from 'lodash/map';
-import countBy from 'lodash/countBy';
-import { ButtonColor, FuncType } from 'choerodon-ui/pro/lib/button/enum';
-import { LabelLayout } from 'choerodon-ui/pro/lib/form/enum';
 import ContentHeader from '@/routes/host-config/components/content-header';
 import ContentList from '@/routes/host-config/components/content-list';
 import CreateHost from '@/routes/host-config/components/create-host';
 import HostConfigApis from '@/routes/host-config/apis';
+import { ButtonColor } from '../../interface';
 import { useHostConfigStore } from './stores';
 
 const HostConfig: React.FC<any> = observer((): any => {
