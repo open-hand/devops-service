@@ -26,11 +26,14 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
                                       @Param("searchParam") Map<String, Object> searchParam,
                                       @Param("params") List<String> params);
 
+    List<DevopsHostDTO> listByProjectIdAndIds(@Param("projectId") Long projectId,
+                                              @Param("hostIds") Set<Long> hostIds);
+
     /**
      * 批量设置主机状态为处理中
      *
      * @param projectId 项目id
      * @param hostIds   主机id数据
      */
-    void batchSetStatusOperating(@Param("projectId") Long projectId, @Param("hostIds") Set<Long> hostIds);
+    void batchSetStatusOperating(@Param("projectId") Long projectId, @Param("hostIds") Set<Long> hostIds, @Param("isTestType") Boolean isTestType);
 }

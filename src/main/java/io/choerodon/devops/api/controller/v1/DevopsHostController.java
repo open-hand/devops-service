@@ -170,8 +170,7 @@ public class DevopsHostController {
                                              @PathVariable("project_id") Long projectId,
                                              @ApiParam(value = "主机id集合", required = true)
                                              @Encrypt @RequestBody Set<Long> hostIds) {
-        devopsHostService.batchSetStatusOperating(projectId, hostIds);
-        devopsHostService.asyncBatchCorrectStatus(projectId, hostIds);
+        devopsHostService.asyncBatchCorrectStatus(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds));
         return Results.success();
     }
 }
