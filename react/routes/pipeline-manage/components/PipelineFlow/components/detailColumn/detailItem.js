@@ -82,6 +82,7 @@ const DetailItem = (props) => {
     audit, // cd阶段job独有的
     stageId, // cd阶段job独有的
     cdRecordId, // cd阶段job独有的
+    stageRecordId,
     jobRecordId,
     history,
     location: { search },
@@ -94,7 +95,7 @@ const DetailItem = (props) => {
 
   const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
 
-  function openDescModal() {
+  function openDescModal(typeItem) {
     Modal.open({
       title: '查看日志',
       key: Modal.key(),
@@ -103,9 +104,13 @@ const DetailItem = (props) => {
       },
       children: (
         <CodeLog
+          type={typeItem}
           gitlabProjectId={gitlabProjectId}
           projectId={projectId}
           gitlabJobId={gitlabJobId}
+          cdRecordId={cdRecordId}
+          stageRecordId={stageRecordId}
+          jobRecordId={jobRecordId}
         />
       ),
       drawer: true,
@@ -377,7 +382,7 @@ const DetailItem = (props) => {
       {itemType === 'cdHost' && renderCdHost()}
       {itemType === 'sonar' && renderSonar()}
       <footer>
-        {itemType !== 'cdAudit' && itemType !== 'cdHost' && (
+        {itemType !== 'cdAudit' && (
           <Permission
             service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}
           >
@@ -388,7 +393,7 @@ const DetailItem = (props) => {
                 size="small"
                 icon="description-o"
                 disabled={jobStatus === 'created' || jobStatus === 'skipped'}
-                onClick={itemType !== 'cdDeploy' ? openDescModal : openCdLog}
+                onClick={itemType !== 'cdDeploy' ? () => openDescModal(itemType) : openCdLog}
                 color="primary"
               />
             </Tooltip>
