@@ -53,12 +53,31 @@
     <update id="batchSetStatusOperating">
         UPDATE devops_host
         SET
+        last_update_date = #{date},
         host_status = 'operating',
         host_check_error = NULL
         <if test="isTestType">
             ,
             jmeter_status = 'operating',
             jmeter_check_error = NULL
+        </if>
+        WHERE project_id = #{projectId,jdbcType=BIGINT}
+        AND id IN
+        <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
+            #{hostId,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <update id="batchSetStatusTimeoutFailed">
+        UPDATE devops_host
+        SET
+        last_update_date = #{date},
+        host_status = 'failed',
+        host_check_error = 'timeout to correct status'
+        <if test="isTestType">
+            ,
+            jmeter_status = 'failed',
+            jmeter_check_error = 'timeout to correct status'
         </if>
         WHERE project_id = #{projectId,jdbcType=BIGINT}
         AND id IN

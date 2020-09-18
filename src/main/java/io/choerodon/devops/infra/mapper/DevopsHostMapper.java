@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,5 +36,19 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      * @param projectId 项目id
      * @param hostIds   主机id数据
      */
-    void batchSetStatusOperating(@Param("projectId") Long projectId, @Param("hostIds") Set<Long> hostIds, @Param("isTestType") Boolean isTestType);
+    void batchSetStatusOperating(@Param("projectId") Long projectId,
+                                 @Param("hostIds") Set<Long> hostIds,
+                                 @Param("isTestType") Boolean isTestType,
+                                 @Param("date") Date date);
+
+    /**
+     * 批量设置主机状态为超时失败
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id数据
+     */
+    void batchSetStatusTimeoutFailed(@Param("projectId") Long projectId,
+                                     @Param("hostIds") Set<Long> hostIds,
+                                     @Param("isTestType") Boolean isTestType,
+                                     @Param("date") Date date);
 }

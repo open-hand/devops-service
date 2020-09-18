@@ -38,6 +38,14 @@ public interface DevopsHostService {
     void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds);
 
     /**
+     * 异步批量更新超时的主机为失败
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id
+     */
+    void asyncBatchSetTimeoutHostFailed(Long projectId, Set<Long> hostIds);
+
+    /**
      * 校正一个主机的状态
      *
      * @param projectId 项目id

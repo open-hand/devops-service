@@ -44,10 +44,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsHostServiceImpl implements DevopsHostService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
     /**
-     * 多少毫秒内的间隔处于处理中的纪录再次校准状态时会被跳过
-     * 例如, 上次更新时间为30秒前的并状态为处理中的纪录不会再次校准了, 会跳过此次异步校准
+     * 主机状态处于处理中的超时时长
      */
-    private static final long SKIP_CORRECT_INTERNAL = 60 * 1000;
+    private static final long OPERATING_TIMEOUT = 60 * 1000;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -108,11 +107,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         });
 
         // 设置状态为处理中
+        Date current = new Date();
         if (!CollectionUtils.isEmpty(deployHosts)) {
-            devopsHostMapper.batchSetStatusOperating(projectId, deployHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), false);
+            devopsHostMapper.batchSetStatusOperating(projectId, deployHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), false, current);
         }
         if (!CollectionUtils.isEmpty(testHosts)) {
-            devopsHostMapper.batchSetStatusOperating(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true);
+            devopsHostMapper.batchSetStatusOperating(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true, current);
         }
 
         return hosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet());
@@ -124,6 +124,41 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         LOGGER.debug("asyncBatchCorrectStatus: projectId: {}, hostIds: {}", projectId, hostIds);
         // 这么调用, 是解决事务代理不生效问题
         hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, hostId));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
+    @Override
+    public void asyncBatchSetTimeoutHostFailed(Long projectId, Set<Long> hostIds) {
+        LOGGER.debug("batchSetStatusTimeoutFailed: projectId: {}, hostIds: {}", projectId, hostIds);
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return;
+        }
+
+        List<DevopsHostDTO> hosts = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
+        if (CollectionUtils.isEmpty(hosts)) {
+            return;
+        }
+
+        // 分类测试主机和部署的主机
+        List<DevopsHostDTO> deployHosts = new ArrayList<>();
+        List<DevopsHostDTO> testHosts = new ArrayList<>();
+        hosts.forEach(host -> {
+            if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(host.getType())) {
+                deployHosts.add(host);
+            } else {
+                testHosts.add(host);
+            }
+        });
+
+        // 设置状态为失败
+        Date current = new Date();
+        if (!CollectionUtils.isEmpty(deployHosts)) {
+            devopsHostMapper.batchSetStatusTimeoutFailed(projectId, deployHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), false, current);
+        }
+        if (!CollectionUtils.isEmpty(testHosts)) {
+            devopsHostMapper.batchSetStatusTimeoutFailed(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true, current);
+        }
     }
 
     @Transactional
@@ -168,27 +203,39 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private List<DevopsHostDTO> filterHostsToCorrect(List<DevopsHostDTO> hosts) {
         return hosts.stream().filter(hostDTO -> {
             // 过滤测试中的主机
-            if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(hostDTO.getType())) {
-                if (DevopsHostStatus.OPERATING.getValue().equals(hostDTO.getHostStatus())) {
-                    if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
-                        LOGGER.info("Skip operating deploy host with id {}", hostDTO.getId());
-                        return false;
-                    }
-                }
-            } else {
-                if (isDistributeHostOperating(hostDTO.getHostStatus(), hostDTO.getJmeterStatus())) {
-                    if (toSkipCorrect(hostDTO.getLastUpdateDate())) {
-                        LOGGER.info("Skip operating distribute-test host with id {}", hostDTO.getId());
-                        return false;
-                    }
-                }
+            if (isOperating(hostDTO.getType(), hostDTO.getHostStatus(), hostDTO.getJmeterStatus())
+                    && !isTimeout(hostDTO.getLastUpdateDate())) {
+                LOGGER.info("Skip correct for operating host with id {}", hostDTO.getId());
+                return false;
             }
             return true;
         }).collect(Collectors.toList());
     }
 
-    private boolean toSkipCorrect(Date lastUpdateDate) {
-        return System.currentTimeMillis() - lastUpdateDate.getTime() < SKIP_CORRECT_INTERNAL;
+    /**
+     * 主机状态是否是处理中
+     *
+     * @param type         主机类型
+     * @param hostStatus   主机状态
+     * @param jmeterStatus jmeter状态
+     * @return true表示是处理中
+     */
+    private boolean isOperating(String type, String hostStatus, String jmeterStatus) {
+        if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(type)) {
+            return DevopsHostStatus.OPERATING.getValue().equals(hostStatus);
+        } else {
+            return isDistributeHostOperating(hostStatus, jmeterStatus);
+        }
+    }
+
+    /**
+     * 判断主机处于处理中的时间是否超时了
+     *
+     * @param lastUpdateDate 上次更新时间
+     * @return true表示超时
+     */
+    private boolean isTimeout(Date lastUpdateDate) {
+        return System.currentTimeMillis() - lastUpdateDate.getTime() >= OPERATING_TIMEOUT;
     }
 
     private boolean isDistributeHostOperating(String hostStatus, String jmeterStatus) {
@@ -225,7 +272,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public DevopsHostVO queryHost(Long projectId, Long hostId) {
-        return ConvertUtils.convertObject(devopsHostMapper.selectByPrimaryKey(hostId), DevopsHostVO.class);
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        if (devopsHostDTO == null || !projectId.equals(devopsHostDTO.getProjectId())) {
+            return null;
+        }
+
+        // 校验超时
+        checkTimeout(projectId, ArrayUtil.singleAsList(devopsHostDTO));
+
+        return ConvertUtils.convertObject(devopsHostDTO, DevopsHostVO.class);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -309,13 +364,39 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options) {
         // 解析查询参数
         Map<String, Object> maps = TypeUtil.castMapParams(options);
+        Page<DevopsHostDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+
+        // 校验超时
+        checkTimeout(projectId, page.getContent());
+
         // 分页查询
-        Page<DevopsHostVO> result = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))), DevopsHostVO.class);
+        Page<DevopsHostVO> result = ConvertUtils.convertPage(page, DevopsHostVO.class);
         if (withUpdaterInfo) {
             // 填充更新者用户信息
             fillUpdaterInfo(result);
         }
         return result;
+    }
+
+    /**
+     * 校验主机的状态是否超时
+     *
+     * @param projectId      项目id
+     * @param devopsHostDTOS 主机
+     */
+    private void checkTimeout(Long projectId, List<DevopsHostDTO> devopsHostDTOS) {
+        Set<Long> ids = new HashSet<>();
+        devopsHostDTOS.forEach(host -> {
+            if (isOperating(host.getType(), host.getHostStatus(), host.getJmeterStatus())
+                    && isTimeout(host.getLastUpdateDate())) {
+                ids.add(host.getId());
+            }
+        });
+
+        // 不为空 异步设置失败
+        if (!ids.isEmpty()) {
+            ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchSetTimeoutHostFailed(projectId, ids);
+        }
     }
 
     @Override
