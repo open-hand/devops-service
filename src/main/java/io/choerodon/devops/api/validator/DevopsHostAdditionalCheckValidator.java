@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.validator;
 
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,8 @@ import io.choerodon.devops.infra.util.CommonExAssertUtil;
  */
 @Component
 public class DevopsHostAdditionalCheckValidator {
+    private static final Pattern JMETER_PATH_PATTERN = Pattern.compile("^(/[\\w\\W]+)+$");
+
     @Lazy
     @Autowired
     private DevopsHostService devopsHostService;
@@ -31,5 +35,9 @@ public class DevopsHostAdditionalCheckValidator {
 
     public void validJmeterPort(Integer jmeterPort) {
         CommonExAssertUtil.assertTrue(jmeterPort != null && jmeterPort > 0 && jmeterPort <= 65535, "error.jmeter.port.invalid");
+    }
+
+    public void validJmeterPath(String jmeterPath) {
+        CommonExAssertUtil.assertTrue(jmeterPath != null && JMETER_PATH_PATTERN.matcher(jmeterPath).matches(), "error.jmeter.path.invalid");
     }
 }
