@@ -21,10 +21,10 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 public class HostStatusAsyncTheadPoolConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(HostStatusAsyncTheadPoolConfig.class);
 
-    @Bean
+    @Bean(name = GitOpsConstants.HOST_STATUS_EXECUTOR)
     @Qualifier(GitOpsConstants.HOST_STATUS_EXECUTOR)
-    public AsyncTaskExecutor syncPipeline(@Value("${devops.host.status.executor.corePoolSize:5}") Integer corePoolSize,
-                                          @Value("${devops.host.status.executor.maxPoolSize:8}") Integer maxPoolSize) {
+    public AsyncTaskExecutor hostStatus(@Value("${devops.host.status.executor.corePoolSize:5}") Integer corePoolSize,
+                                        @Value("${devops.host.status.executor.maxPoolSize:8}") Integer maxPoolSize) {
         LOGGER.info("Create AsyncTaskExecutor for host status. The coreSize is {} and the maxSize is {}", corePoolSize, maxPoolSize);
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix(GitOpsConstants.HOST_STATUS_EXECUTOR);
