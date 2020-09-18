@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin } from 'choerodon-ui';
@@ -50,6 +51,8 @@ export default observer((props) => {
     gitlabTriggerRef,
     commit,
     devopsPipelineRecordRelId: recordDevopsPipelineRecordRelId,
+    cdRecordId,
+    viewId: loadViewId,
   } = getDetailData;
 
   useEffect(() => {
@@ -62,7 +65,9 @@ export default observer((props) => {
 
   const renderStage = () => (
     stageRecordVOS && stageRecordVOS.length > 0 ? stageRecordVOS.map((item) => {
-      const { name, status: stageStatus, durationSeconds, sequence, stageId } = item;
+      const {
+        name, status: stageStatus, durationSeconds, sequence, stageId,
+      } = item;
       return (
         <DetailColumn
           key={sequence}
@@ -76,29 +81,34 @@ export default observer((props) => {
           {...props}
         />
       );
-    }) : (<EmptyPage
-      title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
-      describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
-      access
-    />)
+    }) : (
+      <EmptyPage
+        title={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.title` : `${intlPrefix}.record.empty.title.other` })}
+        describe={formatMessage({ id: status === 'skipped' ? `${intlPrefix}.record.empty.des` : `${intlPrefix}.record.empty.des.other` })}
+        access
+      />
+    )
   );
 
   return (
     !getDetailLoading
-      ? <div className="c7n-piplineManage">
-        <DetailHeader
-          viewId={viewId}
-          appServiceName={ciCdPipelineVO && ciCdPipelineVO.appServiceName}
-          appServiceId={ciCdPipelineVO && ciCdPipelineVO.appServiceId}
-          aHref={commit && commit.gitlabProjectUrl}
-          triggerRef={gitlabTriggerRef}
-          status={status}
-          mainStore={mainStore}
-          projectId={projectId}
-        />
-        <div className="c7n-piplineManage-detail">
-          {renderStage()}
+      ? (
+        <div className="c7n-piplineManage">
+          <DetailHeader
+            viewId={viewId || loadViewId}
+            appServiceName={ciCdPipelineVO && ciCdPipelineVO.appServiceName}
+            appServiceId={ciCdPipelineVO && ciCdPipelineVO.appServiceId}
+            aHref={commit && commit.gitlabProjectUrl}
+            triggerRef={gitlabTriggerRef}
+            status={status}
+            mainStore={mainStore}
+            projectId={projectId}
+          />
+          <div className="c7n-piplineManage-detail">
+            {renderStage()}
+          </div>
         </div>
-      </div> : <Loading display={getDetailLoading} />
+      )
+      : <Loading display={getDetailLoading} />
   );
 });
