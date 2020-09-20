@@ -24,6 +24,7 @@ mybatis:
     mapUnderscoreToCamelCase: true
 services:
   harbor:
+    update: false
     baseUrl: "harbor.example.com" # harbor地址
     username: "123456" # harbor用户名
     password: "123456" # 对应harbor用户名的密码
