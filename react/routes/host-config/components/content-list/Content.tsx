@@ -1,19 +1,8 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  Page,
-  Header,
-  Breadcrumb,
-  Content,
-  Permission,
-  Action,
-} from '@choerodon/boot';
-import {
-  Button, Form, Pagination, Select, TextField,
+  Pagination,
 } from 'choerodon-ui/pro';
-import map from 'lodash/map';
-import countBy from 'lodash/countBy';
-import { ButtonColor, FuncType } from 'choerodon-ui/pro/lib/button/enum';
 import EmptyPage from '@/components/empty-page';
 import Loading from '@/components/loading';
 import HostsItem from './components/hostItem';
