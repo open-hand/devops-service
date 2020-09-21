@@ -366,13 +366,18 @@ const DetailItem = (props) => {
   }
 
   function goToApiTest() {
-    if (apiTestTaskRecordId) {
+    const {
+      id,
+      taskId,
+    } = apiTestTaskRecordVO;
+    if (id && taskId) {
       history.push({
         pathname: '/testManager/test-task',
         search,
         state: {
-          recordId: apiTestTaskRecordId,
-          type: 'execute',
+          id: taskId,
+          recordId: id,
+          type: 'task',
         },
       });
     } else {
