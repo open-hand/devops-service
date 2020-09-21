@@ -1203,9 +1203,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordVO.getType())) {
                 ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordVO.getProjectId(), devopsCdJobRecordVO.getApiTestTaskRecordId());
                 devopsCdJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
-
+                CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordVO.getMetadata(), CdApiTestConfigVO.class);
                 // 将主键加密，再序列化为json
-                devopsCdJobRecordVO.setMetadata(KeyDecryptHelper.encryptJson(apiTestTaskRecordVO));
+                devopsCdJobRecordVO.setMetadata(KeyDecryptHelper.encryptJson(cdApiTestConfigVO));
             }
 
         });
