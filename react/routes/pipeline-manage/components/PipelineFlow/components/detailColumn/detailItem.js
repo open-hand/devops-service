@@ -11,6 +11,7 @@ import StatusDot from '../statusDot';
 import CodeQuality from '../codeQuality';
 import CodeLog from '../codeLog';
 import { usePipelineManageStore } from '../../../../stores';
+import renderDuration from '../../../../../../utils/getDuration';
 
 const jobType = {
   build: {
@@ -38,29 +39,6 @@ const jobType = {
     name: 'API测试任务',
   },
 };
-
-function renderDuration(value) {
-  let secondTime = parseInt(value, 10); // 秒
-  let minuteTime = 0; // 分
-  let hourTime = 0; // 小时
-  if (secondTime > 60) {
-    minuteTime = parseInt(secondTime / 60, 10);
-    secondTime = parseInt(secondTime % 60, 10);
-    if (minuteTime > 60) {
-      hourTime = parseInt(minuteTime / 60, 10);
-      minuteTime = parseInt(minuteTime % 60, 10);
-    }
-  }
-  let result = `${parseInt(secondTime, 10)}秒`;
-
-  if (minuteTime > 0) {
-    result = `${parseInt(minuteTime, 10)}分${result}`;
-  }
-  if (hourTime > 0) {
-    result = `${parseInt(hourTime, 10)}小时${result}`;
-  }
-  return result;
-}
 
 const DetailItem = (props) => {
   const {
@@ -508,7 +486,7 @@ const DetailItem = (props) => {
         <span className="c7n-piplineManage-detail-column-item-time">
           <span>任务耗时：</span>
           <span>
-            {jobDurationSeconds ? `${renderDuration(jobDurationSeconds)}` : '-'}
+            {jobDurationSeconds ? `${renderDuration({ value: jobDurationSeconds })}` : '-'}
           </span>
         </span>
       </footer>
