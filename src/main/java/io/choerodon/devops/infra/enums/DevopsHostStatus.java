@@ -16,6 +16,10 @@ public enum DevopsHostStatus {
      */
     FAILED("failed"),
     /**
+     * 占用中 (测试类型的主机执行分布式测试时会处于这个状态)
+     */
+    OCCUPIED("occupied"),
+    /**
      * 测试中
      */
     OPERATING("operating");
