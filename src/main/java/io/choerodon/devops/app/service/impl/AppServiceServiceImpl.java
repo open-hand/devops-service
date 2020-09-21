@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,6 +214,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsCiCdPipelineMapper DevopsCiCdPipelineMapper;
     @Autowired
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     static {
         InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
@@ -1549,10 +1552,15 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             });
             sonarContentsVO.setSonarContents(sonarContentVOS);
+            cacheSonarContents(projectId, appServiceId, sonarContentsVO);
         } catch (IOException e) {
             throw new CommonException(e);
         }
         return sonarContentsVO;
+    }
+
+    private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
+        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO));
     }
 
     public String getTimestampTimeV17(String str) {
@@ -2784,5 +2792,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void fixAppServiceVersion() {
         devopsTask.fixAppServiceVersion(null);
+    }
+
+    @Override
+    public SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId) {
+        String json = redisTemplate.opsForValue().get(SONAR + ":" + projectId + ":" + appServiceId);
+        return JsonHelper.unmarshalByJackson(json, SonarContentsVO.class);
     }
 }
