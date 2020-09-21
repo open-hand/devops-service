@@ -465,24 +465,26 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
                     devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
                 }
-                SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
-                    List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
-                    List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
-                        return SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
-                                || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                                || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
-                    }).collect(Collectors.toList());
-                    // 执行成功的添加覆盖率
-                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                // 执行成功的添加sonar信息
+                if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                    SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+                    if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+                        List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+                        List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
+                            return SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+                                    || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+                                    || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
+                        }).collect(Collectors.toList());
+
                         sonarContents.forEach(v -> {
                             if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
                                 devopsCiJobRecordVO.setCodeCoverage(v.getValue());
                             }
                         });
+                        devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                     }
-                    devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                 }
+
             }
             //release阶段，添加版本的信息
             if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())) {
