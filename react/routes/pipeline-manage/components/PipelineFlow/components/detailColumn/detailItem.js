@@ -34,6 +34,9 @@ const jobType = {
   cdHost: {
     name: '主机部署',
   },
+  cdApiTest: {
+    name: 'API测试任务',
+  },
 };
 
 function renderDuration(value) {
@@ -91,6 +94,8 @@ const DetailItem = (props) => {
     cdHostDeployConfigVO,
     sonarScannerType,
     codeCoverage,
+    apiTestTaskRecordVO, // api测试任务独有的
+    apiTestTaskRecordId, // api测试任务独有的
   } = props;
 
   const { gitlabProjectId, appServiceId } = getDetailData && getDetailData.ciCdPipelineVO;
@@ -329,6 +334,38 @@ const DetailItem = (props) => {
     );
   };
 
+  function calcValue(successCount, failCount) {
+    const sum = failCount + successCount;
+    if (sum) {
+      const value = (successCount / sum) * 100;
+      return `${Number(value.toFixed(2))}%`;
+    }
+    return '-';
+  }
+
+  const renderApiTest = () => {
+    const {
+      successCount,
+      failCount,
+    } = apiTestTaskRecordVO;
+    return (
+      <main>
+        <div>
+          <span>通过率:</span>
+          <span>{calcValue(successCount, failCount)}</span>
+        </div>
+        <div>
+          <span>成功数量:</span>
+          <span>{successCount}</span>
+        </div>
+        <div>
+          <span>失败数量:</span>
+          <span>{failCount}</span>
+        </div>
+      </main>
+    );
+  };
+
   const renderSonar = () => (
     <main>
       <div>
@@ -348,6 +385,21 @@ const DetailItem = (props) => {
       return !successAndFailed;
     }
     return !(successAndFailed || jobStatus === 'canceled');
+  }
+
+  function goToApiTest() {
+    if (apiTestTaskRecordId) {
+      history.push({
+        pathname: '/devops/test-task',
+        search,
+        state: {
+          recordId: apiTestTaskRecordId,
+          type: 'execute',
+        },
+      });
+    } else {
+      history.push(`/devops/test-task${search}`);
+    }
   }
 
   return (
@@ -381,8 +433,9 @@ const DetailItem = (props) => {
       {itemType === 'chart' && renderChart()}
       {itemType === 'cdHost' && renderCdHost()}
       {itemType === 'sonar' && renderSonar()}
+      {itemType === 'cdApiTest' && renderApiTest()}
       <footer>
-        {itemType !== 'cdAudit' && (
+        {(itemType !== 'cdAudit' && itemType !== 'cdApiTest') && (
           <Permission
             service={['choerodon.code.project.develop.ci-pipeline.ps.job.log']}
           >
@@ -399,7 +452,7 @@ const DetailItem = (props) => {
             </Tooltip>
           </Permission>
         )}
-        {itemType !== 'cdAudit' && (
+        {(itemType !== 'cdAudit' && itemType !== 'cdApiTest') && (
           <Permission
             service={[
               'choerodon.code.project.develop.ci-pipeline.ps.job.retry',
@@ -440,6 +493,18 @@ const DetailItem = (props) => {
             </Tooltip>
           </Permission>
         )}
+        {
+          <Tooltip title="查看详情">
+            <Button
+              funcType="flat"
+              shape="circle"
+              size="small"
+              onClick={goToApiTest}
+              icon="find_in_page-o"
+              color="primary"
+            />
+          </Tooltip>
+        }
         <span className="c7n-piplineManage-detail-column-item-time">
           <span>任务耗时：</span>
           <span>

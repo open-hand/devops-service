@@ -81,7 +81,6 @@ export default observer((props) => {
             gitlabJobId={gitlabJobId}
             cdRecordId={cdRecordId}
             {...rest}
-            // {...props}
           />
         );
       })

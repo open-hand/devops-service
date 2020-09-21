@@ -1,9 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  Page, Header, Breadcrumb, Content, Permission,
-} from '@choerodon/boot';
-import {
   Button, Form, Icon, Select, TextField,
 } from 'choerodon-ui/pro';
 import {
