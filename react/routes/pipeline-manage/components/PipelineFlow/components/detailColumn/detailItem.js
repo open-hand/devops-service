@@ -368,7 +368,7 @@ const DetailItem = (props) => {
   function goToApiTest() {
     if (apiTestTaskRecordId) {
       history.push({
-        pathname: '/devops/test-task',
+        pathname: '/testManager/test-task',
         search,
         state: {
           recordId: apiTestTaskRecordId,
@@ -376,7 +376,7 @@ const DetailItem = (props) => {
         },
       });
     } else {
-      history.push(`/devops/test-task${search}`);
+      history.push(`/testManager/test-task${search}`);
     }
   }
 
