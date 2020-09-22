@@ -54,52 +54,6 @@ public class ClusterConnectionHandler {
     @Autowired
     private DevopsClusterService devopsClusterService;
 
-    private static int compareVersion(String a, String b) {
-        if (!a.contains("-") && !b.contains("-")) {
-            return compareTag(a, b);
-        } else if (a.contains("-") && b.contains("-")) {
-            String[] a1 = a.split("-");
-            String[] b1 = b.split("-");
-            int compareResult = compareTag(a1[0], b1[0]);
-            if (compareResult == 0) {
-                if (TypeUtil.objToLong(b1[1]) > TypeUtil.objToLong(a1[1])) {
-                    return 1;
-                } else if (TypeUtil.objToLong(b1[1]) < TypeUtil.objToLong(a1[1])) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            } else {
-                return compareResult;
-            }
-        }
-        return 1;
-    }
-
-    private static int compareTag(String a, String b) {
-        String[] a1 = a.split("\\.");
-        String[] b1 = b.split("\\.");
-        if (TypeUtil.objToLong(b1[0]) > TypeUtil.objToLong(a1[0])) {
-            return 1;
-        } else if (TypeUtil.objToLong(b1[0]) < TypeUtil.objToLong(a1[0])) {
-            return -1;
-        } else {
-            if (TypeUtil.objToLong(b1[1]) > TypeUtil.objToLong(a1[1])) {
-                return 1;
-            } else if (TypeUtil.objToLong(b1[1]) < TypeUtil.objToLong(a1[1])) {
-                return -1;
-            } else {
-                if (TypeUtil.objToLong(b1[2]) > TypeUtil.objToLong(a1[2])) {
-                    return 1;
-                } else if (TypeUtil.objToLong(b1[2]) < TypeUtil.objToLong(a1[2])) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
-        }
-    }
-
     /**
      * 检查集群的环境是否链接
      *
@@ -119,10 +73,9 @@ public class ClusterConnectionHandler {
      */
     private boolean getEnvConnectionStatus(Long clusterId) {
         Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
-
-        return clusterSessions.entrySet().stream()
-                .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
-                        && compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1);
+        return clusterSessions.values().stream()
+                .anyMatch(t -> clusterId.equals(t.getClusterId())
+                        && agentExpectVersion.equals(t.getVersion()));
     }
 
 //
@@ -141,14 +94,15 @@ public class ClusterConnectionHandler {
 
     /**
      * 不需要进行升级的已连接的集群 up-to-date
+     * 版本相等就认为不需要升级
      *
      * @return 环境更新列表
      */
     public List<Long> getUpdatedClusterList() {
         Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
-        return clusterSessions.entrySet().stream()
-                .filter(t -> compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1)
-                .map(t -> t.getValue().getClusterId())
+        return clusterSessions.values().stream()
+                .filter(clusterSessionVO -> agentExpectVersion.equals(clusterSessionVO.getVersion()))
+                .map(ClusterSessionVO::getClusterId)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
