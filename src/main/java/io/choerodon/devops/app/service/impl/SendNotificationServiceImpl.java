@@ -1106,7 +1106,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceInstanceDTO.getAppServiceId());
                     List<Receiver> receivers = new ArrayList<>();
                     Map<String, String> webHookParams = StringMapBuilder.newBuilder()
-                            .put("projectName", projectDTO.getProgramName())
+                            .put("projectName", projectDTO.getName())
                             .put("envName", devopsEnvironmentDTO.getName())
                             .put("instanceId", appServiceInstanceDTO.getId())
                             .put("instanceName", appServiceInstanceDTO.getCode())
