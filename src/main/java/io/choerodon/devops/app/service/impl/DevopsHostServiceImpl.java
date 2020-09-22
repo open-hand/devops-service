@@ -415,6 +415,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public boolean checkHostDelete(Long projectId, Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        if (Objects.isNull(devopsHostDTO)) {
+            return Boolean.TRUE;
+        }
+        //测试主机，状态占用中不能删除
+        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType().trim())
+                && DevopsHostStatus.OCCUPIED.getValue().equalsIgnoreCase(devopsHostDTO.getHostStatus().trim())) {
+            return Boolean.FALSE;
+        }
+
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setProjectId(projectId);
         devopsCdJobDTO.setType(JobTypeEnum.CD_HOST.value());
