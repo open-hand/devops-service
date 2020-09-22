@@ -367,16 +367,15 @@ const DetailItem = (props) => {
 
   function goToApiTest() {
     const {
-      id,
-      taskId,
+      id, // 记录id
+      taskId, // 任务id
     } = apiTestTaskRecordVO;
     if (id && taskId) {
       history.push({
         pathname: '/testManager/test-task',
         search,
         state: {
-          id: taskId,
-          recordId: id,
+          recordId: `${taskId}**${id}`,
           type: 'task',
         },
       });
@@ -477,6 +476,7 @@ const DetailItem = (props) => {
           </Permission>
         )}
         {
+          itemType === 'cdApiTest' && (
           <Tooltip title="查看详情">
             <Button
               funcType="flat"
@@ -487,6 +487,7 @@ const DetailItem = (props) => {
               color="primary"
             />
           </Tooltip>
+          )
         }
         <span className="c7n-piplineManage-detail-column-item-time">
           <span>任务耗时：</span>
