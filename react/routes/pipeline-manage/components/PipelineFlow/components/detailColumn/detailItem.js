@@ -375,7 +375,8 @@ const DetailItem = (props) => {
         pathname: '/testManager/test-task',
         search,
         state: {
-          recordId: `${taskId}**${id}`,
+          taskId,
+          recordId: id,
           type: 'task',
         },
       });

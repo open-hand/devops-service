@@ -6,6 +6,7 @@ import { inject } from 'mobx-react';
 import { DataSet } from 'choerodon-ui/pro';
 import ListDataSet from '@/routes/host-config/stores/ListDataSet';
 import SearchDataSet from '@/routes/host-config/stores/SearchDataSet';
+import { DataSetSelection } from 'choerodon-ui/pro/lib/data-set/enum';
 import useStore from './useStore';
 
 // @ts-ignore
@@ -25,6 +26,7 @@ interface ContextProps {
   refresh():void,
   mainStore:any,
   HAS_BASE_PRO: boolean,
+  statusDs:DataSet,
 }
 
 const Store = createContext({} as ContextProps);
@@ -51,6 +53,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
       text: '部署主机',
     },
   ], []);
+
+  const statusDs = useMemo(() => new DataSet({
+    data: [],
+    selection: 'single' as DataSetSelection,
+  }), []);
 
   const mainStore = useStore();
 
@@ -80,6 +87,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     mainStore,
     projectId,
     HAS_BASE_PRO,
+    statusDs,
   };
   return (
     <Store.Provider value={value}>

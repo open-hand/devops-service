@@ -1,9 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Button, Form, Icon, Select, TextField, DataSet,
 } from 'choerodon-ui/pro';
-import { DataSetSelection } from 'choerodon-ui/pro/lib/data-set/enum';
 import {
   ButtonColor, FuncType, LabelLayoutType,
 } from '../../../../interface';
@@ -19,6 +18,7 @@ const ContentHeader: React.FC<any> = observer((): any => {
     listDs,
     mainStore,
     HAS_BASE_PRO,
+    statusDs,
   } = useHostConfigStore();
 
   const searchArr = useMemo(() => ([
@@ -45,10 +45,9 @@ const ContentHeader: React.FC<any> = observer((): any => {
     return isTest ? searchArr : searchArr.slice(0, searchArr.length - 1);
   };
 
-  const statusDs = useMemo(() => new DataSet({
-    data: getSearchArr(),
-    selection: 'single' as DataSetSelection,
-  }), [mainStore.getCurrentTabKey]);
+  useEffect(() => {
+    statusDs && statusDs.loadData(getSearchArr());
+  }, [mainStore.getCurrentTabKey]);
 
   const handleChange = (key:string) => {
     searchDs.reset();
