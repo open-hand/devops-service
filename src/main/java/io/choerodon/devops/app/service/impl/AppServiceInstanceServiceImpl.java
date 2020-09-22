@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
@@ -53,7 +52,6 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -87,13 +85,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String RELEASE_NAME = "ReleaseName";
     private static final String NAMESPACE = "namespace";
     private static final Gson gson = new Gson();
-
-    @Value("${services.helm.url}")
-    private String helmUrl;
-    @Value("${services.gitlab.url}")
-    private String gitlabUrl;
-    @Value("${services.gitlab.sshUrl}")
-    private String gitlabSshUrl;
 
     @Autowired
     private AgentCommandService agentCommandService;
@@ -136,8 +127,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
-    private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
-    @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
@@ -157,11 +146,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsIngressService devopsIngressService;
     @Autowired
-    private RdupmClient rdupmClient;
-    @Autowired
     private HarborService harborService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsEnvApplicationService devopsEnvApplicationService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -624,7 +613,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (!appServiceDeployVO.getIsNotChange()) {
             //存储数据
             if (appServiceDeployVO.getType().equals(CREATE)) {
-                createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
+                devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
                 appServiceInstanceDTO.setCode(code);
                 appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
             }
@@ -669,19 +658,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
-    }
-
-    /**
-     * 为环境和应用创建关联关系如果不存在
-     *
-     * @param appServiceId 应用id
-     * @param envId        环境id
-     */
-    private void createEnvAppRelationShipIfNon(Long appServiceId, Long envId) {
-        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
-        devopsEnvAppServiceDTO.setAppServiceId(appServiceId);
-        devopsEnvAppServiceDTO.setEnvId(envId);
-        devopsEnvAppServiceMapper.insertIgnore(devopsEnvAppServiceDTO);
     }
 
     @Override
@@ -805,7 +781,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 插入应用服务和环境的关联关系
         if (appServiceInstanceDTO.getAppServiceId() != null) {
-            createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId());
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId());
         }
 
         //插入部署记录
@@ -1279,7 +1255,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         //存储数据
-        createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
+        devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
         appServiceInstanceDTO.setCode(code);
         appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
         devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
