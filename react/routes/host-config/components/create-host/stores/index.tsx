@@ -5,8 +5,10 @@ import { injectIntl } from 'react-intl';
 import { inject } from 'mobx-react';
 import { DataSet } from 'choerodon-ui/pro';
 import { DataSetSelection } from 'choerodon-ui/pro/lib/data-set/enum';
-import map from 'lodash/map';
 import FormDataSet from './FormDataSet';
+
+// @ts-ignore
+const HAS_BASE_PRO = C7NHasModule('@choerodon/base-pro');
 
 interface ContextProps {
   prefixCls: string,
@@ -17,6 +19,7 @@ interface ContextProps {
   modal: any,
   refresh(): void,
   hostId?: string,
+  HAS_BASE_PRO: boolean,
 }
 
 const Store = createContext({} as ContextProps);
@@ -69,6 +72,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
       typeDs,
       accountDs,
       hostId,
+      HAS_BASE_PRO,
     })), [projectId],
   );
 
@@ -87,6 +91,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     formatMessage,
     projectId,
     formDs,
+    HAS_BASE_PRO,
   };
   return (
     <Store.Provider value={value}>

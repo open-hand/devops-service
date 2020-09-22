@@ -6,9 +6,7 @@ import {
 import {
   ButtonColor, FuncType, LabelLayoutType,
 } from '../../../../interface';
-
 import { useHostConfigStore } from '../../stores';
-
 import HostPick from '../host-pick';
 
 const ContentHeader: React.FC<any> = observer((): any => {
@@ -20,6 +18,7 @@ const ContentHeader: React.FC<any> = observer((): any => {
     hostTabKeys,
     listDs,
     mainStore,
+    HAS_BASE_PRO,
   } = useHostConfigStore();
 
   const handleChange = (key:string) => {
@@ -41,7 +40,7 @@ const ContentHeader: React.FC<any> = observer((): any => {
 
   return (
     <div className={`${prefixCls}-content-search`}>
-      <HostPick onChange={handleChange} hostTabKeys={hostTabKeys} />
+      {HAS_BASE_PRO && <HostPick onChange={handleChange} hostTabKeys={hostTabKeys} />}
       <div style={{
         display: 'flex',
         alignItems: 'center',
