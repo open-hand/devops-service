@@ -1,12 +1,11 @@
+/* eslint-disable import/no-anonymous-default-export */
 import { DataSetProps } from 'choerodon-ui/pro/lib/data-set/DataSet';
-import { DataSet } from 'choerodon-ui/pro';
 
 interface ListProps {
   projectId: number,
-  statusDs: DataSet,
 }
 
-export default ({ projectId, statusDs }: ListProps): DataSetProps => ({
+export default ({ projectId }: ListProps): DataSetProps => ({
   autoCreate: true,
   selection: false,
   fields: [
@@ -17,8 +16,6 @@ export default ({ projectId, statusDs }: ListProps): DataSetProps => ({
       name: 'status',
       textField: 'text',
       valueField: 'value',
-      options: statusDs,
-      // label: '主机状态',
     },
   ],
 });

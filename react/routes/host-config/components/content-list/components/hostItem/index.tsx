@@ -47,6 +47,9 @@ const HostsItem:React.FC<any> = ({
       if (jmeterStatus === 'failed' || hostStatus === 'failed') {
         return 'failed';
       }
+      if (jmeterStatus === 'occupied') {
+        return 'occupied';
+      }
       return 'operating';
     }
     return 'operating';
@@ -85,6 +88,7 @@ const HostsItem:React.FC<any> = ({
         hostId={id}
         projectId={projectId}
         handleDelete={deleteRerord}
+        hostType={type}
       />,
       footer: null,
     };
@@ -120,7 +124,7 @@ const HostsItem:React.FC<any> = ({
       text: formatMessage({ id: 'delete' }),
       action: handleDelete,
     },
-  ] : []), [getMainStatus]);
+  ] : []), [getMainStatus, handleCorrect, handleDelete, handleModify]);
 
   return (
     <div className={`${prefixCls}-content-list-item`}>
@@ -143,7 +147,7 @@ const HostsItem:React.FC<any> = ({
               />
             </div>
             <div>
-              <span>更新</span>
+              <span>更新于</span>
               <TimePopover
                 style={{
                   color: 'rgba(58, 52, 95, 1)',
