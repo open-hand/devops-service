@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  Button, Form, Icon, Select, TextField,
+  Button, Form, Icon, Select, TextField, DataSet,
 } from 'choerodon-ui/pro';
+import { DataSetSelection } from 'choerodon-ui/pro/lib/data-set/enum';
 import {
   ButtonColor, FuncType, LabelLayoutType,
 } from '../../../../interface';
@@ -12,7 +13,6 @@ import HostPick from '../host-pick';
 const ContentHeader: React.FC<any> = observer((): any => {
   const {
     prefixCls,
-    intlPrefix,
     formatMessage,
     searchDs,
     hostTabKeys,
@@ -20,6 +20,35 @@ const ContentHeader: React.FC<any> = observer((): any => {
     mainStore,
     HAS_BASE_PRO,
   } = useHostConfigStore();
+
+  const searchArr = useMemo(() => ([
+    {
+      text: formatMessage({ id: 'success' }),
+      value: 'success',
+    },
+    {
+      text: formatMessage({ id: 'failed' }),
+      value: 'failed',
+    },
+    {
+      text: formatMessage({ id: 'connecting' }),
+      value: 'operating',
+    },
+    {
+      text: formatMessage({ id: 'occupied' }),
+      value: 'occupied',
+    },
+  ]), []);
+
+  const getSearchArr = ():object[] => {
+    const isTest = mainStore.getCurrentTabKey === 'distribute_test';
+    return isTest ? searchArr : searchArr.slice(0, searchArr.length - 1);
+  };
+
+  const statusDs = useMemo(() => new DataSet({
+    data: getSearchArr(),
+    selection: 'single' as DataSetSelection,
+  }), [mainStore.getCurrentTabKey]);
 
   const handleChange = (key:string) => {
     searchDs.reset();
@@ -66,6 +95,7 @@ const ContentHeader: React.FC<any> = observer((): any => {
             colSpan={3}
             placeholder="请选择"
             onClear={handleSearch}
+            options={statusDs}
           />
         </Form>
         <Button

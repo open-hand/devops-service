@@ -10,6 +10,7 @@ interface DeleteCheckProps {
   hostId:string,
   handleDelete():void,
   formatMessage(arg0: object, arg1?: object): string,
+  hostType:string,
 }
 
 const DeleteCheck:FC<DeleteCheckProps> = (props) => {
@@ -19,6 +20,7 @@ const DeleteCheck:FC<DeleteCheckProps> = (props) => {
     hostId,
     handleDelete,
     formatMessage,
+    hostType,
   } = props;
   const [loading, setLoading] = useState<boolean>(true);
   const [text, setText] = useState<string>('');
@@ -51,7 +53,7 @@ const DeleteCheck:FC<DeleteCheckProps> = (props) => {
         });
         return;
       }
-      setText('该主机含有关联的流水线主机部署任务，无法删除。');
+      setText(hostType !== 'distribute_test' ? '该主机含有关联的流水线主机部署任务，无法删除。' : '该主机状态已改变，请刷新后重试');
       modal.update({
         title: '删除主机',
         footer: (okBtn:ReactNode, cancelBtn:ReactNode) => (
@@ -63,6 +65,7 @@ const DeleteCheck:FC<DeleteCheckProps> = (props) => {
       });
     } catch (error) {
       modal.update({
+        title: '删除主机',
         footer: (okBtn:ReactNode, cancelBtn:ReactNode) => (
           <>
             {cancelBtn}

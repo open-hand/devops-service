@@ -26,6 +26,12 @@ const statusKindMap:statusKindsMap = {
     fontColor: 'rgba(77, 144, 254, 1)',
     hoverText: '测试连接中',
   },
+  occupied: {
+    text: '占用中',
+    bgColor: 'rgba(158, 173, 190, 0.16)',
+    fontColor: 'rgba(15, 19, 88, 0.36)',
+    hoverText: '连接被占用',
+  },
   default: {
     text: 'unknown',
     bgColor: 'rgba(216, 216, 216, 0.12)',

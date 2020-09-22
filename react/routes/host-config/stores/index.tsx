@@ -5,7 +5,6 @@ import { injectIntl } from 'react-intl';
 import { inject } from 'mobx-react';
 import { DataSet } from 'choerodon-ui/pro';
 import ListDataSet from '@/routes/host-config/stores/ListDataSet';
-import { DataSetSelection } from 'choerodon-ui/pro/lib/data-set/enum';
 import SearchDataSet from '@/routes/host-config/stores/SearchDataSet';
 import useStore from './useStore';
 
@@ -42,20 +41,6 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
   } = props;
   const intlPrefix = 'c7ncd.host.config';
 
-  const statusDs = useMemo(() => new DataSet({
-    data: [
-      {
-        text: formatMessage({ id: 'success' }),
-        value: 'success',
-      },
-      {
-        text: formatMessage({ id: 'failed' }),
-        value: 'failed',
-      },
-    ],
-    selection: 'single' as DataSetSelection,
-  }), []);
-
   const hostTabKeys = useMemo(() => [
     {
       key: 'distribute_test',
@@ -70,7 +55,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
   const mainStore = useStore();
 
   const listDs = useMemo(() => new DataSet(ListDataSet({ projectId, HAS_BASE_PRO })), [projectId]);
-  const searchDs = useMemo(() => new DataSet(SearchDataSet({ projectId, statusDs })), [projectId]);
+  const searchDs = useMemo(() => new DataSet(SearchDataSet({ projectId })), [projectId]);
 
   const refresh = useCallback(async (callback?:CallableFunction) => {
     await listDs.query();
