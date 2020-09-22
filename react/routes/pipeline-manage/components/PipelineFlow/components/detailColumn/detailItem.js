@@ -376,7 +376,7 @@ const DetailItem = (props) => {
         search,
         state: {
           taskId,
-          recordId: `${taskId}**${id}`,
+          recordId: id,
           type: 'task',
         },
       });
