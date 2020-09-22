@@ -77,14 +77,15 @@ const ContentHeader: React.FC<any> = observer((): any => {
       >
         <Form
           dataSet={searchDs}
-          columns={6}
+          columns={7}
           className={`${prefixCls}-content-search-form`}
           labelLayout={'horizontal' as LabelLayoutType}
+          labelWidth={1}
         >
           <TextField
             clearButton
             name="params"
-            colSpan={3}
+            colSpan={4}
             placeholder="请输入搜索条件"
             prefix={<Icon type="search" style={{ color: '#CACAE4', lineHeight: '22px' }} />}
             onClear={handleSearch}
