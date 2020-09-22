@@ -55,6 +55,7 @@ export default observer((props) => {
     commit,
     devopsPipelineRecordRelId: recordDevopsPipelineRecordRelId,
     cdRecordId,
+    viewId: loadViewId,
   } = getDetailData;
 
   useEffect(() => {
@@ -100,7 +101,7 @@ export default observer((props) => {
       ? (
         <div className="c7n-piplineManage">
           <DetailHeader
-            viewId={viewId}
+            viewId={viewId || loadViewId}
             appServiceName={ciCdPipelineVO && ciCdPipelineVO.appServiceName}
             appServiceId={ciCdPipelineVO && ciCdPipelineVO.appServiceId}
             aHref={commit && commit.gitlabProjectUrl}
