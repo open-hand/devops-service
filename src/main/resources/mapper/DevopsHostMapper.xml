@@ -20,6 +20,9 @@
                     <when test="searchParam.status == 'failed'">
                         AND ((dh.type = 'distribute_test' AND (dh.host_status = 'failed' OR dh.jmeter_status = 'failed')) OR (dh.type = 'deploy' AND dh.host_status = 'failed'))
                     </when>
+                    <when test="searchParam.status == 'occupied'">
+                        AND (dh.type = 'distribute_test' AND dh.jmeter_status = 'occupied')
+                    </when>
                     <otherwise>
                         AND ((dh.type = 'distribute_test' AND (dh.host_status != 'success' OR dh.jmeter_status != 'success')
                         AND dh.host_status != 'failed' AND dh.jmeter_status != 'failed') OR (dh.type = 'deploy' AND dh.host_status = 'operating'))
