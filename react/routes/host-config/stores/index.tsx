@@ -54,7 +54,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
 
   const mainStore = useStore();
 
+<<<<<<< HEAD
   const listDs = useMemo(() => new DataSet(ListDataSet({ projectId, HAS_BASE_PRO })), [projectId]);
+=======
+  const listDs = useMemo(() => new DataSet(ListDataSet({ projectId })), [projectId]);
+>>>>>>> [ADD] 主机配置-测试主机，删除需要加上校验;前端：修改测试主机和部署主机筛选逻辑
   const searchDs = useMemo(() => new DataSet(SearchDataSet({ projectId })), [projectId]);
 
   const refresh = useCallback(async (callback?:CallableFunction) => {
