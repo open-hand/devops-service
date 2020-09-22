@@ -203,6 +203,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private List<DevopsHostDTO> filterHostsToCorrect(List<DevopsHostDTO> hosts) {
         return hosts.stream().filter(hostDTO -> {
+            // 跳过占用中的测试主机
+            if (DevopsHostStatus.OCCUPIED.getValue().equals(hostDTO.getJmeterStatus())) {
+                return false;
+            }
             // 过滤测试中的主机
             if (isOperating(hostDTO.getType(), hostDTO.getHostStatus(), hostDTO.getJmeterStatus())
                     && !isTimeout(hostDTO.getLastUpdateDate())) {
@@ -240,9 +244,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     private boolean isDistributeHostOperating(String hostStatus, String jmeterStatus) {
-        // 测试主机, 任意一个状态失败则失败, 两个状态都成功则成功, 否则都是处理中
+        // 测试主机, 任意一个状态失败则失败, 两个状态都成功则成功, jmeter状态为占用就是占用, 否则都是处理中
         return !DevopsHostStatus.FAILED.getValue().equals(hostStatus)
                 && !DevopsHostStatus.FAILED.getValue().equals(jmeterStatus)
+                && !DevopsHostStatus.OCCUPIED.getValue().equals(jmeterStatus)
                 && !(DevopsHostStatus.SUCCESS.getValue().equals(hostStatus) && DevopsHostStatus.SUCCESS.getValue().equals(jmeterStatus));
     }
 
