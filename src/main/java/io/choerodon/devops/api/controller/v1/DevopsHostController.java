@@ -159,7 +159,7 @@ public class DevopsHostController {
     public ResponseEntity<Boolean> checkHostDelete(@ApiParam(value = "项目id", required = true)
                                                    @PathVariable("project_id") Long projectId,
                                                    @ApiParam(value = "主机id", required = true)
-                                                   @RequestParam("host_id") Long hostId) {
+                                                   @Encrypt @RequestParam("host_id") Long hostId) {
         return Results.success(devopsHostService.checkHostDelete(projectId, hostId));
     }
 
