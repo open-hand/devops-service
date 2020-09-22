@@ -1,5 +1,5 @@
 import React, {
-  createContext, useCallback, useContext, useMemo,
+  createContext, useCallback, useContext, useEffect, useMemo,
 } from 'react';
 import { injectIntl } from 'react-intl';
 import { inject } from 'mobx-react';
@@ -8,6 +8,9 @@ import ListDataSet from '@/routes/host-config/stores/ListDataSet';
 import { DataSetSelection } from 'choerodon-ui/pro/lib/data-set/enum';
 import SearchDataSet from '@/routes/host-config/stores/SearchDataSet';
 import useStore from './useStore';
+
+// @ts-ignore
+const HAS_BASE_PRO = C7NHasModule('@choerodon/base-pro');
 
 interface ContextProps {
   prefixCls: string,
@@ -22,6 +25,7 @@ interface ContextProps {
   }[],
   refresh():void,
   mainStore:any,
+  HAS_BASE_PRO: boolean,
 }
 
 const Store = createContext({} as ContextProps);
@@ -65,13 +69,19 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
 
   const mainStore = useStore();
 
-  const listDs = useMemo(() => new DataSet(ListDataSet({ projectId })), [projectId]);
+  const listDs = useMemo(() => new DataSet(ListDataSet({ projectId, HAS_BASE_PRO })), [projectId]);
   const searchDs = useMemo(() => new DataSet(SearchDataSet({ projectId, statusDs })), [projectId]);
 
   const refresh = useCallback(async (callback?:CallableFunction) => {
     await listDs.query();
     typeof callback === 'function' && callback();
   }, [listDs]);
+
+  useEffect(() => {
+    if (!HAS_BASE_PRO) {
+      mainStore.setCurrentTabKey('deploy');
+    }
+  }, []);
 
   const value = {
     ...props,
@@ -84,6 +94,7 @@ export const StoreProvider = injectIntl(inject('AppState')((props: any) => {
     refresh,
     mainStore,
     projectId,
+    HAS_BASE_PRO,
   };
   return (
     <Store.Provider value={value}>

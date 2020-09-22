@@ -4,9 +4,10 @@ import apis from '../apis';
 
 interface ListProps {
   projectId: number,
+  HAS_BASE_PRO: boolean,
 }
 
-export default ({ projectId }: ListProps): DataSetProps => ({
+export default ({ projectId, HAS_BASE_PRO }: ListProps): DataSetProps => ({
   autoCreate: false,
   autoQuery: true,
   selection: false,
@@ -20,7 +21,7 @@ export default ({ projectId }: ListProps): DataSetProps => ({
         method: 'post',
         data: {
           searchParam: {
-            type: type || 'distribute_test',
+            type: type || (HAS_BASE_PRO ? 'distribute_test' : 'deploy'),
             status,
           },
           params: params ? [params] : [],

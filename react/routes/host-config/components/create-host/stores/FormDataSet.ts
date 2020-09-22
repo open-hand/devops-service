@@ -12,6 +12,7 @@ interface FormProps {
   typeDs: DataSet,
   accountDs: DataSet,
   hostId: string,
+  HAS_BASE_PRO: boolean,
 }
 
 function setStatus(record: any) {
@@ -50,6 +51,7 @@ export default ({
   typeDs,
   accountDs,
   hostId,
+  HAS_BASE_PRO,
 }: FormProps): DataSetProps => {
   async function checkName(value: any, name: any, record: any) {
     if (value && record.getPristineValue(name) && value === record.getPristineValue(name)) {
@@ -157,7 +159,7 @@ export default ({
         type: 'string' as FieldType,
         textField: 'text',
         valueField: 'value',
-        defaultValue: 'distribute_test',
+        defaultValue: HAS_BASE_PRO ? 'distribute_test' : 'deploy',
         options: typeDs,
         label: formatMessage({ id: `${intlPrefix}.type` }),
       },
