@@ -124,7 +124,7 @@ const HostsItem:React.FC<any> = ({
       text: formatMessage({ id: 'delete' }),
       action: handleDelete,
     },
-  ] : []), [getMainStatus]);
+  ] : []), [getMainStatus, handleCorrect, handleDelete, handleModify]);
 
   return (
     <div className={`${prefixCls}-content-list-item`}>
