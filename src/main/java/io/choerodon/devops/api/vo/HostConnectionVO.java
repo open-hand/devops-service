@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.enums.HostSourceEnum;
 
@@ -30,6 +31,7 @@ public class HostConnectionVO {
 
 
     @ApiModelProperty("主机id")
+    @Encrypt
     private Long hostId;
 
     /**
