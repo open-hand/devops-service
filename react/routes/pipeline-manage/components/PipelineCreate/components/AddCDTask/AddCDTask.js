@@ -607,8 +607,19 @@ export default observer(() => {
           ),
           <TextField
             addonAfter={(
-              <Tips helpText="默认工作目录为：/temp，而默认的jar包下载存放目录为：/temp/jar/xxx.jar，默认日志存放目录为：/temp/log/xxx.log
-若此处填写了自定义工作目录，即表示，jar包下载存放目录为：工作目录/jar/xxx.jar 日志存放目录为：工作目录/log/xxx.log"
+              <Tips
+                helpText={(
+                  <>
+                    <p style={{ margin: 0 }}>
+                      默认工作目录为：/temp，而默认的jar包下载存放目录为：/temp/jar/xxx.jar，
+                      默认日志存放目录为：/temp/log/xxx.log
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      若此处填写了自定义工作目录,即表示,
+                      jar包下载存放目录为:工作目录/jar/xxx.jar 日志存放目录为:工作目录/log/xxx.log
+                    </p>
+                  </>
+                )}
               />
             )}
             colSpan={3}
