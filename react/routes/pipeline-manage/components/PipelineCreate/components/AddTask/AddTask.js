@@ -264,6 +264,7 @@ const AddTask = observer(() => {
         // } else {
         //   AddTaskFormDataSet.current.set('selectImage', '0');
         // }
+        AddTaskFormDataSet.current.set('glyyfw', appServiceId || PipelineCreateFormDataSet.getField('appServiceId').getText(PipelineCreateFormDataSet.current.get('appServiceId')));
       } else {
         if (image) {
           AddTaskFormDataSet.current.set('selectImage', '0');
