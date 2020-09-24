@@ -173,4 +173,23 @@ public class DevopsHostController {
         devopsHostService.asyncBatchCorrectStatus(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds));
         return Results.success();
     }
+
+    @ApiOperation("批量校准主机状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/batch_correct_with_progress")
+    public ResponseEntity<String> batchCorrectWithProgress(@ApiParam(value = "项目id", required = true)
+                                             @PathVariable("project_id") Long projectId,
+                                             @ApiParam(value = "主机id集合", required = true)
+                                             @Encrypt @RequestBody Set<Long> hostIds) {
+        return ResponseEntity.ok(devopsHostService.asyncBatchCorrectStatusWithProgress(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds)));
+    }
+
+    @ApiOperation("获取批量校准主机状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/checking_progress")
+    public ResponseEntity<CheckingProgressVO> getCheckingProgress(@ApiParam(value = "项目id", required = true)
+                                                           @PathVariable("project_id") Long projectId,
+                                                           @RequestParam("correctKey") String correctKey) {
+        return ResponseEntity.ok(devopsHostService.getCheckingProgress(projectId, correctKey));
+    }
 }

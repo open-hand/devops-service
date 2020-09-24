@@ -1,14 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Functions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +52,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      * 主机状态处于处理中的超时时长
      */
     private static final long OPERATING_TIMEOUT = 60 * 1000;
+    private static final String CHECKING_HOST = "checking";
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -59,6 +65,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsCdJobMapper devopsCdJobMapper;
     @Autowired
     private TestServiceClientOperator testServiceClientOperator;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    private Gson gson = new Gson();
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -127,6 +137,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, hostId));
     }
 
+    @Override
+    public String asyncBatchCorrectStatusWithProgress(Long projectId, Set<Long> hostIds) {
+        String correctKey = UUIDUtils.generateUUID();
+        hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, correctKey, hostId));
+        return correctKey;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
     @Override
@@ -193,6 +210,56 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 CustomContextUtil.clearContext();
             }
         }
+    }
+
+    @Override
+    @Async
+    public void correctStatus(Long projectId, String correctKey, Long hostId) {
+        boolean noContextPre = DetailsHelper.getUserDetails() == null;
+        try {
+            updateHostStatus(correctKey, hostId, CHECKING_HOST);
+
+            DevopsHostDTO hostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+            if (hostDTO == null) {
+                return;
+            }
+
+            // 设置上下文, 以免丢失更新者信息
+            CustomContextUtil.setDefaultIfNull(hostDTO.getLastUpdatedBy());
+            DevopsHostConnectionTestVO devopsHostConnectionTestVO = ConvertUtils.convertObject(hostDTO, DevopsHostConnectionTestVO.class);
+
+            DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
+            hostDTO.setHostStatus(result.getHostStatus());
+            hostDTO.setHostCheckError(result.getHostCheckError());
+            hostDTO.setJmeterStatus(result.getJmeterStatus());
+            hostDTO.setJmeterCheckError(result.getJmeterCheckError());
+            // 不对更新涉及的纪录结果进行判断
+            devopsHostMapper.updateByPrimaryKeySelective(hostDTO);
+            updateHostStatus(correctKey, hostId, result.getHostStatus());
+            LOGGER.debug("connection result for host with id {} is {}", hostId, result);
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to correct status for host with id {}", hostId);
+            LOGGER.warn("The ex is ", ex);
+        } finally {
+            // 如果之前没有上下文, 清除上下文
+            if (noContextPre) {
+                CustomContextUtil.clearContext();
+            }
+        }
+    }
+
+    private void updateHostStatus(String correctKey, Long hostId, String checkingHost) {
+        Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>(){}.getType());
+        if (hostStatus == null) {
+            hostStatus = new HashMap<>();
+        }
+        if (hostStatus.get(hostId) == null) {
+            hostStatus.put(hostId, CHECKING_HOST);
+        } else {
+            String s = hostStatus.get(hostId);
+            s = CHECKING_HOST;
+        }
+        redisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
     }
 
     /**
@@ -446,6 +513,41 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             }
         }
         return Boolean.TRUE;
+    }
+
+    @Override
+    public CheckingProgressVO getCheckingProgress(Long projectId, String correctKey) {
+        Map<Long, String> hostStatusMap = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+        }.getType());
+        if (hostStatusMap == null) {
+            return null;
+        }
+        int size = hostStatusMap.size();
+        if (size == 0) {
+            return null;
+        }
+        int failed = 0;
+        int success = 0;
+        Set<Long> ids = hostStatusMap.keySet();
+        for (Long id : ids) {
+            if (DevopsHostStatus.FAILED.getValue().equals(hostStatusMap.get(id))) {
+                failed++;
+            }
+            if (DevopsHostStatus.SUCCESS.getValue().equals(hostStatusMap.get(id))) {
+                success++;
+            }
+        }
+        CheckingProgressVO checkingProgressVO = new CheckingProgressVO();
+        if (failed > 0) {
+            checkingProgressVO.setStatus(DevopsHostStatus.FAILED.getValue());
+        }
+        if (success == size) {
+            checkingProgressVO.setStatus(DevopsHostStatus.SUCCESS.getValue());
+        }
+        double progress = (double) success / (double) size;
+        checkingProgressVO.setProgress(String.valueOf(progress));
+
+        return checkingProgressVO;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
