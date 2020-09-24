@@ -56,7 +56,7 @@
         SELECT dh.*
         FROM devops_host dh
         <where>
-            dh.project_id = #{projectId,jdbcType=BIGINT}
+            dh.project_id = #{projectId,jdbcType=BIGINT} and dh.type = 'distribute_test'
             <if test="searchParam != null">
                 AND dh.name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
             </if>
@@ -86,13 +86,13 @@
         dh.creation_date,
         dh.last_updated_by,
         dh.last_update_date,
-        selected 1,
-        CASE
-        WHEN dh.host_status = 'failed' THEN 1
+        1 AS selected,
+        CASE WHEN dh.host_status = 'failed' or dh.jmeter_status = 'failed' THEN 1
         ELSE 0
-        END failed
+        END AS failed
         FROM devops_host dh
         <where>
+            dh.type = 'distribute_test' and
             dh.id IN
             <foreach collection="finalHostIds" item="id" open="(" close=")" separator="," index="i">
                 #{id}
@@ -101,7 +101,7 @@
                 AND dh.name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
             </if>
         </where>
-        union all
+        union
         SELECT
         dh1.id,
         dh1.name,
@@ -123,14 +123,13 @@
         dh1.creation_date,
         dh1.last_updated_by,
         dh1.last_update_date,
-        selected 0,
-        CASE
-        WHEN dh.host_status = 'failed' THEN 1
+        0 AS selected,
+        CASE WHEN dh1.host_status = 'failed' or dh1.jmeter_status = 'failed' THEN 1
         ELSE 0
-        END failed
+        END AS failed
         FROM devops_host dh1
         <where>
-            dh1.projectId = #{projectId}
+            dh1.type = 'distribute_test' and dh1.project_id = #{projectId}
             and dh1.id not IN
             <foreach collection="finalHostIds" item="id" open="(" close=")" separator="," index="i">
                 #{id}
@@ -139,7 +138,7 @@
                 AND dh1.name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
             </if>
         </where>
-        ) order by selected desc,failed desc
+        ) h order by h.selected desc,h.failed desc
 
     </select>
 

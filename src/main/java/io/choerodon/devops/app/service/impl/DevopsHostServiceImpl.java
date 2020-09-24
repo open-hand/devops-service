@@ -141,6 +141,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public String asyncBatchCorrectStatusWithProgress(Long projectId, Set<Long> hostIds) {
         String correctKey = UUIDUtils.generateUUID();
+        // 初始化校验状态
+        Map<Long, String> map = new HashMap<>();
+        hostIds.forEach(hostId -> map.put(hostId, CHECKING_HOST));
+
+        redisTemplate.opsForValue().set(correctKey, gson.toJson(map), 10, TimeUnit.MINUTES);
         hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, correctKey, hostId));
         return correctKey;
     }
@@ -218,8 +223,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public void correctStatus(Long projectId, String correctKey, Long hostId) {
         boolean noContextPre = DetailsHelper.getUserDetails() == null;
         try {
-            updateHostStatus(correctKey, hostId, CHECKING_HOST);
-
             DevopsHostDTO hostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
             if (hostDTO == null) {
                 return;
@@ -236,7 +239,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             hostDTO.setJmeterCheckError(result.getJmeterCheckError());
             // 不对更新涉及的纪录结果进行判断
             devopsHostMapper.updateByPrimaryKeySelective(hostDTO);
-            updateHostStatus(correctKey, hostId, result.getHostStatus());
+            String status = DevopsHostStatus.FAILED.getValue();
+            if (DevopsHostStatus.SUCCESS.getValue().equals(result.getHostStatus()) && DevopsHostStatus.SUCCESS.getValue().equals(result.getJmeterStatus())) {
+                status = DevopsHostStatus.SUCCESS.getValue();
+            }
+            updateHostStatus(correctKey, hostId, status);
             LOGGER.debug("connection result for host with id {} is {}", hostId, result);
         } catch (Exception ex) {
             LOGGER.warn("Failed to correct status for host with id {}", hostId);
@@ -249,17 +256,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    private void updateHostStatus(String correctKey, Long hostId, String checkingHost) {
+    private void updateHostStatus(String correctKey, Long hostId, String status) {
         Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>(){}.getType());
         if (hostStatus == null) {
             hostStatus = new HashMap<>();
         }
-        if (hostStatus.get(hostId) == null) {
-            hostStatus.put(hostId, CHECKING_HOST);
-        } else {
-            String s = hostStatus.get(hostId);
-            s = CHECKING_HOST;
-        }
+        hostStatus.put(hostId, status);
         redisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
     }
 
@@ -529,8 +531,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
         int failed = 0;
         int success = 0;
+        int checking = 0;
         Set<Long> ids = hostStatusMap.keySet();
         for (Long id : ids) {
+            if (CHECKING_HOST.equals(hostStatusMap.get(id))) {
+                checking++;
+            }
             if (DevopsHostStatus.FAILED.getValue().equals(hostStatusMap.get(id))) {
                 failed++;
             }
@@ -539,6 +545,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             }
         }
         CheckingProgressVO checkingProgressVO = new CheckingProgressVO();
+        if (checking > 0) {
+            checkingProgressVO.setStatus(CHECKING_HOST);
+        }
         if (failed > 0) {
             checkingProgressVO.setStatus(DevopsHostStatus.FAILED.getValue());
         }
@@ -546,7 +555,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             checkingProgressVO.setStatus(DevopsHostStatus.SUCCESS.getValue());
         }
         double progress = (double) success / (double) size;
-        checkingProgressVO.setProgress(String.valueOf(progress));
+        checkingProgressVO.setProgress(String.valueOf(progress * 100) + "%");
 
         return checkingProgressVO;
     }
@@ -557,7 +566,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!StringUtils.isAllEmpty(correctKey)) {
             Map<Long, String> hostStatusMap = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
             }.getType());
-            hostIds = hostStatusMap.keySet();
+            if (!CollectionUtils.isEmpty(hostStatusMap)) {
+                hostIds = hostStatusMap.keySet();
+            }
         }
         Page<DevopsHostVO> page;
         if (CollectionUtils.isEmpty(hostIds)) {
