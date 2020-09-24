@@ -37,6 +37,7 @@ public class BranchVO {
 
     @ApiModelProperty("分支纪录的版本号")
     private Long objectVersionNumber;
+    @Encrypt
     private Long sagaInstanceId;
 
 
