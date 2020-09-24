@@ -80,6 +80,8 @@ public class DevopsHostVO {
     @JsonIgnore
     private Long lastUpdatedBy;
 
+    private Boolean selected;
+
     public Long getId() {
         return id;
     }
@@ -208,5 +210,13 @@ public class DevopsHostVO {
 
     public void setJmeterCheckError(@Nullable String jmeterCheckError) {
         this.jmeterCheckError = jmeterCheckError;
+    }
+
+    public Boolean getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Boolean selected) {
+        this.selected = selected;
     }
 }

@@ -52,6 +52,96 @@
             #{hostId,jdbcType=BIGINT}
         </foreach>
     </select>
+    <select id="listBySearchParam" resultType="io.choerodon.devops.api.vo.DevopsHostVO">
+        SELECT dh.*
+        FROM devops_host dh
+        <where>
+            dh.project_id = #{projectId,jdbcType=BIGINT}
+            <if test="searchParam != null">
+                AND dh.name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+            </if>
+        </where>
+    </select>
+    <select id="pagingWithCheckingStatus" resultType="io.choerodon.devops.api.vo.DevopsHostVO">
+        SELECT *
+        FROM (
+        SELECT
+        dh.id,
+        dh.name,
+        dh.type,
+        dh.project_id,
+        dh.host_status,
+        dh.host_check_error,
+        dh.jmeter_status,
+        dh.jmeter_check_error,
+        dh.host_ip,
+        dh.ssh_port,
+        dh.auth_type,
+        dh.username,
+        dh.password,
+        dh.jmeter_port,
+        dh.jmeter_path,
+        dh.object_version_number,
+        dh.created_by,
+        dh.creation_date,
+        dh.last_updated_by,
+        dh.last_update_date,
+        selected 1,
+        CASE
+        WHEN dh.host_status = 'failed' THEN 1
+        ELSE 0
+        END failed
+        FROM devops_host dh
+        <where>
+            dh.id IN
+            <foreach collection="finalHostIds" item="id" open="(" close=")" separator="," index="i">
+                #{id}
+            </foreach>
+            <if test="searchParam != null">
+                AND dh.name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+            </if>
+        </where>
+        union all
+        SELECT
+        dh1.id,
+        dh1.name,
+        dh1.type,
+        dh1.project_id,
+        dh1.host_status,
+        dh1.host_check_error,
+        dh1.jmeter_status,
+        dh1.jmeter_check_error,
+        dh1.host_ip,
+        dh1.ssh_port,
+        dh1.auth_type,
+        dh1.username,
+        dh1.password,
+        dh1.jmeter_port,
+        dh1.jmeter_path,
+        dh1.object_version_number,
+        dh1.created_by,
+        dh1.creation_date,
+        dh1.last_updated_by,
+        dh1.last_update_date,
+        selected 0,
+        CASE
+        WHEN dh.host_status = 'failed' THEN 1
+        ELSE 0
+        END failed
+        FROM devops_host dh1
+        <where>
+            dh1.projectId = #{projectId}
+            and dh1.id not IN
+            <foreach collection="finalHostIds" item="id" open="(" close=")" separator="," index="i">
+                #{id}
+            </foreach>
+            <if test="searchParam != null">
+                AND dh1.name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+            </if>
+        </where>
+        ) order by selected desc,failed desc
+
+    </select>
 
     <update id="batchSetStatusOperating">
         UPDATE devops_host

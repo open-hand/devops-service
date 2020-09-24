@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.DevopsHostVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -51,4 +52,11 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
                                      @Param("hostIds") Set<Long> hostIds,
                                      @Param("isTestType") Boolean isTestType,
                                      @Param("date") Date date);
+
+    List<DevopsHostVO> listBySearchParam(@Param("projectId") Long projectId,
+                                         @Param("searchParam") String searchParam);
+
+    List<DevopsHostVO> pagingWithCheckingStatus(@Param("projectId") Long projectId,
+                                                @Param("finalHostIds") Set<Long> finalHostIds,
+                                                @Param("searchParam") String searchParam);
 }

@@ -8,6 +8,8 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -178,9 +180,9 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/batch_correct_with_progress")
     public ResponseEntity<String> batchCorrectWithProgress(@ApiParam(value = "项目id", required = true)
-                                             @PathVariable("project_id") Long projectId,
-                                             @ApiParam(value = "主机id集合", required = true)
-                                             @Encrypt @RequestBody Set<Long> hostIds) {
+                                                           @PathVariable("project_id") Long projectId,
+                                                           @ApiParam(value = "主机id集合", required = true)
+                                                           @Encrypt @RequestBody Set<Long> hostIds) {
         return ResponseEntity.ok(devopsHostService.asyncBatchCorrectStatusWithProgress(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds)));
     }
 
@@ -188,8 +190,20 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/checking_progress")
     public ResponseEntity<CheckingProgressVO> getCheckingProgress(@ApiParam(value = "项目id", required = true)
-                                                           @PathVariable("project_id") Long projectId,
-                                                           @RequestParam("correctKey") String correctKey) {
+                                                                  @PathVariable("project_id") Long projectId,
+                                                                  @RequestParam("correctKey") String correctKey) {
         return ResponseEntity.ok(devopsHostService.getCheckingProgress(projectId, correctKey));
+    }
+
+    @ApiOperation("获取批量校准主机状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/paging_with_checking_status")
+    @CustomPageRequest
+    public ResponseEntity<Page<DevopsHostVO>> pagingWithCheckingStatus(@ApiParam(value = "项目id", required = true)
+                                                                       @PathVariable("project_id") Long projectId,
+                                                                       @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                       @RequestParam(value = "correctKey", required = false) String correctKey,
+                                                                       @RequestParam(value = "search_param", required = false) String searchParam) {
+        return ResponseEntity.ok(devopsHostService.pagingWithCheckingStatus(projectId, pageRequest, correctKey, searchParam));
     }
 }
