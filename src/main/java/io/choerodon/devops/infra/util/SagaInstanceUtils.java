@@ -22,7 +22,7 @@ public class SagaInstanceUtils {
         if (!MapUtils.isEmpty(map) && !Objects.isNull(map.get(refId)) && FAILED.equalsIgnoreCase(map.get(refId).getStatus().trim())) {
             return map.get(refId).getId();
         } else {
-            return 0L;
+            return null;
         }
     }
 
