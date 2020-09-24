@@ -38,6 +38,13 @@ public interface DevopsHostService {
     void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds);
 
     /**
+     * 异步批量校准主机状态
+     *
+     * @param hostIds 主机id
+     */
+    String asyncBatchCorrectStatusWithProgress(Long projectId, Set<Long> hostIds);
+
+    /**
      * 异步批量更新超时的主机为失败
      *
      * @param projectId 项目id
@@ -52,6 +59,14 @@ public interface DevopsHostService {
      * @param hostId    主机id
      */
     void correctStatus(Long projectId, Long hostId);
+
+    /**
+     * 校正一个主机的状态
+     *
+     * @param projectId 项目id
+     * @param hostId    主机id
+     */
+    void correctStatus(Long projectId, String correctKey, Long hostId);
 
     /**
      * 更新主机
@@ -145,4 +160,6 @@ public interface DevopsHostService {
      * @return true表示能删除
      */
     boolean checkHostDelete(Long projectId, Long hostId);
+
+    CheckingProgressVO getCheckingProgress(Long projectId, String correctKey);
 }
