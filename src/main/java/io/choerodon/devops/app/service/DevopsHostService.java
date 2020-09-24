@@ -162,4 +162,6 @@ public interface DevopsHostService {
     boolean checkHostDelete(Long projectId, Long hostId);
 
     CheckingProgressVO getCheckingProgress(Long projectId, String correctKey);
+
+    Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam);
 }

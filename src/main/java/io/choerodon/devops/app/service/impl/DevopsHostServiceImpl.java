@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -548,6 +549,25 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         checkingProgressVO.setProgress(String.valueOf(progress));
 
         return checkingProgressVO;
+    }
+
+    @Override
+    public Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam) {
+        Set<Long> hostIds = new HashSet<>();
+        if (!StringUtils.isAllEmpty(correctKey)) {
+            Map<Long, String> hostStatusMap = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+            }.getType());
+            hostIds = hostStatusMap.keySet();
+        }
+        Page<DevopsHostVO> page;
+        if (CollectionUtils.isEmpty(hostIds)) {
+            page = PageHelper.doPage(pageRequest, () -> devopsHostMapper.listBySearchParam(projectId, searchParam));
+        } else {
+            Set<Long> finalHostIds = hostIds;
+            page = PageHelper.doPage(pageRequest, () -> devopsHostMapper.pagingWithCheckingStatus(projectId, finalHostIds, searchParam));
+        }
+
+        return page;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
