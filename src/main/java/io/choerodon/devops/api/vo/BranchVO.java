@@ -37,6 +37,8 @@ public class BranchVO {
 
     @ApiModelProperty("分支纪录的版本号")
     private Long objectVersionNumber;
+    private Long sagaInstanceId;
+
 
     public BranchVO() {
     }
@@ -47,7 +49,7 @@ public class BranchVO {
     public BranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl,
                     String createUserUrl,
                     IssueDTO issue,
-                    IamUserDTO commitUserE, String createUserName, String realName, String status, String errorMessage) {
+                    IamUserDTO commitUserE, String createUserName, String realName, String status, String errorMessage, Long sagaInstanceId) {
         this.branchName = devopsBranchDTO.getBranchName();
         this.sha = devopsBranchDTO.getLastCommit();
         this.commitContent = devopsBranchDTO.getLastCommitMsg();
@@ -67,6 +69,7 @@ public class BranchVO {
         this.status = status;
         this.errorMessage = errorMessage;
         this.objectVersionNumber = devopsBranchDTO.getObjectVersionNumber();
+        this.sagaInstanceId = sagaInstanceId;
     }
 
     public String getBranchName() {
@@ -219,5 +222,13 @@ public class BranchVO {
 
     public void setCommitUserRealName(String commitUserRealName) {
         this.commitUserRealName = commitUserRealName;
+    }
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
     }
 }

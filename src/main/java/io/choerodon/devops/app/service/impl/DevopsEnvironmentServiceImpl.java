@@ -47,6 +47,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -184,6 +185,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private PolarisScanningService polarisScanningService;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
     @PostConstruct
     private void init() {
@@ -410,7 +413,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (groupId == null) {
             groupId = 0L;
         }
-        return sort(ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class)).get(groupId);
+        List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
+        List<String> refIds = devopsEnvironmentRepVOS.stream().map(devopsEnvironmentRepVO -> String.valueOf(devopsEnvironmentRepVO.getId())).collect(Collectors.toList());
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(ENV.toLowerCase(), refIds, SagaTopicCodeConstants.DEVOPS_CREATE_ENV));
+        devopsEnvironmentRepVOS.forEach(devopsEnvironmentRepVO -> {
+            devopsEnvironmentRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(devopsEnvironmentRepVO.getId())));
+        });
+        return sort(devopsEnvironmentRepVOS).get(groupId);
     }
 
     private Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
