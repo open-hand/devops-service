@@ -1,17 +1,36 @@
 .c7ncd-appService {
-
   &-content {
     padding-top: 0;
   }
 
   &-table {
-
     &-name {
-      color: #000;
-
+      width: 1rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      // display: inline-block;
+      &-link {
+        color: #000;
+        &:hover {
+          color: #3f51b5;
+          text-decoration: underline;
+        }
+      }
+    }
+    &-dashBoard {
+      color: rgb(247, 103, 118);
+      font-size: 14px;
+      margin-left: 8px;
+      cursor: pointer;
+      border-radius: 50%;
+      padding: 3px;
+      text-align: center;
+      /* position: absolute; */
+      &:focus,
+      &:active,
       &:hover {
-        color: #3f51b5;
-        text-decoration: underline;
+        background: rgba(247, 103, 118, 0.12);
       }
     }
     color: rgba(0, 0, 0, 0.65);

@@ -5,10 +5,23 @@
     height: 100%;
     width: 100%;
   }
-
+  &-dashBoard {
+    color: rgb(247, 103, 118);
+    font-size: 14px;
+    margin-left: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 3px;
+    text-align: center;
+    &:focus,
+    &:active,
+    &:hover {
+      background: rgba(247, 103, 118, 0.12);
+    }
+  }
   &-main {
     flex: 1;
-    padding: .15rem .2rem;
+    padding: 0.15rem 0.2rem;
     min-width: 2rem;
     height: 100%;
     background: #fff;
@@ -16,6 +29,8 @@
   }
 
   &-animate {
-    transition: width 0.05s ease-out, height 0.05s ease-out, background 0.05s ease-out, opacity 0.05s ease-out, transform 0.05s ease-out;
+    transition: width 0.05s ease-out, height 0.05s ease-out,
+      background 0.05s ease-out, opacity 0.05s ease-out,
+      transform 0.05s ease-out;
   }
 }
