@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Set;
 import javax.validation.Valid;
 
@@ -18,6 +19,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -205,5 +207,54 @@ public class DevopsHostController {
                                                                        @RequestParam(value = "correctKey", required = false) String correctKey,
                                                                        @RequestParam(value = "search_param", required = false) String searchParam) {
         return ResponseEntity.ok(devopsHostService.pagingWithCheckingStatus(projectId, pageRequest, correctKey, searchParam));
+    }
+
+    @ApiOperation("通过主机id查询测试主机信息(带密码), 内部接口, 测试服务使用")
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @PostMapping("/list_test_hosts_by_ids")
+    public ResponseEntity<List<DevopsHostDTO>> listDistributionTestHostsByIds(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "主机id集合")
+            @Encrypt
+            @RequestBody Set<Long> hostIds) {
+        return Results.success(devopsHostService.listDistributionTestHostsByIds(projectId, hostIds));
+    }
+
+    /**
+     * 返回true表示操作成功
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id
+     * @return true表示操作成功
+     */
+    @ApiOperation("将主机设置为占用状态 / 内部接口, 测试服务使用")
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @PostMapping("/occupy_hosts")
+    public ResponseEntity<Boolean> occupyHosts(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "测试纪录id")
+            @Encrypt
+            @RequestParam("record_id") Long recordId,
+            @ApiParam(value = "主机id集合")
+            @Encrypt
+            @RequestBody Set<Long> hostIds) {
+        return Results.success(devopsHostService.occupyHosts(projectId, recordId, hostIds));
+    }
+
+    @ApiOperation("取消主机的占用状态 / 内部接口, 测试服务使用")
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @PostMapping("/un_occupy_hosts")
+    public ResponseEntity<Boolean> unOccupyHosts(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "测试纪录id")
+            @Encrypt
+            @RequestParam("record_id") Long recordId,
+            @ApiParam(value = "主机id集合")
+            @Encrypt
+            @RequestBody Set<Long> hostIds) {
+        return Results.success(devopsHostService.unOccupyHosts(projectId, recordId, hostIds));
     }
 }
