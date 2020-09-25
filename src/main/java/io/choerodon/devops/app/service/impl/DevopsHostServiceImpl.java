@@ -555,7 +555,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             checkingProgressVO.setStatus(DevopsHostStatus.SUCCESS.getValue());
         }
         double progress = (double) success / (double) size;
-        checkingProgressVO.setProgress(String.valueOf(progress * 100) + "%");
+        checkingProgressVO.setProgress(progress * 100 + "%");
 
         return checkingProgressVO;
     }
