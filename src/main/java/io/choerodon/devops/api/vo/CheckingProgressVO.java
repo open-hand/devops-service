@@ -9,7 +9,7 @@ package io.choerodon.devops.api.vo;
  */
 public class CheckingProgressVO {
     private String status;
-    private String progress;
+    private Double progress;
 
     public String getStatus() {
         return status;
@@ -19,11 +19,11 @@ public class CheckingProgressVO {
         this.status = status;
     }
 
-    public String getProgress() {
+    public Double getProgress() {
         return progress;
     }
 
-    public void setProgress(String progress) {
+    public void setProgress(Double progress) {
         this.progress = progress;
     }
 }
