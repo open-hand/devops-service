@@ -55,6 +55,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final long OPERATING_TIMEOUT = 60 * 1000;
     private static final String CHECKING_HOST = "checking";
 
+    /**
+     * 主机占用的锁的redis key, 变量是主机id
+     */
+    public static final String HOST_OCCUPY_REDIS_KEY_TEMPLATE = "devops-service:hosts:host-occupy-%s";
+
     @Autowired
     private DevopsHostMapper devopsHostMapper;
     @Lazy
@@ -69,7 +74,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -257,7 +262,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     private void updateHostStatus(String correctKey, Long hostId, String status) {
-        Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>(){}.getType());
+        Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+        }.getType());
         if (hostStatus == null) {
             hostStatus = new HashMap<>();
         }
@@ -581,6 +587,105 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         return page;
+    }
+
+    @Override
+    public List<DevopsHostDTO> listDistributionTestHostsByIds(Long projectId, Set<Long> hostIds) {
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return Collections.emptyList();
+        }
+        return devopsHostMapper.listDistributionTestHostsByIds(projectId, hostIds);
+    }
+
+    @Override
+    public boolean occupyHosts(Long projectId, Long recordId, Set<Long> hostIds) {
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return false;
+        }
+
+        // 锁key
+        String lockKey;
+        // 锁值
+        String value = recordId.toString();
+        // 加锁成功的key
+        List<String> locked = new ArrayList<>();
+        // 是否有某个加锁失败
+        boolean failedToLock = false;
+
+        try {
+            // 尝试给所有id加锁
+            for (Long hostId : hostIds) {
+                lockKey = hostOccupyKey(hostId);
+                Boolean result = redisTemplate.opsForValue().setIfAbsent(lockKey, value);
+                if (Boolean.TRUE.equals(result)) {
+                    locked.add(lockKey);
+                } else {
+                    LOGGER.debug("Failed to acquire lock for host with id {}", hostId);
+                    failedToLock = true;
+                    break;
+                }
+            }
+
+            // 如果获取锁失败, 将已经获取成功的锁释放
+            if (failedToLock) {
+                releaseLocks(locked);
+                return false;
+            }
+
+            List<DevopsHostDTO> hosts = devopsHostMapper.listDistributionTestHostsByIds(projectId, hostIds);
+            // 如果查出的主机数量不一致, 认为失败
+            if (hosts.size() != hostIds.size()) {
+                LOGGER.debug("The size doesn't equals. expect: {}, actual: {}", hostIds.size(), hosts.size());
+                releaseLocks(locked);
+                return false;
+            }
+
+            // 将所有主机更新为占用中的状态
+            devopsHostMapper.updateJmeterStatus(hostIds, DevopsHostStatus.OCCUPIED.getValue());
+        } catch (Exception ex) {
+            LOGGER.warn("Ex occurred when occupying host {}", hostIds);
+            LOGGER.warn("The ex is:", ex);
+            releaseLocks(locked);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void releaseLocks(List<String> keys) {
+        keys.forEach(key -> redisTemplate.delete(key));
+    }
+
+    @Override
+    public boolean unOccupyHosts(Long projectId, Long recordId, Set<Long> hostIds) {
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return true;
+        }
+
+        // 锁key
+        String lockKey;
+
+        try {
+            // 尝试给所有id解锁
+            for (Long hostId : hostIds) {
+                lockKey = hostOccupyKey(hostId);
+                redisTemplate.delete(lockKey);
+            }
+            LOGGER.debug("Finished to delete redis locks for hosts {}", hostIds);
+
+            // 将所有主机更新为成功中的状态
+            devopsHostMapper.updateJmeterStatus(hostIds, DevopsHostStatus.SUCCESS.getValue());
+        } catch (Exception ex) {
+            LOGGER.warn("Ex occurred when un-occupying host {}", hostIds);
+            LOGGER.warn("The ex is:", ex);
+            return false;
+        }
+
+        return true;
+    }
+
+    private String hostOccupyKey(Long hostId) {
+        return String.format(HOST_OCCUPY_REDIS_KEY_TEMPLATE, hostId);
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

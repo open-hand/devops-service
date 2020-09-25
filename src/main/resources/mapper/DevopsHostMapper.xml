@@ -142,6 +142,17 @@
 
     </select>
 
+    <select id="listDistributionTestHostsByIds" resultType="io.choerodon.devops.infra.dto.DevopsHostDTO">
+        SELECT dh.*
+        FROM devops_host dh
+        WHERE dh.id IN
+        <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
+            #{hostId}
+        </foreach>
+        AND dh.project_id = #{projectId}
+        AND dh.type = 'distribute_test'
+    </select>
+
     <update id="batchSetStatusOperating">
         UPDATE devops_host
         SET
@@ -173,6 +184,16 @@
         </if>
         WHERE project_id = #{projectId,jdbcType=BIGINT}
         AND id IN
+        <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
+            #{hostId,jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <update id="updateJmeterStatus">
+        UPDATE devops_host
+        SET
+        jmeter_status = #{status}
+        WHERE id IN
         <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
             #{hostId,jdbcType=BIGINT}
         </foreach>

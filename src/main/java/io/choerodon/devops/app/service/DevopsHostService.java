@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -164,4 +166,31 @@ public interface DevopsHostService {
     CheckingProgressVO getCheckingProgress(Long projectId, String correctKey);
 
     Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam);
+
+    /**
+     * 根据id查询测试主机
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id
+     * @return 主机信息
+     */
+    List<DevopsHostDTO> listDistributionTestHostsByIds(Long projectId, Set<Long> hostIds);
+
+    /**
+     * 将主机设置为占用状态
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id
+     * @return true表示都设置成功
+     */
+    boolean occupyHosts(Long projectId, Long recordId, Set<Long> hostIds);
+
+    /**
+     * 将主机解除占用状态
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id
+     * @return true表示都解除成功
+     */
+    boolean unOccupyHosts(Long projectId, Long recordId, Set<Long> hostIds);
 }
