@@ -585,7 +585,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             Set<Long> finalHostIds = hostIds;
             page = PageHelper.doPage(pageRequest, () -> devopsHostMapper.pagingWithCheckingStatus(projectId, finalHostIds, searchParam));
         }
-
+        // 添加用户信息
+        if (!page.isEmpty()) {
+            List<Long> userIds = page.getContent().stream().map(DevopsHostVO::getLastUpdatedBy).collect(Collectors.toList());
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+            Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+            page.getContent().forEach(devopsHostVO -> {
+                if (userDTOMap.get(devopsHostVO.getLastUpdatedBy()) != null) {
+                    devopsHostVO.setUpdaterInfo(userDTOMap.get(devopsHostVO.getLastUpdatedBy()));
+                }
+            });
+        }
         return page;
     }
 
