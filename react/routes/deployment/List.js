@@ -284,13 +284,14 @@ const Deployment = withRouter(observer((props) => {
     const errorInfo = record.get('errorInfo');
     const deployStatus = record.get('deployStatus');
     const letter = (record.get('deployType') || 'M').slice(0, 1).toUpperCase();
+    const viewId = record.get('viewId');
     return (
       <Fragment>
         <div className={`${prefixCls}-content-table-mark ${prefixCls}-content-table-mark-${record.get('deployType')}`}>
           <span>{letter}</span>
         </div>
         <ClickText
-          value={`#${value}`}
+          value={`#${viewId}`}
           clickAble={canDetail}
           onClick={openDetail}
         />
