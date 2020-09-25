@@ -1,7 +1,8 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Modal as ProModal, Table, Tooltip, Button } from 'choerodon-ui/pro';
+import { Modal as ProModal, Table, Tooltip, Button, Icon } from 'choerodon-ui/pro';
 import { Page, Permission, stores, Action } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { SagaDetails } from '@choerodon/master';
 import { observer } from 'mobx-react-lite';
 import BranchCreate from './branch-create/index';
 import BranchEdit from './branch-edit';
@@ -176,15 +177,26 @@ function Branch(props) {
     }
   }
 
+  function openSagaDetails(id) {
+    ProModal.open({
+      title: formatMessage({ id: 'global.saga-instance.detail' }),
+      key: ProModal.key(),
+      children: <SagaDetails sagaInstanceId={id} instance />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+      style: {
+        width: 'calc(100% - 3.5rem)',
+      },
+    });
+  }
+
   // 分支名称渲染函数
   function branchNameRenderer({ record, text }) {
     const status = record.get('status');
     const errorMessage = record.get('errorMessage');
-    const issueId = record.get('issueId');
-    const objectVersionNumber = record.get('objectVersionNumber');
-    const branchName = record.get('branchName');
     return (
-      <div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         {getIcon(text)}
         <StatusIcon
           status={status}
@@ -196,6 +208,13 @@ function Branch(props) {
           record={text}
           permissionCode={['choerodon.code.project.develop.code-management.ps.branch.update']}
         />
+        {record.get('sagaInstanceId') ? (
+          <Icon
+            className="c7n-branch-table-dashBoard"
+            type="developer_board"
+            onClick={() => openSagaDetails(record.get('sagaInstanceId'))}
+          />
+        ) : ''}
       </div>
     );
   }

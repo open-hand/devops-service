@@ -1,7 +1,12 @@
-import React, { Fragment, useMemo, useEffect, useState } from 'react';
+import React, {
+  Fragment, useMemo, useEffect, useState 
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Modal, Table, Spin } from 'choerodon-ui/pro';
+import {
+  Modal, Table, Spin, Icon 
+} from 'choerodon-ui/pro';
+import {SagaDetails} from '@choerodon/master';
 import checkPermission from '../../../../../utils/checkPermission';
 import StatusTag from '../../../../../components/status-tag';
 import eventStopProp from '../../../../../utils/eventStopProp';
@@ -30,6 +35,7 @@ const Group = observer(() => {
     envStore,
     treeDs,
     AppState: { currentMenuType: { id: projectId } },
+    prefixCls,
   } = useEnvironmentStore();
   const { mainStore } = useMainStore();
   const {
@@ -80,9 +86,9 @@ const Group = observer(() => {
             cancelProps: { color: 'dark' },
             onOk: handleDelete,
             footer: ((okBtn, cancelBtn) => (
-              <Fragment>
+              <>
                 {cancelBtn}{okBtn}
-              </Fragment>
+              </>
             )),
           });
         } else {
@@ -90,9 +96,9 @@ const Group = observer(() => {
             children: formatMessage({ id: `${intlPrefix}.delete.des.pipeline.confirm` }),
             okText: formatMessage({ id: 'iknow' }),
             footer: ((okBtn) => (
-              <Fragment>
+              <>
                 {okBtn}
-              </Fragment>
+              </>
             )),
           });
         }
@@ -101,9 +107,9 @@ const Group = observer(() => {
           children: formatMessage({ id: `${intlPrefix}.status.change` }),
           onOk: refresh,
           footer: ((okBtn, cancelBtn) => (
-            <Fragment>
+            <>
               {okBtn}
-            </Fragment>
+            </>
           )),
         });
       }
@@ -171,9 +177,9 @@ const Group = observer(() => {
             okCancel: true,
             onOk: () => handleEffect(envId, false),
             footer: ((okBtn, cancelBtn) => (
-              <Fragment>
+              <>
                 {okBtn}{cancelBtn}
-              </Fragment>
+              </>
             )),
           });
         } else if (!result.failed) {
@@ -181,9 +187,9 @@ const Group = observer(() => {
             children: formatMessage({ id: `${intlPrefix}.no.stop.des` }),
             okText: formatMessage({ id: 'iknow' }),
             footer: ((okBtn, cancelBtn) => (
-              <Fragment>
+              <>
                 {okBtn}
-              </Fragment>
+              </>
             )),
           });
         } else {
@@ -198,9 +204,9 @@ const Group = observer(() => {
         children: formatMessage({ id: `${intlPrefix}.status.change` }),
         onOk: refresh,
         footer: (okBtn, cancelBtn) => (
-          <Fragment>
+          <>
             {okBtn}
-          </Fragment>
+          </>
         ),
       });
     }
@@ -255,11 +261,25 @@ const Group = observer(() => {
     });
   }
 
+  function openSagaDetails(id) {
+    Modal.open({
+      title: formatMessage({ id: 'global.saga-instance.detail' }),
+      key: Modal.key(),
+      children: <SagaDetails sagaInstanceId={id} instance />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+      style: {
+        width: 'calc(100% - 3.5rem)',
+      },
+    });
+  }
+
   function renderName({ value, record }) {
     const { RUNNING, DISCONNECTED } = statusMappings;
     const status = getStatusInRecord(record);
     return (
-      <Fragment>
+      <>
         <StatusTag
           colorCode={status}
           name={formatMessage({ id: status })}
@@ -267,15 +287,24 @@ const Group = observer(() => {
         <ClickText
           value={value}
           clickAble={(status === RUNNING || status === DISCONNECTED) && canDetail}
-          onClick={openModifyModal.bind(this, record)}
+          onClick={() => openModifyModal(record)}
           record={record}
         />
-      </Fragment>
+        {record.get('sagaInstanceId') ? (
+          <Icon
+            className={`${prefixCls}-dashBoard`}
+            type="developer_board"
+            onClick={() => openSagaDetails(record.get('sagaInstanceId'))}
+          />
+        ) : ''}
+      </>
     );
   }
 
   function renderActions({ record }) {
-    const { RUNNING, DISCONNECTED, FAILED, OPERATING, STOPPED } = statusMappings;
+    const {
+      RUNNING, DISCONNECTED, FAILED, OPERATING, STOPPED,
+    } = statusMappings;
 
     const status = getStatusInRecord(record);
     const envId = record.get('id');
@@ -327,15 +356,17 @@ const Group = observer(() => {
       default:
     }
 
-    return <Action
-      placement="bottomRight"
-      data={actionData}
-      onClick={eventStopProp}
-    />;
+    return (
+      <Action
+        placement="bottomRight"
+        data={actionData}
+        onClick={eventStopProp}
+      />
+    );
   }
 
   return (
-    <Fragment>
+    <>
       <h2>{name}</h2>
       <Table
         dataSet={groupDs}
@@ -348,7 +379,7 @@ const Group = observer(() => {
         <Column name="clusterName" />
       </Table>
       <Modals />
-    </Fragment>
+    </>
   );
 });
 
