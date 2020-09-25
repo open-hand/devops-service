@@ -490,11 +490,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return Boolean.TRUE;
         }
         //测试主机，状态占用中不能删除
-        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType().trim())
-                && DevopsHostStatus.OCCUPIED.getValue().equalsIgnoreCase(devopsHostDTO.getHostStatus().trim())) {
-            return Boolean.FALSE;
+        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType().trim())) {
+            if (DevopsHostStatus.OCCUPIED.getValue().equalsIgnoreCase(devopsHostDTO.getHostStatus().trim())) {
+                return Boolean.FALSE;
+            } else {
+                return Boolean.TRUE;
+            }
         }
-
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setProjectId(projectId);
         devopsCdJobDTO.setType(JobTypeEnum.CD_HOST.value());
