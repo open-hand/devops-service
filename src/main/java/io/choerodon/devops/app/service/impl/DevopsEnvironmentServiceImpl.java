@@ -415,10 +415,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
         List<String> refIds = devopsEnvironmentRepVOS.stream().map(devopsEnvironmentRepVO -> String.valueOf(devopsEnvironmentRepVO.getId())).collect(Collectors.toList());
-        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(ENV.toLowerCase(), refIds, SagaTopicCodeConstants.DEVOPS_CREATE_ENV));
-        devopsEnvironmentRepVOS.forEach(devopsEnvironmentRepVO -> {
-            devopsEnvironmentRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(devopsEnvironmentRepVO.getId())));
-        });
+        if (!CollectionUtils.isEmpty(refIds)) {
+            Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(ENV.toLowerCase(), refIds, SagaTopicCodeConstants.DEVOPS_CREATE_ENV));
+            devopsEnvironmentRepVOS.forEach(devopsEnvironmentRepVO -> {
+                devopsEnvironmentRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(devopsEnvironmentRepVO.getId())));
+            });
+        }
         return sort(devopsEnvironmentRepVOS).get(groupId);
     }
 
