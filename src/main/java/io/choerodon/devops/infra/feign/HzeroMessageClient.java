@@ -12,7 +12,7 @@ import io.choerodon.devops.infra.feign.fallback.HzeroMessageServiceClientFallBac
  * Created by Sheep on 2019/5/15.
  */
 
-@FeignClient(value = "hzero-message", fallback = HzeroMessageServiceClientFallBack.class)
+@FeignClient(value = "choerodon-message", fallback = HzeroMessageServiceClientFallBack.class)
 public interface HzeroMessageClient {
     @GetMapping("/choerodon/v1/projects/{project_id}/message_settings/type/{notify_type}/code/{code}")
     MessageSettingVO queryByEnvIdAndEventNameAndProjectIdAndCode(

@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
@@ -13,21 +17,14 @@ import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
-import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
-
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
+import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
 
 /**
  * User: Mr.Wang
  * Date: 2020/6/11
  */
-@FeignClient(value = "hrds-prod-repo", fallback = RdupmClientFallback.class)
+@FeignClient(value = "prod-repo-service", fallback = RdupmClientFallback.class)
 public interface RdupmClient {
 
     /**

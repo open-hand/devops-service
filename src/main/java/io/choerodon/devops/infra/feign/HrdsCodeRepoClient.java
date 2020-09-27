@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
+import io.choerodon.devops.infra.feign.fallback.HrdsCodeRepoClientFallback;
 import io.choerodon.devops.infra.feign.fallback.HzeroMessageServiceClientFallBack;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -21,7 +22,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @date 2020/6/11
  * @description
  */
-@FeignClient(value = "hrds-code-repo", fallback = HzeroMessageServiceClientFallBack.class)
+@FeignClient(value = "code-repo-service", fallback = HrdsCodeRepoClientFallback.class)
 public interface HrdsCodeRepoClient {
 
     /**
