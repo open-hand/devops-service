@@ -1031,11 +1031,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
-            List<Long> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList).stream().map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+            List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
+            List<Long> permissions = devopsEnvUserPermissionDTOS.stream().map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
             projectMembers = projectMembers
                     .stream()
                     .filter(member -> permissions.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId))
                     .collect(Collectors.toList());
+            projectMembers.forEach(devopsUserPermissionVO -> {
+                if (permissions.contains(devopsUserPermissionVO.getIamUserId())) {
+                    devopsEnvUserPermissionDTOS.forEach(devopsEnvUserPermissionDTO -> {
+                        if (devopsEnvUserPermissionDTO.getIamUserId().equals(devopsUserPermissionVO.getIamUserId())) {
+                            devopsUserPermissionVO.setCreationDate(devopsEnvUserPermissionDTO.getCreationDate());
+                        }
+                    });
+                }
+            });
         }
 
         return appServiceService.combineOwnerAndMember(projectMembers, projectOwners, pageable);
