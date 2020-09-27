@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -1103,14 +1104,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     String code = "";
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceInstanceDTO.getProjectId());
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
-                    AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceInstanceDTO.getAppServiceId());
                     List<Receiver> receivers = new ArrayList<>();
                     Map<String, String> webHookParams = StringMapBuilder.newBuilder()
+                            .put("createdAt", LocalDateTime.now())
                             .put("projectName", projectDTO.getName())
                             .put("envName", devopsEnvironmentDTO.getName())
                             .put("instanceId", appServiceInstanceDTO.getId())
                             .put("instanceName", appServiceInstanceDTO.getCode())
-                            .put("envId", devopsEnvironmentDTO.getName()).build();
+                            .put("envId", devopsEnvironmentDTO.getId()).build();
                     switch (CommandType.valueOf(devopsEnvCommandDTO.getCommandType().toUpperCase())) {
                         case CREATE:
                             webHookParams.put("currentStatus", currentStatus);
@@ -1149,6 +1150,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             break;
 
                     }
+                    webHookParams.put("objectKind",code);
+                    webHookParams.put("eventName",code);
                     sendNotices(code, receivers, webHookParams, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Failed to send message WhenInstanceStatusUpdate.", ex)
