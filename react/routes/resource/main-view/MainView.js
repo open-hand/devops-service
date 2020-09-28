@@ -1,4 +1,6 @@
-import React, { useRef, lazy, Suspense, useMemo } from 'react';
+import React, {
+  useRef, lazy, Suspense, useMemo,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import Sidebar from './sidebar';
@@ -72,16 +74,20 @@ const MainView = observer(() => {
   const { getDeleteArr } = mainStore;
 
   const deleteModals = useMemo(() => (
-    map(getDeleteArr, ({ name, display, deleteId, type, refresh, envId }) => (<DeleteModal
-      key={deleteId}
-      envId={envId || parentId.split('**')[0]}
-      store={mainStore}
-      title={`${formatMessage({ id: `${type}.delete` })}“${name}”`}
-      visible={display}
-      objectId={deleteId}
-      objectType={type}
-      refresh={refresh}
-    />))
+    map(getDeleteArr, ({
+      name, display, deleteId, type, refresh, envId,
+    }) => (
+      <DeleteModal
+        key={deleteId}
+        envId={envId || parentId.split('**')[0]}
+        store={mainStore}
+        title={`${formatMessage({ id: `${type}.delete` })}“${name}”`}
+        visible={display}
+        objectId={deleteId}
+        objectType={type}
+        refresh={refresh}
+      />
+    ))
   ), [getDeleteArr]);
 
   const content = useMemo(() => {
@@ -111,30 +117,36 @@ const MainView = observer(() => {
     };
     return cmMaps[itemType]
       ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
-      : <EmptyPage
-        title="没有该类型资源"
-        describe="请稍后重试"
-      />;
+      : (
+        <EmptyPage
+          title="没有该类型资源"
+          describe="请稍后重试"
+        />
+      );
   }, [resourceStore.getViewType, resourceStore.getSelectedMenu.itemType]);
 
-  return (!treeDs.length && treeDs.status === 'ready') ? <div className={`${prefixCls}-wrap`}>
-    <Suspense fallback={<span />}>
-      <EmptyShown />
-    </Suspense>
-  </div> : <div
-    ref={rootRef}
-    className={`${prefixCls}-wrap`}
-  >
-    <DragBar
-      parentRef={rootRef}
-      store={mainStore}
-    />
-    <Sidebar />
-    <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-      {content}
+  return (!treeDs.length && treeDs.status === 'ready') ? (
+    <div className={`${prefixCls}-wrap`}>
+      <Suspense fallback={<span />}>
+        <EmptyShown />
+      </Suspense>
     </div>
-    {deleteModals}
-  </div>;
+  ) : (
+    <div
+      ref={rootRef}
+      className={`${prefixCls}-wrap`}
+    >
+      <DragBar
+        parentRef={rootRef}
+        store={mainStore}
+      />
+      <Sidebar />
+      <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+        {content}
+      </div>
+      {deleteModals}
+    </div>
+  );
 });
 
 export default MainView;
