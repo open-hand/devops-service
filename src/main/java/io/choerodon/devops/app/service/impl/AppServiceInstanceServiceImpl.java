@@ -681,7 +681,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
         devopsEnvAppServiceDTO.setAppServiceId(appServiceId);
         devopsEnvAppServiceDTO.setEnvId(envId);
-        devopsEnvAppServiceMapper.insertIgnore(devopsEnvAppServiceDTO);
+        if (devopsEnvAppServiceMapper.selectCount(devopsEnvAppServiceDTO) == 0) {
+            devopsEnvAppServiceMapper.insertSelective(devopsEnvAppServiceDTO);
+        }
     }
 
     @Override
