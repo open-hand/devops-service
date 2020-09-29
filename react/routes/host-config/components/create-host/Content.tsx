@@ -89,7 +89,7 @@ const CreateHost: React.FC<any> = observer((): any => {
 
   return (
     <div className={`${prefixCls}`}>
-      <Form dataSet={formDs}>
+      <Form dataSet={formDs} className={`${prefixCls}-form`}>
         {HAS_BASE_PRO && <SelectBox name="type" disabled={!!hostId} />}
         <TextField name="name" />
         <TextField name="hostIp" />
