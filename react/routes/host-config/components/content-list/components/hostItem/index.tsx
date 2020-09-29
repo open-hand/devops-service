@@ -150,8 +150,11 @@ const HostsItem:React.FC<any> = ({
               <span>更新于</span>
               <TimePopover
                 style={{
-                  color: 'rgba(58, 52, 95, 1)',
                   marginLeft: '4px',
+                  fontSize: '12px',
+                  fontFamily: 'PingFangSC-Regular, PingFang SC',
+                  fontWeight: 400,
+                  color: 'rgba(58, 52, 95, 0.65)',
                 }}
                 content={lastUpdateDate}
               />
@@ -163,6 +166,10 @@ const HostsItem:React.FC<any> = ({
             <Action
               data={getActionData()}
               onClick={eventStopProp}
+              style={{
+                color: '#5365EA',
+                marginRight: '4px',
+              }}
             />
           </div>
         )}
