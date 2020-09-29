@@ -108,7 +108,7 @@ const HostsItem:React.FC<any> = ({
     });
   }
 
-  const getActionData = useCallback(() => (getMainStatus !== 'operating' ? [
+  const getActionData = useCallback(() => (getMainStatus !== 'operating' || getMainStatus !== 'occupied' ? [
     {
       service: ['choerodon.code.project.deploy.host.ps.correct'],
       text: '校准状态',
