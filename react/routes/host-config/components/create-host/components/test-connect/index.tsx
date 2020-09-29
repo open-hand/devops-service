@@ -63,7 +63,7 @@ const TestConnect: React.FC<any> = observer(({ handleTestConnection }): any => {
         case 'success':
           content = [
             <Icon
-              type="check_circle"
+              type="finished"
               className={`${prefixCls}-test-text-icon`}
             />,
             <span>成功</span>,
@@ -73,7 +73,7 @@ const TestConnect: React.FC<any> = observer(({ handleTestConnection }): any => {
           content = [
             <Tooltip title={record.get('hostCheckError') || ''}>
               <Icon
-                type="cancel"
+                type="highlight_off"
                 className={`${prefixCls}-test-text-icon`}
               />
             </Tooltip>,

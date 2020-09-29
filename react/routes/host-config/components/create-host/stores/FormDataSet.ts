@@ -15,12 +15,12 @@ interface FormProps {
   HAS_BASE_PRO: boolean,
 }
 
-function setStatus(record: any) {
+function setStatus(record: any, isDefault: boolean = false) {
   if (record) {
     const hostStatus = record.get('hostStatus');
     const jmeterStatus = record.get('jmeterStatus');
     const status = record.get('status');
-    if (status && status !== 'wait') {
+    if ((status && status !== 'wait') || isDefault) {
       // eslint-disable-next-line no-nested-ternary
       const newStatus = [hostStatus, jmeterStatus].includes('failed') ? 'failed' : hostStatus === 'success' && jmeterStatus === 'success' ? 'success' : 'operating';
       record.init('status', record.get('type') === 'deploy' ? hostStatus : newStatus);
@@ -29,7 +29,7 @@ function setStatus(record: any) {
 }
 
 function handleLoad({ dataSet }: { dataSet: DataSet }) {
-  setStatus(dataSet.current);
+  setStatus(dataSet.current, true);
 }
 
 function handleUpdate({ name, record }: { name: string, record: any }) {
