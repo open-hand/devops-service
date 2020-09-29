@@ -556,6 +556,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 CiCdPipelineRecordVO lastCiCdPipelineRecordVO = ciCdPipelineVO.getCiCdPipelineRecordVOS().get(0);
                 ciCdPipelineVO.setLatestExecuteStatus(lastCiCdPipelineRecordVO.getStatus());
                 ciCdPipelineVO.setLatestExecuteDate(lastCiCdPipelineRecordVO.getCreatedDate());
+                //填充显示编号
+                CiCdPipelineUtils.fillViewId(ciCdPipelineVO.getCiCdPipelineRecordVOS());
             }
         });
         return ciCdPipelineVOS;

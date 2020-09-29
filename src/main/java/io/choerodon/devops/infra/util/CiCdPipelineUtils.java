@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.util;
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
-
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.BaseDomain;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;;
@@ -15,6 +15,7 @@ import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 
 public class CiCdPipelineUtils {
+    private static final Integer VIEWID_DIGIT = 6;
 
 
     public static <T extends BaseDomain> void recordListSort(List<T> list) {
@@ -67,6 +68,24 @@ public class CiCdPipelineUtils {
         if (Objects.isNull(devopsCiPipelineRecordVO) && !Objects.isNull(devopsCdPipelineRecordVO)) {
             ciCdPipelineRecordVO.setStatus(devopsCdPipelineRecordVO.getStatus());
         }
+    }
+
+    public static void fillViewId(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS) {
+        if (CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
+            return;
+        }
+        ciCdPipelineRecordVOS.forEach(ciCdPipelineRecordVO -> {
+            String handleId = handleId(ciCdPipelineRecordVO.getDevopsPipelineRecordRelId());
+            ciCdPipelineRecordVO.setViewId(handleId);
+        });
+    }
+
+    public static String handleId(Long id) {
+        String relId = String.valueOf(id);
+        if (relId.length() >= VIEWID_DIGIT) {
+            return StringUtils.reverse(StringUtils.substring(StringUtils.reverse(relId), 0, VIEWID_DIGIT));
+        }
+        return relId;
     }
 
 }
