@@ -161,8 +161,9 @@ const HostsItem:React.FC<any> = ({
             </div>
           </div>
         </div>
-        {getMainStatus !== 'operating' && (
-          <div className={`${prefixCls}-content-list-item-header-right`}>
+
+        <div className={`${prefixCls}-content-list-item-header-right`}>
+          {getMainStatus !== 'operating' && (
             <Action
               data={getActionData()}
               onClick={eventStopProp}
@@ -171,8 +172,9 @@ const HostsItem:React.FC<any> = ({
                 marginRight: '4px',
               }}
             />
-          </div>
-        )}
+          )}
+
+        </div>
       </div>
       <main className={`${prefixCls}-content-list-item-main`}>
         <div className={`${prefixCls}-content-list-item-main-item`}>
