@@ -13,6 +13,7 @@ import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -59,6 +60,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      * 主机占用的锁的redis key, 变量是主机id
      */
     public static final String HOST_OCCUPY_REDIS_KEY_TEMPLATE = "devops-service:hosts:host-occupy-%s";
+
+    /**
+     * 占用主机的过期时间, 超过这个时间, 主机会被释放
+     */
+    @Value("${devops.host.occupy.timeout-hours:24}")
+    private long hostOccupyTimeoutHours;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -188,6 +195,24 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!CollectionUtils.isEmpty(testHosts)) {
             devopsHostMapper.batchSetStatusTimeoutFailed(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true, current);
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
+    @Override
+    public void asyncBatchUnOccupyHosts(Long projectId, Set<Long> hostIds) {
+        LOGGER.debug("asyncBatchUnOccupyHosts: projectId: {}, hostIds: {}", projectId, hostIds);
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return;
+        }
+
+        List<DevopsHostDTO> hosts = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
+        if (CollectionUtils.isEmpty(hosts)) {
+            return;
+        }
+
+        // 释放主机
+        unOccupyHosts(projectId, hostIds);
     }
 
     @Transactional
@@ -476,10 +501,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private void checkTimeout(Long projectId, List<DevopsHostDTO> devopsHostDTOS) {
         Set<Long> ids = new HashSet<>();
+        Set<Long> occupyTimeoutHosts = new HashSet<>();
         devopsHostDTOS.forEach(host -> {
+            // 收集校验超时的主机
             if (isOperating(host.getType(), host.getHostStatus(), host.getJmeterStatus())
                     && isTimeout(host.getLastUpdateDate())) {
                 ids.add(host.getId());
+            }
+
+            // 收集占用超时的主机
+            if (DevopsHostStatus.OCCUPIED.getValue().equals(host.getJmeterStatus())
+                    && isHostOccupiedTimeout(host.getLastUpdateDate())) {
+                occupyTimeoutHosts.add(host.getId());
             }
         });
 
@@ -487,6 +520,25 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!ids.isEmpty()) {
             ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchSetTimeoutHostFailed(projectId, ids);
         }
+
+        // 异步释放被占用的主机
+        if (!occupyTimeoutHosts.isEmpty()) {
+            ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchUnOccupyHosts(projectId, ids);
+        }
+    }
+
+    /**
+     * 主机被占用的时长是否超时了
+     *
+     * @param lastUpdateDate 最后更新时间
+     * @return true表示超时
+     */
+    private boolean isHostOccupiedTimeout(Date lastUpdateDate) {
+        long current = System.currentTimeMillis();
+        long lastUpdate = lastUpdateDate.getTime();
+        long hourToMillis = 60 * 60 * 1000;
+        // 最后更新时间加上过期时间的毫秒数是否大于现在的毫秒数
+        return (lastUpdate + hostOccupyTimeoutHours * hourToMillis) > current;
     }
 
     @Override
@@ -629,6 +681,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 Boolean result = redisTemplate.opsForValue().setIfAbsent(lockKey, value);
                 if (Boolean.TRUE.equals(result)) {
                     locked.add(lockKey);
+                    // 锁持有设置超时的时间
+                    redisTemplate.opsForValue().set(lockKey, value, hostOccupyTimeoutHours, TimeUnit.HOURS);
                 } else {
                     LOGGER.debug("Failed to acquire lock for host with id {}", hostId);
                     failedToLock = true;
@@ -667,7 +721,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public boolean unOccupyHosts(Long projectId, Long recordId, Set<Long> hostIds) {
+    public boolean unOccupyHosts(Long projectId, Set<Long> hostIds) {
         if (CollectionUtils.isEmpty(hostIds)) {
             return true;
         }
