@@ -255,6 +255,6 @@ public class DevopsHostController {
             @ApiParam(value = "主机id集合")
             @Encrypt
             @RequestBody Set<Long> hostIds) {
-        return Results.success(devopsHostService.unOccupyHosts(projectId, recordId, hostIds));
+        return Results.success(devopsHostService.unOccupyHosts(projectId, hostIds));
     }
 }

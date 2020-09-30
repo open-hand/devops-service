@@ -55,6 +55,14 @@ public interface DevopsHostService {
     void asyncBatchSetTimeoutHostFailed(Long projectId, Set<Long> hostIds);
 
     /**
+     * 异步释放占用中的主机
+     *
+     * @param projectId 项目id
+     * @param hostIds   主机id
+     */
+    void asyncBatchUnOccupyHosts(Long projectId, Set<Long> hostIds);
+
+    /**
      * 校正一个主机的状态
      *
      * @param projectId 项目id
@@ -192,5 +200,5 @@ public interface DevopsHostService {
      * @param hostIds   主机id
      * @return true表示都解除成功
      */
-    boolean unOccupyHosts(Long projectId, Long recordId, Set<Long> hostIds);
+    boolean unOccupyHosts(Long projectId, Set<Long> hostIds);
 }
