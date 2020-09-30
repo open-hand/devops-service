@@ -67,8 +67,9 @@ public interface DevopsHostService {
      *
      * @param projectId 项目id
      * @param hostId    主机id
+     * @param updaterId 更新者的id
      */
-    void correctStatus(Long projectId, Long hostId);
+    void correctStatus(Long projectId, Long hostId, Long updaterId);
 
     /**
      * 校正一个主机的状态

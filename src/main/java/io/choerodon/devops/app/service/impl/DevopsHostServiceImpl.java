@@ -147,7 +147,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds) {
         LOGGER.debug("asyncBatchCorrectStatus: projectId: {}, hostIds: {}", projectId, hostIds);
         // 这么调用, 是解决事务代理不生效问题
-        hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, hostId));
+        hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, hostId, DetailsHelper.getUserDetails().getUserId()));
     }
 
     @Override
@@ -217,8 +217,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional
     @Override
-    public void correctStatus(Long projectId, Long hostId) {
+    public void correctStatus(Long projectId, Long hostId, Long updaterId) {
         boolean noContextPre = DetailsHelper.getUserDetails() == null;
+
         try {
             DevopsHostDTO hostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
             if (hostDTO == null) {
@@ -226,7 +227,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             }
 
             // 设置上下文, 以免丢失更新者信息
-            CustomContextUtil.setDefaultIfNull(hostDTO.getLastUpdatedBy());
+            CustomContextUtil.setDefaultIfNull(updaterId != null ? updaterId : hostDTO.getLastUpdatedBy());
             DevopsHostConnectionTestVO devopsHostConnectionTestVO = ConvertUtils.convertObject(hostDTO, DevopsHostConnectionTestVO.class);
 
             DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
