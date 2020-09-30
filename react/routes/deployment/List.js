@@ -280,7 +280,7 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
-  function renderNumber({ value, record }) {
+  function renderNumber({ record }) {
     const errorInfo = record.get('errorInfo');
     const deployStatus = record.get('deployStatus');
     const letter = (record.get('deployType') || 'M').slice(0, 1).toUpperCase();
@@ -290,7 +290,7 @@ const Deployment = withRouter(observer((props) => {
           <span>{letter}</span>
         </div>
         <ClickText
-          value={`#${value}`}
+          value={`#${record.get('viewId')}`}
           clickAble={canDetail}
           onClick={openDetail}
         />

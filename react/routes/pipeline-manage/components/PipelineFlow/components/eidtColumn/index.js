@@ -395,6 +395,7 @@ export default observer((props) => {
         className="c7n-piplineManage-edit-column-arrow"
       >
         <span />
+        <span />
       </div>
     </div>,
   ];

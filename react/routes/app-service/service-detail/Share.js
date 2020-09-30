@@ -45,10 +45,10 @@ const Share = withRouter((props) => {
     }
   }
 
-  function renderNumber({ value }) {
+  function renderNumber({ record }) {
     return (
       <ClickText
-        value={`#${value}`}
+        value={`#${record.get('viewId')}`}
         onClick={() => openModal('edit')}
         clickAble
         permissionCode={['choerodon.code.project.develop.app-service.ps.share.update']}
