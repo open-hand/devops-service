@@ -121,7 +121,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<DevopsMergeRequestDTO> mergeRequestDTOList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(gitlabProjectIds)) {
             mergeRequestDTOList = devopsMergeRequestMapper.listToBeAuditedByThisUserUnderProjectIds(gitlabProjectIds, DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId());
-            if (!CollectionUtils.isEmpty(mergeRequestDTOList)) {
+            if (CollectionUtils.isEmpty(mergeRequestDTOList)) {
                 return approvalVOList;
             }
         }
