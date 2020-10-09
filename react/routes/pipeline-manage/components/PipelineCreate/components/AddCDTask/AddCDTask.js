@@ -689,6 +689,14 @@ export default observer(() => {
                   style={{ width: '100%' }}
                   name="cdAuditUserIds"
                   maxTagCount={3}
+                  maxTagPlaceholder={(omittedValues) => {
+                    const tempArr = omittedValues.map((item) => ADDCDTaskDataSet.getField('cdAuditUserIds').getText(item));
+                    return (
+                      <Tooltip title={tempArr.join(',')}>
+                        {`+${omittedValues.length}`}
+                      </Tooltip>
+                    );
+                  }}
                   searchMatcher="realName"
                   onOption={({ dataSet, record }) => ({
                     disabled: record.get('id') === 'more',
