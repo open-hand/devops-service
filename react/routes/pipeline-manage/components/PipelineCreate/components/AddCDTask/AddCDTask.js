@@ -1,12 +1,13 @@
 /* eslint-disable no-template-curly-in-string */
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Form, Select, TextField, SelectBox, Password, Tooltip, Button,
+  Form, Select, TextField, SelectBox, Password, Tooltip, Button, Modal,
 } from 'choerodon-ui/pro';
 import { Icon, Spin } from 'choerodon-ui';
 import { axios } from '@choerodon/boot';
 import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
+import DeployConfig from '@/components/deploy-config';
 import JSONbig from 'json-bigint';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
@@ -298,6 +299,35 @@ export default observer(() => {
     return record.get('pipelineTask').indexOf(text) !== -1;
   }
 
+  const handleClickCreateValue = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    Modal.open({
+      key: Modal.key(),
+      drawer: true,
+      style: {
+        width: '740px',
+      },
+      children: <DeployConfig
+        envId={ADDCDTaskDataSet.current.get('envId')}
+        appServiceId={PipelineCreateFormDataSet.current.get('appServiceId')}
+        appServiceName={appServiceId}
+        refresh={({ valueId, value }) => {
+          ADDCDTaskUseStore.setValueIdRandom(Math.random());
+          ADDCDTaskDataSet.current.set('valueId', valueId);
+          // const origin = ADDCDTaskUseStore.getValueIdList;
+          setValueIdValues(value);
+        }}
+      />,
+      title: '创建部署配置',
+    });
+  };
+
+  const rendererValueId = ({ value, text, record }) => (text === '创建部署配置' ? (
+    <a style={{ width: '100%', display: 'inline-block' }} role="none" onClick={(e) => handleClickCreateValue(e)}>{text}</a>) : text);
+
+  const optionRenderValueId = ({ value, text, record }) => rendererValueId({ text });
+
   const getOtherConfig = () => {
     function getModeDom() {
       const currentDepoySource = ADDCDTaskDataSet?.current?.get('deploySource');
@@ -406,6 +436,8 @@ export default observer(() => {
               const origin = ADDCDTaskUseStore.getValueIdList;
               setValueIdValues(origin.find((i) => i.id === data).value);
             }}
+            optionRenderer={optionRenderValueId}
+            renderer={rendererValueId}
           />
           <YamlEditor
             colSpan={3}
@@ -662,9 +694,9 @@ export default observer(() => {
               name="envId"
               optionRenderer={optionRenderer}
               // renderer={renderer}
-              onOption={({ record }) => ({
-                disabled: !record.get('connected'),
-              })}
+              // onOption={({ record }) => ({
+              //   disabled: !record.get('connected'),
+              // })}
             />,
             <SelectBox className="addcdTask-mode" newLine colSpan={1} name="deployType">
               <Option value="create">新建实例</Option>
