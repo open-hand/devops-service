@@ -17,6 +17,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
@@ -44,7 +45,7 @@ public class DevopsHostController {
             @ApiParam(value = "创建主机相关参数")
             @RequestBody @Valid DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         DevopsHostVO resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()));
+        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
         return Results.success(resp);
     }
 
@@ -59,7 +60,7 @@ public class DevopsHostController {
             @ApiParam(value = "更新主机相关参数")
             @RequestBody @Valid DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
         DevopsHostVO resp = devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()));
+        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
         return Results.success(resp);
     }
 
@@ -174,7 +175,7 @@ public class DevopsHostController {
                                              @PathVariable("project_id") Long projectId,
                                              @ApiParam(value = "主机id集合", required = true)
                                              @Encrypt @RequestBody Set<Long> hostIds) {
-        devopsHostService.asyncBatchCorrectStatus(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds));
+        devopsHostService.asyncBatchCorrectStatus(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds), DetailsHelper.getUserDetails().getUserId());
         return Results.success();
     }
 

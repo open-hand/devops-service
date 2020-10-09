@@ -35,9 +35,11 @@ public interface DevopsHostService {
     /**
      * 异步批量校准主机状态
      *
-     * @param hostIds 主机id
+     * @param projectId 项目id
+     * @param hostIds   主机id
+     * @param userId    当前用户id
      */
-    void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds);
+    void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds, Long userId);
 
     /**
      * 异步批量校准主机状态
