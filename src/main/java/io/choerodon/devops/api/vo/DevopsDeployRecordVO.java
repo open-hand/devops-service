@@ -42,6 +42,16 @@ public class DevopsDeployRecordVO {
     @ApiModelProperty("手动部署的实例的应用服务id, 对于自动部署的纪录此值为空")
     private Long appServiceId;
 
+    private String viewId;
+
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
+    }
+
     public Long getId() {
         return id;
     }

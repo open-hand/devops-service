@@ -6,7 +6,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.infra.util.KeyDecryptHelper;
+import io.choerodon.devops.infra.util.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -28,9 +29,6 @@ import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -84,6 +82,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 }
                 devopsDeployRecordVO.setUserImage(targetUser.getImageUrl());
             }
+            //处理显示编号
+            devopsDeployRecordVO.setViewId(CiCdPipelineUtils.handleId(devopsDeployRecordVO.getId()));
         });
         return devopsDeployRecordVOPageInfo;
     }
