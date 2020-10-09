@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.ApprovalVO;
@@ -118,9 +119,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         Map<Integer, AppServiceDTO> gitlabProjectAndAppMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getGitlabProjectId, v -> v));
         // 查出该用户待审批的合并请求
         List<DevopsMergeRequestDTO> mergeRequestDTOList = new ArrayList<>();
-        if (gitlabProjectIds.size() != 0) {
+        if (!CollectionUtils.isEmpty(gitlabProjectIds)) {
             mergeRequestDTOList = devopsMergeRequestMapper.listToBeAuditedByThisUserUnderProjectIds(gitlabProjectIds, DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId());
-            if (mergeRequestDTOList.size() == 0) {
+            if (!CollectionUtils.isEmpty(mergeRequestDTOList)) {
                 return approvalVOList;
             }
         }
