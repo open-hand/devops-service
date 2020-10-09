@@ -145,10 +145,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
     @Override
-    public void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds) {
+    public void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds, Long userId) {
         LOGGER.debug("asyncBatchCorrectStatus: projectId: {}, hostIds: {}", projectId, hostIds);
         // 这么调用, 是解决事务代理不生效问题
-        hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, hostId, DetailsHelper.getUserDetails().getUserId()));
+        hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, hostId, userId));
     }
 
     @Override
