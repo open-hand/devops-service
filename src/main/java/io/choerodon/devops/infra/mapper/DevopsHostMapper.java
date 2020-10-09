@@ -40,7 +40,8 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
     void batchSetStatusOperating(@Param("projectId") Long projectId,
                                  @Param("hostIds") Set<Long> hostIds,
                                  @Param("isTestType") Boolean isTestType,
-                                 @Param("date") Date date);
+                                 @Param("date") Date date,
+                                 @Param("updatedBy") Long updatedBy);
 
     /**
      * 批量设置主机状态为超时失败
