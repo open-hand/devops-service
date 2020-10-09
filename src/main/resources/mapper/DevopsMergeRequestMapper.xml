@@ -77,6 +77,16 @@
         GROUP BY id, last_update_date
 
     </select>
+
+    <delete id="deleteByGitlabProjectIdAndMergeRequestIdNotInIds">
+        DELETE
+        FROM devops_merge_request
+        WHERE gitlab_project_id = #{gitlabProjectId}
+        AND gitlab_merge_request_id NOT IN
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>
 
 

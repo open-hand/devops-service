@@ -473,4 +473,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<Void> batchProjectDeleteVariable(Integer projectId, Integer userId, List<String> key) {
         throw new CommonException("error.gitlab.batch.delete.project.variable");
     }
+
+    @Override
+    public ResponseEntity<List<Long>> listIds(Integer projectId) {
+        throw new CommonException("error.gitlab.mergeRequest.ids.list");
+    }
 }

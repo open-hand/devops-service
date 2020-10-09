@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
@@ -15,7 +16,6 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.infra.feign.RdupmClient;
 
 /**

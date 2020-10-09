@@ -1,20 +1,21 @@
 package io.choerodon.devops.infra.feign;
 
-import io.choerodon.devops.api.vo.CiVariableVO;
-import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
+import java.util.List;
+import java.util.Map;
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
+import io.choerodon.devops.api.vo.CiVariableVO;
+import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
 /**
  * gitlab服务 feign客户端
@@ -419,6 +420,11 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity<MemberDTO> getProjectMember(@PathVariable("projectId") Integer projectId,
                                                @PathVariable("userId") Integer userId);
+
+    @GetMapping("/v1/projects/{projectId}/merge_requests/ids")
+    ResponseEntity<List<Long>> listIds(
+            @ApiParam(value = "gitlab项目id", required = true)
+            @PathVariable Integer projectId);
 
     @DeleteMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity deleteProjectMember(@PathVariable("projectId") Integer projectId,
