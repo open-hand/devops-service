@@ -132,11 +132,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         // 设置状态为处理中
         Date current = new Date();
+        Long updateUserId = DetailsHelper.getUserDetails().getUserId();
         if (!CollectionUtils.isEmpty(deployHosts)) {
-            devopsHostMapper.batchSetStatusOperating(projectId, deployHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), false, current);
+            devopsHostMapper.batchSetStatusOperating(projectId, deployHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), false, current, updateUserId);
         }
         if (!CollectionUtils.isEmpty(testHosts)) {
-            devopsHostMapper.batchSetStatusOperating(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true, current);
+            devopsHostMapper.batchSetStatusOperating(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true, current, updateUserId);
         }
 
         return hosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet());

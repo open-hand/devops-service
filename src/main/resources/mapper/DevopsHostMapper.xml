@@ -158,7 +158,10 @@
         SET
         last_update_date = #{date},
         host_status = 'operating',
-        host_check_error = NULL
+        host_check_error = NULL,
+        <if test="updatedBy != null">
+            last_updated_by = #{updatedBy}
+        </if>
         <if test="isTestType">
             ,
             jmeter_status = 'operating',
