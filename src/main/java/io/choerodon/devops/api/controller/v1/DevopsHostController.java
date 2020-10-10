@@ -9,8 +9,6 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -22,7 +20,9 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.util.ArrayUtil;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -82,6 +82,10 @@ public class DevopsHostController {
     public ResponseEntity<Page<DevopsHostVO>> pageByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
+            @SortDefault.SortDefaults({
+                    @SortDefault(value = "jmeter_status", direction = Sort.Direction.DESC),
+                    @SortDefault(value = "host_status", direction = Sort.Direction.DESC),
+                    @SortDefault(value = "id", direction = Sort.Direction.DESC)})
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "是否带有更新者信息", required = false)
             @RequestParam(value = "with_updater_info", required = false, defaultValue = "false")
