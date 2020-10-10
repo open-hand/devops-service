@@ -189,17 +189,9 @@ export default (
           let newRes = res;
           try {
             newRes = JSON.parse(res);
-            newRes.push({
-              name: '创建部署配置',
-              id: 'create',
-            });
             useStore.setValueIdList(newRes);
             return newRes;
           } catch (e) {
-            newRes.push({
-              name: '创建部署配置',
-              id: 'create',
-            });
             useStore.setValueIdList(newRes);
             return newRes;
           }
