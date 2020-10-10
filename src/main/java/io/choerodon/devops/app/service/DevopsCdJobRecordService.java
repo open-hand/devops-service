@@ -79,4 +79,6 @@ public interface DevopsCdJobRecordService {
     void updateNotAuditJobStatus(Long jobRecordId, String status);
 
     List<DevopsCdJobRecordDTO> queryJobWithStageRecordIdAndStatus(Long stageRecordId, String status);
+
+    DevopsCdJobRecordDTO queryByPipelineRecordIdAndJobName(Long pipelineRecordId, String deployJobName);
 }

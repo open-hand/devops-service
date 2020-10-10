@@ -226,5 +226,10 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         return devopsCdJobRecordMapper.select(devopsCdJobRecordDTO);
     }
 
+    @Override
+    public DevopsCdJobRecordDTO queryByPipelineRecordIdAndJobName(Long pipelineRecordId, String deployJobName) {
+        return devopsCdJobRecordMapper.queryByPipelineRecordIdAndJobName(pipelineRecordId, deployJobName);
+    }
+
 
 }
