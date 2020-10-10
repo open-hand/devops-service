@@ -74,4 +74,12 @@ public interface DevopsCdPipelineService {
      * @param jobRecordId
      */
     void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    /**
+     * 查询部署任务的部署结果
+     * @param pipelineRecordId
+     * @param deployJobName
+     * @return
+     */
+    String getDeployStatus(Long pipelineRecordId, String deployJobName);
 }

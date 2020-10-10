@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.kubernetes.client.models.V1Container;
+import io.kubernetes.client.models.V1Pod;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -52,6 +54,7 @@ import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.K8sUtil;
 
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
@@ -134,6 +137,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     private TestServiceClientOperator testServiceClientoperator;
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
 
     @Override
     @Transactional
@@ -968,6 +973,35 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
 
 
+    }
+
+    @Override
+    public String getDeployStatus(Long pipelineRecordId, String deployJobName) {
+        // 查询部署任务
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryByPipelineRecordIdAndJobName(pipelineRecordId, deployJobName);
+        // 查询部署配置
+        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+        // 查询实例
+        AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
+        // 查询部署版本
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
+        // 查询当前实例运行时pod metadata
+        List<String> message = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
+
+        if (CollectionUtils.isEmpty(message)) {
+            return JobStatusEnum.RUNNING.value();
+        }
+        List<String> images = new ArrayList<>();
+        for (String s : message) {
+            V1Pod podInfo = K8sUtil.deserialize(s, V1Pod.class);
+            images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
+        }
+        if (images.stream().allMatch(v -> appServiceVersionDTO.getImage().equals(v))) {
+            return JobStatusEnum.SUCCESS.value();
+        } else {
+            return JobStatusEnum.RUNNING.value();
+        }
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {

@@ -259,6 +259,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     } else if (jobRecordDTO.getType().equals(JobTypeEnum.CD_API_TEST.value())) {
                         CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(jobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
                         taskDTO.setBlockAfterJob(cdApiTestConfigVO.getBlockAfterJob());
+                        taskDTO.setDeployJobName(cdApiTestConfigVO.getDeployJobName());
                     }
                     taskDTO.setTaskType(jobRecordDTO.getType());
                     if (jobRecordDTO.getCountersigned() != null) {

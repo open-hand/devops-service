@@ -16,6 +16,7 @@ public class CdApiTestConfigVO extends DevopsCdEnvDeployInfoDTO {
     private Long apiTestTaskId;
     private String apiTestTaskName;
     private Boolean blockAfterJob;
+    private String deployJobName;
 
 
     public Long getApiTestTaskId() {
@@ -40,5 +41,13 @@ public class CdApiTestConfigVO extends DevopsCdEnvDeployInfoDTO {
 
     public void setBlockAfterJob(Boolean blockAfterJob) {
         this.blockAfterJob = blockAfterJob;
+    }
+
+    public String getDeployJobName() {
+        return deployJobName;
+    }
+
+    public void setDeployJobName(String deployJobName) {
+        this.deployJobName = deployJobName;
     }
 }

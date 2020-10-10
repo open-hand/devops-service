@@ -55,4 +55,5 @@ public interface DevopsEnvPodService {
 
     void deleteEnvPodById(Long projectId, Long envId, Long podId);
 
+    List<String> queryResourceDetailsByInstanceId(Long instanceId);
 }
