@@ -1252,7 +1252,7 @@ const AddTask = observer(() => {
       colSpan={4}
       newLine
       className={`advanced_text border-advanced ${!expandIf && 'border-advanced-after'}`}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: 'pointer', marginBottom: '-17px' }}
       onClick={() => setExpandIf(!expandIf)}
     >
       高级设置<Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
@@ -1262,6 +1262,7 @@ const AddTask = observer(() => {
         className={['chart', 'sonar'].includes(AddTaskFormDataSet.current.get('type')) && 'border-advanced-after'}
         newLine
         colSpan={4}
+        style={{ marginTop: '-19px' }}
       >
         <Select
           addonAfter={<Tips helpText="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。" />}
@@ -1277,7 +1278,7 @@ const AddTask = observer(() => {
   ];
 
   const getShareSettings = () => (expandIf && AddTaskFormDataSet.current.get('type') === 'build' ? [
-    <div className="border-advanced-after" newLine colSpan={4}>
+    <div className="border-advanced-after" newLine colSpan={4} style={{ marginTop: '-19px' }}>
       <Tips
         title={formatMessage({ id: 'c7ncd.pipelineManage.create.share.title' })}
         helpText={formatMessage({ id: 'c7ncd.pipelineManage.create.share.tips' })}

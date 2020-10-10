@@ -1,7 +1,9 @@
 import React, { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui';
-import { Modal, Form, TextField, Select, SelectBox } from 'choerodon-ui/pro';
+import {
+  Modal, Form, TextField, Select, SelectBox, Icon,
+} from 'choerodon-ui/pro';
 import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
 import AddCDTask from '../../../PipelineCreate/components/AddCDTask';
@@ -57,21 +59,24 @@ const EditItem = (props) => {
     Modal.open({
       key: Modal.key(),
       title: (
-        <Fragment>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <span className="c7n-piplineManage-edit-title-text">{`编辑${name}任务`}</span>
           {
             stageType === 'CI' && (
-              <Button
-                type="primary"
-                icon="find_in_page-o"
-                className="c7n-piplineManage-edit-title-btn"
-                onClick={openVariableModal}
+              <div
+                className="c7n-piplineManage-edit-title-text-btn"
+                onClick={() => openVariableModal()}
+                role="none"
               >
-                查看流水线变量
-              </Button>
+                <Icon
+                  type="find_in_page-o"
+                  className="c7n-piplineManage-edit-title-btn"
+                />
+                <span>查看流水线变量</span>
+              </div>
             )
           }
-        </Fragment>
+        </div>
       ),
       children: stageType === 'CI' ? <AddTask
         jobDetail={jobDetail}
