@@ -1,12 +1,12 @@
 import React, {
-  Fragment, useMemo, useEffect, useState 
+  Fragment, useMemo, useEffect, useState,
 } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action, Choerodon } from '@choerodon/boot';
 import {
-  Modal, Table, Spin, Icon 
+  Modal, Table, Spin, Icon,
 } from 'choerodon-ui/pro';
-import {SagaDetails} from '@choerodon/master';
+import { SagaDetails } from '@choerodon/master';
 import checkPermission from '../../../../../utils/checkPermission';
 import StatusTag from '../../../../../components/status-tag';
 import eventStopProp from '../../../../../utils/eventStopProp';
@@ -87,7 +87,8 @@ const Group = observer(() => {
             onOk: handleDelete,
             footer: ((okBtn, cancelBtn) => (
               <>
-                {cancelBtn}{okBtn}
+                {cancelBtn}
+                {okBtn}
               </>
             )),
           });
@@ -178,7 +179,8 @@ const Group = observer(() => {
             onOk: () => handleEffect(envId, false),
             footer: ((okBtn, cancelBtn) => (
               <>
-                {okBtn}{cancelBtn}
+                {okBtn}
+                {cancelBtn}
               </>
             )),
           });
@@ -305,55 +307,63 @@ const Group = observer(() => {
     const {
       RUNNING, DISCONNECTED, FAILED, OPERATING, STOPPED,
     } = statusMappings;
-
     const status = getStatusInRecord(record);
     const envId = record.get('id');
+    const hasSagaInstanceId = record.get('sagaInstanceId');
     if (status === OPERATING) return null;
 
     let actionData = [];
 
-    switch (status) {
-      case RUNNING:
-        actionData = [{
-          service: ['choerodon.code.project.deploy.environment.ps.modify'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
-          action: openModifyModal.bind(this, record),
-        }, {
-          service: ['choerodon.code.project.deploy.environment.ps.stop'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
-          action: () => openEffectModal(record),
-        }];
-        break;
-      case DISCONNECTED:
-        actionData = [{
-          service: ['choerodon.code.project.deploy.environment.ps.modify'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
-          action: () => openModifyModal(record),
-        }, {
-          service: ['choerodon.code.project.deploy.environment.ps.delete'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
-          action: () => openDelete(record),
-        }];
-        break;
-      case STOPPED:
-        actionData = [{
-          service: ['choerodon.code.project.deploy.environment.ps.stop'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.start` }),
-          action: () => handleEffect(envId, true),
-        }, {
-          service: ['choerodon.code.project.deploy.environment.ps.delete'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
-          action: () => openDelete(record),
-        }];
-        break;
-      case FAILED:
-        actionData = [{
-          service: ['choerodon.code.project.deploy.environment.ps.delete'],
-          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
-          action: () => openDelete(record),
-        }];
-        break;
-      default:
+    if (hasSagaInstanceId) {
+      actionData = [{
+        service: ['choerodon.code.project.deploy.environment.ps.delete'],
+        text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+        action: () => openDelete(record),
+      }];
+    } else {
+      switch (status) {
+        case RUNNING:
+          actionData = [{
+            service: ['choerodon.code.project.deploy.environment.ps.modify'],
+            text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
+            action: openModifyModal.bind(this, record),
+          }, {
+            service: ['choerodon.code.project.deploy.environment.ps.stop'],
+            text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
+            action: () => openEffectModal(record),
+          }];
+          break;
+        case DISCONNECTED:
+          actionData = [{
+            service: ['choerodon.code.project.deploy.environment.ps.modify'],
+            text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
+            action: () => openModifyModal(record),
+          }, {
+            service: ['choerodon.code.project.deploy.environment.ps.delete'],
+            text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+            action: () => openDelete(record),
+          }];
+          break;
+        case STOPPED:
+          actionData = [{
+            service: ['choerodon.code.project.deploy.environment.ps.stop'],
+            text: formatMessage({ id: `${intlPrefix}.modal.detail.start` }),
+            action: () => handleEffect(envId, true),
+          }, {
+            service: ['choerodon.code.project.deploy.environment.ps.delete'],
+            text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+            action: () => openDelete(record),
+          }];
+          break;
+        case FAILED:
+          actionData = [{
+            service: ['choerodon.code.project.deploy.environment.ps.delete'],
+            text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+            action: () => openDelete(record),
+          }];
+          break;
+        default:
+      }
     }
 
     return (
