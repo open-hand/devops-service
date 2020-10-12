@@ -208,7 +208,10 @@ public class DevopsHostController {
     @CustomPageRequest
     public ResponseEntity<Page<DevopsHostVO>> pagingWithCheckingStatus(@ApiParam(value = "项目id", required = true)
                                                                        @PathVariable("project_id") Long projectId,
-                                                                       @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+                                                                       @SortDefault.SortDefaults({
+                                                                               @SortDefault(value = "jmeter_status", direction = Sort.Direction.DESC),
+                                                                               @SortDefault(value = "host_status", direction = Sort.Direction.DESC),
+                                                                               @SortDefault(value = "id", direction = Sort.Direction.DESC)}) PageRequest pageRequest,
                                                                        @RequestParam(value = "correctKey", required = false) String correctKey,
                                                                        @RequestParam(value = "search_param", required = false) String searchParam) {
         return ResponseEntity.ok(devopsHostService.pagingWithCheckingStatus(projectId, pageRequest, correctKey, searchParam));
