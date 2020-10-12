@@ -215,7 +215,7 @@ public class SagaHandler {
         GitlabUserVO gitlabUserVO = gson.fromJson(payload, GitlabUserVO.class);
         loggerInfo(gitlabUserVO);
 
-        gitlabUserService.isEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserVO.getId()));
+        gitlabUserService.isEnabledGitlabUser(TypeUtil.objToLong(gitlabUserVO.getId()));
         return payload;
     }
 
@@ -230,7 +230,7 @@ public class SagaHandler {
         GitlabUserVO gitlabUserVO = gson.fromJson(payload, GitlabUserVO.class);
         loggerInfo(gitlabUserVO);
 
-        gitlabUserService.disEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserVO.getId()));
+        gitlabUserService.disEnabledGitlabUser(TypeUtil.objToLong(gitlabUserVO.getId()));
         return payload;
     }
 

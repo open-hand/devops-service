@@ -65,6 +65,7 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.util.StringUtil;
 
 /**
  * 〈功能简述〉
@@ -87,6 +88,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STOP = "stop";
+    private static final String COMMAND_SEPARATOR = "||";
     private static final Integer WAIT_SECONDS = 6;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
@@ -755,18 +757,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         try {
             session = ssh.startSession();
             String[] strings = value.split("\n");
-            String values = "";
+            List<String> commandToExecute = new ArrayList<>();
             for (String s : strings) {
                 if (s.length() > 0 && !s.contains("#")) {
-                    values = s;
+                    commandToExecute.add(s);
                 }
             }
-            if (StringUtils.isEmpty(values)) {
+
+            String commands = StringUtil.join(commandToExecute, COMMAND_SEPARATOR);
+
+            if (StringUtils.isEmpty(commands)) {
                 throw new CommonException("error.instruction");
             }
 
-            LOGGER.info(values);
-            final Session.Command cmd = session.exec(values);
+            LOGGER.info(commands);
+            final Session.Command cmd = session.exec(commands);
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
