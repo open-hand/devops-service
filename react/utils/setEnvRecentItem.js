@@ -20,8 +20,10 @@ function saveRecent(collection = [], value, number) {
 
 function findDataIndex(collection, value) {
   return collection ? collection.findIndex(
-    ({ id, projectId, organizationId }) => id === value.id
-      && organizationId === value.organizationId
-      && projectId === value.projectId
+    ({
+      id, projectId, organizationId, code,
+    }) => (id === value.id || code === value.code)
+      && String(organizationId) === String(value.organizationId)
+      && String(projectId) === String(value.projectId),
   ) : -1;
 }
