@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +21,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -42,6 +42,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
 
     private static final String SECRET = "Secret";
     private static final String GIT_SUFFIX = "/.git";
+    private static final String DOCKER_REGISTRY_SECRET_TYPE = "kubernetes.io/dockerconfigjson";
 
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
@@ -194,19 +195,28 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         secretReqVO.setEnvId(envId);
         //等待界面支持secret类型之后在区分开
         // 支持另外一种类型secret
-        if (c7nSecret.getType().equals("kubernetes.io/dockerconfigjson")) {
+        // 这两种其实是一样的处理方式, 都从data里面取数据(2020/10/10)
+        if (DOCKER_REGISTRY_SECRET_TYPE.equals(c7nSecret.getType())) {
             Map<String, String> map = new HashMap<>();
-            c7nSecret.getData().forEach((key, value) -> {
-                try {
-                    map.put(key, new String(value, "utf-8"));
-                    secretReqVO.setValue(map);
-                } catch (UnsupportedEncodingException e) {
-                    logger.info(e.getMessage());
-                }
-            });
+            c7nSecret.getData().forEach(map::put);
+            secretReqVO.setValue(map);
         } else {
-            secretReqVO.setValue(c7nSecret.getStringData());
+            secretReqVO.setValue(mergeSecretData(c7nSecret.getData(), c7nSecret.getStringData()));
         }
         return secretReqVO;
+    }
+
+    private Map<String, String> mergeSecretData(Map<String, String> data, Map<String, String> stringData) {
+        // k8s处理stringData和data的逻辑是将stringData的value进行base64加密后, 与data合并,
+        // 如果键相同, stringData覆盖data的值
+        Map<String, String> converted = new LinkedHashMap<>();
+        // 加密stringData的数据
+        if (stringData != null) {
+            stringData.forEach((k, v) -> converted.put(k, Base64Util.getBase64EncodedString(v)));
+        }
+        if (data != null) {
+            data.forEach(converted::putIfAbsent);
+        }
+        return converted;
     }
 }
