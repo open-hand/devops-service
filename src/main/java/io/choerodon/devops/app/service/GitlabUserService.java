@@ -20,9 +20,9 @@ public interface GitlabUserService {
 
     void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);
 
-    void isEnabledGitlabUser(Integer userId);
+    void isEnabledGitlabUser(Long userId);
 
-    void disEnabledGitlabUser(Integer userId);
+    void disEnabledGitlabUser(Long userId);
 
     Boolean doesEmailExists(String email);
 
