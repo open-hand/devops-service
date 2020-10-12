@@ -61,7 +61,9 @@ function FormContent() {
   }
 
   function targetPortOptionRenderer({ record, text, value }) {
-    return value;
+    return <Tooltip title={value}>
+      {value}
+    </Tooltip>;
   }
 
   function targetPortOptionsFilter(record) {
