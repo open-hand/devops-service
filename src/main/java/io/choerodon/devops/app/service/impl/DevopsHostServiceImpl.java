@@ -525,7 +525,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         // 异步释放被占用的主机
         if (!occupyTimeoutHosts.isEmpty()) {
-            ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchUnOccupyHosts(projectId, ids);
+            ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchUnOccupyHosts(projectId, occupyTimeoutHosts);
         }
     }
 
