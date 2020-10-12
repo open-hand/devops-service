@@ -184,6 +184,7 @@ const TreeItem = observer(({ record, search }) => {
       parentId,
       stageRecordVOS,
       devopsPipelineRecordRelId,
+      viewId,
     } = record.toData();
     if (includes(key, 'more')) {
       if (record.getState('isLoading')) {
@@ -237,7 +238,7 @@ const TreeItem = observer(({ record, search }) => {
       return (
         <div className={`${prefixCls}-sidebar-header-node`}>
           <span className={`${prefixCls}-sidebar-header-number`}>
-            <TreeItemName name={`#${devopsPipelineRecordRelId}`} search={search} headSpace={false} />
+            <TreeItemName name={`#${viewId}`} search={search} headSpace={false} />
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
             {map(stageRecordVOS, ({ status: stageStatus, triggerType: stageTriggerType = 'auto' }) => (

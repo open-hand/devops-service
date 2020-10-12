@@ -283,21 +283,24 @@ export default observer((props) => {
     Modal.open({
       key: Modal.key(),
       title: (
-        <Fragment>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <span className="c7n-piplineManage-edit-title-text">添加任务</span>
           {
             type === 'CI' && (
-              <Button
-                type="primary"
-                icon="find_in_page-o"
-                className="c7n-piplineManage-edit-title-btn"
-                onClick={openVariableModal}
+              <div
+                className="c7n-piplineManage-edit-title-text-btn"
+                onClick={() => openVariableModal()}
+                role="none"
               >
-                查看流水线变量
-              </Button>
+                <Icon
+                  type="find_in_page-o"
+                  className="c7n-piplineManage-edit-title-btn"
+                />
+                <span>查看流水线变量</span>
+              </div>
             )
           }
-        </Fragment>
+        </div>
       ),
       children: type === 'CI' ? (
         <AddTask

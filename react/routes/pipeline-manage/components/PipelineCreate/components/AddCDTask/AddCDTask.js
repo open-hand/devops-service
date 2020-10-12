@@ -692,8 +692,10 @@ export default observer(() => {
                   maxTagPlaceholder={(omittedValues) => {
                     const tempArr = omittedValues.map((item) => ADDCDTaskDataSet.getField('cdAuditUserIds').getText(item));
                     return (
-                      <Tooltip title={tempArr.join(',')}>
-                        {`+${omittedValues.length}`}
+                      <Tooltip title={tempArr.join('，')}>
+                        <span style={{ width: '0.4rem', display: 'block' }}>
+                          {`+${omittedValues.length}`}...
+                        </span>
                       </Tooltip>
                     );
                   }}

@@ -19,6 +19,7 @@ export default observer((props) => {
     stageRecordVOS: treeStageRecordVOList,
     cdRecordId,
     devopsPipelineRecordRelId,
+    viewId,
   } = props;
   const {
     intl: { formatMessage },
@@ -94,6 +95,7 @@ export default observer((props) => {
           status={status}
           mainStore={mainStore}
           projectId={projectId}
+          viewId={viewId}
         />
         <div className="c7n-piplineManage-detail">
           {renderStage()}
