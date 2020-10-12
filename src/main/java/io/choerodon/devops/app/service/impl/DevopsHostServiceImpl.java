@@ -634,7 +634,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
         Page<DevopsHostVO> page;
         if (CollectionUtils.isEmpty(hostIds)) {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostMapper.listBySearchParam(projectId, searchParam));
+            page = PageHelper.doPageAndSort(pageRequest, () -> devopsHostMapper.listBySearchParam(projectId, searchParam));
         } else {
             Set<Long> finalHostIds = hostIds;
             page = PageHelper.doPage(pageRequest, () -> devopsHostMapper.pagingWithCheckingStatus(projectId, finalHostIds, searchParam));
