@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hzero.core.util.TokenUtils;
 import org.hzero.starter.keyencrypt.core.EncryptContext;
+import org.hzero.starter.keyencrypt.core.EncryptType;
 import org.hzero.starter.keyencrypt.core.IEncryptionService;
 import org.springframework.util.CollectionUtils;
 
@@ -299,10 +300,14 @@ public final class KeyDecryptHelper {
         // websocket 的背景下, 不能判断当前用户上下文
         if (ENCRYPTION_SERVICE.isCipher(object)) {
             try {
+                // websocket没有上下文，如果要解密，那就设置上下文为要解密
+                EncryptContext.setEncryptType(EncryptType.ENCRYPT.name());
                 return ENCRYPTION_SERVICE.decrypt(object, EMPTY, EMPTY, true);
             } catch (Exception ex) {
                 // 发生异常还是返回原值
                 return object;
+            } finally {
+                EncryptContext.clear();
             }
         } else {
             return object;
