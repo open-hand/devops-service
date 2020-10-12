@@ -906,7 +906,7 @@ const AddTask = observer(() => {
   const getMissionOther = () => {
     if (AddTaskFormDataSet.current.get('type') === 'build') {
       return [
-        <div colSpan={4} className="AddTask_configStep">
+        <div colSpan={4} className="AddTask_configStep" style={{ marginTop: `${expandIf ? '-.3rem' : '0'}` }}>
           <p>配置步骤</p>
         </div>,
         <Select colSpan={2} onChange={handleChangeBuildTemple} name="gjmb">
@@ -1262,7 +1262,7 @@ const AddTask = observer(() => {
         className={['chart', 'sonar'].includes(AddTaskFormDataSet.current.get('type')) && 'border-advanced-after'}
         newLine
         colSpan={4}
-        style={{ marginTop: '-19px' }}
+        style={{ marginTop: '-19px', paddingTop: 0 }}
       >
         <Select
           addonAfter={<Tips helpText="流水线制品部署表示直接使用所选关联构建任务中产生的镜像进行部署；匹配制品部署则表示可自主选择项目镜像仓库中的镜像，并配置镜像版本的匹配规则，后续部署的镜像版本便会遵循此规则。" />}
