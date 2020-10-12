@@ -1,9 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.api.vo.SecretReqVO;
@@ -20,18 +33,6 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsSecretMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -131,6 +132,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private DevopsSecretDTO voToDto(SecretReqVO secretReqVO, boolean isFromGitOps) {
         DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
         BeanUtils.copyProperties(secretReqVO, devopsSecretDTO);
+        // 从GitOps库来的, 应该是加密的, 不需要再进行加密了
         if (isFromGitOps) {
             devopsSecretDTO.setValue(gson.toJson(secretReqVO.getValue()));
             devopsSecretDTO.setValueMap(secretReqVO.getValue());
@@ -213,7 +215,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
 
-    private V1Secret initV1Secret(DevopsSecretDTO devopsSecretDTO) {
+    private static V1Secret initV1Secret(DevopsSecretDTO devopsSecretDTO) {
         V1Secret secret = new V1Secret();
         secret.setApiVersion("v1");
         secret.setKind(SECRET);
@@ -221,7 +223,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         metadata.setName(devopsSecretDTO.getName());
         secret.setMetadata(metadata);
         secret.setType("Opaque");
-        secret.setStringData(devopsSecretDTO.getValueMap());
+        secret.setData(devopsSecretDTO.getValueMap());
         return secret;
     }
 
@@ -494,20 +496,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
         devopsSecretDTO.setEnvId(envId);
         return devopsSecretMapper.select(devopsSecretDTO);
-    }
-
-    private Map<String, String> getEncodedSecretMaps(SecretReqVO secretReqVO) {
-        Map<String, String> encodedSecretMaps = new HashMap<>();
-        if (!secretReqVO.getValue().isEmpty()) {
-            for (Map.Entry<String, String> e : secretReqVO.getValue().entrySet()) {
-                if (!e.getKey().equals(DOCKER_CONFIG_JSON)) {
-                    encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
-                } else {
-                    encodedSecretMaps.put(e.getKey(), e.getValue());
-                }
-            }
-        }
-        return encodedSecretMaps;
     }
 
     @Override
