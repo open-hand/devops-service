@@ -540,7 +540,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         long lastUpdate = lastUpdateDate.getTime();
         long hourToMillis = 60 * 60 * 1000;
         // 最后更新时间加上过期时间的毫秒数是否大于现在的毫秒数
-        return (lastUpdate + hostOccupyTimeoutHours * hourToMillis) > current;
+        return (lastUpdate + hostOccupyTimeoutHours * hourToMillis) < current;
     }
 
     @Override
