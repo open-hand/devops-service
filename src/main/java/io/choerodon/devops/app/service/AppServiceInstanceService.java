@@ -131,7 +131,7 @@ public interface AppServiceInstanceService {
      * @param projectId  项目id
      * @param instanceId 实例id
      */
-    void restartInstance(Long projectId, Long instanceId);
+    void restartInstance(Long projectId, Long instanceId, boolean isFromPipeline);
 
     /**
      * 实例删除
