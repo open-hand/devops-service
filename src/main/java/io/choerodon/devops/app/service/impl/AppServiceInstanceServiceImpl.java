@@ -1431,6 +1431,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 GitOpsConstants.BATCH_DEPLOYMENT_COMMIT_MESSAGE);
     }
 
+    @Override
+    public AppServiceVersionDTO queryVersion(Long appServiceInstanceId) {
+        return appServiceInstanceMapper.queryVersion(appServiceInstanceId);
+    }
+
     private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {
 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
