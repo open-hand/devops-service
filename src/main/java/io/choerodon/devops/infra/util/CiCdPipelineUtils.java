@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.util;
 
-
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.BaseDomain;
-import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;;
+import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.infra.enums.PipelineStatus;

@@ -6,12 +6,12 @@
   padding: 12px;
   min-height: calc(100vh - 3.9rem);
   & + & {
-    margin-left: .4rem;
+    margin-left: 0.4rem;
   }
   &-addBtn {
     position: absolute;
-    right: -.31rem;
-    top: .53rem;
+    right: -0.31rem;
+    top: 0.53rem;
     color: rgba(82, 102, 212, 1);
   }
   &-arrow {
@@ -19,28 +19,33 @@
     left: -0.4rem;
     top: 0.87rem;
     width: 0.3rem;
-    height: 1px;
-    border-bottom: 1px solid #6887e8;
-    span {
+    span:first-of-type {
+      width: 30px;
+      height: 1px;
+      display: block;
+      background: #6887e8;
+      position: absolute;
+    }
+    span:nth-of-type(2) {
       border: 6px solid transparent;
       width: 0;
       height: 0;
       display: inline-block;
       border-left: 10px solid #6887e8;
       position: relative;
-      bottom: 0.09rem;
-      left: 0.3rem;
+      bottom: 9px;
+      left: 30px;
     }
   }
   &-header {
     display: flex;
     align-items: center;
     & > span:first-child {
-      font-size: .15rem;
+      font-size: 0.15rem;
       font-family: PingFangSC-Medium, PingFang SC;
       font-weight: 500;
       color: rgba(0, 0, 0, 1);
-      line-height: .21rem;
+      line-height: 0.21rem;
     }
     &-btnGroup {
       margin-left: auto;
@@ -65,24 +70,24 @@
     }
   }
   &-lists {
-    margin-top: .14rem;
+    margin-top: 0.14rem;
   }
   &-item {
-    padding: .08rem;
+    padding: 0.08rem;
     background: rgba(255, 255, 255, 1);
     border-radius: 4px;
     &-header {
-      font-size: .13rem;
+      font-size: 0.13rem;
       font-family: PingFangSC-Regular, PingFang SC;
       font-weight: 400;
       color: rgba(58, 52, 95, 1);
-      line-height: .12rem;
+      line-height: 0.12rem;
     }
     & + & {
-      margin-top: .12rem;
+      margin-top: 0.12rem;
     }
     &-btnGroup {
-      margin-top: .14rem;
+      margin-top: 0.14rem;
       &-btn {
         background: rgba(245, 246, 250, 1);
         border-radius: 6px !important;
@@ -96,13 +101,20 @@
 }
 
 .c7n-piplineManage-edit-title {
-
   &-btn {
-    margin-left: .4rem;
+    margin-left: 0.4rem;
   }
 
   &-text {
-    vertical-align: middle;
+    &-btn {
+      font-size: 13px;
+      font-family: PingFangSC-Medium, PingFang SC;
+      font-weight: 500;
+      color: #3f51b5;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
   }
 }
 

@@ -1,6 +1,8 @@
 import React, { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { TextField, Form, Button, Icon, Select, SelectBox, Tooltip } from 'choerodon-ui/pro';
+import {
+  TextField, Form, Button, Icon, Select, SelectBox, Tooltip,
+} from 'choerodon-ui/pro';
 import { map } from 'lodash';
 import useNetWorkStore from '../stores';
 
@@ -22,8 +24,9 @@ function FormContent() {
     appInstanceOptionsDs,
   } = useNetWorkStore();
 
-  const current = formDs.current;
+  const { current } = formDs;
 
+  // eslint-disable-next-line consistent-return
   modal.handleOk(async () => {
     if (await formDs.submit() !== false) {
       refresh();
@@ -65,22 +68,23 @@ function FormContent() {
   function appInstanceOptionRenderer({ record, text, value }) {
     const status = record.get('status');
     if (status) {
-      return <Fragment>
-        <Tooltip
-          title={formatMessage({ id: status })}
-          placement="right"
-        >
-          <span className="c7ncd-network-instance-text">{text}</span>
-        </Tooltip>
-        { status !== 'running' && (
-        <Tooltip title={formatMessage({ id: 'deleted' })} placement="top">
-          <Icon type="error" className="c7ncd-instance-status-icon" />
-        </Tooltip>
-        )}
-      </Fragment>;
-    } else {
-      return text;
+      return (
+        <>
+          <Tooltip
+            title={formatMessage({ id: status })}
+            placement="right"
+          >
+            <span className="c7ncd-network-instance-text">{text}</span>
+          </Tooltip>
+          { status !== 'running' && (
+          <Tooltip title={formatMessage({ id: 'deleted' })} placement="top">
+            <Icon type="error" className="c7ncd-instance-status-icon" />
+          </Tooltip>
+          )}
+        </>
+      );
     }
+    return text;
   }
 
   function appInstanceRenderer({ value, text }) {
@@ -88,22 +92,23 @@ function FormContent() {
 
     if (instance && instance.get('status')) {
       const status = instance.get('status');
-      return <Fragment>
-        <Tooltip
-          title={formatMessage({ id: status })}
-          placement="right"
-        >
-          <span className="c7ncd-network-instance-text">{text}</span>
-        </Tooltip>
-        { status !== 'running' && (
+      return (
+        <>
+          <Tooltip
+            title={formatMessage({ id: status })}
+            placement="right"
+          >
+            <span className="c7ncd-network-instance-text">{text}</span>
+          </Tooltip>
+          { status !== 'running' && (
           <Tooltip title={formatMessage({ id: 'deleted' })} placement="top">
             <Icon type="error" className="c7ncd-instance-status-icon" />
           </Tooltip>
-        )}
-      </Fragment>;
-    } else {
-      return text;
+          )}
+        </>
+      );
     }
+    return text;
   }
 
   function clearInputOption(record) {
@@ -111,9 +116,8 @@ function FormContent() {
     return meaning && meaning.indexOf(':') >= 0;
   }
 
-
   return (
-    <Fragment>
+    <>
       <div className="c7ncd-create-network">
         <Form dataSet={formDs} columns={3}>
           <TextField name="name" colSpan={3} maxLength={30} disabled={!!networkId} />
@@ -136,31 +140,37 @@ function FormContent() {
             {
               (current && current.get('target') === 'instance')
                 ? <Select searchable name="appInstance" colSpan={3} className="app-instance-select" optionRenderer={appInstanceOptionRenderer} renderer={appInstanceRenderer} />
-                : <div className="label-form">
-                  {
-                    map(targetLabelsDs.created, (record, index) => (<Form record={record} key={`target-label-record-${index}`} columns={4}>
-                      <Select name="keyword" combo optionRenderer={labelOptionRenderer} optionsFilter={clearInputOption} />
-                      <Icon className="network-group-icon" type="drag_handle" />
-                      <Select name="value" combo optionRenderer={labelOptionRenderer} optionsFilter={clearInputOption} />
-                      {
-                        targetLabelsDs.created.length > 1 ? <Icon
-                          colSpan={1}
-                          className="delete-icon-target"
-                          type="delete"
-                          onClick={removeTargetLabelGroup.bind(this, record)}
-                        /> : <span colSpan={1} />
+                : (
+                  <div className="label-form">
+                    {
+                    map(targetLabelsDs.created, (record, index) => (
+                      <Form record={record} key={`target-label-record-${index}`} columns={4}>
+                        <Select name="keyword" combo optionRenderer={labelOptionRenderer} optionsFilter={clearInputOption} />
+                        <Icon className="network-group-icon" type="drag_handle" />
+                        <Select name="value" combo optionRenderer={labelOptionRenderer} optionsFilter={clearInputOption} />
+                        {
+                        targetLabelsDs.created.length > 1 ? (
+                          <Icon
+                            colSpan={1}
+                            className="delete-icon-target"
+                            type="delete"
+                            onClick={() => removeTargetLabelGroup(record)}
+                          />
+                        ) : <span colSpan={1} />
                       }
-                    </Form>))
+                      </Form>
+                    ))
                   }
-                  <Button
-                    color="primary"
-                    funcType="flat"
-                    onClick={createTargetLabelGroup}
-                    icon="add"
-                  >
-                    {formatMessage({ id: 'network.config.addtarget' })}
-                  </Button>
-                </div>
+                    <Button
+                      color="primary"
+                      funcType="flat"
+                      onClick={createTargetLabelGroup}
+                      icon="add"
+                    >
+                      {formatMessage({ id: 'network.config.addtarget' })}
+                    </Button>
+                  </div>
+                )
             }
           </div>
         </Form>
@@ -182,33 +192,39 @@ function FormContent() {
 
         <div className="group-port">
           {
-            map(portDs.created, (record, index) => (<Form record={record} key={`port-record-${index}`} columns={5}>
-              
-              {
+            map(portDs.created, (record, index) => (
+              <Form record={record} key={`port-record-${index}`} columns={5}>
+
+                {
                 current.get('type') !== 'ClusterIP'
                   && <TextField name="nodePort" maxLength={5} />
               }
-              <TextField name="port" maxLength={5} />
-              <Select name="targetPort" combo optionRenderer={targetPortOptionRenderer} clearButton={false} optionsFilter={targetPortOptionsFilter} />
-              {
+                <TextField name="port" maxLength={5} />
+                <Select name="targetPort" combo optionRenderer={targetPortOptionRenderer} clearButton={false} optionsFilter={targetPortOptionsFilter} />
+                {
                 current.get('type') === 'NodePort'
-                && <Select name="protocol" clearButton={false}>
+                && (
+                <Select name="protocol" clearButton={false}>
                   {map(['TCP', 'UDP'], (item) => (
                     <Option value={item} key={item}>
                       {item}
                     </Option>
                   ))}
                 </Select>
+                )
               }
-              {
-                portDs.created.length > 1 ? <Icon
-                  colSpan={3}
-                  className="delete-icon"
-                  type="delete"
-                  onClick={removePortGroup.bind(this, record)}
-                /> : <span colSpan={3} />
+                {
+                portDs.created.length > 1 ? (
+                  <Icon
+                    colSpan={3}
+                    className="delete-icon"
+                    type="delete"
+                    onClick={() => removePortGroup(record)}
+                  />
+                ) : <span colSpan={3} />
               }
-            </Form>))
+              </Form>
+            ))
           }
           <Button
             color="primary"
@@ -220,7 +236,7 @@ function FormContent() {
           </Button>
         </div>
       </div>
-    </Fragment>
+    </>
   );
 }
 

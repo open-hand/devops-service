@@ -1,6 +1,11 @@
+/* eslint-disable */
 import React, { Fragment, useEffect, useState } from 'react';
-import { Modal as ProModal, Table, Tooltip, Button, Icon } from 'choerodon-ui/pro';
-import { Page, Permission, stores, Action } from '@choerodon/boot';
+import {
+  Modal as ProModal, Table, Tooltip, Button, Icon,
+} from 'choerodon-ui/pro';
+import {
+  Page, Permission, stores, Action,
+} from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { SagaDetails } from '@choerodon/master';
 import { observer } from 'mobx-react-lite';
@@ -67,28 +72,29 @@ function Branch(props) {
   const getSelfToolBar = () => (
     !(appServiceId)
       ? null
-      : <Permission
-        service={['choerodon.code.project.develop.code-management.ps.branch.create',
-        ]}
-      >
-        <Button
-          onClick={openCreateBranchModal}
-          icon="playlist_add"
-          disabled={!(appServiceId && renderEmpty())}
+      : (
+        <Permission
+          service={['choerodon.code.project.develop.code-management.ps.branch.create',
+          ]}
         >
-          <FormattedMessage id="branch.create" />
-        </Button>
-      </Permission>);
+          <Button
+            onClick={openCreateBranchModal}
+            icon="playlist_add"
+            disabled={!(appServiceId && renderEmpty())}
+          >
+            <FormattedMessage id="branch.create" />
+          </Button>
+        </Permission>
+      ));
 
   function renderEmpty() {
     const appServiceData = appServiceDs.toData();
     if (!appServiceData) {
       return false;
-    } else {
-      const appArr = appServiceDs.current && appServiceData;
-      const select = appArr.filter((item) => item?.id === appServiceId);
-      return !select[0]?.emptyRepository;
     }
+    const appArr = appServiceDs.current && appServiceData;
+    const select = appArr.filter((item) => item?.id === appServiceId);
+    return !select[0]?.emptyRepository;
   }
   // 打开创建分支模态框
   async function openCreateBranchModal() {
@@ -272,11 +278,15 @@ function Branch(props) {
             style={{ display: 'inline-block', color: 'rgba(0, 0, 0, 0.65)' }}
           />
         </div>
-        {record.get('commitUserUrl') && record.get('commitUserName') ? <Tooltip title={`${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}`}>
-          <div className="branch-user-img" style={{ backgroundImage: `url(${record.get('commitUserUrl')})` }} />
-        </Tooltip> : <Tooltip title={record.get('commitUserName') ? `${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}` : ''}>
-          <div className="branch-user-img">{record.get('commitUserName') && record.get('commitUserName').slice(0, 1)}</div>
-        </Tooltip>}
+        {record.get('commitUserUrl') && record.get('commitUserName') ? (
+          <Tooltip title={`${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}`}>
+            <div className="branch-user-img" style={{ backgroundImage: `url(${record.get('commitUserUrl')})` }} />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.get('commitUserName') ? `${record.get('commitUserName')}${record.get('commitUserRealName') ? ` (${record.get('commitUserRealName')})` : ''}` : ''}>
+            <div className="branch-user-img">{record.get('commitUserName') && record.get('commitUserName').slice(0, 1)}</div>
+          </Tooltip>
+        )}
         <MouserOverWrapper text={text} width={0.2} className="branch-col-icon">
           {text}
         </MouserOverWrapper>
@@ -294,9 +304,13 @@ function Branch(props) {
     return (
       <div>
         {record.get('typeCode') ? getOptionContent(record) : null}
-        <a onClick={() => openIssueDetail(record.get('issueId'), record.get('branchName'))} role="none"><Tooltip
-          title={text}
-        >{record.get('issueCode')}</Tooltip></a>
+        <a onClick={() => openIssueDetail(record.get('issueId'), record.get('branchName'))} role="none">
+          <Tooltip
+            title={text}
+          >
+            {record.get('issueCode')}
+          </Tooltip>
+        </a>
       </div>
     );
   }
@@ -335,9 +349,11 @@ function Branch(props) {
         icon = 'agile_task';
         color = '#4d90fe';
     }
-    return (<Tooltip title={mes}>
-      <div style={{ color }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
-    </Tooltip>);
+    return (
+      <Tooltip title={mes}>
+        <div style={{ color }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
+      </Tooltip>
+    );
   };
 
   function openIssueDetail(id, name) {

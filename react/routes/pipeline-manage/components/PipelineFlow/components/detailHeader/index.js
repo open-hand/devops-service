@@ -37,6 +37,7 @@ const detailHeader = ({
         -
         <Icon type="branch" />
         <span
+          role="none"
           onClick={linkToGitlab}
           className="c7ncd-pipelineManage-optsDetail-header-ref"
         >

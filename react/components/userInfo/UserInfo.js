@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import './UserInfo.less';
@@ -24,8 +25,10 @@ class UserInfo extends PureComponent {
   };
 
   render() {
-    const { avatar, name, id, showName, showTooltip, size, className } = this.props;
-    
+    const {
+      avatar, name, id, showName, showTooltip, size, className,
+    } = this.props;
+
     const ava = avatar
 
       ? <img src={avatar} alt="avatar" className={`c7ncd-userinfo-avatar c7ncd-userinfo-avatar-${size}`} />
@@ -33,14 +36,20 @@ class UserInfo extends PureComponent {
 
     return (
       <div className={`c7ncd-userinfo-wrap ${className || ''}`}>
-        {name && (<Fragment>
-          {showTooltip ? <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
-            {ava}
-          </Tooltip> : ava}
-          {showName ? <div className="c7ncd-userinfo-name">
-            {name}
-          </div> : null}
-        </Fragment>)}
+        {name && (
+        <>
+          {showTooltip ? (
+            <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
+              {ava}
+            </Tooltip>
+          ) : ava}
+          {showName ? (
+            <div className="c7ncd-userinfo-name">
+              {name}
+            </div>
+          ) : null}
+        </>
+        )}
       </div>
     );
   }

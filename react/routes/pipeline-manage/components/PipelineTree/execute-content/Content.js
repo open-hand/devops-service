@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Form, Progress, Select, Icon, TextField } from 'choerodon-ui/pro';
+import {
+  Form, Progress, Select, Icon, TextField,
+} from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { map, some, debounce } from 'lodash';
 import { axios, Choerodon } from '@choerodon/boot';
@@ -38,6 +40,7 @@ export default observer(() => {
     getHasMoreTag,
   } = store;
 
+  // eslint-disable-next-line consistent-return
   modal.handleOk(async () => {
     try {
       if (await selectDs.submit() !== false) {
@@ -57,14 +60,18 @@ export default observer(() => {
 
     if (type === 'branch') {
       setMoreBranchLoading(true);
-      await store.loadBranchData({ projectId, appServiceId, page: branchPage + 1, searchValue });
+      await store.loadBranchData({
+        projectId, appServiceId, page: branchPage + 1, searchValue,
+      });
       setMoreBranchLoading(false);
-      setBranchPage(pre => pre + 1);
+      setBranchPage((pre) => pre + 1);
     } else {
       setMoreTagLoading(true);
-      await store.loadTagData({ projectId, appServiceId, page: tagPage + 1, searchValue });
+      await store.loadTagData({
+        projectId, appServiceId, page: tagPage + 1, searchValue,
+      });
       setMoreTagLoading(false);
-      setTagPage(pre => pre + 1);
+      setTagPage((pre) => pre + 1);
     }
   }
 
@@ -75,7 +82,11 @@ export default observer(() => {
       selectCom.options.changeStatus('loading');
     }
     try {
-      const [branchData, tagData] = await axios.all([store.loadBranchData({ projectId, appServiceId, page: 1, searchValue: text }), store.loadTagData({ projectId, appServiceId, page: 1, searchValue: text })]);
+      const [branchData, tagData] = await axios.all([store.loadBranchData({
+        projectId, appServiceId, page: 1, searchValue: text,
+      }), store.loadTagData({
+        projectId, appServiceId, page: 1, searchValue: text,
+      })]);
       const value = selectDs.current.get('branch');
       if (selectCom && selectCom.options) {
         selectCom.options.changeStatus('ready');
@@ -109,6 +120,7 @@ export default observer(() => {
   }, 700), [projectId, appServiceId, selectCom]);
 
   function renderBranchOptionOrigin(args) {
+    // eslint-disable-next-line no-shadow
     const { record, text } = args;
     // meaning是默认的textfiled 此处用于判断 是否是加载更多的按钮
     if (!record.get('meaning')) {
@@ -121,12 +133,14 @@ export default observer(() => {
       }
       return (
         <div
+          role="none"
           onClick={loadMore.bind(this, record.get('value'))}
           className={`${prefixCls}-popover`}
         >
           {progress}
           <span className={`${prefixCls}-popover-option-more`}>{formatMessage({ id: 'loadMore' })}</span>
-        </div>);
+        </div>
+      );
     }
 
     return renderOption(record.get('value'));
@@ -143,13 +157,15 @@ export default observer(() => {
 
   function renderOption(text) {
     if (!text) return null;
-    return (<span>
-      <Icon
-        type={text.slice(-7) === '_type_t' ? 'local_offer' : 'branch'}
-        className={`${prefixCls}-popover-option-icon`}
-      />
-      {text && text.slice(0, -7)}
-    </span>);
+    return (
+      <span>
+        <Icon
+          type={text.slice(-7) === '_type_t' ? 'local_offer' : 'branch'}
+          className={`${prefixCls}-popover-option-icon`}
+        />
+        {text && text.slice(0, -7)}
+      </span>
+    );
   }
 
   function searchMatcher() {
@@ -171,7 +187,7 @@ export default observer(() => {
 
   function changeRef(obj) {
     if (obj) {
-      const fields = obj.fields;
+      const { fields } = obj;
       if (fields instanceof Array && fields.length) {
         const select = fields[0];
         if (select && !selectCom) {
@@ -218,9 +234,11 @@ export default observer(() => {
           key="more"
         >
           {map(getTagData, ({ release }) => (release
-            ? <Option value={`${release.tagName}_type_t`} key={release.tagName}>
-              {release.tagName}
-            </Option> : null))}
+            ? (
+              <Option value={`${release.tagName}_type_t`} key={release.tagName}>
+                {release.tagName}
+              </Option>
+            ) : null))}
           {getHasMoreTag ? (
             <Option value="tag" />) : null }
         </OptGroup>

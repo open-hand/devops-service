@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/boot';
+import {
+  TabPage, Content, Permission, Breadcrumb, Action,
+} from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { withRouter } from 'react-router-dom';
@@ -40,15 +42,14 @@ const Share = withRouter((props) => {
   function renderProjectName({ value, record }) {
     if (value && record.get('projectId')) {
       return <span>{value}</span>;
-    } else {
-      return <FormattedMessage id={`${intlPrefix}.project.all`} />;
     }
+    return <FormattedMessage id={`${intlPrefix}.project.all`} />;
   }
 
-  function renderNumber({ value, record }) {
+  function renderNumber({ record }) {
     return (
       <ClickText
-        value={`#${value}`}
+        value={`#${record.get('viewId')}`}
         onClick={() => openModal('edit')}
         clickAble
         permissionCode={['choerodon.code.project.develop.app-service.ps.share.update']}
@@ -144,6 +145,7 @@ const Share = withRouter((props) => {
     return record.status !== 'add';
   }
 
+  // eslint-disable-next-line consistent-return
   function getTitle() {
     if (detailDs.current) {
       return detailDs.current.get('name');

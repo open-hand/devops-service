@@ -1050,7 +1050,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, true));
         List<DevopsUserPermissionVO> projectMembers = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue()),
                 iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, false));
-
         if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);

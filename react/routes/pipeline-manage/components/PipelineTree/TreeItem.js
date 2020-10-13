@@ -1,8 +1,11 @@
+/* eslint-disable */
 import React, { Fragment, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Action, Choerodon } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
-import { Icon, Modal, Spin, Tooltip } from 'choerodon-ui/pro';
+import {
+  Icon, Modal, Spin, Tooltip,
+} from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import forEach from 'lodash/forEach';
 import includes from 'lodash/includes';
@@ -244,60 +247,61 @@ const TreeItem = observer(({ record, search }) => {
           </span>
           <div className={`${prefixCls}-sidebar-header-stage`}>
             {map(stageRecordVOS, ({ status: stageStatus, triggerType: stageTriggerType = 'auto' }) => (
-              <Fragment>
+              <>
                 <span className={`${prefixCls}-sidebar-header-stage-line ${prefixCls}-sidebar-header-stage-line-${stageTriggerType}`} />
                 <span className={`${prefixCls}-sidebar-header-stage-item ${prefixCls}-sidebar-header-stage-item-${stageStatus}`} />
-              </Fragment>
+              </>
             ))}
           </div>
           <TimePopover content={createdDate} style={timePopoverStyle} />
           {actionData ? <Action data={actionData} onClick={eventStopProp} /> : <span style={{ width: 24 }} />}
         </div>
       );
-    } else {
-      const actionData = [
-        {
-          service: ['choerodon.code.project.develop.ci-pipeline.ps.execute'],
-          text: formatMessage({ id: `${intlPrefix}.execute` }),
-          action: handleExecute,
-        },
-        {
-          service: [`choerodon.code.project.develop.ci-pipeline.ps.${enabled ? 'disable' : 'enable'}`],
-          text: formatMessage({ id: enabled ? 'stop' : 'active' }),
-          action: handleChangeActive,
-        },
-        {
-          service: ['choerodon.code.project.develop.ci-pipeline.ps.delete'],
-          text: formatMessage({ id: 'delete' }),
-          action: handleDelete,
-        },
-      ];
-      return (
-        <div className={`${prefixCls}-sidebar-header-parent`}>
-          <div className={`${prefixCls}-sidebar-header`}>
-            <PipelineType name={name} type={triggerType} />
-            <Tooltip title={`${name}(${appServiceName})`} placement="top">
-              <span className={`${prefixCls}-sidebar-header-name`}>
-                <TreeItemName name={name} search={search} headSpace={false} />
-                <span className={`${prefixCls}-sidebar-header-service`}>
-                  (<TreeItemName name={appServiceName} search={search} headSpace={false} />)
-                </span>
+    }
+    const actionData = [
+      {
+        service: ['choerodon.code.project.develop.ci-pipeline.ps.execute'],
+        text: formatMessage({ id: `${intlPrefix}.execute` }),
+        action: handleExecute,
+      },
+      {
+        service: [`choerodon.code.project.develop.ci-pipeline.ps.${enabled ? 'disable' : 'enable'}`],
+        text: formatMessage({ id: enabled ? 'stop' : 'active' }),
+        action: handleChangeActive,
+      },
+      {
+        service: ['choerodon.code.project.develop.ci-pipeline.ps.delete'],
+        text: formatMessage({ id: 'delete' }),
+        action: handleDelete,
+      },
+    ];
+    return (
+      <div className={`${prefixCls}-sidebar-header-parent`}>
+        <div className={`${prefixCls}-sidebar-header`}>
+          <PipelineType name={name} type={triggerType} />
+          <Tooltip title={`${name}(${appServiceName})`} placement="top">
+            <span className={`${prefixCls}-sidebar-header-name`}>
+              <TreeItemName name={name} search={search} headSpace={false} />
+              <span className={`${prefixCls}-sidebar-header-service`}>
+                (
+                <TreeItemName name={appServiceName} search={search} headSpace={false} />
+                )
               </span>
-            </Tooltip>
-            <div style={{ flexShrink: '0' }}>
-              <Action data={enabled ? actionData : actionData.slice(1, 3)} onClick={eventStopProp} />
-            </div>
-          </div>
-          <div className={`${prefixCls}-sidebar-header`}>
-            <span className={`${prefixCls}-sidebar-header-active ${prefixCls}-sidebar-header-active-${enabled}`}>
-              {formatMessage({ id: enabled ? 'active' : 'stop' })}
             </span>
-            <StatusTag status={status} size={12} className={`${prefixCls}-sidebar-header-status`} />
-            <TimePopover content={latestExecuteDate} style={{ ...timePopoverStyle, marginRight: '0.24rem' }} />
+          </Tooltip>
+          <div style={{ flexShrink: '0' }}>
+            <Action data={enabled ? actionData : actionData.slice(1, 3)} onClick={eventStopProp} />
           </div>
         </div>
-      );
-    }
+        <div className={`${prefixCls}-sidebar-header`}>
+          <span className={`${prefixCls}-sidebar-header-active ${prefixCls}-sidebar-header-active-${enabled}`}>
+            {formatMessage({ id: enabled ? 'active' : 'stop' })}
+          </span>
+          <StatusTag status={status} size={12} className={`${prefixCls}-sidebar-header-status`} />
+          <TimePopover content={latestExecuteDate} style={{ ...timePopoverStyle, marginRight: '0.24rem' }} />
+        </div>
+      </div>
+    );
   }
 
   return getItem();

@@ -57,10 +57,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
     private String pipelineName;
     private Long gitlabProjectId;
-
-    /**
-     * 界面显示编号，取雪花id
-     */
     private String viewId;
 
     public String getViewId() {

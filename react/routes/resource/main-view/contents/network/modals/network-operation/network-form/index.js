@@ -28,6 +28,7 @@ function FormContent() {
 
   const { current } = formDs;
 
+  // eslint-disable-next-line consistent-return
   modal.handleOk(async () => {
     if (await formDs.submit() !== false) {
       refresh();

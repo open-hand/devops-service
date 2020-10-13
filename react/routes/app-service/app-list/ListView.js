@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useEffect, useState, Fragment } from 'react';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';

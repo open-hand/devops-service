@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.feign.fallback.HrdsCodeRepoClientFallback;
  * @date 2020/6/11
  * @description
  */
-@FeignClient(value = "hrds-code-repo", fallback = HrdsCodeRepoClientFallback.class)
+@FeignClient(value = "code-repo-service", fallback = HrdsCodeRepoClientFallback.class)
 public interface HrdsCodeRepoClient {
 
     /**

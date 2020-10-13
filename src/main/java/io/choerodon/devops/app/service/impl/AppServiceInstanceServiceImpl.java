@@ -1084,8 +1084,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public AppServiceInstanceDTO baseQueryByCodeAndEnv(String code, Long envId) {
-        Assert.notNull(code, "error.code.is.null");
-        Assert.notNull(envId, "error.envId.is.null");
+        // todo
+//        Assert.notNull(code, "error.code.is.null");
+//        Assert.notNull(envId, "error.envId.is.null");
 
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setCode(code);

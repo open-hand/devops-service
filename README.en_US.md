@@ -33,12 +33,12 @@ DevOps Service integrated several open source tools to automate the process of `
 
 ## Dependencies
 
-* `hzero-register`: Register server, in place of `eureka-server`
-* `hzero-iam`：Iam service
-* `hzero-gateway`: Gateway service
-* `hzero-oauth`: Oauth service
-* `hzero-asgard` : Transaction consistency service
-* `hzero-message` : Notify service
+* `choerodon-register`: Register server, in place of `eureka-server`
+* `choerodon-iam`：Iam service
+* `choerodon-gateway`: Gateway service
+* `choerodon-oauth`: Oauth service
+* `choerodon-asgard` : Transaction consistency service
+* `choerodon-message` : Notify service
 * `gitlab-service`：Service to communicate with gitlab
 * `workflow-service`：Workflow service
 * `agile-service`：Agile service
@@ -180,7 +180,7 @@ DevOps Service integrated several open source tools to automate the process of `
    git clone https://github.com/choerodon/devops-service.git
    ```
 
-3. Execute command in the project root directory: `sh init-database.sh`
+3. Execute command in the project root directory: `mvn clean package spring-boot:repackage -Dmaven.test.skip=true && bash init-database.sh`
 
 4. Run with the following commands or run `DevopsServiceApplication` directly in the integrated environment:
 

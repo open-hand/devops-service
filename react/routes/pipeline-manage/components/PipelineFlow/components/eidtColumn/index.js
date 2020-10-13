@@ -2,7 +2,7 @@ import React, { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui';
 import {
-  Modal, Form, TextField, Select, SelectBox,
+  Modal, Form, TextField, Select, SelectBox, Icon,
 } from 'choerodon-ui/pro';
 import { usePipelineStageEditStore } from '../stageEditBlock/stores';
 import AddTask from '../../../PipelineCreate/components/AddTask';
@@ -62,47 +62,24 @@ const EditItem = (props) => {
     Modal.open({
       key: Modal.key(),
       title: (
-        <>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <span className="c7n-piplineManage-edit-title-text">{`编辑${name}任务`}</span>
           {
             stageType === 'CI' && (
-              <Button
-                type="primary"
-                icon="find_in_page-o"
-                className="c7n-piplineManage-edit-title-btn"
-                onClick={openVariableModal}
+              <div
+                className="c7n-piplineManage-edit-title-text-btn"
+                onClick={() => openVariableModal()}
+                role="none"
               >
-                查看流水线变量
-              </Button>
+                <Icon
+                  type="find_in_page-o"
+                  className="c7n-piplineManage-edit-title-btn"
+                />
+                <span>查看流水线变量</span>
+              </div>
             )
           }
-        </>
-      ),
-      children: stageType === 'CI' ? (
-        <AddTask
-          jobDetail={jobDetail}
-          appServiceId={!edit && appServiceName}
-          appServiceName={!edit && appServiceName}
-          handleOk={handleEditOk}
-          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-          AppServiceOptionsDs={edit && AppServiceOptionsDs}
-          image={image}
-          witchColumnJobIndex={witchColumnJobIndex + 1}
-          columnIndex={sequence}
-        />
-      ) : (
-        <AddCDTask
-          random={Math.random()}
-          jobDetail={jobDetail}
-          pipelineStageMainSource={getStepData2}
-          appServiceId={appServiceName}
-          appServiceName={appServiceName}
-          appServiceCode={appServiceCode}
-          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-          handleOk={handleEditOk}
-          witchColumnJobIndex={witchColumnJobIndex + 1}
-          columnIndex={sequence}
-        />
+        </div>
       ),
       style: {
         width: '740px',
@@ -306,21 +283,24 @@ export default observer((props) => {
     Modal.open({
       key: Modal.key(),
       title: (
-        <>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <span className="c7n-piplineManage-edit-title-text">添加任务</span>
           {
             type === 'CI' && (
-              <Button
-                type="primary"
-                icon="find_in_page-o"
-                className="c7n-piplineManage-edit-title-btn"
-                onClick={openVariableModal}
+              <div
+                className="c7n-piplineManage-edit-title-text-btn"
+                onClick={() => openVariableModal()}
+                role="none"
               >
-                查看流水线变量
-              </Button>
+                <Icon
+                  type="find_in_page-o"
+                  className="c7n-piplineManage-edit-title-btn"
+                />
+                <span>查看流水线变量</span>
+              </div>
             )
           }
-        </>
+        </div>
       ),
       children: type === 'CI' ? (
         <AddTask
@@ -434,6 +414,7 @@ export default observer((props) => {
       <div
         className="c7n-piplineManage-edit-column-arrow"
       >
+        <span />
         <span />
       </div>
     </div>,
