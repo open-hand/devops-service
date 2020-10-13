@@ -31,4 +31,12 @@ public class MessageCodeConstants {
     public static final String PIPELINE_STOP = "PIPELINESTOP";
     public static final String PIPELINE_PASS = "PIPELINEPASS";
     public static final String PIPELINE_STAGE_AUDIT = "PIPELINESTAGEAUDIT";
+    public static final String CREATE_INSTANCE_SUCCESS = "CREATEINSTANCESUCCESS";
+    public static final String CREATE_INSTANCE_FAIL = "CREATEINSTANCEFAIL";
+    public static final String UPDATE_INSTANCE_SUCCESS = "UPDATEINSTANCESUCCESS";
+    public static final String UPDATE_INSTANCE_FAIL = "UPDATEINSTANCEFAIL";
+    public static final String ENABLE_INSTANCE = "ENABLEINSTANCE";
+    public static final String STOP_INSTANCE = "STOPINSTANCE";
+
+
 }

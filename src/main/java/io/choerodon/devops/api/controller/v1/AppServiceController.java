@@ -1,5 +1,17 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.*;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -13,17 +25,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.*;
 
 /**
  * Created by younger on 2018/4/4.
@@ -441,55 +442,6 @@ public class AppServiceController {
 //    }
 
     /**
-     * 项目下分页查询代码仓库
-     *
-     * @param projectId 项目id
-     * @param pageable  分页参数
-     * @param params    参数
-     * @return Page
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下分页查询代码仓库")
-    @CustomPageRequest
-    @PostMapping("/page_code_repository")
-    public ResponseEntity<Page<AppServiceRepVO>> pageCodeRepository(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC)
-            @ApiIgnore PageRequest pageable,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.pageCodeRepository(projectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
-    }
-
-    /**
-     * 获取服务下所有用户权限
-     *
-     * @param appServiceId 服务id
-     * @return List
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "获取服务下所有用户权限")
-    @GetMapping(value = "/{appServiceId}/list_all")
-    public ResponseEntity<List<AppServiceUserPermissionRespVO>> listAllUserPermission(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "服务id", required = true)
-            @PathVariable Long appServiceId) {
-        return Optional.ofNullable(applicationServiceService.listAllUserPermission(appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.user.permission.get"));
-    }
-
-
-    /**
      * 校验harbor配置信息是否正确
      *
      * @param url      harbor地址
@@ -641,59 +593,6 @@ public class AppServiceController {
                 applicationServiceService.pagePermissionUsers(projectId, appServiceId, pageable, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.app.service.user.permission.get"));
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询没有服务应用服务权限的成员")
-    @PostMapping(value = "/{app_service_id}/list_non_permission_users")
-    public ResponseEntity<Page<DevopsUserPermissionVO>> listNonPermissionUsers(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "服务服务Id")
-            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
-            @Encrypt
-            @ApiParam(value = "指定的用户Id")
-            @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.listMembers(projectId, appServiceId, selectedIamUserId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.share.app.service.no.user.permission.get"));
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "应用服务权限更新")
-    @PostMapping(value = "/{app_service_id}/update_permission")
-    public ResponseEntity<Void> updatePermission(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "服务服务Id")
-            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
-            @ApiParam(value = "权限信息", required = true)
-            @RequestBody AppServicePermissionVO appServicePermissionVO) {
-        applicationServiceService.updatePermission(projectId, appServiceId, appServicePermissionVO);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "应用服务权限删除")
-    @DeleteMapping(value = "/{app_service_id}/delete_permission")
-    public ResponseEntity<Void> deletePermission(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "服务服务Id")
-            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
-            @Encrypt
-            @ApiParam(value = "user Id", required = true)
-            @RequestParam(value = "user_id") Long userId) {
-        applicationServiceService.deletePermission(projectId, appServiceId, userId);
-        return ResponseEntity.noContent().build();
     }
 
 

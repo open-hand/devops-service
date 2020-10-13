@@ -2,7 +2,7 @@ import { useLocalStore } from 'mobx-react-lite';
 import { axios, Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../utils';
 
-export default function useStore() {
+export default function useStore(mainStore) {
   return useLocalStore(() => ({
     detailData: {},
     loadDetail(projectId, gitlabPipelineId) {
@@ -13,7 +13,10 @@ export default function useStore() {
       this.setDetailLoading(true);
       this.loadDetail(projectId, gitlabPipelineId).then((res) => {
         if (handlePromptError(res)) {
-          this.setDetailData(res);
+          const { devopsPipelineRecordRelId } = mainStore.getSelectedMenu;
+          if (String(devopsPipelineRecordRelId) === String(gitlabPipelineId)) {
+            this.setDetailData(res);
+          }
           this.setDetailLoading(false);
         }
       }).catch((e) => {
@@ -40,7 +43,7 @@ export default function useStore() {
       return axios.get(`/devops/v1/projects/${projectId}/ci_jobs/gitlab_projects/${gitlabProjectId}/gitlab_jobs/${jobId}/retry`);
     },
     retryCdJob(projectId, pipelineRecordId) {
-      return axios.get(`devops/v1/projects/${projectId}/cicd_pipelines_record/retry_cd_task?cd_pipeline_record_id=${pipelineRecordId}`)
+      return axios.get(`devops/v1/projects/${projectId}/cicd_pipelines_record/retry_cd_task?cd_pipeline_record_id=${pipelineRecordId}`);
     },
   }));
 }

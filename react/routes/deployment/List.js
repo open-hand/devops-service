@@ -1,6 +1,10 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Table, Modal, Select, Form, Icon } from 'choerodon-ui/pro';
+import {
+  Page, Content, Header, Permission, Action, Breadcrumb, Choerodon,
+} from '@choerodon/boot';
+import {
+  Table, Modal, Select, Form, Icon,
+} from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -182,6 +186,7 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
+  // eslint-disable-next-line consistent-return
   async function handleOperating(operatingType) {
     try {
       let result = null;
@@ -284,13 +289,14 @@ const Deployment = withRouter(observer((props) => {
     const errorInfo = record.get('errorInfo');
     const deployStatus = record.get('deployStatus');
     const letter = (record.get('deployType') || 'M').slice(0, 1).toUpperCase();
+    const viewId = record.get('viewId');
     return (
-      <Fragment>
+      <>
         <div className={`${prefixCls}-content-table-mark ${prefixCls}-content-table-mark-${record.get('deployType')}`}>
           <span>{letter}</span>
         </div>
         <ClickText
-          value={`#${record.get('viewId')}`}
+          value={`#${viewId}`}
           clickAble={canDetail}
           onClick={openDetail}
         />
@@ -299,7 +305,7 @@ const Deployment = withRouter(observer((props) => {
             <Icon type="error" className={`${prefixCls}-content-icon-failed`} />
           </Tooltip>
         )}
-      </Fragment>
+      </>
     );
   }
 
@@ -313,6 +319,7 @@ const Deployment = withRouter(observer((props) => {
     }
     const newValue = value === 'running' || value === 'operating' ? 'executing' : value;
     const message = newValue === 'stop' ? 'terminated' : newValue;
+    // eslint-disable-next-line consistent-return
     return (
       <StatusTag
         colorCode={newValue || ''}
@@ -449,36 +456,44 @@ const Deployment = withRouter(observer((props) => {
             name="deployId"
             renderer={renderNumber}
             align="left"
-            header={<Tips
-              helpText={formatMessage({ id: `${intlPrefix}.id.tips` })}
-              title={formatMessage({ id: `${intlPrefix}.number` })}
-            />}
+            header={(
+              <Tips
+                helpText={formatMessage({ id: `${intlPrefix}.id.tips` })}
+                title={formatMessage({ id: `${intlPrefix}.number` })}
+              />
+)}
           />
           <Column renderer={renderActions} width="0.7rem" />
           <Column
             name="deployType"
             renderer={renderDeployType}
-            header={<Tips
-              helpText={formatMessage({ id: `${intlPrefix}.type.tips` })}
-              title={formatMessage({ id: `${intlPrefix}.type` })}
-            />}
+            header={(
+              <Tips
+                helpText={formatMessage({ id: `${intlPrefix}.type.tips` })}
+                title={formatMessage({ id: `${intlPrefix}.type` })}
+              />
+)}
           />
           <Column name="deployStatus" renderer={renderDeployStatus} />
           <Column
             name="pipelineName"
             renderer={renderPipelineName}
-            header={<Tips
-              helpText={formatMessage({ id: `${intlPrefix}.pipeline.tips` })}
-              title={formatMessage({ id: `${intlPrefix}.pipeline.name` })}
-            />}
+            header={(
+              <Tips
+                helpText={formatMessage({ id: `${intlPrefix}.pipeline.tips` })}
+                title={formatMessage({ id: `${intlPrefix}.pipeline.name` })}
+              />
+)}
           />
           <Column
             name="pipelineTriggerType"
             renderer={renderTriggerType}
-            header={<Tips
-              helpText={formatMessage({ id: `${intlPrefix}.trigger.tips` })}
-              title={formatMessage({ id: `${intlPrefix}.pipeline.type` })}
-            />}
+            header={(
+              <Tips
+                helpText={formatMessage({ id: `${intlPrefix}.trigger.tips` })}
+                title={formatMessage({ id: `${intlPrefix}.pipeline.type` })}
+              />
+)}
           />
           <Column name="userName" renderer={renderExecutor} />
           <Column name="deployTime" renderer={renderTime} />

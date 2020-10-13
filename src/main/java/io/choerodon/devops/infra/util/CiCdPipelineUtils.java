@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.util;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,7 +42,6 @@ public class CiCdPipelineUtils {
             }
         });
     }
-
 
 
     public static void calculateStatus(CiCdPipelineRecordVO ciCdPipelineRecordVO, DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
@@ -87,5 +90,8 @@ public class CiCdPipelineUtils {
         }
         return relId;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 }

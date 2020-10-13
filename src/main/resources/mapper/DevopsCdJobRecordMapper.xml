@@ -77,4 +77,12 @@
             #{id}
         </foreach>
     </select>
+    <select id="queryByPipelineRecordIdAndJobName"
+            resultType="io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO">
+        SELECT dcjr.*
+        FROM devops_cd_pipeline_record dcpr
+                 INNER JOIN devops_cd_stage_record dcsr ON dcsr.pipeline_record_id = dcpr.id
+                 INNER JOIN devops_cd_job_record dcjr ON dcjr.stage_record_id = dcsr.id
+        WHERE dcpr.id = #{pipelineRecordId} AND dcjr.`name` = #{deployJobName}
+    </select>
 </mapper>

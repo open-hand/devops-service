@@ -1,9 +1,25 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -31,29 +47,13 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/4/9.
@@ -185,6 +185,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private PolarisScanningService polarisScanningService;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
     @PostConstruct
     private void init() {
@@ -411,7 +413,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (groupId == null) {
             groupId = 0L;
         }
-        return sort(ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class)).get(groupId);
+        List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
+        List<String> refIds = devopsEnvironmentRepVOS.stream().map(devopsEnvironmentRepVO -> String.valueOf(devopsEnvironmentRepVO.getId())).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(refIds)) {
+            Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(ENV.toLowerCase(), refIds, SagaTopicCodeConstants.DEVOPS_CREATE_ENV));
+            devopsEnvironmentRepVOS.forEach(devopsEnvironmentRepVO -> {
+                devopsEnvironmentRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(devopsEnvironmentRepVO.getId())));
+            });
+        }
+        return sort(devopsEnvironmentRepVOS).get(groupId);
     }
 
     private Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
@@ -701,7 +711,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public void retryGitOps(Long projectId, Long envId) {
         // TODO 参考{@link io.choerodon.devops.app.service.impl.DevopsClusterResourceServiceImpl.retrySystemEnvGitOps}改写
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
@@ -736,7 +746,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return false;
         }
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
@@ -882,6 +892,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvironmentDTO.setHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
         }
         if (!gitlabServiceClientOperator.getFile(gitlabProjectDO.getId(), MASTER, README)) {
+            LOGGER.info("Add readme for env with id {}", devopsEnvironmentDTO.getId());
             gitlabServiceClientOperator.createFile(gitlabProjectDO.getId(),
                     README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
         }

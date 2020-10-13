@@ -22,6 +22,7 @@ const jobTask = {
   cdDeploy: '部署',
   cdHost: '主机部署',
   cdAudit: '人工卡点',
+  cdApiTest: 'API测试',
 };
 const modalStyle = {
   width: 380,
@@ -39,6 +40,8 @@ const EditItem = (props) => {
     image,
     openVariableModal,
     stageType,
+    appServiceCode,
+    witchColumnJobIndex,
   } = props;
 
   const { name, type } = jobDetail;
@@ -78,23 +81,6 @@ const EditItem = (props) => {
           }
         </div>
       ),
-      children: stageType === 'CI' ? <AddTask
-        jobDetail={jobDetail}
-        appServiceId={!edit && appServiceName}
-        appServiceName={!edit && appServiceName}
-        handleOk={handleEditOk}
-        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-        AppServiceOptionsDs={edit && AppServiceOptionsDs}
-        image={image}
-      /> : (<AddCDTask
-        random={Math.random()}
-        jobDetail={jobDetail}
-        pipelineStageMainSource={getStepData2}
-        appServiceId={!edit && appServiceName}
-        appServiceName={!edit && appServiceName}
-        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-        handleOk={handleEditOk}
-      />),
       style: {
         width: '740px',
       },
@@ -116,7 +102,10 @@ const EditItem = (props) => {
   return (
     <div className="c7n-piplineManage-edit-column-item">
       <div className="c7n-piplineManage-edit-column-item-header">
-        【{jobTask[type]}】{name}
+        【
+        {jobTask[type]}
+        】
+        {name}
       </div>
       <div className="c7n-piplineManage-edit-column-item-btnGroup">
         <Button
@@ -154,7 +143,11 @@ export default observer((props) => {
     appServiceCode,
     appServiceType,
     nextStageType,
+    stagesSource,
   } = props;
+
+  const witchColumnJobIndex = stagesSource && stagesSource[columnIndex]?.jobList.length;
+
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -184,7 +177,7 @@ export default observer((props) => {
   async function createNewStage(firstIf) {
     const res = await addStepDs.validate();
     if (res) {
-      const a = addStepDs.toData()[0];
+      // const a = addStepDs.toData()[0];
       addNewStep(firstIf ? -1 : columnIndex, addStepDs.toData()[0], edit);
       addStepDs.reset();
       return true;
@@ -192,6 +185,7 @@ export default observer((props) => {
     return false;
   }
 
+  // eslint-disable-next-line consistent-return
   async function editStage() {
     if (addStepDs.current && addStepDs.current.validate()) {
       eidtStep(sequence, addStepDs.current.get('step'), addStepDs.current.get('type'), true);
@@ -202,24 +196,30 @@ export default observer((props) => {
   }
 
   const renderStepTasks = () => (
-    jobList && jobList.length > 0 ? <div className="c7n-piplineManage-edit-column-lists">
-      {
-        jobList.slice().map((item, index) => <EditItem
-          index={index}
-          sequence={sequence}
-          key={Math.random()}
-          edit={edit}
-          appServiceId={appServiceId}
-          appServiceName={appServiceName}
-          AppServiceOptionsDs={edit && AppServiceOptionsDs}
-          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-          jobDetail={item}
-          image={image}
-          openVariableModal={openVariableModal}
-          stageType={type || 'CI'}
-        />)
+    jobList && jobList.length > 0 ? (
+      <div className="c7n-piplineManage-edit-column-lists">
+        {
+        jobList.slice().map((item, index) => (
+          <EditItem
+            index={index}
+            witchColumnJobIndex={witchColumnJobIndex}
+            sequence={sequence}
+            key={Math.random()}
+            edit={edit}
+            appServiceId={appServiceId}
+            appServiceName={appServiceName}
+            appServiceCode={appServiceCode}
+            AppServiceOptionsDs={edit && AppServiceOptionsDs}
+            PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+            jobDetail={item}
+            image={image}
+            openVariableModal={openVariableModal}
+            stageType={type || 'CI'}
+          />
+        ))
       }
-    </div> : null
+      </div>
+    ) : null
   );
   const openAddStageModal = ({ optType, curType, firstIf = false }) => {
     const title = optType === 'create' ? '添加阶段' : '修改阶段信息';
@@ -310,16 +310,22 @@ export default observer((props) => {
           appServiceId={appServiceName}
           appServiceName={appServiceName}
           image={image}
+          columnIndex={sequence}
+          witchColumnJobIndex={witchColumnJobIndex + 1}
         />
-      ) : (<AddCDTask
-        random={Math.random()}
-        appServiceId={appServiceName}
-        appServiceName={appServiceName}
-        appServiceCode={appServiceCode}
-        pipelineStageMainSource={getStepData2}
-        PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
-        handleOk={hanleStepCreateOk}
-      />),
+      ) : (
+        <AddCDTask
+          random={Math.random()}
+          appServiceId={appServiceName}
+          appServiceName={appServiceName}
+          appServiceCode={appServiceCode}
+          pipelineStageMainSource={getStepData2}
+          PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
+          handleOk={hanleStepCreateOk}
+          columnIndex={sequence}
+          witchColumnJobIndex={witchColumnJobIndex + 1}
+        />
+      ),
       style: {
         width: '740px',
       },
@@ -365,14 +371,16 @@ export default observer((props) => {
             }
             className="c7n-piplineManage-edit-column-header-btnGroup-btn"
           />
-          {stageLength > 1 && <Button
+          {stageLength > 1 && (
+          <Button
             funcType="raised"
             shape="circle"
             size="small"
             onClick={deleteStep}
             icon="delete_forever"
             className="c7n-piplineManage-edit-column-header-btnGroup-btn c7n-piplineManage-edit-column-header-btnGroup-btn-delete"
-          />}
+          />
+          )}
         </div>
       </div>
       <div className="c7n-piplineManage-edit-column-stageType">
@@ -380,7 +388,9 @@ export default observer((props) => {
         {/* Todo 加上串并行逻辑后优化判断 */}
         <span
           className={`c7n-piplineManage-stage-type-task c7n-piplineManage-stage-type-task-${parallel || realType === 'CI' ? 'parallel' : 'serial'}`}
-        >{parallel || realType === 'CI' ? '任务并行' : '任务串行'}</span>
+        >
+          {parallel || realType === 'CI' ? '任务并行' : '任务串行'}
+        </span>
       </div>
       {renderStepTasks()}
       <Button
@@ -390,7 +400,9 @@ export default observer((props) => {
         onClick={openNewTaskModal}
         style={{ marginTop: '10px' }}
         disabled={PipelineCreateFormDataSet && !PipelineCreateFormDataSet.current.get('appServiceId')}
-      >添加任务</Button>
+      >
+        添加任务
+      </Button>
       <Button
         funcType="raised"
         icon="add"

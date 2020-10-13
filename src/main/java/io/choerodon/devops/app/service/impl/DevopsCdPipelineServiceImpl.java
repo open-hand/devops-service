@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.kubernetes.client.models.V1Container;
+import io.kubernetes.client.models.V1Pod;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -33,6 +35,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.PipelineConstants;
@@ -40,15 +43,18 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.K8sUtil;
 
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
@@ -129,6 +135,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private TestServiceClientOperator testServiceClientoperator;
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
 
     @Override
     @Transactional
@@ -446,7 +456,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         }
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
 
-                        appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId());
+                        appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId(), true);
 
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
                         return;
@@ -490,7 +500,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     });
         } catch (Exception e) {
             LOGGER.error("error.create.pipeline.auto.deploy.instance", e);
-            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
+            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
@@ -525,10 +535,29 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public String getDeployStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
-        if (jobRecordDTO != null) {
+
+        if (jobRecordDTO == null) {
+            return PipelineStatus.FAILED.toValue();
+        }
+        // api测试任务状态需要去test-manager查询
+        if (JobTypeEnum.CD_API_TEST.value().equals(jobRecordDTO.getType())) {
+            ApiTestTaskRecordVO apiTestTaskRecordVO = null;
+            try {
+                apiTestTaskRecordVO = testServiceClientoperator.queryById(jobRecordDTO.getProjectId(), jobRecordDTO.getApiTestTaskRecordId());
+            } catch (Exception e) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", jobRecordDTO.getProjectId(), jobRecordDTO.getApiTestTaskRecordId());
+            }
+
+            String status = apiTestTaskRecordVO == null ? PipelineStatus.FAILED.toValue() : apiTestTaskRecordVO.getStatus();
+
+            if (apiTestTaskRecordVO != null
+                    && PipelineStatus.SUCCESS.toValue().equals(apiTestTaskRecordVO.getStatus())) {
+                devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
+            }
+            return status;
+        } else {
             return jobRecordDTO.getStatus();
         }
-        return PipelineStatus.FAILED.toValue();
     }
 
     private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
@@ -607,7 +636,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             } else {
                 // 已经是最后一个阶段了
                 devopsCdPipelineRecordService.updateStatusById(devopsCdPipelineRecordDTO.getId(), PipelineStatus.SUCCESS.toValue());
-                sendNotificationService.sendCdPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, null);
+                sendNotificationService.sendCdPipelineNotice(devopsCdPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCdPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
             }
         }
     }
@@ -915,6 +944,63 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline {} : {} success>>>>>>>>>>>>>>>>>>>>>>>>>>>>", devopsCdPipelineRecordDTO.getId(), devopsCdPipelineRecordDTO.getPipelineName());
             }
 
+        }
+    }
+
+    @Override
+    @Transactional
+    public void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>  Execute api test task. pipelineRecordId : {}, stageRecordId : {} ,jobRecordId : {} <<<<<<<<<<<<<<<<<<<<", pipelineRecordId, stageRecordId, jobRecordId);
+        if (!JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordDTO.getType())) {
+            throw new CommonException("error.invalid.job.type");
+        }
+        CdApiTestConfigVO cdApiTestConfigVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+        ApiTestTaskRecordDTO taskRecordDTO;
+
+        // 更新记录状态为执行中
+        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
+        try {
+            taskRecordDTO = testServiceClientoperator.executeTask(devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+
+            DevopsCdJobRecordDTO devopsCdJobRecordDTO1 = devopsCdJobRecordService.queryById(jobRecordId);
+            devopsCdJobRecordDTO1.setApiTestTaskRecordId(taskRecordDTO.getId());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO1);
+        } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+            // 更新记录状态为失败
+            devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
+        }
+
+
+    }
+
+    @Override
+    public String getDeployStatus(Long pipelineRecordId, String deployJobName) {
+        // 查询部署任务
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryByPipelineRecordIdAndJobName(pipelineRecordId, deployJobName);
+        // 查询部署配置
+        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+        // 查询实例
+        AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
+        // 查询部署版本
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
+        // 查询当前实例运行时pod metadata
+        List<String> message = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
+
+        if (CollectionUtils.isEmpty(message)) {
+            return JobStatusEnum.RUNNING.value();
+        }
+        List<String> images = new ArrayList<>();
+        for (String s : message) {
+            V1Pod podInfo = K8sUtil.deserialize(s, V1Pod.class);
+            images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
+        }
+        if (images.stream().allMatch(v -> appServiceVersionDTO.getImage().equals(v))) {
+            return JobStatusEnum.SUCCESS.value();
+        } else {
+            return JobStatusEnum.RUNNING.value();
         }
     }
 

@@ -1,11 +1,11 @@
 import { axios } from '@choerodon/boot';
 import React, {
-  useEffect, useState, Fragment, useRef,
+  useEffect, useState,
 } from 'react';
 import {
-  Form, TextField, Select, SelectBox, Modal, Button, DataSet,
+  Form, TextField, Select, SelectBox,
 } from 'choerodon-ui/pro';
-import { message, Icon } from 'choerodon-ui';
+import { message, Icon, Tooltip } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import { usePipelineCreateStore } from './stores';
 import Tips from '../../../../components/new-tips';
@@ -36,13 +36,15 @@ const PipelineCreate = observer(() => {
   useEffect(() => {
     if (dataSource) {
       const {
-        name, appServiceId, image, stageList,
+        name, appServiceId, image, versionName,
       } = dataSource;
       PipelineCreateFormDataSet.loadData([{
         name,
         appServiceId,
         image,
         selectImage: '1',
+        versionName,
+        bbcl: !!versionName,
       }]);
       // editBlockStore.setStepData(stageList, true);
     }
@@ -67,6 +69,9 @@ const PipelineCreate = observer(() => {
         devopsCiStageVOS: editBlockStore.getStepData2.filter((s) => s.type === 'CI'),
         devopsCdStageVOS: editBlockStore.getStepData2.filter((s) => s.type === 'CD'),
       };
+      if (!data.bbcl) {
+        delete data.versionName;
+      }
       if (data.devopsCiStageVOS.some((s) => s.jobList.length === 0)
         || data.devopsCdStageVOS.some((s) => s.jobList.length === 0)
       ) {
@@ -74,20 +79,22 @@ const PipelineCreate = observer(() => {
         return false;
       }
       if (dataSource) {
-        await axios.put(`/devops/v1/projects/${projectId}/cicd_pipelines/${dataSource.id}`, data);
-        editBlockStore.loadData(projectId, dataSource.id);
-        refreshTree();
-        return true;
-      } else {
-        return createUseStore.axiosCreatePipeline(data, id).then((res) => {
-          if (res.failed) {
-            message.error(res.message);
-            return false;
-          }
-          res.id && mainStore.setSelectedMenu({ key: String(res.id) });
+        try {
+          await axios.put(`/devops/v1/projects/${projectId}/cicd_pipelines/${dataSource.id}`, data);
+          editBlockStore.loadData(projectId, dataSource.id);
           refreshTree();
           return true;
-        });
+        } catch (e) {
+          return false;
+        }
+      }
+      try {
+        const res = await createUseStore.axiosCreatePipeline(data, id);
+        res.id && mainStore.setSelectedMenu({ key: String(res.id) });
+        refreshTree();
+        return true;
+      } catch (e) {
+        return false;
       }
     }
     return false;
@@ -129,10 +136,13 @@ const PipelineCreate = observer(() => {
   };
 
   const optionRenderer = ({ text }) => (text === '加载更多' ? (
-    <a 
+    <a
+      role="none"
       style={{ width: '100%', height: '100%', display: 'block' }}
       onClick={handleClickMore}
-    >{text}</a>
+    >
+      {text}
+    </a>
   ) : text);
 
   function getAppServiceData() {
@@ -158,6 +168,7 @@ const PipelineCreate = observer(() => {
         />
         <TextField style={{ display: 'none' }} />
         <div
+          role="none"
           className="advanced_text"
           style={{ cursor: 'pointer' }}
           onClick={() => setExpandIf(!expandIf)}
@@ -166,7 +177,7 @@ const PipelineCreate = observer(() => {
           <Icon style={{ fontSize: 18 }} type={expandIf ? 'expand_less' : 'expand_more'} />
         </div>
         {
-          expandIf ? (
+          expandIf ? [
             <Select
               combo
               newLine
@@ -180,8 +191,63 @@ const PipelineCreate = observer(() => {
               >
                 {createUseStore.getDefaultImage}
               </Option>
-            </Select>
-          ) : ''
+            </Select>,
+            <div newLine colSpan={2} style={{ position: 'relative', top: '15px' }}>
+              <SelectBox
+                name="bbcl"
+              >
+                <Option value={false}>平台默认</Option>
+                <Option value>自定义</Option>
+              </SelectBox>
+              <Tooltip title={(
+                <div>
+                  <p style={{ margin: 0 }}>此处版本策略指的是流水线中生成的应用服务版本的名称策略;</p>
+                  <p style={{ margin: 0 }}>选择为平台默认后，便会默认使用“时间戳+分支名”的命名规则;</p>
+                  <p style={{ margin: 0 }}>若选择为自定义，则支持用户输入一个固定或动态的参数作为版本命名规则</p>
+                </div>
+              )}
+              >
+                <Icon
+                  type="help"
+                  className="c7ncd-select-tips-icon"
+                  style={{
+                    position: 'absolute',
+                    top: '-18px',
+                    left: '55px',
+                  }}
+                />
+              </Tooltip>
+            </div>,
+            PipelineCreateFormDataSet.current.get('bbcl') ? (
+              <TextField
+                newLine
+                colSpan={2}
+                addonAfter={(
+                  <Tips helpText={[
+                    <p style={{ margin: 0 }}>
+                      自定义命名规则支持输入固定参数例如：0.1.0，那么之后流水线生成的版本名称，将永远为固定的0.1.0。
+                    </p>,
+                    <p style={{ margin: 0 }}>
+                      {`同时，支持使用动态参数及各种变量，例如：\${CI_PIPELINE_ID}-\${C7N_BRANCH} ，则表示命名规则为：gitlab流水线id+分支名。
+更多支持的变量，请参考 `}
+                      <a style={{ color: 'cornflowerblue' }} target="_blank" href="https://docs.gitlab.com/ee/ci/variables/predefined_variables.html">GitLab变量</a>
+                    </p>,
+                  ]}
+                  />
+)}
+                name="versionName"
+              />
+            ) : (
+              <TextField
+                newLine
+                colSpan={2}
+                addonAfter={(
+                  <Tips helpText="平台默认的版本命名规则为：${C7N_COMMIT_TIME}-${C7N_BRANCH}，即表示该流水线中生成的版本名称为”时间戳+分支名" />
+                           )}
+                name="versionNameRules"
+              />
+            ),
+          ] : ''
         }
       </Form>
       <StageEditBlock

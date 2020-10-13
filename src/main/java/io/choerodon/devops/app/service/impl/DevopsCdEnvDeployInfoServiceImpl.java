@@ -41,8 +41,13 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
         Assert.notNull(devopsCdEnvDeployInfoDTO.getAppServiceId(), ERROR_APP_SVC_ID_IS_NULL);
         Assert.notNull(devopsCdEnvDeployInfoDTO.getEnvId(), ERROR_ENV_ID_IS_NULL);
         Assert.notNull(devopsCdEnvDeployInfoDTO.getValueId(), ERROR_VALUE_ID_IS_NULL);
+<<<<<<< HEAD
         // todo
 //        Assert.notNull(devopsCdEnvDeployInfoDTO.getInstanceName(), ERROR_INSTANCE_NAME_IS_NULL);
+=======
+        Assert.notNull(devopsCdEnvDeployInfoDTO.getInstanceName(), ERROR_INSTANCE_NAME_IS_NULL);
+
+>>>>>>> origin/master
         if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
             if (devopsCdEnvDeployInfoDTO.getInstanceName() == null || devopsCdEnvDeployInfoDTO.getInstanceId() != null) {
                 throw new CommonException(ERROR_PARAM_IS_INVALID);

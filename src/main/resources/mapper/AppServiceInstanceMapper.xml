@@ -634,4 +634,26 @@
             #{appServiceIds}
         </foreach>
     </select>
+
+    <select id="queryVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT dasv.*
+        FROM devops_app_service_instance dasi
+                 INNER JOIN devops_env_command command ON dasi.command_id = command.id
+                 INNER JOIN devops_app_service_version dasv ON command.object_version_id = dasv.id
+        WHERE dasi.id = #{appServiceInstanceId};
+    </select>
+    <select id="queryVersionByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT dasv.*
+        FROM devops_app_service_instance dasi
+                 INNER JOIN devops_env_command command ON dasi.command_id = command.id
+                 INNER JOIN devops_app_service_version dasv ON command.object_version_id = dasv.id
+        WHERE dasv.app_service_id  = #{appServiceId};
+    </select>
+    <select id="queryEffectVersionByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT dasv.*
+        FROM devops_app_service_instance dasi
+                 INNER JOIN devops_env_command command ON dasi.effect_command_id = command.id
+                 INNER JOIN devops_app_service_version dasv ON command.object_version_id = dasv.id
+        WHERE dasv.app_service_id  = #{appServiceId};
+    </select>
 </mapper>

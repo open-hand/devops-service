@@ -1,10 +1,12 @@
-import React, { Fragment, useRef, useState, Suspense, useEffect } from 'react';
+/* eslint-disable max-len */
+import React, {
+  useRef, Suspense,
+} from 'react';
 import { observer } from 'mobx-react-lite';
-import { Page, Header, Breadcrumb, Content, Permission } from '@choerodon/boot';
-import { Button, Modal } from 'choerodon-ui/pro';
-import { axios, Choerodon } from '@choerodon/boot';
-import { Prompt, Router } from 'react-router-dom';
-import { handlePromptError } from '../../utils';
+import {
+  Page, Header, Breadcrumb, Content,
+} from '@choerodon/boot';
+import { Modal } from 'choerodon-ui/pro';
 import PipelineTree from './components/PipelineTree';
 import PipelineFlow from './components/PipelineFlow';
 import DragBar from '../../components/drag-bar';
@@ -16,9 +18,9 @@ import HeaderButtons from '../../components/header-buttons';
 import VariableSettings from './components/variable-settings';
 import AuditModal from './components/audit-modal';
 import GitlabRunner from './components/gitlab-runner';
+import MouserOverWrapper from '../../components/MouseOverWrapper';
 
 import './index.less';
-import MouserOverWrapper from '../../components/MouseOverWrapper';
 
 const recordDetailKey = Modal.key();
 const settingsKey = Modal.key();
@@ -31,7 +33,7 @@ const settingsModalStyle = {
   width: 740,
 };
 
-const PipelineManage = observer((props) => {
+const PipelineManage = observer(() => {
   const {
     intl: { formatMessage },
     intlPrefix,
@@ -40,15 +42,17 @@ const PipelineManage = observer((props) => {
     mainStore,
     editBlockStore,
     detailStore,
-    detailStore: {
-      loadDetailData, getDetailData,
-    },
-    editBlockStore: {
-      getMainData, loadData, getHasModify, setHasModify,
-    },
     treeDs,
     projectId,
   } = usePipelineManageStore();
+
+  const {
+    getMainData, loadData, setHasModify,
+  } = editBlockStore;
+
+  const {
+    loadDetailData, getDetailData,
+  } = detailStore;
 
   const handleCreatePipeline = () => {
     Modal.open({
@@ -58,7 +62,12 @@ const PipelineManage = observer((props) => {
         width: 'calc(100vw - 3.52rem)',
       },
       drawer: true,
-      children: <PipelineCreate mathRandom={Math.random()} refreshTree={handleRefresh} editBlockStore={editBlockStore} mainStore={mainStore} />,
+      children: <PipelineCreate
+        mathRandom={Math.random()}
+        refreshTree={handleRefresh}
+        editBlockStore={editBlockStore}
+        mainStore={mainStore}
+      />,
       okText: '创建',
     });
   };
@@ -72,7 +81,7 @@ const PipelineManage = observer((props) => {
     await treeDs.query();
     const { id } = getMainData;
     const { parentId } = getSelectedMenu;
-    const { gitlabPipelineId, devopsPipelineRecordRelId } = getDetailData;
+    const { devopsPipelineRecordRelId } = getDetailData;
     if (!parentId) {
       id && loadData(projectId, id);
     } else {
@@ -104,13 +113,15 @@ const PipelineManage = observer((props) => {
     Modal.open({
       key: recordDetailKey,
       style: modalStyle,
-      title: <span className={`${prefixCls}-detail-modal-title`}>
-        流水线记录“
-        <MouserOverWrapper width="100px" text={`#${newDevopsPipelineRecordRelId}`}>
-          <span>{`#${newDevopsPipelineRecordRelId}`}</span>
-        </MouserOverWrapper>
-        ”的详情
-      </span>,
+      title: (
+        <span className={`${prefixCls}-detail-modal-title`}>
+          流水线记录“
+          <MouserOverWrapper width="100px" text={`#${newDevopsPipelineRecordRelId}`}>
+            <span>{`#${newDevopsPipelineRecordRelId}`}</span>
+          </MouserOverWrapper>
+          ”的详情
+        </span>
+      ),
       children: <RecordDetail
         pipelineRecordId={newDevopsPipelineRecordRelId}
         intlPrefix={intlPrefix}
@@ -125,7 +136,11 @@ const PipelineManage = observer((props) => {
 
   async function changeRecordExecute(type) {
     const { gitlabProjectId, gitlabPipelineId, devopsPipelineRecordRelId } = getSelectedMenu;
-    const { gitlabProjectId: detailGitlabProjectId, gitlabPipelineId: detailGitlabPipelineId, devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId } = getDetailData;
+    const {
+      gitlabProjectId: detailGitlabProjectId,
+      gitlabPipelineId: detailGitlabPipelineId,
+      devopsPipelineRecordRelId: detailDevopsPipelineRecordRelId,
+    } = getDetailData;
     const res = await mainStore.changeRecordExecute({
       projectId,
       gitlabProjectId: gitlabProjectId || detailGitlabProjectId,
@@ -139,8 +154,12 @@ const PipelineManage = observer((props) => {
   }
 
   function openAuditModal() {
-    const { devopsCdPipelineDeatilVO, parentId } = getSelectedMenu;
-    const { cdRecordId, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO, pipelineName } = getDetailData;
+    const { devopsCdPipelineDeatilVO } = getSelectedMenu;
+    const {
+      cdRecordId,
+      devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO,
+      pipelineName,
+    } = getDetailData;
     Modal.open({
       key: auditKey,
       title: formatMessage({ id: `${intlPrefix}.execute.audit` }),
@@ -156,7 +175,6 @@ const PipelineManage = observer((props) => {
   }
 
   function openSettingsModal(type) {
-    const { id } = getMainData;
     const { appServiceId, appServiceName } = getSelectedMenu;
     Modal.open({
       key: settingsKey,
@@ -188,7 +206,10 @@ const PipelineManage = observer((props) => {
 
   function getHeaderButtons() {
     const { parentId, status, devopsCdPipelineDeatilVO } = getSelectedMenu;
-    const { status: detailStatus, devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO } = getDetailData;
+    const {
+      status: detailStatus,
+      devopsCdPipelineDeatilVO: detailDevopsCdPipelineDeatilVO,
+    } = getDetailData;
     const buttons = [{
       permissions: ['choerodon.code.project.develop.ci-pipeline.ps.create'],
       name: formatMessage({ id: `${intlPrefix}.create` }),
@@ -278,35 +299,34 @@ const PipelineManage = observer((props) => {
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
-        {!treeDs.length && treeDs.status === 'ready' ? <div className={`${prefixCls}-wrap`}>
-          <Suspense fallback={<span />}>
-            <EmptyPage
-              title={formatMessage({ id: 'empty.title.pipeline' })}
-              describe={formatMessage({ id: 'empty.tips.pipeline.owner' })}
-              btnText={formatMessage({ id: `${intlPrefix}.create` })}
-              onClick={handleCreatePipeline}
-              access
-            />
-          </Suspense>
-        </div> : (<div
-          ref={rootRef}
-          className={`${prefixCls}-wrap`}
-        >
-          <DragBar
-            parentRef={rootRef}
-            store={mainStore}
-          />
-          <PipelineTree handleRefresh={handleRefresh} />
-          <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-            <PipelineFlow
-              stepStore={editBlockStore}
-              detailStore={detailStore}
-              handleRefresh={handleRefresh}
-              treeDs={treeDs}
-              mainStore={mainStore}
-            />
+        {!treeDs.length && treeDs.status === 'ready' ? (
+          <div className={`${prefixCls}-wrap`}>
+            <Suspense fallback={<span />}>
+              <EmptyPage
+                title={formatMessage({ id: 'empty.title.pipeline' })}
+                describe={formatMessage({ id: 'empty.tips.pipeline.owner' })}
+                btnText={formatMessage({ id: `${intlPrefix}.create` })}
+                onClick={handleCreatePipeline}
+                access
+              />
+            </Suspense>
           </div>
-        </div>
+        ) : (
+          <div
+            ref={rootRef}
+            className={`${prefixCls}-wrap`}
+          >
+            <DragBar
+              parentRef={rootRef}
+              store={mainStore}
+            />
+            <PipelineTree handleRefresh={handleRefresh} />
+            <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+              <PipelineFlow
+                handleRefresh={handleRefresh}
+              />
+            </div>
+          </div>
         )}
       </Content>
     </Page>

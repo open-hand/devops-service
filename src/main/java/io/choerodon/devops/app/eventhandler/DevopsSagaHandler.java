@@ -1,8 +1,22 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Objects;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.kubernetes.client.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
@@ -13,12 +27,9 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
-import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -27,20 +38,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
-
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 
 /**
@@ -213,40 +210,6 @@ public class DevopsSagaHandler {
     }
 
     /**
-     * GitOps 用户权限分配处理
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            description = "GitOps 用户权限分配处理",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            maxRetryCount = 3,
-            seq = 1)
-    public String updateGitlabUser(String data) {
-        LOGGER.info("DevopsSagaHandler.DEVOPS_UPDATE_GITLAB_USERS:{}", data);
-        DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
-        try {
-            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
-            if (CollectionUtils.isEmpty(devOpsUserPayload.getIamUserIds())) {
-                LOGGER.info("updateGitlabUser: empty users -> skip...");
-            }
-            //如果是用户是组织层的root，则跳过权限跟新
-            devOpsUserPayload.getIamUserIds().forEach(userId -> {
-                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-                if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
-                    updateUserPermissionService
-                            .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
-                                    Arrays.asList(userId), devOpsUserPayload.getOption());
-                }
-            });
-
-        } catch (Exception e) {
-            LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds());
-            throw e;
-        }
-        return data;
-    }
-
-
-    /**
      * devops处理环境权限分配相应的gitlab操作
      */
     @SagaTask(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION,
@@ -369,7 +332,7 @@ public class DevopsSagaHandler {
             pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
 
             pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            Long userId = GitUserNameUtil.getUserId().longValue();
+            Long userId = GitUserNameUtil.getUserId();
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
@@ -414,7 +377,7 @@ public class DevopsSagaHandler {
             devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
 
-            Long userId = GitUserNameUtil.getUserId().longValue();
+            Long userId = GitUserNameUtil.getUserId();
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());

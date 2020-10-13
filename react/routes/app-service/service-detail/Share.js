@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/boot';
+import {
+  TabPage, Content, Permission, Breadcrumb, Action,
+} from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { withRouter } from 'react-router-dom';
@@ -40,9 +42,8 @@ const Share = withRouter((props) => {
   function renderProjectName({ value, record }) {
     if (value && record.get('projectId')) {
       return <span>{value}</span>;
-    } else {
-      return <FormattedMessage id={`${intlPrefix}.project.all`} />;
     }
+    return <FormattedMessage id={`${intlPrefix}.project.all`} />;
   }
 
   function renderNumber({ record }) {
@@ -106,27 +107,6 @@ const Share = withRouter((props) => {
       location,
     } = props;
     history.push(`/rducm/code-lib-management/assign${location.search}&appServiceIds=${appServiceIds}`);
-    // Modal.open({
-    //   key: modalKey1,
-    //   title: <Tips
-    //     helpText={formatMessage({ id: `${intlPrefix}.detail.allocation.tips` })}
-    //     title={formatMessage({ id: `${intlPrefix}.permission.manage` })}
-    //   />,
-    //   children: <ServicePermission
-    //     dataSet={permissionDs}
-    //     baseDs={detailDs}
-    //     store={appServiceStore}
-    //     nonePermissionDs={nonePermissionDs}
-    //     intlPrefix="c7ncd.deployment"
-    //     prefixCls={prefixCls}
-    //     formatMessage={formatMessage}
-    //     projectId={id}
-    //     refresh={refresh}
-    //   />,
-    //   drawer: true,
-    //   style: modalStyle,
-    //   okText: formatMessage({ id: 'save' }),
-    // });
   }
 
   function renderButtons() {
@@ -165,6 +145,7 @@ const Share = withRouter((props) => {
     return record.status !== 'add';
   }
 
+  // eslint-disable-next-line consistent-return
   function getTitle() {
     if (detailDs.current) {
       return detailDs.current.get('name');
@@ -187,7 +168,7 @@ const Share = withRouter((props) => {
       <Breadcrumb title={getTitle()} />
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={shareDs} filter={handleTableFilter} pristine>
-          <Column name="id" renderer={renderNumber} align="left" sortable />
+          <Column name="viewId" renderer={renderNumber} align="left" sortable />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="versionType" />
           <Column name="version" sortable />

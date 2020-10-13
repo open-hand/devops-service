@@ -16,7 +16,6 @@ import DomainForm from '../../../components/domain-form';
 
 import './index.less';
 
-
 const { Column } = Table;
 const editNetWorkKey = Modal.key();
 const editDomainKey = Modal.key();
@@ -56,14 +55,16 @@ const Networking = observer(() => {
     const error = record.get('error');
     const disabled = getEnvIsNotRunning() || status === 'operating';
 
-    return (<StatusIcon
-      name={value}
-      status={status || ''}
-      error={error || ''}
-      clickAble={!disabled}
-      onClick={openNetworkEdit}
-      permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.net-detail']}
-    />);
+    return (
+      <StatusIcon
+        name={value}
+        status={status || ''}
+        error={error || ''}
+        clickAble={!disabled}
+        onClick={openNetworkEdit}
+        permissionCode={['choerodon.code.project.deploy.app-deployment.resource.ps.net-detail']}
+      />
+    );
   }
 
   function renderTargetType({ record }) {
@@ -83,7 +84,9 @@ const Networking = observer(() => {
   }
 
   function renderTarget({ record }) {
-    const { instances, selectors, endPoints, targetAppServiceId, targetAppServiceName } = record.get('target') || {};
+    const {
+      instances, selectors, endPoints, targetAppServiceId, targetAppServiceName,
+    } = record.get('target') || {};
     const node = [];
     const port = [];
     const len = endPoints ? 2 : 1;
@@ -91,7 +94,7 @@ const Networking = observer(() => {
       node.push(
         <div className="net-target-item">
           <span>{targetAppServiceName}</span>
-        </div>
+        </div>,
       );
     } else if (instances && instances.length) {
       _.forEach(instances, ({ id: itemId, code, status }) => {
@@ -116,9 +119,11 @@ const Networking = observer(() => {
     if (!_.isEmpty(selectors)) {
       _.forEach(selectors, (value, key) => node.push(
         <div className="net-target-item" key={key}>
-          <span>{key}</span>=<span>{value}</span>
+          <span>{key}</span>
+          =
+          <span>{value}</span>
         </div>,
-      ),);
+      ));
     }
     if (endPoints) {
       const targetIps = _.split(_.keys(endPoints)[0], ',');
@@ -127,7 +132,7 @@ const Networking = observer(() => {
         <div className="net-target-item" key={index}>
           <span>{item}</span>
         </div>,
-      ),);
+      ));
       _.map(portList, (item, index) => {
         port.push(
           <div className="net-target-item" key={index}>
@@ -137,8 +142,9 @@ const Networking = observer(() => {
       });
     }
     return (
-      <Fragment>
+      <>
         {
+          // eslint-disable-next-line consistent-return
           _.map([node, port], (item, index) => {
             if (item.length) {
               return (
@@ -149,7 +155,7 @@ const Networking = observer(() => {
                     <Popover
                       arrowPointAtCenter
                       placement="bottomRight"
-                      content={<Fragment>{item}</Fragment>}
+                      content={<>{item}</>}
                       overlayClassName={`${prefixCls}-application-net`}
                     >
                       <Icon type="expand_more" className="net-expend-icon" />
@@ -160,7 +166,7 @@ const Networking = observer(() => {
             }
           })
         }
-      </Fragment>
+      </>
     );
   }
 
@@ -183,7 +189,11 @@ const Networking = observer(() => {
       _.forEach(ports, ({ nodePort, port, targetPort }) => {
         portArr.push(
           <div key={port} className="net-config-item">
-            {nodePort || (type !== 'ClusterIP' && formatMessage({ id: 'null' }))} {port} {targetPort}
+            {nodePort || (type !== 'ClusterIP' && formatMessage({ id: 'null' }))}
+            {' '}
+            {port}
+            {' '}
+            {targetPort}
           </div>,
         );
       });
@@ -193,7 +203,7 @@ const Networking = observer(() => {
     switch (type) {
       case 'ClusterIP':
         content = (
-          <Fragment>
+          <>
             <div className="net-config-wrap">
               <div className="net-type-title">
                 <FormattedMessage id={`${intlPrefix}.application.net.ip`} />
@@ -206,22 +216,22 @@ const Networking = observer(() => {
               </div>
               <div>{portArr}</div>
             </div>
-          </Fragment>
+          </>
         );
         break;
       case 'NodePort':
         content = (
-          <Fragment>
+          <>
             <div className="net-config-item">
               <FormattedMessage id={`${intlPrefix}.application.net.nport`} />
             </div>
             <div>{portArr}</div>
-          </Fragment>
+          </>
         );
         break;
       case 'LoadBalancer':
         content = (
-          <Fragment>
+          <>
             <div className="net-config-wrap">
               <div className="net-type-title">
                 <FormattedMessage id={`${intlPrefix}.application.net.nport`} />
@@ -236,7 +246,7 @@ const Networking = observer(() => {
                 <div>{loadBalanceIp}</div>
               </div>
             )}
-          </Fragment>
+          </>
         );
         break;
       default:
@@ -315,7 +325,9 @@ const Networking = observer(() => {
   function renderExpandedRow({ record }) {
     const devopsIngressDTOS = record.get('devopsIngressVOS');
     const content = devopsIngressDTOS && devopsIngressDTOS.length ? (
-      _.map(devopsIngressDTOS, ({ id: itemId, name, domain, error, status, pathList }) => {
+      _.map(devopsIngressDTOS, ({
+        id: itemId, name, domain, error, status, pathList,
+      }) => {
         const buttons = [
           {
             service: ['choerodon.code.project.deploy.app-deployment.resource.ps.delete-domain'],
@@ -326,7 +338,8 @@ const Networking = observer(() => {
         const disabled = getEnvIsNotRunning() || status === 'operating';
         return (
           <div key={itemId} className="net-expandedRow-detail">
-            <FormattedMessage id={`${intlPrefix}.application.net.ingress`} />：
+            <FormattedMessage id={`${intlPrefix}.application.net.ingress`} />
+            ：
             <div className="net-ingress-text">
               <StatusIcon
                 name={name}
@@ -342,23 +355,25 @@ const Networking = observer(() => {
                 <Action data={buttons} />
               </div>
             )}
-            <FormattedMessage id="address" />：
+            <FormattedMessage id="address" />
+            ：
             <div className="net-ingress-text">
               <MouserOverWrapper text={domain} width={0.2} style={{ display: 'block' }}>
                 {domain}
               </MouserOverWrapper>
             </div>
-            <FormattedMessage id="path" />：
+            <FormattedMessage id="path" />
+            ：
             <div className="net-ingress-text net-ingress-path">
               <MouserOverWrapper text={pathList[0] ? pathList[0].path : ''} width={0.2}>
                 {pathList[0] ? pathList[0].path : ''}
               </MouserOverWrapper>
               {pathList.length > 1 && (
-                <Tooltip
-                  title={_.map(pathList, ({ path }) => <div>{path}</div>)}
-                >
-                  <Icon type="expand_more" className="net-expend-icon" />
-                </Tooltip>
+              <Tooltip
+                title={_.map(pathList, ({ path }) => <div>{path}</div>)}
+              >
+                <Icon type="expand_more" className="net-expend-icon" />
+              </Tooltip>
               )}
             </div>
           </div>

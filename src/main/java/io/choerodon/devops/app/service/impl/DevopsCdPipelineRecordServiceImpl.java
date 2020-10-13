@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
@@ -40,6 +41,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
@@ -58,10 +60,12 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.util.StringUtil;
 
 /**
  * 〈功能简述〉
@@ -84,6 +88,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STOP = "stop";
+    private static final String COMMAND_SEPARATOR = "||";
+    private static final Integer WAIT_SECONDS = 6;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
@@ -153,6 +159,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
+
+    @Autowired
+    private TestServiceClientOperator testServiceClientoperator;
+
+    @Autowired
+    private DevopsHostMapper devopsHostMapper;
 
     @Value("${choerodon.online:true}")
     private Boolean online;
@@ -246,6 +258,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         List<String> taskUsers = jobAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
                         taskDTO.setUsernames(taskUsers);
                         taskDTO.setMultiAssign(taskUsers.size() > 1);
+                    } else if (jobRecordDTO.getType().equals(JobTypeEnum.CD_API_TEST.value())) {
+                        CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(jobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+                        taskDTO.setBlockAfterJob(cdApiTestConfigVO.getBlockAfterJob());
+                        taskDTO.setDeployJobName(cdApiTestConfigVO.getDeployJobName());
                     }
                     taskDTO.setTaskType(jobRecordDTO.getType());
                     if (jobRecordDTO.getCountersigned() != null) {
@@ -277,6 +293,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         Boolean status = true;
         SSHClient ssh = new SSHClient();
+        StringBuilder log = new StringBuilder();
         try {
             // 0.1
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
@@ -329,13 +346,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             // 3.
             // 3.1
-            dockerLogin(ssh, c7nImageDeployDTO);
+            dockerLogin(ssh, c7nImageDeployDTO, log);
             // 3.2
-            dockerPull(ssh, c7nImageDeployDTO);
+            dockerPull(ssh, c7nImageDeployDTO, log);
 
-            dockerStop(ssh, imageDeploy);
+            dockerStop(ssh, imageDeploy, log);
             // 3.3
-            dockerRun(ssh, imageDeploy, c7nImageDeployDTO);
+            dockerRun(ssh, imageDeploy, c7nImageDeployDTO, log);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
@@ -344,12 +361,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
+            devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
         }
         return status;
     }
 
-    private void dockerLogin(SSHClient ssh, C7nImageDeployDTO imageTagVo) throws IOException {
+    private void dockerLogin(SSHClient ssh, C7nImageDeployDTO imageTagVo, StringBuilder log) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -359,7 +377,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
+            log.append(loggerInfo);
+            log.append(loggerError);
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
             LOGGER.info("docker login status:{}", cmd.getExitStatus());
@@ -374,7 +394,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void dockerPull(SSHClient ssh, C7nImageDeployDTO imageTagVo) throws IOException {
+    private void dockerPull(SSHClient ssh, C7nImageDeployDTO imageTagVo, StringBuilder log) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -382,6 +402,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             Session.Command cmd = session.exec(imageTagVo.getPullCmd());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            execPullImage(cmd);
+            log.append(System.lineSeparator());
+            log.append(loggerInfo);
+            log.append(loggerError);
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
             LOGGER.info("docker pull status:{}", cmd.getExitStatus());
@@ -394,7 +418,26 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, C7nImageDeployDTO c7nImageDeployDTO) throws IOException {
+    /**
+     * 解决pull 镜像时间较长
+     * 等3分钟
+     */
+    private void execPullImage(Session.Command cmd) {
+        for (int i = 0; i < 30; i++) {
+            if (cmd.getExitStatus() == null) {
+                LOGGER.info("Pulling the image!!!");
+                try {
+                    cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
+                } catch (ConnectionException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -418,6 +461,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
+            log.append(System.lineSeparator());
+            log.append(loggerInfo);
+            log.append(loggerError);
             LOGGER.info("docker run status:{}", cmd.getExitStatus());
             if (cmd.getExitStatus() != 0) {
                 throw new CommonException(ERROR_DOCKER_RUN);
@@ -429,7 +476,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    private void dockerStop(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy) throws IOException {
+    private void dockerStop(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, StringBuilder log) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
@@ -440,8 +487,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             dockerRunExec.append("docker rm ").append(imageDeploy.getContainerName());
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            log.append(System.lineSeparator());
+            log.append(loggerInfo);
+            log.append(loggerError);
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
             LOGGER.info("docker stop status:{}", cmd.getExitStatus());
@@ -456,13 +507,30 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3.
 //        ssh.loadKnownHosts();
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
+        //根据主机来源获取主机连接信息
+        if (HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
+            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostConnectionVO.getHostId());
+            dtoToHostConnVo(hostConnectionVO, devopsHostDTO);
+        }
+
         ssh.connect(hostConnectionVO.getHostIp(), TypeUtil.objToInteger(hostConnectionVO.getHostPort()));
-        if (hostConnectionVO.getAccountType().equals(CdHostAccountType.PASSWORD.value())) {
+        if (hostConnectionVO.getAccountType().equals(CdHostAccountType.ACCOUNTPASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
         } else {
             String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());
             KeyProvider keyProvider = ssh.loadKeys(str, null, null);
             ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
+        }
+    }
+
+    private void dtoToHostConnVo(HostConnectionVO hostConnectionVO, DevopsHostDTO devopsHostDTO) {
+        if (devopsHostDTO != null) {
+            hostConnectionVO.setHostIp(devopsHostDTO.getHostIp());
+            hostConnectionVO.setHostPort(String.valueOf(devopsHostDTO.getSshPort()));
+            hostConnectionVO.setAccountType(devopsHostDTO.getAuthType());
+            hostConnectionVO.setUserName(devopsHostDTO.getUsername());
+            hostConnectionVO.setPassword(devopsHostDTO.getPassword());
+            hostConnectionVO.setAccountKey(devopsHostDTO.getPassword());
         }
     }
 
@@ -498,6 +566,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         SSHClient ssh = new SSHClient();
         Boolean status = true;
+        StringBuilder log = new StringBuilder();
         try {
             // 0.1 查询部署信息
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
@@ -556,8 +625,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
 
             // 2. 执行jar部署
-            sshStopJar(ssh, jobRecordDTO.getJobId());
-            sshExec(ssh, c7nNexusDeployDTO, jarDeploy);
+            sshStopJar(ssh, jobRecordDTO.getJobId(), log);
+            sshExec(ssh, c7nNexusDeployDTO, jarDeploy, log);
             devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
@@ -565,6 +634,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
+            devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
         }
         return status;
@@ -576,25 +646,27 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start custom deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         SSHClient ssh = new SSHClient();
         Boolean status = true;
+        StringBuilder log = new StringBuilder();
         try {
             // 0.1 查询部署信息
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
             String value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), "UTF-8");
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
-            sshExecCustom(ssh, value);
+            sshExecCustom(ssh, value, log);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             e.printStackTrace();
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
+            devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
         }
         return status;
     }
 
-    private void sshStopJar(SSHClient ssh, Long jobId) throws IOException {
+    private void sshStopJar(SSHClient ssh, Long jobId, StringBuilder log) throws IOException {
         DevopsCdEnvDeployInfoDTO cdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryByCdJobId(jobId);
         if (cdEnvDeployInfoDTO != null && !StringUtils.isEmpty(cdEnvDeployInfoDTO.getJarName())) {
             StringBuilder stopJar = new StringBuilder();
@@ -608,8 +680,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             try {
                 session = ssh.startSession();
                 final Session.Command cmd = session.exec(stopJar.toString());
-                LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
-                LOGGER.info(IOUtils.readFully(cmd.getErrorStream()).toString());
+                cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
+                String logInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+                String errorInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
+                log.append(logInfo);
+                log.append(errorInfo);
             } finally {
                 assert session != null;
                 session.close();
@@ -617,10 +692,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, CdHostDeployConfigVO.JarDeploy jarDeploy) throws IOException {
+    private void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, CdHostDeployConfigVO.JarDeploy jarDeploy, StringBuilder log) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
-        cmdStr.append("mkdir -p /temp-jar && ");
-        cmdStr.append("mkdir -p /temp-log && ");
+        if (StringUtils.isEmpty(jarDeploy.getWorkingPath())) {
+            cmdStr.append("mkdir -p /temp/jar && ");
+            cmdStr.append("mkdir -p /temp/log && ");
+        } else {
+            String workingPath = jarDeploy.getWorkingPath().endsWith("/") ? jarDeploy.getWorkingPath().substring(0, jarDeploy.getWorkingPath().length() - 1) : jarDeploy.getWorkingPath();
+            cmdStr.append(String.format("mkdir -p %s/jar && ", workingPath));
+            cmdStr.append(String.format("mkdir -p %s/log && ", workingPath));
+        }
+
         Session session = null;
         try {
             session = ssh.startSession();
@@ -652,10 +734,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             LOGGER.info(cmdStr.toString());
 
             final Session.Command cmd = session.exec(cmdStr.toString());
-            cmd.join(5, TimeUnit.SECONDS);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-
+            log.append(System.lineSeparator());
+            log.append(loggerInfo);
+            log.append(loggerError);
             if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized") || cmd.getExitStatus() != 0) {
                 throw new CommonException(ERROR_DOWNLOAD_JAY);
             }
@@ -668,29 +752,33 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    private void sshExecCustom(SSHClient ssh, String value) throws IOException {
+    private void sshExecCustom(SSHClient ssh, String value, StringBuilder log) throws IOException {
         Session session = null;
         try {
             session = ssh.startSession();
             String[] strings = value.split("\n");
-            String values = "";
+            List<String> commandToExecute = new ArrayList<>();
             for (String s : strings) {
                 if (s.length() > 0 && !s.contains("#")) {
-                    values = s;
+                    commandToExecute.add(s);
                 }
             }
-            if (StringUtils.isEmpty(values)) {
+
+            String commands = StringUtil.join(commandToExecute, COMMAND_SEPARATOR);
+
+            if (StringUtils.isEmpty(commands)) {
                 throw new CommonException("error.instruction");
             }
 
-            LOGGER.info(values);
-            final Session.Command cmd = session.exec(values);
-            cmd.join(5, TimeUnit.SECONDS);
+            LOGGER.info(commands);
+            final Session.Command cmd = session.exec(commands);
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
+            log.append(loggerInfo);
+            log.append(loggerError);
         } finally {
             assert session != null;
             session.close();
@@ -774,17 +862,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
         C7nImageDeployDTO imageTagVoRecord = gson.fromJson(cdJobRecordDTO.getDeployMetadata(), C7nImageDeployDTO.class);
         SSHClient ssh = new SSHClient();
+        StringBuilder log = new StringBuilder();
         try {
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
-            dockerLogin(ssh, imageTagVoRecord);
-            dockerPull(ssh, imageTagVoRecord);
-            dockerStop(ssh, imageDeploy);
-            dockerRun(ssh, imageDeploy, imageTagVoRecord);
+            dockerLogin(ssh, imageTagVoRecord, log);
+            dockerPull(ssh, imageTagVoRecord, log);
+            dockerStop(ssh, imageDeploy, log);
+            dockerRun(ssh, imageDeploy, imageTagVoRecord, log);
 
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
+            devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
         }
     }
@@ -796,16 +886,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(cdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         C7nNexusDeployDTO c7nNexusDeployDTO = gson.fromJson(cdJobRecordDTO.getDeployMetadata(), C7nNexusDeployDTO.class);
         SSHClient ssh = new SSHClient();
+        StringBuilder log = new StringBuilder();
         try {
             sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             // 2.1
-            sshStopJar(ssh, cdJobRecordDTO.getJobId());
-            sshExec(ssh, c7nNexusDeployDTO, cdHostDeployConfigVO.getJarDeploy());
+            sshStopJar(ssh, cdJobRecordDTO.getJobId(), log);
+            sshExec(ssh, c7nNexusDeployDTO, cdHostDeployConfigVO.getJarDeploy(), log);
             devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(cdJobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
         } catch (Exception e) {
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } finally {
+            devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
         }
     }
@@ -897,6 +989,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdPipelineDeatilVO.setTaskRecordId(devopsCdJobRecordDTO.getId());
             }
         }
+
         devopsCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineDeatilVO);
 
     }
@@ -1067,7 +1160,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     appServiceInstanceDTO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
                     AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
                     if (!Objects.isNull(serviceInstanceDTO)) {
-                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())){
+                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
                             cdAuto.setInstanceName(serviceInstanceDTO.getCode());
                         }
                         cdAuto.setInstanceId(serviceInstanceDTO.getId());
@@ -1107,6 +1200,20 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 }
                 devopsCdJobRecordVO.setAudit(audit);
             }
+            //如果是主机部署 显示主机部署模式(镜像，jar，自定义)，来源，关联构建任务
+            if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordVO.getType())) {
+                CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdHostDeployConfigVO.class);
+                devopsCdJobRecordVO.setCdHostDeployConfigVO(cdHostDeployConfigVO);
+            }
+
+            if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordVO.getType())) {
+                if (!PipelineStatus.RUNNING.toValue().equals(devopsCdJobRecordVO.getStatus())) {
+                    ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordVO.getProjectId(), devopsCdJobRecordVO.getApiTestTaskRecordId());
+                    devopsCdJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
+                }
+
+            }
+
         });
 
     }

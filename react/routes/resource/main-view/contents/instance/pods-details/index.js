@@ -1,4 +1,6 @@
-import React, { Fragment, memo, useState, useCallback } from 'react';
+import React, {
+  Fragment, memo, useState, useCallback,
+} from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
@@ -31,6 +33,7 @@ const PodDetail = memo(() => {
     intl,
     podsDs,
   } = useInstanceStore();
+  // eslint-disable-next-line no-unused-expressions
   shellVisible;
   const [visible, setVisible] = useState(false);
   const [shellVisible, setShellVisible] = useState(false);
@@ -51,7 +54,7 @@ const PodDetail = memo(() => {
     const statusCode = getStatusCode(record);
 
     return (
-      <Fragment>
+      <>
         <Tooltip title={<FormattedMessage id={`ist.ready.${statusCode}`} />}>
           <Icon
             type={ICON_CODE[statusCode]}
@@ -61,7 +64,7 @@ const PodDetail = memo(() => {
         <MouserOverWrapper text={value} width={0.2} style={{ display: 'inline' }}>
           {value}
         </MouserOverWrapper>
-      </Fragment>
+      </>
     );
   }
 
@@ -94,6 +97,7 @@ const PodDetail = memo(() => {
     const node = [];
     let item;
     if (value && value.length) {
+      // eslint-disable-next-line prefer-destructuring
       item = value[0];
       map(value, ({ ready, name }, index) => {
         node.push(
@@ -110,30 +114,31 @@ const PodDetail = memo(() => {
       });
     }
     return (
-      <Fragment>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         {item && (
-          <Fragment>
-            <Tooltip title={<FormattedMessage id={`ist.${item.ready ? 'y' : 'n'}`} />}>
-              <Icon
-                type={item.ready ? 'check_circle' : 'cancel'}
-                className={`${prefixCls}-pod-ready-${item.ready ? 'check' : 'cancel'}`}
-              />
-            </Tooltip>
-            <MouserOverWrapper text={item.name} width={0.1} style={{ display: 'inline' }}>
-              {item.name}
-            </MouserOverWrapper>
-          </Fragment>)}
-        {node.length > 1 && (
-          <Popover
-            arrowPointAtCenter
-            placement="bottomRight"
-            content={<Fragment>{node}</Fragment>}
-            overlayClassName={`${prefixCls}-pods-popover`}
-          >
-            <Icon type="expand_more" className="container-expend-icon" />
-          </Popover>
+        <>
+          <Tooltip title={<FormattedMessage id={`ist.${item.ready ? 'y' : 'n'}`} />}>
+            <Icon
+              type={item.ready ? 'check_circle' : 'cancel'}
+              className={`${prefixCls}-pod-ready-${item.ready ? 'check' : 'cancel'}`}
+            />
+          </Tooltip>
+          <MouserOverWrapper text={item.name} width={0.1} style={{ display: 'inline' }}>
+            {item.name}
+          </MouserOverWrapper>
+        </>
         )}
-      </Fragment>
+        {node.length > 1 && (
+        <Popover
+          arrowPointAtCenter
+          placement="bottomRight"
+          content={<>{node}</>}
+          overlayClassName={`${prefixCls}-pods-popover`}
+        >
+          <Icon type="expand_more" className="container-expend-icon" />
+        </Popover>
+        )}
+      </div>
     );
   }
 
@@ -194,7 +199,7 @@ const PodDetail = memo(() => {
   }
 
   return (
-    <Fragment>
+    <>
       <div className="c7ncd-tab-table">
         <Table
           dataSet={podsDs}
@@ -210,9 +215,17 @@ const PodDetail = memo(() => {
           <Column name="status" renderer={renderStatus} width="1rem" />
         </Table>
       </div>
-      {visible && <LogSiderbar visible={visible} onClose={closeLog} record={podsDs.current.toData()} />}
-      {shellVisible && <TermSiderbar visible={shellVisible} onClose={closeShell} record={podsDs.current.toData()} />}
-    </Fragment>
+      {visible
+        && <LogSiderbar visible={visible} onClose={closeLog} record={podsDs.current.toData()} />}
+      {shellVisible
+        && (
+        <TermSiderbar
+          visible={shellVisible}
+          onClose={closeShell}
+          record={podsDs.current.toData()}
+        />
+        )}
+    </>
   );
 });
 

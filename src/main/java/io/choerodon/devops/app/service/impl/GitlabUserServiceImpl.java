@@ -81,7 +81,11 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void isEnabledGitlabUser(Long userId) {
+<<<<<<< HEAD
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+=======
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(userId));
+>>>>>>> origin/master
         if (userAttrDTO != null) {
             gitlabServiceClientOperator.enableUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
@@ -89,7 +93,11 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void disEnabledGitlabUser(Long userId) {
+<<<<<<< HEAD
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+=======
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(userId));
+>>>>>>> origin/master
         if (userAttrDTO != null) {
             gitlabServiceClientOperator.disableUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }

@@ -81,4 +81,17 @@ public class DevopsProjectOverviewController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.overview.deploy.count"));
     }
+
+
+    //项目概览统计流水线触发次数
+    @ApiOperation("项目下应用服务迭代部署次数")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/ci_count")
+    public ResponseEntity<CountVO> getCiCount(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId) {
+        return Optional.ofNullable(devopsProjectOverview.getCiCount(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.project.overview.ci.count"));
+    }
 }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { usePipelineManageStore } from '../../../stores';
@@ -12,22 +12,19 @@ export function usePipelineFlowStore() {
 export const StoreProvider = injectIntl(inject('AppState')((props) => {
   const {
     children,
-    AppState: { currentMenuType: { projectId } },
     histroy,
     location,
   } = props;
+
   const {
-    mainStore: {
-      getSelectedMenu,
-    },
+    mainStore: { getSelectedMenu },
   } = usePipelineManageStore();
 
   const value = {
     ...props,
-    getSelectedMenu,
-    projectId,
     histroy,
     location,
+    getSelectedMenu,
   };
 
   return (

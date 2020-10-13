@@ -22,4 +22,7 @@ public interface DevopsCdJobRecordMapper extends BaseMapper<DevopsCdJobRecordDTO
                                 @Param("status") String status);
 
     List<DevopsCdJobRecordDTO> listByIds(@Param("ids") List<Long> ids);
+
+    DevopsCdJobRecordDTO queryByPipelineRecordIdAndJobName(@Param("pipelineRecordId") Long pipelineRecordId,
+                                                           @Param("deployJobName") String deployJobName);
 }

@@ -1,7 +1,7 @@
 import { useLocalStore } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
 
-export default function useStore() {
+export default function useStore(mainStore) {
   return useLocalStore(() => ({
     mainStore: [],
     get getMainData() {
@@ -28,8 +28,11 @@ export default function useStore() {
       this.setLoading(true);
       this.loadDetail(projectId, pipelineId).then((res) => {
         if (res) {
-          this.setStepData(res.devopsCiStageVOS.concat(res.devopsCdStageVOS), false);
-          this.setMainData(res);
+          const { id: selectedId } = mainStore.getSelectedMenu;
+          if (selectedId === pipelineId) {
+            this.setStepData(res.devopsCiStageVOS.concat(res.devopsCdStageVOS), false);
+            this.setMainData(res);
+          }
           this.setLoading(false);
         }
       });
@@ -71,8 +74,10 @@ export default function useStore() {
     },
 
     addNewStep(index, data, edit) {
+      const { cdAuditUserIds } = data;
       const stepObj = {
         ...data,
+        cdAuditUserIds: cdAuditUserIds && cdAuditUserIds.map((x) => (typeof x === 'object' ? x.id : x)),
         name: data.step,
         jobList: [],
       };
@@ -80,14 +85,16 @@ export default function useStore() {
       if (edit) {
         this.dataSource2.splice(index + 1, 0, stepObj);
         this.dataSource2 = this.dataSource2.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       } else {
         this.dataSource.splice(index + 1, 0, stepObj);
         this.dataSource = this.dataSource.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       }
     },
@@ -100,10 +107,12 @@ export default function useStore() {
             this.dataSource2.splice(index, 1);
             return true;
           }
+          return false;
         });
         this.dataSource2 = this.dataSource2.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       } else {
         this.dataSource.forEach((item, index) => {
@@ -111,10 +120,12 @@ export default function useStore() {
             this.dataSource.splice(index, 1);
             return true;
           }
+          return false;
         });
         this.dataSource = this.dataSource.map((item, i) => {
-          item.sequence = i;
-          return item;
+          const newItem = item;
+          newItem.sequence = i;
+          return newItem;
         });
       }
     },
@@ -127,6 +138,7 @@ export default function useStore() {
             this.dataSource2[index].type = curType;
             return true;
           }
+          return false;
         });
       } else {
         this.dataSource.forEach((item, index) => {
@@ -135,6 +147,7 @@ export default function useStore() {
             this.dataSource[index].type = curType;
             return true;
           }
+          return false;
         });
       }
     },
@@ -143,6 +156,7 @@ export default function useStore() {
       if (edit) {
         this.dataSource2.forEach((item, index) => {
           if (item.sequence === sequence) {
+            // eslint-disable-next-line no-param-reassign
             data.sequence = this.dataSource2[index].jobList.length;
             if (this.dataSource2[index].jobList) {
               this.dataSource2[index].jobList.push(data);
@@ -154,6 +168,7 @@ export default function useStore() {
       } else {
         this.dataSource.forEach((item, index) => {
           if (item.sequence === sequence) {
+            // eslint-disable-next-line no-param-reassign
             data.sequence = this.dataSource[index].jobList.length;
             if (this.dataSource[index].jobList) {
               this.dataSource[index].jobList.push(data);

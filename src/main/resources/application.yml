@@ -119,7 +119,10 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 600000
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
@@ -139,10 +142,14 @@ logging:
 
 
 devops:
+  # 占用主机的过期时间, 超过这个时间, 主机会被释放
+  host:
+    occupy:
+      timeout-hours: 24
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     default:
-      image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
+      image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.10.1
     pipeline:
       sync:
         executor:

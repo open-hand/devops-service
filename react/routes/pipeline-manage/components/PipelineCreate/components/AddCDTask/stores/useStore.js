@@ -10,6 +10,16 @@ export default function useStore() {
 
     instanceList: [],
 
+    hostList: [],
+
+    get getHostList() {
+      return this.hostList;
+    },
+
+    setHostList(data) {
+      this.hostList = data;
+    },
+
     get getInstanceList() {
       return this.instanceIdList;
     },
@@ -19,6 +29,16 @@ export default function useStore() {
     },
 
     valueIdRandom: undefined,
+
+    apiTestArray: [],
+
+    get getApiTestArray() {
+      return this.apiTestArray;
+    },
+
+    setApiTestArray(data) {
+      this.apiTestArray = data;
+    },
 
     get getValueIdRandom() {
       return this.valueIdRandom;

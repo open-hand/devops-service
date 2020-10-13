@@ -142,4 +142,11 @@ public class CustomContextUtil {
             setUserContext(preContext);
         }
     }
+
+    /**
+     * 清除上下文
+     */
+    public static void clearContext() {
+        SecurityContextHolder.getContext().setAuthentication(null);
+    }
 }

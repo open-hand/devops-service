@@ -1,0 +1,189 @@
+.c7ncd-pipeline-detail {
+
+  &-title {
+    font-size: .2rem;
+    margin-bottom: .16rem;
+    font-weight: 500;
+
+    &-appService {
+      color: rgba(0, 0, 0, 0.54);
+    }
+  }
+
+  &-content {
+    display: flex;
+    background: rgba(245, 246, 250, 0.3);
+    border-radius: 4px;
+    min-height: ~"calc(100vh - 2.4rem)";
+    overflow-x: scroll;
+  }
+
+  &-stage {
+    border-right: 1px solid rgba(14, 29, 128, 0.1);
+    width: 2.2rem;
+    position: relative;
+    flex-shrink: 0;
+
+    &:last-child {
+      border: none;
+
+      .c7ncd-pipeline-detail-stage-line {
+        width: 50%;
+      }
+    }
+
+    &-title {
+      font-family: PingFangSC-Medium, PingFang SC;
+      font-size: .15rem;
+      font-weight: 500;
+      padding: .16rem .2rem;
+      display: flex;
+      align-items: center;
+
+      &-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      &-type {
+        flex-shrink: 0;
+      }
+    }
+
+    &-line {
+      border-bottom: 1px solid #a6a6c0;
+      position: absolute;
+      top: .72rem;
+      width: ~"calc(100% - 0.15rem)";
+    }
+
+    &-arrow {
+      color: #6887e8;
+      position: absolute;
+      left: -0.16rem;
+      top: 0.68rem;
+      z-index: 10;
+      line-height: 0;
+
+      .icon {
+        font-size: .32rem;
+      }
+    }
+  }
+
+  &-job {
+    background: rgba(239, 243, 252, 1);
+    border-radius: 4px;
+    border: 1px solid rgba(104, 135, 232, 1);
+    width: 1.64rem;
+    padding: .08rem;
+    margin: 0 auto .32rem;
+    position: relative;
+    z-index: 10;
+
+    &-title {
+      font-weight: 500;
+      text-align: center;
+      color: #3a345f;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &-task {
+      color: rgba(58, 52, 95, 0.65);
+      font-size: .12rem;
+      background-color: #fff;
+      word-break: break-all;
+      margin-top: .08rem;
+      line-height: .17rem;
+
+      &-item {
+        padding: .1rem;
+        border-bottom: 1px solid;
+        border-image: linear-gradient(to right, rgba(216, 220, 235, 1), rgba(216, 220, 235, 0.4)) 30 30;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+
+      &-sonar {
+        padding: .1rem;
+
+        &-type {
+          display: block;
+          margin-bottom: .02rem;
+        }
+      }
+
+      &-deploy {
+        padding: .1rem;
+
+        &-item {
+          display: block;
+          margin-bottom: .02rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+
+    &-CD {
+      background: rgba(233, 242, 248, 1);
+      border: 1px solid rgba(63, 178, 233, 1);
+
+      .c7ncd-pipeline-detail-job-title {
+        color: #224a6b;
+      }
+    }
+
+    &-rect {
+
+      &-left {
+        border-left: 1px solid #a6a6c0;
+        border-bottom: 1px solid #a6a6c0;
+        border-bottom-left-radius: .1rem;
+        width: .33rem;
+        position: absolute;
+        top: .72rem;
+        left: .17rem;
+
+        &:before {
+          width: .05rem;
+          height: .05rem;
+          content: '';
+          border-radius: 50%;
+          border: 1px solid #a6a6c0;
+          background-color: #fff;
+          display: block;
+          margin: -0.025rem 0 0 -0.0275rem;
+        }
+      }
+
+      &-right {
+        border-right: 1px solid #a6a6c0;
+        border-bottom: 1px solid #a6a6c0;
+        border-bottom-right-radius: .1rem;
+        width: .33rem;
+        position: absolute;
+        top: .72rem;
+        right: .17rem;
+
+        &:after {
+          width: .05rem;
+          height: .05rem;
+          content: '';
+          border-radius: 50%;
+          border: 1px solid #a6a6c0;
+          background-color: #fff;
+          display: block;
+          margin: -0.025rem 0 0 .3rem;
+        }
+      }
+    }
+  }
+}

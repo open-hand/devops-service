@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin } from 'choerodon-ui';
@@ -63,23 +64,27 @@ export default observer(() => {
     if (dataSource && dataSource.length > 0) {
       return dataSource.map((item, index) => {
         const nextStageType = dataSource[index + 1]?.type && dataSource[index + 1]?.type.toUpperCase();
-        return (<EditColumn
-          {...item}
-          columnIndex={index}
-          key={item.id}
-          isLast={String(index) === String(dataSource.length - 1)}
-          isFirst={index === 0}
-          nextStageType={nextStageType}
-          edit={edit}
-          pipelineId={pipelineId}
-          appServiceId={appServiceId}
-          appServiceName={appServiceName}
-          appServiceCode={appServiceCode}
-          appServiceType={appServiceType}
-          image={image}
-        />);
+        return (
+          <EditColumn
+            {...item}
+            stagesSource={dataSource}
+            columnIndex={index}
+            key={item.id}
+            isLast={String(index) === String(dataSource.length - 1)}
+            isFirst={index === 0}
+            nextStageType={nextStageType}
+            edit={edit}
+            pipelineId={pipelineId}
+            appServiceId={appServiceId}
+            appServiceName={appServiceName}
+            appServiceCode={appServiceCode}
+            appServiceType={appServiceType}
+            image={image}
+          />
+        );
       });
     }
+    return [];
   }
 
   function renderBlock() {
@@ -89,13 +94,14 @@ export default observer(() => {
           {renderColumn()}
         </div>
       );
-    } else {
-      return (
-        !getLoading && !edit ? <div className="c7n-piplineManage-edit">
-          {renderColumn()}
-        </div> : <Loading display={getLoading} />
-      );
     }
+    return (
+      !getLoading && !edit ? (
+        <div className="c7n-piplineManage-edit">
+          {renderColumn()}
+        </div>
+      ) : <Loading display={getLoading} />
+    );
   }
 
   return renderBlock();

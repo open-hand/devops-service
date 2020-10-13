@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import './UserInfo.less';
@@ -14,6 +15,7 @@ class UserInfo extends PureComponent {
     ]),
     showName: PropTypes.bool,
     showTooltip: PropTypes.bool,
+    className: PropTypes.string,
   };
 
   static defaultProps = {
@@ -23,23 +25,31 @@ class UserInfo extends PureComponent {
   };
 
   render() {
-    const { avatar, name, id, showName, showTooltip, size } = this.props;
-    
+    const {
+      avatar, name, id, showName, showTooltip, size, className,
+    } = this.props;
+
     const ava = avatar
 
       ? <img src={avatar} alt="avatar" className={`c7ncd-userinfo-avatar c7ncd-userinfo-avatar-${size}`} />
       : <span className={`c7ncd-userinfo-avatar-txt c7ncd-userinfo-avatar-${size}`}>{(name || '').toUpperCase().substring(0, 1)}</span>;
 
     return (
-      <div className="c7ncd-userinfo-wrap">
-        {name && (<Fragment>
-          {showTooltip ? <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
-            {ava}
-          </Tooltip> : ava}
-          {showName ? <div className="c7ncd-userinfo-name">
-            {name}
-          </div> : null}
-        </Fragment>)}
+      <div className={`c7ncd-userinfo-wrap ${className || ''}`}>
+        {name && (
+        <>
+          {showTooltip ? (
+            <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
+              {ava}
+            </Tooltip>
+          ) : ava}
+          {showName ? (
+            <div className="c7ncd-userinfo-name">
+              {name}
+            </div>
+          ) : null}
+        </>
+        )}
       </div>
     );
   }
