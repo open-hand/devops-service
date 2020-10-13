@@ -605,7 +605,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.restartInstance(projectId, instanceId);
+        appServiceInstanceService.restartInstance(projectId, instanceId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
