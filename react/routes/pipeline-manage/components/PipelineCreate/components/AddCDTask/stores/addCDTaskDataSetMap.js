@@ -14,7 +14,7 @@ const map = {
   // 是否阻塞后续阶段与任务
   whetherBlock: 'blockAfterJob',
   // 关联部署任务
-  relativeMission: 'relativeMission',
+  relativeMission: 'deployJobName',
 };
 
 export default map;
