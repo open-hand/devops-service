@@ -2356,7 +2356,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsBranchDTO.setCheckoutCommit(commitDTO.getId());
         devopsBranchDTO.setCheckoutDate(commitDTO.getCommittedDate());
         devopsBranchDTO.setLastCommitUser(TypeUtil.objToLong(devOpsAppServicePayload.getUserId()));
-        devopsBranchDTO.setLastCommitMsg(commitDTO.getMessage());
+        devopsBranchDTO.setLastCommitMsg(LogUtil.cutOutString(commitDTO.getMessage(), MiscConstants.DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH));
         devopsBranchDTO.setLastCommitDate(commitDTO.getCommittedDate());
         devopsBranchDTO.setLastCommit(commitDTO.getId());
         devopsBranchService.baseCreate(devopsBranchDTO);
