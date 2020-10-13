@@ -56,6 +56,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 
@@ -535,7 +536,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public List<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name) {
+    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name, PageRequest pageRequest) {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
@@ -549,15 +550,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else {
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
-                return new ArrayList<>();
+                return new Page<>();
             }
         }
         // 查询流水线
-        List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
+        Page<CiCdPipelineVO> pageAndSort = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name));
         // 封装流水线记录
         PageRequest cicdPipelineRel = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsPipelineRecordRelDTO.FIELD_ID)));
         //每条流水线默认展示5条记录
-        ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
+        pageAndSort.getContent().forEach(ciCdPipelineVO -> {
             List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = new ArrayList<>();
             // 查询cicd关系表
             Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOPage = devopsPipelineRecordRelService.pagingPipelineRel(ciCdPipelineVO.getId(), cicdPipelineRel);
@@ -641,7 +642,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 CiCdPipelineUtils.fillViewId(ciCdPipelineVO.getCiCdPipelineRecordVOS());
             }
         });
-        return ciCdPipelineVOS;
+        return pageAndSort;
     }
 
     private boolean isFirstRecord(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
