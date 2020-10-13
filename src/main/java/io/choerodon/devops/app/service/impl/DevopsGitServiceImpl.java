@@ -280,7 +280,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             devopsBranchDTOCreate.setLastCommitDate(checkoutDate);
             devopsBranchDTOCreate.setLastCommit(checkoutSha);
-            devopsBranchDTOCreate.setLastCommitMsg(commitDTO.getMessage());
+            devopsBranchDTOCreate.setLastCommitMsg(LogUtil.cutOutString(commitDTO.getMessage(), MiscConstants.DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH));
             UserAttrDTO userAttrDTO;
             if (commitDTO.getCommitterName().equals("root")) {
                 userAttrDTO = userAttrService.baseQueryByGitlabUserName("admin");
@@ -944,7 +944,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             devopsBranchDTO.setLastCommit(lastCommit);
             devopsBranchDTO.setLastCommitDate(lastCommitDTO.getTimestamp());
-            devopsBranchDTO.setLastCommitMsg(lastCommitDTO.getMessage());
+            devopsBranchDTO.setLastCommitMsg(LogUtil.cutOutString(lastCommitDTO.getMessage(), MiscConstants.DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH));
             devopsBranchDTO.setLastCommitUser(pushWebHookVO.getUserId().longValue());
             devopsBranchService.baseUpdateBranchLastCommit(devopsBranchDTO);
         } catch (Exception e) {
@@ -1063,7 +1063,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
                 devopsBranchDTO.setLastCommitUser(userId);
                 devopsBranchDTO.setLastCommit(lastCommit);
-                devopsBranchDTO.setLastCommitMsg(commitDTO.getMessage());
+                devopsBranchDTO.setLastCommitMsg(LogUtil.cutOutString(commitDTO.getMessage(), MiscConstants.DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH));
 
                 devopsBranchDTO.setLastCommitDate(commitDTO.getCommittedDate());
                 devopsBranchService.baseCreate(devopsBranchDTO);
