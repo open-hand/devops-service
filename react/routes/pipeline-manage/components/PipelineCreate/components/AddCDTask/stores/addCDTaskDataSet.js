@@ -87,6 +87,11 @@ export default (
       }),
     },
     {
+      name: addCDTaskDataSetMap.relativeMission,
+      type: 'string',
+      label: '关联部署任务',
+    },
+    {
       name: 'triggerType',
       type: 'string',
       label: '匹配类型',
