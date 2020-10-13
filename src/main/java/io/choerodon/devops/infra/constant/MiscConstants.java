@@ -24,4 +24,9 @@ public final class MiscConstants {
     public static final String APP_SERVICE = "appService";
 
     public static final String ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT = "error.operating.resource.in.other.project";
+
+    /**
+     * devops_branch表的last_commit_message的最大长度限制
+     */
+    public static final int DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH = 510;
 }

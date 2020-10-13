@@ -184,7 +184,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
                 devopsBranchDTO.setLastCommitDate(checkoutDate);
                 devopsBranchDTO.setLastCommit(checkoutSha);
-                devopsBranchDTO.setLastCommitMsg(commitDTO.getMessage());
+                devopsBranchDTO.setLastCommitMsg(LogUtil.cutOutString(commitDTO.getMessage(), MiscConstants.DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH));
                 devopsBranchDTO.setLastCommitUser(userId);
                 devopsBranchService.baseCreate(devopsBranchDTO);
             });

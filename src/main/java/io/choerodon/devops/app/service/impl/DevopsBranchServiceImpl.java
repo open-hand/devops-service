@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsBranchService;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -60,7 +62,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 .queryByAppAndBranchName(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName());
         oldDevopsBranchDTO.setLastCommit(devopsBranchDTO.getLastCommit());
         oldDevopsBranchDTO.setLastCommitDate(devopsBranchDTO.getLastCommitDate());
-        oldDevopsBranchDTO.setLastCommitMsg(devopsBranchDTO.getLastCommitMsg());
+        oldDevopsBranchDTO.setLastCommitMsg(LogUtil.cutOutString(devopsBranchDTO.getLastCommitMsg(), MiscConstants.DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH));
         oldDevopsBranchDTO.setLastCommitUser(devopsBranchDTO.getLastCommitUser());
         devopsBranchMapper.updateByPrimaryKey(oldDevopsBranchDTO);
     }
