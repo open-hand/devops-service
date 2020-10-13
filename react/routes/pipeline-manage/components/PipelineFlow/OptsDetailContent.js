@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Spin } from 'choerodon-ui';
 import map from 'lodash/map';
 import isEqual from 'lodash/isEqual';
 import DetailHeader from './components/detailHeader';
@@ -9,26 +8,31 @@ import DetailColumn from './components/detailColumn';
 import Loading from '../../../../components/loading';
 import EmptyPage from '../../../../components/empty-page';
 import { usePipelineManageStore } from '../../stores';
+import { usePipelineFlowStore } from './stores';
 
 export default observer((props) => {
-  const {
-    gitlabPipelineId,
-    detailStore,
-    projectId,
-    status: treeStatus,
-    treeDs,
-    stageRecordVOS: treeStageRecordVOList,
-    cdRecordId,
-    devopsPipelineRecordRelId,
-    viewId,
-  } = props;
   const {
     intl: { formatMessage },
     intlPrefix,
     mainStore,
     history,
     location,
+    detailStore,
+    projectId,
+    treeDs,
   } = usePipelineManageStore();
+
+  const {
+    getSelectedMenu,
+    handleRefresh,
+  } = usePipelineFlowStore();
+
+  const {
+    status: treeStatus,
+    stageRecordVOS: treeStageRecordVOList,
+    devopsPipelineRecordRelId,
+    viewId,
+  } = getSelectedMenu;
 
   const {
     loadDetailData,
@@ -38,7 +42,7 @@ export default observer((props) => {
 
   useEffect(() => {
     devopsPipelineRecordRelId && loadDetailData(projectId, devopsPipelineRecordRelId);
-  }, [projectId, cdRecordId, devopsPipelineRecordRelId]);
+  }, [projectId, devopsPipelineRecordRelId]);
 
   // stageRecordVOS: 各个详情阶段记录,包括ci和cd的
   // devopsCipiplineVO: 本流水线记录得信息
@@ -51,13 +55,15 @@ export default observer((props) => {
     gitlabTriggerRef,
     commit,
     devopsPipelineRecordRelId: recordDevopsPipelineRecordRelId,
+    cdRecordId,
     viewId: loadViewId,
   } = getDetailData;
 
   useEffect(() => {
     const treeStatusList = map(treeStageRecordVOList || [], 'status');
     const detailStatusList = map(stageRecordVOS || [], 'status');
-    if (devopsPipelineRecordRelId === recordDevopsPipelineRecordRelId && (status !== treeStatus || !isEqual(detailStatusList, treeStatusList))) {
+    const treeIsEqual = status !== treeStatus || !isEqual(detailStatusList, treeStatusList);
+    if (devopsPipelineRecordRelId === recordDevopsPipelineRecordRelId && (treeIsEqual)) {
       treeDs && treeDs.query();
     }
   }, [pipelineRecordId]);
@@ -65,19 +71,21 @@ export default observer((props) => {
   const renderStage = () => (
     stageRecordVOS && stageRecordVOS.length > 0 ? stageRecordVOS.map((item) => {
       const {
-        name, status: stageStatus, durationSeconds, sequence, stageId,
+        name, status: stageStatus, durationSeconds, sequence, type, jobRecordVOList, stageId,
       } = item;
       return (
         <DetailColumn
           key={sequence}
-          piplineName={name}
-          seconds={durationSeconds}
-          piplineStatus={stageStatus}
-          stageId={stageId}
+          piplineStageName={name}
+          stageSeconds={durationSeconds}
+          piplineStageStatus={stageStatus}
           history={history}
           location={location}
-          {...item}
-          {...props}
+          handleRefresh={handleRefresh}
+          stageType={type}
+          jobRecordVOList={jobRecordVOList}
+          stageId={stageId}
+          cdRecordId={cdRecordId}
         />
       );
     }) : (
@@ -107,7 +115,6 @@ export default observer((props) => {
             {renderStage()}
           </div>
         </div>
-      )
-      : <Loading display={getDetailLoading} />
+      ) : <Loading display={getDetailLoading} />
   );
 });

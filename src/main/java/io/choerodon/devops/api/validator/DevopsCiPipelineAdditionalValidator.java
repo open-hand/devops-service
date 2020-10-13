@@ -79,6 +79,20 @@ public class DevopsCiPipelineAdditionalValidator {
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
                     });
                 });
+        ciCdPipelineVO.getDevopsCdStageVOS()
+                .stream()
+                .forEach(stage -> {
+                    if (CollectionUtils.isEmpty(stage.getJobList())) {
+                        return;
+                    }
+
+                    // 校验stage名称唯一
+                    validateStageNameUniqueInPipeline(stage.getName(), stageNames);
+
+                    stage.getJobList().forEach(job -> {
+                        validateJobNameUniqueInPipeline(job.getName(), jobNames);
+                    });
+                });
     }
 
     /**

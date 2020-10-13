@@ -2,6 +2,7 @@ import uuidV1 from 'uuid/v1';
 import { axios } from '@choerodon/boot';
 import forEach from 'lodash/forEach';
 import JSONbig from 'json-bigint';
+import addCDTaskDataSetMap from './addCDTaskDataSetMap';
 
 function getDefaultInstanceName(appServiceCode) {
   return appServiceCode
@@ -60,6 +61,35 @@ export default (
       label: '关联应用服务',
       required: true,
       disabled: true,
+    },
+    {
+      name: addCDTaskDataSetMap.apiTestMission,
+      type: 'string',
+      label: 'API测试任务',
+      textField: 'name',
+      valueField: 'id',
+      dynamicProps: {
+        required: ({ record }) => record.get('type') === addCDTaskDataSetMap.apiTest,
+      },
+      lookupAxiosConfig: () => ({
+        method: 'get',
+        url: `/test/v1/projects/${projectId}/api_test/tasks/paging?random=${random}`,
+        transformResponse: (res) => {
+          let newRes = res;
+          try {
+            newRes = JSON.parse(res);
+            useStore.setApiTestArray(newRes.content);
+            return newRes;
+          } catch (e) {
+            return newRes;
+          }
+        },
+      }),
+    },
+    {
+      name: addCDTaskDataSetMap.relativeMission,
+      type: 'string',
+      label: '关联部署任务',
     },
     {
       name: 'triggerType',
@@ -179,10 +209,45 @@ export default (
       },
     },
     {
+      name: addCDTaskDataSetMap.hostSource,
+      type: 'string',
+      label: '主机来源',
+      defaultValue: addCDTaskDataSetMap.alreadyhost,
+    },
+    {
+      name: addCDTaskDataSetMap.host,
+      type: 'string',
+      label: '主机',
+      textField: 'name',
+      valueField: 'id',
+      lookupAxiosConfig: () => ({
+        method: 'post',
+        url: `/devops/v1/projects/${projectId}/hosts/page_by_options?random=${random}`,
+        data: {
+          searchParam: {
+            type: 'deploy',
+          },
+          params: [],
+        },
+        transformResponse: (res) => {
+          let newRes = res;
+          try {
+            newRes = JSONbig.parse(newRes);
+            useStore.setHostList(newRes.content);
+            return newRes;
+          } catch (e) {
+            return newRes;
+          }
+        },
+      }),
+    },
+    {
       name: 'hostIp',
       type: 'string',
       label: 'IP',
       dynamicProps: {
+        disabled: ({ record }) => record.get(addCDTaskDataSetMap.hostSource)
+          === addCDTaskDataSetMap.alreadyhost,
         required: ({ record }) => record.get('type') === 'cdHost',
       },
     },
@@ -191,6 +256,8 @@ export default (
       type: 'string',
       label: '端口',
       dynamicProps: {
+        disabled: ({ record }) => record.get(addCDTaskDataSetMap.hostSource)
+          === addCDTaskDataSetMap.alreadyhost,
         required: ({ record }) => record.get('type') === 'cdHost',
       },
     },
@@ -205,7 +272,7 @@ export default (
       type: 'string',
       label: '用户名',
       dynamicProps: {
-        required: ({ record }) => record.get('type') === 'cdHost',
+        required: ({ record }) => record.get('type') === 'cdHost' && record.get(addCDTaskDataSetMap.hostSource) === addCDTaskDataSetMap.customhost,
       },
     },
     {
@@ -214,7 +281,7 @@ export default (
       label: '密码',
       dynamicProps: {
         required: ({ record }) => record.get('type') === 'cdHost'
-          && record.get('accountType') === 'accountPassword',
+          && record.get('accountType') === 'accountPassword' && record.get(addCDTaskDataSetMap.hostSource) === addCDTaskDataSetMap.customhost,
       },
     },
     {
@@ -233,6 +300,12 @@ export default (
           && (record.get('hostDeployType') === 'image'
             || record.get('hostDeployType') === 'jar'),
       },
+    },
+    {
+      name: 'workingPath',
+      type: 'string',
+      label: '工作目录',
+      defaultValue: '/temp',
     },
     {
       name: 'pipelineTask',
@@ -528,6 +601,12 @@ export default (
         required: ({ record }) => record.get('type') === 'cdAudit'
           && record.get('cdAuditUserIds')?.length > 1,
       },
+    },
+    {
+      name: addCDTaskDataSetMap.whetherBlock,
+      type: 'boolean',
+      label: '是否阻塞后续阶段与任务',
+      defaultValue: true,
     },
   ],
 });

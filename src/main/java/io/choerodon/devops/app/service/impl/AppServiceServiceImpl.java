@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -35,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +85,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.*;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
@@ -127,6 +130,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
+    private static final String APPSERVICE = "app-service";
 
     /**
      * CI 文件模板
@@ -213,6 +217,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsCiCdPipelineMapper DevopsCiCdPipelineMapper;
     @Autowired
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
     static {
         InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
@@ -464,6 +472,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceMapper.deleteByPrimaryKey(appServiceId);
     }
+
     @Override
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
@@ -631,7 +640,15 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<Long> distinctIds = userIds.stream().distinct().collect(toList());
 
             Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
-            destination.setContent(applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(Collectors.toList()));
+            List<String> refIds = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> String.valueOf(appServiceDTO.getId())).collect(toList());
+            List<AppServiceRepVO> appServiceRepVOS = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
+            if (!CollectionUtils.isEmpty(refIds)) {
+                Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APPSERVICE, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE));
+                appServiceRepVOS.forEach(appServiceRepVO -> {
+                    appServiceRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(appServiceRepVO.getId())));
+                });
+            }
+            destination.setContent(appServiceRepVOS);
         } else {
             destination.setContent(new ArrayList<>());
         }
@@ -910,7 +927,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
                 // 将所有的tag推送到远程
                 List<Ref> tags = repositoryGit.tagList().call();
-                for (Ref tag: tags) {
+                for (Ref tag : tags) {
                     gitUtil.pushLocalTag(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, tag.getName());
                 }
 
@@ -1549,10 +1566,15 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             });
             sonarContentsVO.setSonarContents(sonarContentVOS);
+            cacheSonarContents(projectId, appServiceId, sonarContentsVO);
         } catch (IOException e) {
             throw new CommonException(e);
         }
         return sonarContentsVO;
+    }
+
+    private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
+        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO));
     }
 
     public String getTimestampTimeV17(String str) {
@@ -2784,5 +2806,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void fixAppServiceVersion() {
         devopsTask.fixAppServiceVersion(null);
+    }
+
+    @Override
+    public SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId) {
+        String json = redisTemplate.opsForValue().get(SONAR + ":" + projectId + ":" + appServiceId);
+        return JsonHelper.unmarshalByJackson(json, SonarContentsVO.class);
     }
 }

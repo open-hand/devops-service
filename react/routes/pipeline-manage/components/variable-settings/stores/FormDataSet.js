@@ -1,12 +1,16 @@
+/* eslint-disable consistent-return */
+
 import isEmpty from 'lodash/isEmpty';
 
 function handleLoad({ dataSet }) {
   if (!dataSet.length) {
-    dataSet.create();
+    dataSet.loadData([{ key: null, value: null }]);
   }
 }
 
-function handleUpdate({ value, name, record, dataSet }) {
+function handleUpdate({
+  value, name, record, dataSet,
+}) {
   if (name === 'key' && value) {
     dataSet.forEach((eachRecord) => {
       if (record.id !== eachRecord.id) {
@@ -22,7 +26,9 @@ function handleRemove({ dataSet }) {
   });
 }
 
-export default ({ formatMessage, intlPrefix, projectId, appServiceId, store }) => {
+export default ({
+  formatMessage, intlPrefix, projectId, appServiceId, store,
+}) => {
   const urlParams = appServiceId ? `app_service_id=${appServiceId}&level=app` : 'level=project';
   function checkKey(value, name, record) {
     const p = /^([_A-Za-z0-9])+$/;
@@ -33,7 +39,7 @@ export default ({ formatMessage, intlPrefix, projectId, appServiceId, store }) =
       return formatMessage({ id: `${intlPrefix}.settings.check.empty` });
     }
     if (p.test(value)) {
-      const dataSet = record.dataSet;
+      const { dataSet } = record;
       const repeatRecord = dataSet.find((eachRecord) => eachRecord.id !== record.id && eachRecord.get('key') === value);
       if (repeatRecord) {
         return formatMessage({ id: `${intlPrefix}.settings.check.exist` });
@@ -59,6 +65,7 @@ export default ({ formatMessage, intlPrefix, projectId, appServiceId, store }) =
         dataSet.toData().forEach((item) => {
           if (!isEmpty(item) && item.key) {
             if (!item.value) {
+              // eslint-disable-next-line no-param-reassign
               item.value = '';
             }
             res.push(item);
@@ -72,7 +79,9 @@ export default ({ formatMessage, intlPrefix, projectId, appServiceId, store }) =
       },
     },
     fields: [
-      { name: 'key', type: 'string', label: formatMessage({ id: 'key' }), validator: checkKey },
+      {
+        name: 'key', type: 'string', label: formatMessage({ id: 'key' }), validator: checkKey,
+      },
       { name: 'value', type: 'string', label: formatMessage({ id: 'value' }) },
     ],
     events: {

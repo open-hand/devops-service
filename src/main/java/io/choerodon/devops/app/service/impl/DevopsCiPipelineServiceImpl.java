@@ -56,6 +56,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 
@@ -488,6 +489,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(longs);
                     devopsCdJobVO.setIamUserDTOS(iamUserDTOS);
                     devopsCdJobVO.setCdAuditUserIds(longs);
+                } else if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobVO.getType())) {
+                    CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobVO.getMetadata(), CdApiTestConfigVO.class);
+                    // 将主键加密，再序列化为json
+                    devopsCdJobVO.setMetadata(KeyDecryptHelper.encryptJson(cdApiTestConfigVO));
                 }
             }
         }
@@ -531,7 +536,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public List<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name) {
+    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name, PageRequest pageRequest) {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
@@ -545,15 +550,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else {
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
-                return new ArrayList<>();
+                return new Page<>();
             }
         }
         // 查询流水线
-        List<CiCdPipelineVO> ciCdPipelineVOS = ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name);
+        Page<CiCdPipelineVO> pageAndSort = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name));
         // 封装流水线记录
         PageRequest cicdPipelineRel = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsPipelineRecordRelDTO.FIELD_ID)));
         //每条流水线默认展示5条记录
-        ciCdPipelineVOS.forEach(ciCdPipelineVO -> {
+        pageAndSort.getContent().forEach(ciCdPipelineVO -> {
             List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = new ArrayList<>();
             // 查询cicd关系表
             Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOPage = devopsPipelineRecordRelService.pagingPipelineRel(ciCdPipelineVO.getId(), cicdPipelineRel);
@@ -637,7 +642,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 CiCdPipelineUtils.fillViewId(ciCdPipelineVO.getCiCdPipelineRecordVOS());
             }
         });
-        return ciCdPipelineVOS;
+        return pageAndSort;
     }
 
     private boolean isFirstRecord(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
@@ -1437,6 +1442,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (t.getCdAuditUserIds().size() == 1) {
                 devopsCdJobDTO.setCountersigned(1);
             }
+        } else if (JobTypeEnum.CD_API_TEST.value().equals(t.getType())) {
+            // 使用能够解密主键加密的json工具解密
+            CdApiTestConfigVO cdApiTestConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
+            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
         }
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();

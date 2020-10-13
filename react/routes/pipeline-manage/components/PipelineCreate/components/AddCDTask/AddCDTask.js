@@ -18,6 +18,7 @@ import { Base64 } from 'js-base64';
 import { observer } from 'mobx-react-lite';
 import DeployConfig from '@/components/deploy-config';
 import JSONbig from 'json-bigint';
+import addCDTaskDataSetMap from './stores/addCDTaskDataSetMap';
 import { useAddCDTaskStore } from './stores';
 import YamlEditor from '../../../../../../components/yamlEditor';
 import Tips from '../../../../../../components/new-tips';
@@ -67,13 +68,22 @@ export default observer(() => {
     handleOk,
     jobDetail,
     pipelineStageMainSource,
+    columnIndex,
+    witchColumnJobIndex,
   } = useAddCDTaskStore();
 
   const [branchsList, setBranchsList] = useState([]);
   const [valueIdValues, setValueIdValues] = useState('');
   const [customValues, setCustomValues] = useState('# 自定义ssh指令\n# 比如部署镜像\n# 需要包括部署镜像指令以及二次触发部署的停用删除逻辑\ndocker stop mynginx & docker rm mynginx & docker run --name mynginx -d nginx:latest');
   const [imageDeployValues, setImageDeployValues] = useState('# docker run指令\n# 不可删除${containerName}和${imageName}占位符\n# 不可删除 -d: 后台运行容器\n# 其余参数可参考可根据需要添加\ndocker run --name=${containerName} -d ${imageName}');
-  const [jarValues, setJarValues] = useState('# java -jar指令\n# 不可删除${jar}\n# java -jar 后台运行参数会自动添加 不需要在重复添加\n# 其余参数可参考可根据需要添加\njava -jar ${jar}\n# jar包下载存放目录为：/temp-jar/xxx.jar 日志存放目录为：/temp-log/xxx.log\n# 请确保用户有该目录操作权限 ');
+  const [jarValues, setJarValues] = useState('# java -jar指令\n'
+    + '# 不可删除${jar}\n'
+    + '# java -jar 后台运行参数会自动添加 不需要在重复添加\n'
+    + '# 其余参数可参考可根据需要添加\n'
+    + 'java -jar ${jar}\n'
+    + '# 默认工作目录，/temp，jar包下载存放目录为：/temp/jar/xxx.jar 日志存放目录为：/temp/log/xxx.log\n'
+    + '# 填写工作目录，jar包下载存放目录为：工作目录/jar/xxx.jar 日志存放目录为：工作目录/log/xxx.log\n'
+    + '# 请确保用户有该目录操作权限');
   const [testStatus, setTestStatus] = useState('');
   const [accountKeyValue, setAccountKeyValue] = useState('');
 
@@ -94,8 +104,17 @@ export default observer(() => {
         ds.instanceName = instanceName;
       }
     }
+    if (ds.type === addCDTaskDataSetMap.apiTest) {
+      ds.apiTestTaskName = ADDCDTaskUseStore.getApiTestArray
+        .find((i) => i.id == ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.apiTestMission)).name;
+      ds[addCDTaskDataSetMap.relativeMission] = ADDCDTaskDataSet
+        .current
+        .get(addCDTaskDataSetMap.relativeMission);
+    }
     if (ds.type === 'cdHost') {
       ds.hostConnectionVO = {
+        [addCDTaskDataSetMap.hostSource]: ds[addCDTaskDataSetMap.hostSource],
+        [addCDTaskDataSetMap.host]: ds[addCDTaskDataSetMap.host],
         hostIp: ds.hostIp,
         hostPort: ds.hostPort,
         accountType: ds.accountType,
@@ -156,6 +175,7 @@ export default observer(() => {
             value: Base64.encode(jarValues),
           };
         }
+        ds.jarDeploy.workingPath = ds.workingPath;
       }
     }
 
@@ -164,7 +184,7 @@ export default observer(() => {
   }
 
   const handleAdd = async () => {
-    const result = await ADDCDTaskDataSet.validate();
+    const result = await ADDCDTaskDataSet.current.validate(true);
     if (result) {
       const ds = JSON.parse(JSON.stringify(ADDCDTaskDataSet.toData()[0]));
       if (ds.type === 'cdHost') {
@@ -199,13 +219,23 @@ export default observer(() => {
       if (jobDetail.type === 'cdDeploy') {
         const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         value && setValueIdValues(Base64.decode(value));
+      } else if (jobDetail.type === addCDTaskDataSetMap.apiTest) {
+        if (jobDetail.metadata) {
+          const metadata = JSONbig.parse(jobDetail.metadata.replace(/'/g, '"'));
+          extra[addCDTaskDataSetMap.relativeMission] = metadata[
+            addCDTaskDataSetMap.relativeMission];
+        }
       } else if (jobDetail.type === 'cdHost') {
-        const metadata = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
+        const metadata = JSONbig.parse(jobDetail.metadata.replace(/'/g, '"'));
         extra = {
           ...metadata?.hostConnectionVO,
           ...metadata?.jarDeploy,
           ...metadata?.imageDeploy,
         };
+        // 如果初始值没有主机来源值 说明是老数据 前端默认将主机来源设置成自定义
+        if (!extra[addCDTaskDataSetMap.hostSource]) {
+          extra[addCDTaskDataSetMap.hostSource] = addCDTaskDataSetMap.customhost;
+        }
         if (extra?.accountKey) {
           setAccountKeyValue(Base64.decode(extra.accountKey));
         }
@@ -326,10 +356,14 @@ export default observer(() => {
       userName,
       password,
       accountType,
+      [addCDTaskDataSetMap.host]: host,
     } = ADDCDTaskDataSet.toData()[0];
     axios
       .post(
-        `/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`,
+        ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.hostSource)
+        === addCDTaskDataSetMap.alreadyhost
+          ? `/devops/v1/projects/${projectId}/hosts/connection_test_by_id?host_id=${host}`
+          : `/devops/v1/projects/${projectId}/cicd_pipelines/test_connection`,
         {
           hostIp,
           hostPort,
@@ -415,6 +449,64 @@ export default observer(() => {
     <a style={{ width: '100%', display: 'inline-block' }} role="none" onClick={(e) => handleClickCreateValue(e)}>{text}</a>) : text);
 
   const optionRenderValueId = ({ value, text, record }) => rendererValueId({ text });
+
+  const renderHostSetting = () => {
+    const value = ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.hostSource);
+    if (value === addCDTaskDataSetMap.alreadyhost) {
+      return [
+        <div
+          colSpan={2}
+          style={{
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative',
+          }}
+          newLine
+        >
+          <Select
+            style={{ flex: 1 }}
+            name={addCDTaskDataSetMap.host}
+            onChange={(value2) => {
+              const item = ADDCDTaskUseStore.getHostList.find((i) => i.id == value2);
+              ADDCDTaskDataSet.current.set('hostIp', item.hostIp);
+              ADDCDTaskDataSet.current.set('hostPort', item.sshPort);
+            }}
+          />
+          <div style={{ flex: 1, marginLeft: 16 }}>
+            <TextField style={{ width: '100%' }} name="hostIp" />
+          </div>
+          <div style={{ flex: 1, marginLeft: 16 }}>
+            <TextField style={{ width: '100%' }} name="hostPort" />
+          </div>
+        </div>,
+      ];
+    }
+    return [
+      <TextField newLine colSpan={1} name="hostIp" />,
+      <TextField colSpan={1} name="hostPort" />,
+      <SelectBox colSpan={1} name="accountType" className="addcdTask-mode">
+        <Option value="accountPassword">用户名与密码</Option>
+        <Option value="accountKey">用户名与密钥</Option>
+      </SelectBox>,
+      <TextField colSpan={1} newLine name="userName" />,
+        ADDCDTaskDataSet?.current?.get('accountType')
+        === 'accountPassword' ? (
+          <Password colSpan={1} name="password" />
+          ) : (
+            [
+              <p newLine colSpan={1} className="addcdTask-accountKeyP">
+                密钥
+              </p>,
+              <YamlEditor
+                colSpan={2}
+                newLine
+                readOnly={false}
+                value={accountKeyValue}
+                modeChange={false}
+                onValueChange={(data) => setAccountKeyValue(data)}
+              />,
+            ]
+          ),
+    ];
+  };
 
   const getOtherConfig = () => {
     function getModeDom() {
@@ -524,6 +616,26 @@ export default observer(() => {
           currentDepoySource === 'matchDeploy' && (
             <TextField colSpan={6} name="versionRegular" />
           ),
+          <TextField
+            addonAfter={(
+              <Tips
+                helpText={(
+                  <>
+                    <p style={{ margin: 0 }}>
+                      默认工作目录为：/temp，而默认的jar包下载存放目录为：/temp/jar/xxx.jar，
+                      默认日志存放目录为：/temp/log/xxx.log
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      若此处填写了自定义工作目录,即表示,
+                      jar包下载存放目录为:工作目录/jar/xxx.jar 日志存放目录为:工作目录/log/xxx.log
+                    </p>
+                  </>
+                )}
+              />
+            )}
+            colSpan={3}
+            name="workingPath"
+          />,
           <YamlEditor
             colSpan={6}
             newLine
@@ -575,37 +687,29 @@ export default observer(() => {
           columns={2}
           dataSet={ADDCDTaskDataSet}
         >
-          <TextField colSpan={1} name="hostIp" />
-          <TextField colSpan={1} name="hostPort" />
-          <SelectBox colSpan={1} name="accountType" className="addcdTask-mode">
-            <Option value="accountPassword">用户名与密码</Option>
-            <Option value="accountKey">用户名与密钥</Option>
+          <SelectBox
+            style={{ top: '16px' }}
+            colSpan={1}
+            name={addCDTaskDataSetMap.hostSource}
+            onChange={() => {
+              ADDCDTaskDataSet.current.set(addCDTaskDataSetMap.host, undefined);
+              ADDCDTaskDataSet.current.set('hostIp', undefined);
+              ADDCDTaskDataSet.current.set('hostPort', undefined);
+            }}
+          >
+            <Option value={addCDTaskDataSetMap.alreadyhost}>已有主机</Option>
+            <Option value={addCDTaskDataSetMap.customhost}>自定义主机</Option>
           </SelectBox>
-          <TextField colSpan={1} newLine name="userName" />
-          {ADDCDTaskDataSet?.current?.get('accountType')
-          === 'accountPassword' ? (
-            <Password colSpan={1} name="password" />
-          ) : (
-            [
-              <p newLine colSpan={1} className="addcdTask-accountKeyP">
-                密钥
-              </p>,
-              <YamlEditor
-                colSpan={2}
-                newLine
-                readOnly={false}
-                value={accountKeyValue}
-                modeChange={false}
-                onValueChange={(data) => setAccountKeyValue(data)}
-              />,
-            ]
-          )}
-          <div colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
+          {renderHostSetting()}
+          <div newLine colSpan={2} style={{ display: 'flex', alignItems: 'center' }}>
             <Button
               disabled={
-                !ADDCDTaskDataSet.current.get('hostIp')
+                ADDCDTaskDataSet.current.get(
+                  addCDTaskDataSetMap.hostSource,
+                ) === addCDTaskDataSetMap.customhost
+                  ? (!ADDCDTaskDataSet.current.get('hostIp')
                 || !ADDCDTaskDataSet.current.get('hostPort')
-                || !ADDCDTaskDataSet.current.get('userName')
+                || !ADDCDTaskDataSet.current.get('userName')) : !ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.host)
               }
               onClick={handleTestConnect}
               style={{ marginRight: 20 }}
@@ -638,6 +742,16 @@ export default observer(() => {
           </SelectBox>
           ,
           {getModeDom()}
+        </Form>,
+      ],
+      [addCDTaskDataSetMap.apiTest]: [
+        <div className="addcdTask-divided" />,
+        <p className="addcdTask-title">执行设置</p>,
+        <Form style={{ marginTop: 20 }} columns={2} dataSet={ADDCDTaskDataSet}>
+          <SelectBox name={addCDTaskDataSetMap.whetherBlock}>
+            <Option value>是</Option>
+            <Option value={false}>否</Option>
+          </SelectBox>
         </Form>,
       ],
     };
@@ -768,6 +882,27 @@ export default observer(() => {
 
   const optionRenderer = ({ record, text, value }) => renderer({ record, text, value });
 
+  /**
+   * 渲染关联部署任务options
+   */
+  const renderRelatedMission = () => {
+    let lists = [];
+    pipelineStageMainSource.forEach((i, iIndex) => {
+      // 是cd阶段
+      if (i.type === 'CD') {
+        // 如果遍历列小于当前列 则直接存入joblist
+        if ((iIndex < columnIndex - 1)) {
+          lists = [...lists, ...i.jobList];
+        } else {
+          //  如果遍历列是当切列
+          lists = [...lists, ...i.jobList.splice(0, witchColumnJobIndex - 1)];
+        }
+      }
+    });
+    // 返回任务是部署任务的options
+    return lists.filter((l) => l.type === 'cdDeploy').map((i) => <Option value={i.name}>{i.name}</Option>);
+  };
+
   return (
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
@@ -785,6 +920,9 @@ export default observer(() => {
               accountType: 'accountPassword',
               hostDeployType: 'image',
               deploySource: 'pipelineDeploy',
+              [addCDTaskDataSetMap.hostSource]: addCDTaskDataSetMap.alreadyhost,
+              workingPath: '/temp',
+              name: ADDCDTaskDataSet.current.get('name') || undefined,
             },
           ])}
           colSpan={1}
@@ -793,6 +931,7 @@ export default observer(() => {
           <Option value="cdDeploy">部署</Option>
           <Option value="cdHost">主机部署</Option>
           <Option value="cdAudit">人工卡点</Option>
+          <Option value={addCDTaskDataSetMap.apiTest}>API测试</Option>
         </Select>
         <TextField colSpan={2} name="name" />
         <TextField colSpan={1} name="glyyfw" />
@@ -842,6 +981,14 @@ export default observer(() => {
             </Select>
           )}
         </div>
+        {
+          ADDCDTaskDataSet.current.get('type') === addCDTaskDataSetMap.apiTest && [
+            <Select newLine colSpan={1} name={addCDTaskDataSetMap.apiTestMission} />,
+            <Select colSpan={2} name={addCDTaskDataSetMap.relativeMission}>
+              {renderRelatedMission()}
+            </Select>,
+          ]
+        }
         {ADDCDTaskDataSet?.current?.get('type') === 'cdDeploy' && [
           <Select
             colSpan={1}

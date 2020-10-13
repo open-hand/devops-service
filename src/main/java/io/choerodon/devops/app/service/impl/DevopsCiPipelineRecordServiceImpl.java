@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,6 +85,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final AppServiceVersionMapper appServiceVersionMapper;
+    private StringRedisTemplate stringRedisTemplate;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -107,7 +109,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
                                              @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
                                              DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
-                                             AppServiceVersionMapper appServiceVersionMapper
+                                             AppServiceVersionMapper appServiceVersionMapper,
+                                             StringRedisTemplate stringRedisTemplate
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
@@ -129,6 +132,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.appServiceVersionMapper = appServiceVersionMapper;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     @Override
@@ -260,6 +264,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
+                // sonar任务执行成功后，缓存sonar信息到redis
+                if (PipelineStatus.SUCCESS.toValue().equals(ciJobWebHookVO.getStatus())
+                        && JobTypeEnum.SONAR.value().equals(devopsCiJobRecordDTO.getType())) {
+                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+                    applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+                }
             }
         });
     }
@@ -454,24 +465,26 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
                     devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
                 }
-                SonarContentsVO sonarContentsVO = applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
-                    List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
-                    List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
-                        return SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
-                                || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                                || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
-                    }).collect(Collectors.toList());
-                    // 执行成功的添加覆盖率
-                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                // 执行成功的添加sonar信息
+                if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                    SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+                    if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+                        List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+                        List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
+                            return SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+                                    || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+                                    || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
+                        }).collect(Collectors.toList());
+
                         sonarContents.forEach(v -> {
                             if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
                                 devopsCiJobRecordVO.setCodeCoverage(v.getValue());
                             }
                         });
+                        devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                     }
-                    devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
                 }
+
             }
             //release阶段，添加版本的信息
             if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())) {

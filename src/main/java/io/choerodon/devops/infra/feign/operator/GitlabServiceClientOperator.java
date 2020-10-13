@@ -1119,4 +1119,8 @@ public class GitlabServiceClientOperator {
     public MemberDTO getMember(Long gitlabProjectId, Long gitlabUserId) {
         return gitlabServiceClient.getProjectMember(gitlabProjectId.intValue(), gitlabUserId.intValue()).getBody();
     }
+
+    public List<Long> listMergeRequestIds(Integer gitlabProjectId) {
+        return gitlabServiceClient.listIds(gitlabProjectId).getBody();
+    }
 }

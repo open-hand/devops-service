@@ -39,6 +39,25 @@ services:
     username: admin
     password: password
 hzero:
+  service:
+    platform:
+      name: choerodon-platform
+    oauth:
+      name: choerodon-oauth
+    iam:
+      name: choerodon-iam
+    file:
+      name: choerodon-file
+    message:
+      name: choerodon-message
+    admin:
+      name: choerodon-admin
+    swagger:
+      name: choerodon-swagger
+    gateway:
+      name: choerodon-gateway
+    monitor:
+      name: choerodon-monitor
   websocket:
     # 用于连接websocket的路径
     websocket: /websocket
@@ -48,6 +67,7 @@ hzero:
     secretKey: devops_ws
 choerodon:
   saga:
+    service: choerodon-asgard
     consumer:
       core-thread-num: 20
       max-thread-num:  20 # 消费线程数
@@ -118,6 +138,10 @@ logging:
 
 
 devops:
+  # 占用主机的过期时间, 超过这个时间, 主机会被释放
+  host:
+    occupy:
+      timeout-hours: 24
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     default:

@@ -96,6 +96,18 @@ public class AppServiceRepVO {
     @ApiModelProperty("来源项目名")
     private String shareProjectName;
 
+    @ApiModelProperty("事务实例id")
+    @Encrypt
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
+
     public String getShareProjectName() {
         return shareProjectName;
     }

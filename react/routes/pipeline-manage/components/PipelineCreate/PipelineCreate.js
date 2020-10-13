@@ -1,9 +1,9 @@
 import { axios } from '@choerodon/boot';
 import React, {
-  useEffect, useState, Fragment, useRef,
+  useEffect, useState,
 } from 'react';
 import {
-  Form, TextField, Select, SelectBox, Modal, Button, DataSet,
+  Form, TextField, Select, SelectBox,
 } from 'choerodon-ui/pro';
 import { message, Icon, Tooltip } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
@@ -36,7 +36,7 @@ const PipelineCreate = observer(() => {
   useEffect(() => {
     if (dataSource) {
       const {
-        name, appServiceId, image, stageList, versionName,
+        name, appServiceId, image, versionName,
       } = dataSource;
       PipelineCreateFormDataSet.loadData([{
         name,
@@ -218,7 +218,7 @@ const PipelineCreate = observer(() => {
                 />
               </Tooltip>
             </div>,
-            PipelineCreateFormDataSet.current.get('bbcl') && (
+            PipelineCreateFormDataSet.current.get('bbcl') ? (
               <TextField
                 newLine
                 colSpan={2}
@@ -236,6 +236,15 @@ const PipelineCreate = observer(() => {
                   />
 )}
                 name="versionName"
+              />
+            ) : (
+              <TextField
+                newLine
+                colSpan={2}
+                addonAfter={(
+                  <Tips helpText="平台默认的版本命名规则为：${C7N_COMMIT_TIME}-${C7N_BRANCH}，即表示该流水线中生成的版本名称为”时间戳+分支名" />
+                           )}
+                name="versionNameRules"
               />
             ),
           ] : ''

@@ -123,6 +123,12 @@ export default (AppServiceOptionsDs, projectId, createUseStore, dataSource, math
         required: ({ record }) => record.get('bbcl'),
       },
     }, {
+      name: 'versionNameRules',
+      type: 'string',
+      label: '版本命名规则',
+      disabled: true,
+      defaultValue: '${C7N_COMMIT_TIME}-${C7N_BRANCH}',
+    }, {
       name: 'triggerType',
       type: 'string',
       label: '触发方式',

@@ -33,12 +33,12 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
 
 ## 服务依赖
 
-* `hzero-register`: 注册中心，在线上环境代替本地的`eureka-server`
-* `hzero-iam`：用户服务，与用户有关的操作依赖与此服务
-* `hzero-gateway`: 网关服务
-* `hzero-oauth`: 授权服务
-* `hzero-asgard` : 事务一致性服务
-* `hzero-message` : 通知服务
+* `choerodon-register`: 注册中心，在线上环境代替本地的`eureka-server`
+* `choerodon-iam`：用户服务，与用户有关的操作依赖与此服务
+* `choerodon-gateway`: 网关服务
+* `choerodon-oauth`: 授权服务
+* `choerodon-asgard` : 事务一致性服务
+* `choerodon-message` : 通知服务
 * `gitlab-service`：gitlab服务
 * `workflow-service`：工作流服务
 * `agile-service`：敏捷服务，查询与分支有关的敏捷Issue需要依赖此服务
@@ -211,7 +211,7 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
    git clone https://github.com/choerodon/devops-service.git
    ```
 
-3. 在项目根目录执行命令： `sh init-database.sh`
+3. 在项目根目录执行命令： `mvn clean package spring-boot:repackage -Dmaven.test.skip=true && bash init-database.sh`
 
 4. 使用下列命令运行或直接在集成环境中运行 `DevopsServiceApplication` 
 

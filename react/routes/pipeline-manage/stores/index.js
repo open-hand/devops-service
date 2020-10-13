@@ -33,9 +33,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
           children: '您的修改尚未保存，确定要离开吗?',
           onOk: () => {
             store.setSelectedMenu(data);
+            // eslint-disable-next-line no-param-reassign
             record.isSelected = true;
             setHasModify(false, false);
           },
+          // eslint-disable-next-line no-param-reassign
           onCancel: () => { previous.isSelected = true; record.isSelected = false; },
         });
       } else {

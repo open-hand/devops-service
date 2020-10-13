@@ -37,5 +37,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_artifact_record.groovy') {
         }
     }
 
-    // TODO 0.23版本删除
+    changeSet(author: "zmf", id: "2020-09-13-delete-ci-artifact-table") {
+        preConditions(onFail: "MARK_RAN") {
+            tableExists(tableName: "devops_ci_job_artifact_record")
+        }
+        dropTable(tableName: "devops_ci_job_artifact_record")
+    }
 }

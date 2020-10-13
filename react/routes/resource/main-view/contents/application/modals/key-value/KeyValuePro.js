@@ -1,11 +1,19 @@
-import React, { Fragment, useState, useEffect, useMemo, useCallback } from 'react';
+import React, {
+  Fragment, useState, useEffect, useMemo, useCallback,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import { Choerodon } from '@choerodon/boot';
-import { Form, DataSet, TextField, TextArea } from 'choerodon-ui/pro';
-import { Button, Icon, Table, Tooltip } from 'choerodon-ui';
-import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
+import {
+  Form, DataSet, TextField, TextArea,
+} from 'choerodon-ui/pro';
+import {
+  Button, Icon, Table, Tooltip,
+} from 'choerodon-ui';
+import {
+  objToYaml, yamlToObj, takeObject, ConfigNode, makePostData,
+} from '../utils';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import { handlePromptError } from '../../../../../../../utils';
 import { useKeyValueStore } from './stores';
@@ -44,7 +52,6 @@ const FormView = observer(() => {
   const [valueErrorMsg, setValueErrorMsg] = useState('');
 
   const [isSubmit, setIsSubmit] = useState(false);
-
 
   useEffect(() => {
     async function callBack() {
@@ -88,6 +95,7 @@ const FormView = observer(() => {
     const values = Object.values(yamlObj);
 
     let error = false;
+    // eslint-disable-next-line no-plusplus
     for (let i = 0, len = values.length; i < len; i++) {
       if (typeof values[i] !== 'string' || values[i] === '') {
         error = true;
@@ -108,6 +116,7 @@ const FormView = observer(() => {
    */
   const checkErrorData = (dataCurrent = null, isSubmitCurrent = false) => {
     const dataSource = KeyValueDataSet.toData();
+    // eslint-disable-next-line no-underscore-dangle
     const _data = dataCurrent || dataSource;
     const hasKey = _data.filter(({ key }) => !_.isEmpty(key));
     const onlyHasValue = _data.filter(({ key, value }) => _.isEmpty(key) && !_.isEmpty(value));
@@ -170,7 +179,7 @@ const FormView = observer(() => {
       const dataSource = KeyValueDataSet.toData();
       if (!isYamlEdit) {
         hasKVError = checkErrorData(null, true);
-        const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
+        const allData = [...dataSource.filter((item) => !_.isEmpty(item.key))];
         configData = allData;
       } else {
         hasConfigRuleError = checkConfigRuleError();
@@ -181,6 +190,7 @@ const FormView = observer(() => {
         resolve(false);
       } else {
         setHasItemError(false);
+        // eslint-disable-next-line no-underscore-dangle
         const _value = takeObject(configData);
         const dto = {
           name,
@@ -213,9 +223,8 @@ const FormView = observer(() => {
         if (handlePromptError(res)) {
           refresh();
           return true;
-        } else {
-          return false;
         }
+        return false;
       } catch (error) {
         Choerodon.handleResponseError(error);
         return false;
@@ -225,7 +234,7 @@ const FormView = observer(() => {
     }
   };
 
-  const getDataSourceMapFormItem = () => KeyValueDataSet.data.map(record => (
+  const getDataSourceMapFormItem = () => KeyValueDataSet.data.map((record) => (
     <Form record={record} key={record.id}>
       <div className="c7n-config-container">
         <TextField
@@ -261,25 +270,31 @@ const FormView = observer(() => {
   const getConfigMap = () => {
     let configMap = null;
     if (!isYamlEdit) {
-      configMap = <Fragment>
-        {getDataSourceMapFormItem()}
-        <Button icon="add" onClick={handleAdd} type="primary">
-          <FormattedMessage id={`${intlPrefix}.${title}.add`} />
-        </Button>
-        {hasItemError ? <div className="c7n-cm-warning">{warningMes}</div> : null}
-      </Fragment>;
+      configMap = (
+        <>
+          {getDataSourceMapFormItem()}
+          <Button icon="add" onClick={handleAdd} type="primary">
+            <FormattedMessage id={`${intlPrefix}.${title}.add`} />
+          </Button>
+          {hasItemError ? <div className="c7n-cm-warning">{warningMes}</div> : null}
+        </>
+      );
     } else {
-      configMap = <Fragment>
-        <YamlEditor
-          readOnly={false}
-          modeChange={false}
-          value={dataYaml}
-          onValueChange={changeYamlValue}
-          handleEnableNext={checkYamlError}
-        />
-        <div className="c7ncd-config-yaml-tip">{hasValueError && (valueErrorMsg
-          || <FormattedMessage id="configMap.yaml.error" />)}</div>
-      </Fragment>;
+      configMap = (
+        <>
+          <YamlEditor
+            readOnly={false}
+            modeChange={false}
+            value={dataYaml}
+            onValueChange={changeYamlValue}
+            handleEnableNext={checkYamlError}
+          />
+          <div className="c7ncd-config-yaml-tip">
+            {hasValueError && (valueErrorMsg
+          || <FormattedMessage id="configMap.yaml.error" />)}
+          </div>
+        </>
+      );
     }
 
     return configMap;
@@ -345,7 +360,8 @@ const FormView = observer(() => {
   };
 
   const checkButtonDisabled = (isSubmitCurrent = false) => {
-    !isSubmitCurrent && modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError } });
+    !isSubmitCurrent
+    && modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError } });
     setIsSubmit(false);
   };
 
@@ -370,21 +386,25 @@ const FormView = observer(() => {
         </Form>
         <div className="c7n-sidebar-from-title">
           <FormattedMessage id={`${intlPrefix}.${title}.head`} />
-          {!isYamlEdit && <Tooltip
+          {!isYamlEdit && (
+          <Tooltip
             overlayStyle={{ maxWidth: 350 }}
             title={formatMessage({ id: `${intlPrefix}.${title}.help.tooltip` })}
           >
             <Icon type="help" />
-          </Tooltip>}
-          {modeSwitch ? <Button
-            className="c7n-config-mode-btn"
-            type="primary"
-            funcType="flat"
-            disabled={disableBtn}
-            onClick={changeEditMode}
-          >
-            <FormattedMessage id={isYamlEdit ? 'configMap.mode.yaml' : 'configMap.mode.kv'} />
-          </Button> : null}
+          </Tooltip>
+          )}
+          {modeSwitch ? (
+            <Button
+              className="c7n-config-mode-btn"
+              type="primary"
+              funcType="flat"
+              disabled={disableBtn}
+              onClick={changeEditMode}
+            >
+              <FormattedMessage id={isYamlEdit ? 'configMap.mode.yaml' : 'configMap.mode.kv'} />
+            </Button>
+          ) : null}
         </div>
         <div className="c7n-config-editor">
           {getConfigMap()}

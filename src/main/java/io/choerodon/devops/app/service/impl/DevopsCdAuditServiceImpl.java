@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditService;
@@ -47,10 +48,9 @@ public class DevopsCdAuditServiceImpl implements DevopsCdAuditService {
         List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditMapper.selectAll();
         Set<Long> cdJobIds = devopsCdAuditDTOS.stream().filter(i -> i.getCdJobId() != null).map(DevopsCdAuditDTO::getCdJobId).collect(Collectors.toSet());
 
-        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.selectByIds(StringUtils.join(cdJobIds, ","));
-
-        devopsCdJobDTOS.forEach(i -> {
-            devopsCdAuditMapper.updateProjectIdByJobId(i.getProjectId(), i.getId());
-        });
+        if (!CollectionUtils.isEmpty(cdJobIds)) {
+            List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.selectByIds(StringUtils.join(cdJobIds, ","));
+            devopsCdJobDTOS.forEach(i -> devopsCdAuditMapper.updateProjectIdByJobId(i.getProjectId(), i.getId()));
+        }
     }
 }

@@ -41,6 +41,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -745,12 +746,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
                     && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
                 logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
-                sendNotificationService.sendWhenInstanceCreationFailure(instanceDTO, instanceDTO.getCreatedBy(), devopsEnvCommandDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
             }
             if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus))
                     && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
-                //创建资源成功 发送webhook json
-                sendNotificationService.sendWhenInstanceSuccessOrDelete(instanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
+                sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, instanceStatus);
             }
         }
     }
@@ -1251,15 +1251,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (updateEnvCommandStatus(resourceCommitVO, appServiceInstanceDTO.getCommandId(),
                 devopsEnvFileResourceDTO, C7NHELMRELEASE_KIND, appServiceInstanceDTO.getCode(), null, errorDevopsFiles)) {
             // 屏蔽运行时的实例错误信息
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                    .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
             if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
                 appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 // 发送资源创建失败通知
-                sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO, appServiceInstanceDTO.getCreatedBy(), appServiceInstanceDTO.getCommandId());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
             }
             if (InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
                 // 发送成功通知
-                sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
             }
         }
     }
@@ -1842,14 +1844,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     if (InstanceStatus.FAILED == instanceStatus
                             && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
                         logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy());
-                        sendNotificationService.sendWhenInstanceCreationFailure(appServiceInstanceDTO, appServiceInstanceDTO.getCreatedBy(), null);
+                        sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
                     }
                     if (InstanceStatus.RUNNING == instanceStatus
                             && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
                         logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", appServiceInstanceDTO.getEnvId(), appServiceInstanceDTO.getCode(), appServiceInstanceDTO.getCreatedBy());
-                        sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.CREATE_RESOURCE.value());
+                        sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
                     }
-
                 }
                 break;
             case SERVICE:

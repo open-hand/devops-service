@@ -529,4 +529,13 @@ public interface AppServiceService {
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
 
     void fixAppServiceVersion();
+
+    /**
+     * 查看sonarqube相关信息
+     *
+     * @param projectId    项目Id
+     * @param appServiceId 服务id
+     * @return 信息
+     */
+    SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId);
 }

@@ -27,7 +27,7 @@ import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
  * User: Mr.Wang
  * Date: 2020/6/11
  */
-@FeignClient(value = "hrds-prod-repo", fallback = RdupmClientFallback.class)
+@FeignClient(value = "prod-repo-service", fallback = RdupmClientFallback.class)
 public interface RdupmClient {
 
     /**
