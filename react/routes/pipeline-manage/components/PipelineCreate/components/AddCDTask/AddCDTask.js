@@ -68,6 +68,8 @@ export default observer(() => {
     handleOk,
     jobDetail,
     pipelineStageMainSource,
+    columnIndex,
+    witchColumnJobIndex,
   } = useAddCDTaskStore();
 
   const [branchsList, setBranchsList] = useState([]);
@@ -871,6 +873,27 @@ export default observer(() => {
 
   const optionRenderer = ({ record, text, value }) => renderer({ record, text, value });
 
+  /**
+   * 渲染关联部署任务options
+   */
+  const renderRelatedMission = () => {
+    let lists = [];
+    pipelineStageMainSource.forEach((i, iIndex) => {
+      // 是cd阶段
+      if (i.type === 'CD') {
+        // 如果遍历列小于当前列 则直接存入joblist
+        if ((iIndex < columnIndex - 1)) {
+          lists = [...lists, ...i.jobList];
+        } else {
+          //  如果遍历列是当切列
+          lists = [...lists, ...i.jobList.splice(0, witchColumnJobIndex - 1)];
+        }
+      }
+    });
+    // 返回任务是部署任务的options
+    return lists.filter((l) => l.type === 'cdDeploy').map((i) => <Option value={i.name}>{i.name}</Option>);
+  };
+
   return (
     <div className="addcdTask">
       <Form columns={3} dataSet={ADDCDTaskDataSet}>
@@ -950,9 +973,12 @@ export default observer(() => {
           )}
         </div>
         {
-          ADDCDTaskDataSet.current.get('type') === addCDTaskDataSetMap.apiTest && (
-            <Select newLine colSpan={1} name={addCDTaskDataSetMap.apiTestMission} />
-          )
+          ADDCDTaskDataSet.current.get('type') === addCDTaskDataSetMap.apiTest && [
+            <Select newLine colSpan={1} name={addCDTaskDataSetMap.apiTestMission} />,
+            <Select colSpan={2} name={addCDTaskDataSetMap.relativeMission}>
+              {renderRelatedMission()}
+            </Select>,
+          ]
         }
         {ADDCDTaskDataSet?.current?.get('type') === 'cdDeploy' && [
           <Select
