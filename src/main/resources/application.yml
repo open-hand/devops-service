@@ -119,10 +119,6 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 600000
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/master
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000

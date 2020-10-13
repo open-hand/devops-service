@@ -9,10 +9,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-<<<<<<< HEAD
-=======
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
->>>>>>> origin/master
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;

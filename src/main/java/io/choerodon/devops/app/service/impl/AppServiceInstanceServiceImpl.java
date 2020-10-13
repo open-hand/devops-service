@@ -20,20 +20,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-<<<<<<< HEAD
-import org.springframework.beans.factory.annotation.Value;
-=======
->>>>>>> origin/master
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-<<<<<<< HEAD
-=======
 import org.springframework.util.Assert;
->>>>>>> origin/master
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -1091,14 +1084,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public AppServiceInstanceDTO baseQueryByCodeAndEnv(String code, Long envId) {
-<<<<<<< HEAD
         // todo
 //        Assert.notNull(code, "error.code.is.null");
 //        Assert.notNull(envId, "error.envId.is.null");
-=======
-        Assert.notNull(code, "error.code.is.null");
-        Assert.notNull(envId, "error.envId.is.null");
->>>>>>> origin/master
 
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setCode(code);

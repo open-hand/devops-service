@@ -59,14 +59,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private Long gitlabProjectId;
     private String viewId;
 
-<<<<<<< HEAD
-=======
-    /**
-     * 界面显示编号，取雪花id
-     */
-    private String viewId;
-
->>>>>>> origin/master
     public String getViewId() {
         return viewId;
     }

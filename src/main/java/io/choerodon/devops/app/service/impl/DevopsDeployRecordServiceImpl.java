@@ -112,15 +112,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             cast.put(ENV_ID, Long.valueOf(KeyDecryptHelper.decryptValueOrIgnore((String) envId)));
         }
 
-<<<<<<< HEAD
-        // 解密查询参数中的环境id
-        Object envId = cast.get(ENV_ID);
-        if (envId instanceof String) {
-            cast.put(ENV_ID, Long.valueOf(KeyDecryptHelper.decryptValueOrIgnore((String) envId)));
-        }
-
-=======
->>>>>>> origin/master
         maps.put(TypeUtil.SEARCH_PARAM, cast);
 
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> devopsDeployRecordMapper.listByProjectId(projectId,
