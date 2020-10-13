@@ -41,6 +41,7 @@ const EditItem = (props) => {
     openVariableModal,
     stageType,
     appServiceCode,
+    witchColumnJobIndex,
   } = props;
 
   const { name, type } = jobDetail;
@@ -86,6 +87,8 @@ const EditItem = (props) => {
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           AppServiceOptionsDs={edit && AppServiceOptionsDs}
           image={image}
+          witchColumnJobIndex={witchColumnJobIndex + 1}
+          columnIndex={sequence}
         />
       ) : (
         <AddCDTask
@@ -97,6 +100,8 @@ const EditItem = (props) => {
           appServiceCode={appServiceCode}
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           handleOk={handleEditOk}
+          witchColumnJobIndex={witchColumnJobIndex + 1}
+          columnIndex={sequence}
         />
       ),
       style: {
@@ -161,7 +166,11 @@ export default observer((props) => {
     appServiceCode,
     appServiceType,
     nextStageType,
+    stagesSource,
   } = props;
+
+  const witchColumnJobIndex = stagesSource && stagesSource[columnIndex]?.jobList.length;
+
   const {
     addStepDs,
     editBlockStore, stepStore,
@@ -216,6 +225,7 @@ export default observer((props) => {
         jobList.slice().map((item, index) => (
           <EditItem
             index={index}
+            witchColumnJobIndex={witchColumnJobIndex}
             sequence={sequence}
             key={Math.random()}
             edit={edit}
@@ -320,6 +330,8 @@ export default observer((props) => {
           appServiceId={appServiceName}
           appServiceName={appServiceName}
           image={image}
+          columnIndex={sequence}
+          witchColumnJobIndex={witchColumnJobIndex + 1}
         />
       ) : (
         <AddCDTask
@@ -330,6 +342,8 @@ export default observer((props) => {
           pipelineStageMainSource={getStepData2}
           PipelineCreateFormDataSet={edit && PipelineCreateFormDataSet}
           handleOk={hanleStepCreateOk}
+          columnIndex={sequence}
+          witchColumnJobIndex={witchColumnJobIndex + 1}
         />
       ),
       style: {
