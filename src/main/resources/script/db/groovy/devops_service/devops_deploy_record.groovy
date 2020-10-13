@@ -33,4 +33,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
         }
     }
 
+    changeSet(author: 'wanghao', id: '2020-10-12-drop-record') {
+        sql("""
+            DELETE FROM devops_deploy_record WHERE deploy_type = 'batch' or deploy_type = 'auto';
+        """)
+    }
+
 }

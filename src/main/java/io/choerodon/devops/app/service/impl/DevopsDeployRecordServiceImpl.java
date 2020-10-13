@@ -103,7 +103,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         Object pipelineId = cast.get(PIPELINE_ID);
         if (pipelineId instanceof String) {
             // 解密流水线id
-            cast.put(PIPELINE_ID, Long.valueOf(KeyDecryptHelper.decryptValueOrIgnore((String)pipelineId)));
+            cast.put(PIPELINE_ID, Long.valueOf(KeyDecryptHelper.decryptValueOrIgnore((String) pipelineId)));
         }
 
         // 解密查询参数中的环境id

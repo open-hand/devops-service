@@ -139,10 +139,6 @@ public interface AppServiceVersionService {
 
     AppServiceVersionDTO baseQueryByAppServiceIdAndVersion(Long appServiceId, String version);
 
-    Page<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageable,
-                                                 String searchParam, Boolean isProjectOwner,
-                                                 Long userId);
-
     void baseUpdate(AppServiceVersionDTO appServiceVersionDTO);
 
     List<AppServiceVersionDTO> baseListUpgradeVersion(Long appServiceServiceId);
@@ -202,4 +198,14 @@ public interface AppServiceVersionService {
     void fixHarbor();
 
     AppServiceVersionDTO queryByCommitShaAndRef(String commitSha, String gitlabTriggerRef);
+
+    /**
+     * 批量删除应用服务版本
+     *
+     * @param projectId
+     * @param appServiceId
+     * @param versionIds
+     */
+    void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds);
+
 }

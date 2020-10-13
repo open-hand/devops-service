@@ -54,8 +54,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Autowired
     private AppServiceService applicationService;
     @Autowired
-    private AppServiceUserPermissionService appServiceUserPermissionService;
-    @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
@@ -507,47 +505,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         if (!CollectionUtils.isEmpty(envIdsWithNoSkipCheck)) {
             devopsEnvUserPermissionService.batchDelete(envIdsWithNoSkipCheck, userId);
         }
-    }
-
-    /**
-     * add member roles in gitlab projects for developer and application services that skip permission check.
-     *
-     * @param projectId    member role project id
-     * @param gitlabUserId user's gitlab id
-     */
-    private void addRoleForSkipPermissionAppService(Long projectId, Integer gitlabUserId) {
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        Integer groupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
-
-        // 拒绝组里的AccessRequest
-        gitlabServiceClientOperator.denyAccessRequest(groupId, gitlabUserId);
-
-        applicationService.baseListByProjectIdAndSkipCheck(projectId)
-                .stream()
-                .filter(app -> app.getGitlabProjectId() != null)
-                .map(AppServiceDTO::getGitlabProjectId)
-                .forEach(gitlabProjectId -> {
-
-                    GitlabProjectDTO gitlabProjectDO = null;
-                    try {
-                        gitlabProjectDO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
-                    } catch (CommonException exception) {
-                        LOGGER.info("project not found");
-                    }
-
-                    if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                        // 删除组和用户之间的关系，如果存在
-                        MemberDTO memberDTO = queryByUserId(groupId, gitlabUserId);
-                        if (memberDTO != null) {
-                            delete(groupId, TypeUtil.objToInteger(gitlabUserId));
-                        }
-                        // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
-                        MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, gitlabUserId);
-                        if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
-                            gitlabServiceClientOperator.createProjectMember(gitlabProjectId, new MemberDTO(gitlabUserId, 30, ""));
-                        }
-                    }
-                });
     }
 
 

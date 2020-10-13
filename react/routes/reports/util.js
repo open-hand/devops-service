@@ -8,6 +8,7 @@ import _ from 'lodash';
  */
 function getNear7Day() {
   const dateArr = [];
+  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < 7; i++) {
     dateArr.push(
       moment()
@@ -28,7 +29,9 @@ function getNear7Day() {
  * @returns {{}}
  */
 function dateSplitAndPad(start, end, date) {
+  // eslint-disable-next-line no-param-reassign
   start = moment(start, 'x');
+  // eslint-disable-next-line no-param-reassign
   end = moment(end, 'x');
   if (start > end) {
     return {};
@@ -43,6 +46,7 @@ function dateSplitAndPad(start, end, date) {
   } else {
     const days = timeDiff / (3600 * 24 * 1000);
     const dateGroup = _.countBy(date, (item) => item.slice(0, 10));
+    // eslint-disable-next-line no-plusplus
     for (let i = 0; i <= Math.floor(days); i++) {
       const d = moment(end)
         .subtract(i, 'days')
@@ -56,7 +60,6 @@ function dateSplitAndPad(start, end, date) {
   }
   return dateArr;
 }
-
 
 /**
  * 提取出对象的键和值，并形成对应的两个数组
@@ -86,6 +89,7 @@ function pickEntries(obj) {
  */
 function getAxis(startTime, endTime, oldxAxis = [], oldyAxis = {}) {
   const xAxis = [];
+  // eslint-disable-next-line no-param-reassign
   for (; startTime <= endTime; startTime += 86400000) {
     const tmp = new Date(startTime);
     xAxis.push(
@@ -95,7 +99,7 @@ function getAxis(startTime, endTime, oldxAxis = [], oldyAxis = {}) {
     );
   }
   const yAxis = {};
-  _.foreach(oldyAxis, (value, key) => {
+  _.forEach(oldyAxis, (value, key) => {
     yAxis[key] = [];
     const data = oldyAxis[key] || [];
     if (oldxAxis.length) {

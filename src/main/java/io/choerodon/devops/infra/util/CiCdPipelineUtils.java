@@ -5,11 +5,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.BaseDomain;
-import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;;
+import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -38,7 +39,6 @@ public class CiCdPipelineUtils {
             }
         });
     }
-
 
 
     public static void calculateStatus(CiCdPipelineRecordVO ciCdPipelineRecordVO, DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
@@ -87,5 +87,4 @@ public class CiCdPipelineUtils {
         }
         return relId;
     }
-
 }

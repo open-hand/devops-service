@@ -212,7 +212,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
-        applicationDTO.setSkipCheckPermission(Boolean.TRUE);
         applicationDTO.setToken(GenerateUUID.generateUUID());
 
         // 查询创建应用所在的gitlab应用组
@@ -242,7 +241,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppServicePayload.setUserIds(Collections.emptyList());
-        devOpsAppServicePayload.setSkipCheckPermission(Boolean.TRUE);
 
         //设置仓库Id
 //        List<DevopsConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");

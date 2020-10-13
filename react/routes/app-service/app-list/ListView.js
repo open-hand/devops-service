@@ -1,10 +1,18 @@
+/* eslint-disable */
 import React, { useEffect, useState, Fragment } from 'react';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
-import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Button, Spin, Tooltip } from 'choerodon-ui';
+import {
+  Page, Content, Header, Permission, Action, Breadcrumb, Choerodon,
+} from '@choerodon/boot';
+import {
+  SagaDetails,
+} from '@choerodon/master';
+import {
+  Button, Spin, Tooltip, Icon,
+} from 'choerodon-ui';
 import pick from 'lodash/pick';
 import TimePopover from '../../../components/timePopover';
 import { useAppTopStore } from '../stores';
@@ -64,6 +72,20 @@ const ListView = withRouter(observer((props) => {
     appListStore.checkCreate(projectId);
   }
 
+  const openSagaDetails = (id) => {
+    Modal.open({
+      title: formatMessage({ id: 'global.saga-instance.detail' }),
+      key: Modal.key(),
+      children: <SagaDetails sagaInstanceId={id} instance />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+      style: {
+        width: 'calc(100% - 3.5rem)',
+      },
+    });
+  };
+
   function renderName({ value, record }) {
     const {
       location: {
@@ -73,17 +95,28 @@ const ListView = withRouter(observer((props) => {
     } = props;
     const canLink = !record.get('fail') && record.get('synchro');
     return (
-      <Tooltip title={value} placement="top">
-        {canLink ? (
-          <Link
-            to={{
-              pathname: `${pathname}/detail/${record.get('id')}`,
-              search,
-            }}
-          >
-            <span className={`${prefixCls}-table-name`}>{value}</span>
-          </Link>) : <span>{value}</span>}
-      </Tooltip>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Tooltip title={value} placement="top">
+          {canLink ? (
+            <Link
+              to={{
+                pathname: `${pathname}/detail/${record.get('id')}`,
+                search,
+              }}
+              className={`${prefixCls}-table-name`}
+            >
+              <span className={`${prefixCls}-table-name ${prefixCls}-table-name-link`}>{value}</span>
+            </Link>
+          ) : <span className={`${prefixCls}-table-name`}>{value}</span>}
+        </Tooltip>
+        {record.get('sagaInstanceId') ? (
+          <Icon
+            className={`${prefixCls}-table-dashBoard`}
+            type="developer_board"
+            onClick={() => openSagaDetails(record.get('sagaInstanceId'))}
+          />
+        ) : ''}
+      </div>
     );
   }
 
@@ -142,6 +175,8 @@ const ListView = withRouter(observer((props) => {
       actionItems = pick(actionData, ['delete']);
     } else if (record.get('synchro') && record.get('active')) {
       actionItems = pick(actionData, ['edit', 'stop']);
+    } else if (record.get('sagaInstanceId')) {
+      actionItems = pick(actionData, ['delete']);
     } else if (record.get('active')) {
       return;
     } else {
@@ -213,7 +248,7 @@ const ListView = withRouter(observer((props) => {
     const recentApp = JSON.parse(localStorage.getItem('recent-app'));
     if (recentApp && recentApp[projectId]) {
       const currentProjectApp = recentApp[projectId];
-      const hasData = currentProjectApp.filter(item => item.id !== appId);
+      const hasData = currentProjectApp.filter((item) => item.id !== appId);
       if (hasData.length < currentProjectApp.length) {
         recentApp[projectId] = hasData;
         localStorage.setItem('recent-app', JSON.stringify(recentApp));
@@ -302,10 +337,10 @@ const ListView = withRouter(observer((props) => {
           onOk: () => (status ? stopModal.close() : handleChangeActive(false)),
           okText: status ? formatMessage({ id: 'iknow' }) : formatMessage({ id: 'stop' }),
           footer: ((okBtn, cancelBtn) => (
-            <Fragment>
+            <>
               {okBtn}
               {!status && cancelBtn}
-            </Fragment>
+            </>
           )),
         };
         stopModal.update(statusObj);
@@ -321,56 +356,58 @@ const ListView = withRouter(observer((props) => {
   function getHeader() {
     const disabled = !appListStore.getCanCreate;
     const disabledMessage = disabled ? formatMessage({ id: `${intlPrefix}.create.disabled` }) : '';
-    return <Header title={<FormattedMessage id="app.head" />}>
-      <Permission
-        service={['choerodon.code.project.develop.app-service.ps.create']}
-      >
-        <Tooltip title={disabledMessage} placement="bottom">
-          <Button
-            icon="playlist_add"
-            disabled={disabled}
-            onClick={openCreate}
-          >
-            <FormattedMessage id={`${intlPrefix}.create`} />
-          </Button>
-        </Tooltip>
-      </Permission>
-      <Permission
-        service={['choerodon.code.project.develop.app-service.ps.import']}
-      >
-        <Tooltip title={disabledMessage} placement="bottom">
-          <Button
-            icon="archive"
-            disabled={disabled}
-            onClick={openImport}
-          >
-            <FormattedMessage id={`${intlPrefix}.import`} />
-          </Button>
-        </Tooltip>
-      </Permission>
-      <Permission
-        service={['choerodon.code.project.develop.app-service.ps.permission.update']}
-      >
-        <Button
-          icon="authority"
-          onClick={() => {
-            const {
-              history,
-              location,
-            } = props;
-            history.push(`/rducm/code-lib-management/assign${location.search}`);
-          }}
+    return (
+      <Header title={<FormattedMessage id="app.head" />}>
+        <Permission
+          service={['choerodon.code.project.develop.app-service.ps.create']}
         >
-          权限管理
+          <Tooltip title={disabledMessage} placement="bottom">
+            <Button
+              icon="playlist_add"
+              disabled={disabled}
+              onClick={openCreate}
+            >
+              <FormattedMessage id={`${intlPrefix}.create`} />
+            </Button>
+          </Tooltip>
+        </Permission>
+        <Permission
+          service={['choerodon.code.project.develop.app-service.ps.import']}
+        >
+          <Tooltip title={disabledMessage} placement="bottom">
+            <Button
+              icon="archive"
+              disabled={disabled}
+              onClick={openImport}
+            >
+              <FormattedMessage id={`${intlPrefix}.import`} />
+            </Button>
+          </Tooltip>
+        </Permission>
+        <Permission
+          service={['choerodon.code.project.develop.app-service.ps.permission.update']}
+        >
+          <Button
+            icon="authority"
+            onClick={() => {
+              const {
+                history,
+                location,
+              } = props;
+              history.push(`/rducm/code-lib-management/assign${location.search}`);
+            }}
+          >
+            权限管理
+          </Button>
+        </Permission>
+        <Button
+          icon="refresh"
+          onClick={refresh}
+        >
+          <FormattedMessage id="refresh" />
         </Button>
-      </Permission>
-      <Button
-        icon="refresh"
-        onClick={refresh}
-      >
-        <FormattedMessage id="refresh" />
-      </Button>
-    </Header>;
+      </Header>
+    );
   }
 
   return (

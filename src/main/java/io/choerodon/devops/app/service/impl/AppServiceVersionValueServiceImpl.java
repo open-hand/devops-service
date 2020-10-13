@@ -4,9 +4,12 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AppServiceVersionValueService;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceVersionValueDTO;
 import io.choerodon.devops.infra.mapper.AppServiceVersionValueMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -43,9 +46,16 @@ public class AppServiceVersionValueServiceImpl implements AppServiceVersionValue
     }
 
     @Override
+    @Transactional
+    public void baseDeleteById(Long appServiceServiceValueId) {
+        Assert.notNull(appServiceServiceValueId, ResourceCheckConstant.ERROR_SERVICE_VERSION_VALUE_ID_IS_NULL);
+        appServiceVersionValueMapper.deleteByPrimaryKey(appServiceServiceValueId);
+    }
+
+    @Override
     public void deleteByIds(Set<Long> valueIds) {
 
-            appServiceVersionValueMapper.deleteByIds(valueIds);
+        appServiceVersionValueMapper.deleteByIds(valueIds);
 
     }
 

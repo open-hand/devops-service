@@ -39,7 +39,12 @@ public enum JobTypeEnum {
     /**
      * cd 主机部署任务
      */
-    CD_HOST("cdHost");
+    CD_HOST("cdHost"),
+
+    /**
+     * cd API测试任务
+     */
+    CD_API_TEST("cdApiTest");
 
 
     private final String value;

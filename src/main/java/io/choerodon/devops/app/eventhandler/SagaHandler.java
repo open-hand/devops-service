@@ -21,7 +21,10 @@ import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.*;
+import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
+import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
+import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
+import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -59,6 +62,8 @@ public class SagaHandler {
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    @Autowired
+    private ChartService chartService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -105,26 +110,6 @@ public class SagaHandler {
         gitlabGroupService.updateGroups(gitlabGroupPayload);
         return msg;
     }
-
-//    /**
-//     * 创建harbor项目事件
-//     */
-//    //todo
-//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_HARBOR,
-//            description = "devops 创建 Harbor",
-//            sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
-//            maxRetryCount = 3,
-//            seq = 5)
-//    public String handleHarborEvent(String msg) {
-//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-//        HarborPayload harborPayload = new HarborPayload(
-//                projectPayload.getProjectId(),
-//                projectPayload.getOrganizationCode() + "-" + projectPayload.getProjectCode()
-//        );
-//        loggerInfo(harborPayload);
-//        harborService.createHarborForProject(harborPayload);
-//        return msg;
-//    }
 
     /**
      * 角色同步事件
@@ -316,8 +301,40 @@ public class SagaHandler {
             devopsCdPipelineRecordService.cdHostImageDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
         } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
             devopsCdPipelineRecordService.cdHostJarDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
-        } else  {
+        } else {
             devopsCdPipelineRecordService.cdHostCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
         }
+    }
+
+    /**
+     * 处理删除habor镜像
+     *
+     * @param payload
+     * @return
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_DELETE_HABOR_IMAGE_TAGS,
+            description = "处理删除habor镜像",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION,
+            maxRetryCount = 5, seq = 10)
+    public String deleteHaborImageTags(String payload) {
+        CustomResourceVO customResourceVO = gson.fromJson(payload, CustomResourceVO.class);
+        harborService.batchDeleteImageTags(customResourceVO.getHarborImageTagDTOS());
+        return payload;
+    }
+
+    /**
+     * 处理删除chart version
+     *
+     * @param payload
+     * @return
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_DELETE_CHART_VERSIONS,
+            description = "处理删除chart version",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION,
+            maxRetryCount = 5, seq = 10)
+    public String deleteChartTags(String payload) {
+        CustomResourceVO customResourceVO = gson.fromJson(payload, CustomResourceVO.class);
+        chartService.batchDeleteChartVersion(customResourceVO.getChartTagVOS());
+        return payload;
     }
 }

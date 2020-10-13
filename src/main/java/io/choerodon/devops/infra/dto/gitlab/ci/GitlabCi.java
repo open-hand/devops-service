@@ -38,7 +38,6 @@ public class GitlabCi {
     @ApiModelProperty("before_script")
     private List<String> beforeScript;
 
-
     public String getInclude() {
         return include;
     }

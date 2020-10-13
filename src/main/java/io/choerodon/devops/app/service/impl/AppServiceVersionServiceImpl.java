@@ -19,15 +19,23 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.chart.ChartTagVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -104,7 +112,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private DevopsConfigMapper devopsConfigMapper;
     @Autowired
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
+    @Autowired
+    private AppServiceShareRuleMapper appServiceShareRuleMapper;
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
 
+    @Autowired
+    private TransactionalProducer producer;
 
     private static final Gson GSON = new Gson();
 
@@ -183,7 +197,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (newApplicationVersion != null) {
             try {
                 // 重新上传chart包后更新values
-                updateValues(newApplicationVersion.getValueId(), values);
+                updateValues(newApplicationVersion.getValueId(), values, newApplicationVersion);
             } finally {
                 FileUtil.deleteDirectories(storeFilePath);
             }
@@ -219,7 +233,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
     }
 
-    private void updateValues(Long oldValuesId, String values) {
+    private void updateValues(Long oldValuesId, String values, AppServiceVersionDTO applicationVersion) {
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         appServiceVersionValueDTO.setId(oldValuesId);
 
@@ -233,6 +247,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (!Objects.equals(old.getValue(), values)) {
             appServiceVersionValueDTO.setValue(values);
             appServiceVersionValueService.baseUpdate(appServiceVersionValueDTO);
+            applicationVersion.setLastUpdateDate(new Date());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, applicationVersion, "error.version.update");
         }
     }
 
@@ -335,7 +351,49 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 applicationVersionDTOPageInfo.setContent(appServiceVersionDTOS);
             }
         }
-        return ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
+        Page<AppServiceVersionVO> appServiceVersionVOS = ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
+        if (!CollectionUtils.isEmpty(appServiceVersionVOS.getContent())) {
+            caculateDelteFlag(appServiceId, appServiceVersionVOS.getContent());
+        }
+
+        return appServiceVersionVOS;
+    }
+
+    private void caculateDelteFlag(Long appServiceId, List<AppServiceVersionVO> content) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceInstanceMapper.queryVersionByAppId(appServiceId);
+        List<AppServiceVersionDTO> effectAppServiceVersionDTOS = appServiceInstanceMapper.queryEffectVersionByAppId(appServiceId);
+        Map<Long, AppServiceVersionDTO> map = new HashMap<>();
+        content.forEach(v -> {
+
+            if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                appServiceVersionDTOS.forEach(appServiceVersionDTO -> {
+                    if (map.get(appServiceVersionDTO.getId()) == null) {
+                        map.put(appServiceVersionDTO.getId(), appServiceVersionDTO);
+                    }
+                });
+            }
+
+            if (!CollectionUtils.isEmpty(effectAppServiceVersionDTOS)) {
+                effectAppServiceVersionDTOS.forEach(appServiceVersionDTO -> {
+                    if (map.get(appServiceVersionDTO.getId()) == null) {
+                        map.put(appServiceVersionDTO.getId(), appServiceVersionDTO);
+                    }
+                });
+            }
+            AppServiceVersionDTO appServiceVersionDTO = map.get(v.getId());
+            if (appServiceVersionDTO != null) {
+                v.setDeleteFlag(false);
+                return;
+            }
+            // 是否存在共享规则
+            AppServiceShareRuleDTO record = new AppServiceShareRuleDTO();
+            record.setAppServiceId(appServiceId);
+            record.setVersion(v.getVersion());
+            List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(record);
+            if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
+                v.setDeleteFlag(false);
+            }
+        });
     }
 
     @Override
@@ -569,34 +627,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public Page<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageable,
-                                                        String searchParam, Boolean isProjectOwner,
-                                                        Long userId) {
-        Sort sort = pageable.getSort();
-        if (sort != null) {
-            List<Sort.Order> newOrders = new ArrayList<>();
-            sort.iterator().forEachRemaining(s -> {
-                String property = s.getProperty();
-                if (property.equals("version")) {
-                    property = "dav.version";
-                } else if (property.equals("creationDate")) {
-                    property = "dav.creation_date";
-                }
-                newOrders.add(new Sort.Order(s.getDirection(), property));
-            });
-            pageable.setSort(new Sort(newOrders));
-        }
-
-        Page<AppServiceVersionDTO> applicationVersionDTOPageInfo;
-        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-        applicationVersionDTOPageInfo = PageHelper
-                .doPageAndSort(pageable, () -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
-                        TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
-        return applicationVersionDTOPageInfo;
-    }
-
-    @Override
     public void baseUpdate(AppServiceVersionDTO appServiceVersionDTO) {
         if (appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO) != 1) {
             throw new CommonException("error.version.update");
@@ -799,6 +829,129 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setCommit(commitSha);
         appServiceVersionDTO.setRef(gitlabTriggerRef);
         return appServiceVersionMapper.selectOne(appServiceVersionDTO);
+    }
+
+    @Override
+    @Transactional
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION, inputSchemaClass = CustomResourceVO.class, description = "批量删除应用服务版本")
+    public void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        // 校验版本是否能够删除
+        checkVersion(appServiceId, versionIds);
+
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        List<HarborImageTagDTO> deleteImagetags = new ArrayList<>();
+        List<ChartTagVO> deleteChartTags = new ArrayList<>();
+        versionIds.forEach(id -> {
+            // 查询应用服务版本
+            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(id);
+            // 删除value
+            appServiceVersionValueService.baseDeleteById(appServiceVersionDTO.getValueId());
+            // 删除readme
+            appServiceVersionReadmeMapper.deleteByPrimaryKey(appServiceVersionDTO.getReadmeValueId());
+
+            // 计算删除harbor镜像列表
+            if (DEFAULT_REPO.equals(appServiceVersionDTO.getRepoType())) {
+                HarborImageTagDTO harborImageTagDTO = caculateHarborImageTagDTO(appServiceDTO.getProjectId(), appServiceVersionDTO.getImage());
+                deleteImagetags.add(harborImageTagDTO);
+            }
+            // 计算删除chart列表
+            ChartTagVO chartTagVO = caculateChartTag(tenant.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode(), appServiceVersionDTO);
+            deleteChartTags.add(chartTagVO);
+
+            // 删除应用服务版本
+            appServiceVersionMapper.deleteByPrimaryKey(appServiceVersionDTO.getId());
+        });
+        CustomResourceVO customResourceVO = new CustomResourceVO();
+        customResourceVO.setHarborImageTagDTOS(deleteImagetags);
+        customResourceVO.setChartTagVOS(deleteChartTags);
+
+
+        // 发送saga
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(appServiceDTO.getId())
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION),
+                builder -> builder
+                        .withJson(GSON.toJson(customResourceVO))
+                        .withRefId(appServiceDTO.getId().toString()));
+    }
+
+    private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {
+        Set<AppServiceVersionDTO> deleteErrorVersion = new HashSet<>();
+        AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
+        appServiceInstanceDTO.setAppServiceId(appServiceId);
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceInstanceMapper.queryVersionByAppId(appServiceId);
+        List<AppServiceVersionDTO> effectAppServiceVersionDTOS = appServiceInstanceMapper.queryEffectVersionByAppId(appServiceId);
+        Map<Long, AppServiceVersionDTO> map = new HashMap<>();
+        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+            appServiceVersionDTOS.forEach(appServiceVersionDTO -> {
+                if (map.get(appServiceVersionDTO.getId()) == null) {
+                    map.put(appServiceVersionDTO.getId(), appServiceVersionDTO);
+                }
+            });
+        }
+
+        if (!CollectionUtils.isEmpty(effectAppServiceVersionDTOS)) {
+            effectAppServiceVersionDTOS.forEach(appServiceVersionDTO -> {
+                if (map.get(appServiceVersionDTO.getId()) == null) {
+                    map.put(appServiceVersionDTO.getId(), appServiceVersionDTO);
+                }
+            });
+        }
+
+        versionIds.forEach(v -> {
+            AppServiceVersionDTO appServiceVersionDTO = map.get(v);
+            if (appServiceVersionDTO != null) {
+                throw new CommonException("error.delete.version.invalid.status");
+            }
+            // 是否存在共享规则
+            AppServiceVersionDTO versionDTO = appServiceVersionMapper.selectByPrimaryKey(v);
+            AppServiceShareRuleDTO record = new AppServiceShareRuleDTO();
+            record.setAppServiceId(appServiceId);
+            record.setVersion(versionDTO.getVersion());
+            List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(record);
+            if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
+                throw new CommonException("error.delete.version.invalid.status");
+            }
+
+        });
+
+        return deleteErrorVersion;
+    }
+
+
+    private ChartTagVO caculateChartTag(String tenantNum, String projectCode, String chartName, AppServiceVersionDTO appServiceVersionDTO) {
+        ChartTagVO chartTagVO = new ChartTagVO();
+        chartTagVO.setOrgCode(tenantNum);
+        chartTagVO.setProjectCode(projectCode);
+        chartTagVO.setChartName(chartName);
+        chartTagVO.setChartVersion(appServiceVersionDTO.getVersion());
+        chartTagVO.setRepository(appServiceVersionDTO.getRepository());
+        chartTagVO.setAppServiceId(appServiceVersionDTO.getAppServiceId());
+        return chartTagVO;
+    }
+
+    private HarborImageTagDTO caculateHarborImageTagDTO(Long projectId, String image) {
+        HarborImageTagDTO harborImageTagDTO = new HarborImageTagDTO();
+        // 镜像格式
+        // dockerhub.hand-china.com/emabc-emabc-edm/emabc-edm:2020.3.20-155740-dev
+        // -        域名或ip       /  项目code     / app code : image tag
+        int startFlag = image.indexOf("/");
+        int endFlag = image.lastIndexOf(":");
+
+        String repoName = image.substring(startFlag + 1, endFlag);
+        String tagName = image.substring(endFlag + 1);
+
+        harborImageTagDTO.setRepoName(repoName);
+        harborImageTagDTO.setTagName(tagName);
+        harborImageTagDTO.setProjectId(projectId);
+        return harborImageTagDTO;
     }
 
     @Nullable

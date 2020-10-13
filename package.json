@@ -3,7 +3,7 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.23.4",
+  "version": "0.24.0",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -19,14 +19,9 @@
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint",
     "compile": "choerodon-front-boot compile",
-    "clean-install": "rm -rf node_modules && rm package-lock.json && npm i --registry https://nexus.choerodon.com.cn/repository/choerodon-npm"
-  },
-  "peerDependencies": {
-    "@choerodon/boot": "0.21.4",
-    "@choerodon/master": "0.23.0"
+    "clean-install": "rm -rf node_modules && rm package-lock.json && npm i --registry https://nexus.choerodon.com.cn/repository/choerodon-npm && chmod -R u+x node_modules"
   },
   "dependencies": {
-    "choerodon-ui": "0.8.x",
     "diff-match-patch": "^1.0.4",
     "echarts": "^4.2.1",
     "echarts-for-react": "^2.0.12",
@@ -36,6 +31,7 @@
     "json-bigint": "^1.0.0",
     "mobx-react-lite": "^1.4.1",
     "moment": "^2.22.2",
+    "pako": "^1.0.11",
     "quill-delta-to-html": "^0.8.4",
     "rc-table": "^6.8.2",
     "react-codemirror": "^1.0.0",
@@ -53,10 +49,24 @@
     "xterm": "^3.12.0"
   },
   "devDependencies": {
-    "@choerodon/boot": "0.21.4",
-    "@choerodon/master": "^0.23.0",
+    "@choerodon/boot": "0.22.0",
+    "@choerodon/master": "0.24.0",
+    "@types/react": "^16.9.44",
+    "@types/react-router": "^5.1.8",
+    "@types/react-router-dom": "^5.1.5",
+    "@typescript-eslint/eslint-plugin": "^3.7.1",
+    "@typescript-eslint/parser": "^3.7.1",
+    "babel-eslint": "8.2.6",
+    "babel-preset-c7n-app": "^0.0.1",
+    "choerodon-ui": "0.8.x",
     "del": "^4.1.1",
-    "eslint-plugin-react-hooks": "^1.7.0",
+    "eslint": "^7.7.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-c7n-app": "^0.0.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.6",
+    "eslint-plugin-react-hooks": "^4.1.0",
     "lodash": "latest"
   },
   "lint-staged": {

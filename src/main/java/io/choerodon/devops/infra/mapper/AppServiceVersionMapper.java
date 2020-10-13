@@ -15,14 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO> {
 
-    List<AppServiceVersionDTO> listApplicationVersion(
-            @Param("projectId") Long projectId,
-            @Param("appServiceId") Long appServiceId,
-            @Param("searchParam") Map<String, Object> searchParam,
-            @Param("params") List<String> params,
-            @Param("isProjectOwner") Boolean isProjectOwner,
-            @Param("userId") Long userId);
-
     List<AppServiceVersionDTO> listByOptions(
             @Param("appServiceId") Long appServiceId,
             @Param("searchParam") Map<String, Object> searchParam,

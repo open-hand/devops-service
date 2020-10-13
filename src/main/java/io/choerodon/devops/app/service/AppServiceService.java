@@ -227,24 +227,6 @@ public interface AppServiceService {
     Page<AppServiceReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageable, String params);
 
     /**
-     * 项目下分页查询代码仓库
-     *
-     * @param projectId 项目id
-     * @param pageable  分页参数
-     * @param params    查询参数
-     * @return page of ApplicationRepDTO
-     */
-    Page<AppServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageable, String params);
-
-    /**
-     * 获取服务下所有用户权限
-     *
-     * @param appServiceId 服务id
-     * @return List
-     */
-    List<AppServiceUserPermissionRespVO> listAllUserPermission(Long appServiceId);
-
-    /**
      * valid the repository url and access token
      *
      * @param gitPlatformType git platform type
@@ -347,28 +329,6 @@ public interface AppServiceService {
 
     DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner);
 
-    /**
-     * 根据appServiceId查询服务服务所有没有权限的项目成员
-     */
-    Page<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, Long selectedIamUserId, PageRequest pageable, String params);
-
-    /**
-     * 更新服务服务权限
-     *
-     * @param appServiceId
-     * @param applicationPermissionVO
-     */
-    void updatePermission(Long projectId, Long appServiceId, AppServicePermissionVO applicationPermissionVO);
-
-    /**
-     * 删除用户服务服务权限
-     *
-     * @param appServiceId
-     * @param userId
-     */
-    void deletePermission(Long projectId, Long appServiceId, Long userId);
-
-
     List<ProjectVO> listProjects(Long organizationId, Long projectId, String params);
 
     /**
@@ -408,10 +368,6 @@ public interface AppServiceService {
     Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
                                           String type, Boolean doPage, PageRequest pageable, String params, Boolean checkMember);
 
-    Page<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageable, String params,
-                                               Boolean isProjectOwner, Long userId);
-
-
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
     AppServiceDTO baseQueryByCodeWithNullProject(String code);
@@ -425,19 +381,9 @@ public interface AppServiceService {
 
     AppServiceDTO baseQueryByToken(String token);
 
-    List<AppServiceDTO> baseListByCode(String code);
-
-    List<AppServiceDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds);
-
     void baseDelete(Long appServiceId);
 
-    List<AppServiceDTO> baseListByProjectIdAndSkipCheck(Long projectId);
-
-    List<AppServiceDTO> baseListByProjectIdWithNoSkipCheck(Long projectId);
-
     List<AppServiceDTO> baseListByProjectId(Long projectId);
-
-    void baseUpdateHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate);
 
     AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO applicationReqDTO);
 
@@ -559,15 +505,6 @@ public interface AppServiceService {
     Boolean checkEnableCreateAppSvc(Long projectId);
 
     /**
-     * 校验用户是否拥有应用服务权限
-     *
-     * @param appSvcId 应用服务id
-     * @param userId   用户id
-     * @return
-     */
-    boolean checkAppServicePermissionForUser(Long appSvcId, Long userId);
-
-    /**
      * 分页查询用于创建CI流水线的应用服务
      * 1. 默认查询20条
      * 2. 要用户有权限的
@@ -592,4 +529,13 @@ public interface AppServiceService {
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
 
     void fixAppServiceVersion();
+
+    /**
+     * 查看sonarqube相关信息
+     *
+     * @param projectId    项目Id
+     * @param appServiceId 服务id
+     * @return 信息
+     */
+    SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId);
 }

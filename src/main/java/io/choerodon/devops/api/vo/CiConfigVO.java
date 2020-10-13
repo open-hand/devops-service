@@ -12,6 +12,13 @@ import java.util.List;
 public class CiConfigVO {
     private List<CiConfigTemplateVO> config;
 
+    public CiConfigVO() {
+    }
+
+    public CiConfigVO(List<CiConfigTemplateVO> config) {
+        this.config = config;
+    }
+
     public List<CiConfigTemplateVO> getConfig() {
         return config;
     }

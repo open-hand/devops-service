@@ -12,14 +12,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsEnvAppServiceMapper extends BaseMapper<DevopsEnvAppServiceDTO> {
-
-    /**
-     * 当记录不存在时，插入记录
-     *
-     * @param devopsEnvAppServiceDTO 环境应用关联关系
-     */
-    void insertIgnore(DevopsEnvAppServiceDTO devopsEnvAppServiceDTO);
-
     /**
      * 通过环境Id查询所有应用Id
      *

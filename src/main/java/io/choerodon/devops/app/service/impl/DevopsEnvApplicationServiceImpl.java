@@ -1,5 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Container;
+import io.kubernetes.client.models.V1ContainerPort;
+import io.kubernetes.client.models.V1beta2Deployment;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
@@ -9,19 +20,6 @@ import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta2Deployment;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author lizongwei
@@ -30,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationService {
 
-    private JSON json = new JSON();
+    private final JSON json = new JSON();
 
     @Autowired
     private AppServiceService applicationService;
@@ -46,9 +44,27 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         permissionHelper.checkAppServicesBelongToProject(projectId, devopsEnvAppServiceVO.getAppServiceIds());
         return devopsEnvAppServiceVO.getAppServiceIds().stream()
                 .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
-                .peek(e -> devopsEnvAppServiceMapper.insertIgnore(e))
+                .peek(e -> createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId()))
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 为环境和应用创建关联关系如果不存在
+     *
+     * @param appServiceId 应用id
+     * @param envId        环境id
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void createEnvAppRelationShipIfNon(Long appServiceId, Long envId) {
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
+        devopsEnvAppServiceDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
+        devopsEnvAppServiceDTO.setEnvId(Objects.requireNonNull(envId));
+        // 如果没有，插入
+        if (devopsEnvAppServiceMapper.selectCount(devopsEnvAppServiceDTO) == 0) {
+            devopsEnvAppServiceMapper.insertSelective(devopsEnvAppServiceDTO);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)

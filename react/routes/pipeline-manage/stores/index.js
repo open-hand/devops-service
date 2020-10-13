@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useMemo, useEffect } from 'react';
+import React, {
+  createContext, useContext, useMemo, useEffect,
+} from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import { DataSet } from 'choerodon-ui/pro';
-import { Modal } from 'choerodon-ui/pro';
+import { DataSet, Modal } from 'choerodon-ui/pro';
+
 import useStore from './useStore';
 import useEditBlockStore from './useEditBlockStore';
 import useDetailStore from './useDetailStore';
@@ -31,9 +33,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
           children: '您的修改尚未保存，确定要离开吗?',
           onOk: () => {
             store.setSelectedMenu(data);
+            // eslint-disable-next-line no-param-reassign
             record.isSelected = true;
             setHasModify(false, false);
           },
+          // eslint-disable-next-line no-param-reassign
           onCancel: () => { previous.isSelected = true; record.isSelected = false; },
         });
       } else {
@@ -44,9 +48,11 @@ export const StoreProvider = injectIntl(inject('AppState')((props) => {
   }
 
   const mainStore = useStore();
-  const editBlockStore = useEditBlockStore();
-  const detailStore = useDetailStore();
-  const treeDs = useMemo(() => new DataSet(TreeDataSet({ projectId, mainStore, editBlockStore, handleSelect })), [projectId]);
+  const editBlockStore = useEditBlockStore(mainStore);
+  const detailStore = useDetailStore(mainStore);
+  const treeDs = useMemo(() => new DataSet(TreeDataSet({
+    projectId, mainStore, editBlockStore, handleSelect,
+  })), [projectId]);
 
   useEffect(() => {
     // 处理消息铃铛中审核任务的跳转
