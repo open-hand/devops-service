@@ -107,6 +107,9 @@ export default observer(() => {
     if (ds.type === addCDTaskDataSetMap.apiTest) {
       ds.apiTestTaskName = ADDCDTaskUseStore.getApiTestArray
         .find((i) => i.id == ADDCDTaskDataSet.current.get(addCDTaskDataSetMap.apiTestMission)).name;
+      ds[addCDTaskDataSetMap.relativeMission] = ADDCDTaskDataSet
+        .current
+        .get(addCDTaskDataSetMap.relativeMission);
     }
     if (ds.type === 'cdHost') {
       ds.hostConnectionVO = {
@@ -216,6 +219,12 @@ export default observer(() => {
       if (jobDetail.type === 'cdDeploy') {
         const { value } = JSON.parse(jobDetail.metadata.replace(/'/g, '"'));
         value && setValueIdValues(Base64.decode(value));
+      } else if (jobDetail.type === addCDTaskDataSetMap.apiTest) {
+        if (jobDetail.metadata) {
+          const metadata = JSONbig.parse(jobDetail.metadata.replace(/'/g, '"'));
+          extra[addCDTaskDataSetMap.relativeMission] = metadata[
+            addCDTaskDataSetMap.relativeMission];
+        }
       } else if (jobDetail.type === 'cdHost') {
         const metadata = JSONbig.parse(jobDetail.metadata.replace(/'/g, '"'));
         extra = {
