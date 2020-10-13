@@ -32,7 +32,9 @@ function formatData({ data, expandsKeys }) {
   return newData;
 }
 
-export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
+export default ({
+  projectId, mainStore, editBlockStore, handleSelect,
+}) => ({
   autoCreate: false,
   autoQuery: false,
   selection: 'single',
@@ -49,16 +51,16 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
           const data = JSONBigint.parse(response);
           if (data && data.failed) {
             return data;
-          } else {
-            const { getExpandedKeys, setExpandedKeys } = mainStore;
-            let expandsKeys = getExpandedKeys;
-            if (isEmpty(getExpandedKeys) && data.length) {
-              const newKeys = data[0].id.toString();
-              expandsKeys = [newKeys];
-              setExpandedKeys(newKeys);
-            }
-            return formatData({ data, expandsKeys });
           }
+          const { getExpandedKeys, setExpandedKeys } = mainStore;
+          let expandsKeys = getExpandedKeys;
+          const newData = data.content || [];
+          if (isEmpty(getExpandedKeys) && newData.length) {
+            const newKeys = newData[0].id.toString();
+            expandsKeys = [newKeys];
+            setExpandedKeys(newKeys);
+          }
+          return formatData({ data: newData, expandsKeys });
         } catch (e) {
           return response;
         }
@@ -75,6 +77,7 @@ export default ({ projectId, mainStore, editBlockStore, handleSelect }) => ({
     },
     unSelect: ({ record }) => {
       // 禁用取消选中
+      // eslint-disable-next-line no-param-reassign
       record.isSelected = true;
     },
     load: ({ dataSet }) => {
