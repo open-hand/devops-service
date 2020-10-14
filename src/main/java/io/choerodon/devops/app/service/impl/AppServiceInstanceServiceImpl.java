@@ -1263,7 +1263,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         baseUpdate(appServiceInstanceDTO);
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), DeployType.BATCH.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), DeployType.BATCH.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), new Date());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
