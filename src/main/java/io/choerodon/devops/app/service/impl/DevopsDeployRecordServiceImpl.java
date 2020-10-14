@@ -236,6 +236,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             if (iamUserDTO != null) {
                 v.setExecuteUser(iamUserDTO);
             }
+            v.setViewId(CiCdPipelineUtils.handleId(v.getId()));
         });
 
         return deployRecordVOPage;
