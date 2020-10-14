@@ -260,4 +260,39 @@
         WHERE ddr.env = #{envId,jdbcType=VARCHAR}
         AND ddr.deploy_type = #{deployType,jdbcType=VARCHAR}
     </select>
+    <select id="listByParams" resultType="io.choerodon.devops.api.vo.DeployRecordVO">
+		SELECT
+			ddr.id AS id,
+		    ddr.deploy_type,
+		    denc.status,
+		    dasi.id AS instance_id,
+		    dasi.code AS instance_name,
+		    de.name AS env_name,
+			das.name AS app_service_name,
+			dasv.version AS app_service_version,
+		    ddr.deploy_time,
+			ddr.created_by
+		FROM devops_deploy_record ddr
+		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
+		LEFT JOIN devops_app_service_instance dasi ON  denc.object_id = dasi.id
+		LEFT JOIN devops_env de ON de.id = dasi.env_id
+		LEFT JOIN devops_app_service_version dasv ON denc.object_version_id = dasv.id
+		LEFT JOIN devops_app_service das ON das.id = dasi.app_service_id
+		<where>
+			ddr.project_id = #{projectId}
+			<if test="envId != null">
+				and dasi.env_id = #{envId}
+			</if>
+			<if test="appServiceId != null">
+				and dasi.app_service_id = #{appServiceId}
+			</if>
+			<if test="deployType != null">
+				and ddr.deploy_type = #{deployType}
+			</if>
+			<if test="deployResult != null">
+				and denc.status = #{deployResult}
+			</if>
+		</where>
+
+	</select>
 </mapper>

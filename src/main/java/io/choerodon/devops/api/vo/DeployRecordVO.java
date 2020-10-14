@@ -34,6 +34,8 @@ public class DeployRecordVO {
 
     private Date deployTime;
 
+    private Long createdBy;
+
     public Long getId() {
         return id;
     }
@@ -120,5 +122,13 @@ public class DeployRecordVO {
 
     public void setDeployTime(Date deployTime) {
         this.deployTime = deployTime;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }

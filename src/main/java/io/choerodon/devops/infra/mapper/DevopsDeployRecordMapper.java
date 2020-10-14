@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
+import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -32,4 +33,10 @@ public interface DevopsDeployRecordMapper extends BaseMapper<DevopsDeployRecordD
             @Param("deployType") String deployType);
 
     List<AppServiceInstanceForRecordVO> queryByBatchDeployRecordId(@Param("recordId") Long recordId);
+
+    List<DeployRecordVO> listByParams(@Param("projectId") Long projectId,
+                                      @Param("envId") Long envId,
+                                      @Param("appServiceId") Long appServiceId,
+                                      @Param("deployType") String deployType,
+                                      @Param("deployResult") String deployResult);
 }
