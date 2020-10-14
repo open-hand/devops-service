@@ -12,7 +12,7 @@ import io.choerodon.devops.infra.feign.fallback.AsgardFeignClientFallback;
 /**
  * @author dengyouquan
  **/
-@FeignClient(value = "hzero-asgard",
+@FeignClient(value = "choerodon-asgard",
         fallback = AsgardFeignClientFallback.class)
 public interface AsgardFeignClient {
 
