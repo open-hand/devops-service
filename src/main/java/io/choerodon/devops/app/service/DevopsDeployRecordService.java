@@ -7,6 +7,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
+import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordInstanceDTO;
@@ -67,4 +68,16 @@ public interface DevopsDeployRecordService {
      * @return 对应的实例列表
      */
     List<AppServiceInstanceForRecordVO> queryByBatchDeployRecordId(Long recordId);
+
+    /**
+     * 分页查询部署记录
+     * @param projectId
+     * @param pageRequest
+     * @param envId
+     * @param appServiceId
+     * @param deployType
+     * @param deployResult
+     * @return
+     */
+    Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, Long envId, Long appServiceId, String deployType, String deployResult);
 }

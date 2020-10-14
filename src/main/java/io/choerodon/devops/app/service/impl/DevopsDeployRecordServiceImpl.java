@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.infra.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,5 +216,28 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public List<AppServiceInstanceForRecordVO> queryByBatchDeployRecordId(Long recordId) {
         // 这里不校验recordId是不是批量部署类型的部署纪录的id
         return devopsDeployRecordMapper.queryByBatchDeployRecordId(recordId);
+    }
+
+    @Override
+    public Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, Long envId, Long appServiceId, String deployType, String deployResult) {
+        Page<DeployRecordVO> deployRecordVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsDeployRecordMapper.listByParams(projectId, envId, appServiceId, deployType, deployResult));
+        // 添加用户信息
+        if (CollectionUtils.isEmpty(deployRecordVOPage.getContent())) {
+            return deployRecordVOPage;
+        }
+        List<Long> uIds = deployRecordVOPage.getContent().stream().map(DeployRecordVO::getCreatedBy).collect(Collectors.toList());
+
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(uIds);
+
+        Map<Long, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+
+        deployRecordVOPage.getContent().forEach(v -> {
+            IamUserDTO iamUserDTO = userMap.get(v.getCreatedBy());
+            if (iamUserDTO != null) {
+                v.setExecuteUser(iamUserDTO);
+            }
+        });
+
+        return deployRecordVOPage;
     }
 }

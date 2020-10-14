@@ -289,13 +289,27 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     private void updateHostStatus(String correctKey, Long hostId, String status) {
-        Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
-        }.getType());
-        if (hostStatus == null) {
-            hostStatus = new HashMap<>();
+        String lockKey = "checkHost:status:lock:" + correctKey;
+        while (!Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "lock"))) {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                LOGGER.info("sleep.failed.", e);
+            }
         }
-        hostStatus.put(hostId, status);
-        redisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
+        try {
+            redisTemplate.opsForValue().set(lockKey, "lock", 10, TimeUnit.MINUTES);
+            Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+            }.getType());
+            if (hostStatus == null) {
+                hostStatus = new HashMap<>();
+            }
+            hostStatus.put(hostId, status);
+            redisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
+        } finally {
+            redisTemplate.delete(lockKey);
+        }
+
     }
 
     /**
