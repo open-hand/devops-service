@@ -264,7 +264,7 @@
 		SELECT
 			ddr.id AS id,
 		    ddr.deploy_type,
-		    denc.status,
+		    denc.status AS deploy_status,
 		    dasi.id AS instance_id,
 		    dasi.code AS instance_name,
 		    de.name AS env_name,
