@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,8 +70,10 @@ public class DevopsDeployRecordController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "环境id")
+            @Encrypt
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用服务id")
+            @Encrypt
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "部署类型")
             @RequestParam(value = "deploy_type", required = false) String deployType,

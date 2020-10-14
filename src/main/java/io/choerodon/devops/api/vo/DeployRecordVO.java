@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -12,6 +14,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @since 2020/10/12 15:14
  */
 public class DeployRecordVO {
+    @Encrypt
     private Long id;
 
     private String viewId;
@@ -20,6 +23,7 @@ public class DeployRecordVO {
 
     private String deployStatus;
 
+    @Encrypt
     private Long instanceId;
 
     private String instanceName;
