@@ -528,6 +528,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 && PipelineStatus.RUNNING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
     }
