@@ -27,7 +27,6 @@ public class RdmMemberViewDTO {
     @ApiModelProperty("代码库id")
     private Long repositoryId;
 
-    @JsonIgnore
     private Long userId;
 
     @ApiModelProperty("权限")
