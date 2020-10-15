@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import io.choerodon.devops.api.vo.DeployRecordVO;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsDeployRecordInstanceMapper devopsDeployRecordInstanceMapper;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
 
     @Override
     public Page<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageable) {
@@ -231,12 +234,15 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
         Map<Long, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
 
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+
         deployRecordVOPage.getContent().forEach(v -> {
             IamUserDTO iamUserDTO = userMap.get(v.getCreatedBy());
             if (iamUserDTO != null) {
                 v.setExecuteUser(iamUserDTO);
             }
             v.setViewId(CiCdPipelineUtils.handleId(v.getId()));
+            v.setConnect(upgradeClusterList.contains(v.getClusterId()));
         });
 
         return deployRecordVOPage;
