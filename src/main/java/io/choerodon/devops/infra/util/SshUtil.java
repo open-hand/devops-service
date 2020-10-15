@@ -41,6 +41,7 @@ public class SshUtil {
     public static boolean sshConnect(String hostIp, Integer sshPort, String authType, String username, String password) {
         SSHClient ssh = new SSHClient();
         ssh.setConnectTimeout(DEFAULT_TIMEOUT_MILLISECONDS);
+        ssh.setTimeout(DEFAULT_TIMEOUT_MILLISECONDS);
         Session session = null;
         try {
             addAuth(ssh, hostIp, sshPort, authType, username, password);
