@@ -150,8 +150,8 @@ public class UserAttrServiceImpl implements UserAttrService {
         List<Long> finalSelectedIamUserIds = selectedIamUserIds;
         List<IamUserDTO> userDTOS = rdmMemberViewDTOS.stream().map(v -> {
             IamUserDTO iamUserDTO = new IamUserDTO();
-            iamUserDTO.setId(v.getUserId());
-            if (finalSelectedIamUserIds.contains(v.getUserId())) {
+            iamUserDTO.setId(v.getId());
+            if (finalSelectedIamUserIds.contains(v.getId())) {
                 iamUserDTO.setSelectFlag(1);
             }
             return iamUserDTO;
