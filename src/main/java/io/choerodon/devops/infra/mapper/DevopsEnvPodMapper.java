@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.dto.PodResourceDetailsDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -34,5 +35,5 @@ public interface DevopsEnvPodMapper extends BaseMapper<DevopsEnvPodDTO> {
                        @Param("status") String status,
                        @Param("is_ready") Boolean isReady);
 
-    List<String> queryResourceDetailsByInstanceId(@Param("instanceId") Long instanceId);
+    List<PodResourceDetailsDTO> queryResourceDetailsByInstanceId(@Param("instanceId") Long instanceId);
 }

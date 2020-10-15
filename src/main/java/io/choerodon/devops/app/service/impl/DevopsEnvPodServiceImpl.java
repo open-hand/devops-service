@@ -294,7 +294,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public List<String> queryResourceDetailsByInstanceId(Long instanceId) {
+    public List<PodResourceDetailsDTO> queryResourceDetailsByInstanceId(Long instanceId) {
         return devopsEnvPodMapper.queryResourceDetailsByInstanceId(instanceId);
     }
 }

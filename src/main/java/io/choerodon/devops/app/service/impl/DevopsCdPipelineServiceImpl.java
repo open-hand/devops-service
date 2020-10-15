@@ -987,14 +987,17 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 查询部署版本
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
         // 查询当前实例运行时pod metadata
-        List<String> message = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
+        List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
 
-        if (CollectionUtils.isEmpty(message)) {
+        if (CollectionUtils.isEmpty(podResourceDetailsDTOS)) {
+            return JobStatusEnum.RUNNING.value();
+        }
+        if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
             return JobStatusEnum.RUNNING.value();
         }
         List<String> images = new ArrayList<>();
-        for (String s : message) {
-            V1Pod podInfo = K8sUtil.deserialize(s, V1Pod.class);
+        for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
+            V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
             images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
         }
         if (images.stream().allMatch(v -> appServiceVersionDTO.getImage().equals(v))) {
