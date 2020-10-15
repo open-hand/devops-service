@@ -269,6 +269,7 @@
 		    dasi.code AS instance_name,
 		    de.id AS env_id,
 		    de.name AS env_name,
+		    de.cluster_id,
 		    das.id AS app_service_id,
 			das.name AS app_service_name,
 			dasv.version AS app_service_version,

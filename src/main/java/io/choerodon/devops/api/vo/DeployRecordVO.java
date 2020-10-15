@@ -33,6 +33,10 @@ public class DeployRecordVO {
 
     private String envName;
 
+    private Long clusterId;
+
+    private Boolean connect;
+
     @Encrypt
     private Long appServiceId;
 
@@ -156,5 +160,21 @@ public class DeployRecordVO {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public Boolean getConnect() {
+        return connect;
+    }
+
+    public void setConnect(Boolean connect) {
+        this.connect = connect;
     }
 }
