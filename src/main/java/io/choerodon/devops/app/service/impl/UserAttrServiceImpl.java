@@ -139,12 +139,15 @@ public class UserAttrServiceImpl implements UserAttrService {
     @Override
     public Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params) {
         List<Long> selectedIamUserIds = new ArrayList<>();
+        String realName = null;
         if (!StringUtils.isEmpty(params)) {
             Map maps = JSONObject.parseObject(params, Map.class);
             selectedIamUserIds = KeyDecryptHelper.decryptIdList((JSONArray) maps.get("ids"));
+            realName = (String) maps.get("userName");
         }
         RdmMemberQueryDTO rdmMemberQueryDTO = new RdmMemberQueryDTO();
         rdmMemberQueryDTO.setRepositoryIds(Collections.singleton(appServiceId));
+        rdmMemberQueryDTO.setRealName(realName);
         List<RdmMemberViewDTO> rdmMemberViewDTOS = hrdsCodeRepoClientOperator.listMembers(null, projectId, rdmMemberQueryDTO);
 
         List<Long> finalSelectedIamUserIds = selectedIamUserIds;
