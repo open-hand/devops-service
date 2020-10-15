@@ -119,8 +119,8 @@
             AND dep.status = #{status,jdbcType=VARCHAR}
         </if>
     </select>
-    <select id="queryResourceDetailsByInstanceId" resultType="java.lang.String">
-        SELECT derd.message
+    <select id="queryResourceDetailsByInstanceId" resultType="io.choerodon.devops.infra.dto.PodResourceDetailsDTO">
+        SELECT derd.message,dep.is_ready
         FROM devops_env_pod dep
                  INNER JOIN devops_env_resource der ON (der.instance_id = dep.instance_id AND der.`name` = dep.`name` AND der.kind = 'pod')
                  INNER JOIN devops_env_resource_detail derd ON derd.id = der.resource_detail_id
