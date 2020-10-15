@@ -28,7 +28,13 @@ public class DeployRecordVO {
 
     private String instanceName;
 
+    @Encrypt
+    private Long envId;
+
     private String envName;
+
+    @Encrypt
+    private Long appServiceId;
 
     private String appServiceName;
 
@@ -134,5 +140,21 @@ public class DeployRecordVO {
 
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }
