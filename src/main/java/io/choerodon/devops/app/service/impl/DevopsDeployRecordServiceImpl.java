@@ -222,8 +222,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     }
 
     @Override
-    public Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, Long envId, Long appServiceId, String deployType, String deployResult) {
-        Page<DeployRecordVO> deployRecordVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsDeployRecordMapper.listByParams(projectId, envId, appServiceId, deployType, deployResult));
+    public Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String envName, String appServiceName, String deployType, String deployResult) {
+        Page<DeployRecordVO> deployRecordVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsDeployRecordMapper.listByParams(projectId, envName, appServiceName, deployType, deployResult));
         // 添加用户信息
         if (CollectionUtils.isEmpty(deployRecordVOPage.getContent())) {
             return deployRecordVOPage;

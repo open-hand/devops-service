@@ -79,5 +79,5 @@ public interface DevopsDeployRecordService {
      * @param deployResult
      * @return
      */
-    Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, Long envId, Long appServiceId, String deployType, String deployResult);
+    Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String envName, String appServiceName, String deployType, String deployResult);
 }

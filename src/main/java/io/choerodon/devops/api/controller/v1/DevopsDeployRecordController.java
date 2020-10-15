@@ -69,18 +69,16 @@ public class DevopsDeployRecordController {
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @ApiParam(value = "环境id")
-            @Encrypt
-            @RequestParam(value = "env_id", required = false) Long envId,
+            @ApiParam(value = "环境name")
+            @RequestParam(value = "env_name", required = false) String envName,
             @ApiParam(value = "应用服务id")
-            @Encrypt
-            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
+            @RequestParam(value = "app_service_name", required = false) String appServiceName,
             @ApiParam(value = "部署类型")
             @RequestParam(value = "deploy_type", required = false) String deployType,
             @ApiParam(value = "部署结果")
             @RequestParam(value = "deploy_result", required = false) String deployResult
             ) {
-        return ResponseEntity.ok(devopsDeployRecordService.paging(projectId, pageRequest, envId, appServiceId, deployType, deployResult));
+        return ResponseEntity.ok(devopsDeployRecordService.paging(projectId, pageRequest, envName, appServiceName, deployType, deployResult));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)

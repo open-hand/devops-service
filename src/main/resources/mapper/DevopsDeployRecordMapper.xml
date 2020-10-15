@@ -283,11 +283,11 @@
 		LEFT JOIN devops_app_service das ON das.id = dasi.app_service_id
 		<where>
 			ddr.project_id = #{projectId}
-			<if test="envId != null">
-				and dasi.env_id = #{envId}
+			<if test="envName != null">
+				and de.name LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
 			</if>
-			<if test="appServiceId != null">
-				and dasi.app_service_id = #{appServiceId}
+			<if test="appServiceName != null">
+				and das.name LIKE CONCAT(CONCAT('%', #{appServiceName, jdbcType=VARCHAR}),'%')
 			</if>
 			<if test="deployType != null">
 				and ddr.deploy_type = #{deployType}
