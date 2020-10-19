@@ -290,7 +290,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     private void updateHostStatus(String correctKey, Long hostId, String status) {
         String lockKey = "checkHost:status:lock:" + correctKey;
-        while (!Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "lock"))) {
+        while (!Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
@@ -298,7 +298,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             }
         }
         try {
-            redisTemplate.opsForValue().set(lockKey, "lock", 10, TimeUnit.MINUTES);
             Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
             }.getType());
             if (hostStatus == null) {
@@ -694,11 +693,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             // 尝试给所有id加锁
             for (Long hostId : hostIds) {
                 lockKey = hostOccupyKey(hostId);
-                Boolean result = redisTemplate.opsForValue().setIfAbsent(lockKey, value);
+                Boolean result = redisTemplate.opsForValue().setIfAbsent(lockKey, value, hostOccupyTimeoutHours, TimeUnit.HOURS);
                 if (Boolean.TRUE.equals(result)) {
                     locked.add(lockKey);
-                    // 锁持有设置超时的时间
-                    redisTemplate.opsForValue().set(lockKey, value, hostOccupyTimeoutHours, TimeUnit.HOURS);
                 } else {
                     LOGGER.debug("Failed to acquire lock for host with id {}", hostId);
                     failedToLock = true;
