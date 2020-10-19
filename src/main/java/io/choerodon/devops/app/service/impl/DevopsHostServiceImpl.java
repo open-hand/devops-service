@@ -80,6 +80,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private TestServiceClientOperator testServiceClientOperator;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private SshUtil sshUtil;
 
     private final Gson gson = new Gson();
 
@@ -433,7 +435,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
         DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
-        boolean sshConnected = SshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
+        boolean sshConnected = sshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
         result.setHostStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
         if (!sshConnected) {
             result.setHostCheckError("failed to check ssh, please ensure network and authentication is valid");
@@ -461,7 +463,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         CommonExAssertUtil.assertTrue(projectId.equals(devopsHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         CommonExAssertUtil.assertTrue(DevopsHostType.DEPLOY.getValue().equals(devopsHostDTO.getType()), "error.host.type.invalid");
 
-        return SshUtil.sshConnect(devopsHostDTO.getHostIp(), devopsHostDTO.getSshPort(), devopsHostDTO.getAuthType(), devopsHostDTO.getUsername(), devopsHostDTO.getPassword());
+        return sshUtil.sshConnect(devopsHostDTO.getHostIp(), devopsHostDTO.getSshPort(), devopsHostDTO.getAuthType(), devopsHostDTO.getUsername(), devopsHostDTO.getPassword());
     }
 
     @Override
