@@ -21,6 +21,7 @@
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
         <choerodon.dom4j.version>2.1.3</choerodon.dom4j.version>
+        <spring.data.redis.version>2.1.0.RELEASE</spring.data.redis.version>
     </properties>
 
 
@@ -77,12 +78,6 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-asgard</artifactId>
-            <!--            <exclusions>-->
-            <!--                <exclusion>-->
-            <!--                    <groupId>org.hzero.boot</groupId>-->
-            <!--                    <artifactId>hzero-boot-admin</artifactId>-->
-            <!--                </exclusion>-->
-            <!--            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -209,7 +204,16 @@
                     <groupId>org.springframework.data</groupId>
                     <artifactId>spring-data-commons</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-redis</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>${spring.data.redis.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
