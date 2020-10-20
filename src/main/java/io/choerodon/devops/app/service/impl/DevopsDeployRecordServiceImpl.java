@@ -133,51 +133,51 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         }
     }
 
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public void createRecordForBatchDeployment(Long projectId, Long envId, List<DevopsDeployRecordInstanceDTO> instances) {
-        if (CollectionUtils.isEmpty(instances)) {
-            throw new CommonException("error.instances.empty");
-        }
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(projectId, DeployType.BATCH.getType(), null, String.valueOf(envId), new Date());
-        baseCreate(devopsDeployRecordDTO);
-        Long deployRecordId = devopsDeployRecordDTO.getId();
-        instances.forEach(i -> i.setDeployRecordId(deployRecordId));
-        devopsDeployRecordInstanceMapper.batchInsert(instances);
-    }
+//    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+//    @Override
+//    public void createRecordForBatchDeployment(Long projectId, Long envId, List<DevopsDeployRecordInstanceDTO> instances) {
+//        if (CollectionUtils.isEmpty(instances)) {
+//            throw new CommonException("error.instances.empty");
+//        }
+//        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(projectId, DeployType.BATCH.getType(), null, String.valueOf(envId), new Date());
+//        baseCreate(devopsDeployRecordDTO);
+//        Long deployRecordId = devopsDeployRecordDTO.getId();
+//        instances.forEach(i -> i.setDeployRecordId(deployRecordId));
+//        devopsDeployRecordInstanceMapper.batchInsert(instances);
+//    }
 
     @Override
     public void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         devopsDeployRecordMapper.delete(devopsDeployRecordDTO);
     }
 
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public void deleteManualAndBatchRecordByEnv(Long envId) {
-        DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
-        // 删除手动部署的纪录
-        deleteCondition.setEnv(String.valueOf(envId));
-        deleteCondition.setDeployType(DeployType.MANUAL.getType());
-        devopsDeployRecordMapper.delete(deleteCondition);
+//    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+//    @Override
+//    public void deleteManualAndBatchRecordByEnv(Long envId) {
+//        DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
+//        // 删除手动部署的纪录
+//        deleteCondition.setDeployPayloadId(String.valueOf(envId));
+//        deleteCondition.setDeployType(DeployType.MANUAL.getType());
+//        devopsDeployRecordMapper.delete(deleteCondition);
+//
+//        // 删除关联表
+//        List<Long> batchRecordIds = devopsDeployRecordMapper.queryRecordIdByEnvIdAndDeployType(String.valueOf(envId), DeployType.BATCH.getType());
+//        deleteRecordInstanceByRecordIds(batchRecordIds);
+//
+//        // 删除批量部署的纪录
+//        deleteCondition.setDeployPayloadId(String.valueOf(envId));
+//        deleteCondition.setDeployType(DeployType.BATCH.getType());
+//        devopsDeployRecordMapper.delete(deleteCondition);
+//    }
 
-        // 删除关联表
-        List<Long> batchRecordIds = devopsDeployRecordMapper.queryRecordIdByEnvIdAndDeployType(String.valueOf(envId), DeployType.BATCH.getType());
-        deleteRecordInstanceByRecordIds(batchRecordIds);
-
-        // 删除批量部署的纪录
-        deleteCondition.setEnv(String.valueOf(envId));
-        deleteCondition.setDeployType(DeployType.BATCH.getType());
-        devopsDeployRecordMapper.delete(deleteCondition);
-    }
-
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    @Override
-    public void deleteRecordInstanceByRecordIds(List<Long> recordIds) {
-        if (CollectionUtils.isEmpty(recordIds)) {
-            return;
-        }
-        devopsDeployRecordInstanceMapper.deleteRecordInstanceByRecordIds(recordIds);
-    }
+//    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+//    @Override
+//    public void deleteRecordInstanceByRecordIds(List<Long> recordIds) {
+//        if (CollectionUtils.isEmpty(recordIds)) {
+//            return;
+//        }
+//        devopsDeployRecordInstanceMapper.deleteRecordInstanceByRecordIds(recordIds);
+//    }
 
     @Override
     public void deleteRelatedRecordOfInstance(Long instanceId) {

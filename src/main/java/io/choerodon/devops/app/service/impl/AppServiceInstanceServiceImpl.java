@@ -52,6 +52,8 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -624,7 +626,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             baseUpdate(appServiceInstanceDTO);
 
             //插入部署记录
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), isFromPipeline ? DeployType.AUTO.getType() : DeployType.MANUAL.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
+                    isFromPipeline ? DeployType.AUTO.getType() : DeployType.MANUAL.getType(),
+                    devopsEnvCommandDTO.getId(),
+                    DeployModeEnum.ENV.value(),
+                    devopsEnvironmentDTO.getId(),
+                    devopsEnvironmentDTO.getName(),
+                    null,
+                    devopsEnvCommandDTO.getCreationDate(),
+                    DeployObjectTypeEnum.APP.value(),
+                    appServiceDTO.getName(),
+                    appServiceVersionDTO.getVersion(),
+                    appServiceInstanceDTO.getCode());
             devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
@@ -783,7 +796,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), DeployType.MANUAL.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
+                DeployType.MANUAL.getType(),
+                devopsEnvCommandDTO.getId(),
+                DeployModeEnum.ENV.value(),
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getName(),
+                null,
+                devopsEnvCommandDTO.getCreationDate(),
+                DeployObjectTypeEnum.APP.value(),
+                appServiceDTO.getName(),
+                appServiceVersionDTO.getVersion(),
+                appServiceInstanceDTO.getCode());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
@@ -844,7 +870,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), isFromPipeline ? DeployType.AUTO.getType() : DeployType.MANUAL.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
+                DeployType.MANUAL.getType(),
+                devopsEnvCommandDTO.getId(),
+                DeployModeEnum.ENV.value(),
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getName(),
+                null,
+                devopsEnvCommandDTO.getCreationDate(),
+                DeployObjectTypeEnum.APP.value(),
+                appServiceDTO.getName(),
+                appServiceVersionDTO.getVersion(),
+                appServiceInstanceDTO.getCode());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
@@ -1263,7 +1300,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         baseUpdate(appServiceInstanceDTO);
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), DeployType.BATCH.getType(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), new Date());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
+                DeployType.BATCH.getType(),
+                devopsEnvCommandDTO.getId(),
+                DeployModeEnum.ENV.value(),
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getName(),
+                null,
+                new Date(),
+                DeployObjectTypeEnum.APP.value(),
+                appServiceDTO.getName(),
+                appServiceVersionDTO.getVersion(),
+                appServiceInstanceDTO.getCode());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 

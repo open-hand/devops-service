@@ -25,7 +25,7 @@ public interface DevopsDeployRecordService {
 
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
-    void createRecordForBatchDeployment(Long projectId, Long envId, List<DevopsDeployRecordInstanceDTO> instances);
+//    void createRecordForBatchDeployment(Long projectId, Long envId, List<DevopsDeployRecordInstanceDTO> instances);
 
     void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
@@ -34,14 +34,14 @@ public interface DevopsDeployRecordService {
      *
      * @param envId 环境id
      */
-    void deleteManualAndBatchRecordByEnv(Long envId);
+//    void deleteManualAndBatchRecordByEnv(Long envId);
 
     /**
      * 通过部署纪录id删除关联的 `devops_deploy_record_instance`表纪录
      *
      * @param recordIds 部署纪录id
      */
-    void deleteRecordInstanceByRecordIds(List<Long> recordIds);
+//    void deleteRecordInstanceByRecordIds(List<Long> recordIds);
 
 
     /**
@@ -73,8 +73,6 @@ public interface DevopsDeployRecordService {
      * 分页查询部署记录
      * @param projectId
      * @param pageRequest
-     * @param envId
-     * @param appServiceId
      * @param deployType
      * @param deployResult
      * @return

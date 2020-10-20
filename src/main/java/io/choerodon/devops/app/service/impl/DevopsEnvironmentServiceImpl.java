@@ -1384,7 +1384,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceService.baseDeleteServiceAndInstanceByEnvId(envId);
 
         // 删除实例对应的部署纪录
-        devopsDeployRecordService.deleteManualAndBatchRecordByEnv(envId);
+//        devopsDeployRecordService.deleteManualAndBatchRecordByEnv(envId);
 
         // 删除环境对应的secret
         devopsSecretService.baseListByEnv(envId).forEach(secretE ->

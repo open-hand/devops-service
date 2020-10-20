@@ -57,8 +57,6 @@ public interface PipelineService {
 
     CheckAuditVO checkAudit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);
 
-    void executeAutoDeploy(Long pipelineId);
-
     void failed(Long projectId, Long recordId);
 
     PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
