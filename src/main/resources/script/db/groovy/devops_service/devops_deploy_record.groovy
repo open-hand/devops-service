@@ -43,6 +43,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
                 constraints(nullable: false)
             }
             column(name: 'deploy_result', type: 'varchar(255)', remarks: '执行结果, 环境部署的结果根据deploy_id从env_command表获取', afterColumn: 'deploy_payload_name')
+            column(name: 'deploy_object_type', type: 'varchar(255)', remarks: '部署对象类型 app 应用服务，jar ,image', afterColumn: 'deploy_result')
             column(name: 'deploy_object_name', type: 'varchar(255)', remarks: '部署对象名', afterColumn: 'deploy_object_type') {
                 constraints(nullable: false)
             }
