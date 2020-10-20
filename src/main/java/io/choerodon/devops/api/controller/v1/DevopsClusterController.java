@@ -1,5 +1,18 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -10,18 +23,6 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/clusters")
@@ -41,13 +42,50 @@ public class DevopsClusterController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建集群")
-    @PostMapping
-    public ResponseEntity<String> create(
+    @PostMapping("/create")
+    public ResponseEntity<Void> create(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群信息", required = true)
             @RequestBody @Valid DevopsClusterReqVO devopsClusterReqVO) {
-        return Optional.ofNullable(devopsClusterService.createCluster(projectId, devopsClusterReqVO))
+        // TODO 校验参数
+
+        devopsClusterService.createCluster(projectId, devopsClusterReqVO);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 重试创建集群
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @return
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下创建集群")
+    @PostMapping("/retry_create")
+    public ResponseEntity<Void> create(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @RequestParam(value = "cluster_id") Long clusterId) {
+        devopsClusterService.retryCreateCluster(projectId, clusterId);
+        return ResponseEntity.ok().build();
+
+    }
+
+    /**
+     * 项目下激活集群
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下创建集群")
+    @PostMapping("/activate")
+    public ResponseEntity<String> enable(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群信息", required = true)
+            @RequestBody @Valid DevopsClusterReqVO devopsClusterReqVO) {
+        return Optional.ofNullable(devopsClusterService.activateCluster(projectId, devopsClusterReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.cluster.insert"));
     }

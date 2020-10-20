@@ -86,6 +86,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private DevopsClusterNodeService devopsClusterNodeService;
 
     static {
         InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
@@ -126,8 +128,20 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
+    public void createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        // TODO 保存节点信息
+
+        // TODO 创建集群
+    }
+
+    @Override
+    public void retryCreateCluster(Long projectId, Long clusterId) {
+        // TODO 重试集群创建
+    }
+
+    @Override
     @Transactional
-    public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+    public String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         // 判断组织下是否还能创建集群
         checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject = null;
@@ -142,7 +156,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
             devopsClusterDTO.setSkipCheckProjectPermission(true);
             devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
-
 
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
 
@@ -680,6 +693,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         int allCount = devopsClusterMapper.countByOptions(null, null);
         int updatedCount = clusterConnectionHandler.getUpdatedClusterList().size();
         return new ClusterOverViewVO(updatedCount, allCount - updatedCount);
+    }
+
+    @Override
+    public void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long clusterId) {
+        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = ConvertUtils.convertList(devopsClusterNodeVOList, DevopsClusterNodeDTO.class)
+                .stream()
+                .peek(n -> n.setClusterId(clusterId))
+                .collect(Collectors.toList());
+        devopsClusterNodeService.batchInsert(devopsClusterNodeDTOS);
     }
 
     /**

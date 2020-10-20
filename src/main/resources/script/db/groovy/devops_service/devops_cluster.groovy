@@ -71,4 +71,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
             column(name: 'client_id', type: 'BIGINT UNSIGNED', remarks: 'client_id', afterColumn: 'system_env_id')
         }
     }
+
+    changeSet(author: 'lihao',id:'2020-10-19-add-type-column'){
+        addColumn(tableName: 'devops_cluster'){
+            column(name: 'type',type: 'VARCHAR(10)',remarks: 'agent集群类型，created或者imported',afterColumn: 'id')
+        }
+    }
+
+    changeSet(author: 'lihao', id: '2020-10-19-fix-type') {
+        sql("UPDATE devops_cluster SET type='imported'")
+    }
 }

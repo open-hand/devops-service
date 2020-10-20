@@ -9,10 +9,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'name', type: 'VARCHAR(128)', remarks: '节点名称') {
                 constraints(nullable: false)
             }
-            column(name: 'type', type: 'TINYINT UNSIGNED', remarks: '节点类型, 使用二进制掩码来表示多个关系，存储二进制对应的十进制值 比如abc a表示master节点 b表示etcd节点 c表示worker节点') {
+            column(name: 'type', type: 'VARCHAR(20)', remarks: '节点类型') {
                 constraints(nullable: false)
             }
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
+                constraints(nullable: false)
+            }
+            column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: '集群id') {
                 constraints(nullable: false)
             }
             column(name: 'host_ip', type: 'VARCHAR(15)', remarks: '节点ip') {

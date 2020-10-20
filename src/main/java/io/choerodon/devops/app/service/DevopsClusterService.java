@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public interface DevopsClusterService {
     /**
@@ -34,7 +34,20 @@ public interface DevopsClusterService {
      * @param devopsClusterReqVO 集群信息
      * @return
      */
-    String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
+    void createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
+
+    /**
+     * 重试集群创建
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     */
+    void retryCreateCluster(Long projectId, Long clusterId);
+
+    /**
+     * 激活集群
+     */
+    String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
 
     /**
      * 更新集群
@@ -215,4 +228,9 @@ public interface DevopsClusterService {
      * @return
      */
     Boolean checkEnableCreateCluster(Long projectId);
+
+    /**
+     * 创建节点
+     */
+    void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long clusterId);
 }

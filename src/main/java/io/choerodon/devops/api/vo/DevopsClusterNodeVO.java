@@ -1,22 +1,10 @@
-package io.choerodon.devops.infra.dto;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.BaseDomain;
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-
-@ModifyAudit
-@VersionAudit
-@Table(name = "devops_cluster_node")
-public class DevopsClusterNodeDTO extends BaseDomain {
-    @Id
-    @GeneratedValue
+public class DevopsClusterNodeVO {
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("节点名称")
@@ -25,15 +13,11 @@ public class DevopsClusterNodeDTO extends BaseDomain {
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostType}
      */
-    @ApiModelProperty("节点类型,master对应4，etcd对应2，worker对应1，多个类型用数字之和表示，比如master、etcd节点，用4+2之和6表示")
+    @ApiModelProperty("节点类型")
     private String type;
 
     @ApiModelProperty("项目id")
     private Long projectId;
-
-    @Encrypt
-    @ApiModelProperty("集群id")
-    private Long clusterId;
 
     @ApiModelProperty("节点ip")
     private String hostIp;
@@ -125,14 +109,6 @@ public class DevopsClusterNodeDTO extends BaseDomain {
         this.password = password;
     }
 
-    public Long getClusterId() {
-        return clusterId;
-    }
-
-    public void setClusterId(Long clusterId) {
-        this.clusterId = clusterId;
-    }
-
     @Override
     public String toString() {
         return "DevopsClusterNodeDTO{" +
@@ -140,7 +116,6 @@ public class DevopsClusterNodeDTO extends BaseDomain {
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", projectId=" + projectId +
-                ", clusterId=" + clusterId +
                 ", hostIp='" + hostIp + '\'' +
                 ", sshPort=" + sshPort +
                 ", authType='" + authType + '\'' +

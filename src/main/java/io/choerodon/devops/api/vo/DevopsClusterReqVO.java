@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -15,6 +16,27 @@ public class DevopsClusterReqVO {
 
     @ApiModelProperty("集群描述 / 非必需")
     private String description;
+
+    @ApiModelProperty("集群类型 / 必须")
+    private String type;
+
+    private List<DevopsClusterNodeVO> devopsClusterNodeVOList;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public List<DevopsClusterNodeVO> getDevopsClusterNodeVOList() {
+        return devopsClusterNodeVOList;
+    }
+
+    public void setDevopsClusterNodeVOList(List<DevopsClusterNodeVO> devopsClusterNodeVOList) {
+        this.devopsClusterNodeVOList = devopsClusterNodeVOList;
+    }
 
     public String getName() {
         return name;
