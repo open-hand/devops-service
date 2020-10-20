@@ -34,15 +34,26 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
     }
 
     changeSet(author: 'wanghao', id: '2020-10-20-add-column') {
-        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'deploy_payload_id', oldColumnName: 'env', tableName: 'devops_deploy_record')
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'deploy_payload_id', oldColumnName: 'env', tableName: 'devops_deploy_record') {
+            constraints(nullable: false)
+        }
         addColumn(tableName: 'devops_deploy_record') {
-            column(name: 'deploy_mode', type: 'varchar(100)', remarks: '部署模式， env 环境部署，host主机部署', afterColumn: 'deploy_type')
-            column(name: 'deploy_payload_name', type: 'varchar(255)', remarks: '部署载体name 主机名/环境名', afterColumn: 'deploy_mode')
+            column(name: 'deploy_mode', type: 'varchar(100)', remarks: '部署模式， env 环境部署，host主机部署', afterColumn: 'deploy_type') {
+                constraints(nullable: false)
+            }
+            column(name: 'deploy_payload_name', type: 'varchar(255)', remarks: '部署载体name 主机名/环境名', afterColumn: 'deploy_mode') {
+                constraints(nullable: false)
+            }
             column(name: 'deploy_result', type: 'varchar(255)', remarks: '执行结果, 环境部署的结果根据deploy_id从env_command表获取', afterColumn: 'deploy_payload_name')
-            column(name: 'deploy_object_type', type: 'varchar(255)', remarks: '部署对象类型 app 应用服务，jar ,image', afterColumn: 'deploy_result')
-            column(name: 'deploy_object_name', type: 'varchar(255)', remarks: '部署对象名', afterColumn: 'deploy_object_type')
-            column(name: 'deploy_object_version', type: 'varchar(255)', remarks: '部署对象版本', afterColumn: 'deploy_object_name')
-            column(name: 'instance_name', type: 'varchar(255)', remarks: '实例code', afterColumn: 'deploy_object_version')
+            column(name: 'deploy_object_name', type: 'varchar(255)', remarks: '部署对象名', afterColumn: 'deploy_object_type') {
+                constraints(nullable: false)
+            }
+            column(name: 'deploy_object_version', type: 'varchar(255)', remarks: '部署对象版本', afterColumn: 'deploy_object_name') {
+                constraints(nullable: false)
+            }
+            column(name: 'instance_name', type: 'varchar(255)', remarks: '实例code', afterColumn: 'deploy_object_version') {
+                constraints(nullable: false)
+            }
         }
     }
 
