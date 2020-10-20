@@ -30,7 +30,6 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.DevopsClusterTypeEnum;
 import io.choerodon.devops.infra.enums.PolarisScopeType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -129,8 +128,20 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
+    public void createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        // TODO 保存节点信息
+
+        // TODO 创建集群
+    }
+
+    @Override
+    public void retryCreateCluster(Long projectId, Long clusterId) {
+        // TODO 重试集群创建
+    }
+
+    @Override
     @Transactional
-    public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+    public String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         // 判断组织下是否还能创建集群
         checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject = null;
@@ -145,13 +156,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
             devopsClusterDTO.setSkipCheckProjectPermission(true);
             devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
-
-            if (DevopsClusterTypeEnum.CREATED.getTYpe().equalsIgnoreCase(devopsClusterReqVO.getType())) {
-                // TODO 保存节点信息
-
-                // 创建集群
-            }
-
 
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
 
@@ -692,8 +696,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void createNodeAndSaveRelation(DevopsClusterReqVO devopsClusterReqVO) {
-
+    public void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long clusterId) {
+        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = ConvertUtils.convertList(devopsClusterNodeVOList, DevopsClusterNodeDTO.class)
+                .stream()
+                .peek(n -> n.setClusterId(clusterId))
+                .collect(Collectors.toList());
+        devopsClusterNodeService.batchInsert(devopsClusterNodeDTOS);
     }
 
     /**

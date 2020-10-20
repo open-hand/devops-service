@@ -34,7 +34,20 @@ public interface DevopsClusterService {
      * @param devopsClusterReqVO 集群信息
      * @return
      */
-    String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
+    void createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
+
+    /**
+     * 重试集群创建
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     */
+    void retryCreateCluster(Long projectId, Long clusterId);
+
+    /**
+     * 激活集群
+     */
+    String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
 
     /**
      * 更新集群
@@ -217,7 +230,7 @@ public interface DevopsClusterService {
     Boolean checkEnableCreateCluster(Long projectId);
 
     /**
-     * 创建节点并保存集群节点关系
+     * 创建节点
      */
-    void createNodeAndSaveRelation(DevopsClusterReqVO devopsClusterReqVO);
+    void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long clusterId);
 }

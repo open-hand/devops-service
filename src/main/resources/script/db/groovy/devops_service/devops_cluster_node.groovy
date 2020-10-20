@@ -15,6 +15,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
                 constraints(nullable: false)
             }
+            column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: '集群id') {
+                constraints(nullable: false)
+            }
             column(name: 'host_ip', type: 'VARCHAR(15)', remarks: '节点ip') {
                 constraints(nullable: false)
             }

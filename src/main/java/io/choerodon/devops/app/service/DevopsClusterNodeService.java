@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestResultVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
+import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 
 public interface DevopsClusterNodeService {
     /**
@@ -12,4 +15,12 @@ public interface DevopsClusterNodeService {
      * @return 测试结果 boolean
      */
     DevopsClusterNodeConnectionTestResultVO testConnection(Long projectId, DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO);
+
+    /**
+     * 批量插入
+     *
+     * @param devopsClusterNodeDTOList 列表
+     * @return
+     */
+    void batchInsert(List<DevopsClusterNodeDTO> devopsClusterNodeDTOList);
 }

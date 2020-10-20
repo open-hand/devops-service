@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.BaseDomain;
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -29,6 +30,10 @@ public class DevopsClusterNodeDTO extends BaseDomain {
 
     @ApiModelProperty("项目id")
     private Long projectId;
+
+    @Encrypt
+    @ApiModelProperty("集群id")
+    private Long clusterId;
 
     @ApiModelProperty("节点ip")
     private String hostIp;
@@ -120,6 +125,14 @@ public class DevopsClusterNodeDTO extends BaseDomain {
         this.password = password;
     }
 
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
+
     @Override
     public String toString() {
         return "DevopsClusterNodeDTO{" +
@@ -127,6 +140,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", projectId=" + projectId +
+                ", clusterId=" + clusterId +
                 ", hostIp='" + hostIp + '\'' +
                 ", sshPort=" + sshPort +
                 ", authType='" + authType + '\'' +
