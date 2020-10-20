@@ -228,7 +228,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         FileUtil.deleteDirectories(destFilePath, storeFilePath);
         //流水线
-        checkAutoDeploy(appServiceVersionDTO);
+//        checkAutoDeploy(appServiceVersionDTO);
         //生成版本成功后发送webhook json
         sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
     }
@@ -293,7 +293,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         devopsPipelineDTOS.forEach(pipelineDTO -> {
                             if (pipelineService.checkDeploy(pipelineDTO.getProjectId(), pipelineDTO.getId()).getVersions()) {
                                 LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertAppServiceVersionDTO.getId(), insertAppServiceVersionDTO.getVersion(), pipelineDTO.getId());
-                                pipelineService.executeAutoDeploy(pipelineDTO.getId());
+//                                pipelineService.executeAutoDeploy(pipelineDTO.getId());
                             }
                         });
                     }

@@ -26,46 +26,41 @@ public class DevopsDeployRecordDTO extends AuditDomain {
     private String deployType;
     @ApiModelProperty("部署id：对于type为manual，是实例的CommandId，对于type是auto，是流水线纪录id，对于type是batch，此值为null")
     private Long deployId;
-    private String env;
+
+    private String deployMode;
+
+    private Long deployPayloadId;
+
+    private String deployPayloadName;
+
     private Date deployTime;
 
-    @Transient
     private String deployStatus;
-    @Transient
-    private String pipelineName;
-    @Transient
-    private String pipelineTriggerType;
-    @Transient
-    private Long deployCreatedBy;
 
-    @Transient
-    @ApiModelProperty("手动部署生成的实例id")
-    private Long instanceId;
+    private String deployObjectType;
 
-    @Transient
-    @ApiModelProperty("手动部署生成的实例的环境id")
-    private Long envId;
+    private String deployObjectName;
 
-    @Transient
-    @ApiModelProperty("手动部署的实例的应用服务id")
-    private Long appServiceId;
+    private String deployObjectVersion;
 
-    @Transient
-    private String errorInfo;
-
-    @Transient
-    private String envName;
+    private String instanceCode;
 
     public DevopsDeployRecordDTO() {
     }
 
-
-    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String env, Date deployTime) {
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployStatus, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceCode) {
         this.projectId = projectId;
         this.deployType = deployType;
         this.deployId = deployId;
-        this.env = env;
+        this.deployMode = deployMode;
+        this.deployPayloadId = deployPayloadId;
+        this.deployPayloadName = deployPayloadName;
+        this.deployStatus = deployStatus;
         this.deployTime = deployTime;
+        this.deployObjectType = deployObjectType;
+        this.deployObjectName = deployObjectName;
+        this.deployObjectVersion = deployObjectVersion;
+        this.instanceCode = instanceCode;
     }
 
 
@@ -109,36 +104,28 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployStatus = deployStatus;
     }
 
-    public String getPipelineName() {
-        return pipelineName;
+    public String getDeployMode() {
+        return deployMode;
     }
 
-    public void setPipelineName(String pipelineName) {
-        this.pipelineName = pipelineName;
+    public void setDeployMode(String deployMode) {
+        this.deployMode = deployMode;
     }
 
-    public String getPipelineTriggerType() {
-        return pipelineTriggerType;
+    public Long getDeployPayloadId() {
+        return deployPayloadId;
     }
 
-    public void setPipelineTriggerType(String pipelineTriggerType) {
-        this.pipelineTriggerType = pipelineTriggerType;
+    public void setDeployPayloadId(Long deployPayloadId) {
+        this.deployPayloadId = deployPayloadId;
     }
 
-    public String getEnv() {
-        return env;
+    public String getDeployPayloadName() {
+        return deployPayloadName;
     }
 
-    public void setEnv(String env) {
-        this.env = env;
-    }
-
-    public Long getDeployCreatedBy() {
-        return deployCreatedBy;
-    }
-
-    public void setDeployCreatedBy(Long deployCreatedBy) {
-        this.deployCreatedBy = deployCreatedBy;
+    public void setDeployPayloadName(String deployPayloadName) {
+        this.deployPayloadName = deployPayloadName;
     }
 
     public Date getDeployTime() {
@@ -149,44 +136,35 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployTime = deployTime;
     }
 
-    public Long getInstanceId() {
-        return instanceId;
+    public String getDeployObjectType() {
+        return deployObjectType;
     }
 
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
+    public void setDeployObjectType(String deployObjectType) {
+        this.deployObjectType = deployObjectType;
     }
 
-    public Long getEnvId() {
-        return envId;
+    public String getDeployObjectName() {
+        return deployObjectName;
     }
 
-    public void setEnvId(Long envId) {
-        this.envId = envId;
+    public void setDeployObjectName(String deployObjectName) {
+        this.deployObjectName = deployObjectName;
     }
 
-    public Long getAppServiceId() {
-        return appServiceId;
+    public String getDeployObjectVersion() {
+        return deployObjectVersion;
     }
 
-    public void setAppServiceId(Long appServiceId) {
-        this.appServiceId = appServiceId;
+    public void setDeployObjectVersion(String deployObjectVersion) {
+        this.deployObjectVersion = deployObjectVersion;
     }
 
-    public void setEnvName(String envName) {
-        this.envName = envName;
+    public String getInstanceCode() {
+        return instanceCode;
     }
 
-    public String getEnvName() {
-
-        return envName;
-    }
-
-    public String getErrorInfo() {
-        return errorInfo;
-    }
-
-    public void setErrorInfo(String errorInfo) {
-        this.errorInfo = errorInfo;
+    public void setInstanceCode(String instanceCode) {
+        this.instanceCode = instanceCode;
     }
 }
