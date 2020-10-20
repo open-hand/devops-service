@@ -34,9 +34,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
     }
 
     changeSet(author: 'wanghao', id: '2020-10-20-add-column') {
-        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'deploy_payload_id', oldColumnName: 'env', tableName: 'devops_deploy_record') {
-            constraints(nullable: false)
-        }
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'deploy_payload_id', oldColumnName: 'env', tableName: 'devops_deploy_record')
         addColumn(tableName: 'devops_deploy_record') {
             column(name: 'deploy_mode', type: 'varchar(100)', remarks: '部署模式， env 环境部署，host主机部署', afterColumn: 'deploy_type') {
                 constraints(nullable: false)
