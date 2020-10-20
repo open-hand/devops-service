@@ -34,18 +34,10 @@ public interface DevopsDeployRecordService {
      *
      * @param envId 环境id
      */
-//    void deleteManualAndBatchRecordByEnv(Long envId);
+    void deleteRecordByEnv(Long envId);
 
     /**
-     * 通过部署纪录id删除关联的 `devops_deploy_record_instance`表纪录
-     *
-     * @param recordIds 部署纪录id
-     */
-//    void deleteRecordInstanceByRecordIds(List<Long> recordIds);
-
-
-    /**
-     * 删除手动部署生成的实例相关的部署纪录
+     * 删除部署生成的实例相关的部署纪录
      *
      * @param instanceId 实例id
      */
@@ -74,8 +66,13 @@ public interface DevopsDeployRecordService {
      * @param projectId
      * @param pageRequest
      * @param deployType
+     * @param deployMode
+     * @param deployPayloadName
      * @param deployResult
+     * @param deployObjectName
+     * @param deployObjectVersion
      * @return
      */
-    Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String envName, String appServiceName, String deployType, String deployResult);
+    Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion);
+
 }

@@ -69,16 +69,20 @@ public class DevopsDeployRecordController {
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @ApiParam(value = "环境name")
-            @RequestParam(value = "env_name", required = false) String envName,
-            @ApiParam(value = "应用服务id")
-            @RequestParam(value = "app_service_name", required = false) String appServiceName,
             @ApiParam(value = "部署类型")
             @RequestParam(value = "deploy_type", required = false) String deployType,
+            @ApiParam(value = "部署方式")
+            @RequestParam(value = "deploy_mode", required = false) String deployMode,
+            @ApiParam(value = "部署载体名")
+            @RequestParam(value = "deploy_payload_name", required = false) String deployPayloadName,
             @ApiParam(value = "部署结果")
-            @RequestParam(value = "deploy_result", required = false) String deployResult
+            @RequestParam(value = "deploy_result", required = false) String deployResult,
+            @ApiParam(value = "部署对象名")
+            @RequestParam(value = "deploy_object_name", required = false) String deployObjectName,
+            @ApiParam(value = "部署对象版本")
+            @RequestParam(value = "deploy_object_version", required = false) String deployObjectVersion
             ) {
-        return ResponseEntity.ok(devopsDeployRecordService.paging(projectId, pageRequest, envName, appServiceName, deployType, deployResult));
+        return ResponseEntity.ok(devopsDeployRecordService.paging(projectId, pageRequest, deployType, deployMode, deployPayloadName, deployResult, deployObjectName, deployObjectVersion));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
