@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public interface DevopsClusterService {
     /**
@@ -215,4 +215,9 @@ public interface DevopsClusterService {
      * @return
      */
     Boolean checkEnableCreateCluster(Long projectId);
+
+    /**
+     * 创建节点并保存集群节点关系
+     */
+    void createNodeAndSaveRelation(DevopsClusterReqVO devopsClusterReqVO);
 }

@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.DevopsClusterTypeEnum;
 import io.choerodon.devops.infra.enums.PolarisScopeType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -86,6 +87,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private DevopsClusterNodeService devopsClusterNodeService;
 
     static {
         InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
@@ -142,6 +145,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
             devopsClusterDTO.setSkipCheckProjectPermission(true);
             devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
+
+            if (DevopsClusterTypeEnum.CREATED.getTYpe().equalsIgnoreCase(devopsClusterReqVO.getType())) {
+                // TODO 保存节点信息
+
+                // 创建集群
+            }
 
 
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
@@ -680,6 +689,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         int allCount = devopsClusterMapper.countByOptions(null, null);
         int updatedCount = clusterConnectionHandler.getUpdatedClusterList().size();
         return new ClusterOverViewVO(updatedCount, allCount - updatedCount);
+    }
+
+    @Override
+    public void createNodeAndSaveRelation(DevopsClusterReqVO devopsClusterReqVO) {
+
     }
 
     /**
