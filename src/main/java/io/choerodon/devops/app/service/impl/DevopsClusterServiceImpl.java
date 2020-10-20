@@ -498,7 +498,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 校验集群是否能够删除
-        checkConnectEnvsAndPV(clusterId);
+        checkConnectAndExistEnvsOrPV(clusterId);
 
         if (!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
             baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
@@ -510,6 +510,23 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         baseDelete(clusterId);
         //删除集群后发送webhook
         sendNotificationService.sendWhenDeleteCluster(devopsClusterDTO);
+    }
+
+    private void checkConnectAndExistEnvsOrPV(Long clusterId) {
+        List<Long> connectedEnvList = clusterConnectionHandler.getUpdatedClusterList();
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+
+        if (connectedEnvList.contains(clusterId)) {
+            throw new CommonException("error.cluster.connected");
+        }
+        if (!devopsEnvironmentDTOS.isEmpty()) {
+            throw new CommonException("error.cluster.delete");
+        }
+        //集群是否存在PV
+        List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
+        if (!Objects.isNull(clusterDTOList) && !clusterDTOList.isEmpty()) {
+            throw new CommonException("error.cluster.pv.exist");
+        }
     }
 
     @Override
