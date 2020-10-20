@@ -21,17 +21,27 @@ public class DeployRecordVO {
 
     private String deployType;
 
-    private String deployStatus;
+    private String deployResult;
 
     @Encrypt
     private Long instanceId;
 
     private String instanceName;
 
-    @Encrypt
-    private Long envId;
+    private String deployMode;
 
-    private String envName;
+    @Encrypt
+    private Long deployPayloadId;
+
+    private String deployPayloadName;
+
+    private Date deployTime;
+
+    private String deployObjectType;
+
+    private String deployObjectName;
+
+    private String deployObjectVersion;
 
     private Long clusterId;
 
@@ -46,9 +56,9 @@ public class DeployRecordVO {
 
     private IamUserDTO executeUser;
 
-    private Date deployTime;
-
     private Long createdBy;
+
+    private String commandStatus;
 
     public Long getId() {
         return id;
@@ -74,12 +84,12 @@ public class DeployRecordVO {
         this.deployType = deployType;
     }
 
-    public String getDeployStatus() {
-        return deployStatus;
+    public String getDeployResult() {
+        return deployResult;
     }
 
-    public void setDeployStatus(String deployStatus) {
-        this.deployStatus = deployStatus;
+    public void setDeployResult(String deployResult) {
+        this.deployResult = deployResult;
     }
 
     public Long getInstanceId() {
@@ -96,14 +106,6 @@ public class DeployRecordVO {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
-    }
-
-    public String getEnvName() {
-        return envName;
-    }
-
-    public void setEnvName(String envName) {
-        this.envName = envName;
     }
 
     public String getAppServiceName() {
@@ -146,14 +148,6 @@ public class DeployRecordVO {
         this.createdBy = createdBy;
     }
 
-    public Long getEnvId() {
-        return envId;
-    }
-
-    public void setEnvId(Long envId) {
-        this.envId = envId;
-    }
-
     public Long getAppServiceId() {
         return appServiceId;
     }
@@ -176,5 +170,61 @@ public class DeployRecordVO {
 
     public void setConnect(Boolean connect) {
         this.connect = connect;
+    }
+
+    public String getDeployMode() {
+        return deployMode;
+    }
+
+    public void setDeployMode(String deployMode) {
+        this.deployMode = deployMode;
+    }
+
+    public Long getDeployPayloadId() {
+        return deployPayloadId;
+    }
+
+    public void setDeployPayloadId(Long deployPayloadId) {
+        this.deployPayloadId = deployPayloadId;
+    }
+
+    public String getDeployPayloadName() {
+        return deployPayloadName;
+    }
+
+    public void setDeployPayloadName(String deployPayloadName) {
+        this.deployPayloadName = deployPayloadName;
+    }
+
+    public String getDeployObjectType() {
+        return deployObjectType;
+    }
+
+    public void setDeployObjectType(String deployObjectType) {
+        this.deployObjectType = deployObjectType;
+    }
+
+    public String getDeployObjectName() {
+        return deployObjectName;
+    }
+
+    public void setDeployObjectName(String deployObjectName) {
+        this.deployObjectName = deployObjectName;
+    }
+
+    public String getDeployObjectVersion() {
+        return deployObjectVersion;
+    }
+
+    public void setDeployObjectVersion(String deployObjectVersion) {
+        this.deployObjectVersion = deployObjectVersion;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
     }
 }

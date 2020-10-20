@@ -6,10 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.api.vo.DeployRecordVO;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,17 +16,21 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
+import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsDeployRecordInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsDeployRecordInstanceMapper;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -54,9 +54,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Autowired
     private PermissionHelper permissionHelper;
     @Autowired
-    private DevopsDeployRecordInstanceMapper devopsDeployRecordInstanceMapper;
-    @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     public Page<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageable) {
@@ -151,35 +151,18 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         devopsDeployRecordMapper.delete(devopsDeployRecordDTO);
     }
 
-//    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-//    @Override
-//    public void deleteManualAndBatchRecordByEnv(Long envId) {
-//        DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
-//        // 删除手动部署的纪录
-//        deleteCondition.setDeployPayloadId(String.valueOf(envId));
-//        deleteCondition.setDeployType(DeployType.MANUAL.getType());
-//        devopsDeployRecordMapper.delete(deleteCondition);
-//
-//        // 删除关联表
-//        List<Long> batchRecordIds = devopsDeployRecordMapper.queryRecordIdByEnvIdAndDeployType(String.valueOf(envId), DeployType.BATCH.getType());
-//        deleteRecordInstanceByRecordIds(batchRecordIds);
-//
-//        // 删除批量部署的纪录
-//        deleteCondition.setDeployPayloadId(String.valueOf(envId));
-//        deleteCondition.setDeployType(DeployType.BATCH.getType());
-//        devopsDeployRecordMapper.delete(deleteCondition);
-//    }
-
-//    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-//    @Override
-//    public void deleteRecordInstanceByRecordIds(List<Long> recordIds) {
-//        if (CollectionUtils.isEmpty(recordIds)) {
-//            return;
-//        }
-//        devopsDeployRecordInstanceMapper.deleteRecordInstanceByRecordIds(recordIds);
-//    }
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    @Override
+    public void deleteRecordByEnv(Long envId) {
+        DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
+        // 删除手动部署的纪录
+        deleteCondition.setDeployPayloadId(envId);
+        deleteCondition.setDeployMode(DeployModeEnum.ENV.value());
+        devopsDeployRecordMapper.delete(deleteCondition);
+    }
 
     @Override
+    @Transactional
     public void deleteRelatedRecordOfInstance(Long instanceId) {
         devopsDeployRecordMapper.deleteRelatedRecordOfInstance(instanceId);
     }
@@ -221,9 +204,19 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         return devopsDeployRecordMapper.queryByBatchDeployRecordId(recordId);
     }
 
+
     @Override
-    public Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String envName, String appServiceName, String deployType, String deployResult) {
-        Page<DeployRecordVO> deployRecordVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsDeployRecordMapper.listByParams(projectId, envName, appServiceName, deployType, deployResult));
+    public Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion) {
+        Page<DeployRecordVO> deployRecordVOPage = PageHelper
+                .doPageAndSort(pageRequest,
+                        () -> devopsDeployRecordMapper.listByParams(
+                                projectId,
+                                deployType,
+                                deployMode,
+                                deployPayloadName,
+                                deployResult,
+                                deployObjectName,
+                                deployObjectVersion));
         // 添加用户信息
         if (CollectionUtils.isEmpty(deployRecordVOPage.getContent())) {
             return deployRecordVOPage;
@@ -242,7 +235,16 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 v.setExecuteUser(iamUserDTO);
             }
             v.setViewId(CiCdPipelineUtils.handleId(v.getId()));
-            v.setConnect(upgradeClusterList.contains(v.getClusterId()));
+
+
+            if (DeployModeEnum.ENV.value().equals(v.getDeployMode())) {
+                // 计算部署结果
+                v.setDeployResult(v.getCommandStatus());
+                // 计算集群状态
+                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(v.getDeployPayloadId());
+                v.setConnect(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
+            }
+
         });
 
         return deployRecordVOPage;

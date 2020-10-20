@@ -35,7 +35,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
 
     private Date deployTime;
 
-    private String deployStatus;
+    private String deployResult;
 
     private String deployObjectType;
 
@@ -43,24 +43,24 @@ public class DevopsDeployRecordDTO extends AuditDomain {
 
     private String deployObjectVersion;
 
-    private String instanceCode;
+    private String instanceName;
 
     public DevopsDeployRecordDTO() {
     }
 
-    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployStatus, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceCode) {
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName) {
         this.projectId = projectId;
         this.deployType = deployType;
         this.deployId = deployId;
         this.deployMode = deployMode;
         this.deployPayloadId = deployPayloadId;
         this.deployPayloadName = deployPayloadName;
-        this.deployStatus = deployStatus;
+        this.deployResult = deployResult;
         this.deployTime = deployTime;
         this.deployObjectType = deployObjectType;
         this.deployObjectName = deployObjectName;
         this.deployObjectVersion = deployObjectVersion;
-        this.instanceCode = instanceCode;
+        this.instanceName = instanceName;
     }
 
 
@@ -96,12 +96,12 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.projectId = projectId;
     }
 
-    public String getDeployStatus() {
-        return deployStatus;
+    public String getDeployResult() {
+        return deployResult;
     }
 
-    public void setDeployStatus(String deployStatus) {
-        this.deployStatus = deployStatus;
+    public void setDeployResult(String deployResult) {
+        this.deployResult = deployResult;
     }
 
     public String getDeployMode() {
@@ -160,11 +160,11 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectVersion = deployObjectVersion;
     }
 
-    public String getInstanceCode() {
-        return instanceCode;
+    public String getInstanceName() {
+        return instanceName;
     }
 
-    public void setInstanceCode(String instanceCode) {
-        this.instanceCode = instanceCode;
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 }

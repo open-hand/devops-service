@@ -219,8 +219,7 @@
     <delete id="deleteRelatedRecordOfInstance">
         DELETE
         FROM devops_deploy_record
-        WHERE deploy_type = 'manual'
-        AND deploy_id IN (SELECT command.id
+        WHERE deploy_id IN (SELECT command.id
         FROM devops_env_command command
         WHERE command.object = 'instance'
         AND command.object_id = #{instanceId,jdbcType=BIGINT})
@@ -264,36 +263,39 @@
 		SELECT
 			ddr.id AS id,
 		    ddr.deploy_type,
-		    denc.status AS deploy_status,
-		    dasi.id AS instance_id,
-		    dasi.code AS instance_name,
-		    de.id AS env_id,
-		    de.name AS env_name,
-		    de.cluster_id,
-		    das.id AS app_service_id,
-			das.name AS app_service_name,
-			dasv.version AS app_service_version,
+		    denc.status AS command_status,
+			denc.object_id AS instance_id,
+			ddr.instance_name,
+			ddr.deploy_mode,
+			ddr.deploy_payload_id,
+			ddr.deploy_payload_name,
+			ddr.deploy_result,
+			ddr.deploy_object_type,
+			ddr.deploy_object_name,
+			ddr.deploy_object_version,
 		    ddr.deploy_time,
 			ddr.created_by
 		FROM devops_deploy_record ddr
 		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
-		LEFT JOIN devops_app_service_instance dasi ON  denc.object_id = dasi.id
-		LEFT JOIN devops_env de ON de.id = dasi.env_id
-		LEFT JOIN devops_app_service_version dasv ON denc.object_version_id = dasv.id
-		LEFT JOIN devops_app_service das ON das.id = dasi.app_service_id
 		<where>
 			ddr.project_id = #{projectId}
-			<if test="envName != null">
-				and de.name LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
-			</if>
-			<if test="appServiceName != null">
-				and das.name LIKE CONCAT(CONCAT('%', #{appServiceName, jdbcType=VARCHAR}),'%')
-			</if>
 			<if test="deployType != null">
-				and ddr.deploy_type = #{deployType}
+				and ddr.deploy_type = {deployType}
+			</if>
+			<if test="deployMode != null">
+				and ddr.deploy_mode = #{deployMode}
+			</if>
+			<if test="deployPayloadName != null">
+				and ddr.deploy_payload_name LIKE CONCAT(CONCAT('%', #{deployPayloadName, jdbcType=VARCHAR}),'%')
 			</if>
 			<if test="deployResult != null">
-				and denc.status = #{deployResult}
+				and (denc.status = #{deployResult} or denc.status = #{deployResult})
+			</if>
+			<if test="deployObjectName != null">
+				and ddr.deploy_object_name LIKE CONCAT(CONCAT('%', #{deployObjectName, jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="deployObjectVersion != null">
+				and ddr.deploy_object_version LIKE CONCAT(CONCAT('%', #{deployObjectVersion, jdbcType=VARCHAR}),'%')
 			</if>
 		</where>
 
