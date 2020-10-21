@@ -9,6 +9,7 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
+import net.schmizz.sshj.xfer.FileSystemFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -335,6 +336,14 @@ public class SshUtil {
         } else {
             KeyProvider keyProvider = ssh.loadKeys(password, null, null);
             ssh.authPublickey(username, keyProvider);
+        }
+    }
+
+    public void uploadFile(SSHClient ssh, String file, String targetFile) {
+        try {
+            ssh.newSCPFileTransfer().upload(new FileSystemFile(file), targetFile);
+        } catch (IOException e) {
+            throw new CommonException(String.format("failed to upload file %s to host(%s),target path is %s,error is:%s", file, ssh.getRemoteHostname(), targetFile, e.getMessage()));
         }
     }
 
