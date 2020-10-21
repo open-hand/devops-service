@@ -6,6 +6,7 @@ import net.schmizz.sshj.SSHClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
@@ -13,10 +14,12 @@ import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.ClusterNodeRole;
 import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.SshUtil;
 
 @Service
@@ -49,12 +52,47 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
-        // 统计
-
         // 查询节点类型
+        return checkNodeNumByRole(projectId, nodeId);
+    }
+
+    private Boolean checkNodeNumByRole(Long projectId, Long nodeId) {
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole());
-        return null;
+        if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
+                return false;
+            }
+        }
+        if (ClusterNodeRole.isWorker(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+                return false;
+            }
+        }
+        if (ClusterNodeRole.isEtcd(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long projectId, Long nodeId) {
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterNodeDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        if (Boolean.FALSE.equals(checkNodeNumByRole(projectId, nodeId))) {
+            throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_FAILED);
+        }
+        // todo 删除集群中的node
+
+        // 删除数据库中数据
+        if (devopsClusterNodeMapper.deleteByPrimaryKey(nodeId) != 1) {
+            throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_FAILED);
+        }
     }
 
     @Override

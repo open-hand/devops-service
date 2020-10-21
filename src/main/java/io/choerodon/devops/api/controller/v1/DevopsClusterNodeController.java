@@ -46,6 +46,18 @@ public class DevopsClusterNodeController {
         return ResponseEntity.ok(devopsClusterNodeService.checkEnableDelete(projectId, nodeId));
     }
 
+    @ApiOperation("删除节点")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping("/{node_id}")
+    public ResponseEntity<Void> delete(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "node id")
+            @PathVariable(value = "node_id") @Encrypt Long nodeId) {
+        devopsClusterNodeService.delete(projectId, nodeId);
+        return ResponseEntity.noContent().build();
+    }
+
     // TODO wx 批量添加节点
 
     // TODO wx 删除节点

@@ -57,4 +57,11 @@ public interface DevopsClusterNodeService {
      */
     void uploadNodeConfiguration(SSHClient ssh, List<DevopsClusterNodeVO> devopsClusterNodeVOList);
 
+
+    /**
+     * 删除node
+     * @param projectId
+     * @param nodeId
+     */
+    void delete(Long projectId, Long nodeId);
 }
