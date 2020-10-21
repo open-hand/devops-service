@@ -95,10 +95,10 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             Long nexusRepoId = jarDeploy.getRepositoryId();
             String groupId = jarDeploy.getGroupId();
             String artifactId = jarDeploy.getArtifactId();
-            String versionRegular = "^" + jarDeploy.getVersion() + "&";
+            String version = jarDeploy.getVersion();
 
             // 0.3 获取并记录信息
-            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, versionRegular);
+            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                 throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
             }
