@@ -178,6 +178,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             }
             c7nImageDeployDTO.setPullAccount(imageTagVo.getPullAccount());
             c7nImageDeployDTO.setPullPassword(imageTagVo.getPullPassword());
+            c7nImageDeployDTO.setHarborUrl(imageTagVo.getHarborUrl());
             c7nImageDeployDTO.setPullCmd(imageTagVo.getImageTagList().get(0).getPullCmd());
             // 2.
             sshUtil.sshConnect(hostDeployConfigVO.getHostConnectionVO(), ssh);
