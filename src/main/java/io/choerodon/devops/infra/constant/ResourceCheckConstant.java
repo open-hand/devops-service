@@ -18,4 +18,9 @@ public class ResourceCheckConstant {
     // sonar
     public static final String ERROR_SONAR_SCANNER_TYPE_INVALID = "error.sonar.scanner.type.invalid";
 
+    // project
+    public static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
+
+
+
 }
