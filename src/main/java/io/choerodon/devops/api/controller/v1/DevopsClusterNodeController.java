@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestResultVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.swagger.annotation.Permission;
@@ -29,7 +28,7 @@ public class DevopsClusterNodeController {
     @ApiOperation("测试节点连通性")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/connection_test")
-    public ResponseEntity<DevopsClusterNodeConnectionTestResultVO> testConnection(
+    public ResponseEntity<Boolean> testConnection(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @RequestBody @Valid DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO) {

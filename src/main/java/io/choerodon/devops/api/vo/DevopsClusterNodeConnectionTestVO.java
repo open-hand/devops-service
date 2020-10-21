@@ -9,16 +9,8 @@ import org.hibernate.validator.constraints.Range;
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CdHostAccountType;
-import io.choerodon.devops.infra.enums.DevopsHostType;
 
 public class DevopsClusterNodeConnectionTestVO {
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostType}
-     */
-    @EnumCheck(message = "error.host.type.invalid", enumClass = DevopsHostType.class)
-    @ApiModelProperty("主机类型")
-    private String type;
-
     @Pattern(regexp = GitOpsConstants.IP_PATTERN, message = "error.host.ip.invalid")
     @ApiModelProperty("主机ip")
     private String hostIp;
@@ -41,14 +33,6 @@ public class DevopsClusterNodeConnectionTestVO {
     @NotEmpty(message = "error.host.password.empty")
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
 
     public String getHostIp() {
         return hostIp;

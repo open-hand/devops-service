@@ -11,10 +11,10 @@ public class DevopsClusterNodeVO {
     private String name;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostType}
+     * {@link io.choerodon.devops.infra.enums.ClusterNodeRole}
      */
     @ApiModelProperty("节点类型")
-    private String type;
+    private String role;
 
     @ApiModelProperty("项目id")
     private Long projectId;
@@ -26,7 +26,7 @@ public class DevopsClusterNodeVO {
     private Integer sshPort;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.CdHostAccountType}
+     * {@link io.choerodon.devops.infra.enums.ClusterNodeAuthTypeEnum}
      */
     @ApiModelProperty("认证类型")
     private String authType;
@@ -53,12 +53,12 @@ public class DevopsClusterNodeVO {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    public String getRole() {
+        return role;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Long getProjectId() {
@@ -114,7 +114,7 @@ public class DevopsClusterNodeVO {
         return "DevopsClusterNodeDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", type='" + type + '\'' +
+                ", type='" + role + '\'' +
                 ", projectId=" + projectId +
                 ", hostIp='" + hostIp + '\'' +
                 ", sshPort=" + sshPort +

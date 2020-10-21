@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.enums;
 
-public enum NodeAuthTypeEnum {
+public enum ClusterNodeAuthTypeEnum {
     /**
      * 账号密码类型
      */
@@ -10,15 +10,13 @@ public enum NodeAuthTypeEnum {
      */
     PUBLICKEY("publickey");
 
-    private String type;
+    private final String type;
 
-    NodeAuthTypeEnum(String type) {
+    ClusterNodeAuthTypeEnum(String type) {
         this.type = type;
     }
 
-    public String getType() {
+    public String value() {
         return this.type;
     }
-
-
 }

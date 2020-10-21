@@ -268,6 +268,11 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_DELETE_CHART_VERSIONS = "devops-delete-chart-versions";
 
+    /**
+     * 安装k8s
+     */
+    public static final String DEVOPS_INSTALL_K8S = "devops-install-k8s";
+
 
     private SagaTaskCodeConstants() {
     }

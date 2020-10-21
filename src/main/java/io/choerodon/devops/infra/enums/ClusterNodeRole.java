@@ -1,13 +1,13 @@
 package io.choerodon.devops.infra.enums;
 
 /**
- * 节点类型
+ * 节点角色
  * 使用掩码来表示多个关系 abc
  * a表示master节点
  * b表示etcd节点
  * c表示worker节点
  */
-public enum ClusterNodeType implements Type {
+public enum ClusterNodeRole implements Type {
     /**
      * worker节点
      */
@@ -33,7 +33,7 @@ public enum ClusterNodeType implements Type {
 
     public static int collectDefaults() {
         int flags = 0;
-        for (ClusterNodeType t : values()) {
+        for (ClusterNodeRole t : values()) {
             flags |= t.getMask();
         }
         return flags;

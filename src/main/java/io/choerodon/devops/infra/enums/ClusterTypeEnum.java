@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.enums;
 /**
  * 集群类型
  */
-public enum DevopsClusterTypeEnum {
+public enum ClusterTypeEnum {
     /**
      * 创建类型
      */
@@ -12,13 +12,14 @@ public enum DevopsClusterTypeEnum {
      * 导入类型
      */
     IMPORTED("imported");
-    private String type;
 
-    DevopsClusterTypeEnum(String type) {
+    private final String type;
+
+    ClusterTypeEnum(String type) {
         this.type = type;
     }
 
-    public String getTYpe() {
+    public String value() {
         return this.type;
     }
 }

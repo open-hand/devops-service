@@ -2,19 +2,20 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import net.schmizz.sshj.SSHClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestResultVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
+import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
-import io.choerodon.devops.infra.enums.ClusterNodeType;
-import io.choerodon.devops.infra.enums.DevopsHostStatus;
+import io.choerodon.devops.infra.enums.ClusterNodeRole;
 import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
 import io.choerodon.devops.infra.util.SshUtil;
 
@@ -27,14 +28,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private DevopsClusterNodeMapper devopsClusterNodeMapper;
 
     @Override
-    public DevopsClusterNodeConnectionTestResultVO testConnection(Long projectId, DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO) {
-        DevopsClusterNodeConnectionTestResultVO result = new DevopsClusterNodeConnectionTestResultVO();
-        boolean sshConnected = sshUtil.sshConnect(devopsClusterNodeConnectionTestVO.getHostIp(), devopsClusterNodeConnectionTestVO.getSshPort(), devopsClusterNodeConnectionTestVO.getAuthType(), devopsClusterNodeConnectionTestVO.getUsername(), devopsClusterNodeConnectionTestVO.getPassword());
-        result.setHostStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
-        if (!sshConnected) {
-            result.setHostCheckError("failed to check ssh, please ensure network and authentication is valid");
-        }
-        return result;
+    public boolean testConnection(Long projectId, DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO) {
+        return sshUtil.sshConnect(devopsClusterNodeConnectionTestVO.getHostIp(),
+                devopsClusterNodeConnectionTestVO.getSshPort(),
+                devopsClusterNodeConnectionTestVO.getAuthType(),
+                devopsClusterNodeConnectionTestVO.getUsername(),
+                devopsClusterNodeConnectionTestVO.getPassword());
     }
 
     @Override
@@ -54,7 +53,21 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
         // 查询节点类型
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        ClusterNodeType.isMaster(devopsClusterNodeDTO.getRole());
+        ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole());
         return null;
+    }
+
+    @Override
+    public void execCommand(SSHClient ssh, String command) {
+    }
+
+    @Async
+    @Override
+    public void checkNode(SSHClient ssh) {
+    }
+
+    @Override
+    public void uploadNodeConfiguration(SSHClient ssh, List<DevopsClusterNodeVO> devopsClusterNodeVOList) {
+
     }
 }

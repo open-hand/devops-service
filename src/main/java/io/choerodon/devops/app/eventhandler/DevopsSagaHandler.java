@@ -100,6 +100,8 @@ public class DevopsSagaHandler {
     private DevopsCdJobService devopsCdJobService;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private DevopsClusterService devopsClusterService;
 
     /**
      * devops创建环境
@@ -584,5 +586,15 @@ public class DevopsSagaHandler {
             seq = 1)
     public void batchDeployment(String payload) {
         appServiceInstanceService.batchDeploymentSaga(new JSON().deserialize(payload, BatchDeploymentPayload.class));
+    }
+
+    /**
+     * devops安装k8s
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_INSTALL_K8S,
+            sagaCode = DEVOPS_INSTALL_K8S,
+            description = "Devops安装k8s", maxRetryCount = 1, seq = 1)
+    public void installK8s(String payload) {
+        devopsClusterService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsK8sInstallPayload.class));
     }
 }

@@ -242,6 +242,11 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
 
+    /**
+     * 创建集群
+     */
+    public static final String DEVOPS_INSTALL_K8S = "devops-install-k8s";
+
     private SagaTopicCodeConstants() {
     }
 }

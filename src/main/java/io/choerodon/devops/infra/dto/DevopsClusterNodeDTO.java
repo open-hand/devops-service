@@ -23,7 +23,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
     private String name;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.ClusterNodeType}
+     * {@link io.choerodon.devops.infra.enums.ClusterNodeRole}
      */
     @ApiModelProperty("节点类型,master对应4，etcd对应2，worker对应1，多个类型用数字之和表示，比如master、etcd节点，用4+2之和6表示")
     private Integer role;
@@ -42,7 +42,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
     private Integer sshPort;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.CdHostAccountType}
+     * {@link io.choerodon.devops.infra.enums.ClusterNodeAuthTypeEnum}
      */
     @ApiModelProperty("认证类型")
     private String authType;

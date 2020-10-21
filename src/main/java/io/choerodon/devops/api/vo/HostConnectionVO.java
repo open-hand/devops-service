@@ -18,7 +18,7 @@ public class HostConnectionVO {
     private String hostPort;
 
     @ApiModelProperty("用户名")
-    private String userName;
+    private String username;
 
     @ApiModelProperty("密码")
     private String password;
@@ -80,12 +80,12 @@ public class HostConnectionVO {
         this.hostPort = hostPort;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
