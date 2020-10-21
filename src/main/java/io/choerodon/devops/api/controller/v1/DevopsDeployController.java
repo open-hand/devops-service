@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
@@ -28,7 +29,7 @@ public class DevopsDeployController {
     public ResponseEntity<Void> hostDeploy(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody HostDeployConfigVO hostDeployConfigVO) {
+            @RequestBody @Validated HostDeployConfigVO hostDeployConfigVO) {
         devopsDeployService.hostDeploy(projectId, hostDeployConfigVO);
         return ResponseEntity.noContent().build();
     }
