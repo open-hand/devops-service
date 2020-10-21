@@ -26,7 +26,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
      * {@link io.choerodon.devops.infra.enums.ClusterNodeType}
      */
     @ApiModelProperty("节点类型,master对应4，etcd对应2，worker对应1，多个类型用数字之和表示，比如master、etcd节点，用4+2之和6表示")
-    private String role;
+    private Integer role;
 
     @ApiModelProperty("项目id")
     private Long projectId;
@@ -72,11 +72,11 @@ public class DevopsClusterNodeDTO extends BaseDomain {
         this.name = name;
     }
 
-    public String getRole() {
+    public Integer getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Integer role) {
         this.role = role;
     }
 
