@@ -35,6 +35,16 @@ public class DevopsClusterNodeController {
         return Results.success(devopsClusterNodeService.testConnection(projectId, devopsClusterNodeConnectionTestVO));
     }
 
+//    @ApiOperation("校验是否能够删除节点")
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @PostMapping("/{node_id}/check_enable_delete")
+//    public ResponseEntity<DevopsClusterNodeConnectionTestResultVO> checkEnableDelete(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable("project_id") Long projectId,
+//            @PathVariable @Valid DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO) {
+//        return Results.success(devopsClusterNodeService.checkEnableDelete(projectId, devopsClusterNodeConnectionTestVO));
+//    }
+
     // TODO wx 批量添加节点
 
     // TODO wx 删除节点

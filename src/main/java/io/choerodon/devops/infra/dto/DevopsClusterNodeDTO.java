@@ -23,10 +23,10 @@ public class DevopsClusterNodeDTO extends BaseDomain {
     private String name;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostType}
+     * {@link io.choerodon.devops.infra.enums.ClusterNodeType}
      */
     @ApiModelProperty("节点类型,master对应4，etcd对应2，worker对应1，多个类型用数字之和表示，比如master、etcd节点，用4+2之和6表示")
-    private String type;
+    private String role;
 
     @ApiModelProperty("项目id")
     private Long projectId;
@@ -53,6 +53,9 @@ public class DevopsClusterNodeDTO extends BaseDomain {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
+    @ApiModelProperty("集群状态")
+    private String status;
+
     public Long getId() {
         return id;
     }
@@ -69,12 +72,12 @@ public class DevopsClusterNodeDTO extends BaseDomain {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    public String getRole() {
+        return role;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Long getProjectId() {
@@ -133,12 +136,20 @@ public class DevopsClusterNodeDTO extends BaseDomain {
         this.clusterId = clusterId;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "DevopsClusterNodeDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", type='" + type + '\'' +
+                ", role='" + role + '\'' +
                 ", projectId=" + projectId +
                 ", clusterId=" + clusterId +
                 ", hostIp='" + hostIp + '\'' +
@@ -146,6 +157,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
                 ", authType='" + authType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
 }
