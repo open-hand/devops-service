@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.enums;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 节点角色
  * 使用掩码来表示多个关系 abc
@@ -107,5 +111,17 @@ public enum ClusterNodeRole implements Type {
      */
     public static boolean isMasterAndEtcdAndWorker(int flag) {
         return MASTER.isSet(flag) && ETCD.isSet(flag) && WORKER.isSet(flag);
+    }
+
+    public static Set<Integer> listMasterRoleSet() {
+        return new HashSet<>(Arrays.asList(4, 5, 6));
+    }
+
+    public static Set<Integer> listEtcdRoleSet() {
+        return new HashSet<>(Arrays.asList(2, 3, 6));
+    }
+
+    public static Set<Integer> listWorkerRoleSet() {
+        return new HashSet<>(Arrays.asList(1, 3, 5));
     }
 }
