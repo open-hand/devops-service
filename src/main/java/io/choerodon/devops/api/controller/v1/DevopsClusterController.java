@@ -62,9 +62,9 @@ public class DevopsClusterController {
      * @return
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下创建集群")
+    @ApiOperation(value = "项目下重试创建集群")
     @PostMapping("/retry_create")
-    public ResponseEntity<Void> create(
+    public ResponseEntity<Void> retryCreate(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
