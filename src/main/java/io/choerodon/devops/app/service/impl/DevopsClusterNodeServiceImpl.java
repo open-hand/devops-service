@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestResultVO;
@@ -13,6 +14,7 @@ import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
 import io.choerodon.devops.infra.util.SshUtil;
 
+@Service
 public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Autowired
