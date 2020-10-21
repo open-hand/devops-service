@@ -6,6 +6,8 @@ import net.schmizz.sshj.SSHClient;
 
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
+import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
+import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 
 public interface DevopsClusterNodeService {
@@ -40,7 +42,7 @@ public interface DevopsClusterNodeService {
      * @param nodeId
      * @return
      */
-    Boolean checkEnableDelete(Long projectId, Long nodeId);
+    NodeDeleteCheckVO checkEnableDelete(Long projectId, Long nodeId);
 
     /**
      * 登录指定节点执行命令
@@ -64,4 +66,12 @@ public interface DevopsClusterNodeService {
      * @param nodeId
      */
     void delete(Long projectId, Long nodeId);
+
+    /**
+     * 校验是否能够删除节点角色
+     * @param projectId
+     * @param nodeId
+     * @return
+     */
+    NodeRoleDeleteCheckVO checkEnableDeleteRole(Long projectId, Long nodeId);
 }

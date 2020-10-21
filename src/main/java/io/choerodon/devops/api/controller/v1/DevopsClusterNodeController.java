@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
+import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
+import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -38,7 +40,7 @@ public class DevopsClusterNodeController {
     @ApiOperation("校验是否能够删除节点")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{node_id}/check_enable_delete")
-    public ResponseEntity<Boolean> checkEnableDelete(
+    public ResponseEntity<NodeDeleteCheckVO> checkEnableDelete(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
@@ -56,6 +58,17 @@ public class DevopsClusterNodeController {
             @PathVariable(value = "node_id") @Encrypt Long nodeId) {
         devopsClusterNodeService.delete(projectId, nodeId);
         return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("校验是否能够删除节点角色")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{node_id}/check_enable_delete_role")
+    public ResponseEntity<NodeRoleDeleteCheckVO> checkEnableDeleteRole(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "node id")
+            @PathVariable(value = "node_id") @Encrypt Long nodeId) {
+        return ResponseEntity.ok(devopsClusterNodeService.checkEnableDeleteRole(projectId, nodeId));
     }
 
     // TODO wx 批量添加节点

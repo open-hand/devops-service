@@ -12,6 +12,8 @@ import org.springframework.util.Assert;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
+import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
+import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.MiscConstants;
@@ -48,32 +50,47 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public Boolean checkEnableDelete(Long projectId, Long nodeId) {
+    public NodeDeleteCheckVO checkEnableDelete(Long projectId, Long nodeId) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
+        NodeDeleteCheckVO nodeDeleteCheckVO = new NodeDeleteCheckVO();
         // 查询节点类型
-        return checkNodeNumByRole(projectId, nodeId);
-    }
-
-    private Boolean checkNodeNumByRole(Long projectId, Long nodeId) {
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
         if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())) {
             if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
-                return false;
+                nodeDeleteCheckVO.setEnableDeleteMaster(false);
             }
         }
         if (ClusterNodeRole.isWorker(devopsClusterNodeDTO.getRole())) {
             if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
-                return false;
+                nodeDeleteCheckVO.setEnableDeleteWorker(false);
             }
         }
         if (ClusterNodeRole.isEtcd(devopsClusterNodeDTO.getRole())) {
             if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
-                return false;
+                nodeDeleteCheckVO.setEnableDeleteEtcd(false);
             }
         }
-        return true;
+        return nodeDeleteCheckVO;
+    }
+
+    private void checkNodeNumByRole(DevopsClusterNodeDTO devopsClusterNodeDTO) {
+        if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
+                throw new CommonException(ClusterCheckConstant.ERROR_MASTER_NODE_ONLY_ONE);
+            }
+        }
+        if (ClusterNodeRole.isWorker(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+                throw new CommonException(ClusterCheckConstant.ERROR_WORKER_NODE_ONLY_ONE);
+            }
+        }
+        if (ClusterNodeRole.isEtcd(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+                throw new CommonException(ClusterCheckConstant.ERROR_ETCD_NODE_ONLY_ONE);
+            }
+        }
     }
 
     @Override
@@ -84,9 +101,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterNodeDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
-        if (Boolean.FALSE.equals(checkNodeNumByRole(projectId, nodeId))) {
-            throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_FAILED);
-        }
+        checkNodeNumByRole(devopsClusterNodeDTO);
         // todo 删除集群中的node
 
         // 删除数据库中数据
@@ -94,6 +109,27 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_FAILED);
         }
     }
+
+    @Override
+    public NodeRoleDeleteCheckVO checkEnableDeleteRole(Long projectId, Long nodeId) {
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+
+        NodeRoleDeleteCheckVO nodeRoleDeleteCheckVO = new NodeRoleDeleteCheckVO();
+        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
+        if (Boolean.FALSE.equals(ClusterNodeRole.isWorker(devopsClusterNodeDTO.getRole()))) {
+            nodeRoleDeleteCheckVO.setEnableDeleteRole(true);
+        }
+
+        if (Boolean.TRUE.equals(ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole()))) {
+            nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
+        }
+        if (Boolean.TRUE.equals(ClusterNodeRole.isEtcd(devopsClusterNodeDTO.getRole()))) {
+            nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
+        }
+        return nodeRoleDeleteCheckVO;
+    }
+
 
     @Override
     public void execCommand(SSHClient ssh, String command) {
