@@ -9,7 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'name', type: 'VARCHAR(128)', remarks: '节点名称') {
                 constraints(nullable: false)
             }
-            column(name: 'role', type: 'VARCHAR(20)', remarks: '节点拥有的角色') {
+            column(name: 'role', type: 'SMALLINT UNSIGNED', remarks: '节点拥有的角色') {
                 constraints(nullable: false)
             }
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
@@ -33,7 +33,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'password', type: 'VARCHAR(2048)', remarks: '密码/rsa秘钥') {
                 constraints(nullable: false)
             }
-            column(name: 'status', type: 'VARCHAR(255)', remarks: '集群状态') {
+            column(name: 'status', type: 'VARCHAR(255)', remarks: '节点状态') {
                 constraints(nullable: false)
             }
 

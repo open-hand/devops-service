@@ -13,6 +13,7 @@ import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
+import io.choerodon.devops.infra.enums.ClusterNodeType;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
 import io.choerodon.devops.infra.util.SshUtil;
@@ -49,7 +50,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
+        // 统计
 
+        // 查询节点类型
+        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
+        ClusterNodeType.isMaster(devopsClusterNodeDTO.getRole());
         return null;
     }
 }
