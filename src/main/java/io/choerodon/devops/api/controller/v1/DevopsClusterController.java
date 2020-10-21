@@ -28,6 +28,8 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/clusters")
 public class DevopsClusterController {
     private static final String ERROR_CLUSTER_QUERY = "error.cluster.query";
+    private static final String ERROR_CLUSTER_INSERT = "error.devops.cluster.insert";
+
 
     @Autowired
     private DevopsClusterService devopsClusterService;
@@ -43,15 +45,47 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建集群")
     @PostMapping("/create")
-    public ResponseEntity<Void> create(
+    public ResponseEntity<DevopsClusterSshNodeInfoVO> create(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群信息", required = true)
-            @RequestBody @Valid DevopsClusterReqVO devopsClusterReqVO) {
-        // TODO 校验参数
+            @RequestBody @Valid DevopsClusterReqVO devopsClusterReqVO) throws Exception {
+        return Optional.ofNullable(devopsClusterService.createCluster(projectId, devopsClusterReqVO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_INSERT));
+    }
 
-        devopsClusterService.createCluster(projectId, devopsClusterReqVO);
+    /**
+     * 确认安装k8s
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "确认安装k8s")
+    @PostMapping("/confirm_install")
+    public ResponseEntity<Void> confirmInstall(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @RequestParam(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "ssh连接的节点信息", required = true)
+            @RequestBody DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
+        devopsClusterService.confirmInstall(projectId, clusterId, devopsClusterSshNodeInfoVO);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 获得节点检测进度
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "获得节点检测进度")
+    @PostMapping("/check_process")
+    public ResponseEntity<DevopsNodeCheckResultVO> checkProgress(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "ssh连接的节点信息", required = true)
+            @RequestBody DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
+        return Optional.ofNullable(devopsClusterService.checkProgress(projectId, devopsClusterSshNodeInfoVO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.node.check.process.get"));
     }
 
     /**
@@ -78,7 +112,7 @@ public class DevopsClusterController {
      * 项目下激活集群
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下创建集群")
+    @ApiOperation(value = "项目连接集群")
     @PostMapping("/activate")
     public ResponseEntity<String> enable(
             @ApiParam(value = "项目Id", required = true)

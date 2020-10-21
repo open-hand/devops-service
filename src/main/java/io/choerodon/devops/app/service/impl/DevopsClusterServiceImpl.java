@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
+import net.schmizz.sshj.SSHClient;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,13 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.DevopsClusterValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -53,6 +58,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
+    private static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> /tmp/check.log\n" +
+            "systemctl restart docker && systemctl enable docker >> /tmp/check.log";
+
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
@@ -88,6 +96,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsClusterNodeService devopsClusterNodeService;
+    @Autowired
+    private DevopsClusterValidator devopsClusterValidator;
+    @Autowired
+    private TransactionalProducer producer;
+    @Autowired
+    private SshUtil sshUtil;
 
     static {
         InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
@@ -127,11 +141,49 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return String.format(CLUSTER_INFO_KEY_TEMPLATE, Objects.requireNonNull(clusterId));
     }
 
+    @Transactional
     @Override
-    public void createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
-        // TODO 保存节点信息
+    @Saga(code = "create-cluster", description = "创建集群", inputSchema = "{}")
+    public DevopsClusterSshNodeInfoVO createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) throws Exception {
+        devopsClusterValidator.check(devopsClusterReqVO);
+        DevopsClusterDTO devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO);
+        createNode(devopsClusterReqVO.getDevopsClusterNodeVOList(), devopsClusterDTO.getId());
+        DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
+                .setClusterId(devopsClusterDTO.getId())
+                .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
+        SSHClient ssh = new SSHClient();
+        HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class);
 
-        // TODO 创建集群
+        sshUtil.sshConnect(hostConnectionVO, ssh);
+        // 安装docker
+        devopsClusterNodeService.execCommand(ssh, INSTALL_DOCKER_COMMAND);
+        // 上传配置文件
+        devopsClusterNodeService.uploadNodeConfiguration(ssh, devopsClusterReqVO.getDevopsClusterNodeVOList());
+
+        // 异步检测节点信息
+        devopsClusterNodeService.checkNode(ssh);
+        return devopsClusterSshNodeInfoVO;
+    }
+
+    @Override
+    public void confirmInstall(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
+//        // TODO 发送saga进行安装
+//        producer.applyAndReturn(
+//                StartSagaBuilder
+//                        .newBuilder()
+//                        .withLevel(ResourceLevel.PROJECT)
+//                        .withSourceId(projectId)
+//                        .withRefType("cluster")
+//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_CLUSTER),
+//                builder -> builder
+//                        .withPayloadAndSerialize()
+//                        .withRefId(String.valueOf(devopsClusterDTO.getId()))
+//                        .withSourceId(projectId));
+    }
+
+    @Override
+    public void installK8s(DevopsK8sInstallPayload devopsK8sInstallPayload) {
+        // TODO 安装k8s
     }
 
     @Override
@@ -140,22 +192,21 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
+    public DevopsNodeCheckResultVO checkProgress(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
+        // TODO 连接节点获得日志
+
+        // TODO 处理日志，获得结果
+        return null;
+    }
+
+    @Override
     @Transactional
     public String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
-        // 判断组织下是否还能创建集群
-        checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject = null;
         DevopsClusterDTO devopsClusterDTO = null;
         Map<String, String> params = new HashMap<>();
         try {
-            iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
-            // 插入记录
-            devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
-            devopsClusterDTO.setToken(GenerateUUID.generateUUID());
-            devopsClusterDTO.setProjectId(projectId);
-            devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
-            devopsClusterDTO.setSkipCheckProjectPermission(true);
-            devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
+            devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO);
 
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
 
@@ -762,5 +813,18 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return devopsClusterRepVO;
     }
 
-
+    private DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        // 判断组织下是否还能创建集群
+        checkEnableCreateClusterOrThrowE(projectId);
+        ProjectDTO iamProject;
+        DevopsClusterDTO devopsClusterDTO;
+        iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
+        // 插入记录
+        devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
+        devopsClusterDTO.setToken(GenerateUUID.generateUUID());
+        devopsClusterDTO.setProjectId(projectId);
+        devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
+        devopsClusterDTO.setSkipCheckProjectPermission(true);
+        return baseCreateCluster(devopsClusterDTO);
+    }
 }

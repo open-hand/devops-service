@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ExecResultInfoVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
@@ -40,7 +41,6 @@ public class SshUtil {
     private static final String ERROR_DOCKER_PULL = "error.docker.pull";
     private static final String ERROR_DOCKER_RUN = "error.docker.run";
     private static final String ERROR_DOWNLOAD_JAY = "error.download.jar";
-
 
 
     @Autowired
@@ -86,8 +86,7 @@ public class SshUtil {
     }
 
     public void sshConnect(HostConnectionVO hostConnectionVO, SSHClient ssh) throws IOException {
-        // 3.
-//        ssh.loadKnownHosts();
+        //ssh.loadKnownHosts();
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
         //根据主机来源获取主机连接信息
         if (HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
@@ -97,11 +96,11 @@ public class SshUtil {
 
         ssh.connect(hostConnectionVO.getHostIp(), TypeUtil.objToInteger(hostConnectionVO.getHostPort()));
         if (hostConnectionVO.getAccountType().equals(CdHostAccountType.ACCOUNTPASSWORD.value())) {
-            ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
+            ssh.authPassword(hostConnectionVO.getUsername(), hostConnectionVO.getPassword());
         } else {
             String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());
             KeyProvider keyProvider = ssh.loadKeys(str, null, null);
-            ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
+            ssh.authPublickey(hostConnectionVO.getUsername(), keyProvider);
         }
     }
 
@@ -266,6 +265,21 @@ public class SshUtil {
 
     }
 
+    public ExecResultInfoVO execCommand(SSHClient sshClient, String command) throws IOException {
+        ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
+        try (Session session = sshClient.startSession()) {
+            Session.Command cmd = session.exec(command);
+            if (cmd.getExitStatus() == null || 0 != cmd.getExitStatus()) {
+                execResultInfoVO.setCommand(command);
+                execResultInfoVO.setStdErr(IOUtils.readFully(cmd.getErrorStream()).toString());
+                execResultInfoVO.setStdOut(IOUtils.readFully(cmd.getInputStream()).toString());
+                execResultInfoVO.setExitCode(cmd.getExitStatus());
+                return execResultInfoVO;
+            }
+        }
+        return null;
+    }
+
     public void dockerRun(SSHClient ssh, String value, String containerName, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {
         Session session = null;
         try {
@@ -340,7 +354,7 @@ public class SshUtil {
             hostConnectionVO.setHostIp(devopsHostDTO.getHostIp());
             hostConnectionVO.setHostPort(String.valueOf(devopsHostDTO.getSshPort()));
             hostConnectionVO.setAccountType(devopsHostDTO.getAuthType());
-            hostConnectionVO.setUserName(devopsHostDTO.getUsername());
+            hostConnectionVO.setUsername(devopsHostDTO.getUsername());
             hostConnectionVO.setPassword(devopsHostDTO.getPassword());
             hostConnectionVO.setAccountKey(devopsHostDTO.getPassword());
         }
