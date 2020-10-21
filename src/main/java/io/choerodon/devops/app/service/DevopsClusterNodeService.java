@@ -23,4 +23,12 @@ public interface DevopsClusterNodeService {
      * @return
      */
     void batchInsert(List<DevopsClusterNodeDTO> devopsClusterNodeDTOList);
+
+    /**
+     * 校验是否能够删除节点
+     * @param projectId
+     * @param nodeId
+     * @return
+     */
+    Boolean checkEnableDelete(Long projectId, Long nodeId);
 }

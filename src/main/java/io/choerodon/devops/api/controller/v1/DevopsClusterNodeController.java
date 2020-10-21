@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,15 +36,16 @@ public class DevopsClusterNodeController {
         return Results.success(devopsClusterNodeService.testConnection(projectId, devopsClusterNodeConnectionTestVO));
     }
 
-//    @ApiOperation("校验是否能够删除节点")
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @PostMapping("/{node_id}/check_enable_delete")
-//    public ResponseEntity<DevopsClusterNodeConnectionTestResultVO> checkEnableDelete(
-//            @ApiParam(value = "项目id", required = true)
-//            @PathVariable("project_id") Long projectId,
-//            @PathVariable @Valid DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO) {
-//        return Results.success(devopsClusterNodeService.checkEnableDelete(projectId, devopsClusterNodeConnectionTestVO));
-//    }
+    @ApiOperation("校验是否能够删除节点")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{node_id}/check_enable_delete")
+    public ResponseEntity<Boolean> checkEnableDelete(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "node id")
+            @PathVariable(value = "node_id") @Encrypt Long nodeId) {
+        return ResponseEntity.ok(devopsClusterNodeService.checkEnableDelete(projectId, nodeId));
+    }
 
     // TODO wx 批量添加节点
 
