@@ -1,8 +1,11 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 
 /**
@@ -26,6 +29,9 @@ public class HostDeployConfigVO {
 
     @ApiModelProperty("自定义部署customize详情")
     private Customize customize;
+
+    @Valid
+    private AppServiceDeployVO appServiceDeployVO;
 
     public static class ImageDeploy {
 
@@ -264,5 +270,13 @@ public class HostDeployConfigVO {
 
     public void setHostConnectionVO(HostConnectionVO hostConnectionVO) {
         this.hostConnectionVO = hostConnectionVO;
+    }
+
+    public AppServiceDeployVO getAppServiceDeployVO() {
+        return appServiceDeployVO;
+    }
+
+    public void setAppServiceDeployVO(AppServiceDeployVO appServiceDeployVO) {
+        this.appServiceDeployVO = appServiceDeployVO;
     }
 }

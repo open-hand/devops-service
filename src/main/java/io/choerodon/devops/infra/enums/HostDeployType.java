@@ -7,6 +7,7 @@ package io.choerodon.devops.infra.enums;
  */
 public enum HostDeployType {
     IMAGED_DEPLOY("image"),
+    ENV_DEPLOY("env"),
     JAR_DEPLOY("jar"),
     CUSTOMIZE_DEPLOY("customize");
 

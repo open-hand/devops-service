@@ -13,8 +13,10 @@ import org.springframework.util.CollectionUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.deploy.HostDeployConfigVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsDeployService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
@@ -64,6 +66,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private DevopsHostMapper devopsHostMapper;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     @Override
     public void hostDeploy(Long projectId, HostDeployConfigVO hostDeployConfigVO) {
@@ -71,6 +75,10 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             hostImagedeploy(projectId, hostDeployConfigVO);
         } else if (HostDeployType.JAR_DEPLOY.getValue().equals(hostDeployConfigVO.getHostDeployType())) {
             hostJarDeploy(projectId, hostDeployConfigVO);
+        } else if (HostDeployType.ENV_DEPLOY.getValue().equals(hostDeployConfigVO.getHostDeployType())) {
+            AppServiceDeployVO appServiceDeployVO = hostDeployConfigVO.getAppServiceDeployVO();
+            appServiceDeployVO.setType("create");
+            appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false);
         }
     }
 

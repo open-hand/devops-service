@@ -1,7 +1,5 @@
 package io.choerodon.devops.infra.enums.deploy;
 
-import io.kubernetes.client.models.V1Pod;
-
 /**
  * 〈功能简述〉
  * 〈部署模式枚举〉
