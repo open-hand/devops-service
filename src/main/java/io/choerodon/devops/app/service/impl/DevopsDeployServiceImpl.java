@@ -176,6 +176,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);
             }
+            c7nImageDeployDTO.setPullAccount(imageTagVo.getPullAccount());
+            c7nImageDeployDTO.setPullPassword(imageTagVo.getPullPassword());
             c7nImageDeployDTO.setPullCmd(imageTagVo.getImageTagList().get(0).getPullCmd());
             // 2.
             sshUtil.sshConnect(hostDeployConfigVO.getHostConnectionVO(), ssh);

@@ -50,9 +50,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
             column(name: 'deploy_object_version', type: 'varchar(255)', remarks: '部署对象版本', afterColumn: 'deploy_object_name') {
                 constraints(nullable: false)
             }
-            column(name: 'instance_name', type: 'varchar(255)', remarks: '实例code', afterColumn: 'deploy_object_version') {
-                constraints(nullable: false)
-            }
+            column(name: 'instance_name', type: 'varchar(255)', remarks: '实例code', afterColumn: 'deploy_object_version')
         }
     }
 
