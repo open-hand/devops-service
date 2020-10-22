@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.deploy.HostDeployConfigVO;
+import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.app.service.DevopsDeployService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -29,8 +29,8 @@ public class DevopsDeployController {
     public ResponseEntity<Void> hostDeploy(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody @Validated HostDeployConfigVO hostDeployConfigVO) {
-        devopsDeployService.hostDeploy(projectId, hostDeployConfigVO);
+            @RequestBody @Validated DeployConfigVO deployConfigVO) {
+        devopsDeployService.hostDeploy(projectId, deployConfigVO);
         return ResponseEntity.noContent().build();
     }
 

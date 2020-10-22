@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.DOCKER_INSTALL_COMMAND;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -58,8 +60,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
-    private static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> /tmp/check.log\n" +
-            "systemctl restart docker && systemctl enable docker >> /tmp/check.log";
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -156,7 +156,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         sshUtil.sshConnect(hostConnectionVO, ssh);
         // 安装docker
-        devopsClusterNodeService.execCommand(ssh, INSTALL_DOCKER_COMMAND);
+        devopsClusterNodeService.execCommand(ssh, DOCKER_INSTALL_COMMAND);
         // 上传配置文件
         devopsClusterNodeService.uploadNodeConfiguration(ssh, devopsClusterReqVO.getDevopsClusterNodeVOList());
 
