@@ -1,18 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.schmizz.sshj.SSHClient;
+import org.apache.commons.io.IOUtils;
+import org.hzero.core.util.UUIDUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -33,6 +37,8 @@ import io.choerodon.devops.infra.util.SshUtil;
 
 @Service
 public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterNodeServiceImpl.class);
+
     private static final InputStream inventoryIniInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/template/inventory.ini");
     private static final String INVENTORY_INI_TEMPLATE_FOR_ALL = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
     private static final String INVENTORY_INI_TEMPLATE_FOR_NODE_IP = "%s\n";
@@ -48,6 +54,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final String DEL_ETCD = "del-etcd";
     private static final String DEL_NODE = "del-node";
     private static final String INVENTORY_CONFIG_FILE_PATH = "/tmp/inventory.ini";
+
+    private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
 
     @Autowired
     private SshUtil sshUtil;
@@ -136,15 +144,28 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
         HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTO, HostConnectionVO.class);
         hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
+
         SSHClient sshClient = new SSHClient();
+        String configFilePath = UUIDUtils.generateUUID() + ".ini";
         try {
             sshUtil.sshConnect(hostConnectionVO, sshClient);
-            sshUtil.uploadFile(sshClient, generateInventoryInI(inventoryVO), INVENTORY_CONFIG_FILE_PATH);
-            sshUtil.execCommand(sshClient, DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE);
-        } catch (IOException e) {
 
+            IOUtils.write(generateInventoryInI(inventoryVO).getBytes(), new FileOutputStream(configFilePath));
+            sshUtil.uploadFile(sshClient, configFilePath, INVENTORY_CONFIG_FILE_PATH);
+
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
+            LOGGER.info("delete node {} result is, {}", nodeId, execResultInfoVO);
+            if (execResultInfoVO.getExitCode() == 1) {
+                throw new CommonException(ERROR_DELETE_NODE_FAILED);
+            }
+        } catch (Exception e) {
+            throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
-
+            File file = new File(configFilePath);
+            if (file.exists()) {
+                file.delete();
+            }
+            sshUtil.sshDisconnect(sshClient);
         }
 
         // 删除数据库中数据

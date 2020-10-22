@@ -357,6 +357,13 @@ public class SshUtil {
             e.printStackTrace();
         }
     }
+    public void sshDisconnect(SSHClient ssh) {
+        try {
+            ssh.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void dtoToHostConnVo(HostConnectionVO hostConnectionVO, DevopsHostDTO devopsHostDTO) {
         if (devopsHostDTO != null) {
