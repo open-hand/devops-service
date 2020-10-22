@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import net.schmizz.sshj.SSHClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +130,44 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
         }
         return nodeRoleDeleteCheckVO;
+    }
+
+    @Override
+    @Transactional
+    public void deleteRole(Long projectId, Long nodeId, Integer role) {
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+        Assert.notNull(role, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
+
+        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
+
+        // 删除校验
+        checkEnableDeleteRole(devopsClusterNodeDTO, role);
+
+        // 删除节点角色
+
+        // 删除数据库数据
+        int resultRole = devopsClusterNodeDTO.getRole() - role;
+
+        devopsClusterNodeDTO.setRole(resultRole == 0 ? 1 : resultRole);
+        if (devopsClusterNodeMapper.updateByPrimaryKey(devopsClusterNodeDTO) != 1) {
+            throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
+        }
+    }
+
+    private void checkEnableDeleteRole(DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role) {
+        if (ClusterNodeRole.listWorkerRoleSet().contains(role)) {
+            throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
+        }
+        if (ClusterNodeRole.listEtcdRoleSet().contains(role)
+                && Boolean.FALSE.equals(ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
+            throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
+        }
+        if (ClusterNodeRole.listMasterRoleSet().contains(role)
+                && Boolean.FALSE.equals(ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
+            throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
+        }
+
     }
 
 
