@@ -13,13 +13,12 @@ import io.choerodon.devops.api.vo.HostConnectionVO;
  * @date 2020/6/30
  * @description 主机部署配置信息
  */
-public class HostDeployConfigVO {
+public class DeployConfigVO {
     @ApiModelProperty("主机详情")
     private HostConnectionVO hostConnectionVO;
 
-    @ApiModelProperty("主机部署类型 image/jar/customize")
-    // HostDeployType
-    private String hostDeployType;
+    @ApiModelProperty("部署类型 env/host")
+    private String deployType;
 
     @ApiModelProperty("镜像部署详情")
     private ImageDeploy imageDeploy;
@@ -27,8 +26,8 @@ public class HostDeployConfigVO {
     @ApiModelProperty("jar部署详情")
     private JarDeploy jarDeploy;
 
-    @ApiModelProperty("自定义部署customize详情")
-    private Customize customize;
+    @ApiModelProperty("部署对象类型 image/jar")
+    private String deployObjectType;
 
     @Valid
     private AppServiceDeployVO appServiceDeployVO;
@@ -218,34 +217,12 @@ public class HostDeployConfigVO {
         }
     }
 
-    public static class Customize {
-
-        @ApiModelProperty("部署values")
-        private String values;
-
-        public String getValues() {
-            return values;
-        }
-
-        public void setValues(String values) {
-            this.values = values;
-        }
+    public String getDeployType() {
+        return deployType;
     }
 
-    public String getHostDeployType() {
-        return hostDeployType;
-    }
-
-    public void setHostDeployType(String hostDeployType) {
-        this.hostDeployType = hostDeployType;
-    }
-
-    public Customize getCustomize() {
-        return customize;
-    }
-
-    public void setCustomize(Customize customize) {
-        this.customize = customize;
+    public void setDeployType(String deployType) {
+        this.deployType = deployType;
     }
 
     public ImageDeploy getImageDeploy() {
@@ -278,5 +255,13 @@ public class HostDeployConfigVO {
 
     public void setAppServiceDeployVO(AppServiceDeployVO appServiceDeployVO) {
         this.appServiceDeployVO = appServiceDeployVO;
+    }
+
+    public String getDeployObjectType() {
+        return deployObjectType;
+    }
+
+    public void setDeployObjectType(String deployObjectType) {
+        this.deployObjectType = deployObjectType;
     }
 }

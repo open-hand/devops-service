@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.deploy.HostDeployConfigVO;
+import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 
 /**
  * 〈功能简述〉
@@ -14,7 +14,7 @@ public interface DevopsDeployService {
     /**
      * 主机部署
      * @param projectId
-     * @param hostDeployConfigVO
+     * @param deployConfigVO
      */
-    void hostDeploy(Long projectId, HostDeployConfigVO hostDeployConfigVO);
+    void hostDeploy(Long projectId, DeployConfigVO deployConfigVO);
 }

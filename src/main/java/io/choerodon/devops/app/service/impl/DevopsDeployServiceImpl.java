@@ -14,7 +14,7 @@ import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.deploy.HostDeployConfigVO;
+import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
@@ -70,30 +70,32 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private AppServiceInstanceService appServiceInstanceService;
 
     @Override
-    public void hostDeploy(Long projectId, HostDeployConfigVO hostDeployConfigVO) {
-        if (HostDeployType.IMAGED_DEPLOY.getValue().equals(hostDeployConfigVO.getHostDeployType())) {
-            hostImagedeploy(projectId, hostDeployConfigVO);
-        } else if (HostDeployType.JAR_DEPLOY.getValue().equals(hostDeployConfigVO.getHostDeployType())) {
-            hostJarDeploy(projectId, hostDeployConfigVO);
-        } else if (HostDeployType.ENV_DEPLOY.getValue().equals(hostDeployConfigVO.getHostDeployType())) {
-            AppServiceDeployVO appServiceDeployVO = hostDeployConfigVO.getAppServiceDeployVO();
+    public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
+        if (DeployModeEnum.ENV.value().equals(deployConfigVO.getDeployType())) {
+            AppServiceDeployVO appServiceDeployVO = deployConfigVO.getAppServiceDeployVO();
             appServiceDeployVO.setType("create");
             appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false);
+        } else if (DeployModeEnum.HOST.value().equals(deployConfigVO.getDeployType())) {
+            if (HostDeployType.IMAGED_DEPLOY.getValue().equals(deployConfigVO.getDeployType())) {
+                hostImagedeploy(projectId, deployConfigVO);
+            } else if (HostDeployType.JAR_DEPLOY.getValue().equals(deployConfigVO.getDeployType())) {
+                hostJarDeploy(projectId, deployConfigVO);
+            }
         }
     }
 
-    private void hostJarDeploy(Long projectId, HostDeployConfigVO hostDeployConfigVO) {
+    private void hostJarDeploy(Long projectId, DeployConfigVO deployConfigVO) {
         LOGGER.info("========================================");
         LOGGER.info("start jar deploy cd host job,projectId:{}", projectId);
         SSHClient ssh = new SSHClient();
         StringBuilder log = new StringBuilder();
-        HostDeployConfigVO.JarDeploy jarDeploy;
+        DeployConfigVO.JarDeploy jarDeploy;
         C7nNexusComponentDTO c7nNexusComponentDTO = new C7nNexusComponentDTO();
 
         try {
             // 0.1 查询部署信息
 
-            jarDeploy = hostDeployConfigVO.getJarDeploy();
+            jarDeploy = deployConfigVO.getJarDeploy();
             jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), "UTF-8"));
             C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -120,12 +122,12 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             c7nNexusComponentDTO = nexusComponentDTOList.get(0);
             c7nNexusDeployDTO.setJarName(getJarName(c7nNexusDeployDTO.getDownloadUrl()));
 
-            sshUtil.sshConnect(hostDeployConfigVO.getHostConnectionVO(), ssh);
+            sshUtil.sshConnect(deployConfigVO.getHostConnectionVO(), ssh);
 
             // 2. 执行jar部署
             sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(), log);
             sshUtil.sshExec(ssh, c7nNexusDeployDTO, jarDeploy.getValue(), jarDeploy.getWorkingPath(), log);
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostDeployConfigVO.getHostConnectionVO().getHostId());
+            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                     projectId,
                     DeployType.MANUAL.getType(),
@@ -141,7 +143,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     null);
             devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
         } catch (Exception e) {
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostDeployConfigVO.getHostConnectionVO().getHostId());
+            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                     projectId,
                     DeployType.MANUAL.getType(),
@@ -167,16 +169,16 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         return arr[arr.length - 1].replace(".jar", "-") + GenerateUUID.generateRandomString() + ".jar";
     }
 
-    private void hostImagedeploy(Long projectId, HostDeployConfigVO hostDeployConfigVO) {
+    private void hostImagedeploy(Long projectId, DeployConfigVO deployConfigVO) {
         LOGGER.info("========================================");
         LOGGER.info("start image deploy cd host job,projectId:{}", projectId);
         SSHClient ssh = new SSHClient();
         StringBuilder log = new StringBuilder();
-        HostDeployConfigVO.ImageDeploy imageDeploy = new HostDeployConfigVO.ImageDeploy();
+        DeployConfigVO.ImageDeploy imageDeploy = new DeployConfigVO.ImageDeploy();
         try {
             // 0.1
 
-            imageDeploy = hostDeployConfigVO.getImageDeploy();
+            imageDeploy = deployConfigVO.getImageDeploy();
             imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
             C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
@@ -189,7 +191,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             c7nImageDeployDTO.setHarborUrl(imageTagVo.getHarborUrl());
             c7nImageDeployDTO.setPullCmd(imageTagVo.getImageTagList().get(0).getPullCmd());
             // 2.
-            sshUtil.sshConnect(hostDeployConfigVO.getHostConnectionVO(), ssh);
+            sshUtil.sshConnect(deployConfigVO.getHostConnectionVO(), ssh);
             // 3.
             // 3.1
             sshUtil.dockerLogin(ssh, c7nImageDeployDTO, log);
@@ -199,7 +201,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             sshUtil.dockerStop(ssh, imageDeploy.getContainerName(), log);
             // 3.3
             sshUtil.dockerRun(ssh, imageDeploy.getValue(), imageDeploy.getContainerName(), c7nImageDeployDTO, log);
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostDeployConfigVO.getHostConnectionVO().getHostId());
+            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                     projectId,
                     DeployType.MANUAL.getType(),
@@ -217,7 +219,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!");
         }catch (Exception e) {
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostDeployConfigVO.getHostConnectionVO().getHostId());
+            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                     projectId,
                     DeployType.MANUAL.getType(),
