@@ -125,7 +125,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
         checkNodeNumByRole(devopsClusterNodeDTO);
         // todo 删除集群中的node
+        // 1. 查询集群节点信息
+        DevopsClusterNodeDTO record = new DevopsClusterNodeDTO();
+        record.setClusterId(devopsClusterNodeDTO.getClusterId());
+        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeMapper.select(record);
+        devopsClusterNodeDTOS.forEach(node -> {
 
+        });
+        //
         // 删除数据库中数据
         if (devopsClusterNodeMapper.deleteByPrimaryKey(nodeId) != 1) {
             throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_FAILED);
