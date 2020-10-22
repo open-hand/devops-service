@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Set;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -74,13 +73,13 @@ public class DevopsClusterNodeController {
 
     @ApiOperation("删除节点角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping("/{node_id}/roles/{role_id}")
+    @DeleteMapping("/{node_id}/roles/{role}")
     public ResponseEntity<Void> deleteRole(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
             @PathVariable(value = "node_id") @Encrypt Long nodeId,
-            @PathVariable Integer role) {
+            @PathVariable(value = "role") Integer role) {
         devopsClusterNodeService.deleteRole(projectId, nodeId, role);
         return ResponseEntity.noContent().build();
     }
