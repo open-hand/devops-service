@@ -15,4 +15,6 @@ public class DevopsClusterCommandConstants {
             "-v /tmp/inventory.ini:/tmp/inventory.ini\n" +
             "registry.cn-shanghai.aliyuncs.com/kubeadm-ha/setzero_ansible:2.8.5-nginx-1.17.6-alpine \\\n" +
             "ansible-playbook -i /tmp/inventory.ini %s > /tmp/ansible.log";
+
+    public static final String REMOVE_NODE_YAML = "87-remove-node.yml";
 }
