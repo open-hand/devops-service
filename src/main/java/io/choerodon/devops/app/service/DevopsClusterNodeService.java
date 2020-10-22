@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import net.schmizz.sshj.SSHClient;
 
@@ -74,4 +75,12 @@ public interface DevopsClusterNodeService {
      * @return
      */
     NodeRoleDeleteCheckVO checkEnableDeleteRole(Long projectId, Long nodeId);
+
+    /**
+     * 删除节点角色
+     * @param projectId
+     * @param nodeId
+     * @param role
+     */
+    void deleteRole(Long projectId, Long nodeId, Integer role);
 }
