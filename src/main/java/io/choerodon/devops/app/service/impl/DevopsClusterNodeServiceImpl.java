@@ -57,36 +57,37 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         NodeDeleteCheckVO nodeDeleteCheckVO = new NodeDeleteCheckVO();
         // 查询节点类型
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
-                nodeDeleteCheckVO.setEnableDeleteMaster(false);
-            }
-        }
-        if (ClusterNodeRole.isWorker(devopsClusterNodeDTO.getRole())) {
+        if (ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
             if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
                 nodeDeleteCheckVO.setEnableDeleteWorker(false);
             }
         }
-        if (ClusterNodeRole.isEtcd(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+        if (ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listEtcdRoleSet()) < 2) {
                 nodeDeleteCheckVO.setEnableDeleteEtcd(false);
             }
         }
+        if (ClusterNodeRole.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
+                nodeDeleteCheckVO.setEnableDeleteMaster(false);
+            }
+        }
+
         return nodeDeleteCheckVO;
     }
 
     private void checkNodeNumByRole(DevopsClusterNodeDTO devopsClusterNodeDTO) {
-        if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())) {
+        if (ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
             if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
                 throw new CommonException(ClusterCheckConstant.ERROR_MASTER_NODE_ONLY_ONE);
             }
         }
-        if (ClusterNodeRole.isWorker(devopsClusterNodeDTO.getRole())) {
+        if (ClusterNodeRole.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
             if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
                 throw new CommonException(ClusterCheckConstant.ERROR_WORKER_NODE_ONLY_ONE);
             }
         }
-        if (ClusterNodeRole.isEtcd(devopsClusterNodeDTO.getRole())) {
+        if (ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
             if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
                 throw new CommonException(ClusterCheckConstant.ERROR_ETCD_NODE_ONLY_ONE);
             }
@@ -121,10 +122,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             nodeRoleDeleteCheckVO.setEnableDeleteRole(true);
         }
 
-        if (Boolean.TRUE.equals(ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole()))) {
+        if (Boolean.TRUE.equals(ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
             nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
         }
-        if (Boolean.TRUE.equals(ClusterNodeRole.isEtcd(devopsClusterNodeDTO.getRole()))) {
+        if (Boolean.TRUE.equals(ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
             nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
         }
         return nodeRoleDeleteCheckVO;
