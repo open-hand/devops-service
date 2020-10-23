@@ -290,6 +290,13 @@
             <version>0.16.1.RELEASE</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.ini4j/ini4j -->
+        <dependency>
+            <groupId>org.ini4j</groupId>
+            <artifactId>ini4j</artifactId>
+            <version>0.5.4</version>
+        </dependency>
+
         <!-- junit -->
         <!--        <dependency>-->
         <!--            <groupId>junit</groupId>-->

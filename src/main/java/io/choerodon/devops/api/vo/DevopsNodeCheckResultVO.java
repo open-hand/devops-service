@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * 节点检查进度
  */
@@ -11,6 +9,17 @@ public class DevopsNodeCheckResultVO {
     private Step system;
     private Step memory;
     private Step cpu;
+
+    public DevopsNodeCheckResultVO() {
+        Step systemStep = new Step();
+        Step configurationStep = new Step();
+        Step cpuStep = new Step();
+        Step memoryStep = new Step();
+        this.setMemory(memoryStep)
+                .setSystem(systemStep)
+                .setCpu(cpuStep)
+                .setConfiguration(configurationStep);
+    }
 
     public String getStatus() {
         return status;

@@ -68,7 +68,7 @@ public class DevopsClusterController {
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "ssh连接的节点信息", required = true)
             @RequestBody DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        devopsClusterService.confirmInstall(projectId, clusterId, devopsClusterSshNodeInfoVO);
+        devopsClusterService.startInstallK8s(projectId, clusterId, devopsClusterSshNodeInfoVO);
         return ResponseEntity.ok().build();
     }
 
@@ -103,7 +103,7 @@ public class DevopsClusterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId) {
-        devopsClusterService.retryCreateCluster(projectId, clusterId);
+        devopsClusterService.retryInstallK8s(projectId, clusterId);
         return ResponseEntity.ok().build();
 
     }

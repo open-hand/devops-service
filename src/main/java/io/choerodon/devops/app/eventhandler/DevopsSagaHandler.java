@@ -97,11 +97,9 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
-    private DevopsCdJobService devopsCdJobService;
-    @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
-    private DevopsClusterService devopsClusterService;
+    private DevopsClusterNodeService devopsClusterNodeService;
 
     /**
      * devops创建环境
@@ -595,6 +593,6 @@ public class DevopsSagaHandler {
             sagaCode = DEVOPS_INSTALL_K8S,
             description = "Devops安装k8s", maxRetryCount = 1, seq = 1)
     public void installK8s(String payload) {
-        devopsClusterService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsK8sInstallPayload.class));
+        devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsK8sInstallPayload.class));
     }
 }

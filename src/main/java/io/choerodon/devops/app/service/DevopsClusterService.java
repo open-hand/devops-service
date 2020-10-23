@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -36,14 +35,6 @@ public interface DevopsClusterService {
      * @return
      */
     DevopsClusterSshNodeInfoVO createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) throws Exception;
-
-    /**
-     * 重试集群创建
-     *
-     * @param projectId 项目id
-     * @param clusterId 集群id
-     */
-    void retryCreateCluster(Long projectId, Long clusterId);
 
     /**
      * 激活集群
@@ -236,20 +227,17 @@ public interface DevopsClusterService {
     void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long clusterId);
 
     /**
-     * 确认安装k8s
+     * 开始安装k8s
      *
      * @param projectId                  项目id
      * @param devopsClusterSshNodeInfoVO ssh连接的节点信息
      */
-    void confirmInstall(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO);
+    void startInstallK8s(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO);
 
     /**
-     * 开始安装k8s
-     *
-     * @param projectId           项目id
-     * @param devopsSshNodeInfoVO ssh连接的节点信息
+     * 重试安装k8s
      */
-    void installK8s(DevopsK8sInstallPayload devopsK8sInstallPayload);
+    void retryInstallK8s(Long projectId, Long clusterId);
 
     /**
      * 获得节点检查进度

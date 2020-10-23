@@ -17,7 +17,7 @@
         </foreach>
     </insert>
     <select id="countMaster" resultType="java.lang.Integer">
-       
+
     </select>
     <select id="countEtcd" resultType="java.lang.Integer">
 
@@ -29,5 +29,11 @@
         <foreach collection="roleSet" index="i" separator="," open="(" close=")" item="role">
             #{role}
         </foreach>
+    </select>
+
+    <select id="listByClusterId" resultType="io.choerodon.devops.infra.dto.DevopsClusterNodeDTO">
+        SELECT dcn.*
+        FROM devops_cluster_node dcn
+        WHERE dcn.cluster_id=#{clusterId}}
     </select>
 </mapper>
