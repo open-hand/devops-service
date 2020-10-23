@@ -35,8 +35,8 @@ public interface DevopsDeployRecordMapper extends BaseMapper<DevopsDeployRecordD
     List<AppServiceInstanceForRecordVO> queryByBatchDeployRecordId(@Param("recordId") Long recordId);
 
     List<DeployRecordVO> listByParams(@Param("projectId") Long projectId,
-                                      String deployType,
-                                      String deployMode,
+                                      @Param("deployType") String deployType,
+                                      @Param("deployMode") String deployMode,
                                       @Param("deployPayloadName") String deployPayloadName,
                                       @Param("deployResult") String deployResult,
                                       @Param("deployObjectName") String deployObjectName,
