@@ -33,9 +33,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'password', type: 'VARCHAR(2048)', remarks: '密码/rsa秘钥') {
                 constraints(nullable: false)
             }
-            column(name: 'status', type: 'VARCHAR(255)', remarks: '节点状态') {
-                constraints(nullable: false)
-            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

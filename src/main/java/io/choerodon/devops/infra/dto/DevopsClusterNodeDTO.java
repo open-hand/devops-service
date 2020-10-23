@@ -40,7 +40,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
     private String hostIp;
 
     @ApiModelProperty("节点ssh的端口")
-    private Integer sshPort;
+    private Integer hostPort;
 
     /**
      * {@link ClusterNodeAccountTypeEnum}
@@ -97,12 +97,12 @@ public class DevopsClusterNodeDTO extends BaseDomain {
         this.hostIp = hostIp;
     }
 
-    public Integer getSshPort() {
-        return sshPort;
+    public Integer getHostPort() {
+        return hostPort;
     }
 
-    public void setSshPort(Integer sshPort) {
-        this.sshPort = sshPort;
+    public void setHostPort(Integer hostPort) {
+        this.hostPort = hostPort;
     }
 
     public String getAccountType() {
@@ -154,7 +154,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
                 ", projectId=" + projectId +
                 ", clusterId=" + clusterId +
                 ", hostIp='" + hostIp + '\'' +
-                ", sshPort=" + sshPort +
+                ", sshPort=" + hostPort +
                 ", authType='" + accountType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
