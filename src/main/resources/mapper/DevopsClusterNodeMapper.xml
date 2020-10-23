@@ -2,16 +2,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper">
     <insert id="batchInsert">
-        INSERT INTO devops_cluster_node (name, type, project_id, cluster_id, host_ip, ssh_port, auth_type, username, password)
+        INSERT INTO devops_cluster_node (name, role, project_id, cluster_id, host_ip, host_port, account_type, username, password)
         VALUES
         <foreach collection="devopsClusterNodeDTOList" item="item" separator=",">
             (#{item.name},
-            #{item.type},
+            #{item.role},
             #{item.projectId},
-            #{item.clusterId}
+            #{item.clusterId},
             #{item.hostIp},
-            #{item.sshPort},
-            #{item.authType},
+            #{item.hostPort},
+            #{item.accountType},
             #{item.username},
             #{item.password})
         </foreach>

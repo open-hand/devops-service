@@ -202,7 +202,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             // 设置所有节点
             if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(node.getAccountType())) {
-                inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getSshPort(), node.getUsername(), node.getPassword()))
+                inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                         .append(System.lineSeparator());
             } else {
                 //todo 处理密钥认证方式

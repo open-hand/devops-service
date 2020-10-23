@@ -19,7 +19,6 @@ public class DevopsClusterValidator {
         List<DevopsClusterNodeVO> devopsClusterNodeVOList = devopsClusterReqVO.getDevopsClusterNodeVOList();
         if (CollectionUtils.isEmpty(devopsClusterNodeVOList)) {
             throw new CommonException("error.node.size.is.zero");
-
         }
         if (!checkMemberUnique(devopsClusterNodeVOList.stream().map(DevopsClusterNodeVO::getName).collect(Collectors.toList()))) {
             throw new CommonException("error.node.name.not.unique");
