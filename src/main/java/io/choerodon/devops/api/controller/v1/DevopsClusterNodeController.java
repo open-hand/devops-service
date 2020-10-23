@@ -80,8 +80,8 @@ public class DevopsClusterNodeController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
             @PathVariable(value = "node_id") @Encrypt Long nodeId,
-            @PathVariable(value = "role") Integer role) {
-        devopsClusterNodeService.deleteRole(projectId, nodeId, role);
+            @PathVariable(value = "roles") Set<Integer> roles) {
+        devopsClusterNodeService.deleteRole(projectId, nodeId, roles);
         return ResponseEntity.noContent().build();
     }
 
