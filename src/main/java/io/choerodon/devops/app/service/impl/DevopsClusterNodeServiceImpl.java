@@ -363,7 +363,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         }
     }
 
-    @Async
     @Override
     public void checkNode(Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO) {
         SSHClient ssh = new SSHClient();
