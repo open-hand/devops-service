@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.BaseDomain;
+import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 
@@ -42,10 +43,10 @@ public class DevopsClusterNodeDTO extends BaseDomain {
     private Integer sshPort;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.ClusterNodeAuthTypeEnum}
+     * {@link ClusterNodeAccountTypeEnum}
      */
     @ApiModelProperty("认证类型")
-    private String authType;
+    private String accountType;
 
     @ApiModelProperty("用户名")
     private String username;
@@ -104,12 +105,12 @@ public class DevopsClusterNodeDTO extends BaseDomain {
         this.sshPort = sshPort;
     }
 
-    public String getAuthType() {
-        return authType;
+    public String getAccountType() {
+        return accountType;
     }
 
-    public void setAuthType(String authType) {
-        this.authType = authType;
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
     }
 
     public String getUsername() {
@@ -154,7 +155,7 @@ public class DevopsClusterNodeDTO extends BaseDomain {
                 ", clusterId=" + clusterId +
                 ", hostIp='" + hostIp + '\'' +
                 ", sshPort=" + sshPort +
-                ", authType='" + authType + '\'' +
+                ", authType='" + accountType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", status='" + status + '\'' +

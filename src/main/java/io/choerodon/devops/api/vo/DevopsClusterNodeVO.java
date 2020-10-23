@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
+
 public class DevopsClusterNodeVO {
     @Encrypt
     private Long id;
@@ -23,13 +25,13 @@ public class DevopsClusterNodeVO {
     private String hostIp;
 
     @ApiModelProperty("节点ssh的端口")
-    private Integer sshPort;
+    private Integer hostPort;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.ClusterNodeAuthTypeEnum}
+     * {@link ClusterNodeAccountTypeEnum}
      */
     @ApiModelProperty("认证类型")
-    private String authType;
+    private String accountType;
 
     @ApiModelProperty("用户名")
     private String username;
@@ -77,20 +79,20 @@ public class DevopsClusterNodeVO {
         this.hostIp = hostIp;
     }
 
-    public Integer getSshPort() {
-        return sshPort;
+    public Integer getHostPort() {
+        return hostPort;
     }
 
-    public void setSshPort(Integer sshPort) {
-        this.sshPort = sshPort;
+    public void setHostPort(Integer hostPort) {
+        this.hostPort = hostPort;
     }
 
-    public String getAuthType() {
-        return authType;
+    public String getAccountType() {
+        return accountType;
     }
 
-    public void setAuthType(String authType) {
-        this.authType = authType;
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
     }
 
     public String getUsername() {
@@ -117,8 +119,8 @@ public class DevopsClusterNodeVO {
                 ", type='" + role + '\'' +
                 ", projectId=" + projectId +
                 ", hostIp='" + hostIp + '\'' +
-                ", sshPort=" + sshPort +
-                ", authType='" + authType + '\'' +
+                ", sshPort=" + hostPort +
+                ", authType='" + accountType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 '}';

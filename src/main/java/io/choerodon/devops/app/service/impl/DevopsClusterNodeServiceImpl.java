@@ -81,12 +81,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private DevopsClusterNodeMapper devopsClusterNodeMapper;
 
     @Override
-    public boolean testConnection(Long projectId, DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO) {
-        return sshUtil.sshConnect(devopsClusterNodeConnectionTestVO.getHostIp(),
-                devopsClusterNodeConnectionTestVO.getSshPort(),
-                devopsClusterNodeConnectionTestVO.getAuthType(),
-                devopsClusterNodeConnectionTestVO.getUsername(),
-                devopsClusterNodeConnectionTestVO.getPassword());
+    public boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO) {
+        return sshUtil.sshConnect(hostConnectionVO.getHostIp(),
+                Integer.valueOf(hostConnectionVO.getHostPort()),
+                hostConnectionVO.getAccountType(),
+                hostConnectionVO.getUsername(),
+                hostConnectionVO.getPassword());
     }
 
     @Override
@@ -201,7 +201,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         InventoryVO inventoryVO = new InventoryVO();
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             // 设置所有节点
-            if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
+            if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(node.getAccountType())) {
                 inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getSshPort(), node.getUsername(), node.getPassword()))
                         .append(System.lineSeparator());
             } else {

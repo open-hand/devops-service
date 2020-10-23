@@ -3,7 +3,11 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
+import io.choerodon.devops.infra.enums.ClusterTypeEnum;
 
 public class DevopsClusterReqVO {
     @ApiModelProperty("集群名称 / 必需")
