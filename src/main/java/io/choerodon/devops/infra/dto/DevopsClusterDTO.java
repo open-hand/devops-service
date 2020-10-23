@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.dto;
 
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @VersionAudit
@@ -26,6 +27,8 @@ public class DevopsClusterDTO extends AuditDomain {
      * 这个集群所属项目的组织id， 不能为空
      */
     private Long organizationId;
+    private String type;
+    private String status;
     private String name;
     private String code;
     private String description;
@@ -154,5 +157,21 @@ public class DevopsClusterDTO extends AuditDomain {
 
     public void setClientId(Long clientId) {
         this.clientId = clientId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

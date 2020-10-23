@@ -40,6 +40,8 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.ClusterStatusEnum;
+import io.choerodon.devops.infra.enums.ClusterTypeEnum;
 import io.choerodon.devops.infra.enums.PolarisScopeType;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -158,7 +160,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
                 .setClusterId(devopsClusterDTO.getId())
                 .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
-        // 异步检测节点信息
+        // 检测节点信息
         devopsClusterNodeService.checkNode(devopsClusterDTO.getId(),
                 ConvertUtils.convertList(devopsClusterReqVO.getDevopsClusterNodeVOList(), DevopsClusterNodeDTO.class),
                 ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class));
@@ -838,6 +840,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterDTO.setProjectId(projectId);
         devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
         devopsClusterDTO.setSkipCheckProjectPermission(true);
+        devopsClusterDTO.setType(ClusterTypeEnum.CREATED.value());
+        devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
         return baseCreateCluster(devopsClusterDTO);
     }
 }

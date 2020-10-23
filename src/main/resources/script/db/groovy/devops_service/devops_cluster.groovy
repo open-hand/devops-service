@@ -82,9 +82,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
         sql("UPDATE devops_cluster SET type='imported'")
     }
 
-    changeSet(author: 'lihao',id: '2020-10-23-add-statuc-column'){
+    changeSet(author: 'lihao',id: '2020-10-23-add-status-column'){
         addColumn(tableName: 'devops_cluster'){
-            column(name: 'statuc',type: 'VARCHAR(10)',remarks: '集群状态',afterColumn: 'type')
+            column(name: 'status',type: 'VARCHAR(10)',remarks: '集群状态',afterColumn: 'type')
         }
     }
 }
