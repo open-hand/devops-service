@@ -80,7 +80,7 @@ public interface DevopsClusterNodeService {
      * 删除节点角色
      * @param projectId
      * @param nodeId
-     * @param role
+     * @param roles
      */
-    void deleteRole(Long projectId, Long nodeId, Integer role);
+    void deleteRole(Long projectId, Long nodeId, Set<Integer> roles);
 }
