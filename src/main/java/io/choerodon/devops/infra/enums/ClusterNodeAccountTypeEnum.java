@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.enums;
 
-public enum ClusterNodeAuthTypeEnum {
+public enum ClusterNodeAccountTypeEnum {
     /**
      * 账号密码类型
      */
-    ACCOUNT_PASSWORD("accountPassword"),
+    ACCOUNTPASSWORD("accountPassword"),
     /**
      * 密钥类型
      */
@@ -12,7 +12,7 @@ public enum ClusterNodeAuthTypeEnum {
 
     private final String type;
 
-    ClusterNodeAuthTypeEnum(String type) {
+    ClusterNodeAccountTypeEnum(String type) {
         this.type = type;
     }
 

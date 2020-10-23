@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsClusterNodeConnectionTestVO;
+import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
 import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
@@ -34,8 +34,8 @@ public class DevopsClusterNodeController {
     public ResponseEntity<Boolean> testConnection(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
-            @RequestBody @Valid DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO) {
-        return Results.success(devopsClusterNodeService.testConnection(projectId, devopsClusterNodeConnectionTestVO));
+            @RequestBody @Valid HostConnectionVO hostConnectionVO) {
+        return Results.success(devopsClusterNodeService.testConnection(projectId, hostConnectionVO));
     }
 
     @ApiOperation("校验是否能够删除节点")

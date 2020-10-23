@@ -21,10 +21,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'host_ip', type: 'VARCHAR(15)', remarks: '节点ip') {
                 constraints(nullable: false)
             }
-            column(name: 'ssh_port', type: 'SMALLINT UNSIGNED', remarks: '节点ssh的端口') {
+            column(name: 'host_port', type: 'SMALLINT UNSIGNED', remarks: '节点ssh的端口') {
                 constraints(nullable: false)
             }
-            column(name: 'auth_type', type: 'VARCHAR(63)', remarks: '认证类型') {
+            column(name: 'account_type', type: 'VARCHAR(63)', remarks: '认证类型') {
                 constraints(nullable: false)
             }
             column(name: 'username', type: 'VARCHAR(32)', remarks: '用户名') {
@@ -46,6 +46,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
         addUniqueConstraint(tableName: 'devops_cluster_node',
                 constraintName: 'uk_project_host_name', columnNames: 'project_id,name')
         addUniqueConstraint(tableName: 'devops_cluster_node',
-                constraintName: 'uk_project_ip_port', columnNames: 'project_id,host_ip,ssh_port')
+                constraintName: 'uk_project_ip_port', columnNames: 'project_id,host_ip,host_port')
     }
 }

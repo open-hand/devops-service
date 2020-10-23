@@ -5,7 +5,10 @@ import java.util.Set;
 
 import net.schmizz.sshj.SSHClient;
 
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.HostConnectionVO;
+import io.choerodon.devops.api.vo.InventoryVO;
+import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
+import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 
@@ -13,11 +16,11 @@ public interface DevopsClusterNodeService {
     /**
      * 测试当前节点连通性
      *
-     * @param projectId                         项目id
-     * @param devopsClusterNodeConnectionTestVO 连接信息
+     * @param projectId        项目id
+     * @param hostConnectionVO 连接信息
      * @return 测试结果 boolean
      */
-    boolean testConnection(Long projectId, DevopsClusterNodeConnectionTestVO devopsClusterNodeConnectionTestVO);
+    boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO);
 
     /**
      * 检查所有节点信息
