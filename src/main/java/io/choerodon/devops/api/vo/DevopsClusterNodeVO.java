@@ -14,7 +14,7 @@ public class DevopsClusterNodeVO {
      * {@link io.choerodon.devops.infra.enums.ClusterNodeRole}
      */
     @ApiModelProperty("节点类型")
-    private String role;
+    private Integer role;
 
     @ApiModelProperty("项目id")
     private Long projectId;
@@ -53,11 +53,11 @@ public class DevopsClusterNodeVO {
         this.name = name;
     }
 
-    public String getRole() {
+    public Integer getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Integer role) {
         this.role = role;
     }
 

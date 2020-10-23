@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -17,5 +18,10 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     @Override
     public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<String> refIds, String sagaCode) {
         throw new CommonException("error.query.instance.detail");
+    }
+
+    @Override
+    public ResponseEntity<Void> retry(Long projectId, Long instance_id) {
+        throw new CommonException("error.retry.saga.instance");
     }
 }

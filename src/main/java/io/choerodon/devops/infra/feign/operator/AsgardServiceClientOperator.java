@@ -30,4 +30,15 @@ public class AsgardServiceClientOperator {
         return listResponseEntity.getBody();
     }
 
+    public void retrySaga(Long projectId, Long instanceId) {
+        ResponseEntity<Void> voidResponseEntity;
+        try {
+            voidResponseEntity = asgardFeignClient.retry(projectId, instanceId);
+            if (!voidResponseEntity.getStatusCode().is2xxSuccessful()) {
+                throw new CommonException("error.retry.saga.instance");
+            }
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
 }

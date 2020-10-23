@@ -270,15 +270,12 @@ public class SshUtil {
         ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
         try (Session session = sshClient.startSession()) {
             Session.Command cmd = session.exec(command);
-            if (cmd.getExitStatus() == null || 0 != cmd.getExitStatus()) {
-                execResultInfoVO.setCommand(command);
-                execResultInfoVO.setStdErr(IOUtils.readFully(cmd.getErrorStream()).toString());
-                execResultInfoVO.setStdOut(IOUtils.readFully(cmd.getInputStream()).toString());
-                execResultInfoVO.setExitCode(cmd.getExitStatus());
-                return execResultInfoVO;
-            }
+            execResultInfoVO.setCommand(command);
+            execResultInfoVO.setStdErr(IOUtils.readFully(cmd.getErrorStream()).toString());
+            execResultInfoVO.setStdOut(IOUtils.readFully(cmd.getInputStream()).toString());
+            execResultInfoVO.setExitCode(cmd.getExitStatus());
+            return execResultInfoVO;
         }
-        return null;
     }
 
     public void dockerRun(SSHClient ssh, String value, String containerName, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {

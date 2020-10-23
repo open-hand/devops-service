@@ -19,4 +19,11 @@ public interface DevopsClusterNodeMapper extends BaseMapper<DevopsClusterNodeDTO
     int countByRoleSet(@Param("clusterId") Long clusterId,
                        @Param("roleSet") Set<Integer> roleSet);
 
+    /**
+     * 根据集群id查出所有节点
+     *
+     * @param clusterId 集群id
+     * @return 节点列表
+     */
+    List<DevopsClusterNodeDTO> listByClusterId(@Param("clusterId") Long clusterId);
 }

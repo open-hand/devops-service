@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.DOCKER_INSTALL_COMMAND;
+import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.GET_LOG;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,11 +26,14 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsClusterValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
@@ -38,6 +41,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.PolarisScopeType;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
@@ -50,6 +54,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterServiceImpl.class);
     private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
+    private static final String SAGA_INSTALL_K8S_REF_TYPE = "cluster";
 
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
@@ -102,6 +107,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private TransactionalProducer producer;
     @Autowired
     private SshUtil sshUtil;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
     static {
         InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
@@ -151,52 +158,58 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
                 .setClusterId(devopsClusterDTO.getId())
                 .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
-        SSHClient ssh = new SSHClient();
-        HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class);
-
-        sshUtil.sshConnect(hostConnectionVO, ssh);
-        // 安装docker
-        devopsClusterNodeService.execCommand(ssh, DOCKER_INSTALL_COMMAND);
-        // 上传配置文件
-        devopsClusterNodeService.uploadNodeConfiguration(ssh, devopsClusterReqVO.getDevopsClusterNodeVOList());
-
         // 异步检测节点信息
-        devopsClusterNodeService.checkNode(ssh);
+        devopsClusterNodeService.checkNode(devopsClusterDTO.getId(),
+                ConvertUtils.convertList(devopsClusterReqVO.getDevopsClusterNodeVOList(), DevopsClusterNodeDTO.class),
+                ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class));
         return devopsClusterSshNodeInfoVO;
     }
 
     @Override
-    public void confirmInstall(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-//        // TODO 发送saga进行安装
-//        producer.applyAndReturn(
-//                StartSagaBuilder
-//                        .newBuilder()
-//                        .withLevel(ResourceLevel.PROJECT)
-//                        .withSourceId(projectId)
-//                        .withRefType("cluster")
-//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_CLUSTER),
-//                builder -> builder
-//                        .withPayloadAndSerialize()
-//                        .withRefId(String.valueOf(devopsClusterDTO.getId()))
-//                        .withSourceId(projectId));
+    public void startInstallK8s(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
+        DevopsK8sInstallPayload devopsK8sInstallPayload = new DevopsK8sInstallPayload()
+                .setProjectId(projectId)
+                .setClusterId(clusterId)
+                .setDevopsClusterSshNodeInfoVO(devopsClusterSshNodeInfoVO);
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType(SAGA_INSTALL_K8S_REF_TYPE)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_INSTALL_K8S),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsK8sInstallPayload)
+                        .withRefId(String.valueOf(clusterId))
+                        .withSourceId(projectId));
     }
 
     @Override
-    public void installK8s(DevopsK8sInstallPayload devopsK8sInstallPayload) {
-        // TODO 安装k8s
-    }
-
-    @Override
-    public void retryCreateCluster(Long projectId, Long clusterId) {
-        // TODO 重试集群创建
+    public void retryInstallK8s(Long projectId, Long clusterId) {
+        List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(SAGA_INSTALL_K8S_REF_TYPE, Collections.singletonList(String.valueOf(clusterId)), SagaTopicCodeConstants.DEVOPS_INSTALL_K8S);
+        if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
+            throw new CommonException("error.retry.install.k8s");
+        }
+        asgardServiceClientOperator.retrySaga(projectId, sagaInstanceDetails.get(0).getId());
     }
 
     @Override
     public DevopsNodeCheckResultVO checkProgress(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        // TODO 连接节点获得日志
-
-        // TODO 处理日志，获得结果
-        return null;
+        try {
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterSshNodeInfoVO, HostConnectionVO.class);
+            SSHClient ssh = new SSHClient();
+            sshUtil.sshConnect(hostConnectionVO, ssh);
+            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, GET_LOG);
+            if (resultInfoVO.getExitCode() == 0) {
+                // TODO 处理结果
+                return new DevopsNodeCheckResultVO();
+            } else {
+                // TODO 处理结果
+                return new DevopsNodeCheckResultVO();
+            }
+        } catch (Exception e) {
+            throw new CommonException("error.node.get.check.log");
+        }
     }
 
     @Override
