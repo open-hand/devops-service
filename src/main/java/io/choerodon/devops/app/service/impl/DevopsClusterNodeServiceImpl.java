@@ -233,14 +233,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
         NodeRoleDeleteCheckVO nodeRoleDeleteCheckVO = new NodeRoleDeleteCheckVO();
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        if (Boolean.FALSE.equals(ClusterNodeRole.isWorker(devopsClusterNodeDTO.getRole()))) {
-            nodeRoleDeleteCheckVO.setEnableDeleteRole(true);
-        }
-
-        if (Boolean.TRUE.equals(ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
+        if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())
+                || ClusterNodeRole.isMasterAndWorker(devopsClusterNodeDTO.getRole())) {
             nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
         }
-        if (Boolean.TRUE.equals(ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
+        if (ClusterNodeRole.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
+            nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
+            nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
+        }
+        if (ClusterNodeRole.isEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
             nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
         }
         return nodeRoleDeleteCheckVO;
@@ -326,11 +327,16 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
             }
             if (ClusterNodeRole.isEtcd(role)
-                    && Boolean.FALSE.equals(ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
+                    && Boolean.FALSE.equals(ClusterNodeRole.isEtcdAndWorker(devopsClusterNodeDTO.getRole()))
+                    && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole()))
+                    && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))) {
                 throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
             }
             if (ClusterNodeRole.isMaster(role)
-                    && Boolean.FALSE.equals(ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole()))) {
+                    && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))
+                    && Boolean.FALSE.equals(ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole()))
+                    && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndWorker(devopsClusterNodeDTO.getRole()))
+                    && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole()))) {
                 throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
             }
         });

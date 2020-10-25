@@ -74,13 +74,13 @@ public class DevopsClusterNodeController {
 
     @ApiOperation("删除节点角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping("/{node_id}/roles/{role}")
+    @DeleteMapping("/{node_id}/roles")
     public ResponseEntity<Void> deleteRole(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
             @PathVariable(value = "node_id") @Encrypt Long nodeId,
-            @PathVariable(value = "roles") Set<Integer> roles) {
+            @RequestBody Set<Integer> roles) {
         devopsClusterNodeService.deleteRole(projectId, nodeId, roles);
         return ResponseEntity.noContent().build();
     }
