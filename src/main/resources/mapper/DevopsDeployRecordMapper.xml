@@ -280,7 +280,7 @@
 		<where>
 			ddr.project_id = #{projectId}
 			<if test="deployType != null">
-				and ddr.deploy_type = {deployType}
+				and ddr.deploy_type = #{deployType}
 			</if>
 			<if test="deployMode != null">
 				and ddr.deploy_mode = #{deployMode}
