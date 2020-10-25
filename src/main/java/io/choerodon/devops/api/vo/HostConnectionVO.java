@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -38,6 +40,7 @@ public class HostConnectionVO {
      * {@link HostSourceEnum}
      */
     @ApiModelProperty("主机来源")
+    @NotNull(message = "error.hostSource.is.null")
     private String hostSource;
 
     public Long getHostId() {
