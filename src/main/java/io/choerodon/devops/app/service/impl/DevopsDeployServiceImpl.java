@@ -76,9 +76,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             appServiceDeployVO.setType("create");
             appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false);
         } else if (DeployModeEnum.HOST.value().equals(deployConfigVO.getDeployType())) {
-            if (HostDeployType.IMAGED_DEPLOY.getValue().equals(deployConfigVO.getDeployType())) {
+            if (HostDeployType.IMAGED_DEPLOY.getValue().equals(deployConfigVO.getDeployObjectType())) {
                 hostImagedeploy(projectId, deployConfigVO);
-            } else if (HostDeployType.JAR_DEPLOY.getValue().equals(deployConfigVO.getDeployType())) {
+            } else if (HostDeployType.JAR_DEPLOY.getValue().equals(deployConfigVO.getDeployObjectType())) {
                 hostJarDeploy(projectId, deployConfigVO);
             }
         }
