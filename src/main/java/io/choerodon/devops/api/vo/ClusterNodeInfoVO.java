@@ -4,10 +4,11 @@ package io.choerodon.devops.api.vo;
  * @author zmf
  */
 public class ClusterNodeInfoVO {
+    private Long id;
     /**
      * values: master/node
      */
-    private String type;
+    private String role;
     private String nodeName;
     private String status;
     private String createTime;
@@ -28,12 +29,12 @@ public class ClusterNodeInfoVO {
     private Long podCount;
     private String podPercentage;
 
-    public String getType() {
-        return type;
+    public String getRole() {
+        return role;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getNodeName() {
@@ -162,5 +163,13 @@ public class ClusterNodeInfoVO {
 
     public void setPodPercentage(String podPercentage) {
         this.podPercentage = podPercentage;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

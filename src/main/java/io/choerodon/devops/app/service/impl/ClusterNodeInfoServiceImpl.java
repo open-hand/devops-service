@@ -6,8 +6,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
+import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.infra.constant.ClusterCheckConstant;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -17,11 +21,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -46,6 +52,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private DevopsClusterService devopsClusterService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private DevopsClusterNodeService devopsClusterNodeService;
 
     @Override
     public String getRedisClusterKey(Long clusterId) {
@@ -147,20 +155,38 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
     @Override
     public Page<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageable) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(clusterId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+
         // 现在分页从0开始了
         long start = (long) (pageable.getPage()) * (long) pageable.getSize();
         // stop不怕越界， redis会将边界之前的最后的那些元素返回
         long stop = start + (long) pageable.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, projectId);
 
+        // 查询为node添加id需要的数据
+        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeService.queryByClusterId(clusterId);
+        Map<String, DevopsClusterNodeDTO> nodeDTOMap = devopsClusterNodeDTOS.stream().collect(Collectors.toMap(DevopsClusterNodeDTO::getName, v -> v));
+
         long total = stringRedisTemplate.opsForList().size(redisKey);
         List<ClusterNodeInfoVO> nodes = stringRedisTemplate
                 .opsForList()
                 .range(redisKey, start, stop)
                 .stream()
-                .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
+                .map(node -> {
+                    ClusterNodeInfoVO clusterNodeInfoVO = JSONObject.parseObject(node, ClusterNodeInfoVO.class);
+                    // 为node添加id
+                    DevopsClusterNodeDTO devopsClusterNodeDTO = nodeDTOMap.get(clusterNodeInfoVO.getNodeName());
+                    if (devopsClusterNodeDTO != null) {
+                        clusterNodeInfoVO.setId(devopsClusterNodeDTO.getId());
+                    }
+                    return clusterNodeInfoVO;
+                })
                 .collect(Collectors.toList());
         Page<ClusterNodeInfoVO> result = new Page<>();
+
+
+
         if (total < pageable.getSize() * pageable.getPage()) {
             result.setSize(TypeUtil.objToInt(total) - (pageable.getSize() * (pageable.getPage() - 1)));
         } else {
@@ -170,6 +196,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         result.setNumber(pageable.getPage());
         result.setTotalElements(total);
         result.setContent(nodes);
+
         return result;
     }
 
