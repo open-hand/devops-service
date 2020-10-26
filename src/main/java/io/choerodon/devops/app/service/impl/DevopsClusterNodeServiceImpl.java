@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
 import org.apache.commons.io.IOUtils;
@@ -17,6 +18,7 @@ import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +60,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final String DEL_ETCD = "del-etcd";
     private static final String DEL_NODE = "del-node";
     private static final String INVENTORY_CONFIG_FILE_PATH = "/tmp/inventory.ini";
+    private static final String CLUSTER_LOCK_KEY = "cluster:lock:key:%s:Long";
+    private static final String CLUSTER_OPERATING_KEY = "cluster:operating:key:%s:DevopsClusterOperatorVO";
 
     private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
 
@@ -79,6 +83,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private SshUtil sshUtil;
     @Autowired
     private DevopsClusterNodeMapper devopsClusterNodeMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO) {
@@ -143,14 +149,25 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    @Async
     @Transactional
     public void delete(Long projectId, Long nodeId) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+
+
+
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterNodeDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-
         checkNodeNumByRole(devopsClusterNodeDTO);
+
+        // 获取锁,失败则抛出异常，成功则程序继续
+        String lockKey = String.format(CLUSTER_LOCK_KEY, devopsClusterNodeDTO.getClusterId());
+        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
+            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
+        // 更新集群操作状态
+
 
         // 删除数据库中数据
         if (devopsClusterNodeMapper.deleteByPrimaryKey(nodeId) != 1) {
