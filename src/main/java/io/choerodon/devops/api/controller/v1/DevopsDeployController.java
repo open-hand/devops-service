@@ -26,7 +26,7 @@ public class DevopsDeployController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "主机部署")
     @PostMapping("/host")
-    public ResponseEntity<Void> hostDeploy(
+    public ResponseEntity<Void> manualDeploy(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Validated DeployConfigVO deployConfigVO) {
