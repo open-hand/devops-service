@@ -55,9 +55,6 @@ public class DevopsClusterNodeDTO extends AuditDomain {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
-    @ApiModelProperty("集群状态")
-    private String status;
-
     public Long getId() {
         return id;
     }
@@ -138,14 +135,6 @@ public class DevopsClusterNodeDTO extends AuditDomain {
         this.clusterId = clusterId;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     @Override
     public String toString() {
         return "DevopsClusterNodeDTO{" +
@@ -159,7 +148,6 @@ public class DevopsClusterNodeDTO extends AuditDomain {
                 ", authType='" + accountType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", status='" + status + '\'' +
                 '}';
     }
 }
