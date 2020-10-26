@@ -11,11 +11,12 @@ import io.choerodon.devops.api.vo.BaseDomain;
 import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_cluster_node")
-public class DevopsClusterNodeDTO extends BaseDomain {
+public class DevopsClusterNodeDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
