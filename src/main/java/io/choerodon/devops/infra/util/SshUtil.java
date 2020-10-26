@@ -289,6 +289,7 @@ public class SshUtil {
                     values = s;
                 }
             }
+            LOGGER.info("docker run values is {}", values);
             if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
                 throw new CommonException("error.instruction");
             }
