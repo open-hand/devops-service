@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo.deploy;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;

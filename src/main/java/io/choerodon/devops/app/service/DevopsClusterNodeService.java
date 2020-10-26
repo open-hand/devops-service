@@ -97,4 +97,6 @@ public interface DevopsClusterNodeService {
      * @param devopsK8sInstallPayload
      */
     void installK8s(DevopsK8sInstallPayload devopsK8sInstallPayload);
+
+    List<DevopsClusterNodeDTO> queryByClusterId(Long clusterId);
 }

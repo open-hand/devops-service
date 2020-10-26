@@ -358,6 +358,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    public List<DevopsClusterNodeDTO> queryByClusterId(Long clusterId) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        DevopsClusterNodeDTO devopsClusterNodeDTO = new DevopsClusterNodeDTO();
+        devopsClusterNodeDTO.setClusterId(clusterId);
+        return devopsClusterNodeMapper.select(devopsClusterNodeDTO);
+    }
+
+    @Override
     public void execCommand(SSHClient ssh, String command) {
         try {
             ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, command);

@@ -8,6 +8,7 @@ package io.choerodon.devops.infra.constant;
  * @since 2020/10/21 10:07
  */
 public class ClusterCheckConstant {
+    public static final String ERROR_CLUSTER_ID_IS_NULL = "error.cluster.id.is.null";
     public static final String ERROR_NODE_ID_IS_NULL = "error.node.id.is.null";
     public static final String ERROR_ROLE_ID_IS_NULL = "error.role.id.is.null";
     public static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
