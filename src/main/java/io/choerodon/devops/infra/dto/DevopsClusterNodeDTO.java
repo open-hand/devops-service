@@ -24,6 +24,9 @@ public class DevopsClusterNodeDTO extends AuditDomain {
     @ApiModelProperty("节点名称")
     private String name;
 
+    @ApiModelProperty("节点操作状态/nullable")
+    private String operatingStatus;
+
     /**
      * {@link io.choerodon.devops.infra.enums.ClusterNodeRole}
      */
@@ -54,6 +57,9 @@ public class DevopsClusterNodeDTO extends AuditDomain {
 
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
+
+    @ApiModelProperty("错误信息/nullable")
+    private String errorMsg;
 
     public Long getId() {
         return id;
@@ -135,19 +141,37 @@ public class DevopsClusterNodeDTO extends AuditDomain {
         this.clusterId = clusterId;
     }
 
+    public String getOperatingStatus() {
+        return operatingStatus;
+    }
+
+    public void setOperatingStatus(String operatingStatus) {
+        this.operatingStatus = operatingStatus;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
     @Override
     public String toString() {
         return "DevopsClusterNodeDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", role='" + role + '\'' +
+                ", operatingStatus='" + operatingStatus + '\'' +
+                ", role=" + role +
                 ", projectId=" + projectId +
                 ", clusterId=" + clusterId +
                 ", hostIp='" + hostIp + '\'' +
-                ", sshPort=" + hostPort +
-                ", authType='" + accountType + '\'' +
+                ", hostPort=" + hostPort +
+                ", accountType='" + accountType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
+                ", errorMsg='" + errorMsg + '\'' +
                 '}';
     }
 }

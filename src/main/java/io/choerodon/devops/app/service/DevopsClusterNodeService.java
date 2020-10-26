@@ -87,9 +87,9 @@ public interface DevopsClusterNodeService {
      *
      * @param projectId
      * @param nodeId
-     * @param roles
+     * @param role
      */
-    void deleteRole(Long projectId, Long nodeId, Set<Integer> roles);
+    void deleteRole(Long projectId, Long nodeId, Integer role);
 
     /**
      * 安装k8s

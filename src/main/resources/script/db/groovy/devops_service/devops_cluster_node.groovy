@@ -12,6 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'role', type: 'SMALLINT UNSIGNED', remarks: '节点拥有的角色') {
                 constraints(nullable: false)
             }
+            column(name: 'operating_status', type: 'VARCHAR(100)', remarks: '节点操作状态')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
                 constraints(nullable: false)
             }
@@ -33,6 +34,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'password', type: 'VARCHAR(2048)', remarks: '密码/rsa秘钥') {
                 constraints(nullable: false)
             }
+            column(name: 'error_msg', type: 'VARCHAR(2048)', remarks: '错误信息')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
