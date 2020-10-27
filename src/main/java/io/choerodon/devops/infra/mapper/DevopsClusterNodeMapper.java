@@ -26,4 +26,10 @@ public interface DevopsClusterNodeMapper extends BaseMapper<DevopsClusterNodeDTO
      * @return 节点列表
      */
     List<DevopsClusterNodeDTO> listByClusterId(@Param("clusterId") Long clusterId);
+
+    /**
+     * 通过cluster id删除node
+     * @param clusterId 集群id
+     */
+    void deleteByClusterId(@Param("clusterId") Long clusterId);
 }

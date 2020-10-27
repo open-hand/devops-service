@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.GET_LOG;
+import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.NODE_CHECK_STEP_REDIS_KEY_TEMPLATE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import net.schmizz.sshj.SSHClient;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,7 +160,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .setClusterId(devopsClusterDTO.getId())
                 .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
         // 检测节点信息
-        devopsClusterNodeService.checkNode(devopsClusterDTO.getId(),
+        devopsClusterNodeService.checkNode(projectId, devopsClusterDTO.getId(),
                 ConvertUtils.convertList(devopsClusterReqVO.getDevopsClusterNodeVOList(), DevopsClusterNodeDTO.class),
                 ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class));
         return devopsClusterSshNodeInfoVO;
@@ -196,22 +195,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public DevopsNodeCheckResultVO checkProgress(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        try {
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterSshNodeInfoVO, HostConnectionVO.class);
-            SSHClient ssh = new SSHClient();
-            sshUtil.sshConnect(hostConnectionVO, ssh);
-            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, GET_LOG);
-            if (resultInfoVO.getExitCode() == 0) {
-                // TODO 处理结果
-                return new DevopsNodeCheckResultVO();
-            } else {
-                // TODO 处理结果
-                return new DevopsNodeCheckResultVO();
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.node.get.check.log");
+    public DevopsNodeCheckResultVO checkProgress(Long projectId, Long clusterId) {
+        String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, clusterId);
+        String value = stringRedisTemplate.opsForValue().get(redisKey);
+        if (StringUtils.isEmpty(value)) {
+            return new DevopsNodeCheckResultVO();
         }
+        return JsonHelper.unmarshalByJackson(value, DevopsNodeCheckResultVO.class);
     }
 
     @Override

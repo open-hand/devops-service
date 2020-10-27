@@ -242,8 +242,8 @@ public interface DevopsClusterService {
     /**
      * 获得节点检查进度
      *
-     * @param projectId                  项目id
-     * @param devopsClusterSshNodeInfoVO ssh连接的节点信息
+     * @param projectId 项目id
+     * @param clusterId ssh连接的节点信息
      */
-    DevopsNodeCheckResultVO checkProgress(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO);
+    DevopsNodeCheckResultVO checkProgress(Long projectId, Long clusterId);
 }

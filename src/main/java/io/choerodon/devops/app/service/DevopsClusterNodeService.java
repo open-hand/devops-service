@@ -25,11 +25,12 @@ public interface DevopsClusterNodeService {
     /**
      * 检查所有节点信息
      *
+     * @param projectId                项目id
      * @param clusterId                集群id
      * @param devopsClusterNodeDTOList 节点列表
      * @param hostConnectionVO         ssh信息
      */
-    void checkNode(Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO);
+    void checkNode(Long projectId, Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO);
 
     /**
      * 批量插入
@@ -47,14 +48,6 @@ public interface DevopsClusterNodeService {
      * @return
      */
     NodeDeleteCheckVO checkEnableDelete(Long projectId, Long nodeId);
-
-    /**
-     * 登录指定节点执行命令
-     *
-     * @param ssh     ssh连接对象
-     * @param command 命令
-     */
-    void execCommand(SSHClient ssh, String command);
 
     /**
      * 生成并上传集群的节点配置信息

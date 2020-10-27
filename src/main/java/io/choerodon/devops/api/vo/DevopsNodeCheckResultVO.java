@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.enums.ClusterNodeCheckStepStatusTypeEnum;
+import io.choerodon.devops.infra.enums.CommandStatus;
+
 /**
  * 节点检查进度
  */
@@ -11,6 +14,7 @@ public class DevopsNodeCheckResultVO {
     private Step cpu;
 
     public DevopsNodeCheckResultVO() {
+        this.status = CommandStatus.OPERATING.getStatus();
         Step systemStep = new Step();
         Step configurationStep = new Step();
         Step cpuStep = new Step();
@@ -65,27 +69,32 @@ public class DevopsNodeCheckResultVO {
         this.cpu = cpu;
         return this;
     }
-}
 
-class Step {
-    private String status;
-    private String errorMessage;
 
-    public String getStatus() {
-        return status;
-    }
+    public static class Step {
+        private String status;
+        private String errorMessage;
 
-    public Step setStatus(String status) {
-        this.status = status;
-        return this;
-    }
+        public Step() {
+            this.status = ClusterNodeCheckStepStatusTypeEnum.WAIT.value();
+        }
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+        public String getStatus() {
+            return status;
+        }
 
-    public Step setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-        return this;
+        public Step setStatus(String status) {
+            this.status = status;
+            return this;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public Step setErrorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+            return this;
+        }
     }
 }
