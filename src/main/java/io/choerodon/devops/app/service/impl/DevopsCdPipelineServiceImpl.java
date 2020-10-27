@@ -551,7 +551,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", jobRecordDTO.getProjectId(), jobRecordDTO.getApiTestTaskRecordId());
             }
 
-            String status = apiTestTaskRecordVO == null ? PipelineStatus.FAILED.toValue() : apiTestTaskRecordVO.getStatus();
+            String status = apiTestTaskRecordVO == null ? PipelineStatus.PENDING.toValue() : apiTestTaskRecordVO.getStatus();
 
             if (apiTestTaskRecordVO != null
                     && PipelineStatus.SUCCESS.toValue().equals(apiTestTaskRecordVO.getStatus())) {
