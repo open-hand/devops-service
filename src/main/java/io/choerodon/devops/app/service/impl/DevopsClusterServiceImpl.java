@@ -39,13 +39,12 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.ClusterStatusEnum;
-import io.choerodon.devops.infra.enums.ClusterTypeEnum;
-import io.choerodon.devops.infra.enums.PolarisScopeType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -107,9 +106,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     private TransactionalProducer producer;
     @Autowired
-    private SshUtil sshUtil;
-    @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
 
     static {
         InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
@@ -152,26 +151,39 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Transactional
     @Override
     @Saga(code = "create-cluster", description = "创建集群", inputSchema = "{}")
-    public DevopsClusterSshNodeInfoVO createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) throws Exception {
+    public DevopsClusterSshNodeInfoVO createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         devopsClusterValidator.check(devopsClusterReqVO);
-        DevopsClusterDTO devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO);
+        // 保存集群信息
+        DevopsClusterDTO devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.CREATED.value());
+        // 保存节点信息
         createNode(devopsClusterReqVO.getDevopsClusterNodeVOList(), devopsClusterDTO.getId());
         DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
                 .setClusterId(devopsClusterDTO.getId())
                 .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
-        // 检测节点信息
+        // 检测节点
         devopsClusterNodeService.checkNode(projectId, devopsClusterDTO.getId(),
                 ConvertUtils.convertList(devopsClusterReqVO.getDevopsClusterNodeVOList(), DevopsClusterNodeDTO.class),
                 ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class));
         return devopsClusterSshNodeInfoVO;
     }
 
+    @Transactional
     @Override
     public void startInstallK8s(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
+        // 保存操作记录
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO()
+                .setSourceType(ClusterOperationTypeEnum.CLUSTER.getType())
+                .setSourceId(clusterId)
+                .setStatus(ClusterOperationStatusEnum.OPERATING.value());
+        devopsClusterOperationRecordMapper.insertOptional(devopsClusterOperationRecordDTO);
+
+        // 发送saga开始安装
         DevopsK8sInstallPayload devopsK8sInstallPayload = new DevopsK8sInstallPayload()
                 .setProjectId(projectId)
                 .setClusterId(clusterId)
+                .setOperationRecordId(devopsClusterOperationRecordDTO.getId())
                 .setDevopsClusterSshNodeInfoVO(devopsClusterSshNodeInfoVO);
+
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
@@ -185,12 +197,17 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                         .withSourceId(projectId));
     }
 
+    @Transactional
     @Override
     public void retryInstallK8s(Long projectId, Long clusterId) {
         List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(SAGA_INSTALL_K8S_REF_TYPE, Collections.singletonList(String.valueOf(clusterId)), SagaTopicCodeConstants.DEVOPS_INSTALL_K8S);
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
             throw new CommonException("error.retry.install.k8s");
         }
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setId(clusterId);
+        devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
+        devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
         asgardServiceClientOperator.retrySaga(projectId, sagaInstanceDetails.get(0).getId());
     }
 
@@ -211,7 +228,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterDTO devopsClusterDTO = null;
         Map<String, String> params = new HashMap<>();
         try {
-            devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO);
+            devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.IMPORTED.value());
 
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
 
@@ -818,7 +835,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return devopsClusterRepVO;
     }
 
-    private DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+    private DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO, String type) {
         // 判断组织下是否还能创建集群
         checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject;
@@ -830,7 +847,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterDTO.setProjectId(projectId);
         devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
         devopsClusterDTO.setSkipCheckProjectPermission(true);
-        devopsClusterDTO.setType(ClusterTypeEnum.CREATED.value());
+        devopsClusterDTO.setType(type);
         devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
         return baseCreateCluster(devopsClusterDTO);
     }

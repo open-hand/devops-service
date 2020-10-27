@@ -15,8 +15,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @ModifyAudit
 @VersionAudit
-@Table(name = "devops_cluster_node_operation_record")
-public class DevopsClusterNodeOperationRecordDTO extends AuditDomain {
+@Table(name = "devops_cluster_operation_record")
+public class DevopsClusterOperationRecordDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
@@ -37,45 +37,50 @@ public class DevopsClusterNodeOperationRecordDTO extends AuditDomain {
         return id;
     }
 
-    public void setId(Long id) {
+    public DevopsClusterOperationRecordDTO setId(Long id) {
         this.id = id;
+        return this;
     }
 
     public String getSourceType() {
         return sourceType;
     }
 
-    public void setSourceType(String sourceType) {
+    public DevopsClusterOperationRecordDTO setSourceType(String sourceType) {
         this.sourceType = sourceType;
+        return this;
     }
 
     public Long getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(Long sourceId) {
+    public DevopsClusterOperationRecordDTO setSourceId(Long sourceId) {
         this.sourceId = sourceId;
+        return this;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public DevopsClusterOperationRecordDTO setStatus(String status) {
         this.status = status;
+        return this;
     }
 
     public String getErrorMsg() {
         return errorMsg;
     }
 
-    public void setErrorMsg(String errorMsg) {
+    public DevopsClusterOperationRecordDTO setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
+        return this;
     }
 
     @Override
     public String toString() {
-        return "DevopsClusterNodeOperationRecordDTO{" +
+        return "DevopsClusterOperationRecordDTO{" +
                 "id=" + id +
                 ", sourceType='" + sourceType + '\'' +
                 ", sourceId=" + sourceId +

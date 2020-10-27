@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.enums.ClusterNodeCheckStepStatusTypeEnum;
+import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.enums.CommandStatus;
 
 /**
@@ -76,7 +76,7 @@ public class DevopsNodeCheckResultVO {
         private String errorMessage;
 
         public Step() {
-            this.status = ClusterNodeCheckStepStatusTypeEnum.WAIT.value();
+            this.status = ClusterOperationStatusEnum.WAIT.value();
         }
 
         public String getStatus() {

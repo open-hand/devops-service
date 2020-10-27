@@ -4,13 +4,13 @@ package io.choerodon.devops.infra.enums;
  * @author lihao
  * 节点检测状态
  */
-public enum ClusterNodeCheckStepStatusTypeEnum {
+public enum ClusterOperationStatusEnum {
     /**
      * 等待处理
      */
     WAIT("wait"),
     /**
-     * 检测中
+     * 操作中
      */
     OPERATING("operating"),
     /**
@@ -23,7 +23,7 @@ public enum ClusterNodeCheckStepStatusTypeEnum {
     SUCCESS("success");
     private final String status;
 
-    ClusterNodeCheckStepStatusTypeEnum(String status) {
+    ClusterOperationStatusEnum(String status) {
         this.status = status;
     }
 

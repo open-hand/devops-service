@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.api.vo.DevopsClusterReqVO;
-import io.choerodon.devops.infra.enums.ClusterNodeRole;
+import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 
 @Component
 public class DevopsClusterValidator {
@@ -35,9 +35,9 @@ public class DevopsClusterValidator {
         long masterCount;
         long workerCount;
         long etcdCount;
-        masterCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRole.isMaster(n.getRole())).count();
-        workerCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRole.isWorker(n.getRole())).count();
-        etcdCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRole.isEtcd(n.getRole())).count();
+        masterCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRoleEnum.isMaster(n.getRole())).count();
+        workerCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRoleEnum.isWorker(n.getRole())).count();
+        etcdCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRoleEnum.isEtcd(n.getRole())).count();
         if (masterCount == 0 || workerCount == 0 || etcdCount == 0) {
             throw new CommonException("error.node.role.count.equal.zero");
         }

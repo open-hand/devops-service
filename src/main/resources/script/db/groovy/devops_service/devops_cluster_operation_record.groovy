@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node_operation_record.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_cluster_operation_record.groovy') {
     changeSet(author: 'lihao', id: '2020-10-27-create-table') {
-        createTable(tableName: 'devops_cluster_node_operation_record', remarks: '集群和节点操作记录表') {
+        createTable(tableName: 'devops_cluster_operation_record', remarks: '集群和节点操作记录表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -21,7 +21,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node_operation_record.gro
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        createIndex(indexName: "idx_source_id_and_source_type ", tableName: "devops_cluster_node_operation_record") {
+        createIndex(indexName: "idx_source_id_and_source_type ", tableName: "devops_cluster_operation_record") {
             column(name: "source_id")
             column(name: "source_type")
         }
