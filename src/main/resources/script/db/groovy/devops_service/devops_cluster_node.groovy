@@ -12,7 +12,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'role', type: 'SMALLINT UNSIGNED', remarks: '节点拥有的角色') {
                 constraints(nullable: false)
             }
-            column(name: 'operating_status', type: 'VARCHAR(100)', remarks: '节点操作状态')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
                 constraints(nullable: false)
             }
