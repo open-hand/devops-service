@@ -8,17 +8,8 @@ package io.choerodon.devops.api.vo;
  * @since 2020/10/21 22:30
  */
 public class NodeRoleDeleteCheckVO {
-    private Boolean enableDeleteRole = false;
     private Boolean enableDeleteMasterRole = false;
     private Boolean enableDeleteEtcdRole = false;
-
-    public Boolean getEnableDeleteRole() {
-        return enableDeleteRole;
-    }
-
-    public void setEnableDeleteRole(Boolean enableDeleteRole) {
-        this.enableDeleteRole = enableDeleteRole;
-    }
 
     public Boolean getEnableDeleteMasterRole() {
         return enableDeleteMasterRole;
