@@ -13,6 +13,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node_operation_record.gro
                 constraints(nullable: false)
             }
             column(name: 'status', type: 'VARCHAR(10)', remarks: '操作状态')
+            column(name: 'error_msg',type: 'TEXT',remarks: '错误信息')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")

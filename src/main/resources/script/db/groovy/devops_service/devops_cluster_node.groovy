@@ -47,4 +47,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
         addUniqueConstraint(tableName: 'devops_cluster_node',
                 constraintName: 'uk_project_ip_port', columnNames: 'project_id,host_ip,host_port')
     }
+
+    changeSet(author: 'lihao', id: '2020-10-27-drop-column') {
+        dropColumn(columnName: "error_msg", tableName: "devops_cluster_node")
+    }
 }
