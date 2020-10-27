@@ -49,6 +49,9 @@ public class DevopsHostConnectionTestVO {
     @ApiModelProperty("jmeter进程的端口号")
     private Integer jmeterPort;
 
+    @ApiModelProperty("jmeter的home目录")
+    private String jmeterPath;
+
     public String getType() {
         return type;
     }
@@ -103,5 +106,13 @@ public class DevopsHostConnectionTestVO {
 
     public void setJmeterPort(Integer jmeterPort) {
         this.jmeterPort = jmeterPort;
+    }
+
+    public String getJmeterPath() {
+        return jmeterPath;
+    }
+
+    public void setJmeterPath(String jmeterPath) {
+        this.jmeterPath = jmeterPath;
     }
 }

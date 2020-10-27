@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
@@ -434,23 +436,31 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
-        DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
-        boolean sshConnected = sshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
-        result.setHostStatus(sshConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
-        if (!sshConnected) {
-            result.setHostCheckError("failed to check ssh, please ensure network and authentication is valid");
-        }
-
-        // 如果是测试类型的主机, 再测试下jmeter的状态
-        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equals(devopsHostConnectionTestVO.getType())) {
-            boolean jmeterConnected = testServiceClientOperator.testJmeterConnection(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
-            result.setJmeterStatus(jmeterConnected ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
-            if (!jmeterConnected) {
-                result.setJmeterCheckError("failed to check jmeter， please ensure network and jmeter server running");
+        SSHClient sshClient = null;
+        try {
+            DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
+            sshClient = SshUtil.sshConnect(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getSshPort(), devopsHostConnectionTestVO.getAuthType(), devopsHostConnectionTestVO.getUsername(), devopsHostConnectionTestVO.getPassword());
+            result.setHostStatus(sshClient != null ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+            if (sshClient == null) {
+                result.setHostCheckError("failed to check ssh, please ensure network and authentication is valid");
             }
-        }
 
-        return result;
+            // 如果是测试类型的主机, 再测试下jmeter的状态
+            if (DevopsHostType.DISTRIBUTE_TEST.getValue().equals(devopsHostConnectionTestVO.getType())) {
+                boolean jmeterConnected = testServiceClientOperator.testJmeterConnection(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
+                if (!jmeterConnected) {
+                    result.setJmeterCheckError("failed to check jmeter， please ensure network and jmeter server running");
+                    result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
+                } else {
+                    boolean jmeterPathValid = SshUtil.execForOk(sshClient, String.format(MiscConstants.LS_JMETER_COMMAND, devopsHostConnectionTestVO.getJmeterPath()));
+                    result.setJmeterStatus(jmeterPathValid ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
+                    result.setJmeterCheckError("failed to check jmeter script. please ensure jmeter home is valid");
+                }
+            }
+            return result;
+        } finally {
+            IOUtils.closeQuietly(sshClient);
+        }
     }
 
     @Override
@@ -463,7 +473,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         CommonExAssertUtil.assertTrue(projectId.equals(devopsHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         CommonExAssertUtil.assertTrue(DevopsHostType.DEPLOY.getValue().equals(devopsHostDTO.getType()), "error.host.type.invalid");
 
-        return sshUtil.sshConnect(devopsHostDTO.getHostIp(), devopsHostDTO.getSshPort(), devopsHostDTO.getAuthType(), devopsHostDTO.getUsername(), devopsHostDTO.getPassword());
+        return SshUtil.sshConnectForOK(devopsHostDTO.getHostIp(), devopsHostDTO.getSshPort(), devopsHostDTO.getAuthType(), devopsHostDTO.getUsername(), devopsHostDTO.getPassword());
     }
 
     @Override

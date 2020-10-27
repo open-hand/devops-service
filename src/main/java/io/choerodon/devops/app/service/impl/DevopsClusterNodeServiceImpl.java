@@ -83,8 +83,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Override
     public boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO) {
-        return sshUtil.sshConnect(hostConnectionVO.getHostIp(),
-                Integer.valueOf(hostConnectionVO.getHostPort()),
+        return SshUtil.sshConnectForOK(hostConnectionVO.getHostIp(),
+                hostConnectionVO.getHostPort(),
                 hostConnectionVO.getAccountType(),
                 hostConnectionVO.getUsername(),
                 hostConnectionVO.getPassword());
