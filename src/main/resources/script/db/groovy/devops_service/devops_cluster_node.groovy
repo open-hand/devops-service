@@ -34,7 +34,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'password', type: 'VARCHAR(2048)', remarks: '密码/rsa秘钥') {
                 constraints(nullable: false)
             }
-            column(name: 'error_msg', type: 'VARCHAR(2048)', remarks: '错误信息')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -46,9 +45,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
                 constraintName: 'uk_project_host_name', columnNames: 'project_id,name')
         addUniqueConstraint(tableName: 'devops_cluster_node',
                 constraintName: 'uk_project_ip_port', columnNames: 'project_id,host_ip,host_port')
-    }
-
-    changeSet(author: 'lihao', id: '2020-10-27-drop-column') {
-        dropColumn(columnName: "error_msg", tableName: "devops_cluster_node")
     }
 }
