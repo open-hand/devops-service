@@ -28,6 +28,7 @@ public class ClusterNodeInfoVO {
     private Long podTotal;
     private Long podCount;
     private String podPercentage;
+    private String clusterType;
 
     public String getRole() {
         return role;
@@ -171,5 +172,13 @@ public class ClusterNodeInfoVO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getClusterType() {
+        return clusterType;
+    }
+
+    public void setClusterType(String clusterType) {
+        this.clusterType = clusterType;
     }
 }

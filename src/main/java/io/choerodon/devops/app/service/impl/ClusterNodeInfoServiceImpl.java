@@ -1,6 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
@@ -15,21 +31,6 @@ import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -167,6 +168,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         // 查询为node添加id需要的数据
         List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeService.queryByClusterId(clusterId);
         Map<String, DevopsClusterNodeDTO> nodeDTOMap = devopsClusterNodeDTOS.stream().collect(Collectors.toMap(DevopsClusterNodeDTO::getName, v -> v));
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
 
         long total = stringRedisTemplate.opsForList().size(redisKey);
         List<ClusterNodeInfoVO> nodes = stringRedisTemplate
@@ -180,6 +182,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                     if (devopsClusterNodeDTO != null) {
                         clusterNodeInfoVO.setId(devopsClusterNodeDTO.getId());
                     }
+                    clusterNodeInfoVO.setClusterType(devopsClusterDTO.getType());
                     return clusterNodeInfoVO;
                 })
                 .collect(Collectors.toList());

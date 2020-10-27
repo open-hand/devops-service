@@ -7,7 +7,6 @@ import javax.persistence.Table;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.BaseDomain;
 import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
