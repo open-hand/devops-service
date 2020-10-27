@@ -453,8 +453,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                     result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
                 } else {
                     boolean jmeterPathValid = SshUtil.execForOk(sshClient, String.format(MiscConstants.LS_JMETER_COMMAND, devopsHostConnectionTestVO.getJmeterPath()));
-                    result.setJmeterStatus(jmeterPathValid ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue());
-                    result.setJmeterCheckError("failed to check jmeter script. please ensure jmeter home is valid");
+                    if (jmeterPathValid) {
+                        result.setJmeterStatus(DevopsHostStatus.SUCCESS.getValue());
+                    } else {
+                        result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
+                        result.setJmeterCheckError("failed to check jmeter script. please ensure jmeter home is valid");
+                    }
                 }
             }
             return result;
