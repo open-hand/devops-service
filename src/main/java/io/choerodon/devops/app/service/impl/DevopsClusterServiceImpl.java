@@ -172,8 +172,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void startInstallK8s(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
         // 保存操作记录
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO()
-                .setSourceType(ClusterOperationTypeEnum.CLUSTER.getType())
-                .setSourceId(clusterId)
+                .setType(ClusterOperationTypeEnum.INSTALL_K8S.getType())
+                .setClusterId(clusterId)
                 .setStatus(ClusterOperationStatusEnum.OPERATING.value());
         devopsClusterOperationRecordMapper.insertOptional(devopsClusterOperationRecordDTO);
 
