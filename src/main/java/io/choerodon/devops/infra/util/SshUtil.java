@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.util;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
@@ -51,16 +52,17 @@ public class SshUtil {
     }
 
     /**
-     * 连接主机进行测试, 如果成功返回true
+     * 连接主机
      *
      * @param hostIp   主机ip
      * @param sshPort  ssh端口
      * @param authType {@link CdHostAccountType}
      * @param username 用户名
      * @param password 密码或者秘钥
-     * @return true
+     * @return 主机连接句柄
      */
-    public boolean sshConnect(String hostIp, Integer sshPort, String authType, String username, String password) {
+    @Nullable
+    public static SSHClient sshConnect(String hostIp, Integer sshPort, String authType, String username, String password) {
         SSHClient ssh = new SSHClient();
         ssh.setConnectTimeout(DEFAULT_TIMEOUT_MILLISECONDS);
         ssh.setTimeout(DEFAULT_TIMEOUT_MILLISECONDS);
@@ -69,7 +71,7 @@ public class SshUtil {
             addAuth(ssh, hostIp, sshPort, authType, username, password);
 
             session = ssh.startSession();
-            Session.Command cmd = session.exec("echo Hello World!!!");
+            Session.Command cmd = session.exec("echo Hello World");
             LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
             cmd.join(5, TimeUnit.SECONDS);
             LOGGER.info("\n** exit status: " + cmd.getExitStatus());
@@ -79,11 +81,30 @@ public class SshUtil {
         } catch (Exception ex) {
             LOGGER.warn("Failed to connect to host by ssh, the host is {}, port is {}, username: {}", hostIp, sshPort, username);
             LOGGER.warn("The ex is ", ex);
-            return false;
+            return null;
         } finally {
             closeSsh(ssh, session);
         }
-        return true;
+        return ssh;
+    }
+
+    /**
+     * 连接主机进行测试, 如果成功返回true
+     *
+     * @param hostIp   主机ip
+     * @param sshPort  ssh端口
+     * @param authType {@link CdHostAccountType}
+     * @param username 用户名
+     * @param password 密码或者秘钥
+     * @return true
+     */
+    public static boolean sshConnectForOK(String hostIp, Integer sshPort, String authType, String username, String password) {
+        SSHClient ssh = sshConnect(hostIp, sshPort, authType, username, password);
+        boolean result = ssh != null;
+        if (result) {
+            IOUtils.closeQuietly(ssh);
+        }
+        return result;
     }
 
     public void sshConnect(HostConnectionVO hostConnectionVO, SSHClient ssh) throws IOException {
@@ -345,7 +366,7 @@ public class SshUtil {
         }
     }
 
-    public void closeSsh(SSHClient ssh, Session session) {
+    public static void closeSsh(SSHClient ssh, Session session) {
         try {
             if (session != null) {
                 session.close();
@@ -392,5 +413,50 @@ public class SshUtil {
                 break;
             }
         }
+    }
+
+    /**
+     * 执行指令
+     *
+     * @param command 指令
+     * @return true表示执行成功
+     */
+    public static boolean execForOk(SSHClient sshClient, String command) {
+        if (sshClient == null || StringUtils.isEmpty(command)) {
+            return false;
+        }
+        Session session = null;
+        try {
+            session = sshClient.startSession();
+            Session.Command cmd = session.exec(command);
+            cmd.join(DEFAULT_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
+            return isExitStatusOk(cmd.getExitStatus());
+        } catch (Exception e) {
+            return false;
+        } finally {
+            IOUtils.closeQuietly(session);
+        }
+    }
+
+
+    /**
+     * 退出码是否是ok
+     *
+     * @param exitStatus 退出码
+     * @return true表示Ok
+     */
+    public static boolean isExitStatusOk(String exitStatus) {
+        return exitStatus != null && "0".equals(exitStatus.trim());
+    }
+
+
+    /**
+     * 退出码是否是ok
+     *
+     * @param exitStatus 退出码
+     * @return true表示Ok
+     */
+    public static boolean isExitStatusOk(Integer exitStatus) {
+        return null != exitStatus && 0 == exitStatus;
     }
 }
