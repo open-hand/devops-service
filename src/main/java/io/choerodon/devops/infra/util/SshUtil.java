@@ -355,6 +355,7 @@ public class SshUtil {
             e.printStackTrace();
         }
     }
+
     public void sshDisconnect(SSHClient ssh) {
         try {
             ssh.disconnect();
@@ -366,7 +367,7 @@ public class SshUtil {
     private void dtoToHostConnVo(HostConnectionVO hostConnectionVO, DevopsHostDTO devopsHostDTO) {
         if (devopsHostDTO != null) {
             hostConnectionVO.setHostIp(devopsHostDTO.getHostIp());
-            hostConnectionVO.setHostPort(String.valueOf(devopsHostDTO.getSshPort()));
+            hostConnectionVO.setHostPort(devopsHostDTO.getSshPort());
             hostConnectionVO.setAccountType(devopsHostDTO.getAuthType());
             hostConnectionVO.setUsername(devopsHostDTO.getUsername());
             hostConnectionVO.setPassword(devopsHostDTO.getPassword());

@@ -77,13 +77,13 @@ public class DevopsClusterController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获得节点检测进度")
-    @PostMapping("/check_process")
+    @GetMapping("/check_process")
     public ResponseEntity<DevopsNodeCheckResultVO> checkProgress(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "ssh连接的节点信息", required = true)
-            @RequestBody DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        return Optional.ofNullable(devopsClusterService.checkProgress(projectId, devopsClusterSshNodeInfoVO))
+            @ApiParam(value = "集群id", required = true)
+            @RequestParam(value = "cluster_id") Long clusterId) {
+        return Optional.ofNullable(devopsClusterService.checkProgress(projectId, clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.node.check.process.get"));
     }

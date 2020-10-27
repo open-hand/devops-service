@@ -17,7 +17,7 @@ public class HostConnectionVO {
     private String hostIp;
 
     @ApiModelProperty("主机port")
-    private String hostPort;
+    private Integer hostPort;
 
     @ApiModelProperty("用户名")
     private String username;
@@ -75,11 +75,11 @@ public class HostConnectionVO {
         this.hostIp = hostIp;
     }
 
-    public String getHostPort() {
+    public Integer getHostPort() {
         return hostPort;
     }
 
-    public void setHostPort(String hostPort) {
+    public void setHostPort(Integer hostPort) {
         this.hostPort = hostPort;
     }
 

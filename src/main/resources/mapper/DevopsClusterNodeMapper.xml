@@ -36,4 +36,8 @@
         FROM devops_cluster_node dcn
         WHERE dcn.cluster_id=#{clusterId}}
     </select>
+
+    <delete id="deleteByClusterId">
+        DELETE FROM devops_cluster_node WHERE cluster_id=#{clusterId}
+    </delete>
 </mapper>

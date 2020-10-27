@@ -122,6 +122,6 @@ public enum ClusterNodeRole implements Type {
     }
 
     public static Set<Integer> listWorkerRoleSet() {
-        return new HashSet<>(Arrays.asList(1, 3, 5));
+        return new HashSet<>(Arrays.asList(1, 3, 5, 7));
     }
 }
