@@ -27,6 +27,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
+import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
@@ -85,6 +86,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
+    @Autowired
+    private DevopsClusterOperatingRecordService devopsClusterOperatingRecordService;
 
     @Override
     public boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO) {
@@ -206,12 +209,18 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (devopsClusterNodeMapper.deleteByPrimaryKey(nodeId) != 1) {
                 throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_FAILED);
             }
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    nodeId,
+                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
+                    ClusterOperationStatusEnum.SUCCESS.value(),
+                    null);
         } catch (Exception e) {
             // 操作失败，记录失败数据
-            // TODO 保存失败记录
-//            devopsClusterNodeDTO.setOperatingStatus(ClusterStatusEnum.FAILED.value());
-//            devopsClusterNodeDTO.setErrorMsg(cutErrorMsg(e.getMessage(), 2000));
-            devopsClusterNodeMapper.updateByPrimaryKeySelective(devopsClusterNodeDTO);
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    nodeId,
+                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
+                    ClusterOperationStatusEnum.FAILED.value(),
+                    e.getMessage());
         } finally {
             // 删除锁
             stringRedisTemplate.delete(lockKey);
@@ -359,12 +368,18 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (devopsClusterNodeMapper.updateByPrimaryKey(devopsClusterNodeDTO) != 1) {
                 throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
             }
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    nodeId,
+                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
+                    ClusterOperationStatusEnum.SUCCESS.value(),
+                    null);
         } catch (Exception e) {
-            // TODO 保存失败记录
             // 操作失败，记录失败数据
-//            devopsClusterNodeDTO.setOperatingStatus(ClusterStatusEnum.FAILED.value());
-//            devopsClusterNodeDTO.setErrorMsg(cutErrorMsg(e.getMessage(), 2000));
-            devopsClusterNodeMapper.updateByPrimaryKeySelective(devopsClusterNodeDTO);
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    nodeId,
+                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
+                    ClusterOperationStatusEnum.FAILED.value(),
+                    e.getMessage());
         } finally {
             // 删除锁
             stringRedisTemplate.delete(lockKey);
