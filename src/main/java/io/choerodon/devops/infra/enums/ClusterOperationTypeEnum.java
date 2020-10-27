@@ -1,17 +1,41 @@
 package io.choerodon.devops.infra.enums;
 
 /**
- * 操作记录对象类型
+ * 操作类型
  */
 public enum ClusterOperationTypeEnum {
     /**
-     * 集群类型
+     * 安装k8s
      */
-    CLUSTER("cluster"),
+    INSTALL_K8S("install_k8s"),
     /**
-     * 节点类型
+     * 卸载k8s
      */
-    NODE("node");
+    UNINSTALL_K8S("uninstall_k8s"),
+    /**
+     * 添加master节点
+     */
+    ADD_MASTER("add_master"),
+    /**
+     * 添加worker节点
+     */
+    ADD_WORKER("add_worker"),
+    /**
+     * 删除master节点
+     */
+    DEL_MASTER("del_master"),
+    /**
+     * 删除worker节点
+     */
+    DEL_WORKER("del_worker"),
+    /**
+     * 删除节点
+     */
+    DEL_NODE("del_node"),
+    /**
+     * 添加节点
+     */
+    ADD_NODE("add_node");
 
     ClusterOperationTypeEnum(String type) {
         this.type = type;

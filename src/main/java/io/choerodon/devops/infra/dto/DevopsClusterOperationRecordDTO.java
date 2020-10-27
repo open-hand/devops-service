@@ -21,11 +21,14 @@ public class DevopsClusterOperationRecordDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "操作对象类型")
-    private String sourceType;
+    @ApiModelProperty(value = "操作类型")
+    private String type;
 
-    @ApiModelProperty(value = "操作对象id")
-    private Long sourceId;
+    @ApiModelProperty(value = "集群id")
+    private Long clusterId;
+
+    @ApiModelProperty(value = "节点id")
+    private Long nodeId;
 
     @ApiModelProperty(value = "操作状态")
     private String status;
@@ -39,24 +42,6 @@ public class DevopsClusterOperationRecordDTO extends AuditDomain {
 
     public DevopsClusterOperationRecordDTO setId(Long id) {
         this.id = id;
-        return this;
-    }
-
-    public String getSourceType() {
-        return sourceType;
-    }
-
-    public DevopsClusterOperationRecordDTO setSourceType(String sourceType) {
-        this.sourceType = sourceType;
-        return this;
-    }
-
-    public Long getSourceId() {
-        return sourceId;
-    }
-
-    public DevopsClusterOperationRecordDTO setSourceId(Long sourceId) {
-        this.sourceId = sourceId;
         return this;
     }
 
@@ -78,12 +63,40 @@ public class DevopsClusterOperationRecordDTO extends AuditDomain {
         return this;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public DevopsClusterOperationRecordDTO setType(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public DevopsClusterOperationRecordDTO setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+        return this;
+    }
+
+    public Long getNodeId() {
+        return nodeId;
+    }
+
+    public DevopsClusterOperationRecordDTO setNodeId(Long nodeId) {
+        this.nodeId = nodeId;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DevopsClusterOperationRecordDTO{" +
                 "id=" + id +
-                ", sourceType='" + sourceType + '\'' +
-                ", sourceId=" + sourceId +
+                ", type='" + type + '\'' +
+                ", clusterId=" + clusterId +
+                ", nodeId=" + nodeId +
                 ", status='" + status + '\'' +
                 ", errorMsg='" + errorMsg + '\'' +
                 '}';
