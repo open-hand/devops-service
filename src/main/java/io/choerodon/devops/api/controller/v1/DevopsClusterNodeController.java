@@ -87,7 +87,4 @@ public class DevopsClusterNodeController {
 
     // TODO wx 批量添加节点
 
-    // TODO wx 删除节点
-
-    // TODO wx 移除节点角色
 }

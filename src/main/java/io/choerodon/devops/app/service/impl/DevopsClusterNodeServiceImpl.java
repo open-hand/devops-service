@@ -279,6 +279,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    @Async
     @Transactional
     public void deleteRole(Long projectId, Long nodeId, Integer role) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
