@@ -82,8 +82,6 @@ public class SshUtil {
             LOGGER.warn("Failed to connect to host by ssh, the host is {}, port is {}, username: {}", hostIp, sshPort, username);
             LOGGER.warn("The ex is ", ex);
             return null;
-        } finally {
-            closeSsh(ssh, session);
         }
         return ssh;
     }
