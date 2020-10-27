@@ -31,10 +31,13 @@ import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.util.*;
 
 @Service
@@ -80,6 +83,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private DevopsClusterNodeMapper devopsClusterNodeMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
 
     @Override
     public boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO) {
@@ -106,18 +111,18 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         NodeDeleteCheckVO nodeDeleteCheckVO = new NodeDeleteCheckVO();
         // 查询节点类型
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        if (ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+        if (ClusterNodeRoleEnum.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listWorkerRoleSet()) < 2) {
                 nodeDeleteCheckVO.setEnableDeleteWorker(false);
             }
         }
-        if (ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listEtcdRoleSet()) < 2) {
+        if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listEtcdRoleSet()) < 2) {
                 nodeDeleteCheckVO.setEnableDeleteEtcd(false);
             }
         }
-        if (ClusterNodeRole.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
+        if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listMasterRoleSet()) < 2) {
                 nodeDeleteCheckVO.setEnableDeleteMaster(false);
             }
         }
@@ -126,18 +131,18 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     private void checkNodeNumByRole(DevopsClusterNodeDTO devopsClusterNodeDTO) {
-        if (ClusterNodeRole.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listMasterRoleSet()) < 2) {
+        if (ClusterNodeRoleEnum.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listMasterRoleSet()) < 2) {
                 throw new CommonException(ClusterCheckConstant.ERROR_MASTER_NODE_ONLY_ONE);
             }
         }
-        if (ClusterNodeRole.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+        if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listWorkerRoleSet()) < 2) {
                 throw new CommonException(ClusterCheckConstant.ERROR_WORKER_NODE_ONLY_ONE);
             }
         }
-        if (ClusterNodeRole.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRole.listWorkerRoleSet()) < 2) {
+        if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listWorkerRoleSet()) < 2) {
                 throw new CommonException(ClusterCheckConstant.ERROR_ETCD_NODE_ONLY_ONE);
             }
         }
@@ -239,17 +244,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 //todo 处理密钥认证方式
             }
             // 设置master节点
-            if (ClusterNodeRole.listMasterRoleSet().contains(node.getRole())) {
+            if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {
                 inventoryVO.getKubeMaster().append(node.getName())
                         .append(System.lineSeparator());
             }
             // 设置etcd节点
-            if (ClusterNodeRole.listEtcdRoleSet().contains(node.getRole())) {
+            if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(node.getRole())) {
                 inventoryVO.getEtcd().append(node.getName())
                         .append(System.lineSeparator());
             }
             // 设置worker节点
-            if (ClusterNodeRole.listWorkerRoleSet().contains(node.getRole())) {
+            if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(node.getRole())) {
                 inventoryVO.getKubeWorker().append(node.getName())
                         .append(System.lineSeparator());
             }
@@ -264,15 +269,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
         NodeRoleDeleteCheckVO nodeRoleDeleteCheckVO = new NodeRoleDeleteCheckVO();
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())
-                || ClusterNodeRole.isMasterAndWorker(devopsClusterNodeDTO.getRole())) {
+        if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())
+                || ClusterNodeRoleEnum.isMasterAndWorker(devopsClusterNodeDTO.getRole())) {
             nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
         }
-        if (ClusterNodeRole.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
+        if (ClusterNodeRoleEnum.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
             nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
             nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
         }
-        if (ClusterNodeRole.isEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
+        if (ClusterNodeRoleEnum.isEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
             nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
         }
         return nodeRoleDeleteCheckVO;
@@ -316,11 +321,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         // 计算invertory配置
         InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOS);
         String command = null;
-        if (ClusterNodeRole.isMaster(role)) {
+        if (ClusterNodeRoleEnum.isMaster(role)) {
             inventoryVO.getDelMaster().append(devopsClusterNodeDTO.getName());
             command = DevopsClusterCommandConstants.REMOVE_MASTER_YAML;
         }
-        if (ClusterNodeRole.isEtcd(role)) {
+        if (ClusterNodeRoleEnum.isEtcd(role)) {
             inventoryVO.getDelEtcd().append(devopsClusterNodeDTO.getName());
             command = DevopsClusterCommandConstants.REMOVE_ETCD_YAML;
         }
@@ -344,7 +349,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
             // 删除数据库数据
             int resultRole = 0;
-            if (ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole())) {
+            if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
                 resultRole = 1;
             } else {
                 resultRole = devopsClusterNodeDTO.getRole() - role;
@@ -375,20 +380,20 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     private void checkEnableDeleteRole(DevopsClusterNodeDTO devopsClusterNodeDTO, Integer roleId) {
-        if (ClusterNodeRole.isWorker(roleId)) {
+        if (ClusterNodeRoleEnum.isWorker(roleId)) {
             throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
         }
-        if (ClusterNodeRole.isEtcd(roleId)
-                && Boolean.FALSE.equals(ClusterNodeRole.isEtcdAndWorker(devopsClusterNodeDTO.getRole()))
-                && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole()))
-                && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))) {
+        if (ClusterNodeRoleEnum.isEtcd(roleId)
+                && Boolean.FALSE.equals(ClusterNodeRoleEnum.isEtcdAndWorker(devopsClusterNodeDTO.getRole()))
+                && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole()))
+                && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))) {
             throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
         }
-        if (ClusterNodeRole.isMaster(roleId)
-                && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))
-                && Boolean.FALSE.equals(ClusterNodeRole.isMaster(devopsClusterNodeDTO.getRole()))
-                && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndWorker(devopsClusterNodeDTO.getRole()))
-                && Boolean.FALSE.equals(ClusterNodeRole.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole()))) {
+        if (ClusterNodeRoleEnum.isMaster(roleId)
+                && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))
+                && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole()))
+                && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndWorker(devopsClusterNodeDTO.getRole()))
+                && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole()))) {
             throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
         }
     }
@@ -402,8 +407,21 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsK8sInstallPayload.getDevopsClusterSshNodeInfoVO(), HostConnectionVO.class), ssh);
             generateAndUploadNodeConfiguration(ssh, devopsK8sInstallPayload.getClusterId(), inventoryVO);
             ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, INSTALL_K8S));
+            DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO()
+                    .setId(devopsK8sInstallPayload.getOperationRecordId());
+            DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+            devopsClusterDTO.setId(devopsK8sInstallPayload.getClusterId());
             if (resultInfoVO.getExitCode() != 0) {
+                devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.FAILED.value())
+                        .setErrorMsg(resultInfoVO.getStdOut());
+                devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+                devopsClusterDTO.setStatus(ClusterOperationStatusEnum.FAILED.value());
+            } else {
+                devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
+                devopsClusterDTO.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
+            devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+            devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
         } catch (Exception e) {
             throw new CommonException("error.install.k8s", e.getMessage());
         }
@@ -423,7 +441,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         try {
             sshUtil.sshConnect(hostConnectionVO, ssh);
         } catch (IOException e) {
-            throw new CommonException("error.node.ssh.connect");
+            throw new CommonException("error.node.ssh.connect", hostConnectionVO.getHostId());
         }
         // 安装docker
         try {
@@ -451,12 +469,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
             if (resultInfoVOForVariable.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterNodeCheckStepStatusTypeEnum.FAILED.value())
+                devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
-                devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterNodeCheckStepStatusTypeEnum.SUCCESS.value());
+                devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
 
@@ -464,12 +482,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, SYSTEM));
             if (resultInfoVOForSystem.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsNodeCheckResultVO.getSystem().setStatus(ClusterNodeCheckStepStatusTypeEnum.FAILED.value())
+                devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
-                devopsNodeCheckResultVO.getSystem().setStatus(ClusterNodeCheckStepStatusTypeEnum.SUCCESS.value());
+                devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
 
@@ -477,12 +495,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, CPU));
             if (resultInfoVOForCPU.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsNodeCheckResultVO.getCpu().setStatus(ClusterNodeCheckStepStatusTypeEnum.FAILED.value())
+                devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
-                devopsNodeCheckResultVO.getCpu().setStatus(ClusterNodeCheckStepStatusTypeEnum.SUCCESS.value());
+                devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
 
@@ -490,22 +508,22 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, MEMORY));
             if (resultInfoVOForMemory.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsNodeCheckResultVO.getMemory().setStatus(ClusterNodeCheckStepStatusTypeEnum.FAILED.value())
+                devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
-                devopsNodeCheckResultVO.getMemory().setStatus(ClusterNodeCheckStepStatusTypeEnum.SUCCESS.value());
+                devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
         } catch (IOException e) {
             sshUtil.sshDisconnect(ssh);
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            stringRedisTemplate.expire(redisKey, 72L, TimeUnit.DAYS);
             devopsClusterMapper.deleteByPrimaryKey(clusterId);
             devopsClusterNodeMapper.deleteByClusterId(clusterId);
+            throw new CommonException("error.node.check");
+        } finally {
+            stringRedisTemplate.expire(redisKey, 72L, TimeUnit.DAYS);
         }
     }
 

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
+import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 
 public class DevopsClusterNodeVO {
     @Encrypt
@@ -13,7 +14,7 @@ public class DevopsClusterNodeVO {
     private String name;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.ClusterNodeRole}
+     * {@link ClusterNodeRoleEnum}
      */
     @ApiModelProperty("节点类型")
     private Integer role;

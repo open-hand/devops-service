@@ -11,7 +11,7 @@ import java.util.Set;
  * b表示etcd节点
  * c表示worker节点
  */
-public enum ClusterNodeRole implements Type {
+public enum ClusterNodeRoleEnum implements Type {
     /**
      * worker节点
      */
@@ -37,7 +37,7 @@ public enum ClusterNodeRole implements Type {
 
     public static int collectDefaults() {
         int flags = 0;
-        for (ClusterNodeRole t : values()) {
+        for (ClusterNodeRoleEnum t : values()) {
             flags |= t.getMask();
         }
         return flags;

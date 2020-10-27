@@ -105,7 +105,6 @@ public class DevopsClusterController {
             @RequestParam(value = "cluster_id") Long clusterId) {
         devopsClusterService.retryInstallK8s(projectId, clusterId);
         return ResponseEntity.ok().build();
-
     }
 
     /**

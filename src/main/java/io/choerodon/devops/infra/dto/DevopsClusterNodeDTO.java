@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
+import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -24,7 +25,7 @@ public class DevopsClusterNodeDTO extends AuditDomain {
     private String name;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.ClusterNodeRole}
+     * {@link ClusterNodeRoleEnum}
      */
     @ApiModelProperty("节点类型,master对应4，etcd对应2，worker对应1，多个类型用数字之和表示，比如master、etcd节点，用4+2之和6表示")
     private Integer role;
