@@ -70,6 +70,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     public static final String CLUSTER_INSTALL_LOG_REDIS_KEY_TEMPLATE = "cluster-install-log-%d%d";
 
     private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
+    private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
     /**
      * inventory配置文件名称
      */
@@ -448,6 +449,113 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         DevopsClusterNodeDTO devopsClusterNodeDTO = new DevopsClusterNodeDTO();
         devopsClusterNodeDTO.setClusterId(clusterId);
         return devopsClusterNodeMapper.select(devopsClusterNodeDTO);
+    }
+
+    @Override
+    @Async
+    @Transactional
+    public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+
+        // 获取锁,失败则抛出异常，成功则程序继续
+        String lockKey = String.format(CLUSTER_LOCK_KEY, clusterId);
+        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
+            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
+        // 保存数据库记录
+        DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
+        if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
+            throw new CommonException(ERROR_ADD_NODE_FAILED);
+        }
+        // 更新redis集群操作状态
+        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
+        devopsClusterOperatorVO.setClusterId(devopsClusterNodeDTO.getClusterId());
+        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.ADD_NODE.value());
+        devopsClusterOperatorVO.setNodeId(devopsClusterNodeDTO.getId());
+        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
+        String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
+        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
+
+        String configFilePath = UUIDUtils.generateUUID() + ".ini";
+        SSHClient sshClient = new SSHClient();
+        try {
+            // 1. 查询集群节点信息
+            DevopsClusterNodeDTO record = new DevopsClusterNodeDTO();
+            record.setClusterId(devopsClusterNodeDTO.getClusterId());
+
+            List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeMapper.select(record);
+
+            // 计算inventory配置
+            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOS);
+            addNodeIniConfig(inventoryVO, devopsClusterNodeDTO);
+            // 连接主机
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTOS.get(0), HostConnectionVO.class);
+            hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
+
+            sshUtil.sshConnect(hostConnectionVO, sshClient);
+            // 上传配置文件
+            IOUtils.write(generateInventoryInI(inventoryVO).getBytes(), new FileOutputStream(configFilePath));
+            sshUtil.uploadFile(sshClient, configFilePath, INVENTORY_CONFIG_FILE_PATH);
+            // 执行删除节点操作
+            String command;
+            if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
+                command = ADD_MASTER_YML;
+            } else if (ClusterNodeRoleEnum.isWorker(devopsClusterNodeDTO.getRole())) {
+                command = ADD_WORKER_YML;
+            } else {
+                throw new CommonException(ERROR_ADD_NODE_FAILED);
+            }
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
+            LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
+            if (execResultInfoVO.getExitCode() == 1) {
+                throw new CommonException(ERROR_DELETE_NODE_FAILED);
+            }
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    devopsClusterNodeDTO.getId(),
+                    ClusterOperatingTypeEnum.ADD_NODE.value(),
+                    ClusterOperationStatusEnum.SUCCESS.value(),
+                    null);
+        } catch (Exception e) {
+            // 操作失败，记录失败数据
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    devopsClusterNodeDTO.getId(),
+                    ClusterOperatingTypeEnum.ADD_NODE.value(),
+                    ClusterOperationStatusEnum.FAILED.value(),
+                    e.getMessage());
+        } finally {
+            // 删除锁
+            stringRedisTemplate.delete(lockKey);
+            stringRedisTemplate.delete(operatingKey);
+            File file = new File(configFilePath);
+            if (file.exists()) {
+                file.delete();
+            }
+            sshUtil.sshDisconnect(sshClient);
+        }
+    }
+
+    private void addNodeIniConfig(InventoryVO inventoryVO, DevopsClusterNodeDTO node) {
+        if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(node.getAccountType())) {
+            inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
+                    .append(System.lineSeparator());
+        } else {
+            //todo 处理密钥认证方式
+        }
+        // 设置master节点
+        if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {
+            inventoryVO.getNewMaster().append(node.getName())
+                    .append(System.lineSeparator());
+        }
+        // 目前不支持,添加etc节点
+        if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(node.getRole())) {
+            throw new CommonException(ERROR_ADD_NODE_FAILED);
+        }
+        // 设置worker节点
+        if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(node.getRole())) {
+            inventoryVO.getNewWorker().append(node.getName())
+                    .append(System.lineSeparator());
+        }
     }
 
     @Override

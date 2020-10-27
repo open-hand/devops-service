@@ -1,14 +1,10 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Set;
 
 import net.schmizz.sshj.SSHClient;
 
-import io.choerodon.devops.api.vo.HostConnectionVO;
-import io.choerodon.devops.api.vo.InventoryVO;
-import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
-import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 
@@ -92,4 +88,12 @@ public interface DevopsClusterNodeService {
     void installK8s(DevopsK8sInstallPayload devopsK8sInstallPayload);
 
     List<DevopsClusterNodeDTO> queryByClusterId(Long clusterId);
+
+    /**
+     * 添加节点
+     * @param projectId
+     * @param clusterId
+     * @param nodeVO
+     */
+    void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO);
 }

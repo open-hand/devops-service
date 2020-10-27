@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
 import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
@@ -82,6 +83,18 @@ public class DevopsClusterNodeController {
             @PathVariable(value = "node_id") @Encrypt Long nodeId,
             @PathVariable(value = "role") Integer role) {
         devopsClusterNodeService.deleteRole(projectId, nodeId, role);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("添加节点")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping
+    public ResponseEntity<Void> addNode(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @RequestParam("cluster_id") Long clusterId,
+            @RequestBody DevopsClusterNodeVO nodeVO) {
+        devopsClusterNodeService.addNode(projectId, clusterId, nodeVO);
         return ResponseEntity.noContent().build();
     }
 

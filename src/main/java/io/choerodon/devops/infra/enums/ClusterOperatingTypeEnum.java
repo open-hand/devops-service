@@ -10,6 +10,7 @@ package io.choerodon.devops.infra.enums;
 public enum ClusterOperatingTypeEnum {
     INSTALL_CLUSTER("install_cluster"),
     DELETE_CLUSTER("delete_cluster"),
+    ADD_NODE("add_node"),
     DELETE_NODE("delete_node"),
     DELETE_NODE_ROLE("delete_node_role");
 

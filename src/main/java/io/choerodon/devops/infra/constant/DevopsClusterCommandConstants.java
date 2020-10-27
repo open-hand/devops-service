@@ -31,6 +31,14 @@ public class DevopsClusterCommandConstants {
             "ansible-playbook -i /tmp/inventory.ini %s";
 
     /**
+     * 添加worker节点
+     */
+    public static final String ADD_WORKER_YML = "81-add-worker.yml";
+    /**
+     * 添加master节点
+     */
+    public static final String ADD_MASTER_YML = "82-add-master.yml";
+    /**
      * 移除master节点
      */
     public static final String REMOVE_MASTER_YAML = "85-remove-master.yml";
