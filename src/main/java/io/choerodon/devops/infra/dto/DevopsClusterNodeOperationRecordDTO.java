@@ -30,6 +30,9 @@ public class DevopsClusterNodeOperationRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "操作状态")
     private String status;
 
+    @ApiModelProperty(value = "失败日志")
+    private String errorMsg;
+
     public Long getId() {
         return id;
     }
@@ -62,6 +65,14 @@ public class DevopsClusterNodeOperationRecordDTO extends AuditDomain {
         this.status = status;
     }
 
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
     @Override
     public String toString() {
         return "DevopsClusterNodeOperationRecordDTO{" +
@@ -69,6 +80,7 @@ public class DevopsClusterNodeOperationRecordDTO extends AuditDomain {
                 ", sourceType='" + sourceType + '\'' +
                 ", sourceId=" + sourceId +
                 ", status='" + status + '\'' +
+                ", errorMsg='" + errorMsg + '\'' +
                 '}';
     }
 }

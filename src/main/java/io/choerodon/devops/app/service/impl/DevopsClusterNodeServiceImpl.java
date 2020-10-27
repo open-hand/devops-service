@@ -203,8 +203,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
         } catch (Exception e) {
             // 操作失败，记录失败数据
-            devopsClusterNodeDTO.setOperatingStatus(ClusterStatusEnum.FAILED.value());
-            devopsClusterNodeDTO.setErrorMsg(cutErrorMsg(e.getMessage(), 2000));
+            // TODO 保存失败记录
+//            devopsClusterNodeDTO.setOperatingStatus(ClusterStatusEnum.FAILED.value());
+//            devopsClusterNodeDTO.setErrorMsg(cutErrorMsg(e.getMessage(), 2000));
             devopsClusterNodeMapper.updateByPrimaryKeySelective(devopsClusterNodeDTO);
         } finally {
             // 删除锁
@@ -353,9 +354,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
             }
         } catch (Exception e) {
+            // TODO 保存失败记录
             // 操作失败，记录失败数据
-            devopsClusterNodeDTO.setOperatingStatus(ClusterStatusEnum.FAILED.value());
-            devopsClusterNodeDTO.setErrorMsg(cutErrorMsg(e.getMessage(), 2000));
+//            devopsClusterNodeDTO.setOperatingStatus(ClusterStatusEnum.FAILED.value());
+//            devopsClusterNodeDTO.setErrorMsg(cutErrorMsg(e.getMessage(), 2000));
             devopsClusterNodeMapper.updateByPrimaryKeySelective(devopsClusterNodeDTO);
         } finally {
             // 删除锁
