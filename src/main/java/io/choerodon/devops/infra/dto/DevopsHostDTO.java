@@ -7,6 +7,7 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -64,7 +65,7 @@ public class DevopsHostDTO extends AuditDomain {
     private Integer sshPort;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.CdHostAccountType}
+     * {@link HostAuthType}
      */
     @ApiModelProperty("认证类型")
     private String authType;

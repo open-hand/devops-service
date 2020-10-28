@@ -5,7 +5,7 @@ package io.choerodon.devops.infra.enums;
  * @date 2020/7/6
  * @description
  */
-public enum CdHostAccountType {
+public enum HostAuthType {
     /**
      * 密码模式
      */
@@ -16,7 +16,7 @@ public enum CdHostAccountType {
     PUBLICKEY("publickey");
     private String value;
 
-    CdHostAccountType(String value) {
+    HostAuthType(String value) {
         this.value = value;
     }
 

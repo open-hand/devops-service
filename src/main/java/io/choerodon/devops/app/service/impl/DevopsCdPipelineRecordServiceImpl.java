@@ -560,7 +560,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //        }
 //
 //        ssh.connect(hostConnectionVO.getHostIp(), TypeUtil.objToInteger(hostConnectionVO.getHostPort()));
-//        if (hostConnectionVO.getAccountType().equals(CdHostAccountType.ACCOUNTPASSWORD.value())) {
+//        if (hostConnectionVO.getAccountType().equals(HostAuthType.ACCOUNTPASSWORD.value())) {
 //            ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
 //        } else {
 //            String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());

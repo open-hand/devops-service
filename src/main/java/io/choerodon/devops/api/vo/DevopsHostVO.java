@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.HostAuthType;
 
 /**
  * 主机配置
@@ -57,7 +58,7 @@ public class DevopsHostVO {
     private Integer sshPort;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.CdHostAccountType}
+     * {@link HostAuthType}
      */
     @ApiModelProperty("认证类型")
     private String authType;
