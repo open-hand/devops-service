@@ -34,6 +34,9 @@ public class ClusterNodeInfoVO {
 
     private String errorMsg;
 
+    private Boolean enableDeleteMasterRole = false;
+    private Boolean enableDeleteEtcdRole = false;
+
     public String getRole() {
         return role;
     }
@@ -200,5 +203,21 @@ public class ClusterNodeInfoVO {
 
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
+    }
+
+    public Boolean getEnableDeleteMasterRole() {
+        return enableDeleteMasterRole;
+    }
+
+    public void setEnableDeleteMasterRole(Boolean enableDeleteMasterRole) {
+        this.enableDeleteMasterRole = enableDeleteMasterRole;
+    }
+
+    public Boolean getEnableDeleteEtcdRole() {
+        return enableDeleteEtcdRole;
+    }
+
+    public void setEnableDeleteEtcdRole(Boolean enableDeleteEtcdRole) {
+        this.enableDeleteEtcdRole = enableDeleteEtcdRole;
     }
 }

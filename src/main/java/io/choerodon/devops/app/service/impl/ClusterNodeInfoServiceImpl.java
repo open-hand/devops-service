@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
+import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -187,6 +188,18 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                     DevopsClusterNodeDTO devopsClusterNodeDTO = nodeDTOMap.get(clusterNodeInfoVO.getNodeName());
                     if (devopsClusterNodeDTO != null) {
                         clusterNodeInfoVO.setId(devopsClusterNodeDTO.getId());
+                        // 添加能否删除节点角色标记
+                        if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())
+                                || ClusterNodeRoleEnum.isMasterAndWorker(devopsClusterNodeDTO.getRole())) {
+                            clusterNodeInfoVO.setEnableDeleteMasterRole(true);
+                        }
+                        if (ClusterNodeRoleEnum.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
+                            clusterNodeInfoVO.setEnableDeleteMasterRole(true);
+                            clusterNodeInfoVO.setEnableDeleteEtcdRole(true);
+                        }
+                        if (ClusterNodeRoleEnum.isEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
+                            clusterNodeInfoVO.setEnableDeleteEtcdRole(true);
+                        }
                         // 添加失败信息
                         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryFailedRecordByNodeId(devopsClusterNodeDTO.getId());
                         if (devopsClusterOperationRecordDTO != null) {
