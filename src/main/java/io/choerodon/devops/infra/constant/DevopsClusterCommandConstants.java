@@ -12,7 +12,7 @@ public class DevopsClusterCommandConstants {
     /**
      * 节点中ansible文件保存目录
      */
-    public static final String ANSIBLE_CONFIG_TARGET_BASE_DIR = "/tmp/";
+    public static final String ANSIBLE_CONFIG_TARGET_BASE_DIR = "/tmp";
 
     /**
      * docker安装命令模板

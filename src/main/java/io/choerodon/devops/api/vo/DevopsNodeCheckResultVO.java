@@ -8,6 +8,7 @@ import io.choerodon.devops.infra.enums.CommandStatus;
  */
 public class DevopsNodeCheckResultVO {
     private String status;
+    private String errorMsg;
     private Step configuration;
     private Step system;
     private Step memory;
@@ -70,6 +71,14 @@ public class DevopsNodeCheckResultVO {
         return this;
     }
 
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public DevopsNodeCheckResultVO setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+        return this;
+    }
 
     public static class Step {
         private String status;

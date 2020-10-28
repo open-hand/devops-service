@@ -12,11 +12,20 @@ public interface DevopsClusterNodeService {
     /**
      * 测试当前节点连通性
      *
-     * @param projectId        项目id
+     * @param projectId               项目id
      * @param clusterHostConnectionVO 连接信息
      * @return 测试结果 boolean
      */
     boolean testConnection(Long projectId, ClusterHostConnectionVO clusterHostConnectionVO);
+
+    /**
+     * 保存节点信息
+     *
+     * @param devopsClusterDTOList 节点列表
+     * @param projectId            项目id
+     * @param clusterId            集群id
+     */
+    void saveNode(List<DevopsClusterNodeDTO> devopsClusterDTOList, Long projectId, Long clusterId);
 
     /**
      * 检查所有节点信息
@@ -26,7 +35,7 @@ public interface DevopsClusterNodeService {
      * @param devopsClusterNodeDTOList 节点列表
      * @param hostConnectionVO         ssh信息
      */
-    void checkNode(Long projectId, Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO);
+    void checkAndSaveNode(Long projectId, Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO);
 
     /**
      * 批量插入
