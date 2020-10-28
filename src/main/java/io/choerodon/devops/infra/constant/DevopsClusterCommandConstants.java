@@ -8,7 +8,7 @@ public class DevopsClusterCommandConstants {
     /**
      * devops中ansible文件保存目录模板
      */
-    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/Users/lihao/ansible/%s";
+    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
     /**
      * 节点中ansible文件保存目录
      */
@@ -17,7 +17,7 @@ public class DevopsClusterCommandConstants {
     /**
      * docker安装命令模板
      */
-    public static final String INSTALL_DOCKER_COMMAND= "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun\n" +
+    public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun\n" +
             "echo =====================install completed\n" +
             "systemctl restart docker && systemctl enable docker";
 
@@ -38,6 +38,16 @@ public class DevopsClusterCommandConstants {
      * 添加master节点
      */
     public static final String ADD_MASTER_YML = "82-add-master.yml";
+    /**
+     * 命令后台执行模板，需要指定具体命令和日志文件
+     */
+    public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup %s > %s 2>&1 &";
+
+    /**
+     * 安装helm模版, curl -L -o helm.tar.gz 文件下载地址
+     */
+    public static final String INSTALL_HELM_TEMPLATE = "curl -L -o helm.tar.gz %s && tar -zxvf helm-v3.2.4-linux-amd64.tar.gz && sudo mv linux-amd64/helm /usr/bin/helm";
+
     /**
      * 移除master节点
      */

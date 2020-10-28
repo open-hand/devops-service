@@ -64,11 +64,9 @@ public class DevopsClusterController {
     public ResponseEntity<Void> confirmInstall(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "集群id", required = true)
-            @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "ssh连接的节点信息", required = true)
             @RequestBody DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        devopsClusterService.startInstallK8s(projectId, clusterId, devopsClusterSshNodeInfoVO);
+        devopsClusterService.startInstallK8s(projectId, devopsClusterSshNodeInfoVO);
         return ResponseEntity.ok().build();
     }
 

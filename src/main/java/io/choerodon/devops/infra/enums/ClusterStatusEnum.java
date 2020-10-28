@@ -20,7 +20,11 @@ public enum ClusterStatusEnum {
     /**
      * 创建失败
      */
-    FAILED("failed");
+    FAILED("failed"),
+    /**
+     * 创建成功
+     */
+    SUCCESS("success");
 
     private final String status;
 

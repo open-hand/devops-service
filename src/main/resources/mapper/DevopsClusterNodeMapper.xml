@@ -34,7 +34,7 @@
     <select id="listByClusterId" resultType="io.choerodon.devops.infra.dto.DevopsClusterNodeDTO">
         SELECT dcn.*
         FROM devops_cluster_node dcn
-        WHERE dcn.cluster_id=#{clusterId}}
+        WHERE dcn.cluster_id=#{clusterId}
     </select>
 
     <delete id="deleteByClusterId">

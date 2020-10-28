@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import io.choerodon.devops.api.vo.DevopsClusterSshNodeInfoVO;
+import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 
 public class DevopsK8sInstallPayload {
     private Long operationRecordId;
     private Long projectId;
     private Long clusterId;
-    private DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO;
+    private DevopsClusterNodeVO devopsClusterNodeVO;
 
     public Long getProjectId() {
         return projectId;
@@ -26,12 +26,12 @@ public class DevopsK8sInstallPayload {
         return this;
     }
 
-    public DevopsClusterSshNodeInfoVO getDevopsClusterSshNodeInfoVO() {
-        return devopsClusterSshNodeInfoVO;
+    public DevopsClusterNodeVO getDevopsClusterNodeVO() {
+        return devopsClusterNodeVO;
     }
 
-    public DevopsK8sInstallPayload setDevopsClusterSshNodeInfoVO(DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        this.devopsClusterSshNodeInfoVO = devopsClusterSshNodeInfoVO;
+    public DevopsK8sInstallPayload setDevopsClusterNodeVO(DevopsClusterNodeVO devopsClusterNodeVO) {
+        this.devopsClusterNodeVO = devopsClusterNodeVO;
         return this;
     }
 

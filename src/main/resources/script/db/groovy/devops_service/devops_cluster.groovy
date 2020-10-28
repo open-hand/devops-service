@@ -84,7 +84,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
 
     changeSet(author: 'lihao',id: '2020-10-23-add-status-column'){
         addColumn(tableName: 'devops_cluster'){
-            column(name: 'status',type: 'VARCHAR(10)',remarks: '集群状态',afterColumn: 'type')
+            column(name: 'status',type: 'VARCHAR(32)',remarks: '集群状态',afterColumn: 'type')
         }
     }
 }
