@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
 import org.apache.commons.io.IOUtils;
@@ -587,41 +588,69 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public void checkNode(Long projectId, Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO) {
-        SSHClient ssh = new SSHClient();
-        try {
-            sshUtil.sshConnect(hostConnectionVO, ssh);
-        } catch (IOException e) {
-            throw new CommonException("error.node.ssh.connect", hostConnectionVO.getHostId());
-        }
-        // 安装docker
-        try {
-            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, INSTALL_DOCKER_COMMAND);
-            if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
-                throw new CommonException("error.node.install.docker", ssh.getRemoteHostname(), resultInfoVO.getStdErr());
-            }
-        } catch (IOException e) {
-            throw new CommonException("error.node.install.docker", ssh.getRemoteHostname(), e.getMessage());
-        }
-        // 生成相关配置节点
-        InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
-        // 上传配置文件
-        generateAndUploadNodeConfiguration(ssh, clusterId, inventoryVO);
-        // 异步执行检测命令
-        asyncCheck(ssh, projectId, clusterId);
+    public void saveNode(List<DevopsClusterNodeDTO> devopsClusterDTOList, Long projectId, Long clusterId) {
+        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterDTOList.stream()
+                .peek(n -> {
+                    n.setClusterId(clusterId);
+                    n.setProjectId(projectId);
+                })
+                .collect(Collectors.toList());
+        batchInsert(devopsClusterNodeDTOS);
     }
 
     @Async
-    public void asyncCheck(SSHClient ssh, Long projectId, Long clusterId) {
+    @Override
+    public void checkAndSaveNode(Long projectId, Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO) {
+        SSHClient ssh = new SSHClient();
+        DevopsNodeCheckResultVO devopsNodeCheckResultVO = new DevopsNodeCheckResultVO();
         String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, clusterId);
         try {
-            DevopsNodeCheckResultVO devopsNodeCheckResultVO = new DevopsNodeCheckResultVO();
+            try {
+                sshUtil.sshConnect(hostConnectionVO, ssh);
+            } catch (IOException e) {
+                throw new CommonException(String.format("failed to connect to host:[ %s ] by ssh", hostConnectionVO.getHostIp()));
+            }
+            // 安装docker
+            try {
+                ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, INSTALL_DOCKER_COMMAND);
+                if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
+                    throw new CommonException(String.format("failed to install docker on host: [ %s ],error is :%s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
+                }
+            } catch (IOException e) {
+                throw new CommonException(String.format("failed to exec command [ %s ] on host [ %s ],error is :%s", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
+            }
+            // 生成相关配置节点
+            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
+            // 上传配置文件
+            generateAndUploadNodeConfiguration(ssh, clusterId, inventoryVO);
+            // 执行检测命令
+            asyncCheck(ssh, devopsNodeCheckResultVO, redisKey, clusterId);
+            // 节点检查通过，保存节点信息
+            saveNode(devopsClusterNodeDTOList, projectId, clusterId);
+        } catch (CommonException e) {
+            devopsNodeCheckResultVO.setErrorMsg(e.getCode())
+                    .setStatus(ClusterOperationStatusEnum.FAILED.value());
+            devopsClusterMapper.deleteByPrimaryKey(clusterId);
+            stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
+        } catch (Exception e) {
+            devopsClusterMapper.deleteByPrimaryKey(clusterId);
+            e.printStackTrace();
+        } finally {
+            sshUtil.sshDisconnect(ssh);
+            stringRedisTemplate.expire(redisKey, 72L, TimeUnit.DAYS);
+        }
+    }
+
+    @Async
+    public void asyncCheck(SSHClient ssh, DevopsNodeCheckResultVO devopsNodeCheckResultVO, String redisKey, Long clusterId) {
+        try {
             // 配置检查
             ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
             if (resultInfoVOForVariable.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
@@ -635,6 +664,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
@@ -648,6 +678,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
@@ -661,20 +692,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
             } else {
                 devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-        } catch (IOException e) {
-            sshUtil.sshDisconnect(ssh);
         } catch (Exception e) {
-            devopsClusterMapper.deleteByPrimaryKey(clusterId);
-            devopsClusterNodeMapper.deleteByClusterId(clusterId);
-            throw new CommonException("error.node.check");
-        } finally {
-            stringRedisTemplate.expire(redisKey, 72L, TimeUnit.DAYS);
+            throw new CommonException(String.format("failed to check node ,error is: %s", e.getMessage()));
         }
     }
 

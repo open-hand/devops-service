@@ -155,13 +155,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterValidator.check(devopsClusterReqVO);
         // 保存集群信息
         DevopsClusterDTO devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.CREATED.value());
-        // 保存节点信息
-        createNode(devopsClusterReqVO.getDevopsClusterNodeVOList(), projectId, devopsClusterDTO.getId());
         DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
                 .setClusterId(devopsClusterDTO.getId())
                 .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
         // 检测节点
-        devopsClusterNodeService.checkNode(projectId, devopsClusterDTO.getId(),
+        devopsClusterNodeService.checkAndSaveNode(projectId, devopsClusterDTO.getId(),
                 ConvertUtils.convertList(devopsClusterReqVO.getDevopsClusterNodeVOList(), DevopsClusterNodeDTO.class),
                 ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class));
         return devopsClusterSshNodeInfoVO;
@@ -795,17 +793,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return new ClusterOverViewVO(updatedCount, allCount - updatedCount);
     }
 
-    @Override
-    public void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long projectId, Long clusterId) {
-        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = ConvertUtils.convertList(devopsClusterNodeVOList, DevopsClusterNodeDTO.class)
-                .stream()
-                .peek(n -> {
-                    n.setClusterId(clusterId);
-                    n.setProjectId(projectId);
-                })
-                .collect(Collectors.toList());
-        devopsClusterNodeService.batchInsert(devopsClusterNodeDTOS);
-    }
 
     /**
      * pod dto to cluster pod vo
