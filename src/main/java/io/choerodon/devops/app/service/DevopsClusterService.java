@@ -222,9 +222,13 @@ public interface DevopsClusterService {
     Boolean checkEnableCreateCluster(Long projectId);
 
     /**
-     * 创建节点
+     * 保存节点信息
+     *
+     * @param devopsClusterNodeVOList 节点列表
+     * @param projectId               项目id
+     * @param clusterId               节点id
      */
-    void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long clusterId);
+    void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long projectId, Long clusterId);
 
     /**
      * 开始安装k8s
