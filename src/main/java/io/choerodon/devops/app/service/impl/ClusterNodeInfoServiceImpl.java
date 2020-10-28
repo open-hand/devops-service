@@ -23,11 +23,14 @@ import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
+import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
+import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -55,6 +58,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private DevopsClusterNodeService devopsClusterNodeService;
+    @Autowired
+    private DevopsClusterOperatingRecordService devopsClusterOperatingRecordService;
 
     @Override
     public String getRedisClusterKey(Long clusterId) {
@@ -170,6 +175,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         Map<String, DevopsClusterNodeDTO> nodeDTOMap = devopsClusterNodeDTOS.stream().collect(Collectors.toMap(DevopsClusterNodeDTO::getName, v -> v));
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
 
+
         long total = stringRedisTemplate.opsForList().size(redisKey);
         List<ClusterNodeInfoVO> nodes = stringRedisTemplate
                 .opsForList()
@@ -181,8 +187,15 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                     DevopsClusterNodeDTO devopsClusterNodeDTO = nodeDTOMap.get(clusterNodeInfoVO.getNodeName());
                     if (devopsClusterNodeDTO != null) {
                         clusterNodeInfoVO.setId(devopsClusterNodeDTO.getId());
+                        // 添加失败信息
+                        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryFailedRecordByNodeId(devopsClusterNodeDTO.getId());
+                        if (devopsClusterOperationRecordDTO != null) {
+                            clusterNodeInfoVO.setOperatingStatus(ClusterOperationStatusEnum.FAILED.value());
+                            clusterNodeInfoVO.setErrorMsg(devopsClusterOperationRecordDTO.getErrorMsg());
+                        }
                     }
                     clusterNodeInfoVO.setClusterType(devopsClusterDTO.getType());
+
                     return clusterNodeInfoVO;
                 })
                 .collect(Collectors.toList());

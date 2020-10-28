@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import javax.annotation.Nullable;
 
+import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -12,4 +14,6 @@ import javax.annotation.Nullable;
 public interface DevopsClusterOperatingRecordService {
 
     void saveOperatingRecord(Long clusterId, Long nodeId, String operatingType, String status,@Nullable String errorMsg);
+
+    DevopsClusterOperationRecordDTO queryFailedRecordByNodeId(Long nodeId);
 }

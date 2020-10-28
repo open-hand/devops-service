@@ -4,8 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
+import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 
@@ -36,5 +38,12 @@ public class DevopsClusterOperatingRecordServiceImpl implements DevopsClusterOpe
         } catch (Exception e) {
             LOGGER.info("save cluster operating record failed.", e);
         }
+    }
+
+    @Override
+    public DevopsClusterOperationRecordDTO queryFailedRecordByNodeId(Long nodeId) {
+        Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+
+        return devopsClusterOperationRecordMapper.queryFirstFailedRecordByNodeId(nodeId);
     }
 }

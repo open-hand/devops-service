@@ -30,6 +30,10 @@ public class ClusterNodeInfoVO {
     private String podPercentage;
     private String clusterType;
 
+    private String operatingStatus;
+
+    private String errorMsg;
+
     public String getRole() {
         return role;
     }
@@ -180,5 +184,21 @@ public class ClusterNodeInfoVO {
 
     public void setClusterType(String clusterType) {
         this.clusterType = clusterType;
+    }
+
+    public String getOperatingStatus() {
+        return operatingStatus;
+    }
+
+    public void setOperatingStatus(String operatingStatus) {
+        this.operatingStatus = operatingStatus;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
     }
 }
