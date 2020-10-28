@@ -169,20 +169,20 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional
     @Override
-    public void startInstallK8s(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
+    public void startInstallK8s(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
         // 保存操作记录
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO()
                 .setType(ClusterOperationTypeEnum.INSTALL_K8S.getType())
-                .setClusterId(clusterId)
+                .setClusterId(devopsClusterSshNodeInfoVO.getClusterId())
                 .setStatus(ClusterOperationStatusEnum.OPERATING.value());
-        devopsClusterOperationRecordMapper.insertOptional(devopsClusterOperationRecordDTO);
+        devopsClusterOperationRecordMapper.insert(devopsClusterOperationRecordDTO);
 
         // 发送saga开始安装
         DevopsK8sInstallPayload devopsK8sInstallPayload = new DevopsK8sInstallPayload()
                 .setProjectId(projectId)
-                .setClusterId(clusterId)
+                .setClusterId(devopsClusterSshNodeInfoVO.getClusterId())
                 .setOperationRecordId(devopsClusterOperationRecordDTO.getId())
-                .setDevopsClusterSshNodeInfoVO(devopsClusterSshNodeInfoVO);
+                .setDevopsClusterNodeVO(devopsClusterSshNodeInfoVO.getDevopsClusterNodeVO());
 
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -193,7 +193,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_INSTALL_K8S),
                 builder -> builder
                         .withPayloadAndSerialize(devopsK8sInstallPayload)
-                        .withRefId(String.valueOf(clusterId))
+                        .withRefId(String.valueOf(devopsClusterSshNodeInfoVO.getClusterId()))
                         .withSourceId(projectId));
     }
 
@@ -226,22 +226,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         ProjectDTO iamProject = null;
         DevopsClusterDTO devopsClusterDTO = null;
-        Map<String, String> params = new HashMap<>();
+        IamUserDTO iamUserDTO;
         try {
             devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.IMPORTED.value());
-
-            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
-
-            // 渲染激活环境的命令参数
-            params.put("{VERSION}", agentExpectVersion);
-            params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterDTO.getCode());
-            params.put("{SERVICEURL}", agentServiceUrl);
-            params.put("{TOKEN}", devopsClusterDTO.getToken());
-            params.put("{EMAIL}", iamUserDTO == null ? "" : iamUserDTO.getEmail());
-            params.put("{CHOERODONID}", devopsClusterDTO.getChoerodonId());
-            params.put("{REPOURL}", agentRepoUrl);
-            params.put("{CLUSTERID}", devopsClusterDTO
-                    .getId().toString());
+            iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
         } catch (Exception e) {
             //创建集群失败发送webhook json
             sendNotificationService.sendWhenCreateClusterFail(devopsClusterDTO, iamProject, e.getMessage());
@@ -250,6 +238,28 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         //创建集群成功发送web_hook
         sendNotificationService.sendWhenCreateCluster(devopsClusterDTO, iamProject);
+        return getInstallString(devopsClusterDTO, iamUserDTO == null ? "" : iamUserDTO.getEmail());
+    }
+
+    /**
+     * 获得agent安装命令
+     *
+     * @return agent安装命令
+     */
+    @Override
+    public String getInstallString(DevopsClusterDTO devopsClusterDTO, String userEmail) {
+        Map<String, String> params = new HashMap<>();
+        // 渲染激活环境的命令参数
+        params.put("{VERSION}", agentExpectVersion);
+        params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterDTO.getCode());
+        params.put("{SERVICEURL}", agentServiceUrl);
+        params.put("{TOKEN}", devopsClusterDTO.getToken());
+        params.put("{EMAIL}", StringUtils.isEmpty(userEmail) ? "" : userEmail);
+        params.put("{CHOERODONID}", devopsClusterDTO.getChoerodonId());
+        params.put("{REPOURL}", agentRepoUrl);
+        params.put("{CLUSTERID}", devopsClusterDTO
+                .getId().toString());
+
         return FileUtil.replaceReturnString(CLUSTER_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 

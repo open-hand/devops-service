@@ -232,7 +232,7 @@ public interface DevopsClusterService {
      * @param projectId                  项目id
      * @param devopsClusterSshNodeInfoVO ssh连接的节点信息
      */
-    void startInstallK8s(Long projectId, Long clusterId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO);
+    void startInstallK8s(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO);
 
     /**
      * 重试安装k8s
@@ -246,4 +246,13 @@ public interface DevopsClusterService {
      * @param clusterId ssh连接的节点信息
      */
     DevopsNodeCheckResultVO checkProgress(Long projectId, Long clusterId);
+
+    /**
+     * 获得agent安装命令
+     *
+     * @param devopsClusterDTO 集群dto
+     * @param userEmail        用户信息
+     * @return 安装命令
+     */
+    String getInstallString(DevopsClusterDTO devopsClusterDTO, String userEmail);
 }
