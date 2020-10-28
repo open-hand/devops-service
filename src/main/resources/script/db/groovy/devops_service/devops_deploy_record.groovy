@@ -32,7 +32,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
             column(name: 'deploy_type')
         }
     }
-
+    changeSet(author: 'wanghao', id: '2020-10-12-drop-record') {
+        sql("""
+            DELETE FROM devops_deploy_record WHERE deploy_type = 'batch' or deploy_type = 'auto';
+        """)
+    }
     changeSet(author: 'wanghao', id: '2020-10-20-add-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'deploy_payload_id', oldColumnName: 'env', tableName: 'devops_deploy_record')
         addColumn(tableName: 'devops_deploy_record') {
