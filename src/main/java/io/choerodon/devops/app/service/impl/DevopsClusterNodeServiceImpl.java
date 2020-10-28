@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterOperationPayload;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
 import io.choerodon.devops.app.service.DevopsClusterService;
@@ -97,7 +97,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private DevopsClusterService devopsClusterService;
 
     @Override
-    public boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO) {
+    public boolean testConnection(Long projectId, ClusterHostConnectionVO hostConnectionVO) {
         return SshUtil.sshConnectForOK(hostConnectionVO.getHostIp(),
                 hostConnectionVO.getHostPort(),
                 hostConnectionVO.getAccountType(),
@@ -421,15 +421,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public void installK8s(DevopsK8sInstallPayload devopsK8sInstallPayload) {
-        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordMapper.selectByPrimaryKey(devopsK8sInstallPayload.getOperationRecordId());
-        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsK8sInstallPayload.getClusterId());
+    public void installK8s(DevopsClusterOperationPayload devopsClusterOperationPayload) {
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordMapper.selectByPrimaryKey(devopsClusterOperationPayload.getOperationRecordId());
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsClusterOperationPayload.getClusterId());
         SSHClient ssh = new SSHClient();
         try {
-            List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsK8sInstallPayload.getClusterId());
+            List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsClusterOperationPayload.getClusterId());
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
-            sshUtil.sshConnect(ConvertUtils.convertObject(devopsK8sInstallPayload.getDevopsClusterNodeVO(), HostConnectionVO.class), ssh);
-            generateAndUploadNodeConfiguration(ssh, devopsK8sInstallPayload.getClusterId(), inventoryVO);
+            sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterOperationPayload.getDevopsClusterNodeVO(), HostConnectionVO.class), ssh);
+            generateAndUploadNodeConfiguration(ssh, devopsClusterOperationPayload.getClusterId(), inventoryVO);
             ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, String.format(ANSIBLE_COMMAND_TEMPLATE, INSTALL_K8S), "/tmp/install.log"));
             // 集群安装出现错误，设置错误消息并更新集群状态
             if (resultInfoVO.getExitCode() != 0) {
