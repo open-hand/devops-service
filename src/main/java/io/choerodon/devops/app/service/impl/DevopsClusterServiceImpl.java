@@ -156,7 +156,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         // 保存集群信息
         DevopsClusterDTO devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.CREATED.value());
         // 保存节点信息
-        createNode(devopsClusterReqVO.getDevopsClusterNodeVOList(), devopsClusterDTO.getId());
+        createNode(devopsClusterReqVO.getDevopsClusterNodeVOList(), projectId, devopsClusterDTO.getId());
         DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
                 .setClusterId(devopsClusterDTO.getId())
                 .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
@@ -796,10 +796,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long clusterId) {
+    public void createNode(List<DevopsClusterNodeVO> devopsClusterNodeVOList, Long projectId, Long clusterId) {
         List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = ConvertUtils.convertList(devopsClusterNodeVOList, DevopsClusterNodeDTO.class)
                 .stream()
-                .peek(n -> n.setClusterId(clusterId))
+                .peek(n -> {
+                    n.setClusterId(clusterId);
+                    n.setProjectId(projectId);
+                })
                 .collect(Collectors.toList());
         devopsClusterNodeService.batchInsert(devopsClusterNodeDTOS);
     }
