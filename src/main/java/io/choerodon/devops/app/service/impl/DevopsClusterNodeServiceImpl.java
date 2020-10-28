@@ -463,19 +463,19 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
             throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
         }
+        // 更新redis集群操作状态
+        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
+        devopsClusterOperatorVO.setClusterId(clusterId);
+        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.ADD_NODE.value());
+        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
+        String operatingKey = String.format(CLUSTER_OPERATING_KEY, clusterId);
+        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
+
         // 保存数据库记录
         DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
         if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
             throw new CommonException(ERROR_ADD_NODE_FAILED);
         }
-        // 更新redis集群操作状态
-        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
-        devopsClusterOperatorVO.setClusterId(devopsClusterNodeDTO.getClusterId());
-        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.ADD_NODE.value());
-        devopsClusterOperatorVO.setNodeId(devopsClusterNodeDTO.getId());
-        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
-        String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
-        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
         SSHClient sshClient = new SSHClient();

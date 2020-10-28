@@ -92,12 +92,11 @@ public class DevopsClusterNodeController {
     public ResponseEntity<Void> addNode(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "集群id")
             @RequestParam("cluster_id") Long clusterId,
             @RequestBody DevopsClusterNodeVO nodeVO) {
         devopsClusterNodeService.addNode(projectId, clusterId, nodeVO);
         return ResponseEntity.noContent().build();
     }
-
-    // TODO wx 批量添加节点
 
 }
