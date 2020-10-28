@@ -593,6 +593,6 @@ public class DevopsSagaHandler {
             sagaCode = DEVOPS_INSTALL_K8S,
             description = "Devops安装k8s", seq = 1)
     public void installK8s(String payload) {
-        devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsK8sInstallPayload.class));
+        devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterOperationPayload.class));
     }
 }

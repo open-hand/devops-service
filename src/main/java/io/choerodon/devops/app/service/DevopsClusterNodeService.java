@@ -5,7 +5,7 @@ import java.util.List;
 import net.schmizz.sshj.SSHClient;
 
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterOperationPayload;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 
 public interface DevopsClusterNodeService {
@@ -13,10 +13,10 @@ public interface DevopsClusterNodeService {
      * 测试当前节点连通性
      *
      * @param projectId        项目id
-     * @param hostConnectionVO 连接信息
+     * @param clusterHostConnectionVO 连接信息
      * @return 测试结果 boolean
      */
-    boolean testConnection(Long projectId, HostConnectionVO hostConnectionVO);
+    boolean testConnection(Long projectId, ClusterHostConnectionVO clusterHostConnectionVO);
 
     /**
      * 检查所有节点信息
@@ -83,14 +83,15 @@ public interface DevopsClusterNodeService {
     /**
      * 安装k8s
      *
-     * @param devopsK8sInstallPayload
+     * @param devopsClusterOperationPayload
      */
-    void installK8s(DevopsK8sInstallPayload devopsK8sInstallPayload);
+    void installK8s(DevopsClusterOperationPayload devopsClusterOperationPayload);
 
     List<DevopsClusterNodeDTO> queryByClusterId(Long clusterId);
 
     /**
      * 添加节点
+     *
      * @param projectId
      * @param clusterId
      * @param nodeVO

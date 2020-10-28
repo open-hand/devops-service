@@ -33,7 +33,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsClusterValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.DevopsK8sInstallPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterOperationPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -178,7 +178,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterOperationRecordMapper.insert(devopsClusterOperationRecordDTO);
 
         // 发送saga开始安装
-        DevopsK8sInstallPayload devopsK8sInstallPayload = new DevopsK8sInstallPayload()
+        DevopsClusterOperationPayload devopsClusterOperationPayload = new DevopsClusterOperationPayload()
                 .setProjectId(projectId)
                 .setClusterId(devopsClusterSshNodeInfoVO.getClusterId())
                 .setOperationRecordId(devopsClusterOperationRecordDTO.getId())
@@ -192,7 +192,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                         .withRefType(SAGA_INSTALL_K8S_REF_TYPE)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_INSTALL_K8S),
                 builder -> builder
-                        .withPayloadAndSerialize(devopsK8sInstallPayload)
+                        .withPayloadAndSerialize(devopsClusterOperationPayload)
                         .withRefId(String.valueOf(devopsClusterSshNodeInfoVO.getClusterId()))
                         .withSourceId(projectId));
     }

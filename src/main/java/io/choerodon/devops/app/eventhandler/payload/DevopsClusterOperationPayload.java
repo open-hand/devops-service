@@ -2,7 +2,7 @@ package io.choerodon.devops.app.eventhandler.payload;
 
 import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 
-public class DevopsK8sInstallPayload {
+public class DevopsClusterOperationPayload {
     private Long operationRecordId;
     private Long projectId;
     private Long clusterId;
@@ -12,7 +12,7 @@ public class DevopsK8sInstallPayload {
         return projectId;
     }
 
-    public DevopsK8sInstallPayload setProjectId(Long projectId) {
+    public DevopsClusterOperationPayload setProjectId(Long projectId) {
         this.projectId = projectId;
         return this;
     }
@@ -21,7 +21,7 @@ public class DevopsK8sInstallPayload {
         return clusterId;
     }
 
-    public DevopsK8sInstallPayload setClusterId(Long clusterId) {
+    public DevopsClusterOperationPayload setClusterId(Long clusterId) {
         this.clusterId = clusterId;
         return this;
     }
@@ -30,7 +30,7 @@ public class DevopsK8sInstallPayload {
         return devopsClusterNodeVO;
     }
 
-    public DevopsK8sInstallPayload setDevopsClusterNodeVO(DevopsClusterNodeVO devopsClusterNodeVO) {
+    public DevopsClusterOperationPayload setDevopsClusterNodeVO(DevopsClusterNodeVO devopsClusterNodeVO) {
         this.devopsClusterNodeVO = devopsClusterNodeVO;
         return this;
     }
@@ -39,7 +39,7 @@ public class DevopsK8sInstallPayload {
         return operationRecordId;
     }
 
-    public DevopsK8sInstallPayload setOperationRecordId(Long operationRecordId) {
+    public DevopsClusterOperationPayload setOperationRecordId(Long operationRecordId) {
         this.operationRecordId = operationRecordId;
         return this;
     }
