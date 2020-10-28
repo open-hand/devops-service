@@ -11,7 +11,7 @@
             #{item.clusterId},
             #{item.hostIp},
             #{item.hostPort},
-            #{item.accountType},
+            #{item.authType},
             #{item.username},
             #{item.password})
         </foreach>

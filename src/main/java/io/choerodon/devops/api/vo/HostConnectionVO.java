@@ -29,7 +29,7 @@ public class HostConnectionVO {
     private String accountKey;
 
     @ApiModelProperty("账号配置类型")
-    private String accountType;
+    private String authType;
 
 
     @ApiModelProperty("主机id")
@@ -99,11 +99,11 @@ public class HostConnectionVO {
         this.password = password;
     }
 
-    public String getAccountType() {
-        return accountType;
+    public String getAuthType() {
+        return authType;
     }
 
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
+    public void setAuthType(String authType) {
+        this.authType = authType;
     }
 }

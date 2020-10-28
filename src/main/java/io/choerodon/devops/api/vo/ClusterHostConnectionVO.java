@@ -20,7 +20,7 @@ public class ClusterHostConnectionVO {
     private String accountKey;
 
     @ApiModelProperty("账号配置类型")
-    private String accountType;
+    private String authType;
 
     public String getAccountKey() {
         return accountKey;
@@ -62,11 +62,11 @@ public class ClusterHostConnectionVO {
         this.password = password;
     }
 
-    public String getAccountType() {
-        return accountType;
+    public String getAuthType() {
+        return authType;
     }
 
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
+    public void setAuthType(String authType) {
+        this.authType = authType;
     }
 }

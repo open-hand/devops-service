@@ -3,7 +3,6 @@ package io.choerodon.devops.api.vo;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
 import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 
 public class DevopsClusterNodeVO {
@@ -29,10 +28,10 @@ public class DevopsClusterNodeVO {
     private Integer hostPort;
 
     /**
-     * {@link ClusterNodeAccountTypeEnum}
+     * {@link io.choerodon.devops.infra.enums.HostAuthType}
      */
     @ApiModelProperty("认证类型")
-    private String accountType;
+    private String authType;
 
     @ApiModelProperty("用户名")
     private String username;
@@ -88,12 +87,12 @@ public class DevopsClusterNodeVO {
         this.hostPort = hostPort;
     }
 
-    public String getAccountType() {
-        return accountType;
+    public String getAuthType() {
+        return authType;
     }
 
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
+    public void setAuthType(String authType) {
+        this.authType = authType;
     }
 
     public String getUsername() {
@@ -121,7 +120,7 @@ public class DevopsClusterNodeVO {
                 ", projectId=" + projectId +
                 ", hostIp='" + hostIp + '\'' +
                 ", sshPort=" + hostPort +
-                ", authType='" + accountType + '\'' +
+                ", authType='" + authType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 '}';

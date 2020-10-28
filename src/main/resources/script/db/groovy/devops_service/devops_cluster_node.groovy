@@ -24,7 +24,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'host_port', type: 'SMALLINT UNSIGNED', remarks: '节点ssh的端口') {
                 constraints(nullable: false)
             }
-            column(name: 'account_type', type: 'VARCHAR(63)', remarks: '认证类型') {
+            column(name: 'auth_type', type: 'VARCHAR(63)', remarks: '认证类型') {
                 constraints(nullable: false)
             }
             column(name: 'username', type: 'VARCHAR(32)', remarks: '用户名') {

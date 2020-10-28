@@ -9,8 +9,7 @@ import org.hibernate.validator.constraints.Range;
 
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.enums.CdHostAccountType;
-import io.choerodon.devops.infra.enums.DevopsHostStatus;
+import io.choerodon.devops.infra.enums.HostAuthType;
 
 /**
  * @author zmf
@@ -31,9 +30,9 @@ public class DevopsHostUpdateRequestVO {
     private Integer sshPort;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.CdHostAccountType}
+     * {@link HostAuthType}
      */
-    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = CdHostAccountType.class)
+    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = HostAuthType.class)
     @ApiModelProperty("认证类型")
     private String authType;
 

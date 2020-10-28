@@ -100,7 +100,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     public boolean testConnection(Long projectId, ClusterHostConnectionVO hostConnectionVO) {
         return SshUtil.sshConnectForOK(hostConnectionVO.getHostIp(),
                 hostConnectionVO.getHostPort(),
-                hostConnectionVO.getAccountType(),
+                hostConnectionVO.getAuthType(),
                 hostConnectionVO.getUsername(),
                 hostConnectionVO.getPassword());
     }
@@ -253,7 +253,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         InventoryVO inventoryVO = new InventoryVO();
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             // 设置所有节点
-            if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(node.getAccountType())) {
+            if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
                 inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                         .append(System.lineSeparator());
             } else {
@@ -564,7 +564,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     private void addNodeIniConfig(InventoryVO inventoryVO, DevopsClusterNodeDTO node) {
-        if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(node.getAccountType())) {
+        if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
             inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                     .append(System.lineSeparator());
         } else {

@@ -23,7 +23,7 @@ import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
-import io.choerodon.devops.infra.enums.CdHostAccountType;
+import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.devops.infra.enums.HostSourceEnum;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 
@@ -56,7 +56,7 @@ public class SshUtil {
      *
      * @param hostIp   主机ip
      * @param sshPort  ssh端口
-     * @param authType {@link CdHostAccountType}
+     * @param authType {@link HostAuthType}
      * @param username 用户名
      * @param password 密码或者秘钥
      * @return 主机连接句柄
@@ -91,7 +91,7 @@ public class SshUtil {
      *
      * @param hostIp   主机ip
      * @param sshPort  ssh端口
-     * @param authType {@link CdHostAccountType}
+     * @param authType {@link HostAuthType}
      * @param username 用户名
      * @param password 密码或者秘钥
      * @return true
@@ -106,16 +106,15 @@ public class SshUtil {
     }
 
     public void sshConnect(HostConnectionVO hostConnectionVO, SSHClient ssh) throws IOException {
-        //ssh.loadKnownHosts();
+        // 根据主机来源获取主机连接信息
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
-        //根据主机来源获取主机连接信息
         if (HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostConnectionVO.getHostId());
             dtoToHostConnVo(hostConnectionVO, devopsHostDTO);
         }
 
         ssh.connect(hostConnectionVO.getHostIp(), TypeUtil.objToInteger(hostConnectionVO.getHostPort()));
-        if (hostConnectionVO.getAccountType().equals(CdHostAccountType.ACCOUNTPASSWORD.value())) {
+        if (hostConnectionVO.getAuthType().equals(HostAuthType.ACCOUNTPASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUsername(), hostConnectionVO.getPassword());
         } else {
             String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());
@@ -348,7 +347,7 @@ public class SshUtil {
     private static void addAuth(SSHClient ssh, String hostIp, Integer sshPort, String authType, String username, String password) throws IOException {
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
         ssh.connect(hostIp, sshPort);
-        if (CdHostAccountType.ACCOUNTPASSWORD.value().equals(authType)) {
+        if (HostAuthType.ACCOUNTPASSWORD.value().equals(authType)) {
             ssh.authPassword(username, password);
         } else {
             KeyProvider keyProvider = ssh.loadKeys(password, null, null);
@@ -387,7 +386,7 @@ public class SshUtil {
         if (devopsHostDTO != null) {
             hostConnectionVO.setHostIp(devopsHostDTO.getHostIp());
             hostConnectionVO.setHostPort(devopsHostDTO.getSshPort());
-            hostConnectionVO.setAccountType(devopsHostDTO.getAuthType());
+            hostConnectionVO.setAuthType(devopsHostDTO.getAuthType());
             hostConnectionVO.setUsername(devopsHostDTO.getUsername());
             hostConnectionVO.setPassword(devopsHostDTO.getPassword());
             hostConnectionVO.setAccountKey(devopsHostDTO.getPassword());

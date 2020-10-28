@@ -7,7 +7,6 @@ import javax.persistence.Table;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.enums.ClusterNodeAccountTypeEnum;
 import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -44,10 +43,10 @@ public class DevopsClusterNodeDTO extends AuditDomain {
     private Integer hostPort;
 
     /**
-     * {@link ClusterNodeAccountTypeEnum}
+     * {@link io.choerodon.devops.infra.enums.HostAuthType}
      */
     @ApiModelProperty("认证类型")
-    private String accountType;
+    private String authType;
 
     @ApiModelProperty("用户名")
     private String username;
@@ -103,12 +102,12 @@ public class DevopsClusterNodeDTO extends AuditDomain {
         this.hostPort = hostPort;
     }
 
-    public String getAccountType() {
-        return accountType;
+    public String getAuthType() {
+        return authType;
     }
 
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
+    public void setAuthType(String authType) {
+        this.authType = authType;
     }
 
     public String getUsername() {
@@ -145,7 +144,7 @@ public class DevopsClusterNodeDTO extends AuditDomain {
                 ", clusterId=" + clusterId +
                 ", hostIp='" + hostIp + '\'' +
                 ", hostPort=" + hostPort +
-                ", accountType='" + accountType + '\'' +
+                ", authType='" + authType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 '}';
