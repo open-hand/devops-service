@@ -170,7 +170,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
-        String configFilePath = UUIDUtils.generateUUID() + ".ini";
         SSHClient sshClient = new SSHClient();
         try {
 
@@ -196,12 +195,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
-            IOUtils.write(generateInventoryInI(inventoryVO).getBytes(), new FileOutputStream(configFilePath));
-            sshUtil.uploadFile(sshClient, configFilePath, INVENTORY_CONFIG_FILE_PATH);
+            generateAndUploadNodeConfiguration(sshClient, devopsClusterNodeDTO.getClusterId(), inventoryVO);
             // 执行删除节点操作
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
             LOGGER.info("delete node {} result is, {}", nodeId, execResultInfoVO);
-            if (execResultInfoVO.getExitCode() == 1) {
+            if (execResultInfoVO.getExitCode() != 0) {
                 throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
             // 删除数据库中数据
@@ -224,21 +222,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 删除锁
             stringRedisTemplate.delete(lockKey);
             stringRedisTemplate.delete(operatingKey);
-            File file = new File(configFilePath);
-            if (file.exists()) {
-                file.delete();
-            }
             sshUtil.sshDisconnect(sshClient);
         }
 
-    }
-
-    private String cutErrorMsg(String message, int i) {
-        if (message.length() > i) {
-            return message.substring(0, i);
-        } else {
-            return message;
-        }
     }
 
     private InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> devopsClusterNodeDTOS) {
@@ -321,7 +307,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
 
         SSHClient sshClient = new SSHClient();
-        String configFilePath = UUIDUtils.generateUUID() + ".ini";
         try {
             // 删除节点角色
             // 删除集群中的node
@@ -352,12 +337,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
-            IOUtils.write(generateInventoryInI(inventoryVO).getBytes(), new FileOutputStream(configFilePath));
-            sshUtil.uploadFile(sshClient, configFilePath, INVENTORY_CONFIG_FILE_PATH);
+            generateAndUploadNodeConfiguration(sshClient, devopsClusterNodeDTO.getClusterId(), inventoryVO);
             // 执行删除节点操作
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("operating cluster failed. node id {} result is, {}", nodeId, execResultInfoVO);
-            if (execResultInfoVO.getExitCode() == 1) {
+            if (execResultInfoVO.getExitCode() != 0) {
                 throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
 
@@ -389,10 +373,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 删除锁
             stringRedisTemplate.delete(lockKey);
             stringRedisTemplate.delete(operatingKey);
-            File file = new File(configFilePath);
-            if (file.exists()) {
-                file.delete();
-            }
             sshUtil.sshDisconnect(sshClient);
         }
 
@@ -499,22 +479,32 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
 
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
+
         SSHClient sshClient = new SSHClient();
         try {
             // 保存数据库记录
-            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<", clusterId);
-            DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
-            devopsClusterNodeDTO.setClusterId(clusterId);
-            if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
-                throw new CommonException(ERROR_ADD_NODE_FAILED);
-            }
+            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<" , clusterId);
             // 1. 查询集群节点信息
-            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
-            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
+            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.OUTTER);
+            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.INNER);
 
+
+            DevopsClusterNodeDTO devopsClusterNodeDTO = queryByClusterIdAndNodeName(clusterId, nodeVO.getName());
+            if (devopsClusterNodeDTO == null) {
+                devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
+                devopsClusterNodeDTO.setClusterId(clusterId);
+                if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
+                    throw new CommonException(ERROR_ADD_NODE_FAILED);
+                }
+            } else {
+                devopsClusterNodeDTO.setRole(devopsClusterNodeDTO.getRole() + nodeVO.getRole());
+                if (devopsClusterNodeMapper.updateByPrimaryKey(devopsClusterNodeDTO) != 1) {
+                    throw new CommonException(ERROR_ADD_NODE_FAILED);
+                }
+            }
             // 计算inventory配置
             InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
-            addNodeIniConfig(inventoryVO, devopsClusterNodeDTO);
+            addNodeIniConfig(inventoryVO, nodeVO);
             // 连接主机
             DevopsClusterNodeDTO linkNode;
             if (!CollectionUtils.isEmpty(outerNodes)) {
@@ -527,9 +517,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             LOGGER.info(">>>>>>>>> [add node]  cluster {} ssh connect. <<<<<<<<<<<<<<<", clusterId);
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
-            IOUtils.write(generateInventoryInI(inventoryVO).getBytes(), new FileOutputStream(configFilePath));
-            LOGGER.info(">>>>>>>>> [add node]  cluster {} upload file. <<<<<<<<<<<<<<<", clusterId);
-            sshUtil.uploadFile(sshClient, configFilePath, INVENTORY_CONFIG_FILE_PATH);
+            generateAndUploadNodeConfiguration(sshClient, clusterId, inventoryVO);
             // 执行添加节点操作
             String command;
             if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
@@ -541,7 +529,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
-            if (execResultInfoVO.getExitCode() == 1) {
+            if (execResultInfoVO.getExitCode() != 0) {
                 throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
@@ -556,16 +544,23 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
                     ClusterOperationStatusEnum.FAILED.value(),
                     e.getMessage());
+            throw new CommonException(ERROR_ADD_NODE_FAILED);
         } finally {
             // 删除锁
             stringRedisTemplate.delete(lockKey);
             stringRedisTemplate.delete(operatingKey);
-            File file = new File(configFilePath);
-            if (file.exists()) {
-                file.delete();
-            }
             sshUtil.sshDisconnect(sshClient);
         }
+    }
+
+    @Override
+    public DevopsClusterNodeDTO queryByClusterIdAndNodeName(Long clusterId, String nodeName) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(nodeName, ClusterCheckConstant.ERROR_NODE_NAME_IS_NULL);
+        DevopsClusterNodeDTO devopsClusterNodeDTO = new DevopsClusterNodeDTO();
+        devopsClusterNodeDTO.setClusterId(clusterId);
+        devopsClusterNodeDTO.setName(nodeName);
+        return devopsClusterNodeMapper.selectOne(devopsClusterNodeDTO);
     }
 
     @Override
@@ -579,7 +574,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
 
-    private void addNodeIniConfig(InventoryVO inventoryVO, DevopsClusterNodeDTO node) {
+    private void addNodeIniConfig(InventoryVO inventoryVO, DevopsClusterNodeVO node) {
         if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
             inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                     .append(System.lineSeparator());
