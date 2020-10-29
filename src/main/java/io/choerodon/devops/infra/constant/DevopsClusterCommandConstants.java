@@ -36,9 +36,9 @@ public class DevopsClusterCommandConstants {
             "ansible-playbook -i /tmp/inventory.ini %s";
 
     /**
-     * 检查/tmp目录下文件是否存在
+     * 获取指定目录内容
      */
-    public static final String CHECK_FILE_EXISTS = "ls /tmp/%s";
+    public static final String CAT_FILE = "cat /tmp/%s";
 
     /**
      * 添加worker节点
@@ -50,9 +50,12 @@ public class DevopsClusterCommandConstants {
     public static final String ADD_MASTER_YML = "82-add-master.yml";
 
     /**
-     * 命令后台执行模板，需要指定具体命令和日志文件
+     * 命令后台执行模板，需要指定具体命令以及exitCode保存位置
+     * 第一个%s： 需要执行的命令
+     * 第二个%s： 命令的日志输出
+     * 第三个%s： 前面的命令退出code
      */
-    public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup %s > %s 2>&1 && touch /tmp/%s &";
+    public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup %s > %s 2>&1 && echo $? /tmp/%s &";
 
     /**
      * 安装helm模版, curl -L -o helm.tar.gz 文件下载地址
