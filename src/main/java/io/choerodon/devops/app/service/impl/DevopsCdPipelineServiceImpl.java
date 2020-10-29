@@ -654,30 +654,31 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public void createWorkFlow(Long projectId, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO, String loginName, Long userId, Long orgId) {
 
-        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
-                .subscribe(new Observer<String>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        CustomContextUtil.setUserContext(loginName, userId, orgId);
-                        try {
-                            workFlowServiceOperator.createCiCdPipeline(projectId, devopsPipelineDTO);
-                        } catch (Exception e) {
-                            throw new CommonException(e);
-                        }
-                    }
-                });
+//        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
+//                .subscribe(new Observer<String>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                    }
+//
+//                    @Override
+//                    public void onNext(String s) {
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//
+//                    }
+//                });
+        CustomContextUtil.setUserContext(loginName, userId, orgId);
+        try {
+            workFlowServiceOperator.createCiCdPipeline(projectId, devopsPipelineDTO);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
 
     }
 
