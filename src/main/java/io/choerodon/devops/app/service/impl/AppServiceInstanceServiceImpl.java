@@ -125,8 +125,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
-    @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsServiceService devopsServiceService;
@@ -939,8 +937,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
-        pipelineAppDeployService.baseUpdateWithInstanceId(instanceId);
-
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(
@@ -1032,8 +1028,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        pipelineAppDeployService.baseUpdateWithInstanceId(instanceId);
-
         devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
@@ -1064,8 +1058,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public boolean isNameValid(String code, Long envId) {
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         return AppServiceInstanceValidator.isNameValid(code)
-                && !appServiceInstanceMapper.checkCodeExist(code, envId)
-                && !pipelineAppDeployService.doesInstanceNameExistInPipeline(code, envId);
+                && !appServiceInstanceMapper.checkCodeExist(code, envId);
     }
 
     /**
@@ -1081,10 +1074,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
             throw new CommonException("error.app.instance.name.already.exist");
-        }
-
-        if (!isFromPipeline) {
-            pipelineAppDeployService.baseCheckInstanceNameInPipeline(code, envId);
         }
     }
 

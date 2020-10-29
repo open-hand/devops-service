@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,5 +100,17 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
         DevopsCdEnvDeployInfoDTO queryDTO = new DevopsCdEnvDeployInfoDTO();
         queryDTO.setCdJobId(cdJobId);
         return devopsCdEnvDeployInfoMapper.selectOne(queryDTO);
+    }
+
+    @Override
+    public List<DevopsCdEnvDeployInfoDTO> queryCurrentByValueId(Long valueId) {
+        Assert.notNull(valueId, "error.value.id.is.null");
+        return devopsCdEnvDeployInfoMapper.queryCurrentByValueId(valueId);
+    }
+
+    @Override
+    public List<DevopsCdEnvDeployInfoDTO> queryCurrentByEnvId(Long environmentId) {
+        Assert.notNull(environmentId, "error.env.id.is.null");
+        return devopsCdEnvDeployInfoMapper.queryCurrentByEnvId(environmentId);
     }
 }

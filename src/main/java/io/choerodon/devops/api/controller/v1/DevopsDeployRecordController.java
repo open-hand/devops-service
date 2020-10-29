@@ -35,30 +35,6 @@ public class DevopsDeployRecordController {
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
 
-    /**
-     * 项目下获取部署记录
-     *
-     * @param projectId 项目Id
-     * @param pageable  分页参数
-     * @param params    查询参数
-     * @return 部署纪录页
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下分页查询部署记录")
-    @CustomPageRequest
-    @PostMapping("/page_by_options")
-    public ResponseEntity<Page<DevopsDeployRecordVO>> pageByOptions(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsDeployRecordService.pageByProjectId(projectId, params, pageable))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.list"));
-    }
-
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下分页查询部署记录")
     @CustomPageRequest

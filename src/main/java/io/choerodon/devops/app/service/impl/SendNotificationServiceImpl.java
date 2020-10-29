@@ -79,9 +79,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     @Lazy
     private DevopsClusterService devopsClusterService;
-    @Autowired
-    @Lazy
-    private PipelineRecordService pipelineRecordService;
 
     @Autowired
     private MessageClient messageClient;
@@ -743,12 +740,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return receiver;
     }
 
-
-    private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
-        PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
-        sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
-    }
 
     private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
