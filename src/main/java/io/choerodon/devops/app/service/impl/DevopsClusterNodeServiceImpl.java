@@ -402,6 +402,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     public void installK8s(DevopsClusterOperationPayload devopsClusterOperationPayload) {
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordMapper.selectByPrimaryKey(devopsClusterOperationPayload.getOperationRecordId());
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsClusterOperationPayload.getClusterId());
+        if (ClusterStatusEnum.INIT.value().equalsIgnoreCase(devopsClusterDTO.getStatus()) || ClusterStatusEnum.FAILED.value().equalsIgnoreCase(devopsClusterDTO.getStatus())) {
+            return;
+        }
         SSHClient ssh = new SSHClient();
         try {
             List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsClusterOperationPayload.getClusterId());
@@ -419,6 +422,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
                 devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
             }
+            LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :waiting for installing completed<<<<<<<<<", devopsClusterOperationPayload.getClusterId());
         } catch (Exception e) {
             devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.FAILED.value())
                     .appendErrorMsg(e.getMessage());
@@ -748,7 +752,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                     .collect(Collectors.toMap(DevopsClusterDTO::getId, d -> d));
             for (DevopsClusterOperationRecordDTO record : devopsClusterOperationRecordDTOList) {
                 Long clusterId = record.getClusterId();
-                LOGGER.info(">>>>>>>>> [update cluster status] clusterId:{} operationId:{}", clusterId, record.getId());
+                LOGGER.info(">>>>>>>>> [update cluster status] clusterId:{} operationId:{} <<<<<<<<<", clusterId, record.getId());
                 DevopsClusterDTO devopsClusterDTO = devopsClusterDTOMap.get(clusterId);
                 if (devopsClusterDTO == null) {
                     devopsClusterOperationRecordMapper.deleteByPrimaryKey(record.getId());
@@ -775,9 +779,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                     ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CAT_FILE, record.getId()));
                     if (resultInfoVO.getExitCode() != 0) {
                         if (resultInfoVO.getStdErr().contains("No such file or directory")) {
-                            LOGGER.info("cluster [ {} ] is installing", clusterId);
+                            LOGGER.info(">>>>>>>>> [update cluster status] cluster [ {} ] is installing <<<<<<<<<", clusterId);
                         } else {
-                            LOGGER.info("Failed to get install status of host [ {} ],error is: {}", ssh.getRemoteHostname(), resultInfoVO.getStdErr());
+                            LOGGER.info(">>>>>>>>> [update cluster status] Failed to get install status of host [ {} ],error is: {} <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr());
                             record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                                     .appendErrorMsg(resultInfoVO.getStdErr());
                             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
@@ -787,16 +791,16 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                     } else {
                         if ("0".equals(resultInfoVO.getStdOut().replaceAll("\r|\n", ""))) {
                             // k8s安装成功
-                            LOGGER.info("cluster [ {} ] install success", clusterId);
+                            LOGGER.info(">>>>>>>>> [update cluster status] cluster [ {} ] install success <<<<<<<<<", clusterId);
                             record.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
                             devopsClusterDTO.setStatus(ClusterStatusEnum.UNCONNECTED.value());
                             // 安装agent, 第一步安装helm ，第二步安装agent。这一步骤如果出现错误,只保存错误信息
                             installAgent(devopsClusterDTO, record, ssh);
                         } else {
-                            LOGGER.info("cluster [ {} ] install failed", clusterId);
+                            LOGGER.info(">>>>>>>>> [update cluster status] cluster [ {} ] install failed <<<<<<<<<", clusterId);
                             record.setStatus(ClusterOperationStatusEnum.FAILED.value());
                             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-                            record.setErrorMsg(String.format("login node [ %s ] and cat /tmp/install.log for more info", ssh.getRemoteHostname()));
+                            record.setErrorMsg(String.format(">>>>>>>>> [update cluster status] login node [ %s ] and cat /tmp/install.log for more info <<<<<<<<<", ssh.getRemoteHostname()));
                         }
                         devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
                         devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);

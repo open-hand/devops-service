@@ -37,6 +37,9 @@ public class DevopsClusterOperationRecordDTO extends AuditDomain {
     private String errorMsg;
 
     public void appendErrorMsg(String errorMsg) {
+        if (this.errorMsg == null) {
+            this.errorMsg = "";
+        }
         this.errorMsg += "\n" + errorMsg;
     }
 

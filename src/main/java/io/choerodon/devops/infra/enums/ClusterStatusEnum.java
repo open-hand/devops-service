@@ -6,6 +6,10 @@ package io.choerodon.devops.infra.enums;
 
 public enum ClusterStatusEnum {
     /**
+     * 集群初始状态
+     */
+    INIT("init"),
+    /**
      * 集群创建中
      */
     OPERATING("operating"),
