@@ -49,39 +49,15 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterNodeServiceImpl.class);
     private static final String INVENTORY_INI_TEMPLATE_FOR_ALL = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
-    private static final String INVENTORY_INI_TEMPLATE_FOR_NODE_IP = "%s\n";
-    private static final String ALL = "all";
-    private static final String ETCD = "etcd";
-    private static final String KUBE_MASTER = "kube-master";
-    private static final String KUBE_WORKER = "kube-worker";
-    private static final String NEW_MASTER = "new-master";
-    private static final String NEW_ETCD = "new-etcd";
-    private static final String NEW_WORKER = "new-worker";
-    private static final String DEL_WORKER = "del-worker";
-    private static final String DEL_MASTER = "del-master";
-    private static final String DEL_ETCD = "del-etcd";
-    private static final String DEL_NODE = "del-node";
-    private static final String INVENTORY_CONFIG_FILE_PATH = "/tmp/inventory.ini";
     private static final String CLUSTER_LOCK_KEY = "cluster:lock:key:%s:Long";
     private static final String CLUSTER_OPERATING_KEY = "cluster:operating:key:%s:DevopsClusterOperatorVO";
     /**
      * 节点检查进度redis的key
      */
     public static final String NODE_CHECK_STEP_REDIS_KEY_TEMPLATE = "node-check-step-%d-%d";
-    /**
-     * 集群安装信息redis的key
-     */
-    public static final String CLUSTER_INSTALL_LOG_REDIS_KEY_TEMPLATE = "cluster-install-log-%d%d";
-
     private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
     private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
-    /**
-     * inventory配置文件名称
-     */
-    private static final String INVENTORY_INI_FILE_NAME = "inventory.ini";
-    private static final String INVENTORY_INI_TEMPLATE_FOR_NODE = "%s\n";
-    private static final String[] configTypes = new String[]{ALL, ETCD, KUBE_MASTER, KUBE_WORKER, NEW_MASTER, NEW_ETCD, NEW_WORKER, DEL_ETCD, DEL_WORKER, DEL_MASTER, DEL_NODE};
     @Value(value = "${devops.helm.download-url}")
     private String helmDownloadUrl;
     @Autowired
@@ -450,8 +426,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         try {
             List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsClusterOperationPayload.getClusterId());
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
+            LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :start to create ssh connection object <<<<<<<<<", devopsClusterOperationPayload.getClusterId());
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterOperationPayload.getDevopsClusterNodeVO(), HostConnectionVO.class), ssh);
             generateAndUploadNodeConfiguration(ssh, devopsClusterOperationPayload.getClusterId(), inventoryVO);
+            LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterOperationPayload.getClusterId());
             ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, String.format(ANSIBLE_COMMAND_TEMPLATE, INSTALL_K8S), "/tmp/install.log", devopsClusterOperationRecordDTO.getId()));
             // 集群安装出现错误，设置错误消息并更新集群状态
             if (resultInfoVO.getExitCode() != 0) {
@@ -643,12 +621,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, clusterId);
         try {
             try {
+                LOGGER.info(">>>>>>>>> [check node] clusterId {} :start to create ssh connection object <<<<<<<<<", clusterId);
                 sshUtil.sshConnect(hostConnectionVO, ssh);
             } catch (IOException e) {
                 throw new Exception(String.format("Failed to connect to host: [ %s ] by ssh", hostConnectionVO.getHostIp()));
             }
             // 安装docker
             try {
+                LOGGER.info(">>>>>>>>> [check node] clusterId {} :start to install docker <<<<<<<<<", clusterId);
                 ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, INSTALL_DOCKER_COMMAND);
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
                     throw new Exception(String.format("Failed to install docker on host: [ %s ],error is :%s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
@@ -661,7 +641,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 上传配置文件
             generateAndUploadNodeConfiguration(ssh, clusterId, inventoryVO);
             // 执行检测命令
+            LOGGER.info(">>>>>>>>> [check node] start to check node <<<<<<<<<");
             checkAndSave(ssh, devopsNodeCheckResultVO, devopsClusterNodeDTOList, redisKey, projectId, clusterId);
+            LOGGER.info(">>>>>>>>> [check node] check node complete <<<<<<<<<");
         } catch (Exception e) {
             devopsNodeCheckResultVO.setErrorMsg(e.getMessage())
                     .setStatus(ClusterOperationStatusEnum.FAILED.value());

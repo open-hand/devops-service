@@ -9,6 +9,11 @@ public class DevopsClusterCommandConstants {
      * devops中ansible文件保存目录模板
      */
     public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
+
+    /**
+     * inventory配置文件
+     */
+    public static final String INVENTORY_CONFIG_FILE_PATH = "/tmp/inventory.ini";
     /**
      * 节点中ansible文件保存目录
      */
