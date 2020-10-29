@@ -718,6 +718,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void baseDelete(Long clusterId) {
         devopsClusterMapper.deleteByPrimaryKey(clusterId);
+        devopsClusterNodeService.deleteByClusterId(clusterId);
     }
 
     @Override
