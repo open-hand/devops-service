@@ -523,6 +523,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         try {
             // 保存数据库记录
             DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
+            devopsClusterNodeDTO.setClusterId(clusterId);
             if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
                 throw new CommonException(ERROR_ADD_NODE_FAILED);
             }
