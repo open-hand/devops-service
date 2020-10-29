@@ -428,7 +428,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :start to create ssh connection object <<<<<<<<<", devopsClusterOperationPayload.getClusterId());
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterOperationPayload.getDevopsClusterNodeVO(), HostConnectionVO.class), ssh);
-            generateAndUploadNodeConfiguration(ssh, devopsClusterOperationPayload.getClusterId(), inventoryVO);
+            generateAndUploadNodeConfiguration(ssh, devopsClusterOperationPayload.getClusterId(), inventoryVO,"install-k8s");
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterOperationPayload.getClusterId());
             ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, String.format(ANSIBLE_COMMAND_TEMPLATE, INSTALL_K8S), "/tmp/install.log", devopsClusterOperationRecordDTO.getId()));
             // 集群安装出现错误，设置错误消息并更新集群状态
@@ -639,7 +639,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 生成相关配置节点
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             // 上传配置文件
-            generateAndUploadNodeConfiguration(ssh, clusterId, inventoryVO);
+            generateAndUploadNodeConfiguration(ssh, clusterId, inventoryVO,"check-node");
             // 执行检测命令
             LOGGER.info(">>>>>>>>> [check node] start to check node <<<<<<<<<");
             checkAndSave(ssh, devopsNodeCheckResultVO, devopsClusterNodeDTOList, redisKey, projectId, clusterId);
@@ -725,10 +725,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public void generateAndUploadNodeConfiguration(SSHClient ssh, Long clusterId, InventoryVO inventoryVO) {
+    public void generateAndUploadNodeConfiguration(SSHClient ssh, Long clusterId, InventoryVO inventoryVO, String operation) {
         String configValue = generateInventoryInI(inventoryVO);
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, clusterId) + System.getProperty("file.separator") + "inventory.ini";
-        String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + System.getProperty("file.separator") + "inventory.ini";
+        String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + System.getProperty("file.separator") + "inventory-" + operation + ".ini";
         FileUtil.saveDataToFile(filePath, configValue);
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
     }
