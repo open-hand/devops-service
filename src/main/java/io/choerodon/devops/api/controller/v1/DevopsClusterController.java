@@ -75,7 +75,7 @@ public class DevopsClusterController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获得节点检测进度")
-    @GetMapping("/check_process")
+    @GetMapping("/check_progress")
     public ResponseEntity<DevopsNodeCheckResultVO> checkProgress(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
