@@ -7,6 +7,7 @@ import net.schmizz.sshj.SSHClient;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevopsClusterOperationPayload;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
+import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
 
 public interface DevopsClusterNodeService {
     /**
@@ -106,4 +107,6 @@ public interface DevopsClusterNodeService {
      * @param nodeVO
      */
     void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO);
+
+    List<DevopsClusterNodeDTO> queryNodeByClusterIdAndType(Long clusterId, ClusterNodeTypeEnum type);
 }

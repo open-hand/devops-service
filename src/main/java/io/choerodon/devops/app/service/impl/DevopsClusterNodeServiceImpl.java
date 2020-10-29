@@ -191,16 +191,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
             // 删除集群中的node
             // 1. 查询集群节点信息
-            DevopsClusterNodeDTO record = new DevopsClusterNodeDTO();
-            record.setClusterId(devopsClusterNodeDTO.getClusterId());
-            List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeMapper.select(record);
+            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
+            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
+
+
 
             // 计算inventory配置
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOS);
+            InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
             inventoryVO.getDelNode().append(devopsClusterNodeDTO.getName());
 
             // 连接主机
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTOS.get(0), HostConnectionVO.class);
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(outerNodes.get(0), HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
 
             sshUtil.sshConnect(hostConnectionVO, sshClient);
@@ -331,12 +332,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         // 删除节点角色
         // 删除集群中的node
         // 1. 查询集群节点信息
-        DevopsClusterNodeDTO record = new DevopsClusterNodeDTO();
-        record.setClusterId(devopsClusterNodeDTO.getClusterId());
-        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeMapper.select(record);
+        List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
+        List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
+
+
 
         // 计算invertory配置
-        InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOS);
+        InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
         String command = null;
         if (ClusterNodeRoleEnum.isMaster(role)) {
             inventoryVO.getDelMaster().append(devopsClusterNodeDTO.getName());
@@ -351,7 +353,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
         try {
             // 连接主机
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTOS.get(0), HostConnectionVO.class);
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(outerNodes.get(0), HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
@@ -510,16 +512,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         SSHClient sshClient = new SSHClient();
         try {
             // 1. 查询集群节点信息
-            DevopsClusterNodeDTO record = new DevopsClusterNodeDTO();
-            record.setClusterId(devopsClusterNodeDTO.getClusterId());
-
-            List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeMapper.select(record);
+            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
+            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
 
             // 计算inventory配置
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOS);
+            InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
             addNodeIniConfig(inventoryVO, devopsClusterNodeDTO);
             // 连接主机
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTOS.get(0), HostConnectionVO.class);
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(outerNodes.get(0), HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
 
             sshUtil.sshConnect(hostConnectionVO, sshClient);
@@ -563,6 +563,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             sshUtil.sshDisconnect(sshClient);
         }
     }
+
+    @Override
+    public List<DevopsClusterNodeDTO> queryNodeByClusterIdAndType(Long clusterId, ClusterNodeTypeEnum type) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(type, ClusterCheckConstant.ERROR_CLUSTER_TYPE_IS_OPERATING);
+        DevopsClusterNodeDTO devopsClusterNodeDTO = new DevopsClusterNodeDTO();
+        devopsClusterNodeDTO.setClusterId(clusterId);
+        devopsClusterNodeDTO.setType(type.getType());
+        return devopsClusterNodeMapper.select(devopsClusterNodeDTO);
+    }
+
 
     private void addNodeIniConfig(InventoryVO inventoryVO, DevopsClusterNodeDTO node) {
         if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {

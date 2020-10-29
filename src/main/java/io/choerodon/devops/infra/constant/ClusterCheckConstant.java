@@ -11,6 +11,7 @@ public class ClusterCheckConstant {
     // cluster
     public static final String ERROR_CLUSTER_ID_IS_NULL = "error.cluster.id.is.null";
     public static final String ERROR_CLUSTER_STATUS_IS_OPERATING = "error.cluster.status.is.operating";
+    public static final String ERROR_CLUSTER_TYPE_IS_OPERATING = "error.cluster.type.is.operating";
 
     public static final String ERROR_NODE_ID_IS_NULL = "error.node.id.is.null";
     public static final String ERROR_ROLE_ID_IS_NULL = "error.role.id.is.null";
