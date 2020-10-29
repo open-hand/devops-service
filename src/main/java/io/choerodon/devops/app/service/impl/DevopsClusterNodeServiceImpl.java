@@ -670,20 +670,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
 
-            // CPU检查
-            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, CPU));
-            if (resultInfoVOForCPU.getExitCode() != 0) {
-                devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.FAILED.value())
-                        .setErrorMessage(resultInfoVOForCPU.getStdOut() + "\n" + resultInfoVOForCPU.getStdErr());
-                devopsClusterMapper.deleteByPrimaryKey(clusterId);
-                stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-                return;
-            } else {
-                devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
-            }
-            stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-
             // 内存检查
             ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, MEMORY));
             if (resultInfoVOForMemory.getExitCode() != 0) {
@@ -697,6 +683,24 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
+
+            // CPU检查
+            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, CPU));
+            if (resultInfoVOForCPU.getExitCode() != 0) {
+                devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.FAILED.value())
+                        .setErrorMessage(resultInfoVOForCPU.getStdOut() + "\n" + resultInfoVOForCPU.getStdErr());
+                devopsClusterMapper.deleteByPrimaryKey(clusterId);
+                stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
+                return;
+            } else {
+                devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
+                // CPU作为最后一步检查成功，代表整个variable、system、memory、CPU检查成功，暂时将状态置为SUCCESS，因为后续处理可能会失败，将状态重新置为FAILED
+                devopsNodeCheckResultVO.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
+            }
+
+            stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
+
             // 节点检查通过，保存节点信息
             saveNode(devopsClusterNodeDTOList, projectId, clusterId);
         } catch (Exception e) {
