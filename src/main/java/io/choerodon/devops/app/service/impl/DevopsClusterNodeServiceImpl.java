@@ -399,9 +399,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     public void installK8s(DevopsClusterOperationPayload devopsClusterOperationPayload) {
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordMapper.selectByPrimaryKey(devopsClusterOperationPayload.getOperationRecordId());
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsClusterOperationPayload.getClusterId());
-        if (ClusterStatusEnum.INIT.value().equalsIgnoreCase(devopsClusterDTO.getStatus()) || ClusterStatusEnum.FAILED.value().equalsIgnoreCase(devopsClusterDTO.getStatus())) {
-            return;
-        }
         SSHClient ssh = new SSHClient();
         try {
             List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsClusterOperationPayload.getClusterId());
@@ -409,8 +406,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :start to create ssh connection object <<<<<<<<<", devopsClusterOperationPayload.getClusterId());
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterOperationPayload.getDevopsClusterNodeVO(), HostConnectionVO.class), ssh);
             generateAndUploadNodeConfiguration(ssh, devopsClusterOperationPayload.getClusterId(), inventoryVO);
+            generateAndUploadAnsibleShellScript(ssh, devopsClusterOperationPayload.getClusterId(), INSTALL_K8S, "/tmp/install.log", "/tmp/" + devopsClusterOperationRecordDTO.getId());
+            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, "/tmp/" + INSTALL_K8S));
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterOperationPayload.getClusterId());
-            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, String.format(ANSIBLE_COMMAND_TEMPLATE, INSTALL_K8S), "/tmp/install.log", devopsClusterOperationRecordDTO.getId()));
             // 集群安装出现错误，设置错误消息并更新集群状态
             if (resultInfoVO.getExitCode() != 0) {
                 devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.FAILED.value())
@@ -729,6 +727,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
     }
 
+    public void generateAndUploadAnsibleShellScript(SSHClient ssh, Long clusterId, String command, String logPath, String exitCodePath) {
+        String configValue = generateShellScript(command, logPath, exitCodePath);
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, clusterId) + System.getProperty("file.separator") + command;
+        String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + System.getProperty("file.separator") + command;
+        FileUtil.saveDataToFile(filePath, configValue);
+        sshUtil.uploadFile(ssh, filePath, targetFilePath);
+    }
+
     @Override
     public void update() {
         // 添加redis锁，防止多个pod重复执行
@@ -829,5 +835,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         InputStream inventoryIniInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/template/inventory.ini");
 
         return FileUtil.replaceReturnString(inventoryIniInputStream, map);
+    }
+
+    private String generateShellScript(String command, String logPath, String exitCodePath) {
+        Map<String, String> param = new HashMap<>();
+        param.put("{{command}}", command);
+        param.put("{{log-path}}", logPath);
+        param.put("{{exit-code-path}}", exitCodePath);
+        InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/ansible.sh");
+        return FileUtil.replaceReturnString(shellInputStream, param);
     }
 }
