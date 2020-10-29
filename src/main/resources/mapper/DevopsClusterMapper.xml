@@ -120,4 +120,12 @@
             AND dc.project_id = #{projectId,jdbcType=BIGINT}
         </if>
     </select>
+
+    <select id="listByClusterIds" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
+        SELECT * FROM devops_cluster dc
+        WHERE dc.id IN
+        <foreach collection="clusterIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

@@ -31,6 +31,11 @@ public class DevopsClusterCommandConstants {
             "ansible-playbook -i /tmp/inventory.ini %s";
 
     /**
+     * 检查/tmp目录下文件是否存在
+     */
+    public static final String CHECK_FILE_EXISTS = "ls /tmp/%s";
+
+    /**
      * 添加worker节点
      */
     public static final String ADD_WORKER_YML = "81-add-worker.yml";
@@ -38,15 +43,16 @@ public class DevopsClusterCommandConstants {
      * 添加master节点
      */
     public static final String ADD_MASTER_YML = "82-add-master.yml";
+
     /**
      * 命令后台执行模板，需要指定具体命令和日志文件
      */
-    public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup %s > %s 2>&1 &";
+    public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup %s > %s 2>&1 && touch /tmp/%s &";
 
     /**
      * 安装helm模版, curl -L -o helm.tar.gz 文件下载地址
      */
-    public static final String INSTALL_HELM_TEMPLATE = "curl -L -o helm.tar.gz %s && tar -zxvf helm-v3.2.4-linux-amd64.tar.gz && sudo mv linux-amd64/helm /usr/bin/helm";
+    public static final String INSTALL_HELM_TEMPLATE = "curl -L -o helm.tar.gz %s && tar -zxvf helm.tar.gz && sudo mv linux-amd64/helm /usr/bin/helm";
 
     /**
      * 移除master节点

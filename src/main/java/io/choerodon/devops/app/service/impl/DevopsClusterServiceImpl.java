@@ -162,6 +162,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .setDevopsClusterNodeVO(devopsClusterOutterNodeVO == null ? devopsClusterReqVO.getDevopsClusterInnerNodeVOList().get(0) : devopsClusterOutterNodeVO);
         List<DevopsClusterNodeVO> devopsClusterNodeVOList = devopsClusterReqVO.getDevopsClusterInnerNodeVOList();
         if (devopsClusterOutterNodeVO != null) {
+            devopsClusterOutterNodeVO.setName(devopsClusterReqVO.getCode());
             devopsClusterNodeVOList.add(devopsClusterOutterNodeVO);
         }
 
