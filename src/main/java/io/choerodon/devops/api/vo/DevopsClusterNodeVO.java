@@ -12,10 +12,13 @@ public class DevopsClusterNodeVO {
     @ApiModelProperty("节点名称")
     private String name;
 
+    @ApiModelProperty("节点类型，作为连接介质节点提供公网ip或者集群节点")
+    private String type;
+
     /**
      * {@link ClusterNodeRoleEnum}
      */
-    @ApiModelProperty("节点类型")
+    @ApiModelProperty("节点角色")
     private Integer role;
 
     @ApiModelProperty("项目id")
@@ -111,15 +114,26 @@ public class DevopsClusterNodeVO {
         this.password = password;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public DevopsClusterNodeVO setType(String type) {
+        this.type = type;
+        return this;
+    }
+
+
     @Override
     public String toString() {
-        return "DevopsClusterNodeDTO{" +
+        return "DevopsClusterNodeVO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", type='" + role + '\'' +
+                ", type='" + type + '\'' +
+                ", role=" + role +
                 ", projectId=" + projectId +
                 ", hostIp='" + hostIp + '\'' +
-                ", sshPort=" + hostPort +
+                ", hostPort=" + hostPort +
                 ", authType='" + authType + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +

@@ -23,10 +23,13 @@ public class DevopsClusterNodeDTO extends AuditDomain {
     @ApiModelProperty("节点名称")
     private String name;
 
+    @ApiModelProperty("节点类型，作为连接介质节点提供公网ip或者集群节点")
+    private String type;
+
     /**
      * {@link ClusterNodeRoleEnum}
      */
-    @ApiModelProperty("节点类型,master对应4，etcd对应2，worker对应1，多个类型用数字之和表示，比如master、etcd节点，用4+2之和6表示")
+    @ApiModelProperty("节点角色,master对应4，etcd对应2，worker对应1，多个类型用数字之和表示，比如master、etcd节点，用4+2之和6表示")
     private Integer role;
 
     @ApiModelProperty("项目id")
@@ -134,11 +137,21 @@ public class DevopsClusterNodeDTO extends AuditDomain {
         this.clusterId = clusterId;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public DevopsClusterNodeDTO setType(String type) {
+        this.type = type;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "DevopsClusterNodeDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
                 ", role=" + role +
                 ", projectId=" + projectId +
                 ", clusterId=" + clusterId +
