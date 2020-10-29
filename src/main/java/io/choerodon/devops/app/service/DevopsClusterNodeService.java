@@ -61,7 +61,7 @@ public interface DevopsClusterNodeService {
      * @param ssh         ssh连接对象
      * @param inventoryVO 配置对应节点
      */
-    void generateAndUploadNodeConfiguration(SSHClient ssh, Long clusterId, InventoryVO inventoryVO);
+    void generateAndUploadNodeConfiguration(SSHClient ssh, Long clusterId, InventoryVO inventoryVO, String operation);
 
 
     /**
