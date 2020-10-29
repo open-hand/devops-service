@@ -109,4 +109,9 @@ public interface DevopsClusterNodeService {
     void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO);
 
     List<DevopsClusterNodeDTO> queryNodeByClusterIdAndType(Long clusterId, ClusterNodeTypeEnum type);
+
+    /**
+     * 定时更新集群的安装状态
+     */
+    void update();
 }

@@ -75,6 +75,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
+    private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     /**
      * inventory配置文件名称
      */
@@ -196,7 +197,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
 
 
-
             // 计算inventory配置
             InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
             inventoryVO.getDelNode().append(devopsClusterNodeDTO.getName());
@@ -261,27 +261,28 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> devopsClusterNodeDTOS) {
         InventoryVO inventoryVO = new InventoryVO();
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
-            // 设置所有节点
-            if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
-                inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
-                        .append(System.lineSeparator());
-            } else {
-                //todo 处理密钥认证方式
-            }
-            // 设置master节点
-            if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {
-                inventoryVO.getKubeMaster().append(node.getName())
-                        .append(System.lineSeparator());
-            }
-            // 设置etcd节点
-            if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(node.getRole())) {
-                inventoryVO.getEtcd().append(node.getName())
-                        .append(System.lineSeparator());
-            }
-            // 设置worker节点
-            if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(node.getRole())) {
-                inventoryVO.getKubeWorker().append(node.getName())
-                        .append(System.lineSeparator());
+            if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.INNER.getType())) {// 设置所有节点
+                if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
+                    inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
+                            .append(System.lineSeparator());
+                } else {
+                    //todo 处理密钥认证方式
+                }
+                // 设置master节点
+                if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {
+                    inventoryVO.getKubeMaster().append(node.getName())
+                            .append(System.lineSeparator());
+                }
+                // 设置etcd节点
+                if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(node.getRole())) {
+                    inventoryVO.getEtcd().append(node.getName())
+                            .append(System.lineSeparator());
+                }
+                // 设置worker节点
+                if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(node.getRole())) {
+                    inventoryVO.getKubeWorker().append(node.getName())
+                            .append(System.lineSeparator());
+                }
             }
         }
         return inventoryVO;
@@ -447,26 +448,22 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterOperationPayload.getDevopsClusterNodeVO(), HostConnectionVO.class), ssh);
             generateAndUploadNodeConfiguration(ssh, devopsClusterOperationPayload.getClusterId(), inventoryVO);
-            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, String.format(ANSIBLE_COMMAND_TEMPLATE, INSTALL_K8S), "/tmp/install.log"));
+            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, String.format(ANSIBLE_COMMAND_TEMPLATE, INSTALL_K8S), "/tmp/install.log", devopsClusterOperationRecordDTO.getId()));
             // 集群安装出现错误，设置错误消息并更新集群状态
             if (resultInfoVO.getExitCode() != 0) {
                 devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.FAILED.value())
-                        .setErrorMsg(resultInfoVO.getStdOut() + "\n" + resultInfoVO.getStdErr());
+                        .appendErrorMsg(resultInfoVO.getStdOut() + "\n" + resultInfoVO.getStdErr());
                 devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-            } else {
-                // 集群安装成功，更新集群状态
-                devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
-                devopsClusterDTO.setStatus(ClusterStatusEnum.SUCCESS.value());
-                // 安装agent, 第一步安装helm ，第二部安装agent。这一步骤如果出现错误,只保存错误信息
-                installAgent(devopsClusterDTO, devopsClusterOperationRecordDTO, ssh);
+                devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+                devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
             }
         } catch (Exception e) {
             devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.FAILED.value())
-                    .setErrorMsg(e.getMessage());
+                    .appendErrorMsg(e.getMessage());
             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-        } finally {
             devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
             devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
+        } finally {
             sshUtil.sshDisconnect(ssh);
         }
     }
@@ -476,15 +473,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         try {
             ExecResultInfoVO helmInstallResult = sshUtil.execCommand(ssh, String.format(INSTALL_HELM_TEMPLATE, helmDownloadUrl));
             if (helmInstallResult.getExitCode() != 0) {
-                devopsClusterOperationRecordDTO.setErrorMsg(helmInstallResult.getStdOut() + "\n" + helmInstallResult.getStdErr());
+                devopsClusterOperationRecordDTO.appendErrorMsg(helmInstallResult.getStdOut() + "\n" + helmInstallResult.getStdErr());
             }
             String agentInstallCommand = devopsClusterService.getInstallString(devopsClusterDTO, "");
             ExecResultInfoVO agentInstallResult = sshUtil.execCommand(ssh, agentInstallCommand);
             if (agentInstallResult.getExitCode() != 0) {
-                devopsClusterOperationRecordDTO.setErrorMsg(agentInstallResult.getStdOut() + "\n" + agentInstallResult.getStdErr());
+                devopsClusterOperationRecordDTO.appendErrorMsg(agentInstallResult.getStdOut() + "\n" + agentInstallResult.getStdErr());
             }
         } catch (Exception e) {
-            devopsClusterOperationRecordDTO.setErrorMsg(e.getMessage());
+            devopsClusterOperationRecordDTO.appendErrorMsg(e.getMessage());
         }
     }
 
@@ -752,6 +749,64 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + System.getProperty("file.separator") + "inventory.ini";
         FileUtil.saveDataToFile(filePath, configValue);
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
+    }
+
+    @Override
+    public void update() {
+        // 添加redis锁，防止多个pod重复执行
+        try {
+            if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(CLUSTER_STATUS_SYNC_REDIS_LOCK, "lock", 3, TimeUnit.MINUTES))) {
+                throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+            }
+            DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO()
+                    .setStatus(ClusterOperationStatusEnum.OPERATING.value())
+                    .setType(ClusterOperationTypeEnum.INSTALL_K8S.getType());
+            List<DevopsClusterOperationRecordDTO> devopsClusterOperationRecordDTOList = devopsClusterOperationRecordMapper.select(devopsClusterOperationRecordDTO);
+            if (CollectionUtils.isEmpty(devopsClusterOperationRecordDTOList)) {
+                return;
+            }
+            List<Long> clusterIds = devopsClusterOperationRecordDTOList.stream().map(DevopsClusterOperationRecordDTO::getClusterId).collect(Collectors.toList());
+            Map<Long, DevopsClusterDTO> devopsClusterDTOMap = devopsClusterMapper.listByClusterIds(clusterIds)
+                    .stream()
+                    .collect(Collectors.toMap(DevopsClusterDTO::getId, d -> d));
+            for (DevopsClusterOperationRecordDTO record : devopsClusterOperationRecordDTOList) {
+                SSHClient ssh = new SSHClient();
+                try {
+                    Long clusterId = record.getClusterId();
+                    List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(clusterId);
+                    List<DevopsClusterNodeDTO> devopsClusterOutterNodeDTOList = devopsClusterNodeDTOList.stream().filter(n -> ClusterNodeTypeEnum.OUTTER.getType().equalsIgnoreCase(n.getType())).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(devopsClusterOutterNodeDTOList)) {
+                        sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterOutterNodeDTOList.get(0), HostConnectionVO.class), ssh);
+                    } else {
+                        sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterNodeDTOList.get(0), HostConnectionVO.class), ssh);
+                    }
+                    ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CHECK_FILE_EXISTS, record.getId()));
+                    if (resultInfoVO.getExitCode() != 0) {
+                        if (resultInfoVO.getStdErr().contains("No such file or directory")) {
+                            LOGGER.info(String.format("cluster [ %d ] is installing", clusterId));
+                        } else {
+                            LOGGER.info(String.format("failed to get install status of host [ %s ],error is: %s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
+                            record.setStatus(ClusterOperationStatusEnum.FAILED.value())
+                                    .appendErrorMsg(resultInfoVO.getStdErr());
+                            devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
+                        }
+                    } else {
+                        // k8s安装成功
+                        LOGGER.info(String.format("cluster [ %d ] install success", clusterId));
+                        record.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
+                        // 安装agent, 第一步安装helm ，第二步安装agent。这一步骤如果出现错误,只保存错误信息
+                        installAgent(devopsClusterDTOMap.get(clusterId), record, ssh);
+                        devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    sshUtil.sshDisconnect(ssh);
+                }
+            }
+        } finally {
+            stringRedisTemplate.delete(CLUSTER_STATUS_SYNC_REDIS_LOCK);
+        }
     }
 
     private String generateInventoryInI(InventoryVO inventoryVO) {

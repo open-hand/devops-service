@@ -55,4 +55,11 @@ public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDTO> {
      */
     int countByOptions(@Nullable @Param("organizationId") Long organizationId,
                        @Nullable @Param("projectId") Long projectId);
+
+    /**
+     * 根据ids查出所有集群
+     * @param clusterIds 集群ids
+     * @return
+     */
+    List<DevopsClusterDTO> listByClusterIds(@Param("clusterIds") List<Long> clusterIds);
 }

@@ -36,6 +36,10 @@ public class DevopsClusterOperationRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "失败日志")
     private String errorMsg;
 
+    public void appendErrorMsg(String errorMsg) {
+        this.errorMsg += "\n" + errorMsg;
+    }
+
     public Long getId() {
         return id;
     }
