@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -201,7 +202,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             inventoryVO.getDelNode().append(devopsClusterNodeDTO.getName());
 
             // 连接主机
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(outerNodes.get(0), HostConnectionVO.class);
+            DevopsClusterNodeDTO linkNode;
+            if (!CollectionUtils.isEmpty(outerNodes)) {
+                linkNode = outerNodes.get(0);
+            } else {
+                linkNode = innerNodes.get(0);
+            }
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
 
             sshUtil.sshConnect(hostConnectionVO, sshClient);
@@ -353,7 +360,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
         try {
             // 连接主机
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(outerNodes.get(0), HostConnectionVO.class);
+            // 连接主机
+            DevopsClusterNodeDTO linkNode;
+            if (!CollectionUtils.isEmpty(outerNodes)) {
+                linkNode = outerNodes.get(0);
+            } else {
+                linkNode = innerNodes.get(0);
+            }
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
@@ -519,7 +533,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
             addNodeIniConfig(inventoryVO, devopsClusterNodeDTO);
             // 连接主机
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(outerNodes.get(0), HostConnectionVO.class);
+            DevopsClusterNodeDTO linkNode;
+            if (!CollectionUtils.isEmpty(outerNodes)) {
+                linkNode = outerNodes.get(0);
+            } else {
+                linkNode = innerNodes.get(0);
+            }
+            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
 
             sshUtil.sshConnect(hostConnectionVO, sshClient);
