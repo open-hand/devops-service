@@ -624,9 +624,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 上传配置文件
             generateAndUploadNodeConfiguration(ssh, clusterId, inventoryVO);
             // 执行检测命令
-            asyncCheck(ssh, devopsNodeCheckResultVO, redisKey, clusterId);
-            // 节点检查通过，保存节点信息
-            saveNode(devopsClusterNodeDTOList, projectId, clusterId);
+            checkAndSave(ssh, devopsNodeCheckResultVO, devopsClusterNodeDTOList, redisKey, projectId, clusterId);
         } catch (CommonException e) {
             devopsNodeCheckResultVO.setErrorMsg(e.getCode())
                     .setStatus(ClusterOperationStatusEnum.FAILED.value());
@@ -642,14 +640,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Async
-    public void asyncCheck(SSHClient ssh, DevopsNodeCheckResultVO devopsNodeCheckResultVO, String redisKey, Long clusterId) {
+    public void checkAndSave(SSHClient ssh, DevopsNodeCheckResultVO devopsNodeCheckResultVO, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, String redisKey, Long projectId, Long clusterId) {
         try {
             // 配置检查
             ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
             if (resultInfoVOForVariable.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.FAILED.value())
-                        .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                        .setErrorMessage(resultInfoVOForVariable.getStdOut() + "\n" + resultInfoVOForVariable.getStdErr());
                 devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
@@ -663,7 +661,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (resultInfoVOForSystem.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.FAILED.value())
-                        .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                        .setErrorMessage(resultInfoVOForSystem.getStdOut() + "\n" + resultInfoVOForSystem.getStdErr());
                 devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
@@ -677,7 +675,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (resultInfoVOForCPU.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.FAILED.value())
-                        .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                        .setErrorMessage(resultInfoVOForCPU.getStdOut() + "\n" + resultInfoVOForCPU.getStdErr());
                 devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
@@ -691,7 +689,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (resultInfoVOForMemory.getExitCode() != 0) {
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
                 devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.FAILED.value())
-                        .setErrorMessage(resultInfoVOForVariable.getStdOut());
+                        .setErrorMessage(resultInfoVOForMemory.getStdOut() + "\n" + resultInfoVOForMemory.getStdErr());
                 devopsClusterMapper.deleteByPrimaryKey(clusterId);
                 stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
                 return;
@@ -699,8 +697,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.SUCCESS.value());
             }
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
+            // 节点检查通过，保存节点信息
+            saveNode(devopsClusterNodeDTOList, projectId, clusterId);
         } catch (Exception e) {
-            throw new CommonException(String.format("failed to check node ,error is: %s", e.getMessage()));
+            throw new CommonException(e.getMessage());
         }
     }
 

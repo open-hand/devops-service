@@ -114,11 +114,11 @@ public enum ClusterNodeRoleEnum implements Type {
     }
 
     public static Set<Integer> listMasterRoleSet() {
-        return new HashSet<>(Arrays.asList(4, 5, 6));
+        return new HashSet<>(Arrays.asList(4, 5, 6, 7));
     }
 
     public static Set<Integer> listEtcdRoleSet() {
-        return new HashSet<>(Arrays.asList(2, 3, 6));
+        return new HashSet<>(Arrays.asList(2, 3, 6, 7));
     }
 
     public static Set<Integer> listWorkerRoleSet() {
