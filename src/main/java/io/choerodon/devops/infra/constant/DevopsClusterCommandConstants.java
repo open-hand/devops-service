@@ -55,7 +55,7 @@ public class DevopsClusterCommandConstants {
      * 第二个%s： 命令的日志输出
      * 第三个%s： 前面的命令退出code
      */
-    public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup %s > %s 2>&1 && echo $? /tmp/%s &";
+    public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup %s > %s 2>&1 && echo $? > /tmp/%s &";
 
     /**
      * 安装helm模版, curl -L -o helm.tar.gz 文件下载地址

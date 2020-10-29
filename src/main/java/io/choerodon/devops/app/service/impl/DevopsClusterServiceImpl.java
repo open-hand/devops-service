@@ -858,7 +858,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
         devopsClusterDTO.setSkipCheckProjectPermission(true);
         devopsClusterDTO.setType(type);
-        devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
+        switch (ClusterTypeEnum.valueOf(devopsClusterDTO.getType())) {
+            case CREATED:
+                devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
+                break;
+            case IMPORTED:
+                devopsClusterDTO.setStatus(ClusterStatusEnum.UNCONNECTED.value());
+                break;
+            default:
+        }
         return baseCreateCluster(devopsClusterDTO);
     }
 }

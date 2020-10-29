@@ -15,7 +15,7 @@ public class ClusterTask {
     /**
      * 定时更新集群安装状态
      */
-    @Scheduled(cron = "10 * * * * ?")
+    @Scheduled(cron = "0 0/3 * * * ?")
     public void updateCluster() {
         devopsClusterNodeService.update();
     }
