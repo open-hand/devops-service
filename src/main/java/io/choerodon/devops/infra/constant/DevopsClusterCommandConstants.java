@@ -24,7 +24,7 @@ public class DevopsClusterCommandConstants {
     /**
      * ansible命令模板，需要指定执行的yml
      */
-    public static final String ANSIBLE_COMMAND_TEMPLATE = "docker run --rm --name ansible \\\n" +
+    public static final String ANSIBLE_COMMAND_TEMPLATE = "sudo docker run --rm --name ansible \\\n" +
             "-w /root/kubeadm-ha/ \\\n" +
             "-v /tmp/inventory.ini:/tmp/inventory.ini \\\n" +
             "registry.cn-hangzhou.aliyuncs.com/elem-lihao/ansible:1.1 \\\n" +
