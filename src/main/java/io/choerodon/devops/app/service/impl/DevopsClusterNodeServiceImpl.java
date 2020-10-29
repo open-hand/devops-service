@@ -336,30 +336,30 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
 
-        // 删除节点角色
-        // 删除集群中的node
-        // 1. 查询集群节点信息
-        List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
-        List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
 
-
-
-        // 计算invertory配置
-        InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
-        String command = null;
-        if (ClusterNodeRoleEnum.isMaster(role)) {
-            inventoryVO.getDelMaster().append(devopsClusterNodeDTO.getName());
-            command = DevopsClusterCommandConstants.REMOVE_MASTER_YAML;
-        }
-        if (ClusterNodeRoleEnum.isEtcd(role)) {
-            inventoryVO.getDelEtcd().append(devopsClusterNodeDTO.getName());
-            command = DevopsClusterCommandConstants.REMOVE_ETCD_YAML;
-        }
 
         SSHClient sshClient = new SSHClient();
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
         try {
-            // 连接主机
+            // 删除节点角色
+            // 删除集群中的node
+            // 1. 查询集群节点信息
+            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
+            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
+
+
+
+            // 计算invertory配置
+            InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
+            String command = null;
+            if (ClusterNodeRoleEnum.isMaster(role)) {
+                inventoryVO.getDelMaster().append(devopsClusterNodeDTO.getName());
+                command = DevopsClusterCommandConstants.REMOVE_MASTER_YAML;
+            }
+            if (ClusterNodeRoleEnum.isEtcd(role)) {
+                inventoryVO.getDelEtcd().append(devopsClusterNodeDTO.getName());
+                command = DevopsClusterCommandConstants.REMOVE_ETCD_YAML;
+            }
             // 连接主机
             DevopsClusterNodeDTO linkNode;
             if (!CollectionUtils.isEmpty(outerNodes)) {
@@ -516,15 +516,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String operatingKey = String.format(CLUSTER_OPERATING_KEY, clusterId);
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
-        // 保存数据库记录
-        DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
-        if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
-            throw new CommonException(ERROR_ADD_NODE_FAILED);
-        }
+
 
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
         SSHClient sshClient = new SSHClient();
         try {
+            // 保存数据库记录
+            DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
+            devopsClusterNodeDTO.setClusterId(clusterId);
+            if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
+                throw new CommonException(ERROR_ADD_NODE_FAILED);
+            }
             // 1. 查询集群节点信息
             List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
             List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
@@ -561,14 +563,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
+                    null,
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
         } catch (Exception e) {
             // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
+            devopsClusterOperatingRecordService.saveOperatingRecord(clusterId,
+                    null,
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
                     ClusterOperationStatusEnum.FAILED.value(),
                     e.getMessage());
