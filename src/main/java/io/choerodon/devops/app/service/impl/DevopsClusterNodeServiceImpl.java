@@ -504,11 +504,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
 
         // 获取锁,失败则抛出异常，成功则程序继续
+        LOGGER.info(">>>>>>>>> [add node] check cluster {} is operating. <<<<<<<<<<<<<<<" , clusterId);
         String lockKey = String.format(CLUSTER_LOCK_KEY, clusterId);
         if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
             throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
         }
         // 更新redis集群操作状态
+        LOGGER.info(">>>>>>>>> [add node] cache cluster {} operating record. <<<<<<<<<<<<<<<" , clusterId);
         DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
         devopsClusterOperatorVO.setClusterId(clusterId);
         devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.ADD_NODE.value());
@@ -522,6 +524,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         SSHClient sshClient = new SSHClient();
         try {
             // 保存数据库记录
+            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<" , clusterId);
             DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
             devopsClusterNodeDTO.setClusterId(clusterId);
             if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
@@ -543,12 +546,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
             HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
-
+            LOGGER.info(">>>>>>>>> [add node]  cluster {} ssh connect. <<<<<<<<<<<<<<<" , clusterId);
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
             IOUtils.write(generateInventoryInI(inventoryVO).getBytes(), new FileOutputStream(configFilePath));
+            LOGGER.info(">>>>>>>>> [add node]  cluster {} upload file. <<<<<<<<<<<<<<<" , clusterId);
             sshUtil.uploadFile(sshClient, configFilePath, INVENTORY_CONFIG_FILE_PATH);
-            // 执行删除节点操作
+            // 执行添加节点操作
             String command;
             if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
                 command = ADD_MASTER_YML;
