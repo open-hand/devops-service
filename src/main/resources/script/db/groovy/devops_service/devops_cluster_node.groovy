@@ -12,9 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'type', type: 'VARCHAR(10)', remarks: '连接类型，作为连接介质节点或者集群节点') {
                 constraints(nullable: false)
             }
-            column(name: 'role', type: 'SMALLINT UNSIGNED', remarks: '节点拥有的角色') {
-                constraints(nullable: false)
-            }
+            column(name: 'role', type: 'SMALLINT UNSIGNED', remarks: '节点拥有的角色')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
                 constraints(nullable: false)
             }

@@ -152,16 +152,23 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Saga(code = "create-cluster", description = "创建集群", inputSchema = "{}")
     public DevopsClusterSshNodeInfoVO createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        // 提供外网访问节点
+        DevopsClusterNodeVO devopsClusterOutterNodeVO = devopsClusterReqVO.getDevopsClusterOutterNodeVO();
         devopsClusterValidator.check(devopsClusterReqVO);
         // 保存集群信息
         DevopsClusterDTO devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.CREATED.value());
         DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
                 .setClusterId(devopsClusterDTO.getId())
-                .setDevopsClusterNodeVO(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0));
+                .setDevopsClusterNodeVO(devopsClusterOutterNodeVO == null ? devopsClusterReqVO.getDevopsClusterInnerNodeVOList().get(0) : devopsClusterOutterNodeVO);
+        List<DevopsClusterNodeVO> devopsClusterNodeVOList = devopsClusterReqVO.getDevopsClusterInnerNodeVOList();
+        if (devopsClusterOutterNodeVO != null) {
+            devopsClusterNodeVOList.add(devopsClusterOutterNodeVO);
+        }
+
         // 检测节点
         devopsClusterNodeService.checkAndSaveNode(projectId, devopsClusterDTO.getId(),
-                ConvertUtils.convertList(devopsClusterReqVO.getDevopsClusterNodeVOList(), DevopsClusterNodeDTO.class),
-                ConvertUtils.convertObject(devopsClusterReqVO.getDevopsClusterNodeVOList().get(0), HostConnectionVO.class));
+                ConvertUtils.convertList(devopsClusterNodeVOList, DevopsClusterNodeDTO.class),
+                ConvertUtils.convertObject(devopsClusterOutterNodeVO == null ? devopsClusterReqVO.getDevopsClusterInnerNodeVOList().get(0) : devopsClusterOutterNodeVO, HostConnectionVO.class));
         return devopsClusterSshNodeInfoVO;
     }
 

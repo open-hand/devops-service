@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 public class DevopsClusterValidator {
 
     public void check(DevopsClusterReqVO devopsClusterReqVO) {
-        List<DevopsClusterNodeVO> devopsClusterNodeVOList = devopsClusterReqVO.getDevopsClusterNodeVOList();
+        List<DevopsClusterNodeVO> devopsClusterNodeVOList = devopsClusterReqVO.getDevopsClusterInnerNodeVOList();
         // 检查节点不为空
         if (CollectionUtils.isEmpty(devopsClusterNodeVOList)) {
             throw new CommonException("error.node.size.is.zero");

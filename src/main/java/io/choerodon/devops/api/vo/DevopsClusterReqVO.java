@@ -20,7 +20,11 @@ public class DevopsClusterReqVO {
     @ApiModelProperty("集群类型 / 必须")
     private String type;
 
-    private List<DevopsClusterNodeVO> devopsClusterNodeVOList;
+    @ApiModelProperty("集群节点")
+    private List<DevopsClusterNodeVO> devopsClusterInnerNodeVOList;
+
+    @ApiModelProperty("提供外网访问的节点 / 非必须")
+    private DevopsClusterNodeVO devopsClusterOutterNodeVO;
 
     public String getType() {
         return type;
@@ -30,12 +34,12 @@ public class DevopsClusterReqVO {
         this.type = type;
     }
 
-    public List<DevopsClusterNodeVO> getDevopsClusterNodeVOList() {
-        return devopsClusterNodeVOList;
+    public List<DevopsClusterNodeVO> getDevopsClusterInnerNodeVOList() {
+        return devopsClusterInnerNodeVOList;
     }
 
-    public void setDevopsClusterNodeVOList(List<DevopsClusterNodeVO> devopsClusterNodeVOList) {
-        this.devopsClusterNodeVOList = devopsClusterNodeVOList;
+    public void setDevopsClusterInnerNodeVOList(List<DevopsClusterNodeVO> devopsClusterInnerNodeVOList) {
+        this.devopsClusterInnerNodeVOList = devopsClusterInnerNodeVOList;
     }
 
     public String getName() {
@@ -60,5 +64,14 @@ public class DevopsClusterReqVO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public DevopsClusterNodeVO getDevopsClusterOutterNodeVO() {
+        return devopsClusterOutterNodeVO;
+    }
+
+    public DevopsClusterReqVO setDevopsClusterOutterNodeVO(DevopsClusterNodeVO devopsClusterOutterNodeVO) {
+        this.devopsClusterOutterNodeVO = devopsClusterOutterNodeVO;
+        return this;
     }
 }
