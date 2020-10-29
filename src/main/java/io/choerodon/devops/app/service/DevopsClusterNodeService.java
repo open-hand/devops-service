@@ -108,6 +108,8 @@ public interface DevopsClusterNodeService {
      */
     void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO);
 
+    DevopsClusterNodeDTO queryByClusterIdAndNodeName(Long clusterId, String nodeName);
+
     List<DevopsClusterNodeDTO> queryNodeByClusterIdAndType(Long clusterId, ClusterNodeTypeEnum type);
 
     /**
