@@ -80,7 +80,7 @@ public class DevopsClusterController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(value = "cluster_id") Long clusterId) {
+            @RequestParam(value = "cluster_id") @Encrypt Long clusterId) {
         return Optional.ofNullable(devopsClusterService.checkProgress(projectId, clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.node.check.process.get"));
@@ -100,7 +100,7 @@ public class DevopsClusterController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(value = "cluster_id") Long clusterId) {
+            @RequestParam(value = "cluster_id") @Encrypt Long clusterId) {
         devopsClusterService.retryInstallK8s(projectId, clusterId);
         return ResponseEntity.ok().build();
     }
