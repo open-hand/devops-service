@@ -63,14 +63,6 @@ public class DevopsSagaHandler {
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private PipelineTaskRecordService pipelineTaskRecordService;
-    @Autowired
-    private PipelineStageRecordService pipelineStageRecordService;
-    @Autowired
-    private PipelineService pipelineService;
-    @Autowired
-    private PipelineRecordService pipelineRecordService;
-    @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsIngressService devopsIngressService;
@@ -289,55 +281,6 @@ public class DevopsSagaHandler {
     public String trigerSimpleCDPipeline(String data) {
         devopsCdPipelineService.trigerSimpleCDPipeline(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
-    }
-
-    /**
-     * 创建流水线自动部署实例
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
-            description = "创建流水线自动部署实例",
-            sagaCode = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 3,
-            seq = 1)
-    public void pipelineAutoDeployInstance(String data) {
-        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
-        Long taskRecordId = appServiceDeployVO.getRecordId();
-        Long stageRecordId = pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId();
-        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
-        PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
-        Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
-        try {
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
-            if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
-                if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
-                    PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-                    pipelineTaskRecordDTO.setInstanceId(appServiceInstanceVO.getId());
-                    pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
-                    pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
-                    pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
-                    LOGGER.info("create pipeline auto deploy instance success");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("error create pipeline auto deploy instance {}", e);
-            PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-            pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
-            pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
-
-            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
-            stageRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            stageRecordDTO.setExecutionTime(time.toString());
-            pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
-
-            pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            Long userId = GitUserNameUtil.getUserId();
-            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                    MessageCodeConstants.PIPELINE_FAILED,
-                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
-            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
-        }
     }
 
     /**

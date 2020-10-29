@@ -582,6 +582,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     public void onComplete() {
                         CustomContextUtil.setUserContext(loginName, userId, orgId);
                         try {
+                            LOGGER.info(">>>>>>>>>>>>>>>>>>>approve user task.projectId: {}, businessKey:{} <<<<<<<<<<<<<<<", projectId, businessKey);
                             workFlowServiceOperator.approveUserTask(projectId, businessKey);
                         } catch (Exception e) {
                             throw new CommonException(e);

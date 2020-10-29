@@ -14,10 +14,6 @@ import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
  */
 @Component
 public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
-    @Override
-    public ResponseEntity<String> create(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
-        throw new CommonException("error.workflow.create");
-    }
 
     @Override
     public ResponseEntity<Boolean> approveUserTask(Long projectId, String businessKey) {

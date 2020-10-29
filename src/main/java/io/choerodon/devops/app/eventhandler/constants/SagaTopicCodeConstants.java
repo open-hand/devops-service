@@ -131,12 +131,6 @@ public class SagaTopicCodeConstants {
      */
     public static final String TEST_STATUS_SAGA = "test-status-saga";
 
-
-    /**
-     * 创建流水线自动部署实例
-     */
-    public static final String DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE = "devops-pipeline-auto-deploy-instance";
-
     /**
      * 创建流水线环境自动部署实例
      */

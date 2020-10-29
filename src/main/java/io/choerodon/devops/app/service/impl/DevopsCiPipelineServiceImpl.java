@@ -117,7 +117,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final CiCdPipelineMapper ciCdPipelineMapper;
     private final DevopsCdStageService devopsCdStageService;
     private final DevopsCdAuditService devopsCdAuditService;
-    private final PipelineAppDeployService pipelineAppDeployService;
     private final DevopsCdJobService devopsCdJobService;
     private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     private final DevopsCdJobRecordService devopsCDJobRecordService;
@@ -153,7 +152,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             CiCdPipelineMapper ciCdPipelineMapper,
             DevopsCdStageService devopsCdStageService,
             DevopsCdAuditService devopsCdAuditService,
-            PipelineAppDeployService pipelineAppDeployService,
             DevopsCdJobService devopsCdJobService,
             DevopsCdPipelineRecordService devopsCdPipelineRecordService,
             DevopsCdJobRecordService devopsCDJobRecordService,
@@ -186,7 +184,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.ciCdPipelineMapper = ciCdPipelineMapper;
         this.devopsCdStageService = devopsCdStageService;
         this.devopsCdAuditService = devopsCdAuditService;
-        this.pipelineAppDeployService = pipelineAppDeployService;
         this.devopsCdJobService = devopsCdJobService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
         this.devopsCDJobRecordService = devopsCDJobRecordService;

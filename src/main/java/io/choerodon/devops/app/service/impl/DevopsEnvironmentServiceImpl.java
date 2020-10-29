@@ -132,8 +132,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
-    @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
     private DevopsServiceMapper devopsServiceMapper;
@@ -187,6 +185,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     @PostConstruct
     private void init() {
@@ -601,7 +601,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
             } else {
-                if (!pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
+                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
                     throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
                 }
             }
@@ -1333,7 +1333,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException("error.env.delete");
         }
 
-        if (!CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId))) {
+        if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
             throw new CommonException("error.delete.env.with.pipeline");
         }
 
@@ -1790,7 +1790,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean disableCheck(Long projectId, Long envId) {
         // 停用环境校验资源和流水线
         // pipeLineAppDeploy为空
-        boolean pipeLineAppDeployEmpty = pipelineAppDeployService.baseQueryByEnvId(envId).isEmpty();
+        boolean pipeLineAppDeployEmpty = CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
 
         DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(envId);
 
@@ -1808,7 +1808,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Boolean deleteCheck(Long projectId, Long envId) {
         // 删除环境只校验是否有流水线
-        return CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId));
+        return CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
     }
 
     @Override

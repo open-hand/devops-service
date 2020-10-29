@@ -18,14 +18,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsDeployRecordService {
 
-    Page<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageable);
-
-
-    Page<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, PageRequest pageable);
-
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
-
-//    void createRecordForBatchDeployment(Long projectId, Long envId, List<DevopsDeployRecordInstanceDTO> instances);
 
     void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO);
 

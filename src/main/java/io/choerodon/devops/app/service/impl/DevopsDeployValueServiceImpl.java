@@ -35,13 +35,13 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
-    @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private PermissionHelper permissionHelper;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -135,8 +135,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     public Boolean checkDelete(Long projectId, Long valueId) {
         DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
         permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
-        List<PipelineAppServiceDeployDTO> pipelineAppServiceDeployDTOS = pipelineAppDeployService.baseQueryByValueId(valueId);
-        if (pipelineAppServiceDeployDTOS == null || pipelineAppServiceDeployDTOS.isEmpty()) {
+        List<DevopsCdEnvDeployInfoDTO> devopsCdEnvDeployInfoDTOS = devopsCdEnvDeployInfoService.queryCurrentByValueId(valueId);
+        if (devopsCdEnvDeployInfoDTOS == null || devopsCdEnvDeployInfoDTOS.isEmpty()) {
             List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
             return CollectionUtils.isEmpty(appServiceInstanceDTOS);
         }
