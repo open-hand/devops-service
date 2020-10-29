@@ -2,8 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -13,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
-import org.apache.commons.io.IOUtils;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -487,7 +484,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         SSHClient sshClient = new SSHClient();
         try {
             // 保存数据库记录
-            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<" , clusterId);
+            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<", clusterId);
             // 1. 查询集群节点信息
             List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.OUTTER);
             List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.INNER);
