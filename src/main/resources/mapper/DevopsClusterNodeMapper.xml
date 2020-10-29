@@ -16,16 +16,10 @@
             #{item.password})
         </foreach>
     </insert>
-    <select id="countMaster" resultType="java.lang.Integer">
-
-    </select>
-    <select id="countEtcd" resultType="java.lang.Integer">
-
-    </select>
     <select id="countByRoleSet" resultType="java.lang.Integer">
         SELECT count(*)
         FROM  devops_cluster_node dcn
-        WHERE dcn.cluster_id = #{clusterId} dcn.role IN
+        WHERE dcn.cluster_id = #{clusterId} AND dcn.role IN
         <foreach collection="roleSet" index="i" separator="," open="(" close=")" item="role">
             #{role}
         </foreach>
