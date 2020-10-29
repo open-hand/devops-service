@@ -117,6 +117,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    public void deleteByClusterId(Long clusterId) {
+        DevopsClusterNodeDTO devopsClusterNodeDTO = new DevopsClusterNodeDTO();
+        devopsClusterNodeDTO.setClusterId(clusterId);
+        devopsClusterNodeMapper.delete(devopsClusterNodeDTO);
+    }
+
+    @Override
     public NodeDeleteCheckVO checkEnableDelete(Long projectId, Long nodeId) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
@@ -337,8 +344,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
 
-
-
         SSHClient sshClient = new SSHClient();
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
         try {
@@ -347,7 +352,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 1. 查询集群节点信息
             List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
             List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
-
 
 
             // 计算invertory配置
@@ -501,13 +505,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
 
         // 获取锁,失败则抛出异常，成功则程序继续
-        LOGGER.info(">>>>>>>>> [add node] check cluster {} is operating. <<<<<<<<<<<<<<<" , clusterId);
+        LOGGER.info(">>>>>>>>> [add node] check cluster {} is operating. <<<<<<<<<<<<<<<", clusterId);
         String lockKey = String.format(CLUSTER_LOCK_KEY, clusterId);
         if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
             throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
         }
         // 更新redis集群操作状态
-        LOGGER.info(">>>>>>>>> [add node] cache cluster {} operating record. <<<<<<<<<<<<<<<" , clusterId);
+        LOGGER.info(">>>>>>>>> [add node] cache cluster {} operating record. <<<<<<<<<<<<<<<", clusterId);
         DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
         devopsClusterOperatorVO.setClusterId(clusterId);
         devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.ADD_NODE.value());
@@ -516,12 +520,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
 
-
         String configFilePath = UUIDUtils.generateUUID() + ".ini";
         SSHClient sshClient = new SSHClient();
         try {
             // 保存数据库记录
-            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<" , clusterId);
+            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<", clusterId);
             DevopsClusterNodeDTO devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
             devopsClusterNodeDTO.setClusterId(clusterId);
             if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
@@ -543,11 +546,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
             HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
-            LOGGER.info(">>>>>>>>> [add node]  cluster {} ssh connect. <<<<<<<<<<<<<<<" , clusterId);
+            LOGGER.info(">>>>>>>>> [add node]  cluster {} ssh connect. <<<<<<<<<<<<<<<", clusterId);
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
             IOUtils.write(generateInventoryInI(inventoryVO).getBytes(), new FileOutputStream(configFilePath));
-            LOGGER.info(">>>>>>>>> [add node]  cluster {} upload file. <<<<<<<<<<<<<<<" , clusterId);
+            LOGGER.info(">>>>>>>>> [add node]  cluster {} upload file. <<<<<<<<<<<<<<<", clusterId);
             sshUtil.uploadFile(sshClient, configFilePath, INVENTORY_CONFIG_FILE_PATH);
             // 执行添加节点操作
             String command;
@@ -642,16 +645,16 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             try {
                 sshUtil.sshConnect(hostConnectionVO, ssh);
             } catch (IOException e) {
-                throw new CommonException(String.format("failed to connect to host:[ %s ] by ssh", hostConnectionVO.getHostIp()));
+                throw new CommonException(String.format("Failed to connect to host: [ %s ] by ssh", hostConnectionVO.getHostIp()));
             }
             // 安装docker
             try {
                 ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, INSTALL_DOCKER_COMMAND);
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
-                    throw new CommonException(String.format("failed to install docker on host: [ %s ],error is :%s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
+                    throw new CommonException(String.format("Failed to install docker on host: [ %s ],error is :%s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
                 }
             } catch (IOException e) {
-                throw new CommonException(String.format("failed to exec command [ %s ] on host [ %s ],error is :%s", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
+                throw new CommonException(String.format("Failed to exec command [ %s ] on host [ %s ],error is :%s", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
             }
             // 生成相关配置节点
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
@@ -785,7 +788,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                         if (resultInfoVO.getStdErr().contains("No such file or directory")) {
                             LOGGER.info(String.format("cluster [ %d ] is installing", clusterId));
                         } else {
-                            LOGGER.info(String.format("failed to get install status of host [ %s ],error is: %s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
+                            LOGGER.info(String.format("Failed to get install status of host [ %s ],error is: %s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
                             record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                                     .appendErrorMsg(resultInfoVO.getStdErr());
                             devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);

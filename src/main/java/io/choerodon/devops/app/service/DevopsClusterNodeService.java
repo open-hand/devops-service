@@ -114,4 +114,11 @@ public interface DevopsClusterNodeService {
      * 定时更新集群的安装状态
      */
     void update();
+
+    /**
+     * 根据集群id删除node
+     *
+     * @param clusterId
+     */
+    void deleteByClusterId(Long clusterId);
 }
