@@ -19,7 +19,7 @@ public class DevopsClusterCommandConstants {
      */
     public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun\n" +
             "echo =====================install completed\n" +
-            "systemctl restart docker && systemctl enable docker";
+            "sudo systemctl restart docker && sudo systemctl enable docker";
 
     /**
      * ansible命令模板，需要指定执行的yml
