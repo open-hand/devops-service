@@ -350,11 +350,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 }
                 c7nImageDeployDTO.setPullCmd("docker pull " + ciPipelineImageDTO.getImageTag());
                 // 添加应用服务名用于部署记录
-                AppServiceDTO appServiceDTO = applicationService.baseQuery(harborRepoDTO.getAppServiceId());
-                if (appServiceDTO != null) {
-                    imageDeploy.setImageName(appServiceDTO.getName());
-
-                }
+                String imageTag = ciPipelineImageDTO.getImageTag();
+                String[] split = imageTag.split(":");
+                imageDeploy.setImageName(split[0].substring(split[0].lastIndexOf("/")));
+                deployVersion = split[1];
             }
             // 1. 更新状态 记录镜像信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
