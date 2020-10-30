@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,7 +27,9 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
@@ -38,6 +42,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployRecordServiceImpl.class);
+
     private static final String DEPLOY_STATUS = "deployStatus";
     private static final String DEPLOY_TYPE = "deployType";
     private static final String PIPELINE_ID = "pipelineId";
@@ -53,6 +59,38 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
 
+
+    @Override
+    public void saveRecord(Long projectId,
+                           DeployType type,
+                           Long deployId,
+                           DeployModeEnum deployMode,
+                           Long deployPayloadId,
+                           String deployPayloadName,
+                           String deployResult,
+                           DeployObjectTypeEnum deployObjectType,
+                           String deployObjectName,
+                           String deployVersion,
+                           String instanceName) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+                projectId,
+                type.getType(),
+                deployId,
+                deployMode.value(),
+                deployPayloadId,
+                deployPayloadName,
+                deployResult,
+                new Date(),
+                deployObjectType.value(),
+                deployObjectName,
+                deployVersion,
+                instanceName);
+        try {
+            baseCreate(devopsDeployRecordDTO);
+        } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}", devopsDeployRecordDTO);
+        }
+    }
 
     @Override
     public void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO) {

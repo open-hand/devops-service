@@ -624,19 +624,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             baseUpdate(appServiceInstanceDTO);
 
             //插入部署记录
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
-                    isFromPipeline ? DeployType.AUTO.getType() : DeployType.MANUAL.getType(),
+            devopsDeployRecordService.saveRecord(
+                    devopsEnvironmentDTO.getProjectId(),
+                    isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
                     devopsEnvCommandDTO.getId(),
-                    DeployModeEnum.ENV.value(),
+                    DeployModeEnum.ENV,
                     devopsEnvironmentDTO.getId(),
                     devopsEnvironmentDTO.getName(),
                     null,
-                    devopsEnvCommandDTO.getCreationDate(),
-                    DeployObjectTypeEnum.APP.value(),
+                    DeployObjectTypeEnum.APP,
                     appServiceDTO.getName(),
                     appServiceVersionDTO.getVersion(),
                     appServiceInstanceDTO.getCode());
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
@@ -796,19 +795,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //插入部署记录
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId());
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
-                DeployType.MANUAL.getType(),
+        devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
+                DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
-                DeployModeEnum.ENV.value(),
+                DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
                 devopsEnvironmentDTO.getName(),
                 null,
-                devopsEnvCommandDTO.getCreationDate(),
-                DeployObjectTypeEnum.APP.value(),
+                DeployObjectTypeEnum.APP,
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode());
-        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
@@ -868,19 +865,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
-                DeployType.MANUAL.getType(),
+        devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
+                DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
-                DeployModeEnum.ENV.value(),
+                DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
                 devopsEnvironmentDTO.getName(),
                 null,
-                devopsEnvCommandDTO.getCreationDate(),
-                DeployObjectTypeEnum.APP.value(),
+                DeployObjectTypeEnum.APP,
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode());
-        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
@@ -1289,19 +1284,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         baseUpdate(appServiceInstanceDTO);
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(),
-                DeployType.BATCH.getType(),
+        devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
+                DeployType.BATCH,
                 devopsEnvCommandDTO.getId(),
-                DeployModeEnum.ENV.value(),
+                DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
                 devopsEnvironmentDTO.getName(),
                 null,
-                new Date(),
-                DeployObjectTypeEnum.APP.value(),
+                DeployObjectTypeEnum.APP,
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode());
-        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
