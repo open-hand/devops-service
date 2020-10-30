@@ -447,18 +447,24 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
             // 如果是测试类型的主机, 再测试下jmeter的状态
             if (DevopsHostType.DISTRIBUTE_TEST.getValue().equals(devopsHostConnectionTestVO.getType())) {
-                boolean jmeterConnected = testServiceClientOperator.testJmeterConnection(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
-                if (!jmeterConnected) {
-                    result.setJmeterCheckError("failed to check jmeter， please ensure network and jmeter server running");
-                    result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
-                } else {
-                    boolean jmeterPathValid = SshUtil.execForOk(sshClient, String.format(MiscConstants.LS_JMETER_COMMAND, devopsHostConnectionTestVO.getJmeterPath()));
-                    if (jmeterPathValid) {
-                        result.setJmeterStatus(DevopsHostStatus.SUCCESS.getValue());
-                    } else {
+                // ssh测试成功才有必要测试jmeter状态
+                if (DevopsHostStatus.SUCCESS.getValue().equals(result.getHostStatus())) {
+                    boolean jmeterConnected = testServiceClientOperator.testJmeterConnection(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
+                    if (!jmeterConnected) {
+                        result.setJmeterCheckError("failed to check jmeter， please ensure network and jmeter server running");
                         result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
-                        result.setJmeterCheckError("failed to check jmeter script. please ensure jmeter home is valid");
+                    } else {
+                        boolean jmeterPathValid = SshUtil.execForOk(sshClient, String.format(MiscConstants.LS_JMETER_COMMAND, devopsHostConnectionTestVO.getJmeterPath()));
+                        if (jmeterPathValid) {
+                            result.setJmeterStatus(DevopsHostStatus.SUCCESS.getValue());
+                        } else {
+                            result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
+                            result.setJmeterCheckError("failed to check jmeter script. please ensure jmeter home is valid");
+                        }
                     }
+                } else {
+                    result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
+                    result.setJmeterCheckError("failed due to ssh failed");
                 }
             }
             return result;
