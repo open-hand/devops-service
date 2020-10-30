@@ -21,7 +21,6 @@ import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.api.vo.ExecResultInfoVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.api.vo.InventoryVO;
-import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -87,7 +86,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             LOGGER.info(">>>>>>>>> [add node]  cluster {} ssh connect. <<<<<<<<<<<<<<<", clusterId);
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
-            devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, clusterId, inventoryVO);
+            devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(clusterId), inventoryVO);
             // 执行添加节点操作
             String command;
             if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
@@ -151,7 +150,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
 
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
-            devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, devopsClusterNodeDTO.getClusterId(), inventoryVO);
+            devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(devopsClusterNodeDTO.getClusterId()), inventoryVO);
             // 执行删除节点操作
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
             LOGGER.info("delete node {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
@@ -216,7 +215,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
             sshUtil.sshConnect(hostConnectionVO, sshClient);
             // 上传配置文件
-            devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, devopsClusterNodeDTO.getClusterId(), inventoryVO);
+            devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(devopsClusterNodeDTO.getClusterId()), inventoryVO);
             // 执行删除节点操作
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);

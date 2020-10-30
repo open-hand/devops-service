@@ -45,7 +45,7 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建集群")
     @PostMapping("/create")
-    public ResponseEntity<DevopsClusterSshNodeInfoVO> create(
+    public ResponseEntity<String> create(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群信息", required = true)
@@ -53,21 +53,6 @@ public class DevopsClusterController {
         return Optional.ofNullable(devopsClusterService.createCluster(projectId, devopsClusterReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_CLUSTER_INSERT));
-    }
-
-    /**
-     * 确认安装k8s
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "确认安装k8s")
-    @PostMapping("/confirm_install")
-    public ResponseEntity<Void> confirmInstall(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "ssh连接的节点信息", required = true)
-            @RequestBody DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        devopsClusterService.startInstallK8s(projectId, devopsClusterSshNodeInfoVO);
-        return ResponseEntity.ok().build();
     }
 
     /**
@@ -80,8 +65,8 @@ public class DevopsClusterController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(value = "cluster_id") @Encrypt Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.checkProgress(projectId, clusterId))
+            @RequestParam(value = "key") String key) {
+        return Optional.ofNullable(devopsClusterService.checkProgress(projectId, key))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.node.check.process.get"));
     }

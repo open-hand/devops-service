@@ -9,10 +9,6 @@ public enum ClusterOperationTypeEnum {
      */
     INSTALL_K8S("install_k8s"),
     /**
-     * 卸载k8s
-     */
-    UNINSTALL_K8S("uninstall_k8s"),
-    /**
      * 添加master节点
      */
     ADD_MASTER("add_master"),
