@@ -167,4 +167,23 @@ public class DevopsDeployRecordDTO extends AuditDomain {
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsDeployRecordDTO{" +
+                "id=" + id +
+                ", projectId=" + projectId +
+                ", deployType='" + deployType + '\'' +
+                ", deployId=" + deployId +
+                ", deployMode='" + deployMode + '\'' +
+                ", deployPayloadId=" + deployPayloadId +
+                ", deployPayloadName='" + deployPayloadName + '\'' +
+                ", deployTime=" + deployTime +
+                ", deployResult='" + deployResult + '\'' +
+                ", deployObjectType='" + deployObjectType + '\'' +
+                ", deployObjectName='" + deployObjectName + '\'' +
+                ", deployObjectVersion='" + deployObjectVersion + '\'' +
+                ", instanceName='" + instanceName + '\'' +
+                '}';
+    }
 }
