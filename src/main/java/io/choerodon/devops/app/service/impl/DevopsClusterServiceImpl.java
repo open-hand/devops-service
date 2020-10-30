@@ -342,7 +342,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         Page<ClusterWithNodesVO> devopsClusterRepDTOPage = ConvertUtils.convertPage(devopsClusterRepVOPageInfo, ClusterWithNodesVO.class);
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOPageInfo.getContent().forEach(devopsClusterRepVO -> devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId())));
+        devopsClusterRepVOPageInfo.getContent().forEach(devopsClusterRepVO -> {
+            if (updatedEnvList.contains(devopsClusterRepVO.getId()) && devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
+        });
 
         devopsClusterRepDTOPage.setContent(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getContent(), projectId));
         return devopsClusterRepDTOPage;
@@ -656,7 +660,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             return null;
         }
         List<Long> upToDateList = clusterConnectionHandler.getUpdatedClusterList();
-        result.setConnect(upToDateList.contains(clusterId));
+        if (upToDateList.contains(clusterId) && result.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+            result.setStatus(ClusterStatusEnum.RUNNING.value());
+        }
         return result;
     }
 
@@ -839,7 +845,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return devopsClusterRepVOS.stream().map(cluster -> {
             ClusterWithNodesVO clusterWithNodesDTO = new ClusterWithNodesVO();
             BeanUtils.copyProperties(cluster, clusterWithNodesDTO);
-            if (Boolean.TRUE.equals(clusterWithNodesDTO.getConnect())) {
+            if (clusterWithNodesDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.RUNNING.value())) {
                 clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageClusterNodeInfo(cluster.getId(), projectId, pageable));
             }
             return clusterWithNodesDTO;
@@ -850,7 +856,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterRepVO devopsClusterRepVO = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
-        devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId()));
+        if (updatedEnvList.contains(clusterId) && devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+            devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+        }
         return devopsClusterRepVO;
     }
 
