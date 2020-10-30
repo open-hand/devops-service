@@ -407,7 +407,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterOperationPayload.getDevopsClusterNodeVO(), HostConnectionVO.class), ssh);
             generateAndUploadNodeConfiguration(ssh, devopsClusterOperationPayload.getClusterId(), inventoryVO);
             generateAndUploadAnsibleShellScript(ssh, devopsClusterOperationPayload.getClusterId(), INSTALL_K8S, "/tmp/install.log", "/tmp/" + devopsClusterOperationRecordDTO.getId());
-            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, "/tmp/" + INSTALL_K8S));
+            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, "/tmp/" + INSTALL_K8S, "/tmp/nohup-install"));
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterOperationPayload.getClusterId());
             // 集群安装出现错误，设置错误消息并更新集群状态
             if (resultInfoVO.getExitCode() != 0) {
