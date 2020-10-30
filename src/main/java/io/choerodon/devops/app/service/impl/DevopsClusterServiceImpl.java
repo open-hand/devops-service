@@ -498,8 +498,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         List<DevopsClusterBasicInfoVO> unconnectedClusters = new ArrayList<>();
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
             boolean connect = updatedEnvList.contains(devopsClusterBasicInfoVO.getId());
-            devopsClusterBasicInfoVO.setConnect(connect);
             if (connect) {
+                // 如果在数据库中保存的状态是UNCONNECTED,则将状态置为CONNECTED
+                if (devopsClusterBasicInfoVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.UNCONNECTED.value())) {
+                    devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.CONNECTED.value());
+                }
                 connectedClusters.add(devopsClusterBasicInfoVO);
             } else {
                 unconnectedClusters.add(devopsClusterBasicInfoVO);
