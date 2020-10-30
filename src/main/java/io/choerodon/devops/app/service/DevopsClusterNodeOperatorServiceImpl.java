@@ -52,7 +52,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
-    @Async(ADD_NODE)
+    @Async
     @Transactional
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO, String lockKey, String operatingKey) {
         SSHClient sshClient = new SSHClient();
@@ -124,7 +124,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     }
 
     @Override
-    @Async(DELETE_NODE)
+    @Async
     @Transactional
     public void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, String lockKey, String operatingKey) {
         SSHClient sshClient = new SSHClient();
@@ -182,7 +182,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     }
 
     @Override
-    @Async(DELETE_NODE_ROLE)
+    @Async
     @Transactional
     public void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role, String lockKey, String operatingKey) {
         SSHClient sshClient = new SSHClient();
