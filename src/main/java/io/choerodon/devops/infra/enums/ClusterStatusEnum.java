@@ -6,29 +6,21 @@ package io.choerodon.devops.infra.enums;
 
 public enum ClusterStatusEnum {
     /**
-     * 集群初始状态
-     */
-    INIT("init"),
-    /**
      * 集群创建中
      */
     OPERATING("operating"),
     /**
      * 集群未连接
      */
-    UNCONNECTED("unconnected"),
+    DISCONNECT("disconnect"),
     /**
-     * 已连接
+     * agent已连接，集群运行中
      */
-    CONNECTED("connected"),
+    RUNNING("running"),
     /**
      * 创建失败
      */
-    FAILED("failed"),
-    /**
-     * 创建成功
-     */
-    SUCCESS("success");
+    FAILED("failed");
 
     private final String status;
 

@@ -500,8 +500,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             boolean connect = updatedEnvList.contains(devopsClusterBasicInfoVO.getId());
             if (connect) {
                 // 如果在数据库中保存的状态是UNCONNECTED,则将状态置为CONNECTED
-                if (devopsClusterBasicInfoVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.UNCONNECTED.value())) {
-                    devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.CONNECTED.value());
+                if (devopsClusterBasicInfoVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                    devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.RUNNING.value());
                 }
                 connectedClusters.add(devopsClusterBasicInfoVO);
             } else {
@@ -866,7 +866,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
                 break;
             case IMPORTED:
-                devopsClusterDTO.setStatus(ClusterStatusEnum.UNCONNECTED.value());
+                devopsClusterDTO.setStatus(ClusterStatusEnum.DISCONNECT.value());
                 break;
             default:
         }
