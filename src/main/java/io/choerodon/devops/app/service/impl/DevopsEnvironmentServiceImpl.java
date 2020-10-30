@@ -1316,8 +1316,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                Boolean isProjectOwner) {
         if (devopsEnvironmentDTO.getSkipCheckPermission()) {
             devopsEnvironmentDTO.setPermission(true);
-        } else
+        } else {
             devopsEnvironmentDTO.setPermission(permissionEnvIds.contains(devopsEnvironmentDTO.getId()) || isProjectOwner);
+        }
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_ENV,
@@ -1622,7 +1623,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOS.forEach(t -> t.setConnect(upgradeClusterList.contains(t.getId())));
+        devopsClusterRepVOS.forEach(t -> {
+            if (upgradeClusterList.contains(t.getId()) && t.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                t.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
+        });
         return devopsClusterRepVOS;
     }
 
