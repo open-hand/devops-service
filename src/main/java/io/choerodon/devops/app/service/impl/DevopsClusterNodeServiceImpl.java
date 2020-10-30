@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
-import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +25,11 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevopsClusterOperationPayload;
+import io.choerodon.devops.app.service.DevopsClusterNodeOperatorService;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
-import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
@@ -45,15 +44,13 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterNodeServiceImpl.class);
-    private static final String INVENTORY_INI_TEMPLATE_FOR_ALL = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
-    private static final String CLUSTER_LOCK_KEY = "cluster:lock:key:%s:Long";
-    private static final String CLUSTER_OPERATING_KEY = "cluster:operating:key:%s:DevopsClusterOperatorVO";
     /**
      * 节点检查进度redis的key
      */
     public static final String NODE_CHECK_STEP_REDIS_KEY_TEMPLATE = "node-check-step-%d-%d";
     private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
+    private static final String ERROR_ADD_NODE_ROLE_FAILED = "error.add.node.role.failed";
     private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     @Value(value = "${devops.helm.download-url}")
     private String helmDownloadUrl;
@@ -71,6 +68,29 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private DevopsClusterOperatingRecordService devopsClusterOperatingRecordService;
     @Autowired
     private DevopsClusterService devopsClusterService;
+    @Autowired
+    private DevopsClusterNodeOperatorService devopsClusterNodeOperatorService;
+
+    @Override
+    @Transactional
+    public void baseSave(DevopsClusterNodeDTO devopsClusterNodeDTO) {
+        if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
+            throw new CommonException(ERROR_ADD_NODE_FAILED);
+        }
+    }
+
+    @Override
+    public void baseUpdateNodeRole(Long id, Integer role) {
+        Assert.notNull(id, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+        Assert.notNull(role, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
+
+        DevopsClusterNodeDTO devopsClusterNodeDTO = new DevopsClusterNodeDTO();
+        devopsClusterNodeDTO.setId(id);
+        devopsClusterNodeDTO.setRole(role);
+        if (devopsClusterNodeMapper.updateByPrimaryKey(devopsClusterNodeDTO) != 1) {
+            throw new CommonException(ERROR_ADD_NODE_ROLE_FAILED);
+        }
+    }
 
     @Override
     public boolean testConnection(Long projectId, ClusterHostConnectionVO hostConnectionVO) {
@@ -167,64 +187,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
-        SSHClient sshClient = new SSHClient();
-        try {
+        devopsClusterNodeOperatorService.deleteNode(projectId, devopsClusterNodeDTO, lockKey, operatingKey);
 
-            // 删除集群中的node
-            // 1. 查询集群节点信息
-            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
-            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
-
-
-            // 计算inventory配置
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
-            inventoryVO.getDelNode().append(devopsClusterNodeDTO.getName());
-
-            // 连接主机
-            DevopsClusterNodeDTO linkNode;
-            if (!CollectionUtils.isEmpty(outerNodes)) {
-                linkNode = outerNodes.get(0);
-            } else {
-                linkNode = innerNodes.get(0);
-            }
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
-            hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
-
-            sshUtil.sshConnect(hostConnectionVO, sshClient);
-            // 上传配置文件
-            generateAndUploadNodeConfiguration(sshClient, devopsClusterNodeDTO.getClusterId(), inventoryVO);
-            // 执行删除节点操作
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
-            LOGGER.info("delete node {} result is, {}", nodeId, execResultInfoVO);
-            if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED);
-            }
-            // 删除数据库中数据
-            if (devopsClusterNodeMapper.deleteByPrimaryKey(nodeId) != 1) {
-                throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_FAILED);
-            }
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    nodeId,
-                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
-                    ClusterOperationStatusEnum.SUCCESS.value(),
-                    null);
-        } catch (Exception e) {
-            // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    nodeId,
-                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
-        } finally {
-            // 删除锁
-            stringRedisTemplate.delete(lockKey);
-            stringRedisTemplate.delete(operatingKey);
-            sshUtil.sshDisconnect(sshClient);
-        }
 
     }
 
-    private InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> devopsClusterNodeDTOS) {
+    public InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> devopsClusterNodeDTOS) {
         InventoryVO inventoryVO = new InventoryVO();
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.INNER.getType())) {// 设置所有节点
@@ -252,6 +220,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
         }
         return inventoryVO;
+    }
+
+    @Override
+    @Transactional
+    public void baseDelete(Long id) {
+        Assert.notNull(id, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+        if (devopsClusterNodeMapper.deleteByPrimaryKey(id) != 1) {
+            throw new CommonException(ERROR_DELETE_NODE_FAILED);
+        }
     }
 
     @Override
@@ -302,76 +279,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
+        devopsClusterNodeOperatorService.deleteNodeRole(projectId, devopsClusterNodeDTO, role, lockKey, operatingKey);
 
-        SSHClient sshClient = new SSHClient();
-        try {
-            // 删除节点角色
-            // 删除集群中的node
-            // 1. 查询集群节点信息
-            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.OUTTER);
-            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(devopsClusterNodeDTO.getClusterId(), ClusterNodeTypeEnum.INNER);
-
-
-            // 计算invertory配置
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
-            String command = null;
-            if (ClusterNodeRoleEnum.isMaster(role)) {
-                inventoryVO.getDelMaster().append(devopsClusterNodeDTO.getName());
-                command = DevopsClusterCommandConstants.REMOVE_MASTER_YAML;
-            }
-            if (ClusterNodeRoleEnum.isEtcd(role)) {
-                inventoryVO.getDelEtcd().append(devopsClusterNodeDTO.getName());
-                command = DevopsClusterCommandConstants.REMOVE_ETCD_YAML;
-            }
-            // 连接主机
-            DevopsClusterNodeDTO linkNode;
-            if (!CollectionUtils.isEmpty(outerNodes)) {
-                linkNode = outerNodes.get(0);
-            } else {
-                linkNode = innerNodes.get(0);
-            }
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
-            hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
-            sshUtil.sshConnect(hostConnectionVO, sshClient);
-            // 上传配置文件
-            generateAndUploadNodeConfiguration(sshClient, devopsClusterNodeDTO.getClusterId(), inventoryVO);
-            // 执行删除节点操作
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
-            LOGGER.info("operating cluster failed. node id {} result is, {}", nodeId, execResultInfoVO);
-            if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED);
-            }
-
-            // 删除数据库数据
-            int resultRole = 0;
-            if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
-                resultRole = 1;
-            } else {
-                resultRole = devopsClusterNodeDTO.getRole() - role;
-            }
-
-            devopsClusterNodeDTO.setRole(resultRole == 0 ? 1 : resultRole);
-            if (devopsClusterNodeMapper.updateByPrimaryKey(devopsClusterNodeDTO) != 1) {
-                throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
-            }
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    nodeId,
-                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
-                    ClusterOperationStatusEnum.SUCCESS.value(),
-                    null);
-        } catch (Exception e) {
-            // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    nodeId,
-                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
-        } finally {
-            // 删除锁
-            stringRedisTemplate.delete(lockKey);
-            stringRedisTemplate.delete(operatingKey);
-            sshUtil.sshDisconnect(sshClient);
-        }
 
 
     }
@@ -455,11 +364,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    @Async
-    @Transactional
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        nodeVO.setProjectId(projectId);
 
         // 获取锁,失败则抛出异常，成功则程序继续
         LOGGER.info(">>>>>>>>> [add node] check cluster {} is operating. <<<<<<<<<<<<<<<", clusterId);
@@ -476,80 +384,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String operatingKey = String.format(CLUSTER_OPERATING_KEY, clusterId);
         stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
+        devopsClusterNodeOperatorService.addNode(projectId, clusterId, nodeVO, lockKey, operatingKey);
 
-        String configFilePath = UUIDUtils.generateUUID() + ".ini";
-
-        SSHClient sshClient = new SSHClient();
-        try {
-            // 保存数据库记录
-            LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<", clusterId);
-            // 1. 查询集群节点信息
-            List<DevopsClusterNodeDTO> outerNodes = queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.OUTTER);
-            List<DevopsClusterNodeDTO> innerNodes = queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.INNER);
-
-
-            DevopsClusterNodeDTO devopsClusterNodeDTO = queryByClusterIdAndNodeName(clusterId, nodeVO.getName());
-            if (devopsClusterNodeDTO == null) {
-                devopsClusterNodeDTO = ConvertUtils.convertObject(nodeVO, DevopsClusterNodeDTO.class);
-                devopsClusterNodeDTO.setClusterId(clusterId);
-                if (devopsClusterNodeMapper.insertSelective(devopsClusterNodeDTO) != 1) {
-                    throw new CommonException(ERROR_ADD_NODE_FAILED);
-                }
-            } else {
-                devopsClusterNodeDTO.setRole(devopsClusterNodeDTO.getRole() + nodeVO.getRole());
-                if (devopsClusterNodeMapper.updateByPrimaryKey(devopsClusterNodeDTO) != 1) {
-                    throw new CommonException(ERROR_ADD_NODE_FAILED);
-                }
-            }
-            // 计算inventory配置
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(innerNodes);
-            addNodeIniConfig(inventoryVO, nodeVO);
-            // 连接主机
-            DevopsClusterNodeDTO linkNode;
-            if (!CollectionUtils.isEmpty(outerNodes)) {
-                linkNode = outerNodes.get(0);
-            } else {
-                linkNode = innerNodes.get(0);
-            }
-            HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
-            hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
-            LOGGER.info(">>>>>>>>> [add node]  cluster {} ssh connect. <<<<<<<<<<<<<<<", clusterId);
-            sshUtil.sshConnect(hostConnectionVO, sshClient);
-            // 上传配置文件
-            generateAndUploadNodeConfiguration(sshClient, clusterId, inventoryVO);
-            // 执行添加节点操作
-            String command;
-            if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
-                command = ADD_MASTER_YML;
-            } else if (ClusterNodeRoleEnum.isWorker(devopsClusterNodeDTO.getRole())) {
-                command = ADD_WORKER_YML;
-            } else {
-                throw new CommonException(ERROR_ADD_NODE_FAILED);
-            }
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
-            LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
-            if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED);
-            }
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    null,
-                    ClusterOperatingTypeEnum.ADD_NODE.value(),
-                    ClusterOperationStatusEnum.SUCCESS.value(),
-                    null);
-        } catch (Exception e) {
-            // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(clusterId,
-                    null,
-                    ClusterOperatingTypeEnum.ADD_NODE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
-            throw new CommonException(ERROR_ADD_NODE_FAILED);
-        } finally {
-            // 删除锁
-            stringRedisTemplate.delete(lockKey);
-            stringRedisTemplate.delete(operatingKey);
-            sshUtil.sshDisconnect(sshClient);
-        }
     }
 
     @Override
@@ -573,28 +409,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
 
-    private void addNodeIniConfig(InventoryVO inventoryVO, DevopsClusterNodeVO node) {
-        if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
-            inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
-                    .append(System.lineSeparator());
-        } else {
-            //todo 处理密钥认证方式
-        }
-        // 设置master节点
-        if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {
-            inventoryVO.getNewMaster().append(node.getName())
-                    .append(System.lineSeparator());
-        }
-        // 目前不支持,添加etc节点
-        if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(node.getRole())) {
-            throw new CommonException(ERROR_ADD_NODE_FAILED);
-        }
-        // 设置worker节点
-        if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(node.getRole())) {
-            inventoryVO.getNewWorker().append(node.getName())
-                    .append(System.lineSeparator());
-        }
-    }
+
 
     @Override
     public void saveNode(List<DevopsClusterNodeDTO> devopsClusterDTOList, Long projectId, Long clusterId) {

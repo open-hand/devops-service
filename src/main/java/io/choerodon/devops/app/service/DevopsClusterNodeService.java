@@ -10,6 +10,9 @@ import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
 
 public interface DevopsClusterNodeService {
+    void baseSave(DevopsClusterNodeDTO devopsClusterNodeDTO);
+    void baseUpdateNodeRole(Long id, Integer role);
+
     /**
      * 测试当前节点连通性
      *
@@ -123,4 +126,8 @@ public interface DevopsClusterNodeService {
      * @param clusterId
      */
     void deleteByClusterId(Long clusterId);
+
+    InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> innerNodes);
+
+    void baseDelete(Long id);
 }
