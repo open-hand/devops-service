@@ -128,36 +128,32 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(), log);
             sshUtil.sshExec(ssh, c7nNexusDeployDTO, jarDeploy.getValue(), jarDeploy.getWorkingPath(), log);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+            devopsDeployRecordService.saveRecord(
                     projectId,
-                    DeployType.MANUAL.getType(),
+                    DeployType.MANUAL,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.SUCCESS.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.JAR.value(),
+                    DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+            devopsDeployRecordService.saveRecord(
                     projectId,
-                    DeployType.MANUAL.getType(),
+                    DeployType.MANUAL,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.FAILED.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.JAR.value(),
+                    DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
             throw new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
         } finally {
             sshUtil.closeSsh(ssh, null);
@@ -202,38 +198,34 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             // 3.3
             sshUtil.dockerRun(ssh, imageDeploy.getValue(), imageDeploy.getContainerName(), c7nImageDeployDTO, log);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+            devopsDeployRecordService.saveRecord(
                     projectId,
-                    DeployType.MANUAL.getType(),
+                    DeployType.MANUAL,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.SUCCESS.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.IMAGE.value(),
+                    DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!");
         }catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+            devopsDeployRecordService.saveRecord(
                     projectId,
-                    DeployType.MANUAL.getType(),
+                    DeployType.MANUAL,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.FAILED.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.IMAGE.value(),
+                    DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
             throw new CommonException("error.deploy.hostImage.failed.", e);
         } finally {
             sshUtil.closeSsh(ssh, null);

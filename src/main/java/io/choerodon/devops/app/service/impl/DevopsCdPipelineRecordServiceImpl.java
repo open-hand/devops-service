@@ -349,6 +349,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     c7nImageDeployDTO.setPullPassword(harborRepoDTO.getPullRobot().getToken());
                 }
                 c7nImageDeployDTO.setPullCmd("docker pull " + ciPipelineImageDTO.getImageTag());
+                // 添加应用服务名用于部署记录
+                AppServiceDTO appServiceDTO = applicationService.baseQuery(harborRepoDTO.getAppServiceId());
+                if (appServiceDTO != null) {
+                    imageDeploy.setImageName(appServiceDTO.getName());
+
+                }
             }
             // 1. 更新状态 记录镜像信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
@@ -369,20 +375,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
             // 插入部署记录
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
-                    jobRecordDTO.getProjectId(),
-                    DeployType.AUTO.getType(),
+
+            devopsDeployRecordService.saveRecord(jobRecordDTO.getProjectId(),
+                    DeployType.AUTO,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.SUCCESS.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.IMAGE.value(),
+                    DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     deployVersion,
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } catch (Exception e) {
@@ -391,194 +395,24 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
             // 插入部署记录
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+            devopsDeployRecordService.saveRecord(
                     jobRecordDTO.getProjectId(),
-                    DeployType.AUTO.getType(),
+                    DeployType.AUTO,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.FAILED.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.IMAGE.value(),
+                    DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     deployVersion,
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
         } finally {
             devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
         }
         return status;
     }
-
-    // todo 待删除
-//    private void dockerLogin(SSHClient ssh, C7nImageDeployDTO imageTagVo, StringBuilder log) throws IOException {
-//        Session session = null;
-//        try {
-//            session = ssh.startSession();
-//            String loginExec = String.format("docker login -u '%s' -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
-//            LOGGER.info(loginExec);
-//            Session.Command cmd = session.exec(loginExec);
-//
-//            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-//            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-//            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-//            log.append(loggerInfo);
-//            log.append(loggerError);
-//            LOGGER.info(loggerInfo);
-//            LOGGER.info(loggerError);
-//            LOGGER.info("docker login status:{}", cmd.getExitStatus());
-//
-//            if (cmd.getExitStatus() != 0) {
-//                throw new CommonException(ERROR_DOCKER_LOGIN);
-//            }
-//
-//        } finally {
-//            assert session != null;
-//            session.close();
-//        }
-//    }
-//
-//    private void dockerPull(SSHClient ssh, C7nImageDeployDTO imageTagVo, StringBuilder log) throws IOException {
-//        Session session = null;
-//        try {
-//            session = ssh.startSession();
-//            LOGGER.info(imageTagVo.getPullCmd());
-//            Session.Command cmd = session.exec(imageTagVo.getPullCmd());
-//            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-//            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-//            execPullImage(cmd);
-//            log.append(System.lineSeparator());
-//            log.append(loggerInfo);
-//            log.append(loggerError);
-//            LOGGER.info(loggerInfo);
-//            LOGGER.info(loggerError);
-//            LOGGER.info("docker pull status:{}", cmd.getExitStatus());
-//            if (cmd.getExitStatus() != 0) {
-//                throw new CommonException(ERROR_DOCKER_PULL);
-//            }
-//        } finally {
-//            assert session != null;
-//            session.close();
-//        }
-//    }
-//
-//    /**
-//     * 解决pull 镜像时间较长
-//     * 等3分钟
-//     */
-//    private void execPullImage(Session.Command cmd) {
-//        for (int i = 0; i < 30; i++) {
-//            if (cmd.getExitStatus() == null) {
-//                LOGGER.info("Pulling the image!!!");
-//                try {
-//                    cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-//                } catch (ConnectionException e) {
-//                    e.printStackTrace();
-//                }
-//            } else {
-//                break;
-//            }
-//        }
-//    }
-//
-//    private void dockerRun(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {
-//        Session session = null;
-//        try {
-//            session = ssh.startSession();
-//            String[] strings = imageDeploy.getValue().split("\n");
-//            String values = "";
-//            for (String s : strings) {
-//                if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
-//                    values = s;
-//                }
-//            }
-//            if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
-//                throw new CommonException("error.instruction");
-//            }
-//
-//            // 判断镜像是否存在 存在删除 部署
-//            StringBuilder dockerRunExec = new StringBuilder();
-//            dockerRunExec.append(values.replace("${containerName}", imageDeploy.getContainerName()).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("docker pull", "")));
-//            LOGGER.info(dockerRunExec.toString());
-//            Session.Command cmd = session.exec(dockerRunExec.toString());
-//            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-//            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-//            LOGGER.info(loggerInfo);
-//            LOGGER.info(loggerError);
-//            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-//            log.append(System.lineSeparator());
-//            log.append(loggerInfo);
-//            log.append(loggerError);
-//            LOGGER.info("docker run status:{}", cmd.getExitStatus());
-//            if (cmd.getExitStatus() != 0) {
-//                throw new CommonException(ERROR_DOCKER_RUN);
-//            }
-//        } finally {
-//            assert session != null;
-//            session.close();
-//        }
-//
-//    }
-//
-//    private void dockerStop(SSHClient ssh, CdHostDeployConfigVO.ImageDeploy imageDeploy, StringBuilder log) throws IOException {
-//        Session session = null;
-//        try {
-//            session = ssh.startSession();
-//
-//            // 判断镜像是否存在 存在删除 部署
-//            StringBuilder dockerRunExec = new StringBuilder();
-//            dockerRunExec.append("docker stop ").append(imageDeploy.getContainerName()).append(" && ");
-//            dockerRunExec.append("docker rm ").append(imageDeploy.getContainerName());
-//            LOGGER.info(dockerRunExec.toString());
-//            Session.Command cmd = session.exec(dockerRunExec.toString());
-//            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-//            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-//            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-//            log.append(System.lineSeparator());
-//            log.append(loggerInfo);
-//            log.append(loggerError);
-//            LOGGER.info(loggerInfo);
-//            LOGGER.info(loggerError);
-//            LOGGER.info("docker stop status:{}", cmd.getExitStatus());
-//        } finally {
-//            assert session != null;
-//            session.close();
-//        }
-//
-//    }
-//
-//    private void sshConnect(HostConnectionVO hostConnectionVO, SSHClient ssh) throws IOException {
-//        // 3.
-////        ssh.loadKnownHosts();
-//        ssh.addHostKeyVerifier(new PromiscuousVerifier());
-//        //根据主机来源获取主机连接信息
-//        if (HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
-//            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostConnectionVO.getHostId());
-//            dtoToHostConnVo(hostConnectionVO, devopsHostDTO);
-//        }
-//
-//        ssh.connect(hostConnectionVO.getHostIp(), TypeUtil.objToInteger(hostConnectionVO.getHostPort()));
-//        if (hostConnectionVO.getAccountType().equals(HostAuthType.ACCOUNTPASSWORD.value())) {
-//            ssh.authPassword(hostConnectionVO.getUserName(), hostConnectionVO.getPassword());
-//        } else {
-//            String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());
-//            KeyProvider keyProvider = ssh.loadKeys(str, null, null);
-//            ssh.authPublickey(hostConnectionVO.getUserName(), keyProvider);
-//        }
-//    }
-//
-//    private void dtoToHostConnVo(HostConnectionVO hostConnectionVO, DevopsHostDTO devopsHostDTO) {
-//        if (devopsHostDTO != null) {
-//            hostConnectionVO.setHostIp(devopsHostDTO.getHostIp());
-//            hostConnectionVO.setHostPort(String.valueOf(devopsHostDTO.getSshPort()));
-//            hostConnectionVO.setAccountType(devopsHostDTO.getAuthType());
-//            hostConnectionVO.setUserName(devopsHostDTO.getUsername());
-//            hostConnectionVO.setPassword(devopsHostDTO.getPassword());
-//            hostConnectionVO.setAccountKey(devopsHostDTO.getPassword());
-//        }
-//    }
 
     private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
         String regexStr = null;
@@ -684,39 +518,35 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+            devopsDeployRecordService.saveRecord(
                     jobRecordDTO.getProjectId(),
-                    DeployType.AUTO.getType(),
+                    DeployType.AUTO,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.SUCCESS.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.JAR.value(),
+                    DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
         } catch (Exception e) {
             e.printStackTrace();
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+            devopsDeployRecordService.saveRecord(
                     jobRecordDTO.getProjectId(),
-                    DeployType.AUTO.getType(),
+                    DeployType.AUTO,
                     null,
-                    DeployModeEnum.HOST.value(),
+                    DeployModeEnum.HOST,
                     devopsHostDTO.getId(),
                     devopsHostDTO.getName(),
                     PipelineStatus.FAILED.toValue(),
-                    new Date(),
-                    DeployObjectTypeEnum.JAR.value(),
+                    DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
                     null);
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
         } finally {
             devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
