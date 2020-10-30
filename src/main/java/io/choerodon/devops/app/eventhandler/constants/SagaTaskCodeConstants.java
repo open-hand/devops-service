@@ -273,6 +273,10 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_INSTALL_K8S = "devops-install-k8s";
 
+    /**
+     * 检查节点
+     */
+    public static final String DEVOPS_NODE_CHECK = "devops-node-check";
 
     private SagaTaskCodeConstants() {
     }

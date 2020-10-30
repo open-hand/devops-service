@@ -31,13 +31,14 @@ import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
+import io.choerodon.devops.infra.enums.ClusterOperationTypeEnum;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 
 /**
@@ -92,6 +93,8 @@ public class DevopsSagaHandler {
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
     private DevopsClusterNodeService devopsClusterNodeService;
+    @Autowired
+    private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
 
     /**
      * devops创建环境
@@ -530,12 +533,32 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * 检查节点
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_NODE_CHECK,
+            sagaCode = DEVOPS_INSTALL_K8S,
+            description = "Devops检查节点", seq = 1, maxRetryCount = 3)
+    public String checkNode(String payload) {
+        DevopsClusterInstallPayload devopsClusterInstallPayload = devopsClusterNodeService.checkAndSaveNode(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+
+        // 到达此处表示节点检查、数据保存成功，创建集群安装操作，接下来开始安装集群
+        DevopsClusterOperationRecordDTO installOperation = new DevopsClusterOperationRecordDTO()
+                .setClusterId(devopsClusterInstallPayload.getClusterId())
+                .setType(ClusterOperationTypeEnum.INSTALL_K8S.getType())
+                .setStatus(ClusterOperationStatusEnum.OPERATING.value());
+        devopsClusterOperationRecordMapper.insert(installOperation);
+        devopsClusterInstallPayload.setOperationRecordId(installOperation.getId());
+
+        return JsonHelper.marshalByJackson(devopsClusterInstallPayload);
+    }
+
+    /**
      * devops安装k8s
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_INSTALL_K8S,
             sagaCode = DEVOPS_INSTALL_K8S,
-            description = "Devops安装k8s", seq = 1)
+            description = "Devops安装k8s", seq = 2)
     public void installK8s(String payload) {
-        devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterOperationPayload.class));
+        devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
     }
 }

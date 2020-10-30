@@ -34,13 +34,16 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsClusterValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.DevopsClusterOperationPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
+import io.choerodon.devops.infra.enums.ClusterStatusEnum;
+import io.choerodon.devops.infra.enums.ClusterTypeEnum;
+import io.choerodon.devops.infra.enums.PolarisScopeType;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -152,45 +155,40 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Transactional
     @Override
     @Saga(code = "create-cluster", description = "创建集群", inputSchema = "{}")
-    public DevopsClusterSshNodeInfoVO createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
-        // 提供外网访问节点
-        DevopsClusterNodeVO devopsClusterOutterNodeVO = devopsClusterReqVO.getDevopsClusterOutterNodeVO();
+    public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        // 判断组织下是否还能创建集群
+        checkEnableCreateClusterOrThrowE(projectId);
+        // 检查节点满足要求
         devopsClusterValidator.check(devopsClusterReqVO);
-        // 保存集群信息
-        DevopsClusterDTO devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.CREATED.value());
-        DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO = new DevopsClusterSshNodeInfoVO()
-                .setClusterId(devopsClusterDTO.getId())
-                .setDevopsClusterNodeVO(devopsClusterOutterNodeVO == null ? devopsClusterReqVO.getDevopsClusterInnerNodeVOList().get(0) : devopsClusterOutterNodeVO);
-        List<DevopsClusterNodeVO> devopsClusterNodeVOList = devopsClusterReqVO.getDevopsClusterInnerNodeVOList();
+
+        // 提供外网信息节点
+        DevopsClusterNodeVO devopsClusterOutterNodeVO = devopsClusterReqVO.getDevopsClusterOutterNodeVO();
+        // 集群节点
+        List<DevopsClusterNodeVO> devopsClusterInnerNodeVOList = devopsClusterReqVO.getDevopsClusterInnerNodeVOList();
+        // 需要保存的节点
+        List<DevopsClusterNodeDTO> devopsClusterNodeToSaveDTOList = new ArrayList<>();
+
+        HostConnectionVO hostConnectionVO;
+        // 选出进行ssh连接的节点
         if (devopsClusterOutterNodeVO != null) {
-            devopsClusterOutterNodeVO.setName(devopsClusterReqVO.getCode());
+            devopsClusterOutterNodeVO.setName(devopsClusterReqVO.getCode() + "-sshNode");
             devopsClusterOutterNodeVO.setType(ClusterNodeTypeEnum.OUTTER.getType());
-            devopsClusterNodeVOList.add(devopsClusterOutterNodeVO);
+            hostConnectionVO = ConvertUtils.convertObject(devopsClusterOutterNodeVO, HostConnectionVO.class);
+            devopsClusterNodeToSaveDTOList.add(ConvertUtils.convertObject(devopsClusterOutterNodeVO, DevopsClusterNodeDTO.class));
+        } else {
+            hostConnectionVO = ConvertUtils.convertObject(devopsClusterInnerNodeVOList.get(0), HostConnectionVO.class);
         }
 
-        // 检测节点
-        devopsClusterNodeService.checkAndSaveNode(projectId, devopsClusterDTO.getId(),
-                ConvertUtils.convertList(devopsClusterNodeVOList, DevopsClusterNodeDTO.class),
-                ConvertUtils.convertObject(devopsClusterOutterNodeVO == null ? devopsClusterReqVO.getDevopsClusterInnerNodeVOList().get(0) : devopsClusterOutterNodeVO, HostConnectionVO.class));
-        return devopsClusterSshNodeInfoVO;
-    }
+        devopsClusterNodeToSaveDTOList.addAll(ConvertUtils.convertList(devopsClusterInnerNodeVOList, DevopsClusterNodeDTO.class));
 
-    @Transactional
-    @Override
-    public void startInstallK8s(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO) {
-        // 保存操作记录
-        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO()
-                .setType(ClusterOperationTypeEnum.INSTALL_K8S.getType())
-                .setClusterId(devopsClusterSshNodeInfoVO.getClusterId())
-                .setStatus(ClusterOperationStatusEnum.OPERATING.value());
-        devopsClusterOperationRecordMapper.insert(devopsClusterOperationRecordDTO);
+        String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
 
-        // 发送saga开始安装
-        DevopsClusterOperationPayload devopsClusterOperationPayload = new DevopsClusterOperationPayload()
+        DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
+                .setDevopsClusterReqVO(devopsClusterReqVO)
                 .setProjectId(projectId)
-                .setClusterId(devopsClusterSshNodeInfoVO.getClusterId())
-                .setOperationRecordId(devopsClusterOperationRecordDTO.getId())
-                .setDevopsClusterNodeVO(devopsClusterSshNodeInfoVO.getDevopsClusterNodeVO());
+                .setHostConnectionVO(hostConnectionVO)
+                .setRedisKey(redisKey)
+                .setDevopsClusterNodeToSaveDTOList(devopsClusterNodeToSaveDTOList);
 
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -200,9 +198,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                         .withRefType(SAGA_INSTALL_K8S_REF_TYPE)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_INSTALL_K8S),
                 builder -> builder
-                        .withPayloadAndSerialize(devopsClusterOperationPayload)
-                        .withRefId(String.valueOf(devopsClusterSshNodeInfoVO.getClusterId()))
+                        .withPayloadAndSerialize(devopsClusterInstallPayload)
+                        .withRefId(devopsClusterReqVO.getCode())
                         .withSourceId(projectId));
+
+        return redisKey;
     }
 
     @Transactional
@@ -220,8 +220,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public DevopsNodeCheckResultVO checkProgress(Long projectId, Long clusterId) {
-        String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, clusterId);
+    public DevopsNodeCheckResultVO checkProgress(Long projectId, String redisKey) {
         String value = stringRedisTemplate.opsForValue().get(redisKey);
         if (StringUtils.isEmpty(value)) {
             return new DevopsNodeCheckResultVO();
@@ -855,7 +854,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return devopsClusterRepVO;
     }
 
-    private DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO, String type) {
+    @Override
+    public DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO, String type) {
         // 判断组织下是否还能创建集群
         checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject;

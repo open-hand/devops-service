@@ -32,9 +32,9 @@ public interface DevopsClusterService {
      *
      * @param projectId          项目id
      * @param devopsClusterReqVO 集群信息
-     * @return
+     * @return 本次操作id
      */
-    DevopsClusterSshNodeInfoVO createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) throws Exception;
+    String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) throws Exception;
 
     /**
      * 激活集群
@@ -222,14 +222,6 @@ public interface DevopsClusterService {
     Boolean checkEnableCreateCluster(Long projectId);
 
     /**
-     * 开始安装k8s
-     *
-     * @param projectId                  项目id
-     * @param devopsClusterSshNodeInfoVO ssh连接的节点信息
-     */
-    void startInstallK8s(Long projectId, DevopsClusterSshNodeInfoVO devopsClusterSshNodeInfoVO);
-
-    /**
      * 重试安装k8s
      */
     void retryInstallK8s(Long projectId, Long clusterId);
@@ -238,9 +230,9 @@ public interface DevopsClusterService {
      * 获得节点检查进度
      *
      * @param projectId 项目id
-     * @param clusterId ssh连接的节点信息
+     * @param key       redisKey
      */
-    DevopsNodeCheckResultVO checkProgress(Long projectId, Long clusterId);
+    DevopsNodeCheckResultVO checkProgress(Long projectId, String key);
 
     /**
      * 获得agent安装命令
@@ -250,4 +242,14 @@ public interface DevopsClusterService {
      * @return 安装命令
      */
     String getInstallString(DevopsClusterDTO devopsClusterDTO, String userEmail);
+
+    /**
+     * 保存集群信息
+     *
+     * @param projectId          项目id
+     * @param devopsClusterReqVO 集群信息
+     * @param type               类型
+     * @return
+     */
+    DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO, String type);
 }

@@ -5,12 +5,13 @@ import java.util.List;
 import net.schmizz.sshj.SSHClient;
 
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.DevopsClusterOperationPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallPayload;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
 
 public interface DevopsClusterNodeService {
     void baseSave(DevopsClusterNodeDTO devopsClusterNodeDTO);
+
     void baseUpdateNodeRole(Long id, Integer role);
 
     /**
@@ -23,23 +24,11 @@ public interface DevopsClusterNodeService {
     boolean testConnection(Long projectId, ClusterHostConnectionVO clusterHostConnectionVO);
 
     /**
-     * 保存节点信息
-     *
-     * @param devopsClusterDTOList 节点列表
-     * @param projectId            项目id
-     * @param clusterId            集群id
-     */
-    void saveNode(List<DevopsClusterNodeDTO> devopsClusterDTOList, Long projectId, Long clusterId);
-
-    /**
      * 检查所有节点信息
-     *
-     * @param projectId                项目id
-     * @param clusterId                集群id
-     * @param devopsClusterNodeDTOList 节点列表
-     * @param hostConnectionVO         ssh信息
+     * @param devopsClusterInstallPayload payload
+     * @return
      */
-    void checkAndSaveNode(Long projectId, Long clusterId, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList, HostConnectionVO hostConnectionVO);
+    DevopsClusterInstallPayload checkAndSaveNode(DevopsClusterInstallPayload devopsClusterInstallPayload);
 
     /**
      * 批量插入
@@ -62,10 +51,19 @@ public interface DevopsClusterNodeService {
      * 生成并上传集群的节点配置信息
      *
      * @param ssh         ssh连接对象
+     * @param suffix      目录后缀
      * @param inventoryVO 配置对应节点
      */
-    void generateAndUploadNodeConfiguration(SSHClient ssh, Long clusterId, InventoryVO inventoryVO);
+    void generateAndUploadNodeConfiguration(SSHClient ssh, String suffix, InventoryVO inventoryVO);
 
+    /**
+     * @param ssh          ssh连接对象
+     * @param suffix       目录后缀
+     * @param command      命令
+     * @param logPath      日志输出路径
+     * @param exitCodePath 退出码保存路径
+     */
+    void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath);
 
     /**
      * 删除node
@@ -87,9 +85,9 @@ public interface DevopsClusterNodeService {
     /**
      * 安装k8s
      *
-     * @param devopsClusterOperationPayload
+     * @param devopsClusterInstallPayload
      */
-    void installK8s(DevopsClusterOperationPayload devopsClusterOperationPayload);
+    void installK8s(DevopsClusterInstallPayload devopsClusterInstallPayload);
 
     List<DevopsClusterNodeDTO> queryByClusterId(Long clusterId);
 
@@ -119,6 +117,16 @@ public interface DevopsClusterNodeService {
     void deleteByClusterId(Long clusterId);
 
     InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> innerNodes);
+
+    /**
+     * 保存集群信息和节点信息
+     *
+     * @param devopsClusterDTOList 节点列表
+     * @param projectId            项目id
+     * @param devopsClusterReqVO   集群信息
+     * @return 集群id
+     */
+    Long saveInfo(List<DevopsClusterNodeDTO> devopsClusterDTOList, Long projectId, DevopsClusterReqVO devopsClusterReqVO);
 
     void baseDelete(Long id);
 }
