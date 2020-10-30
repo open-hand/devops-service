@@ -162,8 +162,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    @Async
-    @Transactional
     public void delete(Long projectId, Long nodeId) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
@@ -232,29 +230,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public NodeRoleDeleteCheckVO checkEnableDeleteRole(Long projectId, Long nodeId) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
-        Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
-
-        NodeRoleDeleteCheckVO nodeRoleDeleteCheckVO = new NodeRoleDeleteCheckVO();
-        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())
-                || ClusterNodeRoleEnum.isMasterAndWorker(devopsClusterNodeDTO.getRole())) {
-            nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
-        }
-        if (ClusterNodeRoleEnum.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
-            nodeRoleDeleteCheckVO.setEnableDeleteMasterRole(true);
-            nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
-        }
-        if (ClusterNodeRoleEnum.isEtcdAndWorker(devopsClusterNodeDTO.getRole())) {
-            nodeRoleDeleteCheckVO.setEnableDeleteEtcdRole(true);
-        }
-        return nodeRoleDeleteCheckVO;
-    }
-
-    @Override
-    @Async
-    @Transactional
     public void deleteRole(Long projectId, Long nodeId, Integer role) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);

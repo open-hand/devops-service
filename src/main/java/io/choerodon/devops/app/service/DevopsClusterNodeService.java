@@ -76,15 +76,6 @@ public interface DevopsClusterNodeService {
     void delete(Long projectId, Long nodeId);
 
     /**
-     * 校验是否能够删除节点角色
-     *
-     * @param projectId
-     * @param nodeId
-     * @return
-     */
-    NodeRoleDeleteCheckVO checkEnableDeleteRole(Long projectId, Long nodeId);
-
-    /**
      * 删除节点角色
      *
      * @param projectId

@@ -59,17 +59,6 @@ public class DevopsClusterNodeController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation("校验是否能够删除节点角色")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/{node_id}/check_enable_delete_role")
-    public ResponseEntity<NodeRoleDeleteCheckVO> checkEnableDeleteRole(
-            @ApiParam(value = "项目id")
-            @PathVariable("project_id") Long projectId,
-            @ApiParam(value = "node id")
-            @PathVariable(value = "node_id") @Encrypt Long nodeId) {
-        return ResponseEntity.ok(devopsClusterNodeService.checkEnableDeleteRole(projectId, nodeId));
-    }
-
     @ApiOperation("删除节点角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{node_id}/roles/{role}")
