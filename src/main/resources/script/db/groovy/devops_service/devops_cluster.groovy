@@ -87,4 +87,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
             column(name: 'status',type: 'VARCHAR(32)',remarks: '集群状态',afterColumn: 'type')
         }
     }
+
+    changeSet(author: 'lihao',id: '2020-10-30-fix-status'){
+        sql("UPDATE devops_cluster SET status='running'")
+    }
 }

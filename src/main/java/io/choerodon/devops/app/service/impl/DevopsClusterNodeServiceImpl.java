@@ -611,7 +611,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                             // k8s安装成功
                             LOGGER.info(">>>>>>>>> [update cluster status] cluster [ {} ] operation [ {} ] install success <<<<<<<<<", clusterId, record.getId());
                             record.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
-                            devopsClusterDTO.setStatus(ClusterStatusEnum.UNCONNECTED.value());
+                            devopsClusterDTO.setStatus(ClusterStatusEnum.DISCONNECT.value());
                             // 安装agent, 第一步安装helm ，第二步安装agent。这一步骤如果出现错误,只保存错误信息
                             installAgent(devopsClusterDTO, record, ssh);
                         } else {
