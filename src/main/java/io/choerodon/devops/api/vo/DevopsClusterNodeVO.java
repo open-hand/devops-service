@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -10,36 +12,44 @@ public class DevopsClusterNodeVO {
     private Long id;
 
     @ApiModelProperty("节点名称")
+    @NotNull(message = "error.node.name.is.null")
     private String name;
 
     @ApiModelProperty("节点类型，作为连接介质节点提供公网ip或者集群节点")
+    @NotNull(message = "error.node.type.is.null")
     private String type;
 
     /**
      * {@link ClusterNodeRoleEnum}
      */
     @ApiModelProperty("节点角色")
+    @NotNull(message = "error.node.role.is.null")
     private Integer role;
 
     @ApiModelProperty("项目id")
     private Long projectId;
 
     @ApiModelProperty("节点ip")
+    @NotNull(message = "error.node.hostIp.is.null")
     private String hostIp;
 
     @ApiModelProperty("节点ssh的端口")
+    @NotNull(message = "error.node.hostPort.is.null")
     private Integer hostPort;
 
     /**
      * {@link io.choerodon.devops.infra.enums.HostAuthType}
      */
     @ApiModelProperty("认证类型")
+    @NotNull(message = "error.node.authType.is.null")
     private String authType;
 
     @ApiModelProperty("用户名")
+    @NotNull(message = "error.node.username.is.null")
     private String username;
 
     @ApiModelProperty("密码/rsa秘钥")
+    @NotNull(message = "error.node.password.is.null")
     private String password;
 
     public Long getId() {
