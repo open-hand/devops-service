@@ -40,10 +40,7 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
-import io.choerodon.devops.infra.enums.ClusterStatusEnum;
-import io.choerodon.devops.infra.enums.ClusterTypeEnum;
-import io.choerodon.devops.infra.enums.PolarisScopeType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -156,6 +153,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Saga(code = "create-cluster", description = "创建集群", inputSchema = "{}")
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
+
+        // 如果这个key存在，表明已经有相同的集群处于创建中，禁止重复创建
+        Boolean exists = stringRedisTemplate.hasKey(redisKey);
+        if (exists) {
+            throw new CommonException("error.cluster.installing");
+        }
+
         // 判断组织下是否还能创建集群
         checkEnableCreateClusterOrThrowE(projectId);
         // 检查节点满足要求
@@ -180,8 +185,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         devopsClusterNodeToSaveDTOList.addAll(ConvertUtils.convertList(devopsClusterInnerNodeVOList, DevopsClusterNodeDTO.class));
-
-        String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
 
         DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
                 .setDevopsClusterReqVO(devopsClusterReqVO)
@@ -225,7 +228,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (StringUtils.isEmpty(value)) {
             return new DevopsNodeCheckResultVO();
         }
-        return JsonHelper.unmarshalByJackson(value, DevopsNodeCheckResultVO.class);
+        DevopsNodeCheckResultVO devopsNodeCheckResultVO = JsonHelper.unmarshalByJackson(value, DevopsNodeCheckResultVO.class);
+        // 如果不是OPERATING状态，表示节点检查完成，删除这个key
+        if (!ClusterOperationStatusEnum.OPERATING.value().equalsIgnoreCase(devopsNodeCheckResultVO.getStatus())) {
+            LOGGER.info(">>>>>>>>> [check node] key {}:check complete , result: {}", redisKey, value);
+            stringRedisTemplate.delete(redisKey);
+        }
+        return devopsNodeCheckResultVO;
     }
 
     @Override
