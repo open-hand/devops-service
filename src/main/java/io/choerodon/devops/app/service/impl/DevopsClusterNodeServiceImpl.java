@@ -305,7 +305,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
             devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
             devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         } finally {
             sshUtil.sshDisconnect(ssh);
         }
@@ -441,10 +441,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             devopsNodeCheckResultVO.setErrorMsg(e.getMessage())
                     .setStatus(ClusterOperationStatusEnum.FAILED.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         } finally {
             sshUtil.sshDisconnect(ssh);
-            stringRedisTemplate.expire(redisKey, 72L, TimeUnit.DAYS);
         }
     }
 
