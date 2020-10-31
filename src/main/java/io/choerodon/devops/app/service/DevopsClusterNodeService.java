@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import net.schmizz.sshj.SSHClient;
@@ -25,6 +26,7 @@ public interface DevopsClusterNodeService {
 
     /**
      * 检查所有节点信息
+     *
      * @param devopsClusterInstallPayload payload
      * @return
      */
@@ -127,6 +129,16 @@ public interface DevopsClusterNodeService {
      * @return 集群id
      */
     Long saveInfo(List<DevopsClusterNodeDTO> devopsClusterDTOList, Long projectId, DevopsClusterReqVO devopsClusterReqVO);
+
+    /**
+     * 保存privateKey到节点上
+     *
+     * @param ssh                      ssh连接对象
+     * @param devopsClusterNodeDTOList 节点列表
+     * @return 执行结果
+     * @throws IOException
+     */
+    ExecResultInfoVO generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException;
 
     void baseDelete(Long id);
 }

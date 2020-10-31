@@ -4,6 +4,7 @@ import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,11 +92,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Override
     public boolean testConnection(Long projectId, ClusterHostConnectionVO hostConnectionVO) {
+        String password = hostConnectionVO.getPassword();
+        if (hostConnectionVO.getAuthType().equalsIgnoreCase(HostAuthType.PUBLICKEY.value())) {
+            password = Base64Util.getBase64DecodedString(password);
+        }
         return SshUtil.sshConnectForOK(hostConnectionVO.getHostIp(),
                 hostConnectionVO.getHostPort(),
                 hostConnectionVO.getAuthType(),
                 hostConnectionVO.getUsername(),
-                hostConnectionVO.getPassword());
+                password);
     }
 
     @Override
@@ -193,10 +198,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.INNER.getType())) {// 设置所有节点
                 if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
-                    inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
+                    inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                             .append(System.lineSeparator());
                 } else {
-                    //todo 处理密钥认证方式
+                    inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())))
+                            .append(System.lineSeparator());
                 }
                 // 设置master节点
                 if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {
@@ -283,11 +289,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         SSHClient ssh = new SSHClient();
         try {
             List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsClusterInstallPayload.getClusterId());
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :start to create ssh connection object <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterInstallPayload.getHostConnectionVO(), HostConnectionVO.class), ssh);
+            // 生成并上传配置
+            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             generateAndUploadNodeConfiguration(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), inventoryVO);
+            // 生成并上传k8s安装命令
             generateAndUploadAnsibleShellScript(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), INSTALL_K8S, "/tmp/install.log", "/tmp/" + devopsClusterOperationRecordDTO.getId());
+            // 上传privateKey信息到节点
+            generateAndUploadPrivateKey(ssh, devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
             ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BACKGROUND_COMMAND_TEMPLATE, "/tmp/" + INSTALL_K8S, "/tmp/nohup-install"));
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
             // 集群安装出现错误，设置错误消息并更新集群状态
@@ -425,6 +435,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
             // 上传配置文件
             generateAndUploadNodeConfiguration(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), inventoryVO);
+            // 保存privateKey到节点
+            generateAndUploadPrivateKey(ssh, devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
             // 执行检测命令
             LOGGER.info(">>>>>>>>> [check node] start to check node <<<<<<<<<");
             // 检查节点，如果返回错误，抛出错误
@@ -511,6 +523,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         } catch (Exception e) {
             throw new CommonException(e.getMessage());
         }
+    }
+
+    @Override
+    public ExecResultInfoVO generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException {
+        List<String> commands = new ArrayList<>();
+        for (DevopsClusterNodeDTO node : devopsClusterNodeDTOList) {
+            if (ClusterNodeTypeEnum.INNER.getType().equalsIgnoreCase(node.getType()) && HostAuthType.PUBLICKEY.value().equalsIgnoreCase(node.getAuthType())) {
+                commands.add(String.format(SAVE_PRIVATE_KEY_TEMPLATE, Base64Util.getBase64DecodedString(node.getPassword()), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())));
+            }
+        }
+        return sshUtil.execCommands(ssh, commands);
     }
 
     @Override

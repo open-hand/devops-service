@@ -11,10 +11,6 @@ public class DevopsClusterCommandConstants {
     public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
 
     /**
-     * inventory配置文件
-     */
-    public static final String INVENTORY_CONFIG_FILE_PATH = "/tmp/inventory.ini";
-    /**
      * 节点中ansible文件保存目录
      */
     public static final String ANSIBLE_CONFIG_TARGET_BASE_DIR = "/tmp";
@@ -28,7 +24,26 @@ public class DevopsClusterCommandConstants {
      */
     public static final String CLUSTER_OPERATING_KEY = "cluster:operating:key:%s:DevopsClusterOperatorVO";
 
-    public static final String INVENTORY_INI_TEMPLATE_FOR_ALL = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
+    /**
+     * 密码模式 节点名称 主机 端口 用户 登录密码
+     */
+    public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
+
+    /**
+     * 密钥模式 节点名称 主机 端口 用户 密钥文件路径
+     */
+    public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_private_key_file=%s";
+
+    /**
+     * 密钥保存位置模版
+     */
+    public static final String PRIVATE_KEY_SAVE_PATH_TEMPLATE = "/tmp/ssh-key/id_rsa-%s";
+
+    /**
+     * 保存密钥命令 密钥内容 密钥保存地址
+     */
+    public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo %s > %s";
+
 
     /**
      * docker安装命令模板
