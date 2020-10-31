@@ -255,10 +255,11 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
 
     private void addNodeIniConfig(InventoryVO inventoryVO, DevopsClusterNodeVO node) {
         if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
-            inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
+            inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                     .append(System.lineSeparator());
         } else {
-            //todo 处理密钥认证方式
+            inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())))
+                    .append(System.lineSeparator());
         }
         // 设置master节点
         if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {

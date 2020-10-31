@@ -1,7 +1,9 @@
 package io.choerodon.devops.infra.util;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.schmizz.sshj.SSHClient;
@@ -294,6 +296,18 @@ public class SshUtil {
             execResultInfoVO.setExitCode(cmd.getExitStatus());
             return execResultInfoVO;
         }
+    }
+
+    public ExecResultInfoVO execCommands(SSHClient sshClient, @Nonnull List<String> commands) throws IOException {
+        ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
+        execResultInfoVO.setExitCode(0);
+        for (String c : commands) {
+            execResultInfoVO = execCommand(sshClient, c);
+            if (execResultInfoVO.getExitCode() != 0) {
+                break;
+            }
+        }
+        return execResultInfoVO;
     }
 
     public void dockerRun(SSHClient ssh, String value, String containerName, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {
