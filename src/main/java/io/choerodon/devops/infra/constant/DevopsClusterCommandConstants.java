@@ -34,7 +34,6 @@ public class DevopsClusterCommandConstants {
      * docker安装命令模板
      */
     public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun\n" +
-            "echo =====================install completed\n" +
             "sudo systemctl restart docker && sudo systemctl enable docker";
 
     /**
