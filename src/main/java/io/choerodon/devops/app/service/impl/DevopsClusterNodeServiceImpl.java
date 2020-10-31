@@ -91,11 +91,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Override
     public boolean testConnection(Long projectId, ClusterHostConnectionVO hostConnectionVO) {
+        String password = hostConnectionVO.getPassword();
+        if (hostConnectionVO.getAuthType().equalsIgnoreCase(HostAuthType.PUBLICKEY.value())) {
+            password = Base64Util.getBase64DecodedString(password);
+        }
         return SshUtil.sshConnectForOK(hostConnectionVO.getHostIp(),
                 hostConnectionVO.getHostPort(),
                 hostConnectionVO.getAuthType(),
                 hostConnectionVO.getUsername(),
-                hostConnectionVO.getPassword());
+                password);
     }
 
     @Override
