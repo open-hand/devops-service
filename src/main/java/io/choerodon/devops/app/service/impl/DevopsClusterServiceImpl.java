@@ -45,7 +45,6 @@ import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -109,7 +108,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
-    private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
+    private DevopsClusterOperationRecordService devopsClusterOperationRecordService;
 
     static {
         InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
@@ -744,6 +743,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void baseDelete(Long clusterId) {
         devopsClusterMapper.deleteByPrimaryKey(clusterId);
         devopsClusterNodeService.deleteByClusterId(clusterId);
+        devopsClusterOperationRecordService.deleteByClusterId(clusterId);
     }
 
     @Override
