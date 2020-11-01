@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.enums.ClusterStatusEnum;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsClusterService {
@@ -258,4 +259,11 @@ public interface DevopsClusterService {
      * @param clusterId
      */
     void updateClusterStatusToOperating(Long clusterId);
+
+    /**
+     * 更新集群状态
+     * @param clusterId
+     * @param disconnect
+     */
+    void updateStatusById(Long clusterId, ClusterStatusEnum disconnect);
 }

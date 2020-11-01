@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -64,6 +65,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
+    private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
 
@@ -902,6 +904,20 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void updateClusterStatusToOperating(Long clusterId) {
         if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
             throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateStatusById(Long clusterId, ClusterStatusEnum status) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
+
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setId(clusterId);
+        devopsClusterDTO.setStatus(status.value());
+        if (devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_CLUSTER_STATUS_FAILED);
         }
     }
 }

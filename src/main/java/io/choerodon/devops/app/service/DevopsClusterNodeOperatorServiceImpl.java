@@ -50,6 +50,8 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private DevopsClusterOperatingRecordService devopsClusterOperatingRecordService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private DevopsClusterService devopsClusterService;
 
     @Override
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
@@ -101,6 +103,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             if (execResultInfoVO.getExitCode() != 0) {
                 throw new CommonException(ERROR_ADD_NODE_FAILED, execResultInfoVO.getStdErr());
             }
+            devopsClusterService.updateStatusById(clusterId, ClusterStatusEnum.DISCONNECT);
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     null,
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
@@ -148,7 +151,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             }
             // 删除数据库中数据
             devopsClusterNodeService.baseDelete(devopsClusterNodeDTO.getId());
-
+            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.DELETE_NODE.value(),
@@ -211,6 +214,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             }
 
             devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getId(), resultRole);
+            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
 
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     devopsClusterNodeDTO.getId(),
