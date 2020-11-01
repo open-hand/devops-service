@@ -86,14 +86,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    @Transactional
     public void baseUpdateNodeRole(Long id, Integer role) {
         Assert.notNull(id, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
         Assert.notNull(role, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
 
-        DevopsClusterNodeDTO devopsClusterNodeDTO = new DevopsClusterNodeDTO();
-        devopsClusterNodeDTO.setId(id);
+        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(id);
         devopsClusterNodeDTO.setRole(role);
-        if (devopsClusterNodeMapper.updateByPrimaryKey(devopsClusterNodeDTO) != 1) {
+        if (devopsClusterNodeMapper.updateByPrimaryKeySelective(devopsClusterNodeDTO) != 1) {
             throw new CommonException(ERROR_ADD_NODE_ROLE_FAILED);
         }
     }
@@ -232,6 +232,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    @Transactional
     public void deleteRole(Long projectId, Long nodeId, Integer role) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
@@ -241,20 +242,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
         // 删除校验
         checkEnableDeleteRole(devopsClusterNodeDTO, role);
-
-//        // 获取锁,失败则抛出异常，成功则程序继续
-//        String lockKey = String.format(CLUSTER_LOCK_KEY, devopsClusterNodeDTO.getClusterId());
-//        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
-//            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
-//        }
-//        // 更新redis集群操作状态
-//        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
-//        devopsClusterOperatorVO.setClusterId(devopsClusterNodeDTO.getClusterId());
-//        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value());
-//        devopsClusterOperatorVO.setNodeId(nodeId);
-//        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
-//        String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
-//        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
         // 更新集群操作状态为operating
         devopsClusterService.updateClusterStatusToOperating(devopsClusterNodeDTO.getClusterId());

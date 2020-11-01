@@ -25,6 +25,7 @@ import io.choerodon.devops.api.vo.InventoryVO;
 import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.SshUtil;
 
@@ -52,6 +53,8 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private DevopsClusterService devopsClusterService;
+    @Autowired
+    private DevopsClusterNodeMapper devopsClusterNodeMapper;
 
     @Override
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
@@ -213,7 +216,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                 resultRole = devopsClusterNodeDTO.getRole() - role;
             }
 
-            devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getId(), resultRole);
+            devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getClusterId(), resultRole);
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
 
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
