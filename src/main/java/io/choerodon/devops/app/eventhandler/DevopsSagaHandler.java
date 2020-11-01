@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.asgard.saga.SagaDefinition.TimeoutPolicy.ALERT_ONLY;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 import java.util.Date;
@@ -537,7 +538,7 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_NODE_CHECK,
             sagaCode = DEVOPS_INSTALL_K8S,
-            description = "Devops检查节点", seq = 1, maxRetryCount = 0)
+            description = "Devops检查节点", seq = 1, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
     public String checkNode(String payload) {
         DevopsClusterInstallPayload devopsClusterInstallPayload = devopsClusterNodeService.checkAndSaveNode(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
 
