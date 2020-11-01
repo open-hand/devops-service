@@ -154,7 +154,6 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             }
             // 删除数据库中数据
             devopsClusterNodeService.baseDelete(devopsClusterNodeDTO.getId());
-            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.DELETE_NODE.value(),
@@ -163,6 +162,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
         } catch (Exception e) {
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
+            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
             sshUtil.sshDisconnect(sshClient);
         }
     }
@@ -216,9 +216,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                 resultRole = devopsClusterNodeDTO.getRole() - role;
             }
 
-            devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getClusterId(), resultRole);
-            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
-
+            devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getId(), resultRole);
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
@@ -228,6 +226,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             // 操作失败，记录失败数据
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
+            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
             sshUtil.sshDisconnect(sshClient);
         }
     }
