@@ -48,8 +48,8 @@ public class DevopsClusterCommandConstants {
     /**
      * docker安装命令模板
      */
-    public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> install-docker.log 2>&1 \n" +
-            "sudo systemctl restart docker >> install-docker.log 2>&1 && sudo systemctl enable docker >> install-docker.log 2>&1 ";
+    public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> /tmp/install-docker.log 2>&1 \n" +
+            "sudo systemctl restart docker >> /tmp/install-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/install-docker.log 2>&1 ";
 
     /**
      * ansible命令模板，需要指定执行的yml
@@ -80,6 +80,13 @@ public class DevopsClusterCommandConstants {
      * 第二个%s： 命令的日志输出
      */
     public static final String BACKGROUND_COMMAND_TEMPLATE = "nohup bash %s > %s 2>&1 &";
+
+    /**
+     * 命令执行模板，需要指定具体命令以及exitCode保存位置
+     * 第一个%s： 需要执行的命令
+     * 第二个%s： 命令的日志输出
+     */
+    public static final String BASH_COMMAND_TEMPLATE = "bash %s > %s 2>&1";
 
     /**
      * 安装helm模版, curl -L -o helm.tar.gz 文件下载地址

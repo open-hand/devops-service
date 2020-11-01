@@ -286,6 +286,13 @@ public class SshUtil {
 
     }
 
+    /**
+     * 执行shell命令。该函数需要一直阻塞直到命令返回
+     * @param sshClient
+     * @param command
+     * @return
+     * @throws IOException
+     */
     public ExecResultInfoVO execCommand(SSHClient sshClient, String command) throws IOException {
         ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
         try (Session session = sshClient.startSession()) {
