@@ -96,6 +96,8 @@ public class DevopsSagaHandler {
     private DevopsClusterNodeService devopsClusterNodeService;
     @Autowired
     private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
+    @Autowired
+    private DevopsClusterNodeOperatorService devopsClusterNodeOperatorService;
 
     /**
      * devops创建环境
@@ -561,5 +563,13 @@ public class DevopsSagaHandler {
             description = "Devops安装k8s", seq = 2)
     public void installK8s(String payload) {
         devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLUSTER_ADD_NODE,
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE,
+            description = "Devops添加节点", seq = 1)
+    public void addNode(String payload) {
+        DevopsAddNodePayload devopsAddNodePayload = JsonHelper.unmarshalByJackson(payload, DevopsAddNodePayload.class);
+        devopsClusterNodeOperatorService.addNode(devopsAddNodePayload.getProjectId(), devopsAddNodePayload.getClusterId(), devopsAddNodePayload.getNodeVO());
     }
 }

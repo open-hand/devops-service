@@ -252,4 +252,10 @@ public interface DevopsClusterService {
      * @return
      */
     DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO, String type);
+
+    /**
+     * 更新集群操作状态为操作中
+     * @param clusterId
+     */
+    void updateClusterStatusToOperating(Long clusterId);
 }
