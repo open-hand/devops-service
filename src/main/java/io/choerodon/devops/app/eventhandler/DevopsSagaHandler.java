@@ -537,7 +537,7 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_NODE_CHECK,
             sagaCode = DEVOPS_INSTALL_K8S,
-            description = "Devops检查节点", seq = 1)
+            description = "Devops检查节点", seq = 1, maxRetryCount = 0)
     public String checkNode(String payload) {
         DevopsClusterInstallPayload devopsClusterInstallPayload = devopsClusterNodeService.checkAndSaveNode(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
 
