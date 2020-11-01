@@ -113,7 +113,6 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
                     ClusterOperationStatusEnum.FAILED.value(),
                     e.getMessage());
-            throw new CommonException(ERROR_ADD_NODE_FAILED);
         } finally {
             // 删除锁
             stringRedisTemplate.delete(lockKey);
