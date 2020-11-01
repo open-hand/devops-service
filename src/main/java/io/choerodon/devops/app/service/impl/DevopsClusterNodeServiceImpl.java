@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
+import org.hzero.core.util.StringPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -544,8 +545,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     @Override
     public void generateAndUploadNodeConfiguration(SSHClient ssh, String suffix, InventoryVO inventoryVO) {
         String configValue = generateInventoryInI(inventoryVO);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + System.getProperty("file.separator") + "inventory.ini";
-        String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + System.getProperty("file.separator") + "inventory.ini";
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + StringPool.SLASH + "inventory.ini";
+        String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + StringPool.SLASH + "inventory.ini";
         FileUtil.saveDataToFile(filePath, configValue);
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
     }
