@@ -107,11 +107,6 @@ public interface DevopsClusterNodeService {
     List<DevopsClusterNodeDTO> queryNodeByClusterIdAndType(Long clusterId, ClusterNodeTypeEnum type);
 
     /**
-     * 定时更新集群的安装状态
-     */
-    void update();
-
-    /**
      * 根据集群id删除node
      *
      * @param clusterId
