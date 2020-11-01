@@ -62,4 +62,11 @@ public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDTO> {
      * @return
      */
     List<DevopsClusterDTO> listByClusterIds(@Param("clusterIds") List<Long> clusterIds);
+
+    /**
+     * 更新集群状态为操作中，（status 字段作为乐观锁）
+     * @param clusterId
+     * @return
+     */
+    int updateClusterStatusToOperating(@Param("clusterId") Long clusterId);
 }

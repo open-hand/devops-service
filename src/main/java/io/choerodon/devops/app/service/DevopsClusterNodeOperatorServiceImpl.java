@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import static io.choerodon.devops.infra.constant.ClusterCheckConstant.ERROR_DELETE_NODE_FAILED;
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
 
+import java.io.IOException;
 import java.util.List;
 
 import net.schmizz.sshj.SSHClient;
@@ -51,9 +52,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
-    @Async
-    @Transactional
-    public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO, String lockKey, String operatingKey) {
+    public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
         SSHClient sshClient = new SSHClient();
         try {
             // 保存数据库记录
@@ -85,6 +84,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
             LOGGER.info(">>>>>>>>> [add node]  cluster {} ssh connect. <<<<<<<<<<<<<<<", clusterId);
             sshUtil.sshConnect(hostConnectionVO, sshClient);
+
             // 上传配置文件
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(clusterId), inventoryVO);
             // 执行添加节点操作
@@ -99,7 +99,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_ADD_NODE_FAILED);
+                throw new CommonException(ERROR_ADD_NODE_FAILED, execResultInfoVO.getStdErr());
             }
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     null,
@@ -107,24 +107,14 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
         } catch (Exception e) {
-            // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(clusterId,
-                    null,
-                    ClusterOperatingTypeEnum.ADD_NODE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
+            throw new CommonException(ERROR_ADD_NODE_FAILED, e);
         } finally {
-            // 删除锁
-            stringRedisTemplate.delete(lockKey);
-            stringRedisTemplate.delete(operatingKey);
             sshUtil.sshDisconnect(sshClient);
         }
     }
 
     @Override
-    @Async
-    @Transactional
-    public void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, String lockKey, String operatingKey) {
+    public void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO) {
         SSHClient sshClient = new SSHClient();
         try {
             // 删除集群中的node
@@ -154,7 +144,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
             LOGGER.info("delete node {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED);
+                throw new CommonException(ERROR_DELETE_NODE_FAILED, execResultInfoVO.getStdErr());
             }
             // 删除数据库中数据
             devopsClusterNodeService.baseDelete(devopsClusterNodeDTO.getId());
@@ -165,24 +155,14 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
         } catch (Exception e) {
-            // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
-                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
+            throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
-            // 删除锁
-            stringRedisTemplate.delete(lockKey);
-            stringRedisTemplate.delete(operatingKey);
             sshUtil.sshDisconnect(sshClient);
         }
     }
 
     @Override
-    @Async
-    @Transactional
-    public void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role, String lockKey, String operatingKey) {
+    public void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role) {
         SSHClient sshClient = new SSHClient();
         try {
             // 删除节点角色
@@ -219,7 +199,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED);
+                throw new CommonException(ERROR_DELETE_NODE_FAILED, execResultInfoVO.getStdErr());
             }
 
             // 删除数据库数据
@@ -239,15 +219,8 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     null);
         } catch (Exception e) {
             // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
-                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
+            throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
-            // 删除锁
-            stringRedisTemplate.delete(lockKey);
-            stringRedisTemplate.delete(operatingKey);
             sshUtil.sshDisconnect(sshClient);
         }
     }

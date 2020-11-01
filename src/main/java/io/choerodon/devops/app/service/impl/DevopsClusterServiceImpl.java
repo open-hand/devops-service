@@ -36,6 +36,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -895,5 +896,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             default:
         }
         return baseCreateCluster(devopsClusterDTO);
+    }
+
+    @Override
+    public void updateClusterStatusToOperating(Long clusterId) {
+        if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
+            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
     }
 }

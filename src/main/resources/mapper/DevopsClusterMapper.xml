@@ -85,6 +85,11 @@
         WHERE
             dc.organization_id = #{orgId}
     </update>
+    <update id="updateClusterStatusToOperating">
+        UPDATE devops_cluster dc
+        SET dc.status = 'operating'
+        WHERE dc.id = #{clusterId} and dc.status != 'operating'
+    </update>
 
     <select id="listAllClustersToMigrate" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
         SELECT devops_cluster.*

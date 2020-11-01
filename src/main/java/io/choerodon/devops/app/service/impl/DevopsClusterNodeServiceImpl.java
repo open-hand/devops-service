@@ -23,8 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsAddNodePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallPayload;
 import io.choerodon.devops.app.service.DevopsClusterNodeOperatorService;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
@@ -68,6 +74,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private DevopsClusterService devopsClusterService;
     @Autowired
     private DevopsClusterNodeOperatorService devopsClusterNodeOperatorService;
+    @Autowired
+    private TransactionalProducer producer;
 
     @Override
     @Transactional
@@ -164,6 +172,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    @Transactional
     public void delete(Long projectId, Long nodeId) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
@@ -173,21 +182,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterNodeDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkNodeNumByRole(devopsClusterNodeDTO);
 
-        // 获取锁,失败则抛出异常，成功则程序继续
-        String lockKey = String.format(CLUSTER_LOCK_KEY, devopsClusterNodeDTO.getClusterId());
-        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
-            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
-        }
-        // 更新redis集群操作状态
-        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
-        devopsClusterOperatorVO.setClusterId(devopsClusterNodeDTO.getClusterId());
-        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.DELETE_NODE.value());
-        devopsClusterOperatorVO.setNodeId(nodeId);
-        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
-        String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
-        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
+        // 更新集群操作状态为
+        devopsClusterService.updateClusterStatusToOperating(devopsClusterNodeDTO.getClusterId());
 
-        devopsClusterNodeOperatorService.deleteNode(projectId, devopsClusterNodeDTO, lockKey, operatingKey);
+        devopsClusterNodeOperatorService.deleteNode(projectId, devopsClusterNodeDTO);
 
 
     }
@@ -244,21 +242,24 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         // 删除校验
         checkEnableDeleteRole(devopsClusterNodeDTO, role);
 
-        // 获取锁,失败则抛出异常，成功则程序继续
-        String lockKey = String.format(CLUSTER_LOCK_KEY, devopsClusterNodeDTO.getClusterId());
-        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
-            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
-        }
-        // 更新redis集群操作状态
-        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
-        devopsClusterOperatorVO.setClusterId(devopsClusterNodeDTO.getClusterId());
-        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value());
-        devopsClusterOperatorVO.setNodeId(nodeId);
-        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
-        String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
-        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
+//        // 获取锁,失败则抛出异常，成功则程序继续
+//        String lockKey = String.format(CLUSTER_LOCK_KEY, devopsClusterNodeDTO.getClusterId());
+//        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
+//            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+//        }
+//        // 更新redis集群操作状态
+//        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
+//        devopsClusterOperatorVO.setClusterId(devopsClusterNodeDTO.getClusterId());
+//        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value());
+//        devopsClusterOperatorVO.setNodeId(nodeId);
+//        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
+//        String operatingKey = String.format(CLUSTER_OPERATING_KEY, devopsClusterNodeDTO.getClusterId());
+//        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
-        devopsClusterNodeOperatorService.deleteNodeRole(projectId, devopsClusterNodeDTO, role, lockKey, operatingKey);
+        // 更新集群操作状态为operating
+        devopsClusterService.updateClusterStatusToOperating(devopsClusterNodeDTO.getClusterId());
+
+        devopsClusterNodeOperatorService.deleteNodeRole(projectId, devopsClusterNodeDTO, role);
 
 
     }
@@ -352,28 +353,43 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE, description = "添加集群节点", inputSchema = "{}")
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
         nodeVO.setProjectId(projectId);
 
         // 获取锁,失败则抛出异常，成功则程序继续
-        LOGGER.info(">>>>>>>>> [add node] check cluster {} is operating. <<<<<<<<<<<<<<<", clusterId);
-        String lockKey = String.format(CLUSTER_LOCK_KEY, clusterId);
-        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
-            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
-        }
-        // 更新redis集群操作状态
-        LOGGER.info(">>>>>>>>> [add node] cache cluster {} operating record. <<<<<<<<<<<<<<<", clusterId);
-        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
-        devopsClusterOperatorVO.setClusterId(clusterId);
-        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.ADD_NODE.value());
-        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
-        String operatingKey = String.format(CLUSTER_OPERATING_KEY, clusterId);
-        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
+//        LOGGER.info(">>>>>>>>> [add node] check cluster {} is operating. <<<<<<<<<<<<<<<", clusterId);
+//        String lockKey = String.format(CLUSTER_LOCK_KEY, clusterId);
+//        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
+//            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+//        }
+//        // 更新redis集群操作状态
+//        LOGGER.info(">>>>>>>>> [add node] cache cluster {} operating record. <<<<<<<<<<<<<<<", clusterId);
+//        DevopsClusterOperatorVO devopsClusterOperatorVO = new DevopsClusterOperatorVO();
+//        devopsClusterOperatorVO.setClusterId(clusterId);
+//        devopsClusterOperatorVO.setOperating(ClusterOperatingTypeEnum.ADD_NODE.value());
+//        devopsClusterOperatorVO.setStatus(ClusterStatusEnum.OPERATING.value());
+//        String operatingKey = String.format(CLUSTER_OPERATING_KEY, clusterId);
+//        stringRedisTemplate.opsForValue().set(operatingKey, JsonHelper.marshalByJackson(devopsClusterOperatorVO), 10, TimeUnit.MINUTES);
 
-        devopsClusterNodeOperatorService.addNode(projectId, clusterId, nodeVO, lockKey, operatingKey);
-
+        // 更新集群操作状态为operating
+        DevopsAddNodePayload devopsAddNodePayload = new DevopsAddNodePayload();
+        devopsAddNodePayload.setProjectId(projectId);
+        devopsAddNodePayload.setClusterId(clusterId);
+        devopsAddNodePayload.setNodeVO(nodeVO);
+        devopsClusterService.updateClusterStatusToOperating(clusterId);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType("cluster")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsAddNodePayload)
+                        .withRefId(String.valueOf(clusterId)));
     }
 
     @Override
