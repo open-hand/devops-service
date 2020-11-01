@@ -56,6 +56,7 @@ public class DevopsClusterCommandConstants {
      */
     public static final String ANSIBLE_COMMAND_TEMPLATE = "sudo docker run --rm --name ansible \\\n" +
             "-w /root/kubeadm-ha/ \\\n" +
+            "-v /tmp/ssh-key:/tmp/ssh-key \\\n" +
             "-v /tmp/inventory.ini:/tmp/inventory.ini \\\n" +
             "registry.cn-hangzhou.aliyuncs.com/elem-lihao/ansible:1.1 \\\n" +
             "ansible-playbook -i /tmp/inventory.ini %s";
