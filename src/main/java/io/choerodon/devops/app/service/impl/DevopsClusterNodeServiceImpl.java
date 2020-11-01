@@ -353,7 +353,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE, description = "添加集群节点", inputSchema = "{}")
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE, description = "添加集群节点", inputSchemaClass = DevopsAddNodePayload.class)
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);

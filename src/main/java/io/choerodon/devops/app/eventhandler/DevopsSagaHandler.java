@@ -565,7 +565,11 @@ public class DevopsSagaHandler {
         devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
     }
 
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLUSTER_ADD_NODE,
+    /**
+     * 添加节点
+     * @param payload
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLUSTER_ADD_NODE_TASK,
             sagaCode = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE,
             description = "Devops添加节点", seq = 1)
     public void addNode(String payload) {

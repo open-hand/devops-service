@@ -281,7 +281,7 @@ public class SagaTaskCodeConstants {
     /**
      * 添加节点
      */
-    public static final String DEVOPS_CLUSTER_ADD_NODE = "devops_cluster_add_node";
+    public static final String DEVOPS_CLUSTER_ADD_NODE_TASK = "devops_cluster_add_node_task";
 
     private SagaTaskCodeConstants() {
     }
