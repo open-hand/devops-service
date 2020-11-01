@@ -304,8 +304,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .appendErrorMsg(resultInfoVO.getStdOut() + "\n" + resultInfoVO.getStdErr());
                 devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-                devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
-                devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
             } else {
                 // k8s安装成功
                 LOGGER.info(">>>>>>>>> [install k8s] cluster [ {} ] operation [ {} ] install success <<<<<<<<<", devopsClusterInstallPayload.getClusterId(), record.getId());
@@ -319,10 +317,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                     .appendErrorMsg(e.getMessage());
             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-            devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
-            devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
             throw new CommonException(e.getMessage(), e);
         } finally {
+            devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
+            devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
             sshUtil.sshDisconnect(ssh);
         }
     }
