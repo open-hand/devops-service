@@ -160,6 +160,11 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
         } catch (Exception e) {
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    devopsClusterNodeDTO.getId(),
+                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
+                    ClusterOperationStatusEnum.FAILED.value(),
+                    e.getMessage());
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
@@ -224,6 +229,11 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     null);
         } catch (Exception e) {
             // 操作失败，记录失败数据
+            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                    devopsClusterNodeDTO.getId(),
+                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
+                    ClusterOperationStatusEnum.FAILED.value(),
+                    e.getMessage());
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
