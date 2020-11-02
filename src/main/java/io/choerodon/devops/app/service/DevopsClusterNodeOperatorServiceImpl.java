@@ -4,6 +4,7 @@ import static io.choerodon.devops.infra.constant.ClusterCheckConstant.ERROR_DELE
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import net.schmizz.sshj.SSHClient;
@@ -92,6 +93,10 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
 
             // 上传配置文件
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(clusterId), inventoryVO);
+            // 使用密钥认证，需要上传密钥
+            if (HostAuthType.PUBLICKEY.value().equals(devopsClusterNodeDTO.getAuthType())) {
+                devopsClusterNodeService.generateAndUploadPrivateKey(sshClient, Arrays.asList(devopsClusterNodeDTO));
+            }
             // 执行添加节点操作
             String command;
             if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
