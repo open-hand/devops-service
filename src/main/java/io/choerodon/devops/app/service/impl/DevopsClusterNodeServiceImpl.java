@@ -134,8 +134,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         // 查询节点类型
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
         if (ClusterNodeRoleEnum.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listWorkerRoleSet()) < 2) {
-                nodeDeleteCheckVO.setEnableDeleteWorker(false);
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listMasterRoleSet()) < 2) {
+                nodeDeleteCheckVO.setEnableDeleteMaster(false);
             }
         }
         if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
@@ -144,8 +144,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
         }
         if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
-            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listMasterRoleSet()) < 2) {
-                nodeDeleteCheckVO.setEnableDeleteMaster(false);
+            if (devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listWorkerRoleSet()) < 2) {
+                nodeDeleteCheckVO.setEnableDeleteWorker(false);
             }
         }
 
