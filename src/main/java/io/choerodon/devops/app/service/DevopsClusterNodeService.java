@@ -133,7 +133,7 @@ public interface DevopsClusterNodeService {
      * @return 执行结果
      * @throws IOException
      */
-    ExecResultInfoVO generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException;
+    void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException;
 
     void baseDelete(Long id);
 }

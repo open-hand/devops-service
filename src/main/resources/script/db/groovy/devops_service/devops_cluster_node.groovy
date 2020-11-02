@@ -31,7 +31,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'username', type: 'VARCHAR(32)', remarks: '用户名') {
                 constraints(nullable: false)
             }
-            column(name: 'password', type: 'VARCHAR(2048)', remarks: '密码/rsa秘钥') {
+            column(name: 'password', type: 'text', remarks: '密码/rsa秘钥') {
                 constraints(nullable: false)
             }
 

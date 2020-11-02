@@ -28,12 +28,12 @@ public class DevopsClusterCommandConstants {
     /**
      * 密钥保存位置模版
      */
-    public static final String PRIVATE_KEY_SAVE_PATH_TEMPLATE = "/tmp/ssh-key/id_rsa-%s";
+    public static final String PRIVATE_KEY_SAVE_PATH_TEMPLATE = "/tmp/ansible/ssh-key/id_rsa-%s";
 
     /**
      * 保存密钥命令 密钥内容 密钥保存地址
      */
-    public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo %s > %s";
+    public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo \"%s\" > %s";
 
 
     /**
@@ -47,7 +47,7 @@ public class DevopsClusterCommandConstants {
      */
     public static final String ANSIBLE_COMMAND_TEMPLATE = "sudo docker run --rm --name ansible \\\n" +
             "-w /root/kubeadm-ha/ \\\n" +
-            "-v /tmp/ssh-key:/tmp/ssh-key \\\n" +
+            "-v /tmp/ansible/ssh-key:/tmp/ansible/ssh-key \\\n" +
             "-v /tmp/inventory.ini:/tmp/inventory.ini \\\n" +
             "registry.cn-hangzhou.aliyuncs.com/elem-lihao/ansible:1.1 \\\n" +
             "ansible-playbook -i /tmp/inventory.ini %s";

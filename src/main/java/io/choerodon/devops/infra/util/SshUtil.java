@@ -306,16 +306,15 @@ public class SshUtil {
         }
     }
 
-    public ExecResultInfoVO execCommands(SSHClient sshClient, @Nonnull List<String> commands) throws IOException {
+    public void execCommands(SSHClient sshClient, @Nonnull List<String> commands) throws IOException {
         ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
         execResultInfoVO.setExitCode(0);
         for (String c : commands) {
             execResultInfoVO = execCommand(sshClient, c);
             if (execResultInfoVO.getExitCode() != 0) {
-                break;
+                throw new CommonException(String.format("failed to execute command :%s ,the error is %s", c, execResultInfoVO.getStdErr()));
             }
         }
-        return execResultInfoVO;
     }
 
     public void dockerRun(SSHClient ssh, String value, String containerName, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {

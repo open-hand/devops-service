@@ -290,7 +290,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 上传privateKey信息到节点
             generateAndUploadPrivateKey(ssh, devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
-            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, "/tmp/" + INSTALL_K8S, "/tmp/nohup-install"));
+            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, "/tmp/" + INSTALL_K8S, "/tmp/bash.log"));
             // 集群安装出现错误，设置错误消息并更新集群状态
             if (resultInfoVO.getExitCode() != 0) {
                 record.setStatus(ClusterOperationStatusEnum.FAILED.value())
@@ -436,17 +436,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 LOGGER.info(">>>>>>>>> [check node] key {} :start to create ssh connection object <<<<<<<<<", redisKey);
                 sshUtil.sshConnect(devopsClusterInstallPayload.getHostConnectionVO(), ssh);
             } catch (IOException e) {
-                throw new Exception(String.format("failed to connect to host: [ %s ] by ssh", devopsClusterInstallPayload.getHostConnectionVO().getHostIp()));
+                throw new Exception(String.format(">>>>>>>>> [check node] failed to connect to host: [ %s ] by ssh <<<<<<<<<", devopsClusterInstallPayload.getHostConnectionVO().getHostIp()));
             }
             // 安装docker
             try {
                 LOGGER.info(">>>>>>>>> [check node] key {} :start to install docker <<<<<<<<<", redisKey);
                 ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, INSTALL_DOCKER_COMMAND);
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
-                    throw new Exception(String.format("failed to install docker on host: [ %s ],error is :%s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
+                    throw new Exception(String.format(">>>>>>>>> [check node] failed to install docker on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
                 }
             } catch (IOException e) {
-                throw new Exception(String.format("failed to exec command [ %s ] on host [ %s ],error is :%s", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
+                throw new Exception(String.format(">>>>>>>>> [check node] failed to exec command [ %s ] on host [ %s ],error is :%s <<<<<<<<<", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
             }
             // 生成相关配置节点
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
@@ -544,14 +544,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public ExecResultInfoVO generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException {
+    public void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException {
+        // 创建目录
+        sshUtil.execCommand(ssh, "mkdir -p /tmp/ansible/ssh-key");
+
         List<String> commands = new ArrayList<>();
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOList) {
             if (ClusterNodeTypeEnum.INNER.getType().equalsIgnoreCase(node.getType()) && HostAuthType.PUBLICKEY.value().equalsIgnoreCase(node.getAuthType())) {
                 commands.add(String.format(SAVE_PRIVATE_KEY_TEMPLATE, Base64Util.getBase64DecodedString(node.getPassword()), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())));
             }
         }
-        return sshUtil.execCommands(ssh, commands);
+        sshUtil.execCommands(ssh, commands);
     }
 
     @Override
