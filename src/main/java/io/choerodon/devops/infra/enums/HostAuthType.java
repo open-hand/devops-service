@@ -12,6 +12,7 @@ public enum HostAuthType {
     ACCOUNTPASSWORD("accountPassword"),
     /**
      * 密钥模式
+     * 界面上填写私钥 
      */
     PUBLICKEY("publickey");
     private String value;
