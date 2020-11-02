@@ -89,6 +89,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
     }
 
     changeSet(author: 'lihao',id: '2020-10-30-fix-status'){
-        sql("UPDATE devops_cluster SET status='disconnect' WHERE type='imported")
+        sql("UPDATE devops_cluster SET status='disconnect' WHERE type='imported'")
     }
 }
