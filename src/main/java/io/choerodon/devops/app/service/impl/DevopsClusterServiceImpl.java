@@ -213,12 +213,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Transactional
     @Override
     public void retryInstallK8s(Long projectId, Long clusterId) {
-        List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(SAGA_INSTALL_K8S_REF_TYPE, Collections.singletonList(String.valueOf(clusterId)), SagaTopicCodeConstants.DEVOPS_INSTALL_K8S);
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(SAGA_INSTALL_K8S_REF_TYPE, Collections.singletonList(devopsClusterDTO.getCode()), SagaTopicCodeConstants.DEVOPS_INSTALL_K8S);
         if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
             throw new CommonException("error.retry.install.k8s");
         }
-        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setId(clusterId);
         devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
         devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
         asgardServiceClientOperator.retrySaga(projectId, sagaInstanceDetails.get(0).getId());
