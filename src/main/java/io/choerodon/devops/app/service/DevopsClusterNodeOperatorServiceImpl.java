@@ -99,9 +99,9 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             }
             // 执行添加节点操作
             String command;
-            if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
+            if (ClusterNodeRoleEnum.isMaster(nodeVO.getRole())) {
                 command = ADD_MASTER_YML;
-            } else if (ClusterNodeRoleEnum.isWorker(devopsClusterNodeDTO.getRole())) {
+            } else if (ClusterNodeRoleEnum.isWorker(nodeVO.getRole())) {
                 command = ADD_WORKER_YML;
             } else {
                 throw new CommonException(ERROR_ADD_NODE_FAILED);
