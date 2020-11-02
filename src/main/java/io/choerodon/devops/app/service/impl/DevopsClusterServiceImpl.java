@@ -177,13 +177,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         HostConnectionVO hostConnectionVO;
         // 选出进行ssh连接的节点
-        if (devopsClusterOutterNodeVO != null) {
+        if (devopsClusterOutterNodeVO != null && !StringUtils.isEmpty(devopsClusterOutterNodeVO.getHostIp())) {
             devopsClusterOutterNodeVO.setName(devopsClusterReqVO.getCode() + "-sshNode");
             devopsClusterOutterNodeVO.setType(ClusterNodeTypeEnum.OUTTER.getType());
             hostConnectionVO = ConvertUtils.convertObject(devopsClusterOutterNodeVO, HostConnectionVO.class);
             devopsClusterNodeToSaveDTOList.add(ConvertUtils.convertObject(devopsClusterOutterNodeVO, DevopsClusterNodeDTO.class));
         } else {
             hostConnectionVO = ConvertUtils.convertObject(devopsClusterInnerNodeVOList.get(0), HostConnectionVO.class);
+            devopsClusterReqVO.setDevopsClusterOutterNodeVO(null);
         }
 
         devopsClusterNodeToSaveDTOList.addAll(ConvertUtils.convertList(devopsClusterInnerNodeVOList, DevopsClusterNodeDTO.class));
