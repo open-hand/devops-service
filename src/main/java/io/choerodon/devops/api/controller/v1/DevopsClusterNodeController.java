@@ -79,7 +79,7 @@ public class DevopsClusterNodeController {
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "集群id")
-            @RequestParam("cluster_id") Long clusterId,
+            @RequestParam("cluster_id") @Encrypt Long clusterId,
             @RequestBody DevopsClusterNodeVO nodeVO) {
         devopsClusterNodeService.addNode(projectId, clusterId, nodeVO);
         return ResponseEntity.noContent().build();
