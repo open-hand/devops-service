@@ -57,7 +57,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
     private static final String ERROR_ADD_NODE_ROLE_FAILED = "error.add.node.role.failed";
-    private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     @Value(value = "${devops.helm.download-url}")
     private String helmDownloadUrl;
     @Autowired

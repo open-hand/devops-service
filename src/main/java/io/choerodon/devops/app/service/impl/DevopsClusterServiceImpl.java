@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.NODE_CHECK_STEP_REDIS_KEY_TEMPLATE;
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.CLUSTER_LOCK_KEY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -512,11 +511,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         // 未连接的集群
         List<DevopsClusterBasicInfoVO> unconnectedClusters = new ArrayList<>();
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
-            // 查询缓存中是否存在操作集群节点的锁
-            String lockKey = String.format(CLUSTER_LOCK_KEY, devopsClusterBasicInfoVO.getId());
-            if (stringRedisTemplate.opsForValue().get(lockKey) != null) {
-                devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.OPERATING.value());
-            }
 
             boolean connect = updatedEnvList.contains(devopsClusterBasicInfoVO.getId());
             if (connect) {
