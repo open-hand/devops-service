@@ -278,6 +278,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsClusterInstallPayload.getClusterId());
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :start to create ssh connection object <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterInstallPayload.getHostConnectionVO(), HostConnectionVO.class), ssh);
+            // 检查集群是否安装成功，该情况是如果集群安装成功，但是saga失败导致数据没有更新，防止saga重试使得集群被重新安装
+            if (checkInstallSuccess(ssh, record, devopsClusterDTO)) {
+                return;
+            }
             // 生成并上传配置
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             generateAndUploadNodeConfiguration(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), inventoryVO);
@@ -313,6 +317,27 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         }
     }
 
+    private boolean checkInstallSuccess(SSHClient ssh, DevopsClusterOperationRecordDTO record, DevopsClusterDTO devopsClusterDTO) throws Exception {
+        ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CAT_FILE, record.getId()));
+        if (resultInfoVO.getExitCode() != 0) {
+            if (resultInfoVO.getStdErr().contains("No such file or directory")) {
+                LOGGER.info(">>>>>>>>> [install k8s] installation is not complete <<<<<<<<<");
+            }
+            return false;
+        } else {
+            if ("0".equals(resultInfoVO.getStdOut().replaceAll("\r|\n", ""))) {
+                // k8s安装成功
+                LOGGER.info(">>>>>>>>> [install k8s] cluster [ {} ] operation [ {} ] install success <<<<<<<<<", devopsClusterDTO.getId(), record.getId());
+                record.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
+                devopsClusterDTO.setStatus(ClusterStatusEnum.DISCONNECT.value());
+                // 安装agent, 第一步安装helm ，第二步安装agent。这一步骤如果出现错误,只保存错误信息
+                installAgent(devopsClusterDTO, record, ssh);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 
     private void installAgent(DevopsClusterDTO devopsClusterDTO, DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO, SSHClient ssh) {
         try {
@@ -411,17 +436,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 LOGGER.info(">>>>>>>>> [check node] key {} :start to create ssh connection object <<<<<<<<<", redisKey);
                 sshUtil.sshConnect(devopsClusterInstallPayload.getHostConnectionVO(), ssh);
             } catch (IOException e) {
-                throw new Exception(String.format("Failed to connect to host: [ %s ] by ssh", devopsClusterInstallPayload.getHostConnectionVO().getHostIp()));
+                throw new Exception(String.format("failed to connect to host: [ %s ] by ssh", devopsClusterInstallPayload.getHostConnectionVO().getHostIp()));
             }
             // 安装docker
             try {
                 LOGGER.info(">>>>>>>>> [check node] key {} :start to install docker <<<<<<<<<", redisKey);
                 ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, INSTALL_DOCKER_COMMAND);
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
-                    throw new Exception(String.format("Failed to install docker on host: [ %s ],error is :%s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
+                    throw new Exception(String.format("failed to install docker on host: [ %s ],error is :%s", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
                 }
             } catch (IOException e) {
-                throw new Exception(String.format("Failed to exec command [ %s ] on host [ %s ],error is :%s", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
+                throw new Exception(String.format("failed to exec command [ %s ] on host [ %s ],error is :%s", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
             }
             // 生成相关配置节点
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
