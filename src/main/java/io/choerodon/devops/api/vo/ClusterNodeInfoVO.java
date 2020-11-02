@@ -1,9 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
 public class ClusterNodeInfoVO {
+    @Encrypt
     private Long id;
     /**
      * values: master/node
