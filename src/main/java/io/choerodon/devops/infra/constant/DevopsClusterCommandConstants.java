@@ -16,15 +16,6 @@ public class DevopsClusterCommandConstants {
     public static final String ANSIBLE_CONFIG_TARGET_BASE_DIR = "/tmp";
 
     /**
-     * 集群操作状态锁key
-     */
-    public static final String CLUSTER_LOCK_KEY = "cluster:lock:key:%s:Long";
-    /**
-     * 集群操作信息key
-     */
-    public static final String CLUSTER_OPERATING_KEY = "cluster:operating:key:%s:DevopsClusterOperatorVO";
-
-    /**
      * 密码模式 节点名称 主机 端口 用户 登录密码
      */
     public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
