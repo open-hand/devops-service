@@ -119,7 +119,7 @@ public class SshUtil {
         if (hostConnectionVO.getAuthType().equals(HostAuthType.ACCOUNTPASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUsername(), hostConnectionVO.getPassword());
         } else {
-            String str = Base64Util.getBase64DecodedString(hostConnectionVO.getAccountKey());
+            String str = Base64Util.getBase64DecodedString(StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey());
             KeyProvider keyProvider = ssh.loadKeys(str, null, null);
             ssh.authPublickey(hostConnectionVO.getUsername(), keyProvider);
         }
@@ -288,6 +288,7 @@ public class SshUtil {
 
     /**
      * 执行shell命令。该函数需要一直阻塞直到命令返回
+     *
      * @param sshClient
      * @param command
      * @return
