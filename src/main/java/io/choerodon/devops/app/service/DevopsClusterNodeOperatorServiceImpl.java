@@ -3,10 +3,8 @@ package io.choerodon.devops.app.service;
 import static io.choerodon.devops.infra.constant.ClusterCheckConstant.ERROR_DELETE_NODE_FAILED;
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
 import org.apache.commons.lang3.StringUtils;
@@ -15,9 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -25,7 +21,6 @@ import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.api.vo.ExecResultInfoVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.api.vo.InventoryVO;
-import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -61,9 +56,9 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private DevopsClusterNodeMapper devopsClusterNodeMapper;
 
     @Override
-    public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
+    public void addNode(Long projectId, Long clusterId, String operatingId, DevopsClusterNodeVO nodeVO) {
         SSHClient sshClient = new SSHClient();
-        String operatingFlagKey = String.format(ADD_NODE_OPERATING_FAILED_FLAG, clusterId);
+        String operatingFlagKey = String.format(ADD_NODE_OPERATING_FAILED_FLAG, operatingId);
         try {
             // 如果是重试，则需要获取锁
             String flag = stringRedisTemplate.opsForValue().get(operatingFlagKey);

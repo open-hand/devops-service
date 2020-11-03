@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
 import org.apache.commons.io.IOUtils;
+import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -420,6 +421,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         devopsAddNodePayload.setProjectId(projectId);
         devopsAddNodePayload.setClusterId(clusterId);
         devopsAddNodePayload.setNodeVO(nodeVO);
+        devopsAddNodePayload.setOperatingId(UUIDUtils.generateUUID());
         devopsClusterService.updateClusterStatusToOperating(clusterId);
         producer.apply(
                 StartSagaBuilder
