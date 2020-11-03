@@ -36,7 +36,7 @@ public class DevopsClusterNodeController {
         return Results.success(devopsClusterNodeService.testConnection(projectId, clusterHostConnectionVO));
     }
 
-    @ApiOperation("校验是否能够删除节点")
+    @ApiOperation("校验是否能够删除节点角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{node_id}/roles/{role}/check_enable_delete")
     public ResponseEntity<Boolean> checkEnableDeleteRole(
