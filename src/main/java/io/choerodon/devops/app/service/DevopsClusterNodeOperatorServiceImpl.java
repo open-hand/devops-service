@@ -118,7 +118,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                 throw new CommonException(execResultInfoVO.getStdErr());
             }
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    null,
+                    devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
