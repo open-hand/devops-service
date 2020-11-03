@@ -7,7 +7,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsClusterOperationRecordMapper extends BaseMapper<DevopsClusterOperationRecordDTO> {
 
-    DevopsClusterOperationRecordDTO queryFirstFailedRecordByNodeId(@Param("nodeId") Long nodeId);
+    DevopsClusterOperationRecordDTO queryLatestRecordByNodeId(@Param("nodeId") Long nodeId);
 
     void deleteByClusterId(@Param("clusterId") Long clusterId);
 }

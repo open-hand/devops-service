@@ -199,8 +199,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                             clusterNodeInfoVO.setEnableDeleteNode(true);
                         }
                         // 添加失败信息
-                        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryFailedRecordByNodeId(devopsClusterNodeDTO.getId());
-                        if (devopsClusterOperationRecordDTO != null) {
+                        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryLatestRecordByNodeId(devopsClusterNodeDTO.getId());
+                        if (devopsClusterOperationRecordDTO != null
+                                && ClusterOperationStatusEnum.FAILED.value().equals(devopsClusterOperationRecordDTO.getStatus())) {
                             clusterNodeInfoVO.setOperatingStatus(ClusterOperationStatusEnum.FAILED.value());
                             clusterNodeInfoVO.setErrorMsg(devopsClusterOperationRecordDTO.getErrorMsg());
                         }
