@@ -271,6 +271,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 && ClusterNodeRoleEnum.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
             return;
         }
+
+        if (ClusterNodeRoleEnum.WORKER.getMask() == role
+                && ClusterNodeRoleEnum.listWorkerRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            return;
+        }
         devopsClusterNodeDTO.setRole(devopsClusterNodeDTO.getRole() + role);
         if (devopsClusterNodeMapper.updateByPrimaryKeySelective(devopsClusterNodeDTO) != 1) {
             throw new CommonException(ERROR_ADD_NODE_ROLE_FAILED);
