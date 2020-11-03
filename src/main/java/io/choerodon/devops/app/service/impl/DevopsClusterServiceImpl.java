@@ -55,7 +55,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterServiceImpl.class);
     private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
-    private static final String SAGA_INSTALL_K8S_REF_TYPE = "cluster";
+    private static final String SAGA_INSTALL_K8S_REF_TYPE = "install-cluster";
+    private static final String SAGA_RETRY_INSTALL_K8S_REF_TYPE = "retry-install";
 
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
@@ -214,13 +215,45 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void retryInstallK8s(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(SAGA_INSTALL_K8S_REF_TYPE, Collections.singletonList(devopsClusterDTO.getCode()), SagaTopicCodeConstants.DEVOPS_INSTALL_K8S);
-        if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
-            throw new CommonException("error.retry.install.k8s");
+        if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {
+            throw new CommonException("error.cluster.status");
         }
-        devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
-        devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
-        asgardServiceClientOperator.retrySaga(projectId, sagaInstanceDetails.get(0).getId());
+        CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeService.listByClusterId(clusterId);
+        HostConnectionVO hostConnectionVO = null;
+        for (DevopsClusterNodeDTO node : devopsClusterNodeDTOList) {
+            if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.OUTTER.getType())) {
+                hostConnectionVO = ConvertUtils.convertObject(node, HostConnectionVO.class);
+            }
+        }
+        if (hostConnectionVO == null) {
+            hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTOList.get(0), HostConnectionVO.class);
+        }
+
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(clusterId, ClusterOperationTypeEnum.INSTALL_K8S.getType());
+        devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.OPERATING.value());
+        devopsClusterOperationRecordService.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+
+        DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
+                .setProjectId(projectId)
+                .setClusterId(clusterId)
+                .setDevopsClusterNodeToSaveDTOList(devopsClusterNodeDTOList)
+                .setHostConnectionVO(hostConnectionVO)
+                .setOperationRecordId(devopsClusterOperationRecordDTO.getId())
+                .setDevopsClusterReqVO(ConvertUtils.convertObject(devopsClusterDTO, DevopsClusterReqVO.class));
+
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType(SAGA_RETRY_INSTALL_K8S_REF_TYPE)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsClusterInstallPayload)
+                        .withRefId(devopsClusterDTO.getCode())
+                        .withSourceId(projectId));
+
     }
 
     @Override

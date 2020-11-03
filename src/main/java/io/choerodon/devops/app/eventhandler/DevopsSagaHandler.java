@@ -566,6 +566,16 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * 重试安装集群
+     */
+    @SagaTask(code = DEVOPS_RETRY_INSTALL_K8S,
+            sagaCode = DEVOPS_RETRY_INSTALL_K8S,
+            description = "重试安装集群", seq = 1, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
+    public void retryInstallK8s(String payload) {
+        devopsClusterNodeService.executeInstallK8sInBackground(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+    }
+
+    /**
      * 添加节点
      *
      * @param payload

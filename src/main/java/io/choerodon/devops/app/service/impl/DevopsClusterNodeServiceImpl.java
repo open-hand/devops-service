@@ -731,6 +731,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         }
     }
 
+    @Override
+    public List<DevopsClusterNodeDTO> listByClusterId(Long clusterId) {
+        if (clusterId == null) {
+            return new ArrayList<>();
+        }
+        return devopsClusterNodeMapper.listByClusterId(clusterId);
+    }
+
     private String generateInventoryInI(InventoryVO inventoryVO) {
         Map<String, String> map = new HashMap<>();
         map.put("{{all}}", inventoryVO.getAll().toString());

@@ -242,6 +242,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_INSTALL_K8S = "devops-install-k8s";
 
     /**
+     * 重试创建集群
+     */
+    public static final String DEVOPS_RETRY_INSTALL_K8S = "devops-retry-install-k8s";
+
+    /**
      * 添加集群节点
      */
     public static final String DEVOPS_CLUSTER_ADD_NODE = "devops_cluster_add_node";

@@ -149,6 +149,8 @@ public interface DevopsClusterNodeService {
      */
     void update();
 
+    List<DevopsClusterNodeDTO> listByClusterId(Long clusterId);
+
     void baseDelete(Long id);
 
     Boolean checkEnableDeleteRole(Long projectId, Long nodeId, Integer role);
