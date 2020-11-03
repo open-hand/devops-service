@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.transport.TransportException;
 import org.apache.commons.io.IOUtils;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
@@ -352,11 +353,16 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :waiting for installing completed<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
         } catch (Exception e) {
-            LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install , some error occured<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
-            record.setStatus(ClusterOperationStatusEnum.FAILED.value())
-                    .appendErrorMsg(e.getMessage());
-            devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-            throw new CommonException(e.getMessage(), e);
+            if (e instanceof TransportException) {
+                LOGGER.info(">>>>>>>>> [install k8s] clusterId {} : ssh connection disconnect ,host: [ {} ] <<<<<<<<<", devopsClusterInstallPayload.getClusterId(), ssh.getRemoteHostname());
+                throw new CommonException(String.format("ssh connection disconnect , host: [ %s ]", ssh.getRemoteHostname()));
+            } else {
+                LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install , some error occured<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
+                record.setStatus(ClusterOperationStatusEnum.FAILED.value())
+                        .appendErrorMsg(e.getMessage());
+                devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
+                throw new CommonException(e.getMessage(), e);
+            }
         } finally {
             update(record, devopsClusterDTO);
             sshUtil.sshDisconnect(ssh);
