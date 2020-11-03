@@ -128,6 +128,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     @Override
     public void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO) {
         SSHClient sshClient = new SSHClient();
+        String errorMsg = "";
         try {
             // 删除集群中的node
             // 1. 查询集群节点信息
@@ -156,7 +157,8 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
             LOGGER.info("delete node {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED, execResultInfoVO.getStdErr());
+                errorMsg = execResultInfoVO.getStdErr();
+                throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
             // 如果删除的是外部节点，重启docker
             if (!CollectionUtils.isEmpty(outerNodes)
@@ -175,7 +177,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.DELETE_NODE.value(),
                     ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
+                    errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
@@ -186,6 +188,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     @Override
     public void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role) {
         SSHClient sshClient = new SSHClient();
+        String errorMsg = "";
         try {
             // 删除节点角色
             // 删除集群中的node
@@ -221,7 +224,8 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED, execResultInfoVO.getStdErr());
+                errorMsg = execResultInfoVO.getStdErr();
+                throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
 
             // 删除数据库数据
@@ -244,7 +248,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
                     ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
+                    errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
