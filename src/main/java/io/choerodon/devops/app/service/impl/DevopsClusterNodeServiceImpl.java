@@ -340,12 +340,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
             } else {
                 // 检查集群是否安装成功，该情况是ssh连接断开，但是没有产生错误。如果不成功，抛出异常
+                LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :start to check install complete <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
                 if (!checkInstallSuccess(ssh, record, devopsClusterDTO)) {
                     throw new CommonException("failed to install k8s,please retry after 10 minutes");
                 }
             }
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :waiting for installing completed<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
         } catch (Exception e) {
+            LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install , some error occured<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
             record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                     .appendErrorMsg(e.getMessage());
             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
@@ -374,6 +376,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 installAgent(devopsClusterDTO, record, ssh);
                 return true;
             } else {
+                record.setStatus(ClusterOperationStatusEnum.FAILED.value())
+                        .appendErrorMsg(resultInfoVO.getStdOut() + "\n" + resultInfoVO.getStdErr());
+                devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
                 return false;
             }
         }
