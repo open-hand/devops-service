@@ -258,11 +258,11 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         Assert.notNull(id, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
 
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(id);
-        if (ClusterNodeRoleEnum.isMaster(role)
+        if (ClusterNodeRoleEnum.MASTER.getMask() == role
                 && ClusterNodeRoleEnum.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
             return;
         }
-        if (ClusterNodeRoleEnum.isEtcd(role)
+        if (ClusterNodeRoleEnum.ETCD.getMask() == role
                 && ClusterNodeRoleEnum.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
             return;
         }
@@ -294,16 +294,16 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     private void checkEnableDeleteRole(DevopsClusterNodeDTO devopsClusterNodeDTO, Integer roleId) {
-        if (ClusterNodeRoleEnum.isWorker(roleId)) {
+        if (ClusterNodeRoleEnum.WORKER.getMask() == roleId) {
             throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
         }
-        if (ClusterNodeRoleEnum.isEtcd(roleId)
+        if (ClusterNodeRoleEnum.ETCD.getMask() == roleId
                 && Boolean.FALSE.equals(ClusterNodeRoleEnum.isEtcdAndWorker(devopsClusterNodeDTO.getRole()))
                 && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndEtcdAndWorker(devopsClusterNodeDTO.getRole()))
                 && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))) {
             throw new CommonException(ClusterCheckConstant.ERROR_DELETE_NODE_ROLE_FAILED);
         }
-        if (ClusterNodeRoleEnum.isMaster(roleId)
+        if (ClusterNodeRoleEnum.MASTER.getMask() == roleId
                 && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndEtcd(devopsClusterNodeDTO.getRole()))
                 && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole()))
                 && Boolean.FALSE.equals(ClusterNodeRoleEnum.isMasterAndWorker(devopsClusterNodeDTO.getRole()))
