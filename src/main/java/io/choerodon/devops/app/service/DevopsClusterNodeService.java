@@ -89,7 +89,7 @@ public interface DevopsClusterNodeService {
      *
      * @param devopsClusterInstallPayload
      */
-    void installK8s(DevopsClusterInstallPayload devopsClusterInstallPayload);
+    void executeInstallK8sInBackground(DevopsClusterInstallPayload devopsClusterInstallPayload);
 
     List<DevopsClusterNodeDTO> queryByClusterId(Long clusterId);
 
@@ -143,6 +143,11 @@ public interface DevopsClusterNodeService {
      * @throws Exception
      */
     void uploadInstallDockerShell(SSHClient ssh, String suffix) throws Exception;
+
+    /**
+     * 更新集群安装操作结果的方法
+     */
+    void update();
 
     void baseDelete(Long id);
 

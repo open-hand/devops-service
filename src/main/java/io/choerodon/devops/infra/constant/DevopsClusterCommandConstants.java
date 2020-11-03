@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.constant;
 
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
 import org.hzero.core.util.StringPool;
 
 /**
@@ -7,16 +9,6 @@ import org.hzero.core.util.StringPool;
  * 集群相关操作命令
  */
 public class DevopsClusterCommandConstants {
-    /**
-     * devops中ansible文件保存目录模板
-     */
-    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
-
-    /**
-     * 基准目录
-     */
-    public static final String BASE_DIR = "/tmp";
-
     /**
      * 密码模式 节点名称 主机 端口 用户 登录密码
      */
@@ -26,11 +18,6 @@ public class DevopsClusterCommandConstants {
      * 密钥模式 节点名称 主机 端口 用户 密钥文件路径
      */
     public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_private_key_file=%s";
-
-    /**
-     * 密钥保存位置模版
-     */
-    public static final String PRIVATE_KEY_SAVE_PATH_TEMPLATE = "/tmp/ansible/ssh-key/id_rsa-%s";
 
     /**
      * 保存密钥命令 密钥内容 密钥保存地址
@@ -59,7 +46,7 @@ public class DevopsClusterCommandConstants {
     /**
      * 获取指定目录内容
      */
-    public static final String CAT_FILE = "cat /tmp/%s";
+    public static final String CAT_FILE = "cat %s";
 
     /**
      * 添加worker节点
@@ -101,10 +88,6 @@ public class DevopsClusterCommandConstants {
      * 移除节点
      */
     public static final String REMOVE_NODE_YAML = "87-remove-node.yml";
-    /**
-     * 获取检查日志
-     */
-    public static final String GET_LOG = "cat %s";
 
     /**
      * 检查节点
@@ -145,6 +128,32 @@ public class DevopsClusterCommandConstants {
      * 删除节点角色
      */
     public static final String DELETE_NODE_ROLE = "delete_node_role";
+
+    /**
+     * devops中ansible文件保存目录模板
+     */
+    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
+
+    /**
+     * 基准目录
+     */
+    public static final String BASE_DIR = "/tmp";
+
+    /**
+     * 密钥保存位置模版
+     */
+    public static final String PRIVATE_KEY_SAVE_PATH_TEMPLATE = "/tmp/ansible/ssh-key/id_rsa-%s";
+
+    /**
+     * 执行状态码保存位置
+     */
+    public static final String EXIT_CODE_FILE_TEMPLATE = BASE_DIR + SLASH + "%s";
+
+    /**
+     * k8s安装日志文件
+     */
+    public static final String INSTALL_K8S_LOG = BASE_DIR + StringPool.SLASH + "install.log";
+
     /**
      * 安装docker的shell文件
      */

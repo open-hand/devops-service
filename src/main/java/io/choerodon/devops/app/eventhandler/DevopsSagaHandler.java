@@ -556,13 +556,13 @@ public class DevopsSagaHandler {
     }
 
     /**
-     * devops安装k8s
+     * 通过nohup执行k8s安装命令
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_INSTALL_K8S,
+    @SagaTask(code = SagaTaskCodeConstants.EXECUTE_INSTALL_K8S_COMMAND,
             sagaCode = DEVOPS_INSTALL_K8S,
-            description = "Devops安装k8s", seq = 2, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
+            description = "通过nohup执行k8s安装命令,该saga执行成功不代表k8s安装成功", seq = 2, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
     public void installK8s(String payload) {
-        devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+        devopsClusterNodeService.executeInstallK8sInBackground(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
     }
 
     /**
