@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -357,10 +358,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
             throw new CommonException(e.getMessage(), e);
         } finally {
-            devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
-            devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
+            update(record, devopsClusterDTO);
             sshUtil.sshDisconnect(ssh);
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void update(DevopsClusterOperationRecordDTO record, DevopsClusterDTO devopsClusterDTO) {
+        devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
+        devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
     }
 
     private boolean checkInstallSuccess(SSHClient ssh, DevopsClusterOperationRecordDTO record, DevopsClusterDTO devopsClusterDTO) throws Exception {
