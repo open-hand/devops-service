@@ -74,7 +74,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                 devopsClusterNodeDTO.setClusterId(clusterId);
                 devopsClusterNodeService.baseSave(devopsClusterNodeDTO);
             } else {
-                devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getId(), devopsClusterNodeDTO.getRole() + nodeVO.getRole());
+                devopsClusterNodeService.baseAddNodeRole(devopsClusterNodeDTO.getId(), nodeVO.getRole());
             }
             // 计算inventory配置
             InventoryVO inventoryVO = devopsClusterNodeService.calculateGeneralInventoryValue(innerNodes);
@@ -106,6 +106,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             } else {
                 throw new CommonException(ERROR_ADD_NODE_FAILED);
             }
+
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
@@ -156,6 +157,11 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             LOGGER.info("delete node {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
                 throw new CommonException(ERROR_DELETE_NODE_FAILED, execResultInfoVO.getStdErr());
+            }
+            // 如果删除的是外部节点，重启docker
+            if (!CollectionUtils.isEmpty(outerNodes)
+                    && outerNodes.get(0).getId().equals(devopsClusterNodeDTO.getId())) {
+                sshUtil.execCommand(sshClient, RESTART_DOCKER_PROGRESS);
             }
             // 删除数据库中数据
             devopsClusterNodeService.baseDelete(devopsClusterNodeDTO.getId());

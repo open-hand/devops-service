@@ -73,7 +73,6 @@ public class DevopsClusterNodeController {
         devopsClusterNodeService.deleteRole(projectId, nodeId, role);
         return ResponseEntity.noContent().build();
     }
-
     @ApiOperation("添加节点")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping

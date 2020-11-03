@@ -37,6 +37,15 @@ public class DevopsClusterCommandConstants {
      */
     public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo \"%s\" > %s";
 
+
+    /**
+     * docker安装命令模板
+     */
+    public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> /tmp/install-docker.log 2>&1 \n" +
+            "sudo systemctl restart docker >> /tmp/install-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/install-docker.log 2>&1 ";
+
+    public static final String RESTART_DOCKER_PROGRESS = "sudo systemctl restart docker >> /tmp/restart-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/restart-docker.log 2>&1 ";
+
     /**
      * ansible命令模板，需要指定执行的yml
      */

@@ -252,6 +252,28 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Override
     @Transactional
+    public void baseAddNodeRole(Long id, Integer role) {
+        Assert.notNull(id, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
+        Assert.notNull(id, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
+
+        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(id);
+        if (ClusterNodeRoleEnum.isMaster(role)
+                && ClusterNodeRoleEnum.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            return;
+        }
+        if (ClusterNodeRoleEnum.isEtcd(role)
+                && ClusterNodeRoleEnum.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+            return;
+        }
+        devopsClusterNodeDTO.setRole(devopsClusterNodeDTO.getRole() + role);
+        if (devopsClusterNodeMapper.updateByPrimaryKeySelective(devopsClusterNodeDTO) != 1) {
+            throw new CommonException(ERROR_ADD_NODE_ROLE_FAILED);
+        }
+
+    }
+
+    @Override
+    @Transactional
     public void deleteRole(Long projectId, Long nodeId, Integer role) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
