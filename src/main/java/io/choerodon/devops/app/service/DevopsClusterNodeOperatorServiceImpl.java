@@ -6,8 +6,10 @@ import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.api.vo.ExecResultInfoVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.api.vo.InventoryVO;
+import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -42,7 +45,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterNodeOperatorServiceImpl.class);
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
 
-
+    private static final String ADD_NODE_OPERATING_FAILED_FLAG = "add:node:operating:failed:%s:Long";
     @Autowired
     private SshUtil sshUtil;
     @Autowired
@@ -60,7 +63,13 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     @Override
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
         SSHClient sshClient = new SSHClient();
+        String operatingFlagKey = String.format(ADD_NODE_OPERATING_FAILED_FLAG, clusterId);
         try {
+            // 如果是重试，则需要获取锁
+            String flag = stringRedisTemplate.opsForValue().get(operatingFlagKey);
+            if (StringUtils.isNotBlank(flag)) {
+                devopsClusterService.updateClusterStatusToOperating(clusterId);
+            }
             // 保存数据库记录
             LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<", clusterId);
             // 1. 查询集群节点信息
@@ -118,8 +127,10 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
+            stringRedisTemplate.delete(operatingFlagKey);
         } catch (Exception e) {
             devopsClusterService.updateStatusById(clusterId, ClusterStatusEnum.DISCONNECT);
+            stringRedisTemplate.opsForValue().set(operatingFlagKey, "failed");
             throw new CommonException(ERROR_ADD_NODE_FAILED, e);
         } finally {
             sshUtil.sshDisconnect(sshClient);
