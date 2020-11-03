@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -358,25 +359,35 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             }
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :waiting for installing completed<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
         } catch (Exception e) {
+            record.setStatus(ClusterOperationStatusEnum.FAILED.value())
+                    .appendErrorMsg(e.getMessage());
+            devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
             if (e instanceof TransportException) {
                 LOGGER.info(">>>>>>>>> [install k8s] clusterId {} : ssh connection disconnect ,host: [ {} ] <<<<<<<<<", devopsClusterInstallPayload.getClusterId(), ssh.getRemoteHostname());
                 throw new CommonException(String.format("ssh connection disconnect , host: [ %s ]", ssh.getRemoteHostname()));
             } else {
                 LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install , some error occured<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
-                record.setStatus(ClusterOperationStatusEnum.FAILED.value())
-                        .appendErrorMsg(e.getMessage());
-                devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
                 throw new CommonException(e.getMessage(), e);
             }
         } finally {
+            System.out.println(Thread.currentThread());
             update(record, devopsClusterDTO);
             sshUtil.sshDisconnect(ssh);
         }
     }
 
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void update(DevopsClusterOperationRecordDTO record, DevopsClusterDTO devopsClusterDTO) {
+        System.out.println(Thread.currentThread());
         devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
+        DevopsClusterDTO devopsClusterDTO1 = new DevopsClusterDTO();
+        devopsClusterDTO1.setName("adsf");
+        devopsClusterDTO1.setCode("djsakflsd");
+        devopsClusterDTO1.setOrganizationId(1234L);
+        devopsClusterDTO1.setProjectId(12348L);
+        devopsClusterDTO1.setToken("dsajfkljasdflksjdalfk");
+        devopsClusterMapper.insert(devopsClusterDTO1);
         devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
     }
 
