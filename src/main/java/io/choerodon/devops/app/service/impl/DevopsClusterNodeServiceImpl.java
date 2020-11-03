@@ -240,11 +240,14 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
 
-        if (ClusterNodeRoleEnum.isMaster(role)
+        if (ClusterNodeRoleEnum.MASTER.getMask() == role
                 && devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listMasterRoleSet()) > 1) {
             return true;
-        } else if (ClusterNodeRoleEnum.isEtcd(role)
+        } else if (ClusterNodeRoleEnum.ETCD.getMask() == role
                 && devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listEtcdRoleSet()) > 1) {
+            return true;
+        } else if (ClusterNodeRoleEnum.WORKER.getMask() == role
+                && devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listWorkerRoleSet()) > 1) {
             return true;
         } else {
             return false;
