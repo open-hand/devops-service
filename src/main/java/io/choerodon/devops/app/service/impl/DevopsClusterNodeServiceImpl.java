@@ -231,6 +231,22 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    public Boolean checkEnableDeleteRole(Long projectId, Long nodeId, Integer role) {
+
+        DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
+
+        if (ClusterNodeRoleEnum.isMaster(role)
+                && devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listMasterRoleSet()) < 2) {
+            return true;
+        } else if (ClusterNodeRoleEnum.isEtcd(role)
+                && devopsClusterNodeMapper.countByRoleSet(devopsClusterNodeDTO.getClusterId(), ClusterNodeRoleEnum.listEtcdRoleSet()) < 2) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     @Transactional
     public void deleteRole(Long projectId, Long nodeId, Integer role) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);

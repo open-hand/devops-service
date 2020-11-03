@@ -38,13 +38,15 @@ public class DevopsClusterNodeController {
 
     @ApiOperation("校验是否能够删除节点")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/{node_id}/check_enable_delete")
-    public ResponseEntity<NodeDeleteCheckVO> checkEnableDelete(
+    @GetMapping("/{node_id}/roles/{role}/check_enable_delete")
+    public ResponseEntity<Boolean> checkEnableDeleteRole(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
-            @PathVariable(value = "node_id") @Encrypt Long nodeId) {
-        return ResponseEntity.ok(devopsClusterNodeService.checkEnableDelete(projectId, nodeId));
+            @PathVariable(value = "node_id") @Encrypt Long nodeId,
+            @ApiParam(value = "role")
+            @PathVariable(value = "role")  Integer role) {
+        return ResponseEntity.ok(devopsClusterNodeService.checkEnableDeleteRole(projectId, nodeId, role));
     }
 
     @ApiOperation("删除节点")

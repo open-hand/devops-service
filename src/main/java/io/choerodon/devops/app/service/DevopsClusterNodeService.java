@@ -136,4 +136,6 @@ public interface DevopsClusterNodeService {
     void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException;
 
     void baseDelete(Long id);
+
+    Boolean checkEnableDeleteRole(Long projectId, Long nodeId, Integer role);
 }
