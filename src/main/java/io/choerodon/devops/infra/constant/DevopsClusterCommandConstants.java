@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.constant;
 
+import org.hzero.core.util.StringPool;
+
 /**
  * @author lihao
  * 集群相关操作命令
@@ -11,9 +13,9 @@ public class DevopsClusterCommandConstants {
     public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
 
     /**
-     * 节点中ansible文件保存目录
+     * 基准目录
      */
-    public static final String ANSIBLE_CONFIG_TARGET_BASE_DIR = "/tmp";
+    public static final String BASE_DIR = "/tmp";
 
     /**
      * 密码模式 节点名称 主机 端口 用户 登录密码
@@ -34,13 +36,6 @@ public class DevopsClusterCommandConstants {
      * 保存密钥命令 密钥内容 密钥保存地址
      */
     public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo \"%s\" > %s";
-
-
-    /**
-     * docker安装命令模板
-     */
-    public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> /tmp/install-docker.log 2>&1 \n" +
-            "sudo systemctl restart docker >> /tmp/install-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/install-docker.log 2>&1 ";
 
     /**
      * ansible命令模板，需要指定执行的yml
@@ -141,4 +136,18 @@ public class DevopsClusterCommandConstants {
      * 删除节点角色
      */
     public static final String DELETE_NODE_ROLE = "delete_node_role";
+    /**
+     * 安装docker的shell文件
+     */
+    public static final String INSTALL_DOCKER_SHELL = BASE_DIR + StringPool.SLASH + "install-docker.sh";
+
+    /**
+     * 安装k8s的shell文件
+     */
+    public static final String INSTALL_K8S_SHELL = BASE_DIR + StringPool.SLASH + INSTALL_K8S;
+
+    /**
+     * bash命令日志输出文件
+     */
+    public static final String BASH_LOG_OUTPUT = "/tmp/bash.log";
 }

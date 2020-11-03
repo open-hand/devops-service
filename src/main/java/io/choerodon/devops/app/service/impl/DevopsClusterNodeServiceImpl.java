@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
+import static org.hzero.core.util.StringPool.SLASH;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
-import org.hzero.core.util.StringPool;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -297,7 +298,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeMapper.listByClusterId(devopsClusterInstallPayload.getClusterId());
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :start to create ssh connection object <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
             sshUtil.sshConnect(ConvertUtils.convertObject(devopsClusterInstallPayload.getHostConnectionVO(), HostConnectionVO.class), ssh);
-            // 检查集群是否安装成功，该情况是如果集群安装成功，但是saga失败导致数据没有更新，防止saga重试使得集群被重新安装
+            // 检查集群是否安装成功，该情况是如果集群安装成功，但是saga失败导致数据没有更新，防止saga重试使得集群被重新安装。如果成功，此次saga任务成功
             if (checkInstallSuccess(ssh, record, devopsClusterDTO)) {
                 return;
             }
@@ -305,23 +306,21 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             generateAndUploadNodeConfiguration(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), inventoryVO);
             // 生成并上传k8s安装命令
-            generateAndUploadAnsibleShellScript(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), INSTALL_K8S, "/tmp/install.log", "/tmp/" + record.getId());
+            generateAndUploadAnsibleShellScript(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), INSTALL_K8S, BASE_DIR + SLASH + "install.log", BASE_DIR + SLASH + record.getId());
             // 上传privateKey信息到节点
             generateAndUploadPrivateKey(ssh, devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
-            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, "/tmp/" + INSTALL_K8S, "/tmp/bash.log"));
+            ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, INSTALL_K8S_SHELL, BASH_LOG_OUTPUT));
             // 集群安装出现错误，设置错误消息并更新集群状态
             if (resultInfoVO.getExitCode() != 0) {
                 record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                         .appendErrorMsg(resultInfoVO.getStdOut() + "\n" + resultInfoVO.getStdErr());
                 devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
             } else {
-                // k8s安装成功
-                LOGGER.info(">>>>>>>>> [install k8s] cluster [ {} ] operation [ {} ] install success <<<<<<<<<", devopsClusterInstallPayload.getClusterId(), record.getId());
-                record.setStatus(ClusterOperationStatusEnum.SUCCESS.value());
-                devopsClusterDTO.setStatus(ClusterStatusEnum.DISCONNECT.value());
-                // 安装agent, 第一步安装helm ，第二步安装agent。这一步骤如果出现错误,只保存错误信息
-                installAgent(devopsClusterDTO, record, ssh);
+                // 检查集群是否安装成功，该情况是ssh连接断开，但是没有产生错误。如果不成功，抛出异常
+                if (!checkInstallSuccess(ssh, record, devopsClusterDTO)) {
+                    throw new CommonException("failed to install k8s,please retry after 10 minutes");
+                }
             }
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :waiting for installing completed<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
         } catch (Exception e) {
@@ -340,7 +339,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CAT_FILE, record.getId()));
         if (resultInfoVO.getExitCode() != 0) {
             if (resultInfoVO.getStdErr().contains("No such file or directory")) {
-                LOGGER.info(">>>>>>>>> [install k8s] installation is not complete <<<<<<<<<");
+                LOGGER.info(">>>>>>>>> [install k8s] installation is not completed <<<<<<<<<");
             }
             return false;
         } else {
@@ -460,12 +459,13 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 安装docker
             try {
                 LOGGER.info(">>>>>>>>> [check node] key {} :start to install docker <<<<<<<<<", redisKey);
-                ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, INSTALL_DOCKER_COMMAND);
+                uploadInstallDockerShell(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode());
+                ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, INSTALL_DOCKER_SHELL, BASH_LOG_OUTPUT));
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
                     throw new Exception(String.format(">>>>>>>>> [check node] failed to install docker on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
                 }
             } catch (IOException e) {
-                throw new Exception(String.format(">>>>>>>>> [check node] failed to exec command [ %s ] on host [ %s ],error is :%s <<<<<<<<<", INSTALL_DOCKER_COMMAND, ssh.getRemoteHostname(), e.getMessage()));
+                throw new Exception(String.format(">>>>>>>>> [check node] failed to install docker on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), e.getMessage()));
             }
             // 生成相关配置节点
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
@@ -579,8 +579,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     @Override
     public void generateAndUploadNodeConfiguration(SSHClient ssh, String suffix, InventoryVO inventoryVO) {
         String configValue = generateInventoryInI(inventoryVO);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + StringPool.SLASH + "inventory.ini";
-        String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + StringPool.SLASH + "inventory.ini";
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "inventory.ini";
+        String targetFilePath = BASE_DIR + SLASH + "inventory.ini";
         FileUtil.saveDataToFile(filePath, configValue);
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
     }
@@ -588,10 +588,20 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     @Override
     public void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath) {
         String configValue = generateShellScript(command, logPath, exitCodePath);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + System.getProperty("file.separator") + command;
-        String targetFilePath = ANSIBLE_CONFIG_TARGET_BASE_DIR + System.getProperty("file.separator") + command;
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + command;
+        String targetFilePath = BASE_DIR + SLASH + command;
         FileUtil.saveDataToFile(filePath, configValue);
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
+    }
+
+    @Override
+    public void uploadInstallDockerShell(SSHClient ssh, String suffix) throws IOException {
+        InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/install-docker.sh");
+        String installDockerShell = IOUtils.toString(shellInputStream);
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "install-docker.sh";
+        FileUtil.saveDataToFile(filePath, installDockerShell);
+        sshUtil.uploadFile(ssh, filePath, INSTALL_DOCKER_SHELL);
+
     }
 
     private String generateInventoryInI(InventoryVO inventoryVO) {

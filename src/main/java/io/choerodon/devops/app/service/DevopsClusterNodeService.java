@@ -135,6 +135,15 @@ public interface DevopsClusterNodeService {
      */
     void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException;
 
+    /**
+     * 上传docker安装shell
+     *
+     * @param ssh
+     * @param suffix
+     * @throws Exception
+     */
+    void uploadInstallDockerShell(SSHClient ssh, String suffix) throws Exception;
+
     void baseDelete(Long id);
 
     Boolean checkEnableDeleteRole(Long projectId, Long nodeId, Integer role);
