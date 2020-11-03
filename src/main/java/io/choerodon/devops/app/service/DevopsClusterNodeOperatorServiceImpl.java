@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
 import org.apache.commons.lang3.StringUtils;
@@ -125,7 +126,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             stringRedisTemplate.delete(operatingFlagKey);
         } catch (Exception e) {
             devopsClusterService.updateStatusById(clusterId, ClusterStatusEnum.DISCONNECT);
-            stringRedisTemplate.opsForValue().set(operatingFlagKey, "failed");
+            stringRedisTemplate.opsForValue().set(operatingFlagKey, "failed", 30, TimeUnit.DAYS);
             throw new CommonException(ERROR_ADD_NODE_FAILED, e);
         } finally {
             sshUtil.sshDisconnect(sshClient);
