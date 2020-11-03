@@ -895,7 +895,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
+    @Transactional
     public void updateClusterStatusToOperating(Long clusterId) {
+        if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
+            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateClusterStatusToOperatingInNewTrans(Long clusterId) {
         if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
             throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
         }

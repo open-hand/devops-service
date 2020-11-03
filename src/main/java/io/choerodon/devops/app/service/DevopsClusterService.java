@@ -259,6 +259,7 @@ public interface DevopsClusterService {
      * @param clusterId
      */
     void updateClusterStatusToOperating(Long clusterId);
+    void updateClusterStatusToOperatingInNewTrans(Long clusterId);
 
     /**
      * 更新集群状态

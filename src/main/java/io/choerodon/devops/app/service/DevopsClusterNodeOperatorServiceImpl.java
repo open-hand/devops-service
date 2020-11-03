@@ -64,7 +64,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             // 如果是重试，则需要获取锁
             String flag = stringRedisTemplate.opsForValue().get(operatingFlagKey);
             if (StringUtils.isNotBlank(flag)) {
-                devopsClusterService.updateClusterStatusToOperating(clusterId);
+                devopsClusterService.updateClusterStatusToOperatingInNewTrans(clusterId);
             }
             // 保存数据库记录
             LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<", clusterId);
