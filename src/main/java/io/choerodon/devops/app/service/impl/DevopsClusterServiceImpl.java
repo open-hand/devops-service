@@ -902,8 +902,21 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void updateStatusById(Long clusterId, ClusterStatusEnum status) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        devopsClusterDTO.setStatus(status.value());
+        if (devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_CLUSTER_STATUS_FAILED);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatusByIdInNewTrans(Long clusterId, ClusterStatusEnum status) {
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
         Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
 

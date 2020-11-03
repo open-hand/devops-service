@@ -266,4 +266,6 @@ public interface DevopsClusterService {
      * @param disconnect
      */
     void updateStatusById(Long clusterId, ClusterStatusEnum disconnect);
+
+    void updateStatusByIdInNewTrans(Long clusterId, ClusterStatusEnum disconnect);
 }

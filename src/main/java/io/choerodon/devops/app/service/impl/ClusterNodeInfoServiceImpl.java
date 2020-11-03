@@ -189,13 +189,13 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                     if (devopsClusterNodeDTO != null) {
                         clusterNodeInfoVO.setId(devopsClusterNodeDTO.getId());
                         // 添加能否删除节点角色标记
-                        if (ClusterNodeRoleEnum.listMasterRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+                        if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
                             clusterNodeInfoVO.setEnableDeleteMasterRole(true);
                         }
-                        if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(devopsClusterNodeDTO.getRole())) {
+                        if (ClusterNodeRoleEnum.isEtcd(devopsClusterNodeDTO.getRole())) {
                             clusterNodeInfoVO.setEnableDeleteEtcdRole(true);
                         }
-                        if (ClusterNodeRoleEnum.isWorker(devopsClusterNodeDTO.getRole())) {
+                        if (ClusterNodeRoleEnum.WORKER.getMask() == devopsClusterNodeDTO.getRole()) {
                             clusterNodeInfoVO.setEnableDeleteNode(true);
                         }
                         // 添加失败信息

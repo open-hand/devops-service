@@ -117,7 +117,6 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             if (execResultInfoVO.getExitCode() != 0) {
                 throw new CommonException(ERROR_ADD_NODE_FAILED, execResultInfoVO.getStdErr());
             }
-            devopsClusterService.updateStatusById(clusterId, ClusterStatusEnum.DISCONNECT);
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     null,
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
@@ -125,10 +124,10 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     null);
             stringRedisTemplate.delete(operatingFlagKey);
         } catch (Exception e) {
-            devopsClusterService.updateStatusById(clusterId, ClusterStatusEnum.DISCONNECT);
             stringRedisTemplate.opsForValue().set(operatingFlagKey, "failed", 30, TimeUnit.DAYS);
             throw new CommonException(ERROR_ADD_NODE_FAILED, e);
         } finally {
+            devopsClusterService.updateStatusByIdInNewTrans(clusterId, ClusterStatusEnum.DISCONNECT);
             sshUtil.sshDisconnect(sshClient);
         }
     }
