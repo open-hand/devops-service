@@ -560,13 +560,14 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_INSTALL_K8S,
             sagaCode = DEVOPS_INSTALL_K8S,
-            description = "Devops安装k8s", seq = 2)
+            description = "Devops安装k8s", seq = 2, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
     public void installK8s(String payload) {
         devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
     }
 
     /**
      * 添加节点
+     *
      * @param payload
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLUSTER_ADD_NODE_TASK,
