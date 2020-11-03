@@ -119,6 +119,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
         } catch (Exception e) {
+            devopsClusterService.updateStatusById(clusterId, ClusterStatusEnum.DISCONNECT);
             throw new CommonException(ERROR_ADD_NODE_FAILED, e);
         } finally {
             sshUtil.sshDisconnect(sshClient);

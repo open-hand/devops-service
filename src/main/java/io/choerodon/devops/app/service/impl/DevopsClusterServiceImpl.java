@@ -902,7 +902,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateStatusById(Long clusterId, ClusterStatusEnum status) {
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
         Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
