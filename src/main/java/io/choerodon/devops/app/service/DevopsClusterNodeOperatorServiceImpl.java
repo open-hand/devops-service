@@ -115,7 +115,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_ADD_NODE_FAILED, execResultInfoVO.getStdErr());
+                throw new CommonException(execResultInfoVO.getStdErr());
             }
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
                     null,
