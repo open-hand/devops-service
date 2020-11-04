@@ -41,9 +41,6 @@ public class DevopsClusterValidator {
         if (masterCount == 0 || workerCount == 0 || etcdCount == 0) {
             throw new CommonException("error.node.role.number.equal.zero");
         }
-        if (etcdCount % 2 == 0) {
-            throw new CommonException("error.node.role.etcd.number.is.even");
-        }
     }
 
     private boolean checkMemberUnique(List<?> stringList) {
