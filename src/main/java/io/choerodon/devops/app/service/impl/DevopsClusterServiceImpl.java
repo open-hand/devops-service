@@ -393,8 +393,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         devopsClusterRepVOPageInfo.getContent().forEach(devopsClusterRepVO -> {
-            if (updatedEnvList.contains(devopsClusterRepVO.getId()) && devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
-                devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+            if (updatedEnvList.contains(devopsClusterRepVO.getId())) {
+                devopsClusterRepVO.setConnect(true);
+                if (devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                    devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+                }
+
             }
         });
 
@@ -554,6 +558,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
             boolean connect = updatedEnvList.contains(devopsClusterBasicInfoVO.getId());
             if (connect) {
+                devopsClusterBasicInfoVO.setConnect(connect);
                 // 如果在数据库中保存的状态是UNCONNECTED,则将状态置为CONNECTED
                 if (devopsClusterBasicInfoVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
                     devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.RUNNING.value());
@@ -711,8 +716,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             return null;
         }
         List<Long> upToDateList = clusterConnectionHandler.getUpdatedClusterList();
-        if (upToDateList.contains(clusterId) && result.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
-            result.setStatus(ClusterStatusEnum.RUNNING.value());
+        if (upToDateList.contains(clusterId)) {
+            result.setConnect(true);
+            if (result.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                result.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
         }
         return result;
     }
@@ -908,8 +916,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterRepVO devopsClusterRepVO = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
-        if (updatedEnvList.contains(clusterId) && devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
-            devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+        if (updatedEnvList.contains(clusterId)) {
+            devopsClusterRepVO.setConnect(true);
+            if (devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
         }
         return devopsClusterRepVO;
     }

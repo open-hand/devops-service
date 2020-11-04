@@ -12,6 +12,8 @@ public class DevopsClusterBasicInfoVO {
     private String name;
     private String code;
     @ApiModelProperty(value = "是否已经连接")
+    private Boolean connect;
+    @ApiModelProperty(value = "集群状态")
     private String status;
     @ApiModelProperty(value = "节点列表")
     private List<String> nodes;
@@ -76,5 +78,13 @@ public class DevopsClusterBasicInfoVO {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public Boolean getConnect() {
+        return connect;
+    }
+
+    public void setConnect(Boolean connect) {
+        this.connect = connect;
     }
 }
