@@ -49,6 +49,11 @@ public class DevopsClusterCommandConstants {
     public static final String CAT_FILE = "cat %s";
 
     /**
+     * 删除文件或者目录
+     */
+    public static final String DELETE_FILE = "rm -rf %s";
+
+    /**
      * 添加worker节点
      */
     public static final String ADD_WORKER_YML = "81-add-worker.yml";
@@ -147,7 +152,7 @@ public class DevopsClusterCommandConstants {
     /**
      * 执行状态码保存位置
      */
-    public static final String EXIT_CODE_FILE_TEMPLATE = BASE_DIR + SLASH + "%s";
+    public static final String EXIT_CODE_FILE_TEMPLATE = BASE_DIR + SLASH + "exit-code-%s";
 
     /**
      * k8s安装日志文件

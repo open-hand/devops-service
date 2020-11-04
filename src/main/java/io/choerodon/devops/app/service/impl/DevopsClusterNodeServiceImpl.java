@@ -721,6 +721,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                             record.setStatus(ClusterOperationStatusEnum.FAILED.value());
                             devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
                             record.appendErrorMsg(String.format("install failed.%s for more detail ,login in node [ %s ] and cat %s", installLog, ssh.getRemoteHostname(), INSTALL_K8S_LOG));
+                            // 删除执行状态文件，防止重试安装后，该方法读取错误的状态
+                            sshUtil.execCommand(ssh, String.format(DELETE_FILE, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode())));
                         }
                     }
                 } catch (Exception e) {
