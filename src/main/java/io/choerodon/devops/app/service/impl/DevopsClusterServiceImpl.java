@@ -211,7 +211,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return redisKey;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S, description = "重试创建集群", inputSchema = "{}")
     public void retryInstallK8s(Long projectId, Long clusterId) {
@@ -233,7 +233,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(clusterId, ClusterOperationTypeEnum.INSTALL_K8S.getType());
         devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.OPERATING.value());
+
         devopsClusterOperationRecordService.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+
+        devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsClusterMapper, devopsClusterDTO, "error.update.cluster");
+
+        LOGGER.info("update cluster and cluster operation status");
 
         DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
                 .setProjectId(projectId)

@@ -372,7 +372,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     private boolean checkInstallSuccess(SSHClient ssh, DevopsClusterOperationRecordDTO record, DevopsClusterDTO devopsClusterDTO) throws Exception {
-        ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CAT_FILE, record.getId()));
+        ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CAT_FILE, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode())));
         if (resultInfoVO.getExitCode() != 0) {
             if (resultInfoVO.getStdErr().contains("No such file or directory")) {
                 LOGGER.info(">>>>>>>>> [install k8s] installation is not completed <<<<<<<<<");
