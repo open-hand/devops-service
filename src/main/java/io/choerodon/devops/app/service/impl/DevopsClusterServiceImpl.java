@@ -153,7 +153,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional
     @Override
-    @Saga(code = "create-cluster", description = "创建集群", inputSchema = "{}")
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_INSTALL_K8S, description = "创建集群", inputSchema = "{}")
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
 
@@ -213,6 +213,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional
     @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S, description = "重试创建集群", inputSchema = "{}")
     public void retryInstallK8s(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {
@@ -253,7 +254,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                         .withPayloadAndSerialize(devopsClusterInstallPayload)
                         .withRefId(devopsClusterDTO.getCode())
                         .withSourceId(projectId));
-
     }
 
     @Override
