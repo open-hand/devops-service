@@ -232,6 +232,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(clusterId, ClusterOperationTypeEnum.INSTALL_K8S.getType());
+        devopsClusterOperationRecordDTO.setErrorMsg("");
         devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.OPERATING.value());
 
         devopsClusterOperationRecordService.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
