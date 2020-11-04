@@ -361,7 +361,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (e instanceof TransportException) {
                 LOGGER.info(">>>>>>>>> [install k8s] clusterId {} : ssh connection disconnect ,host: [ {} ] <<<<<<<<<", devopsClusterInstallPayload.getClusterId(), ssh.getRemoteHostname());
             } else {
-                LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install , some error occured<<<<<<<<<", devopsClusterInstallPayload.getClusterId());
+                LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install ,error: {}<<<<<<<<<", devopsClusterInstallPayload.getClusterId(), e.getMessage());
+                e.printStackTrace();
             }
         } finally {
             devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
