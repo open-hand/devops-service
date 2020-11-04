@@ -570,7 +570,7 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = DEVOPS_RETRY_INSTALL_K8S,
             sagaCode = DEVOPS_RETRY_INSTALL_K8S,
-            description = "重试安装集群", seq = 1, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
+            description = "通过nohup重试安装集群,该saga执行成功不代表k8s安装成功", seq = 1, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
     public void retryInstallK8s(String payload) {
         devopsClusterNodeService.executeInstallK8sInBackground(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
     }

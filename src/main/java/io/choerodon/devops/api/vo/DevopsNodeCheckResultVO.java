@@ -85,7 +85,7 @@ public class DevopsNodeCheckResultVO {
         private String errorMessage;
 
         public Step() {
-            this.status = ClusterOperationStatusEnum.OPERATING.value();
+            this.status = ClusterOperationStatusEnum.WAIT.value();
         }
 
         public String getStatus() {

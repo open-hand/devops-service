@@ -539,6 +539,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         try {
             String errorMsg;
             // 配置检查
+            devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.OPERATING.value());
+            stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
             ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
             if (resultInfoVOForVariable.getExitCode() != 0) {
                 errorMsg = resultInfoVOForVariable.getStdOut() + "\n" + resultInfoVOForVariable.getStdErr();
@@ -553,6 +555,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
 
             // 节点系统检查
+            devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.OPERATING.value());
+            stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
             ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, SYSTEM));
             if (resultInfoVOForSystem.getExitCode() != 0) {
                 errorMsg = resultInfoVOForSystem.getStdOut() + "\n" + resultInfoVOForSystem.getStdErr();
@@ -567,6 +571,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
 
             // 内存检查
+            devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.OPERATING.value());
+            stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
             ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, MEMORY));
             if (resultInfoVOForMemory.getExitCode() != 0) {
                 errorMsg = resultInfoVOForMemory.getStdOut() + "\n" + resultInfoVOForMemory.getStdErr();
@@ -581,6 +587,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
 
             // CPU检查
+            devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.OPERATING.value());
+            stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
             ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, CPU));
             if (resultInfoVOForCPU.getExitCode() != 0) {
                 errorMsg = resultInfoVOForCPU.getStdOut() + "\n" + resultInfoVOForCPU.getStdErr();
