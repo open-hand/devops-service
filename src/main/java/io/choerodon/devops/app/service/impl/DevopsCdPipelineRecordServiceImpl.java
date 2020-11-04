@@ -1122,6 +1122,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordVO.getType())) {
                 if (devopsCdJobRecordVO.getApiTestTaskRecordId() != null) {
                     ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordVO.getProjectId(), devopsCdJobRecordVO.getApiTestTaskRecordId());
+                    ApiTestTaskRecordVO meta = gson.fromJson(devopsCdJobRecordVO.getMetadata(), ApiTestTaskRecordVO.class);
+                    apiTestTaskRecordVO.setDeployJobName(meta.getDeployJobName());
+
                     devopsCdJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
                 }
 
