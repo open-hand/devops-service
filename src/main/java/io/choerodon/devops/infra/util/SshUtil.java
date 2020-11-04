@@ -212,7 +212,7 @@ public class SshUtil {
         Session session = null;
         try {
             session = ssh.startSession();
-            String loginExec = String.format("docker login -u '%s' -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
+            String loginExec = String.format("sudo docker login -u '%s' -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
             LOGGER.info(loginExec);
             Session.Command cmd = session.exec(loginExec);
 
@@ -240,7 +240,7 @@ public class SshUtil {
         try {
             session = ssh.startSession();
             LOGGER.info(imageTagVo.getPullCmd());
-            Session.Command cmd = session.exec(imageTagVo.getPullCmd());
+            Session.Command cmd = session.exec("sudo" + imageTagVo.getPullCmd());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             execPullImage(cmd);
@@ -266,8 +266,8 @@ public class SshUtil {
 
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append("docker stop ").append(containerName).append(" && ");
-            dockerRunExec.append("docker rm ").append(containerName);
+            dockerRunExec.append("sudo docker stop ").append(containerName).append(" && ");
+            dockerRunExec.append("sudo docker rm ").append(containerName);
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
@@ -335,7 +335,7 @@ public class SshUtil {
 
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append(values.replace("${containerName}", containerName).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("docker pull", "")));
+            dockerRunExec.append(values.replace("${containerName}", containerName).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("sudo docker pull", "")));
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
