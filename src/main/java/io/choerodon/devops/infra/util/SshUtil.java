@@ -240,7 +240,7 @@ public class SshUtil {
         try {
             session = ssh.startSession();
             LOGGER.info(imageTagVo.getPullCmd());
-            Session.Command cmd = session.exec("sudo" + imageTagVo.getPullCmd());
+            Session.Command cmd = session.exec("sudo " + imageTagVo.getPullCmd());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             execPullImage(cmd);
