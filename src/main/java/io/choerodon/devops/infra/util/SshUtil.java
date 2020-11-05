@@ -298,6 +298,7 @@ public class SshUtil {
         ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
         try (Session session = sshClient.startSession()) {
             Session.Command cmd = session.exec(command);
+            cmd.join(60, TimeUnit.MINUTES);
             execResultInfoVO.setCommand(command);
             execResultInfoVO.setStdErr(IOUtils.readFully(cmd.getErrorStream()).toString());
             execResultInfoVO.setStdOut(IOUtils.readFully(cmd.getInputStream()).toString());
