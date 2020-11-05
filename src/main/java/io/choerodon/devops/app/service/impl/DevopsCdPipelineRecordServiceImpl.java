@@ -1056,7 +1056,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordVO.getDeployInfoId());
                 //部署环境 应用服务 生成版本 实例名称
                 DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                cdAuto.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId()).getName());
+                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
+                if (devopsEnvironmentDTO != null) {
+                    cdAuto.setEnvName(devopsEnvironmentDTO.getName());
+                }
                 cdAuto.setAppServiceName(appServiceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getAppServiceId()).getName());
                 AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
                 appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
