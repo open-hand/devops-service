@@ -571,7 +571,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             // 如果集群状态是失败，设置错误信息
             if (ClusterStatusEnum.FAILED.value().equalsIgnoreCase(devopsClusterBasicInfoVO.getStatus())) {
                 DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(devopsClusterBasicInfoVO.getId(), ClusterOperationTypeEnum.INSTALL_K8S.getType());
-                devopsClusterBasicInfoVO.setErrorMessage(devopsClusterOperationRecordDTO.getErrorMsg());
+                if (devopsClusterOperationRecordDTO != null) {
+                    devopsClusterBasicInfoVO.setErrorMessage(devopsClusterOperationRecordDTO.getErrorMsg());
+                }
             }
         });
 
