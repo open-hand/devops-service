@@ -119,7 +119,12 @@ public class SshUtil {
         if (hostConnectionVO.getAuthType().equals(HostAuthType.ACCOUNTPASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUsername(), hostConnectionVO.getPassword());
         } else {
-            String str = Base64Util.getBase64DecodedString(StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey());
+            String str;
+            if(HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
+                str  = StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey();
+            } else {
+                str  = Base64Util.getBase64DecodedString(StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey());
+            }
             KeyProvider keyProvider = ssh.loadKeys(str, null, null);
             ssh.authPublickey(hostConnectionVO.getUsername(), keyProvider);
         }
