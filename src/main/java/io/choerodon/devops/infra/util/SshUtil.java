@@ -341,7 +341,7 @@ public class SshUtil {
 
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append(values.replace("${containerName}", containerName).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("sudo docker pull", "")));
+            dockerRunExec.append(values.replace("${containerName}", containerName).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("docker pull", "")));
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
