@@ -145,7 +145,7 @@ public interface AppServiceVersionService {
 
     void baseCheckByProjectAndVersionId(Long projectId, Long appServiceServiceId);
 
-    AppServiceVersionDTO baseQueryByCommitSha(Long appServiceId, String ref, String sha);
+    List<AppServiceVersionDTO> baseQueryByCommitSha(Long appServiceId, String ref, String sha);
 
     AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId);
 

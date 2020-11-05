@@ -591,7 +591,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public AppServiceVersionDTO baseQueryByCommitSha(Long appServiceId, String ref, String sha) {
+    public List<AppServiceVersionDTO> baseQueryByCommitSha(Long appServiceId, String ref, String sha) {
         return appServiceVersionMapper.queryByCommitSha(appServiceId, ref, sha);
     }
 

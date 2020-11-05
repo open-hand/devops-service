@@ -78,7 +78,7 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
 
     void updateRepository(@Param("helmUrl") String url);
 
-    AppServiceVersionDTO queryByCommitSha(@Param("appServiceId") Long appServiceId, @Param("ref") String ref, @Param("commit") String commit);
+    List<AppServiceVersionDTO> queryByCommitSha(@Param("appServiceId") Long appServiceId, @Param("ref") String ref, @Param("commit") String commit);
 
 
     void updateObjectVersionNumber(@Param("versionId") Long versionId);
