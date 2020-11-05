@@ -650,7 +650,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     private AppServiceVersionDTO getDeployVersion(Long pipelineRecordId) {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        return appServiceVersionService.queryByCommitShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
+        return appServiceVersionService.queryByCommitShaAndRef(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
     }
 
     @Override
@@ -994,7 +995,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 查询实例
         AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
         // 查询部署版本
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(instanceE.getAppServiceId(), devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
         // 查询当前实例运行时pod metadata
         List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
 

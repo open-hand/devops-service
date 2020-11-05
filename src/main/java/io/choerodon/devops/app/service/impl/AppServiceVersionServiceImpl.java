@@ -766,14 +766,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public AppServiceVersionDTO queryByCommitShaAndRef(String commitSha, String gitlabTriggerRef) {
-        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        appServiceVersionDTO.setCommit(commitSha);
-        appServiceVersionDTO.setRef(gitlabTriggerRef);
-        return appServiceVersionMapper.selectOne(appServiceVersionDTO);
-    }
-
-    @Override
     @Transactional
     @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION, inputSchemaClass = CustomResourceVO.class, description = "批量删除应用服务版本")
     public void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds) {
@@ -822,6 +814,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 builder -> builder
                         .withJson(GSON.toJson(customResourceVO))
                         .withRefId(appServiceDTO.getId().toString()));
+    }
+
+    @Override
+    public AppServiceVersionDTO queryByCommitShaAndRef(Long appServiceId, String commitSha, String ref) {
+
+        return appServiceVersionMapper.queryByCommitShaAndRef(appServiceId, commitSha, ref);
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {

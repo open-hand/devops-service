@@ -197,8 +197,6 @@ public interface AppServiceVersionService {
 
     void fixHarbor();
 
-    AppServiceVersionDTO queryByCommitShaAndRef(String commitSha, String gitlabTriggerRef);
-
     /**
      * 批量删除应用服务版本
      *
@@ -208,4 +206,5 @@ public interface AppServiceVersionService {
      */
     void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds);
 
+    AppServiceVersionDTO queryByCommitShaAndRef(Long appServiceId, String commitSha, String ref);
 }

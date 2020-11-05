@@ -602,6 +602,13 @@
         GROUP BY
 	      dasv.app_service_id
     </select>
+    <select id="queryByCommitShaAndRef" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT *
+        FROM devops_app_service_version dasv
+        WHERE dasv.app_service_id = #{appServiceId} AND dasv.commit = #{commitSha} and dasv.ref = #{ref}
+        order by id desc
+        limit 1
+    </select>
 
     <update id="updateDefaultHarborRecords">
         UPDATE
