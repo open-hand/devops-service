@@ -251,6 +251,12 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_CLUSTER_ADD_NODE = "devops_cluster_add_node";
 
+    /**
+     * 创建流水线自动部署实例
+     */
+    public static final String DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE = "devops-pipeline-auto-deploy-instance";
+
+
     private SagaTopicCodeConstants() {
     }
 }

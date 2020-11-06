@@ -10,7 +10,7 @@ mvn org.apache.maven.plugins:maven-dependency-plugin:get \
 
 java -Dspring.datasource.url="jdbc:mysql://localhost:3306/?serverTimezone=CTT&useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true" \
  -Dspring.datasource.username=root \
- -Dspring.datasource.password=123456 \
+ -Dspring.datasource.password=root \
  -Dspring.datasource.driver-class-name=com.mysql.jdbc.Driver \
  -Ddata.init=true \
  -Dlogging.level.root=info \
