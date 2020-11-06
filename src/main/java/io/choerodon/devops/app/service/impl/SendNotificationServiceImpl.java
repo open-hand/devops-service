@@ -88,6 +88,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+    @Autowired
+    @Lazy
+    private PipelineRecordService pipelineRecordService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -1220,5 +1223,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
         }
         messageClient.async().sendMessage(sender);
+    }
+    private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
+        PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
+        sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 }

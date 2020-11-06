@@ -17,7 +17,10 @@ public class DevopsClusterRepVO {
     @ApiModelProperty("集群code")
     private String code;
 
-    @ApiModelProperty
+    @ApiModelProperty("是否连接")
+    private Boolean connect;
+
+    @ApiModelProperty("集群状态")
     private String status;
 
     @ApiModelProperty("集群描述")
@@ -114,5 +117,13 @@ public class DevopsClusterRepVO {
     public DevopsClusterRepVO setStatus(String status) {
         this.status = status;
         return this;
+    }
+
+    public Boolean getConnect() {
+        return connect;
+    }
+
+    public void setConnect(Boolean connect) {
+        this.connect = connect;
     }
 }

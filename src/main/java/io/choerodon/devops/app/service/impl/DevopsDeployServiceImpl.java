@@ -120,12 +120,12 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             c7nNexusDeployDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
             c7nNexusDeployDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
             c7nNexusComponentDTO = nexusComponentDTOList.get(0);
-            c7nNexusDeployDTO.setJarName(getJarName(c7nNexusDeployDTO.getDownloadUrl()));
+            c7nNexusDeployDTO.setJarName(jarDeploy.getArtifactId());
 
             sshUtil.sshConnect(deployConfigVO.getHostConnectionVO(), ssh);
 
             // 2. 执行jar部署
-            sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(), log);
+            sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(),jarDeploy.getWorkingPath(), log);
             sshUtil.sshExec(ssh, c7nNexusDeployDTO, jarDeploy.getValue(), jarDeploy.getWorkingPath(), log);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             devopsDeployRecordService.saveRecord(
@@ -162,7 +162,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
     private String getJarName(String url) {
         String[] arr = url.split("/");
-        return arr[arr.length - 1].replace(".jar", "-") + GenerateUUID.generateRandomString() + ".jar";
+        return arr[arr.length - 1];
     }
 
     private void hostImagedeploy(Long projectId, DeployConfigVO deployConfigVO) {

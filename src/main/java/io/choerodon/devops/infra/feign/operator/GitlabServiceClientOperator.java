@@ -1101,6 +1101,9 @@ public class GitlabServiceClientOperator {
         } catch (Exception e) {
             throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
         }
+        if (pipeline == null || pipeline.getBody() == null) {
+            throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
+        }
         return pipeline.getBody();
     }
 

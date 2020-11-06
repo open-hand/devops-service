@@ -13,6 +13,7 @@ public class DevopsAddNodePayload {
     private Long projectId;
     private Long clusterId;
     private DevopsClusterNodeVO nodeVO;
+    private String operatingId;
 
     public Long getProjectId() {
         return projectId;
@@ -38,12 +39,21 @@ public class DevopsAddNodePayload {
         this.nodeVO = nodeVO;
     }
 
+    public String getOperatingId() {
+        return operatingId;
+    }
+
+    public void setOperatingId(String operatingId) {
+        this.operatingId = operatingId;
+    }
+
     @Override
     public String toString() {
         return "DevopsAddNodePayload{" +
                 "projectId=" + projectId +
                 ", clusterId=" + clusterId +
                 ", nodeVO=" + nodeVO +
+                ", operatingId='" + operatingId + '\'' +
                 '}';
     }
 }

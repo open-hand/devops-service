@@ -78,7 +78,7 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
 
     void updateRepository(@Param("helmUrl") String url);
 
-    AppServiceVersionDTO queryByCommitSha(@Param("appServiceId") Long appServiceId, @Param("ref") String ref, @Param("commit") String commit);
+    List<AppServiceVersionDTO> queryByCommitSha(@Param("appServiceId") Long appServiceId, @Param("ref") String ref, @Param("commit") String commit);
 
 
     void updateObjectVersionNumber(@Param("versionId") Long versionId);
@@ -119,4 +119,6 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     void updateDefaultHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
 
     void updateCustomHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
+
+    AppServiceVersionDTO queryByCommitShaAndRef(@Param("appServiceId") Long appServiceId, @Param("commitSha") String commitSha, @Param("ref") String ref);
 }

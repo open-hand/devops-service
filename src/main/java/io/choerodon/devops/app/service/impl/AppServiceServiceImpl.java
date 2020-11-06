@@ -2810,7 +2810,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId) {
-        String json = redisTemplate.opsForValue().get(SONAR + ":" + projectId + ":" + appServiceId);
-        return JsonHelper.unmarshalByJackson(json, SonarContentsVO.class);
+        String jsonBody = redisTemplate.opsForValue().get(SONAR + ":" + projectId + ":" + appServiceId);
+        if (StringUtils.isEmpty(jsonBody)) {
+            return getSonarContent(projectId, appServiceId);
+        } else {
+            return JsonHelper.unmarshalByJackson(jsonBody, SonarContentsVO.class);
+        }
     }
 }

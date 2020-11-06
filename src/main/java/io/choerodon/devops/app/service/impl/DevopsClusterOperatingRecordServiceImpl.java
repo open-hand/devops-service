@@ -44,9 +44,9 @@ public class DevopsClusterOperatingRecordServiceImpl implements DevopsClusterOpe
     }
 
     @Override
-    public DevopsClusterOperationRecordDTO queryFailedRecordByNodeId(Long nodeId) {
+    public DevopsClusterOperationRecordDTO queryLatestRecordByNodeId(Long nodeId) {
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
-        return devopsClusterOperationRecordMapper.queryFirstFailedRecordByNodeId(nodeId);
+        return devopsClusterOperationRecordMapper.queryLatestRecordByNodeId(nodeId);
     }
 }

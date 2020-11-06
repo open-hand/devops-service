@@ -43,6 +43,8 @@ public class ApiTestTaskRecordVO {
     @ApiModelProperty("显示编号")
     private String viewId;
 
+    private String deployJobName;
+
     public String getViewId() {
         return viewId;
     }
@@ -121,5 +123,13 @@ public class ApiTestTaskRecordVO {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getDeployJobName() {
+        return deployJobName;
+    }
+
+    public void setDeployJobName(String deployJobName) {
+        this.deployJobName = deployJobName;
     }
 }

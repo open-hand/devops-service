@@ -32,14 +32,12 @@ import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
-import io.choerodon.devops.infra.enums.ClusterOperationTypeEnum;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 /**
@@ -98,6 +96,15 @@ public class DevopsSagaHandler {
     private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
     @Autowired
     private DevopsClusterNodeOperatorService devopsClusterNodeOperatorService;
+
+    @Autowired
+    private PipelineTaskRecordService pipelineTaskRecordService;
+    @Autowired
+    private PipelineStageRecordService pipelineStageRecordService;
+    @Autowired
+    private PipelineService pipelineService;
+    @Autowired
+    private PipelineRecordService pipelineRecordService;
 
     /**
      * devops创建环境
@@ -556,17 +563,28 @@ public class DevopsSagaHandler {
     }
 
     /**
-     * devops安装k8s
+     * 通过nohup执行k8s安装命令
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_INSTALL_K8S,
+    @SagaTask(code = SagaTaskCodeConstants.EXECUTE_INSTALL_K8S_COMMAND,
             sagaCode = DEVOPS_INSTALL_K8S,
-            description = "Devops安装k8s", seq = 2)
+            description = "通过nohup执行k8s安装命令,该saga执行成功不代表k8s安装成功", seq = 2, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
     public void installK8s(String payload) {
-        devopsClusterNodeService.installK8s(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+        devopsClusterNodeService.executeInstallK8sInBackground(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+    }
+
+    /**
+     * 重试安装集群
+     */
+    @SagaTask(code = DEVOPS_RETRY_INSTALL_K8S,
+            sagaCode = DEVOPS_RETRY_INSTALL_K8S,
+            description = "通过nohup重试安装集群,该saga执行成功不代表k8s安装成功", seq = 1, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
+    public void retryInstallK8s(String payload) {
+        devopsClusterNodeService.executeInstallK8sInBackground(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
     }
 
     /**
      * 添加节点
+     *
      * @param payload
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLUSTER_ADD_NODE_TASK,
@@ -574,6 +592,56 @@ public class DevopsSagaHandler {
             description = "Devops添加节点", seq = 1)
     public void addNode(String payload) {
         DevopsAddNodePayload devopsAddNodePayload = JsonHelper.unmarshalByJackson(payload, DevopsAddNodePayload.class);
-        devopsClusterNodeOperatorService.addNode(devopsAddNodePayload.getProjectId(), devopsAddNodePayload.getClusterId(), devopsAddNodePayload.getNodeVO());
+        devopsClusterNodeOperatorService.addNode(devopsAddNodePayload.getProjectId(), devopsAddNodePayload.getClusterId(), devopsAddNodePayload.getOperatingId(), devopsAddNodePayload.getNodeVO());
     }
+
+    /**
+     * 创建流水线自动部署实例
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
+            description = "创建流水线自动部署实例",
+            sagaCode = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 3,
+            seq = 1)
+    public void pipelineAutoDeployInstance(String data) {
+        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
+        Long taskRecordId = appServiceDeployVO.getRecordId();
+        Long stageRecordId = pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId();
+        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
+        PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
+        Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
+        try {
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
+            if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
+                if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
+                    PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
+                    pipelineTaskRecordDTO.setInstanceId(appServiceInstanceVO.getId());
+                    pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
+                    pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
+                    pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
+                    LOGGER.info("create pipeline auto deploy instance success");
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("error create pipeline auto deploy instance {}", e);
+            PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
+            pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
+            pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
+
+            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
+            stageRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            stageRecordDTO.setExecutionTime(time.toString());
+            pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
+
+            pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
+            Long userId = GitUserNameUtil.getUserId();
+            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
+                    MessageCodeConstants.PIPELINE_FAILED,
+                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
+            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
+        }
+    }
+
 }

@@ -187,6 +187,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private PipelineAppDeployService pipelineAppDeployService;
 
     @PostConstruct
     private void init() {
@@ -601,7 +603,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
             } else {
-                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
+                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))
+                        || !pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
                     throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
                 }
             }
@@ -1624,8 +1627,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsClusterRepVOS.forEach(t -> {
-            if (upgradeClusterList.contains(t.getId()) && t.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
-                t.setStatus(ClusterStatusEnum.RUNNING.value());
+            if (upgradeClusterList.contains(t.getId())) {
+                t.setConnect(true);
+                if (t.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                    t.setStatus(ClusterStatusEnum.RUNNING.value());
+                }
             }
         });
         return devopsClusterRepVOS;

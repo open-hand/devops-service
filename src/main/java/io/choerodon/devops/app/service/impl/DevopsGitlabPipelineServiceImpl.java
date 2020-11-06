@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -238,9 +239,9 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         devopsGitlabPipelineDOS.forEach(devopsGitlabPipelineDO -> {
             refs.add(devopsGitlabPipelineDO.getRef() + "-" + devopsGitlabPipelineDO.getSha());
             createDates.add(devopsGitlabPipelineDO.getPipelineCreationDate());
-            AppServiceVersionDTO applicationVersionE = appServiceVersionService.baseQueryByCommitSha(appServiceId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
-            if (applicationVersionE != null) {
-                versions.add(applicationVersionE.getVersion());
+            List<AppServiceVersionDTO> applicationVersionList = appServiceVersionService.baseQueryByCommitSha(appServiceId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
+            if (!CollectionUtils.isEmpty(applicationVersionList)) {
+                versions.add(applicationVersionList.get(0).getVersion());
             } else {
                 versions.add("");
             }

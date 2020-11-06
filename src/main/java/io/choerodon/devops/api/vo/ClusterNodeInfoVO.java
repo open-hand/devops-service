@@ -1,9 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
 public class ClusterNodeInfoVO {
+    @Encrypt
     private Long id;
     /**
      * values: master/node
@@ -36,6 +39,7 @@ public class ClusterNodeInfoVO {
 
     private Boolean enableDeleteMasterRole = false;
     private Boolean enableDeleteEtcdRole = false;
+    private Boolean enableDeleteNode = false;
 
     public String getRole() {
         return role;
@@ -219,5 +223,13 @@ public class ClusterNodeInfoVO {
 
     public void setEnableDeleteEtcdRole(Boolean enableDeleteEtcdRole) {
         this.enableDeleteEtcdRole = enableDeleteEtcdRole;
+    }
+
+    public Boolean getEnableDeleteNode() {
+        return enableDeleteNode;
+    }
+
+    public void setEnableDeleteNode(Boolean enableDeleteNode) {
+        this.enableDeleteNode = enableDeleteNode;
     }
 }
