@@ -142,6 +142,7 @@ public class SshUtil {
             stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", jarName));
             stopJar.append(System.lineSeparator());
             stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, jarName));
+            stopJar.append(System.lineSeparator());
             stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, jarName.replace(".jar", ".log")));
             LOGGER.info(stopJar.toString());
             Session session = null;
@@ -202,7 +203,6 @@ public class SshUtil {
             LOGGER.info(cmdStr.toString());
 
             final Session.Command cmd = session.exec(cmdStr.toString());
-            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             log.append(System.lineSeparator());
