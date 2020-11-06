@@ -287,7 +287,7 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-liquibase</artifactId>
-            <version>0.16.1.RELEASE</version>
+            <version>0.16.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.ini4j/ini4j -->
