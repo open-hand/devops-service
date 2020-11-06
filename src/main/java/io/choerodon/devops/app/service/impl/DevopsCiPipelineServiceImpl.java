@@ -497,7 +497,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Map<Long, List<DevopsCdJobVO>> cdJobMap = devopsCdJobVOS.stream().collect(Collectors.groupingBy(DevopsCdJobVO::getStageId));
         devopsCdStageVOS.forEach(devopsCdStageVO -> {
             List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
-            jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
+            jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getSequence));
             devopsCdStageVO.setJobList(jobMapOrDefault);
         });
         // cd stage排序
