@@ -125,7 +125,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             sshUtil.sshConnect(deployConfigVO.getHostConnectionVO(), ssh);
 
             // 2. 执行jar部署
-            sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(), log);
+            sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(),jarDeploy.getWorkingPath(), log);
             sshUtil.sshExec(ssh, c7nNexusDeployDTO, jarDeploy.getValue(), jarDeploy.getWorkingPath(), log);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             devopsDeployRecordService.saveRecord(
