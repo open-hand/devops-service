@@ -149,6 +149,8 @@ logging:
 
 
 devops:
+  ansible:
+    image: registry.cn-shanghai.aliyuncs.com/c7n/kubeadm-ha:0.1.0
   # helm 下载地址
   helm:
     download-url: https://file.choerodon.com.cn/kubernetes-helm/v3.2.4/helm-v3.2.4-linux-amd64.tar.gz

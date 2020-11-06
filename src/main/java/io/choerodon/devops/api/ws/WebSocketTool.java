@@ -240,7 +240,7 @@ public class WebSocketTool {
             attributes.put(KEY, decryptKey(String.valueOf(key)));
         }
         if (describeId != null) {
-            attributes.put(KEY, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(describeId)));
+            attributes.put(DESCRIBE_Id, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(describeId)));
         }
     }
 

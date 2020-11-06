@@ -3,18 +3,19 @@ package io.choerodon.devops.app.service;
 import static io.choerodon.devops.infra.constant.ClusterCheckConstant.ERROR_DELETE_NODE_FAILED;
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -41,7 +42,9 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterNodeOperatorServiceImpl.class);
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
 
-
+    private static final String ADD_NODE_OPERATING_FAILED_FLAG = "add:node:operating:failed:%s:Long";
+    @Value("${devops.ansible.image}")
+    private String ansibleImage;
     @Autowired
     private SshUtil sshUtil;
     @Autowired
@@ -57,9 +60,15 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private DevopsClusterNodeMapper devopsClusterNodeMapper;
 
     @Override
-    public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
+    public void addNode(Long projectId, Long clusterId, String operatingId, DevopsClusterNodeVO nodeVO) {
         SSHClient sshClient = new SSHClient();
+        String operatingFlagKey = String.format(ADD_NODE_OPERATING_FAILED_FLAG, operatingId);
         try {
+            // 如果是重试，则需要获取锁
+            String flag = stringRedisTemplate.opsForValue().get(operatingFlagKey);
+            if (StringUtils.isNotBlank(flag)) {
+                devopsClusterService.updateClusterStatusToOperatingInNewTrans(clusterId);
+            }
             // 保存数据库记录
             LOGGER.info(">>>>>>>>> [add node] save cluster {} node to db. <<<<<<<<<<<<<<<", clusterId);
             // 1. 查询集群节点信息
@@ -73,7 +82,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                 devopsClusterNodeDTO.setClusterId(clusterId);
                 devopsClusterNodeService.baseSave(devopsClusterNodeDTO);
             } else {
-                devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getId(), devopsClusterNodeDTO.getRole() + nodeVO.getRole());
+                devopsClusterNodeService.baseAddNodeRole(devopsClusterNodeDTO.getId(), nodeVO.getRole());
             }
             // 计算inventory配置
             InventoryVO inventoryVO = devopsClusterNodeService.calculateGeneralInventoryValue(innerNodes);
@@ -92,29 +101,36 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
 
             // 上传配置文件
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(clusterId), inventoryVO);
+            // 使用密钥认证，需要上传密钥
+            if (HostAuthType.PUBLICKEY.value().equals(devopsClusterNodeDTO.getAuthType())) {
+                devopsClusterNodeService.generateAndUploadPrivateKey(sshClient, Arrays.asList(devopsClusterNodeDTO));
+            }
             // 执行添加节点操作
             String command;
-            if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
+            if (ClusterNodeRoleEnum.isMaster(nodeVO.getRole())) {
                 command = ADD_MASTER_YML;
-            } else if (ClusterNodeRoleEnum.isWorker(devopsClusterNodeDTO.getRole())) {
+            } else if (ClusterNodeRoleEnum.isWorker(nodeVO.getRole())) {
                 command = ADD_WORKER_YML;
             } else {
                 throw new CommonException(ERROR_ADD_NODE_FAILED);
             }
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
+
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, command));
             LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_ADD_NODE_FAILED, execResultInfoVO.getStdErr());
+                throw new CommonException(execResultInfoVO.getStdErr());
             }
-            devopsClusterService.updateStatusById(clusterId, ClusterStatusEnum.DISCONNECT);
             devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    null,
+                    devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.ADD_NODE.value(),
                     ClusterOperationStatusEnum.SUCCESS.value(),
                     null);
+            stringRedisTemplate.delete(operatingFlagKey);
         } catch (Exception e) {
+            stringRedisTemplate.opsForValue().set(operatingFlagKey, "failed", 30, TimeUnit.DAYS);
             throw new CommonException(ERROR_ADD_NODE_FAILED, e);
         } finally {
+            devopsClusterService.updateStatusByIdInNewTrans(clusterId, ClusterStatusEnum.DISCONNECT);
             sshUtil.sshDisconnect(sshClient);
         }
     }
@@ -122,6 +138,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     @Override
     public void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO) {
         SSHClient sshClient = new SSHClient();
+        String errorMsg = "";
         try {
             // 删除集群中的node
             // 1. 查询集群节点信息
@@ -147,10 +164,16 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             // 上传配置文件
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(devopsClusterNodeDTO.getClusterId()), inventoryVO);
             // 执行删除节点操作
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
             LOGGER.info("delete node {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED, execResultInfoVO.getStdErr());
+                errorMsg = execResultInfoVO.getStdOut() + System.lineSeparator() + execResultInfoVO.getStdErr();
+                throw new CommonException(ERROR_DELETE_NODE_FAILED);
+            }
+            // 如果删除的是外部节点，重启docker
+            if (!CollectionUtils.isEmpty(outerNodes)
+                    && outerNodes.get(0).getId().equals(devopsClusterNodeDTO.getId())) {
+                sshUtil.execCommand(sshClient, RESTART_DOCKER_PROGRESS);
             }
             // 删除数据库中数据
             devopsClusterNodeService.baseDelete(devopsClusterNodeDTO.getId());
@@ -164,7 +187,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.DELETE_NODE.value(),
                     ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
+                    errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
@@ -175,6 +198,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     @Override
     public void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role) {
         SSHClient sshClient = new SSHClient();
+        String errorMsg = "";
         try {
             // 删除节点角色
             // 删除集群中的node
@@ -207,10 +231,11 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             // 上传配置文件
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(devopsClusterNodeDTO.getClusterId()), inventoryVO);
             // 执行删除节点操作
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, command));
             LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                throw new CommonException(ERROR_DELETE_NODE_FAILED, execResultInfoVO.getStdErr());
+                errorMsg = execResultInfoVO.getStdOut() + System.lineSeparator() + execResultInfoVO.getStdErr();
+                throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
 
             // 删除数据库数据
@@ -233,7 +258,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                     devopsClusterNodeDTO.getId(),
                     ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
                     ClusterOperationStatusEnum.FAILED.value(),
-                    e.getMessage());
+                    errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);

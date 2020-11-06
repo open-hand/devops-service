@@ -127,6 +127,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     private final DevopsDeployValueMapper devopsDeployValueMapper;
+    private final PipelineAppDeployService pipelineAppDeployService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -144,6 +145,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
+            PipelineAppDeployService pipelineAppDeployService,
             RdupmClientOperator rdupmClientOperator,
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
@@ -176,6 +178,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
+        this.pipelineAppDeployService = pipelineAppDeployService;
         this.rdupmClientOperator = rdupmClientOperator;
         this.devopsConfigService = devopsConfigService;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
@@ -473,7 +476,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     DevopsCdEnvDeployInfoVO devopsCdEnvDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsCdEnvDeployInfoVO.class);
                     //根据value id 返回values
                     DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getValueId());
-                    devopsCdEnvDeployInfoVO.setValue(Base64Util.getBase64EncodedString(devopsDeployValueDTO.getValue()));
+                    if (devopsDeployValueDTO != null) {
+                        devopsCdEnvDeployInfoVO.setValue(Base64Util.getBase64EncodedString(devopsDeployValueDTO.getValue()));
+                    }
                     // 加密json中主键
                     devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO)));
                 } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobVO.getType())) {
@@ -497,7 +502,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Map<Long, List<DevopsCdJobVO>> cdJobMap = devopsCdJobVOS.stream().collect(Collectors.groupingBy(DevopsCdJobVO::getStageId));
         devopsCdStageVOS.forEach(devopsCdStageVO -> {
             List<DevopsCdJobVO> jobMapOrDefault = cdJobMap.getOrDefault(devopsCdStageVO.getId(), Collections.emptyList());
-            jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getId));
+            jobMapOrDefault.sort(Comparator.comparing(DevopsCdJobVO::getSequence));
             devopsCdStageVO.setJobList(jobMapOrDefault);
         });
         // cd stage排序

@@ -1,29 +1,14 @@
 package io.choerodon.devops.infra.constant;
 
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
+import org.hzero.core.util.StringPool;
+
 /**
  * @author lihao
  * 集群相关操作命令
  */
 public class DevopsClusterCommandConstants {
-    /**
-     * devops中ansible文件保存目录模板
-     */
-    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
-
-    /**
-     * 节点中ansible文件保存目录
-     */
-    public static final String ANSIBLE_CONFIG_TARGET_BASE_DIR = "/tmp";
-
-    /**
-     * 集群操作状态锁key
-     */
-    public static final String CLUSTER_LOCK_KEY = "cluster:lock:key:%s:Long";
-    /**
-     * 集群操作信息key
-     */
-    public static final String CLUSTER_OPERATING_KEY = "cluster:operating:key:%s:DevopsClusterOperatorVO";
-
     /**
      * 密码模式 节点名称 主机 端口 用户 登录密码
      */
@@ -35,14 +20,9 @@ public class DevopsClusterCommandConstants {
     public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_private_key_file=%s";
 
     /**
-     * 密钥保存位置模版
-     */
-    public static final String PRIVATE_KEY_SAVE_PATH_TEMPLATE = "/tmp/ssh-key/id_rsa-%s";
-
-    /**
      * 保存密钥命令 密钥内容 密钥保存地址
      */
-    public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo %s > %s";
+    public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo \"%s\" > %s";
 
 
     /**
@@ -51,20 +31,27 @@ public class DevopsClusterCommandConstants {
     public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> /tmp/install-docker.log 2>&1 \n" +
             "sudo systemctl restart docker >> /tmp/install-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/install-docker.log 2>&1 ";
 
+    public static final String RESTART_DOCKER_PROGRESS = "sudo systemctl restart docker >> /tmp/restart-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/restart-docker.log 2>&1 ";
+
     /**
      * ansible命令模板，需要指定执行的yml
      */
     public static final String ANSIBLE_COMMAND_TEMPLATE = "sudo docker run --rm --name ansible \\\n" +
             "-w /root/kubeadm-ha/ \\\n" +
-            "-v /tmp/ssh-key:/tmp/ssh-key \\\n" +
+            "-v /tmp/ansible/ssh-key:/tmp/ansible/ssh-key \\\n" +
             "-v /tmp/inventory.ini:/tmp/inventory.ini \\\n" +
-            "registry.cn-hangzhou.aliyuncs.com/elem-lihao/ansible:1.1 \\\n" +
+            "%s \\\n" +
             "ansible-playbook -i /tmp/inventory.ini %s";
 
     /**
      * 获取指定目录内容
      */
-    public static final String CAT_FILE = "cat /tmp/%s";
+    public static final String CAT_FILE = "cat %s";
+
+    /**
+     * 删除文件或者目录
+     */
+    public static final String DELETE_FILE = "rm -rf %s";
 
     /**
      * 添加worker节点
@@ -106,10 +93,6 @@ public class DevopsClusterCommandConstants {
      * 移除节点
      */
     public static final String REMOVE_NODE_YAML = "87-remove-node.yml";
-    /**
-     * 获取检查日志
-     */
-    public static final String GET_LOG = "cat %s";
 
     /**
      * 检查节点
@@ -150,4 +133,44 @@ public class DevopsClusterCommandConstants {
      * 删除节点角色
      */
     public static final String DELETE_NODE_ROLE = "delete_node_role";
+
+    /**
+     * devops中ansible文件保存目录模板
+     */
+    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
+
+    /**
+     * 基准目录
+     */
+    public static final String BASE_DIR = "/tmp";
+
+    /**
+     * 密钥保存位置模版
+     */
+    public static final String PRIVATE_KEY_SAVE_PATH_TEMPLATE = "/tmp/ansible/ssh-key/id_rsa-%s";
+
+    /**
+     * 执行状态码保存位置
+     */
+    public static final String EXIT_CODE_FILE_TEMPLATE = BASE_DIR + SLASH + "exit-code-%s";
+
+    /**
+     * k8s安装日志文件
+     */
+    public static final String INSTALL_K8S_LOG = BASE_DIR + StringPool.SLASH + "install.log";
+
+    /**
+     * 安装docker的shell文件
+     */
+    public static final String INSTALL_DOCKER_SHELL = BASE_DIR + StringPool.SLASH + "install-docker.sh";
+
+    /**
+     * 安装k8s的shell文件
+     */
+    public static final String INSTALL_K8S_SHELL = BASE_DIR + StringPool.SLASH + INSTALL_K8S;
+
+    /**
+     * bash命令日志输出文件
+     */
+    public static final String BASH_LOG_OUTPUT = "/tmp/bash.log";
 }

@@ -526,8 +526,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
         if (Boolean.TRUE.equals(status)
                 && PipelineStatus.RUNNING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            LOGGER.info(">>>>>>> setAppDeployStatus, start next task, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
+            LOGGER.info(">>>>>>> setAppDeployStatus, update status to failed, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
@@ -648,7 +650,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     private AppServiceVersionDTO getDeployVersion(Long pipelineRecordId) {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        return appServiceVersionService.queryByCommitShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
+        return appServiceVersionService.queryByCommitShaAndRef(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
     }
 
     @Override
@@ -976,6 +979,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 更新记录状态为失败
             devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
         }
+        LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task success. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+
 
 
     }
@@ -990,7 +995,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 查询实例
         AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
         // 查询部署版本
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(instanceE.getAppServiceId(), devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
         // 查询当前实例运行时pod metadata
         List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
 

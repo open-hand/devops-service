@@ -174,7 +174,6 @@ public class ProjectCertificationController {
             @Encrypt
             @ApiParam(value = "证书id", required = true)
             @PathVariable(value = "cert_id") Long certId,
-            @Encrypt
             @ApiParam(value = "关联的项目ID", required = true)
             @RequestParam(value = "related_project_id") Long relatedProjectId) {
         devopsProjectCertificationService.deletePermissionOfProject(relatedProjectId, certId);

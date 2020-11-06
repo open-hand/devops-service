@@ -119,52 +119,64 @@ public class SshUtil {
         if (hostConnectionVO.getAuthType().equals(HostAuthType.ACCOUNTPASSWORD.value())) {
             ssh.authPassword(hostConnectionVO.getUsername(), hostConnectionVO.getPassword());
         } else {
-            String str = Base64Util.getBase64DecodedString(StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey());
+            String str;
+            if(HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
+                str  = StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey();
+            } else {
+                str  = Base64Util.getBase64DecodedString(StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey());
+            }
             KeyProvider keyProvider = ssh.loadKeys(str, null, null);
             ssh.authPublickey(hostConnectionVO.getUsername(), keyProvider);
         }
     }
 
-    public void sshStopJar(SSHClient ssh, String jarName, StringBuilder log) throws IOException {
-        StringBuilder stopJar = new StringBuilder();
-        stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", jarName));
-        stopJar.append(System.lineSeparator());
-        stopJar.append(String.format("cd /temp-jar && rm -f %s", jarName));
-        stopJar.append(" && cd /temp-log &&");
-        stopJar.append(String.format("rm -f %s", jarName.replace(".jar", ".log")));
-        LOGGER.info(stopJar.toString());
-        Session session = null;
-        try {
-            session = ssh.startSession();
-            final Session.Command cmd = session.exec(stopJar.toString());
-            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-            String logInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-            String errorInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
-            log.append(logInfo);
-            log.append(errorInfo);
-        } finally {
-            assert session != null;
-            session.close();
+    public void sshStopJar(SSHClient ssh, String jarName,String workingPath, StringBuilder log) throws IOException {
+        if (StringUtils.isEmpty(workingPath)) {
+            workingPath = ".";
+        } else {
+            workingPath = workingPath.endsWith("/") ? workingPath.substring(0, workingPath.length() - 1) : workingPath;
+        }
+
+        if (!StringUtils.isEmpty(jarName)) {
+            StringBuilder stopJar = new StringBuilder();
+            stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", jarName));
+            stopJar.append(System.lineSeparator());
+            stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, jarName));
+            stopJar.append(System.lineSeparator());
+            stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, jarName.replace(".jar", ".log")));
+            LOGGER.info(stopJar.toString());
+            Session session = null;
+            try {
+                session = ssh.startSession();
+                final Session.Command cmd = session.exec(stopJar.toString());
+                cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
+                String logInfo = IOUtils.readFully(cmd.getInputStream()).toString();
+                String errorInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
+                log.append(logInfo);
+                log.append(errorInfo);
+            } finally {
+                assert session != null;
+                session.close();
+            }
         }
     }
 
     public void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, String value, String workingPath, StringBuilder log) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
         if (StringUtils.isEmpty(workingPath)) {
-            cmdStr.append("mkdir -p /temp/jar && ");
-            cmdStr.append("mkdir -p /temp/log && ");
+            workingPath = ".";
         } else {
             workingPath = workingPath.endsWith("/") ? workingPath.substring(0, workingPath.length() - 1) : workingPath;
-            cmdStr.append(String.format("mkdir -p %s/jar && ", workingPath));
-            cmdStr.append(String.format("mkdir -p %s/log && ", workingPath));
         }
-
+        cmdStr.append(String.format("mkdir -p %s/temp-jar && ", workingPath));
+        cmdStr.append(String.format("mkdir -p %s/temp-log && ", workingPath));
         Session session = null;
         try {
             session = ssh.startSession();
+            String jarPathAndName = workingPath + "/temp-jar/" + c7nNexusDeployDTO.getJarName();
             // 2.2
             String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                    "/temp-jar/" + c7nNexusDeployDTO.getJarName(),
+                    jarPathAndName,
                     c7nNexusDeployDTO.getPullUserId(),
                     c7nNexusDeployDTO.getPullUserPassword(),
                     c7nNexusDeployDTO.getDownloadUrl());
@@ -183,13 +195,14 @@ public class SshUtil {
             }
 
             String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
-            String javaJarExec = String.format("nohup %s > /temp-log/%s 2>&1 &", values.replace("${jar}", "/temp-jar/" + c7nNexusDeployDTO.getJarName()), logName);
+            String logPathAndName = workingPath + "/temp-log/" + logName;
+            String javaJarExec = values.replace("${jar}", jarPathAndName);
 
             cmdStr.append(javaJarExec);
-            cmdStr.append(System.lineSeparator());
-            LOGGER.info(cmdStr.toString());
+            StringBuilder finalCmdStr=new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
+            LOGGER.info(finalCmdStr.toString());
 
-            final Session.Command cmd = session.exec(cmdStr.toString());
+            final Session.Command cmd = session.exec(finalCmdStr.toString());
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
@@ -212,7 +225,7 @@ public class SshUtil {
         Session session = null;
         try {
             session = ssh.startSession();
-            String loginExec = String.format("docker login -u '%s' -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
+            String loginExec = String.format("sudo docker login -u '%s' -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
             LOGGER.info(loginExec);
             Session.Command cmd = session.exec(loginExec);
 
@@ -240,7 +253,7 @@ public class SshUtil {
         try {
             session = ssh.startSession();
             LOGGER.info(imageTagVo.getPullCmd());
-            Session.Command cmd = session.exec(imageTagVo.getPullCmd());
+            Session.Command cmd = session.exec("sudo " + imageTagVo.getPullCmd());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             execPullImage(cmd);
@@ -266,8 +279,8 @@ public class SshUtil {
 
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append("docker stop ").append(containerName).append(" && ");
-            dockerRunExec.append("docker rm ").append(containerName);
+            dockerRunExec.append("sudo docker stop ").append(containerName).append(" && ");
+            dockerRunExec.append("sudo docker rm ").append(containerName);
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
@@ -298,6 +311,7 @@ public class SshUtil {
         ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
         try (Session session = sshClient.startSession()) {
             Session.Command cmd = session.exec(command);
+            cmd.join(60, TimeUnit.MINUTES);
             execResultInfoVO.setCommand(command);
             execResultInfoVO.setStdErr(IOUtils.readFully(cmd.getErrorStream()).toString());
             execResultInfoVO.setStdOut(IOUtils.readFully(cmd.getInputStream()).toString());
@@ -306,16 +320,15 @@ public class SshUtil {
         }
     }
 
-    public ExecResultInfoVO execCommands(SSHClient sshClient, @Nonnull List<String> commands) throws IOException {
+    public void execCommands(SSHClient sshClient, @Nonnull List<String> commands) throws IOException {
         ExecResultInfoVO execResultInfoVO = new ExecResultInfoVO();
         execResultInfoVO.setExitCode(0);
         for (String c : commands) {
             execResultInfoVO = execCommand(sshClient, c);
             if (execResultInfoVO.getExitCode() != 0) {
-                break;
+                throw new CommonException(String.format("failed to execute command :%s ,the error is %s", c, execResultInfoVO.getStdErr()));
             }
         }
-        return execResultInfoVO;
     }
 
     public void dockerRun(SSHClient ssh, String value, String containerName, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {

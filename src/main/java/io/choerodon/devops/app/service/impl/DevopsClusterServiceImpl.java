@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.NODE_CHECK_STEP_REDIS_KEY_TEMPLATE;
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.CLUSTER_LOCK_KEY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +55,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterServiceImpl.class);
     private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
-    private static final String SAGA_INSTALL_K8S_REF_TYPE = "cluster";
+    private static final String SAGA_INSTALL_K8S_REF_TYPE = "install-cluster";
+    private static final String SAGA_RETRY_INSTALL_K8S_REF_TYPE = "retry-install";
 
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
@@ -153,7 +153,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional
     @Override
-    @Saga(code = "create-cluster", description = "创建集群", inputSchema = "{}")
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_INSTALL_K8S, description = "创建集群", inputSchema = "{}")
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
 
@@ -211,17 +211,56 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return redisKey;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S, description = "重试创建集群", inputSchema = "{}")
     public void retryInstallK8s(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        List<SagaInstanceDetails> sagaInstanceDetails = asgardServiceClientOperator.queryByRefTypeAndRefIds(SAGA_INSTALL_K8S_REF_TYPE, Collections.singletonList(devopsClusterDTO.getCode()), SagaTopicCodeConstants.DEVOPS_INSTALL_K8S);
-        if (CollectionUtils.isEmpty(sagaInstanceDetails)) {
-            throw new CommonException("error.retry.install.k8s");
+        if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {
+            throw new CommonException("error.cluster.status");
         }
+        CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeService.listByClusterId(clusterId);
+        HostConnectionVO hostConnectionVO = null;
+        for (DevopsClusterNodeDTO node : devopsClusterNodeDTOList) {
+            if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.OUTTER.getType())) {
+                hostConnectionVO = ConvertUtils.convertObject(node, HostConnectionVO.class);
+            }
+        }
+        if (hostConnectionVO == null) {
+            hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTOList.get(0), HostConnectionVO.class);
+        }
+
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(clusterId, ClusterOperationTypeEnum.INSTALL_K8S.getType());
+        devopsClusterOperationRecordDTO.setErrorMsg("");
+        devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.OPERATING.value());
+
+        devopsClusterOperationRecordService.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+
         devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
-        devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
-        asgardServiceClientOperator.retrySaga(projectId, sagaInstanceDetails.get(0).getId());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsClusterMapper, devopsClusterDTO, "error.update.cluster");
+
+        LOGGER.info("update cluster and cluster operation status");
+
+        DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
+                .setProjectId(projectId)
+                .setClusterId(clusterId)
+                .setDevopsClusterNodeToSaveDTOList(devopsClusterNodeDTOList)
+                .setHostConnectionVO(hostConnectionVO)
+                .setOperationRecordId(devopsClusterOperationRecordDTO.getId())
+                .setDevopsClusterReqVO(ConvertUtils.convertObject(devopsClusterDTO, DevopsClusterReqVO.class));
+
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType(SAGA_RETRY_INSTALL_K8S_REF_TYPE)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsClusterInstallPayload)
+                        .withRefId(devopsClusterDTO.getCode())
+                        .withSourceId(projectId));
     }
 
     @Override
@@ -354,8 +393,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         devopsClusterRepVOPageInfo.getContent().forEach(devopsClusterRepVO -> {
-            if (updatedEnvList.contains(devopsClusterRepVO.getId()) && devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
-                devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+            if (updatedEnvList.contains(devopsClusterRepVO.getId())) {
+                devopsClusterRepVO.setConnect(true);
+                if (devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                    devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+                }
+
             }
         });
 
@@ -512,14 +555,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         // 未连接的集群
         List<DevopsClusterBasicInfoVO> unconnectedClusters = new ArrayList<>();
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
-            // 查询缓存中是否存在操作集群节点的锁
-            String lockKey = String.format(CLUSTER_LOCK_KEY, devopsClusterBasicInfoVO.getId());
-            if (stringRedisTemplate.opsForValue().get(lockKey) != null) {
-                devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.OPERATING.value());
-            }
 
             boolean connect = updatedEnvList.contains(devopsClusterBasicInfoVO.getId());
             if (connect) {
+                devopsClusterBasicInfoVO.setConnect(connect);
                 // 如果在数据库中保存的状态是UNCONNECTED,则将状态置为CONNECTED
                 if (devopsClusterBasicInfoVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
                     devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.RUNNING.value());
@@ -527,6 +566,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 connectedClusters.add(devopsClusterBasicInfoVO);
             } else {
                 unconnectedClusters.add(devopsClusterBasicInfoVO);
+            }
+
+            // 如果集群状态是失败，设置错误信息
+            if (ClusterStatusEnum.FAILED.value().equalsIgnoreCase(devopsClusterBasicInfoVO.getStatus())) {
+                DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(devopsClusterBasicInfoVO.getId(), ClusterOperationTypeEnum.INSTALL_K8S.getType());
+                if (devopsClusterOperationRecordDTO != null) {
+                    devopsClusterBasicInfoVO.setErrorMessage(devopsClusterOperationRecordDTO.getErrorMsg());
+                }
             }
         });
 
@@ -671,8 +718,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             return null;
         }
         List<Long> upToDateList = clusterConnectionHandler.getUpdatedClusterList();
-        if (upToDateList.contains(clusterId) && result.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
-            result.setStatus(ClusterStatusEnum.RUNNING.value());
+        if (upToDateList.contains(clusterId)) {
+            result.setConnect(true);
+            if (result.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                result.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
         }
         return result;
     }
@@ -868,8 +918,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterRepVO devopsClusterRepVO = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
-        if (updatedEnvList.contains(clusterId) && devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
-            devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+        if (updatedEnvList.contains(clusterId)) {
+            devopsClusterRepVO.setConnect(true);
+            if (devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
         }
         return devopsClusterRepVO;
     }
@@ -901,7 +954,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
+    @Transactional
     public void updateClusterStatusToOperating(Long clusterId) {
+        if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
+            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateClusterStatusToOperatingInNewTrans(Long clusterId) {
         if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
             throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
         }
@@ -910,6 +972,19 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Transactional
     public void updateStatusById(Long clusterId, ClusterStatusEnum status) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        devopsClusterDTO.setStatus(status.value());
+        if (devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_CLUSTER_STATUS_FAILED);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatusByIdInNewTrans(Long clusterId, ClusterStatusEnum status) {
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
         Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
 

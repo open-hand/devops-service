@@ -36,15 +36,17 @@ public class DevopsClusterNodeController {
         return Results.success(devopsClusterNodeService.testConnection(projectId, clusterHostConnectionVO));
     }
 
-    @ApiOperation("校验是否能够删除节点")
+    @ApiOperation("校验是否能够删除节点角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/{node_id}/check_enable_delete")
-    public ResponseEntity<NodeDeleteCheckVO> checkEnableDelete(
+    @GetMapping("/{node_id}/roles/{role}/check_enable_delete")
+    public ResponseEntity<Boolean> checkEnableDeleteRole(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
-            @PathVariable(value = "node_id") @Encrypt Long nodeId) {
-        return ResponseEntity.ok(devopsClusterNodeService.checkEnableDelete(projectId, nodeId));
+            @PathVariable(value = "node_id") @Encrypt Long nodeId,
+            @ApiParam(value = "role")
+            @PathVariable(value = "role")  Integer role) {
+        return ResponseEntity.ok(devopsClusterNodeService.checkEnableDeleteRole(projectId, nodeId, role));
     }
 
     @ApiOperation("删除节点")
@@ -71,7 +73,6 @@ public class DevopsClusterNodeController {
         devopsClusterNodeService.deleteRole(projectId, nodeId, role);
         return ResponseEntity.noContent().build();
     }
-
     @ApiOperation("添加节点")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping
@@ -79,7 +80,7 @@ public class DevopsClusterNodeController {
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "集群id")
-            @RequestParam("cluster_id") Long clusterId,
+            @RequestParam("cluster_id") @Encrypt Long clusterId,
             @RequestBody DevopsClusterNodeVO nodeVO) {
         devopsClusterNodeService.addNode(projectId, clusterId, nodeVO);
         return ResponseEntity.noContent().build();

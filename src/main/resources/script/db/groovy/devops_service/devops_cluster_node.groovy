@@ -31,7 +31,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: 'username', type: 'VARCHAR(32)', remarks: '用户名') {
                 constraints(nullable: false)
             }
-            column(name: 'password', type: 'VARCHAR(2048)', remarks: '密码/rsa秘钥') {
+            column(name: 'password', type: 'text', remarks: '密码/rsa秘钥') {
                 constraints(nullable: false)
             }
 
@@ -42,7 +42,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
         addUniqueConstraint(tableName: 'devops_cluster_node',
-                constraintName: 'uk_project_host_name', columnNames: 'project_id,name')
+                constraintName: 'uk_cluster_host_name', columnNames: 'cluster_id,name')
         addUniqueConstraint(tableName: 'devops_cluster_node',
                 constraintName: 'uk_project_ip_port', columnNames: 'project_id,host_ip,host_port')
     }
