@@ -196,13 +196,14 @@ public class SshUtil {
 
             String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
             String logPathAndName = workingPath + "/temp-log/" + logName;
-            String javaJarExec = String.format("nohup %s > %s 2>&1 &", values.replace("${jar}", jarPathAndName), logPathAndName);
+            String javaJarExec = values.replace("${jar}", jarPathAndName);
 
             cmdStr.append(javaJarExec);
-            cmdStr.append(System.lineSeparator());
-            LOGGER.info(cmdStr.toString());
+            StringBuilder finalCmdStr=new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
+            LOGGER.info(finalCmdStr.toString());
 
-            final Session.Command cmd = session.exec(cmdStr.toString());
+            final Session.Command cmd = session.exec(finalCmdStr.toString());
+            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             log.append(System.lineSeparator());
