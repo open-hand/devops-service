@@ -64,7 +64,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     private static final Integer MAX_LOG_MSG_LENGTH = 65535;
 
-    @Value("${devops.ansible.image}}")
+    @Value("${devops.ansible.image}")
     private String ansibleImage;
     @Value(value = "${devops.helm.download-url}")
     private String helmDownloadUrl;

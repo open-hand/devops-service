@@ -43,7 +43,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
 
     private static final String ADD_NODE_OPERATING_FAILED_FLAG = "add:node:operating:failed:%s:Long";
-    @Value("${devops.ansible.image}}")
+    @Value("${devops.ansible.image}")
     private String ansibleImage;
     @Autowired
     private SshUtil sshUtil;
