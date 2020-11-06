@@ -42,6 +42,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private AppServiceService appServiceService;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private PipelineAppDeployService pipelineAppDeployService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -135,6 +137,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     public Boolean checkDelete(Long projectId, Long valueId) {
         DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
         permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
+
         List<DevopsCdEnvDeployInfoDTO> devopsCdEnvDeployInfoDTOS = devopsCdEnvDeployInfoService.queryCurrentByValueId(valueId);
         if (devopsCdEnvDeployInfoDTOS == null || devopsCdEnvDeployInfoDTOS.isEmpty()) {
             List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);

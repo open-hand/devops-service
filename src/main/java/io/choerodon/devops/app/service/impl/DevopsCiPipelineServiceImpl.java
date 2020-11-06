@@ -127,6 +127,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     private final DevopsDeployValueMapper devopsDeployValueMapper;
+    private final PipelineAppDeployService pipelineAppDeployService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -144,6 +145,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
+            PipelineAppDeployService pipelineAppDeployService,
             RdupmClientOperator rdupmClientOperator,
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
@@ -176,6 +178,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
+        this.pipelineAppDeployService = pipelineAppDeployService;
         this.rdupmClientOperator = rdupmClientOperator;
         this.devopsConfigService = devopsConfigService;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;

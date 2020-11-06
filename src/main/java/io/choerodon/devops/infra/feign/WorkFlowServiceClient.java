@@ -15,6 +15,11 @@ import io.choerodon.devops.infra.feign.fallback.WorkFlowServiceClientFallback;
 @FeignClient(value = "workflow-service", fallback = WorkFlowServiceClientFallback.class)
 public interface WorkFlowServiceClient {
 
+    @PostMapping(value = "/v1/projects/{project_id}/process_instances")
+    ResponseEntity<String> create(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody DevopsPipelineDTO devopsPipelineDTO);
+
     @PutMapping(value = "/v1/projects/{project_id}/process_instances")
     ResponseEntity<Boolean> approveUserTask(
             @PathVariable(value = "project_id") Long projectId,

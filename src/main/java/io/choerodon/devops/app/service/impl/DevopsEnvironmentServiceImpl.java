@@ -187,6 +187,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private PipelineAppDeployService pipelineAppDeployService;
 
     @PostConstruct
     private void init() {
@@ -601,7 +603,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
             } else {
-                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
+                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))
+                        || !pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
                     throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
                 }
             }

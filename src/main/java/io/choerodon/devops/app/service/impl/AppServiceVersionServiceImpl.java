@@ -108,6 +108,14 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private PipelineAppDeployService pipelineAppDeployService;
+    @Autowired
+    private PipelineTaskService pipelineTaskService;
+    @Autowired
+    private PipelineStageService pipelineStageService;
+    @Autowired
+    private PipelineService pipelineService;
 
     @Autowired
     private TransactionalProducer producer;
@@ -220,7 +228,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         FileUtil.deleteDirectories(destFilePath, storeFilePath);
         //流水线
-//        checkAutoDeploy(appServiceVersionDTO);
+        checkAutoDeploy(appServiceVersionDTO);
         //生成版本成功后发送webhook json
         sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
     }
@@ -820,6 +828,56 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public AppServiceVersionDTO queryByCommitShaAndRef(Long appServiceId, String commitSha, String ref) {
 
         return appServiceVersionMapper.queryByCommitShaAndRef(appServiceId, commitSha, ref);
+    }
+
+    /**
+     * 检测能够触发自动部署
+     *
+     * @param appServiceVersionDTO 版本
+     */
+    private void checkAutoDeploy(AppServiceVersionDTO appServiceVersionDTO) {
+        AppServiceVersionDTO insertAppServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceVersionDTO.getAppServiceId(), appServiceVersionDTO.getVersion());
+
+        if (insertAppServiceVersionDTO != null && insertAppServiceVersionDTO.getVersion() != null) {
+            List<PipelineAppServiceDeployDTO> appDeployDTOList = pipelineAppDeployService.baseQueryByAppId(insertAppServiceVersionDTO.getAppServiceId())
+                    .stream()
+                    .filter(deployDTO -> filterAppDeploy(deployDTO, insertAppServiceVersionDTO.getVersion()))
+                    .collect(Collectors.toList());
+
+            if (!appDeployDTOList.isEmpty()) {
+                List<Long> stageList = appDeployDTOList.stream()
+                        .map(appDeploy -> pipelineTaskService.baseQueryTaskByAppDeployId(appDeploy.getId()))
+                        .filter(Objects::nonNull)
+                        .map(PipelineTaskDTO::getStageId)
+                        .distinct()
+                        .collect(Collectors.toList());
+                if (!stageList.isEmpty()) {
+                    List<Long> pipelineList = stageList.stream()
+                            .map(stageId -> pipelineStageService.baseQueryById(stageId))
+                            .filter(Objects::nonNull)
+                            .map(PipelineStageDTO::getPipelineId)
+                            .distinct()
+                            .collect(Collectors.toList());
+
+                    List<PipelineDTO> devopsPipelineDTOS = new ArrayList<>();
+                    if (!pipelineList.isEmpty()) {
+                        pipelineList.forEach(pipelineId -> {
+                            PipelineDTO pipelineE = pipelineService.baseQueryById(pipelineId);
+                            if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
+                                devopsPipelineDTOS.add(pipelineE);
+                            }
+                        });
+
+                        devopsPipelineDTOS.forEach(pipelineDTO -> {
+                            if (pipelineService.checkDeploy(pipelineDTO.getProjectId(), pipelineDTO.getId()).getVersions()) {
+                                LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertAppServiceVersionDTO.getId(), insertAppServiceVersionDTO.getVersion(), pipelineDTO.getId());
+                                pipelineService.executeAutoDeploy(pipelineDTO.getId());
+                            }
+                        });
+                    }
+                }
+            }
+        }
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {
