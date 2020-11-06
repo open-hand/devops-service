@@ -512,7 +512,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshUtil.sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
 
             // 2. 执行jar部署
-            sshStopJar(ssh, jobRecordDTO.getJobId(), log);
+            sshStopJar(ssh, jobRecordDTO.getJobId(), jarDeploy, log);
             sshExec(ssh, c7nNexusDeployDTO, jarDeploy, log);
             devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
@@ -579,15 +579,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return status;
     }
 
-    private void sshStopJar(SSHClient ssh, Long jobId, StringBuilder log) throws IOException {
+    private void sshStopJar(SSHClient ssh, Long jobId, CdHostDeployConfigVO.JarDeploy jarDeploy, StringBuilder log) throws IOException {
         DevopsCdEnvDeployInfoDTO cdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryByCdJobId(jobId);
+        String workingPath;
+        if (StringUtils.isEmpty(jarDeploy.getWorkingPath())) {
+            workingPath = ".";
+        } else {
+            workingPath = jarDeploy.getWorkingPath().endsWith("/") ? jarDeploy.getWorkingPath().substring(0, jarDeploy.getWorkingPath().length() - 1) : jarDeploy.getWorkingPath();
+        }
+
         if (cdEnvDeployInfoDTO != null && !StringUtils.isEmpty(cdEnvDeployInfoDTO.getJarName())) {
             StringBuilder stopJar = new StringBuilder();
             stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", cdEnvDeployInfoDTO.getJarName()));
             stopJar.append(System.lineSeparator());
-            stopJar.append(String.format("cd /temp-jar && rm -f %s", cdEnvDeployInfoDTO.getJarName()));
-            stopJar.append(" && cd /temp-log &&");
-            stopJar.append(String.format("rm -f %s", cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
+            stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, cdEnvDeployInfoDTO.getJarName()));
+            stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
             LOGGER.info(stopJar.toString());
             Session session = null;
             try {
@@ -607,21 +613,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, CdHostDeployConfigVO.JarDeploy jarDeploy, StringBuilder log) throws IOException {
         StringBuilder cmdStr = new StringBuilder();
+        String workingPath;
         if (StringUtils.isEmpty(jarDeploy.getWorkingPath())) {
-            cmdStr.append("mkdir -p /temp/jar && ");
-            cmdStr.append("mkdir -p /temp/log && ");
+            workingPath = ".";
         } else {
-            String workingPath = jarDeploy.getWorkingPath().endsWith("/") ? jarDeploy.getWorkingPath().substring(0, jarDeploy.getWorkingPath().length() - 1) : jarDeploy.getWorkingPath();
-            cmdStr.append(String.format("mkdir -p %s/jar && ", workingPath));
-            cmdStr.append(String.format("mkdir -p %s/log && ", workingPath));
+            workingPath = jarDeploy.getWorkingPath().endsWith("/") ? jarDeploy.getWorkingPath().substring(0, jarDeploy.getWorkingPath().length() - 1) : jarDeploy.getWorkingPath();
         }
-
+        cmdStr.append(String.format("mkdir -p %s/temp-jar && ", workingPath));
+        cmdStr.append(String.format("mkdir -p %s/temp-log && ", workingPath));
         Session session = null;
         try {
             session = ssh.startSession();
+            String jarPathAndName = workingPath + "/temp-jar/" + c7nNexusDeployDTO.getJarName();
             // 2.2
             String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                    "/temp-jar/" + c7nNexusDeployDTO.getJarName(),
+                    jarPathAndName,
                     c7nNexusDeployDTO.getPullUserId(),
                     c7nNexusDeployDTO.getPullUserPassword(),
                     c7nNexusDeployDTO.getDownloadUrl());
@@ -640,7 +646,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
 
             String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
-            String javaJarExec = String.format("nohup %s > /temp-log/%s 2>&1 &", values.replace("${jar}", "/temp-jar/" + c7nNexusDeployDTO.getJarName()), logName);
+            String logPathAndName = workingPath + "/temp-log/" + logName;
+            String javaJarExec = String.format("nohup %s > %s 2>&1 &", values.replace("${jar}", jarPathAndName), logPathAndName);
 
             cmdStr.append(javaJarExec);
             cmdStr.append(System.lineSeparator());
@@ -803,7 +810,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         try {
             sshUtil.sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             // 2.1
-            sshStopJar(ssh, cdJobRecordDTO.getJobId(), log);
+            sshStopJar(ssh, cdJobRecordDTO.getJobId(), cdHostDeployConfigVO.getJarDeploy(), log);
             sshExec(ssh, c7nNexusDeployDTO, cdHostDeployConfigVO.getJarDeploy(), log);
             devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(cdJobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
