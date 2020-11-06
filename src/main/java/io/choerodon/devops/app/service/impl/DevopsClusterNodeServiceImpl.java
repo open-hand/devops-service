@@ -64,6 +64,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     private static final Integer MAX_LOG_MSG_LENGTH = 65535;
 
+    @Value("${devops.ansible.image}}")
+    private String ansibleImage;
     @Value(value = "${devops.helm.download-url}")
     private String helmDownloadUrl;
     @Autowired
@@ -342,7 +344,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             generateAndUploadNodeConfiguration(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), inventoryVO);
             // 生成并上传k8s安装命令
-            generateAndUploadAnsibleShellScript(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), INSTALL_K8S, INSTALL_K8S_LOG, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode()));
+            generateAndUploadAnsibleShellScript(ssh, devopsClusterInstallPayload.getDevopsClusterReqVO().getCode(), INSTALL_K8S, INSTALL_K8S_LOG, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode()), ansibleImage);
             // 上传privateKey信息到节点
             generateAndUploadPrivateKey(ssh, devopsClusterInstallPayload.getDevopsClusterNodeToSaveDTOList());
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
@@ -542,7 +544,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 配置检查
             devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
+            ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, VARIABLE));
             if (resultInfoVOForVariable.getExitCode() != 0) {
                 errorMsg = resultInfoVOForVariable.getStdOut() + "\n" + resultInfoVOForVariable.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -558,7 +560,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 节点系统检查
             devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, SYSTEM));
+            ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, SYSTEM));
             if (resultInfoVOForSystem.getExitCode() != 0) {
                 errorMsg = resultInfoVOForSystem.getStdOut() + "\n" + resultInfoVOForSystem.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -574,7 +576,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 内存检查
             devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, MEMORY));
+            ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, MEMORY));
             if (resultInfoVOForMemory.getExitCode() != 0) {
                 errorMsg = resultInfoVOForMemory.getStdOut() + "\n" + resultInfoVOForMemory.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -590,7 +592,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // CPU检查
             devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, CPU));
+            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, CPU));
             if (resultInfoVOForCPU.getExitCode() != 0) {
                 errorMsg = resultInfoVOForCPU.getStdOut() + "\n" + resultInfoVOForCPU.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -634,8 +636,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath) {
-        String configValue = generateShellScript(command, logPath, exitCodePath);
+    public void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath, String ansibleImage) {
+        String configValue = generateShellScript(command, logPath, exitCodePath, ansibleImage);
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + command;
         String targetFilePath = BASE_DIR + SLASH + command;
         FileUtil.saveDataToFile(filePath, configValue);
@@ -768,8 +770,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         return FileUtil.replaceReturnString(inventoryIniInputStream, map);
     }
 
-    private String generateShellScript(String command, String logPath, String exitCodePath) {
+    private String generateShellScript(String command, String logPath, String exitCodePath, String ansibleImage) {
         Map<String, String> param = new HashMap<>();
+        param.put("{{ansible-image}}", ansibleImage);
         param.put("{{command}}", command);
         param.put("{{log-path}}", logPath);
         param.put("{{exit-code-path}}", exitCodePath);

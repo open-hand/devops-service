@@ -40,7 +40,7 @@ public class DevopsClusterCommandConstants {
             "-w /root/kubeadm-ha/ \\\n" +
             "-v /tmp/ansible/ssh-key:/tmp/ansible/ssh-key \\\n" +
             "-v /tmp/inventory.ini:/tmp/inventory.ini \\\n" +
-            "registry.cn-shanghai.aliyuncs.com/c7n/kubeadm-ha:0.1.0 \\\n" +
+            "%s \\\n" +
             "ansible-playbook -i /tmp/inventory.ini %s";
 
     /**
