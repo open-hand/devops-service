@@ -167,7 +167,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
             LOGGER.info("delete node {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                errorMsg = execResultInfoVO.getStdErr();
+                errorMsg = execResultInfoVO.getStdOut() + System.lineSeparator() + execResultInfoVO.getStdErr();
                 throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
             // 如果删除的是外部节点，重启docker
@@ -234,7 +234,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, command));
             LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
-                errorMsg = execResultInfoVO.getStdErr();
+                errorMsg = execResultInfoVO.getStdOut() + System.lineSeparator() + execResultInfoVO.getStdErr();
                 throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
 
