@@ -28,5 +28,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_env_deploy_info.groovy') {
             column(name: "jar_name", type: "VARCHAR(50)")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-11-06-modify-column') {
+        modifyDataType(tableName: 'devops_cd_env_deploy_info', columnName: 'jar_name', newDataType: 'VARCHAR(255)')
+    }
 
 }
