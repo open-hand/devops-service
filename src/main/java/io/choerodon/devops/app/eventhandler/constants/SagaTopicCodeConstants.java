@@ -61,6 +61,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_APP_DELETE = "devops-app-delete";
 
     /**
+     * 同步应用服务状态
+     */
+    public static final String DEVOPS_APP_SYNC_STATUS = "devops-app-sync-status";
+
+    /**
      * 同步iam应用状态
      */
     public static final String DEVOPS_SYNC_APP_ACTIVE = "devops-sync-app-active";
