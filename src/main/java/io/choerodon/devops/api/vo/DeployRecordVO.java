@@ -50,9 +50,8 @@ public class DeployRecordVO {
     @Encrypt
     private Long appServiceId;
 
-    private String appServiceName;
-
-    private String appServiceVersion;
+    @Encrypt
+    private Long envId;
 
     private IamUserDTO executeUser;
 
@@ -106,22 +105,6 @@ public class DeployRecordVO {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
-    }
-
-    public String getAppServiceName() {
-        return appServiceName;
-    }
-
-    public void setAppServiceName(String appServiceName) {
-        this.appServiceName = appServiceName;
-    }
-
-    public String getAppServiceVersion() {
-        return appServiceVersion;
-    }
-
-    public void setAppServiceVersion(String appServiceVersion) {
-        this.appServiceVersion = appServiceVersion;
     }
 
     public IamUserDTO getExecuteUser() {
@@ -226,5 +209,13 @@ public class DeployRecordVO {
 
     public void setCommandStatus(String commandStatus) {
         this.commandStatus = commandStatus;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

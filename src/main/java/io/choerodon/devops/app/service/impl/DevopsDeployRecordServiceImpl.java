@@ -22,8 +22,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -58,6 +60,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
 
     @Override
@@ -195,9 +199,19 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             if (DeployModeEnum.ENV.value().equals(v.getDeployMode())) {
                 // 计算部署结果
                 v.setDeployResult(v.getCommandStatus());
-                // 计算集群状态
+
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(v.getDeployPayloadId());
-                v.setConnect(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
+                if (devopsEnvironmentDTO != null) {
+                    // 计算集群状态
+                    v.setConnect(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
+                    // 添加环境id
+                    v.setEnvId(devopsEnvironmentDTO.getId());
+                }
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(v.getInstanceId());
+                if (appServiceInstanceDTO != null) {
+                    // 添加应用服务id
+                    v.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+                }
             }
 
         });
