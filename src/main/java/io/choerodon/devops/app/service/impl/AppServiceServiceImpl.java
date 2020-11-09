@@ -53,6 +53,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
@@ -549,6 +550,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS,
+            description = "同步应用服务状态", inputSchemaClass = DevOpsAppServicePayload.class)
     public Boolean updateActive(Long projectId, Long appServiceId, final Boolean active) {
         AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
 
@@ -580,6 +583,30 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             sendNotificationService.sendWhenAppServiceDisabled(appServiceId);
         }
+
+        //创建saga payload
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        // 查询创建应用服务所在的gitlab应用组
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+        devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
+        devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
+        devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(appServiceId)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefId(String.valueOf(appServiceId))
+                        .withSourceId(projectId));
         return true;
     }
 
