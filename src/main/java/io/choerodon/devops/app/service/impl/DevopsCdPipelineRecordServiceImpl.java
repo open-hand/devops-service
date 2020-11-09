@@ -600,9 +600,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             StringBuilder stopJar = new StringBuilder();
             stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", cdEnvDeployInfoDTO.getJarName()));
             stopJar.append(System.lineSeparator());
-            stopJar.append(String.format("cd /temp-jar && rm -f %s", cdEnvDeployInfoDTO.getJarName()));
-            stopJar.append(" && cd /temp-log &&");
-            stopJar.append(String.format("rm -f %s", cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
+            stopJar.append(String.format("rm -f /temp-jar%s", cdEnvDeployInfoDTO.getJarName()));
+            stopJar.append(String.format("&& rm -f /temp-log%s", cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
             LOGGER.info(stopJar.toString());
             Session session = null;
             try {
@@ -645,13 +644,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
 
             String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
-            String javaJarExec = String.format("nohup %s > /temp-log/%s 2>&1 &", values.replace("${jar}", "/temp-jar/" + c7nNexusDeployDTO.getJarName()), logName);
+            cmdStr.append(values.replace("${jar}", "/temp-jar/" + c7nNexusDeployDTO.getJarName()));
+            StringBuilder finalExec=new StringBuilder().append("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > /temp-log/%s 2>&1 &",  logName));
 
-            cmdStr.append(javaJarExec);
-            cmdStr.append(System.lineSeparator());
-            LOGGER.info(cmdStr.toString());
+            LOGGER.info(finalExec.toString());
 
-            final Session.Command cmd = session.exec(cmdStr.toString());
+            final Session.Command cmd = session.exec(finalExec.toString());
             cmd.join(5, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
