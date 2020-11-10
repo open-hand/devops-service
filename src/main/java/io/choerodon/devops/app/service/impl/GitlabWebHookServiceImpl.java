@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.FastjsonParserConfigProvider;
@@ -75,6 +76,10 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 // 保存ci流水线执行记录
                 devopsCiPipelineRecordService.create(pipelineWebHookVO, token);
                 // 处理流水线执行成功逻辑, 只处理纯cd流水线逻辑
+                if (PipelineStatus.SUCCESS.toValue().equals(pipelineWebHookVO.getObjectAttributes().getStatus())) {
+                    devopsCdPipelineService.handlerCiPipelineStatusSuccess(pipelineWebHookVO, token);
+                }
+
                 devopsCdPipelineService.handlerCiPipelineStatusSuccess(pipelineWebHookVO, token);
                 break;
             case "build":
