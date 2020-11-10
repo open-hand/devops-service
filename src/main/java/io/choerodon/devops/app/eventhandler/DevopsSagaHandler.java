@@ -35,6 +35,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -105,6 +106,8 @@ public class DevopsSagaHandler {
     private PipelineService pipelineService;
     @Autowired
     private PipelineRecordService pipelineRecordService;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     /**
      * devops创建环境
@@ -498,7 +501,7 @@ public class DevopsSagaHandler {
     public void deleteEnv(String data) {
         JsonObject JSONObject = gson.fromJson(data, JsonObject.class);
         Long envId = JSONObject.get("envId").getAsLong();
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
         //删除环境成功，发送webhook
