@@ -50,4 +50,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             column(name: "metadata", type: "TEXT", afterColumn: 'duration_seconds')
         }
     }
+    changeSet(author: 'wanghao', id: '2020-11-10-add-index') {
+        createIndex(indexName: "idx_ci_pipeline_record_id ", tableName: "devops_ci_job_record") {
+            column(name: "ci_pipeline_record_id")
+        }
+    }
 }
