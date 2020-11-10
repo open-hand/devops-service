@@ -556,7 +556,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         }
         // 查询流水线
-        Page<CiCdPipelineVO> pageAndSort = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name));
+        Page<CiCdPipelineVO> pageAndSort = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name));
         // 封装流水线记录
         PageRequest cicdPipelineRel = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsPipelineRecordRelDTO.FIELD_ID)));
         //每条流水线默认展示5条记录

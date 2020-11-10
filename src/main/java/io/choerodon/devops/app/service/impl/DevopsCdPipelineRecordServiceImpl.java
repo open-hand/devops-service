@@ -1201,23 +1201,25 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             //封装审核数据
             List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
             devopsCdStageRecordVOS.sort(Comparator.comparing(StageRecordVO::getSequence));
-            for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
-                //查询Cd job
-                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
-                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                //计算cd阶段的状态， cd下的所有job状态都是未执行 那么cd的状态是未执行
-                Set<String> strings = devopsCdJobRecordVOS.stream().map(devopsCdJobRecordVO -> devopsCdJobRecordVO.getStatus()).collect(Collectors.toSet());
-                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
-                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
-                }
-                //计算satge耗时
-                if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
-                    Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
-                    devopsCdStageRecordVO.setDurationSeconds(seconds);
-                }
-            }
+//            for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
+//                //查询Cd job
+//                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+//                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+//                //计算cd阶段的状态， cd下的所有job状态都是未执行 那么cd的状态是未执行
+//                Set<String> strings = devopsCdJobRecordVOS.stream().map(devopsCdJobRecordVO -> devopsCdJobRecordVO.getStatus()).collect(Collectors.toSet());
+//                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
+//                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
+//                }
+//                //计算satge耗时
+//                if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
+//                    Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
+//                    devopsCdStageRecordVO.setDurationSeconds(seconds);
+//                }
+//            }
             // 计算流水线当前停留的审核节点
-            addAuditStateInfo(devopsCdPipelineRecordVO);
+            if (PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+                addAuditStateInfo(devopsCdPipelineRecordVO);
+            }
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
