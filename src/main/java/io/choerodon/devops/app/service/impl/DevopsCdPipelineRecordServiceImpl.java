@@ -1027,7 +1027,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
         }
         // 计算流水线当前停留的审核节点
-        addAuditStateInfo(devopsCdPipelineRecordVO);
+        if(PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
+            addAuditStateInfo(devopsCdPipelineRecordVO);
+        }
+
         return devopsCdPipelineRecordVO;
     }
 

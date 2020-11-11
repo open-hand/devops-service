@@ -452,88 +452,106 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         recordDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
 
-        // 只返回job的最新记录
-        devopsCiJobRecordDTOS = filterJobs(devopsCiJobRecordDTOS);
+        Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
 
-        // 添加job type
-        List<DevopsCiJobRecordVO> devopsCiJobRecordVOList = ConvertUtils.convertList(devopsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
+        List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = new ArrayList<>();
+        for (Map.Entry<String, List<DevopsCiJobRecordDTO>> entry : jobRecordMap.entrySet()) {
+            String k = entry.getKey();
+            List<DevopsCiJobRecordDTO> value = entry.getValue();
+            DevopsCiStageRecordVO devopsCiStageRecordVO = new DevopsCiStageRecordVO();
+            devopsCiStageRecordVO.setName(k);
+            devopsCiStageRecordVO.setType(StageType.CI.getType());
+            devopsCiStageRecordVO.setSequence(value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).get().getGitlabJobId());
+            // 只返回job的最新记录
+            List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
+            Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
+            calculateStageStatus(devopsCiStageRecordVO, statusMap);
+            List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
+            latestedsCiJobRecordVOS.forEach(devopsCiJobRecordVO -> {
+                if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+                        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
+                        devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+                    }
+                    // 执行成功的添加sonar信息
+                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                        SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+                        if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+                            List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+                            List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
+                                return SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+                                        || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+                                        || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
+                            }).collect(Collectors.toList());
 
-        // 添加sonar
-        for (DevopsCiJobRecordVO devopsCiJobRecordVO : devopsCiJobRecordVOList) {
-            if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
-                if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
-                    SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
-                    devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+                            sonarContents.forEach(v -> {
+                                if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+                                    devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+                                }
+                            });
+                            devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
+                        }
+                    }
+
                 }
-                // 执行成功的添加sonar信息
-                if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
-                    SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                    if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
-                        List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
-                        List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> {
-                            return SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
-                                    || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                                    || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey());
-                        }).collect(Collectors.toList());
-
-                        sonarContents.forEach(v -> {
-                            if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
-                                devopsCiJobRecordVO.setCodeCoverage(v.getValue());
-                            }
-                        });
-                        devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
+                //release阶段，添加版本的信息
+                if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())) {
+                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiPipelineRecordDTO.getCiPipelineId());
+                    if (!Objects.isNull(ciCdPipelineDTO)) {
+                        String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
+                        String ref = devopsCiPipelineRecordVO.getCommit().getRef();
+                        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+                        appServiceVersionDTO.setCommit(commitSha);
+                        appServiceVersionDTO.setRef(ref);
+                        appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
+                        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+                        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                            devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
+                        }
                     }
                 }
+            });
+            devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
+            // 按照gitlab job id正序排序
+            latestedsCiJobRecordVOS.sort(Comparator.comparingLong(DevopsCiJobRecordVO::getGitlabJobId));
+            devopsCiStageRecordVO.setJobRecordVOList(latestedsCiJobRecordVOS);
 
-            }
-            //release阶段，添加版本的信息
-            if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())) {
-                CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiPipelineRecordDTO.getCiPipelineId());
-                if (!Objects.isNull(ciCdPipelineDTO)) {
-                    String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
-                    String ref = devopsCiPipelineRecordVO.getCommit().getRef();
-                    AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-                    appServiceVersionDTO.setCommit(commitSha);
-                    appServiceVersionDTO.setRef(ref);
-                    appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
-                    List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                    if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
-                        devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
-                    }
-                }
-            }
+            devopsCiStageRecordVOS.add(devopsCiStageRecordVO);
         }
 
-        Map<String, List<DevopsCiJobRecordVO>> jobRecordMap = devopsCiJobRecordVOList.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStage));
+
+
+//        Map<String, List<DevopsCiJobRecordVO>> jobRecordMap = devopsCiJobRecordVOList.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStage));
 
         // 查询阶段信息
-        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
-        if (CollectionUtils.isEmpty(devopsCiStageDTOList)) {
-            for (Map.Entry<String, List<DevopsCiJobRecordVO>> stringListEntry : jobRecordMap.entrySet()) {
-                long seq = 0L;
-                DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
-                devopsCiStageDTO.setName(stringListEntry.getKey());
-                devopsCiStageDTO.setSequence(seq++);
-                devopsCiStageDTOList.add(devopsCiStageDTO);
-            }
-        }
-        List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
-        devopsCiStageRecordVOS.forEach(devopsCiStageRecordVO -> {
-            devopsCiStageRecordVO.setType(StageType.CI.getType());
-        });
+//        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
+//        if (CollectionUtils.isEmpty(devopsCiStageDTOList)) {
+//            for (Map.Entry<String, List<DevopsCiJobRecordVO>> stringListEntry : jobRecordMap.entrySet()) {
+//                long seq = 0L;
+//                DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
+//                devopsCiStageDTO.setName(stringListEntry.getKey());
+//                devopsCiStageDTO.setSequence(seq++);
+//                devopsCiStageDTOList.add(devopsCiStageDTO);
+//            }
+//        }
+//        List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageRecordVO.class);
+
+//        devopsCiStageRecordVOS.forEach(devopsCiStageRecordVO -> {
+//            devopsCiStageRecordVO.setType(StageType.CI.getType());
+//        });
         // 计算stage状态
-        devopsCiStageRecordVOS.forEach(stageRecord -> {
-            List<DevopsCiJobRecordVO> devopsCiJobRecordVOS = jobRecordMap.get(stageRecord.getName());
-            if (!CollectionUtils.isEmpty(devopsCiJobRecordVOS)) {
-                Map<String, List<DevopsCiJobRecordVO>> statusMap = devopsCiJobRecordVOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStatus));
-                calculateStageStatus(stageRecord, statusMap);
-                // 计算stage耗时
-                stageRecord.setDurationSeconds(calculateStageDuration(devopsCiJobRecordVOS));
-                // 按照gitlab job id正序排序
-                devopsCiJobRecordVOS.sort(Comparator.comparingLong(DevopsCiJobRecordVO::getGitlabJobId));
-                stageRecord.setJobRecordVOList(devopsCiJobRecordVOS);
-            }
-        });
+//        devopsCiStageRecordVOS.forEach(stageRecord -> {
+//            List<DevopsCiJobRecordVO> devopsCiJobRecordVOS = jobRecordMap.get(stageRecord.getName());
+//            if (!CollectionUtils.isEmpty(devopsCiJobRecordVOS)) {
+//                Map<String, List<DevopsCiJobRecordVO>> statusMap = devopsCiJobRecordVOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStatus));
+//                calculateStageStatus(stageRecord, statusMap);
+//                // 计算stage耗时
+//                stageRecord.setDurationSeconds(calculateStageDuration(devopsCiJobRecordVOS));
+//                // 按照gitlab job id正序排序
+//                devopsCiJobRecordVOS.sort(Comparator.comparingLong(DevopsCiJobRecordVO::getGitlabJobId));
+//                stageRecord.setJobRecordVOList(devopsCiJobRecordVOS);
+//            }
+//        });
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
