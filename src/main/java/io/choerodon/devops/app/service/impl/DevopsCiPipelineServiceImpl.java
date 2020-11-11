@@ -836,9 +836,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineVO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 校验自定义任务格式
-        CiCdPipelineDTO ciCdPipelineDTO = ConvertUtils.convertObject(ciCdPipelineVO, CiCdPipelineDTO.class);
-        ciCdPipelineDTO.setId(pipelineId);
-        ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO);
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        ciCdPipelineDTO.setImage(ciCdPipelineVO.getImage());
+        ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
+        ciCdPipelineDTO.setObjectVersionNumber(ciCdPipelineVO.getObjectVersionNumber());
+        if (ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO) != 1) {
+            throw new CommonException(UPDATE_PIPELINE_FAILED);
+        }
+
 
         boolean initCiFileFlag = false;
         // 如果有ci阶段，需要判断是否是新增的ci阶段。如果是新增的需要初始化gitlab-ci.yaml
