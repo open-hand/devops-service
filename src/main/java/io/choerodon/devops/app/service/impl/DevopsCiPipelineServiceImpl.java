@@ -839,8 +839,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CiCdPipelineDTO ciCdPipelineDTO = ConvertUtils.convertObject(ciCdPipelineVO, CiCdPipelineDTO.class);
         ciCdPipelineDTO.setId(pipelineId);
         ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO);
+
+        boolean initCiFileFlag = false;
+        // 如果有ci阶段，需要判断是否是新增的ci阶段。如果是新增的需要初始化gitlab-ci.yaml
+        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
+            // 校验之前是否是纯cd流水线
+            List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
+            // 之前不存在ci stage则证明之前是纯cd流水线
+            initCiFileFlag = CollectionUtils.isEmpty(devopsCiStageDTOS);
+        }
+
         //更新CI流水线
-        updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+        updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
         //更新CD流水线
         updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
@@ -858,7 +868,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
     }
 
-    private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
+    private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO, boolean initCiFileFlag) {
         // 更新stage
         // 查询数据库中原有stage列表,并和新的stage列表作比较。
         // 差集：要删除的记录
@@ -916,6 +926,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         });
         saveCiContent(projectId, ciCdPipelineDTO.getId(), ciCdPipelineVO);
+
+        // 新增ci阶段，需要初始化gitlab-ci.yaml
+        if (initCiFileFlag) {
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
+            String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
+            initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+        }
     }
 
     private void processCiJobVO(DevopsCiJobVO devopsCiJobVO) {
