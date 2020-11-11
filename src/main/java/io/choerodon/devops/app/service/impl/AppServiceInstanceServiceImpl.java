@@ -866,7 +866,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //插入部署记录
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
-                DeployType.MANUAL,
+                isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
                 DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
