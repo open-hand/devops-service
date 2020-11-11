@@ -456,9 +456,15 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         }
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
 
-                        appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId(), true);
-
-                        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId(), true);
+                        // 更新job状态为success
+                        devopsCdJobRecordDTO.setCommandId(devopsEnvCommandDTO.getId());
+                        devopsCdJobRecordDTO.setFinishedDate(new Date());
+                        if (devopsCdJobRecordDTO.getStartedDate() != null) {
+                            devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+                        }
+                        devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+                        devopsCdJobRecordService.update(devopsCdJobRecordDTO);
                         return;
                     }
 
