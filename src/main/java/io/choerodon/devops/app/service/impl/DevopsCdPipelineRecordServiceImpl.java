@@ -1061,49 +1061,20 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
-                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordVO.getDeployInfoId());
                 //部署环境 应用服务 生成版本 实例名称
-                DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
-                if (devopsEnvironmentDTO != null) {
-                    cdAuto.setEnvName(devopsEnvironmentDTO.getName());
-                }
-                cdAuto.setAppServiceName(appServiceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getAppServiceId()).getName());
-                AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-                appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
-                appServiceVersionDTO.setCommit(devopsCdStageRecordVO.getCommitSha());
-                List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                if (!CollectionUtils.isEmpty(appServiceVersionDTOS) && !StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
-                    cdAuto.setAppServiceVersion(appServiceVersionDTOS.get(0).getVersion());
-                }
-                //创建实例
-                if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                    //instanceName 根据环境id code来查询
-                    AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
-                    appServiceInstanceDTO.setCode(devopsCdEnvDeployInfoDTO.getInstanceName());
-                    appServiceInstanceDTO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
-                    AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
-                    if (!Objects.isNull(serviceInstanceDTO)) {
-                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
-                            cdAuto.setInstanceName(serviceInstanceDTO.getCode());
-                        }
-                        cdAuto.setInstanceId(serviceInstanceDTO.getId());
-                        cdAuto.setAppServiceId(serviceInstanceDTO.getAppServiceId());
-                        cdAuto.setEnvId(serviceInstanceDTO.getEnvId());
-                    }
-                }
-                //替换实例
-                if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                    AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId());
-                    if (appServiceInstanceDTO != null) {
-                        cdAuto.setInstanceName(appServiceInstanceDTO.getCode());
-                        cdAuto.setInstanceId(appServiceInstanceDTO.getId());
-                        cdAuto.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                        cdAuto.setEnvId(appServiceInstanceDTO.getEnvId());
-                    }
-                }
-                devopsCdJobRecordVO.setCdAuto(cdAuto);
+                DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(devopsCdJobRecordVO.getCommandId());
+                if (deployRecordVO != null) {
+                    DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                    cdAuto.setAppServiceId(deployRecordVO.getAppServiceId());
+                    cdAuto.setAppServiceName(deployRecordVO.getDeployObjectName());
+                    cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
+                    cdAuto.setEnvId(deployRecordVO.getEnvId());
+                    cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
+                    cdAuto.setInstanceId(deployRecordVO.getInstanceId());
+                    cdAuto.setInstanceName(deployRecordVO.getInstanceName());
 
+                    devopsCdJobRecordVO.setCdAuto(cdAuto);
+                }
             }
             //如果是人工审核返回审核信息
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {

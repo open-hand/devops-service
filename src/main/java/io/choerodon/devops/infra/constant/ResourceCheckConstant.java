@@ -21,6 +21,11 @@ public class ResourceCheckConstant {
     // project
     public static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
 
+    // env
+    public static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
+
+
+
 
 
 }

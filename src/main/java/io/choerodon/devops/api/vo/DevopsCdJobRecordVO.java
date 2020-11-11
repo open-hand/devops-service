@@ -43,6 +43,7 @@ public class DevopsCdJobRecordVO {
     private Long deployInfoId;
     private Long apiTestTaskRecordId;
     private ApiTestTaskRecordVO apiTestTaskRecordVO;
+    private Long commandId;
 
     public Long getJobId() {
         return jobId;
@@ -318,5 +319,13 @@ public class DevopsCdJobRecordVO {
 
     public void setApiTestTaskRecordId(Long apiTestTaskRecordId) {
         this.apiTestTaskRecordId = apiTestTaskRecordId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }
