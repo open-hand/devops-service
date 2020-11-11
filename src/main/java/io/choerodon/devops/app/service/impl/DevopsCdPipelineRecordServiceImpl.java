@@ -1006,14 +1006,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 //查询Cd job
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                calculateJob(devopsCdPipelineRecordVO, devopsCdJobRecordVOS);
+
+                // 根据job类型，添加相关信息
+                calculateJob(devopsCdJobRecordVOS);
+
                 devopsCdJobRecordVOS.sort(Comparator.comparing(DevopsCdJobRecordVO::getSequence));
                 devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
                 //计算stage状态，如果stage里面的阶段任务，全部为未执行，stage状态为未执行
-                Set<String> strings = devopsCdJobRecordVOS.stream().map(devopsCdJobRecordVO -> devopsCdJobRecordVO.getStatus()).collect(Collectors.toSet());
-                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
-                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
-                }
+//                Set<String> strings = devopsCdJobRecordVOS.stream().map(DevopsCdJobRecordVO::getStatus).collect(Collectors.toSet());
+//                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
+//                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
+//                }
                 //计算stage耗时
                 List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(collect))
@@ -1057,23 +1060,26 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void calculateJob(DevopsCdPipelineRecordVO devopsCdStageRecordVO, List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
+    private void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
         devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
                 //部署环境 应用服务 生成版本 实例名称
-                DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(devopsCdJobRecordVO.getCommandId());
-                if (deployRecordVO != null) {
-                    DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                    cdAuto.setAppServiceId(deployRecordVO.getAppServiceId());
-                    cdAuto.setAppServiceName(deployRecordVO.getDeployObjectName());
-                    cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
-                    cdAuto.setEnvId(deployRecordVO.getEnvId());
-                    cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
-                    cdAuto.setInstanceId(deployRecordVO.getInstanceId());
-                    cdAuto.setInstanceName(deployRecordVO.getInstanceName());
+                Long commandId = devopsCdJobRecordVO.getCommandId();
+                if (commandId != null) {
+                    DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+                    if (deployRecordVO != null) {
+                        DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                        cdAuto.setAppServiceId(deployRecordVO.getAppServiceId());
+                        cdAuto.setAppServiceName(deployRecordVO.getDeployObjectName());
+                        cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
+                        cdAuto.setEnvId(deployRecordVO.getEnvId());
+                        cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
+                        cdAuto.setInstanceId(deployRecordVO.getInstanceId());
+                        cdAuto.setInstanceName(deployRecordVO.getInstanceName());
 
-                    devopsCdJobRecordVO.setCdAuto(cdAuto);
+                        devopsCdJobRecordVO.setCdAuto(cdAuto);
+                    }
                 }
             }
             //如果是人工审核返回审核信息
