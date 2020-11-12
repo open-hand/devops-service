@@ -41,4 +41,6 @@ public interface DevopsDeployRecordMapper extends BaseMapper<DevopsDeployRecordD
                                       @Param("deployResult") String deployResult,
                                       @Param("deployObjectName") String deployObjectName,
                                       @Param("deployObjectVersion") String deployObjectVersion);
+
+    DevopsDeployRecordDTO queryEnvDeployRecordByCommandId(@Param("commandId") Long commandId);
 }

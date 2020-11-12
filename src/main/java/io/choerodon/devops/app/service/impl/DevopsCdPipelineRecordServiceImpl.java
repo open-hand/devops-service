@@ -1006,14 +1006,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 //查询Cd job
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
                 List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                calculateJob(devopsCdPipelineRecordVO, devopsCdJobRecordVOS);
+
+                // 根据job类型，添加相关信息
+                calculateJob(devopsCdJobRecordVOS);
+
                 devopsCdJobRecordVOS.sort(Comparator.comparing(DevopsCdJobRecordVO::getSequence));
                 devopsCdStageRecordVO.setJobRecordVOList(devopsCdJobRecordVOS);
                 //计算stage状态，如果stage里面的阶段任务，全部为未执行，stage状态为未执行
-                Set<String> strings = devopsCdJobRecordVOS.stream().map(devopsCdJobRecordVO -> devopsCdJobRecordVO.getStatus()).collect(Collectors.toSet());
-                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
-                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
-                }
+//                Set<String> strings = devopsCdJobRecordVOS.stream().map(DevopsCdJobRecordVO::getStatus).collect(Collectors.toSet());
+//                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
+//                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
+//                }
                 //计算stage耗时
                 List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(collect))
@@ -1024,7 +1027,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
         }
         // 计算流水线当前停留的审核节点
-        addAuditStateInfo(devopsCdPipelineRecordVO);
+        if(PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
+            addAuditStateInfo(devopsCdPipelineRecordVO);
+        }
+
         return devopsCdPipelineRecordVO;
     }
 
@@ -1057,53 +1063,27 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void calculateJob(DevopsCdPipelineRecordVO devopsCdStageRecordVO, List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
+    private void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
         devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
-                DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordVO.getDeployInfoId());
                 //部署环境 应用服务 生成版本 实例名称
-                DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
-                if (devopsEnvironmentDTO != null) {
-                    cdAuto.setEnvName(devopsEnvironmentDTO.getName());
-                }
-                cdAuto.setAppServiceName(appServiceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getAppServiceId()).getName());
-                AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-                appServiceVersionDTO.setAppServiceId(devopsCdEnvDeployInfoDTO.getAppServiceId());
-                appServiceVersionDTO.setCommit(devopsCdStageRecordVO.getCommitSha());
-                List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                if (!CollectionUtils.isEmpty(appServiceVersionDTOS) && !StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
-                    cdAuto.setAppServiceVersion(appServiceVersionDTOS.get(0).getVersion());
-                }
-                //创建实例
-                if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                    //instanceName 根据环境id code来查询
-                    AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
-                    appServiceInstanceDTO.setCode(devopsCdEnvDeployInfoDTO.getInstanceName());
-                    appServiceInstanceDTO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
-                    AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
-                    if (!Objects.isNull(serviceInstanceDTO)) {
-                        if (!StringUtils.endsWithIgnoreCase(STOP, devopsCdStageRecordVO.getStatus())) {
-                            cdAuto.setInstanceName(serviceInstanceDTO.getCode());
-                        }
-                        cdAuto.setInstanceId(serviceInstanceDTO.getId());
-                        cdAuto.setAppServiceId(serviceInstanceDTO.getAppServiceId());
-                        cdAuto.setEnvId(serviceInstanceDTO.getEnvId());
-                    }
-                }
-                //替换实例
-                if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                    AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getInstanceId());
-                    if (appServiceInstanceDTO != null) {
-                        cdAuto.setInstanceName(appServiceInstanceDTO.getCode());
-                        cdAuto.setInstanceId(appServiceInstanceDTO.getId());
-                        cdAuto.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                        cdAuto.setEnvId(appServiceInstanceDTO.getEnvId());
-                    }
-                }
-                devopsCdJobRecordVO.setCdAuto(cdAuto);
+                Long commandId = devopsCdJobRecordVO.getCommandId();
+                if (commandId != null) {
+                    DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+                    if (deployRecordVO != null) {
+                        DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                        cdAuto.setAppServiceId(deployRecordVO.getAppServiceId());
+                        cdAuto.setAppServiceName(deployRecordVO.getDeployObjectName());
+                        cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
+                        cdAuto.setEnvId(deployRecordVO.getEnvId());
+                        cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
+                        cdAuto.setInstanceId(deployRecordVO.getInstanceId());
+                        cdAuto.setInstanceName(deployRecordVO.getInstanceName());
 
+                        devopsCdJobRecordVO.setCdAuto(cdAuto);
+                    }
+                }
             }
             //如果是人工审核返回审核信息
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {
@@ -1201,23 +1181,25 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             //封装审核数据
             List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
             devopsCdStageRecordVOS.sort(Comparator.comparing(StageRecordVO::getSequence));
-            for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
-                //查询Cd job
-                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
-                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
-                //计算cd阶段的状态， cd下的所有job状态都是未执行 那么cd的状态是未执行
-                Set<String> strings = devopsCdJobRecordVOS.stream().map(devopsCdJobRecordVO -> devopsCdJobRecordVO.getStatus()).collect(Collectors.toSet());
-                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
-                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
-                }
-                //计算satge耗时
-                if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
-                    Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
-                    devopsCdStageRecordVO.setDurationSeconds(seconds);
-                }
-            }
+//            for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
+//                //查询Cd job
+//                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+//                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+//                //计算cd阶段的状态， cd下的所有job状态都是未执行 那么cd的状态是未执行
+//                Set<String> strings = devopsCdJobRecordVOS.stream().map(devopsCdJobRecordVO -> devopsCdJobRecordVO.getStatus()).collect(Collectors.toSet());
+//                if (!CollectionUtils.isEmpty(strings) && strings.size() == 1 && strings.contains(JobStatusEnum.CREATED.value())) {
+//                    devopsCdStageRecordVO.setStatus(JobStatusEnum.CREATED.value());
+//                }
+//                //计算satge耗时
+//                if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
+//                    Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
+//                    devopsCdStageRecordVO.setDurationSeconds(seconds);
+//                }
+//            }
             // 计算流水线当前停留的审核节点
-            addAuditStateInfo(devopsCdPipelineRecordVO);
+            if (PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+                addAuditStateInfo(devopsCdPipelineRecordVO);
+            }
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);

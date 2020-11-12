@@ -837,7 +837,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public void restartInstance(Long projectId, Long instanceId, boolean isFromPipeline) {
+    public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
@@ -866,7 +866,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //插入部署记录
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
-                DeployType.MANUAL,
+                isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
                 DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
@@ -901,6 +901,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 builder -> builder
                         .withPayloadAndSerialize(instanceSagaPayload)
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
+
+        return devopsEnvCommandDTO;
     }
 
     @Override

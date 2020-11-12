@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -25,6 +26,7 @@ import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -36,6 +38,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -217,5 +220,25 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         });
 
         return deployRecordVOPage;
+    }
+
+    @Override
+    public DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId) {
+        Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
+
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.queryEnvDeployRecordByCommandId(commandId);
+        DeployRecordVO deployRecordVO = ConvertUtils.convertObject(devopsDeployRecordDTO, DeployRecordVO.class);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(deployRecordVO.getDeployPayloadId());
+        if (devopsEnvironmentDTO != null) {
+            // 计算集群状态
+            // 添加环境id
+            deployRecordVO.setEnvId(devopsEnvironmentDTO.getId());
+        }
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(deployRecordVO.getInstanceId());
+        if (appServiceInstanceDTO != null) {
+            // 添加应用服务id
+            deployRecordVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+        }
+        return deployRecordVO;
     }
 }

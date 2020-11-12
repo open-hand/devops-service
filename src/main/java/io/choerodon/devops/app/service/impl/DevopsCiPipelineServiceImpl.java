@@ -556,7 +556,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         }
         // 查询流水线
-        Page<CiCdPipelineVO> pageAndSort = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name));
+        Page<CiCdPipelineVO> pageAndSort = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name));
         // 封装流水线记录
         PageRequest cicdPipelineRel = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsPipelineRecordRelDTO.FIELD_ID)));
         //每条流水线默认展示5条记录
@@ -836,11 +836,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineVO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 校验自定义任务格式
-        CiCdPipelineDTO ciCdPipelineDTO = ConvertUtils.convertObject(ciCdPipelineVO, CiCdPipelineDTO.class);
-        ciCdPipelineDTO.setId(pipelineId);
-        ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO);
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        ciCdPipelineDTO.setImage(ciCdPipelineVO.getImage());
+        ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
+        ciCdPipelineDTO.setObjectVersionNumber(ciCdPipelineVO.getObjectVersionNumber());
+        if (ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO) != 1) {
+            throw new CommonException(UPDATE_PIPELINE_FAILED);
+        }
+
+
+        boolean initCiFileFlag = false;
+        // 如果有ci阶段，需要判断是否是新增的ci阶段。如果是新增的需要初始化gitlab-ci.yaml
+        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
+            // 校验之前是否是纯cd流水线
+            List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
+            // 之前不存在ci stage则证明之前是纯cd流水线
+            initCiFileFlag = CollectionUtils.isEmpty(devopsCiStageDTOS);
+        }
+
         //更新CI流水线
-        updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+        updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
         //更新CD流水线
         updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
@@ -858,7 +873,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
     }
 
-    private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
+    private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO, boolean initCiFileFlag) {
         // 更新stage
         // 查询数据库中原有stage列表,并和新的stage列表作比较。
         // 差集：要删除的记录
@@ -916,6 +931,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         });
         saveCiContent(projectId, ciCdPipelineDTO.getId(), ciCdPipelineVO);
+
+        // 新增ci阶段，需要初始化gitlab-ci.yaml
+        if (initCiFileFlag) {
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
+            String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
+            initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+        }
     }
 
     private void processCiJobVO(DevopsCiJobVO devopsCiJobVO) {

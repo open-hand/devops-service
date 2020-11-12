@@ -73,4 +73,5 @@ public interface DevopsDeployRecordService {
      */
     Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion);
 
+    DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId);
 }

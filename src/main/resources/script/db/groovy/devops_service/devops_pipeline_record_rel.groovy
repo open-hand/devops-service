@@ -24,5 +24,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record_rel.groovy') {
         addUniqueConstraint(tableName: 'devops_pipeline_record_rel',
                 constraintName: 'uk_complex_id', columnNames: 'pipeline_id,ci_pipeline_record_id,cd_pipeline_record_id')
     }
+    changeSet(author: 'wanghao', id: '2020-11-10-add-index') {
+        createIndex(indexName: "idx_pipeline_id ", tableName: "devops_pipeline_record_rel") {
+            column(name: "pipeline_id")
+        }
+    }
 
 }
