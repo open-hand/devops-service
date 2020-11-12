@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -31,6 +32,7 @@ import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
 import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
+import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -175,7 +177,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeService.queryByClusterId(clusterId);
         Map<String, DevopsClusterNodeDTO> nodeDTOMap = devopsClusterNodeDTOS.stream().collect(Collectors.toMap(DevopsClusterNodeDTO::getName, v -> v));
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-
+        List<DevopsClusterNodeDTO> outerNodes = devopsClusterNodeDTOS.stream().filter(v -> ClusterNodeTypeEnum.OUTTER.getType().equals(v.getType())).collect(Collectors.toList());
 
         long total = stringRedisTemplate.opsForList().size(redisKey);
         List<ClusterNodeInfoVO> nodes = stringRedisTemplate
@@ -195,8 +197,13 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                         if (ClusterNodeRoleEnum.isEtcd(devopsClusterNodeDTO.getRole())) {
                             clusterNodeInfoVO.setEnableDeleteEtcdRole(true);
                         }
-                        if (ClusterNodeRoleEnum.WORKER.getMask() == devopsClusterNodeDTO.getRole()) {
+                        if (ClusterNodeRoleEnum.WORKER.getMask() == devopsClusterNodeDTO.getRole()
+                                && !devopsClusterNodeDTO.getName().equals(outerNodes.get(0).getInnerNodeName())) {
                             clusterNodeInfoVO.setEnableDeleteNode(true);
+                        }
+                        if (!CollectionUtils.isEmpty(outerNodes)
+                                && devopsClusterNodeDTO.getName().equals(outerNodes.get(0).getInnerNodeName())) {
+                            clusterNodeInfoVO.setOuterNodeFlag(true);
                         }
                         // 添加失败信息
                         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryLatestRecordByNodeId(devopsClusterNodeDTO.getId());

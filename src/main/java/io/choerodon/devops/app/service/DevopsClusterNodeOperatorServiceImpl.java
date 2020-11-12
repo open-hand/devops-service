@@ -6,6 +6,7 @@ import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
 import org.apache.commons.lang3.StringUtils;
@@ -155,8 +156,14 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             if (!CollectionUtils.isEmpty(outerNodes)) {
                 linkNode = outerNodes.get(0);
             } else {
-                linkNode = innerNodes.get(0);
+                // 选择的连接节点，不能是要删除的节点
+                List<DevopsClusterNodeDTO> nodes = innerNodes.stream().filter(v -> v.getName().equals(devopsClusterNodeDTO.getName())).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(nodes)) {
+                    throw new CommonException(ERROR_DELETE_NODE_FAILED);
+                }
+                linkNode = nodes.get(0);
             }
+
             HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(linkNode, HostConnectionVO.class);
             hostConnectionVO.setHostSource(HostSourceEnum.CUSTOMHOST.getValue());
 

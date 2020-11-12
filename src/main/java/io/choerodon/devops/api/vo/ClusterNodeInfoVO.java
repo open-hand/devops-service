@@ -41,6 +41,8 @@ public class ClusterNodeInfoVO {
     private Boolean enableDeleteEtcdRole = false;
     private Boolean enableDeleteNode = false;
 
+    private Boolean outerNodeFlag = false;
+
     public String getRole() {
         return role;
     }
@@ -231,5 +233,13 @@ public class ClusterNodeInfoVO {
 
     public void setEnableDeleteNode(Boolean enableDeleteNode) {
         this.enableDeleteNode = enableDeleteNode;
+    }
+
+    public Boolean getOuterNodeFlag() {
+        return outerNodeFlag;
+    }
+
+    public void setOuterNodeFlag(Boolean outerNodeFlag) {
+        this.outerNodeFlag = outerNodeFlag;
     }
 }
