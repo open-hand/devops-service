@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ClusterHostConnectionVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
-import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
-import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -45,7 +43,7 @@ public class DevopsClusterNodeController {
             @ApiParam(value = "node id")
             @PathVariable(value = "node_id") @Encrypt Long nodeId,
             @ApiParam(value = "role")
-            @PathVariable(value = "role")  Integer role) {
+            @PathVariable(value = "role") Integer role) {
         return ResponseEntity.ok(devopsClusterNodeService.checkEnableDeleteRole(projectId, nodeId, role));
     }
 
@@ -73,6 +71,7 @@ public class DevopsClusterNodeController {
         devopsClusterNodeService.deleteRole(projectId, nodeId, role);
         return ResponseEntity.noContent().build();
     }
+
     @ApiOperation("添加节点")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping

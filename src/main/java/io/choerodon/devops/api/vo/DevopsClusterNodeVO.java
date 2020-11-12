@@ -19,6 +19,9 @@ public class DevopsClusterNodeVO {
     @NotNull(message = "error.node.type.is.null")
     private String type;
 
+    @ApiModelProperty("既作为外部节点，又作为内部节点，这个字段表示作为的内部节点的名称")
+    private String innerNodeName;
+
     /**
      * {@link ClusterNodeRoleEnum}
      */
@@ -133,6 +136,13 @@ public class DevopsClusterNodeVO {
         return this;
     }
 
+    public String getInnerNodeName() {
+        return innerNodeName;
+    }
+
+    public void setInnerNodeName(String innerNodeName) {
+        this.innerNodeName = innerNodeName;
+    }
 
     @Override
     public String toString() {
@@ -140,6 +150,7 @@ public class DevopsClusterNodeVO {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
+                ", innerNodeName='" + innerNodeName + '\'' +
                 ", role=" + role +
                 ", projectId=" + projectId +
                 ", hostIp='" + hostIp + '\'' +
