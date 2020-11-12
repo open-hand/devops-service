@@ -191,7 +191,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         checkNodeNumByRole(devopsClusterNodeDTO);
 
         // 更新集群操作状态为
-        devopsClusterService.updateClusterStatusToOperating(devopsClusterNodeDTO.getClusterId());
+        devopsClusterService.updateClusterStatusToOperatingInNewTrans(devopsClusterNodeDTO.getClusterId());
 
         devopsClusterNodeOperatorService.deleteNode(projectId, devopsClusterNodeDTO);
 
@@ -301,7 +301,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         checkEnableDeleteRole(devopsClusterNodeDTO, role);
 
         // 更新集群操作状态为operating
-        devopsClusterService.updateClusterStatusToOperating(devopsClusterNodeDTO.getClusterId());
+        devopsClusterService.updateClusterStatusToOperatingInNewTrans(devopsClusterNodeDTO.getClusterId());
 
         devopsClusterNodeOperatorService.deleteNodeRole(projectId, devopsClusterNodeDTO, role);
 
