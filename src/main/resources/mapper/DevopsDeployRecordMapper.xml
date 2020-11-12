@@ -301,7 +301,7 @@
 
 	</select>
 	<select id="queryEnvDeployRecordByCommandId"
-			resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
+			resultType="io.choerodon.devops.api.vo.DeployRecordVO">
 		SELECT
 		ddr.id AS id,
 		ddr.deploy_type,
