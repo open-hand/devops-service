@@ -132,6 +132,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String REAL_NAME = "realName";
     private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
     private static final String APPSERVICE = "app-service";
+    private static final String APP = "app";
 
     /**
      * CI 文件模板
@@ -671,8 +672,15 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<AppServiceRepVO> appServiceRepVOS = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
             if (!CollectionUtils.isEmpty(refIds)) {
                 Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APPSERVICE, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE));
+                Map<String, SagaInstanceDetails> sagaInstanceDetailsMapImport = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APP, refIds, SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT));
                 appServiceRepVOS.forEach(appServiceRepVO -> {
-                    appServiceRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(appServiceRepVO.getId())));
+                    Long createSagaId = SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(appServiceRepVO.getId()));
+                    Long importSagaId = SagaInstanceUtils.fillInstanceId(sagaInstanceDetailsMapImport, String.valueOf(appServiceRepVO.getId()));
+                    if (createSagaId != null || createSagaId != 0) {
+                        appServiceRepVO.setSagaInstanceId(createSagaId);
+                    } else {
+                        appServiceRepVO.setSagaInstanceId(importSagaId);
+                    }
                 });
             }
             destination.setContent(appServiceRepVOS);
