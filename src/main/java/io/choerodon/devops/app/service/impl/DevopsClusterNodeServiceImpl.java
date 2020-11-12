@@ -38,6 +38,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevopsAddNodePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallPayload;
 import io.choerodon.devops.app.service.DevopsClusterNodeOperatorService;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
+import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.constant.MiscConstants;
@@ -84,6 +85,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private DevopsClusterNodeOperatorService devopsClusterNodeOperatorService;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private DevopsClusterOperatingRecordService devopsClusterOperatingRecordService;
 
     @Override
     @Transactional
@@ -181,7 +184,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Override
     @Transactional
-    public void delete(Long projectId, Long nodeId) {
+    public Long delete(Long projectId, Long nodeId) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
@@ -191,11 +194,15 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         checkNodeNumByRole(devopsClusterNodeDTO);
 
         // 更新集群操作状态为
-        devopsClusterService.updateClusterStatusToOperatingInNewTrans(devopsClusterNodeDTO.getClusterId());
+        devopsClusterService.updateClusterStatusToOperating(devopsClusterNodeDTO.getClusterId());
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                devopsClusterNodeDTO.getId(),
+                ClusterOperatingTypeEnum.DELETE_NODE.value(),
+                ClusterOperationStatusEnum.OPERATING.value(),
+                null);
+        devopsClusterNodeOperatorService.deleteNode(projectId, devopsClusterNodeDTO, devopsClusterOperationRecordDTO.getId());
 
-        devopsClusterNodeOperatorService.deleteNode(projectId, devopsClusterNodeDTO);
-
-
+        return devopsClusterOperationRecordDTO.getId();
     }
 
     @Override
@@ -289,8 +296,17 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
+    public NodeOperatingResultVO checkOperatingResult(Long projectId, Long operationRecordId) {
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryById(operationRecordId);
+        NodeOperatingResultVO nodeOperatingResultVO = new NodeOperatingResultVO();
+        nodeOperatingResultVO.setStatus(devopsClusterOperationRecordDTO.getStatus());
+        nodeOperatingResultVO.setErrorMsg(devopsClusterOperationRecordDTO.getErrorMsg());
+        return nodeOperatingResultVO;
+    }
+
+    @Override
     @Transactional
-    public void deleteRole(Long projectId, Long nodeId, Integer role) {
+    public Long deleteRole(Long projectId, Long nodeId, Integer role) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
         Assert.notNull(role, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
@@ -301,10 +317,16 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         checkEnableDeleteRole(devopsClusterNodeDTO, role);
 
         // 更新集群操作状态为operating
-        devopsClusterService.updateClusterStatusToOperatingInNewTrans(devopsClusterNodeDTO.getClusterId());
+        devopsClusterService.updateClusterStatusToOperating(devopsClusterNodeDTO.getClusterId());
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
+                devopsClusterNodeDTO.getId(),
+                ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
+                ClusterOperationStatusEnum.OPERATING.value(),
+                null);
 
-        devopsClusterNodeOperatorService.deleteNodeRole(projectId, devopsClusterNodeDTO, role);
+        devopsClusterNodeOperatorService.deleteNodeRole(projectId, devopsClusterNodeDTO, role, devopsClusterOperationRecordDTO.getId());
 
+        return devopsClusterOperationRecordDTO.getId();
 
     }
 

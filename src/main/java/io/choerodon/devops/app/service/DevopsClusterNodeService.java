@@ -74,7 +74,7 @@ public interface DevopsClusterNodeService {
      * @param projectId
      * @param nodeId
      */
-    void delete(Long projectId, Long nodeId);
+    Long delete(Long projectId, Long nodeId);
 
     /**
      * 删除节点角色
@@ -83,7 +83,7 @@ public interface DevopsClusterNodeService {
      * @param nodeId
      * @param role
      */
-    void deleteRole(Long projectId, Long nodeId, Integer role);
+    Long deleteRole(Long projectId, Long nodeId, Integer role);
 
     /**
      * 安装k8s
@@ -157,4 +157,6 @@ public interface DevopsClusterNodeService {
     Boolean checkEnableDeleteRole(Long projectId, Long nodeId, Integer role);
 
     void baseAddNodeRole(Long id, Integer role);
+
+    NodeOperatingResultVO checkOperatingResult(Long projectId, Long operationRecordId);
 }

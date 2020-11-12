@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -28,6 +30,7 @@ import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.SshUtil;
 
@@ -137,7 +140,9 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     }
 
     @Override
-    public void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO) {
+    @Async
+    @Transactional
+    public void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Long operationRecordId) {
         SSHClient sshClient = new SSHClient();
         String errorMsg = "";
         try {
@@ -184,17 +189,9 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             }
             // 删除数据库中数据
             devopsClusterNodeService.baseDelete(devopsClusterNodeDTO.getId());
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
-                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
-                    ClusterOperationStatusEnum.SUCCESS.value(),
-                    null);
+            devopsClusterOperatingRecordService.updateStatusInNewTrans(operationRecordId, ClusterOperationStatusEnum.SUCCESS, null);
         } catch (Exception e) {
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
-                    ClusterOperatingTypeEnum.DELETE_NODE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    errorMsg);
+            devopsClusterOperatingRecordService.updateStatusInNewTrans(operationRecordId, ClusterOperationStatusEnum.FAILED, errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
@@ -203,7 +200,9 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     }
 
     @Override
-    public void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role) {
+    @Async
+    @Transactional
+    public void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role, Long operationRecordId) {
         SSHClient sshClient = new SSHClient();
         String errorMsg = "";
         try {
@@ -254,18 +253,10 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             }
 
             devopsClusterNodeService.baseUpdateNodeRole(devopsClusterNodeDTO.getId(), resultRole);
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
-                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
-                    ClusterOperationStatusEnum.SUCCESS.value(),
-                    null);
+            devopsClusterOperatingRecordService.updateStatusInNewTrans(operationRecordId, ClusterOperationStatusEnum.SUCCESS, null);
         } catch (Exception e) {
             // 操作失败，记录失败数据
-            devopsClusterOperatingRecordService.saveOperatingRecord(devopsClusterNodeDTO.getClusterId(),
-                    devopsClusterNodeDTO.getId(),
-                    ClusterOperatingTypeEnum.DELETE_NODE_ROLE.value(),
-                    ClusterOperationStatusEnum.FAILED.value(),
-                    errorMsg);
+            devopsClusterOperatingRecordService.updateStatusInNewTrans(operationRecordId, ClusterOperationStatusEnum.FAILED, errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
             devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
