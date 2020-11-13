@@ -194,7 +194,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             devopsClusterOperatingRecordService.updateStatusInNewTrans(operationRecordId, ClusterOperationStatusEnum.FAILED, errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
-            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
+            devopsClusterService.updateStatusByIdInNewTrans(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
             sshUtil.sshDisconnect(sshClient);
         }
     }
@@ -259,7 +259,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             devopsClusterOperatingRecordService.updateStatusInNewTrans(operationRecordId, ClusterOperationStatusEnum.FAILED, errorMsg);
             throw new CommonException(ERROR_DELETE_NODE_FAILED, e);
         } finally {
-            devopsClusterService.updateStatusById(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
+            devopsClusterService.updateStatusByIdInNewTrans(devopsClusterNodeDTO.getClusterId(), ClusterStatusEnum.DISCONNECT);
             sshUtil.sshDisconnect(sshClient);
         }
     }
