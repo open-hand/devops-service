@@ -230,21 +230,23 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 // 如果集群已连接，添加cpu、memory相关信息
                 if (updatedClusterList.contains(clusterId)) {
                     ClusterNodeInfoVO redisNodeInfo = redisNodeInfoMap.get(node.getName());
-                    clusterNodeInfoVO.setStatus(redisNodeInfo.getStatus());
-                    clusterNodeInfoVO.setCpuLimit(redisNodeInfo.getCpuLimit());
-                    clusterNodeInfoVO.setCpuLimitPercentage(redisNodeInfo.getCpuLimitPercentage());
-                    clusterNodeInfoVO.setCpuRequest(redisNodeInfo.getCpuRequest());
-                    clusterNodeInfoVO.setCpuRequestPercentage(redisNodeInfo.getCpuRequestPercentage());
-                    clusterNodeInfoVO.setCreateTime(redisNodeInfo.getCreateTime());
-                    clusterNodeInfoVO.setCpuTotal(redisNodeInfo.getCpuTotal());
-                    clusterNodeInfoVO.setMemoryTotal(redisNodeInfo.getMemoryTotal());
-                    clusterNodeInfoVO.setMemoryLimit(redisNodeInfo.getMemoryLimit());
-                    clusterNodeInfoVO.setMemoryLimitPercentage(redisNodeInfo.getMemoryLimitPercentage());
-                    clusterNodeInfoVO.setMemoryRequest(redisNodeInfo.getMemoryRequest());
-                    clusterNodeInfoVO.setMemoryRequestPercentage(redisNodeInfo.getMemoryRequestPercentage());
-                    clusterNodeInfoVO.setPodCount(redisNodeInfo.getPodCount());
-                    clusterNodeInfoVO.setPodPercentage(redisNodeInfo.getPodPercentage());
-                    clusterNodeInfoVO.setPodTotal(redisNodeInfo.getPodTotal());
+                    if (redisNodeInfo != null) {
+                        clusterNodeInfoVO.setStatus(redisNodeInfo.getStatus());
+                        clusterNodeInfoVO.setCpuLimit(redisNodeInfo.getCpuLimit());
+                        clusterNodeInfoVO.setCpuLimitPercentage(redisNodeInfo.getCpuLimitPercentage());
+                        clusterNodeInfoVO.setCpuRequest(redisNodeInfo.getCpuRequest());
+                        clusterNodeInfoVO.setCpuRequestPercentage(redisNodeInfo.getCpuRequestPercentage());
+                        clusterNodeInfoVO.setCreateTime(redisNodeInfo.getCreateTime());
+                        clusterNodeInfoVO.setCpuTotal(redisNodeInfo.getCpuTotal());
+                        clusterNodeInfoVO.setMemoryTotal(redisNodeInfo.getMemoryTotal());
+                        clusterNodeInfoVO.setMemoryLimit(redisNodeInfo.getMemoryLimit());
+                        clusterNodeInfoVO.setMemoryLimitPercentage(redisNodeInfo.getMemoryLimitPercentage());
+                        clusterNodeInfoVO.setMemoryRequest(redisNodeInfo.getMemoryRequest());
+                        clusterNodeInfoVO.setMemoryRequestPercentage(redisNodeInfo.getMemoryRequestPercentage());
+                        clusterNodeInfoVO.setPodCount(redisNodeInfo.getPodCount());
+                        clusterNodeInfoVO.setPodPercentage(redisNodeInfo.getPodPercentage());
+                        clusterNodeInfoVO.setPodTotal(redisNodeInfo.getPodTotal());
+                    }
                 }
                 return clusterNodeInfoVO;
             }).collect(Collectors.toList());
