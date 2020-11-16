@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,8 +35,12 @@ import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
 import io.choerodon.devops.infra.enums.ClusterNodeRoleEnum;
 import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
+import io.choerodon.devops.infra.enums.ClusterTypeEnum;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -63,6 +68,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private DevopsClusterNodeService devopsClusterNodeService;
     @Autowired
     private DevopsClusterOperatingRecordService devopsClusterOperatingRecordService;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
 
     @Override
     public String getRedisClusterKey(Long clusterId) {
@@ -167,72 +174,117 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
         Assert.notNull(clusterId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
 
-        // 现在分页从0开始了
-        long start = (long) (pageable.getPage()) * (long) pageable.getSize();
-        // stop不怕越界， redis会将边界之前的最后的那些元素返回
-        long stop = start + (long) pageable.getSize() - 1;
-        String redisKey = getRedisClusterKey(clusterId, projectId);
 
-        // 查询为node添加id需要的数据
-        List<DevopsClusterNodeDTO> devopsClusterNodeDTOS = devopsClusterNodeService.queryByClusterId(clusterId);
-        Map<String, DevopsClusterNodeDTO> nodeDTOMap = devopsClusterNodeDTOS.stream().collect(Collectors.toMap(DevopsClusterNodeDTO::getName, v -> v));
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-        List<DevopsClusterNodeDTO> outerNodes = devopsClusterNodeDTOS.stream().filter(v -> ClusterNodeTypeEnum.OUTTER.getType().equals(v.getType())).collect(Collectors.toList());
-
-        long total = stringRedisTemplate.opsForList().size(redisKey);
-        List<ClusterNodeInfoVO> nodes = stringRedisTemplate
-                .opsForList()
-                .range(redisKey, start, stop)
-                .stream()
-                .map(node -> {
-                    ClusterNodeInfoVO clusterNodeInfoVO = JSONObject.parseObject(node, ClusterNodeInfoVO.class);
-                    // 为node添加id
-                    DevopsClusterNodeDTO devopsClusterNodeDTO = nodeDTOMap.get(clusterNodeInfoVO.getNodeName());
-                    if (devopsClusterNodeDTO != null) {
-                        clusterNodeInfoVO.setId(devopsClusterNodeDTO.getId());
-                        // 添加能否删除节点角色标记
-                        if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
-                            clusterNodeInfoVO.setEnableDeleteMasterRole(true);
-                        }
-                        if (ClusterNodeRoleEnum.isEtcd(devopsClusterNodeDTO.getRole())) {
-                            clusterNodeInfoVO.setEnableDeleteEtcdRole(true);
-                        }
-                        if (ClusterNodeRoleEnum.WORKER.getMask() == devopsClusterNodeDTO.getRole()
-                                && !devopsClusterNodeDTO.getName().equals(outerNodes.get(0).getInnerNodeName())) {
-                            clusterNodeInfoVO.setEnableDeleteNode(true);
-                        }
-                        if (!CollectionUtils.isEmpty(outerNodes)
-                                && devopsClusterNodeDTO.getName().equals(outerNodes.get(0).getInnerNodeName())) {
-                            clusterNodeInfoVO.setOuterNodeFlag(true);
-                        }
-                        // 添加失败信息
-                        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryLatestRecordByNodeId(devopsClusterNodeDTO.getId());
-                        if (devopsClusterOperationRecordDTO != null
-                                && ClusterOperationStatusEnum.FAILED.value().equals(devopsClusterOperationRecordDTO.getStatus())) {
-                            clusterNodeInfoVO.setOperatingStatus(ClusterOperationStatusEnum.FAILED.value());
-                            clusterNodeInfoVO.setErrorMsg(devopsClusterOperationRecordDTO.getErrorMsg());
-                        }
-                    }
-                    clusterNodeInfoVO.setClusterType(devopsClusterDTO.getType());
-
-                    return clusterNodeInfoVO;
-                })
-                .collect(Collectors.toList());
         Page<ClusterNodeInfoVO> result = new Page<>();
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        String redisKey = getRedisClusterKey(clusterId, projectId);
+        List<ClusterNodeInfoVO> nodes = new ArrayList<>();
 
 
+        if (ClusterTypeEnum.CREATED.value().equals(devopsClusterDTO.getType())) {
+            Page<DevopsClusterNodeDTO> nodeDTOS = PageHelper.doPage(pageable, () -> devopsClusterNodeService.queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.INNER));
 
-        if (total < pageable.getSize() * pageable.getPage()) {
-            result.setSize(TypeUtil.objToInt(total) - (pageable.getSize() * (pageable.getPage() - 1)));
-        } else {
+            // 查询为node添加id需要的数据
+            List<DevopsClusterNodeDTO> outerNodes = devopsClusterNodeService.queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.OUTTER);
+            Map<String, ClusterNodeInfoVO> redisNodeInfoMap = stringRedisTemplate
+                    .opsForList()
+                    .range(redisKey, 0, result.size())
+                    .stream()
+                    .map(node -> {
+                        // 为node添加id
+                        return JSONObject.parseObject(node, ClusterNodeInfoVO.class);
+                    })
+                    .collect(Collectors.toMap(ClusterNodeInfoVO::getNodeName, v -> v));
+
+            List<ClusterNodeInfoVO> nodeInfoVOS = nodeDTOS.stream().map(node -> {
+                ClusterNodeInfoVO clusterNodeInfoVO = new ClusterNodeInfoVO();
+                clusterNodeInfoVO.setId(node.getId());
+                clusterNodeInfoVO.setClusterType(node.getType());
+                clusterNodeInfoVO.setNodeName(node.getName());
+                clusterNodeInfoVO.setStatus(node.getName());
+                clusterNodeInfoVO.setRole(ClusterNodeRoleEnum.getRoleNamesByFlag(node.getRole()));
+
+                if (!CollectionUtils.isEmpty(outerNodes)
+                        && node.getName().equals(outerNodes.get(0).getInnerNodeName())) {
+                    clusterNodeInfoVO.setOuterNodeFlag(true);
+                }
+                // 添加能否删除节点角色标记
+                if (ClusterNodeRoleEnum.isMaster(node.getRole())) {
+                    clusterNodeInfoVO.setEnableDeleteMasterRole(true);
+                }
+                if (ClusterNodeRoleEnum.isEtcd(node.getRole())) {
+                    clusterNodeInfoVO.setEnableDeleteEtcdRole(true);
+                }
+                if (ClusterNodeRoleEnum.WORKER.getMask() == node.getRole()
+                        && !node.getName().equals(outerNodes.get(0).getInnerNodeName())) {
+                    clusterNodeInfoVO.setEnableDeleteNode(true);
+                }
+                // 添加失败信息
+                DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperatingRecordService.queryLatestRecordByNodeId(node.getId());
+                if (devopsClusterOperationRecordDTO != null
+                        && ClusterOperationStatusEnum.FAILED.value().equals(devopsClusterOperationRecordDTO.getStatus())) {
+                    clusterNodeInfoVO.setOperatingStatus(ClusterOperationStatusEnum.FAILED.value());
+                    clusterNodeInfoVO.setErrorMsg(devopsClusterOperationRecordDTO.getErrorMsg());
+                }
+                // 如果集群已连接，添加cpu、memory相关信息
+                if (updatedClusterList.contains(clusterId)) {
+                    ClusterNodeInfoVO redisNodeInfo = redisNodeInfoMap.get(node.getName());
+                    clusterNodeInfoVO.setStatus(redisNodeInfo.getStatus());
+                    clusterNodeInfoVO.setCpuLimit(redisNodeInfo.getCpuLimit());
+                    clusterNodeInfoVO.setCpuLimitPercentage(redisNodeInfo.getCpuLimitPercentage());
+                    clusterNodeInfoVO.setCpuRequest(redisNodeInfo.getCpuRequest());
+                    clusterNodeInfoVO.setCpuRequestPercentage(redisNodeInfo.getCpuRequestPercentage());
+                    clusterNodeInfoVO.setCreateTime(redisNodeInfo.getCreateTime());
+                    clusterNodeInfoVO.setCpuTotal(redisNodeInfo.getCpuTotal());
+                    clusterNodeInfoVO.setMemoryTotal(redisNodeInfo.getMemoryTotal());
+                    clusterNodeInfoVO.setMemoryLimit(redisNodeInfo.getMemoryLimit());
+                    clusterNodeInfoVO.setMemoryLimitPercentage(redisNodeInfo.getMemoryLimitPercentage());
+                    clusterNodeInfoVO.setMemoryRequest(redisNodeInfo.getMemoryRequest());
+                    clusterNodeInfoVO.setMemoryRequestPercentage(redisNodeInfo.getMemoryRequestPercentage());
+                    clusterNodeInfoVO.setPodCount(redisNodeInfo.getPodCount());
+                    clusterNodeInfoVO.setPodPercentage(redisNodeInfo.getPodPercentage());
+                    clusterNodeInfoVO.setPodTotal(redisNodeInfo.getPodTotal());
+                }
+                return clusterNodeInfoVO;
+            }).collect(Collectors.toList());
+
             result.setSize(pageable.getSize());
-        }
-        result.setSize(pageable.getSize());
-        result.setNumber(pageable.getPage());
-        result.setTotalElements(total);
-        result.setContent(nodes);
+            result.setNumber(pageable.getPage());
+            result.setTotalElements(nodeDTOS.getTotalElements());
+            result.setContent(nodeInfoVOS);
+            return result;
+        } else if (ClusterTypeEnum.IMPORTED.value().equals(devopsClusterDTO.getType())) {
+            // 现在分页从0开始了
+            long start = (long) (pageable.getPage()) * (long) pageable.getSize();
+            // stop不怕越界， redis会将边界之前的最后的那些元素返回
+            long stop = start + (long) pageable.getSize() - 1;
+            nodes = stringRedisTemplate
+                    .opsForList()
+                    .range(redisKey, start, stop)
+                    .stream()
+                    .map(node -> {
+                        ClusterNodeInfoVO clusterNodeInfoVO = JSONObject.parseObject(node, ClusterNodeInfoVO.class);
+                        return clusterNodeInfoVO;
+                    })
+                    .collect(Collectors.toList());
+            long total = stringRedisTemplate.opsForList().size(redisKey);
 
-        return result;
+
+            if (total < pageable.getSize() * pageable.getPage()) {
+                result.setSize(TypeUtil.objToInt(total) - (pageable.getSize() * (pageable.getPage() - 1)));
+            } else {
+                result.setSize(pageable.getSize());
+            }
+            result.setSize(pageable.getSize());
+            result.setNumber(pageable.getPage());
+            result.setTotalElements(total);
+            result.setContent(nodes);
+
+            return result;
+        }
+        return null;
+
     }
 
     @Override
