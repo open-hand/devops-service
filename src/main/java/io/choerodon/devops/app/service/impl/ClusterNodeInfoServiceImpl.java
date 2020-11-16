@@ -189,10 +189,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
             List<DevopsClusterNodeDTO> outerNodes = devopsClusterNodeService.queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.OUTTER);
             Map<String, ClusterNodeInfoVO> redisNodeInfoMap = stringRedisTemplate
                     .opsForList()
-                    .range(redisKey, 0, result.size())
+                    .range(redisKey, 0, nodeDTOS.size())
                     .stream()
                     .map(node -> {
-                        // 为node添加id
                         return JSONObject.parseObject(node, ClusterNodeInfoVO.class);
                     })
                     .collect(Collectors.toMap(ClusterNodeInfoVO::getNodeName, v -> v));
