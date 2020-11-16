@@ -570,12 +570,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (pipelineCompositeRecordVO != null) {
                 // 判断是否存在记录
                 pipelineVO.setHasRecords(true);
-
+                //计算流水线上一次执行的状态和时间
+                String latestExecuteStatus = calculateExecuteStatus(pipelineCompositeRecordVO);
+                pipelineVO.setLatestExecuteStatus(latestExecuteStatus);
+                pipelineVO.setLatestExecuteDate(pipelineCompositeRecordVO.getCreationDate());
             }
-            //计算流水线上一次执行的状态和时间
-            String latestExecuteStatus = calculateExecuteStatus(pipelineCompositeRecordVO);
-            pipelineVO.setLatestExecuteStatus(latestExecuteStatus);
-            pipelineVO.setLatestExecuteDate(pipelineCompositeRecordVO.getCreationDate());
+
         });
         return pipelinePage;
 
