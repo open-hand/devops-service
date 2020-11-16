@@ -23,7 +23,7 @@
             devops_pipeline_record_rel dprr
         LEFT JOIN devops_ci_pipeline_record dcipr ON dcipr.id = dprr.ci_pipeline_record_id
         LEFT JOIN devops_cd_pipeline_record dcdpr ON dcdpr.id = dprr.cd_pipeline_record_id
-        WHERE dprr.pipeline_id =  #{pipeline_id}
+        WHERE dprr.pipeline_id =  #{id}
         order by dprr.id desc
         limit 1
     </select>
