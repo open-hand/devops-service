@@ -7,6 +7,7 @@ import org.springframework.util.Assert;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.pipeline.PipelineCompositeRecordVO;
 import io.choerodon.devops.app.service.DevopsPipelineRecordRelService;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
@@ -69,5 +70,10 @@ public class DevopsPipelineRecordRelServiceImpl implements DevopsPipelineRecordR
     public DevopsPipelineRecordRelDTO queryById(Long pipelineRecordRelId) {
         Assert.notNull(pipelineRecordRelId, ERROR_PIPELINE_RECORD_REL_ID_IS_NULL);
         return devopsPipelineRecordRelMapper.selectByPrimaryKey(pipelineRecordRelId);
+    }
+
+    @Override
+    public PipelineCompositeRecordVO queryLatestedPipelineRecord(Long id) {
+        return devopsPipelineRecordRelMapper.queryLatestedPipelineRecord(id);
     }
 }
