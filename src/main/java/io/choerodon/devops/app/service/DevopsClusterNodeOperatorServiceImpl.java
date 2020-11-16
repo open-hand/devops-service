@@ -111,9 +111,9 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             }
             // 执行添加节点操作
             String command;
-            if (ClusterNodeRoleEnum.isMaster(nodeVO.getRole())) {
+            if (ClusterNodeRoleEnum.MASTER.getMask() == nodeVO.getRole()) {
                 command = ADD_MASTER_YML;
-            } else if (ClusterNodeRoleEnum.isWorker(nodeVO.getRole())) {
+            } else if (ClusterNodeRoleEnum.WORKER.getMask() == nodeVO.getRole()) {
                 command = ADD_WORKER_YML;
             } else {
                 throw new CommonException(ERROR_ADD_NODE_FAILED);
@@ -216,11 +216,11 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             // 计算invertory配置
             InventoryVO inventoryVO = devopsClusterNodeService.calculateGeneralInventoryValue(innerNodes);
             String command = null;
-            if (ClusterNodeRoleEnum.isMaster(role)) {
+            if (ClusterNodeRoleEnum.MASTER.getMask() == role) {
                 inventoryVO.getDelMaster().append(devopsClusterNodeDTO.getName());
                 command = DevopsClusterCommandConstants.REMOVE_MASTER_YAML;
             }
-            if (ClusterNodeRoleEnum.isEtcd(role)) {
+            if (ClusterNodeRoleEnum.ETCD.getMask() == role) {
                 inventoryVO.getDelEtcd().append(devopsClusterNodeDTO.getName());
                 command = DevopsClusterCommandConstants.REMOVE_ETCD_YAML;
             }
@@ -246,7 +246,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
 
             // 删除数据库数据
             int resultRole = 0;
-            if (ClusterNodeRoleEnum.isMaster(devopsClusterNodeDTO.getRole())) {
+            if (ClusterNodeRoleEnum.MASTER.getMask() == devopsClusterNodeDTO.getRole()) {
                 resultRole = 1;
             } else {
                 resultRole = devopsClusterNodeDTO.getRole() - role;
