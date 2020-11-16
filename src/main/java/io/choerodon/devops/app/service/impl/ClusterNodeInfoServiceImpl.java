@@ -204,7 +204,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 clusterNodeInfoVO.setNodeName(node.getName());
                 clusterNodeInfoVO.setStatus(node.getName());
                 clusterNodeInfoVO.setRole(ClusterNodeRoleEnum.getRoleNamesByFlag(node.getRole()));
-
+                clusterNodeInfoVO.setCreateTime(node.getCreationDate().toString());
                 if (!CollectionUtils.isEmpty(outerNodes)
                         && node.getName().equals(outerNodes.get(0).getInnerNodeName())) {
                     clusterNodeInfoVO.setOuterNodeFlag(true);
@@ -236,7 +236,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                         clusterNodeInfoVO.setCpuLimitPercentage(redisNodeInfo.getCpuLimitPercentage());
                         clusterNodeInfoVO.setCpuRequest(redisNodeInfo.getCpuRequest());
                         clusterNodeInfoVO.setCpuRequestPercentage(redisNodeInfo.getCpuRequestPercentage());
-                        clusterNodeInfoVO.setCreateTime(redisNodeInfo.getCreateTime());
+
                         clusterNodeInfoVO.setCpuTotal(redisNodeInfo.getCpuTotal());
                         clusterNodeInfoVO.setMemoryTotal(redisNodeInfo.getMemoryTotal());
                         clusterNodeInfoVO.setMemoryLimit(redisNodeInfo.getMemoryLimit());
