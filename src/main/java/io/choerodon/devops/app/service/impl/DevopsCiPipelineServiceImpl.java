@@ -874,6 +874,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 校验自定义任务格式
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
         ciCdPipelineDTO.setImage(ciCdPipelineVO.getImage());
+        ciCdPipelineDTO.setName(ciCdPipelineVO.getName());
         ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
         ciCdPipelineDTO.setObjectVersionNumber(ciCdPipelineVO.getObjectVersionNumber());
         if (ciCdPipelineMapper.updateByPrimaryKeySelective(ciCdPipelineDTO) != 1) {
