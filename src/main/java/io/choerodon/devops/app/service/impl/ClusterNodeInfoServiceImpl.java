@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,6 @@ import io.choerodon.devops.infra.enums.ClusterNodeTypeEnum;
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.enums.ClusterTypeEnum;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -53,11 +50,6 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String MEMORY_MEASURE_FORMAT = "%.2f%s";
     private static final String[] MEMORY_MEASURE = {"Ki", "Ki", "Mi", "Gi"};
     private static final String PERCENTAGE_FORMAT = "%.2f%%";
-    /**
-     * 如果出现时间的解析失误，可能是并发问题，不建议作为局部变量，可以考虑使用Joda-Time库，
-     * 目前考虑Agent发送消息的间隔不会产生并发问题，当前日期(20190118)
-     */
-    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNodeInfoServiceImpl.class);
 
     @Autowired
@@ -123,9 +115,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         setCpuPercentage(node);
 
         try {
-            node.setCreateTime(simpleDateFormat.format(simpleDateFormat.parse(raw.getCreateTime())));
-        } catch (ParseException e) {
-            LOGGER.info("date: {} failed to be formatted", raw.getCreateTime());
+            // 截取掉时区信息, 维持时间格式统一
+            // 2019-11-13 09:27:08 +0800 CST    变成     2019-11-13 09:27:08
+            node.setCreateTime(raw.getCreateTime().substring(0, 19));
         } catch (Exception ex) {
             LOGGER.warn("Exception occurred when parsing creation time: {}", raw.getCreateTime());
         }
