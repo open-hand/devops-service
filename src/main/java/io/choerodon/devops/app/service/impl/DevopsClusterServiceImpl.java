@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.CLUSTER_INFO_REDIS_KEY_TEMPLATE;
 import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.NODE_CHECK_STEP_REDIS_KEY_TEMPLATE;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsClusterValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallInfoVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
@@ -155,6 +157,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_INSTALL_K8S, description = "创建集群", inputSchema = "{}")
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        String clusterInfoRedisKey = String.format(CLUSTER_INFO_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
         String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
 
         // 如果这个key存在，表明已经有相同的集群处于创建中，禁止重复创建
@@ -189,12 +192,19 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         devopsClusterNodeToSaveDTOList.addAll(ConvertUtils.convertList(devopsClusterInnerNodeVOList, DevopsClusterNodeDTO.class));
 
-        DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
+        DevopsClusterInstallInfoVO devopsClusterInstallInfoVO = new DevopsClusterInstallInfoVO()
                 .setDevopsClusterReqVO(devopsClusterReqVO)
                 .setProjectId(projectId)
                 .setHostConnectionVO(hostConnectionVO)
                 .setRedisKey(redisKey)
                 .setDevopsClusterNodeToSaveDTOList(devopsClusterNodeToSaveDTOList);
+
+        stringRedisTemplate.opsForValue().set(clusterInfoRedisKey, JsonHelper.marshalByJackson(devopsClusterInstallInfoVO));
+
+        DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
+                .setProjectId(projectId)
+                .setRedisKey(redisKey)
+                .setClusterInfoRedisKey(clusterInfoRedisKey);
 
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -220,16 +230,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             throw new CommonException("error.cluster.status");
         }
         CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        List<DevopsClusterNodeDTO> devopsClusterNodeDTOList = devopsClusterNodeService.listByClusterId(clusterId);
-        HostConnectionVO hostConnectionVO = null;
-        for (DevopsClusterNodeDTO node : devopsClusterNodeDTOList) {
-            if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.OUTTER.getType())) {
-                hostConnectionVO = ConvertUtils.convertObject(node, HostConnectionVO.class);
-            }
-        }
-        if (hostConnectionVO == null) {
-            hostConnectionVO = ConvertUtils.convertObject(devopsClusterNodeDTOList.get(0), HostConnectionVO.class);
-        }
 
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(clusterId, ClusterOperationTypeEnum.INSTALL_K8S.getType());
         devopsClusterOperationRecordDTO.setErrorMsg("");
@@ -245,10 +245,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
                 .setProjectId(projectId)
                 .setClusterId(clusterId)
-                .setDevopsClusterNodeToSaveDTOList(devopsClusterNodeDTOList)
-                .setHostConnectionVO(hostConnectionVO)
-                .setOperationRecordId(devopsClusterOperationRecordDTO.getId())
-                .setDevopsClusterReqVO(ConvertUtils.convertObject(devopsClusterDTO, DevopsClusterReqVO.class));
+                .setOperationRecordId(devopsClusterOperationRecordDTO.getId());
 
         producer.applyAndReturn(
                 StartSagaBuilder
