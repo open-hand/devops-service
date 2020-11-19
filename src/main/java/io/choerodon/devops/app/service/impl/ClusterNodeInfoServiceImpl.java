@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -196,7 +197,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 clusterNodeInfoVO.setNodeName(node.getName());
                 clusterNodeInfoVO.setStatus(node.getName());
                 clusterNodeInfoVO.setRole(ClusterNodeRoleEnum.getRoleNamesByFlag(node.getRole()));
-
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 clusterNodeInfoVO.setCreateTime(simpleDateFormat.format(node.getCreationDate()));
                 if (!CollectionUtils.isEmpty(outerNodes)
                         && node.getName().equals(outerNodes.get(0).getInnerNodeName())) {
