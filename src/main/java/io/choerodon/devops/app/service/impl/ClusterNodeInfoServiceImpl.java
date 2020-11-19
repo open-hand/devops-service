@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.sun.javafx.binding.StringFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
