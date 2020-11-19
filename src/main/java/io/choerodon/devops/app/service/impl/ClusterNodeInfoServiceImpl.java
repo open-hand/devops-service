@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
+import com.sun.javafx.binding.StringFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -195,7 +196,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 clusterNodeInfoVO.setNodeName(node.getName());
                 clusterNodeInfoVO.setStatus(node.getName());
                 clusterNodeInfoVO.setRole(ClusterNodeRoleEnum.getRoleNamesByFlag(node.getRole()));
-                clusterNodeInfoVO.setCreateTime(node.getCreationDate().toString());
+
+                clusterNodeInfoVO.setCreateTime(simpleDateFormat.format(node.getCreationDate()));
                 if (!CollectionUtils.isEmpty(outerNodes)
                         && node.getName().equals(outerNodes.get(0).getInnerNodeName())) {
                     clusterNodeInfoVO.setOuterNodeFlag(true);
