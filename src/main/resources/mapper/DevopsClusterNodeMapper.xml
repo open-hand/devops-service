@@ -6,7 +6,7 @@
         VALUES
         <foreach collection="devopsClusterNodeDTOList" item="item" separator=",">
             (#{item.name},
-            #{item.inner_node_name},
+            #{item.innerNodeName},
             #{item.role},
             #{item.type},
             #{item.projectId},
