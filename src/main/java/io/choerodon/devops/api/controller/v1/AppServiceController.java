@@ -774,8 +774,8 @@ public class AppServiceController {
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询项目下应用服务的数量")
-    @PostMapping("/list_by_project_id")
-    public ResponseEntity<Map<Long, Integer>> countByProjectId(
+    @PostMapping("/list_by_project_ids")
+    public ResponseEntity<Map<Long, Integer>> countByProjectIds(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody List<Long> projectIds) {
