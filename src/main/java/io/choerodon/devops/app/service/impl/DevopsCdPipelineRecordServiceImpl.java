@@ -373,14 +373,20 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshUtil.dockerRun(ssh, imageDeploy.getValue(), imageDeploy.getContainerName(), c7nImageDeployDTO, log);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
             // 插入部署记录
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
-
+            Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+            String hostName = null;
+            if (hostId == null) {
+                hostName = cdHostDeployConfigVO.getHostConnectionVO().getHostIp();
+            } else {
+                DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+                hostName = devopsHostDTO != null ? devopsHostDTO.getName() : null;
+            }
             devopsDeployRecordService.saveRecord(jobRecordDTO.getProjectId(),
                     DeployType.AUTO,
                     null,
                     DeployModeEnum.HOST,
-                    devopsHostDTO.getId(),
-                    devopsHostDTO.getName(),
+                    hostId,
+                    hostName,
                     PipelineStatus.SUCCESS.toValue(),
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
@@ -393,14 +399,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
             // 插入部署记录
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
+            Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+            String hostName = null;
+            if (hostId == null) {
+                hostName = cdHostDeployConfigVO.getHostConnectionVO().getHostIp();
+            } else {
+                DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+                hostName = devopsHostDTO != null ? devopsHostDTO.getName() : null;
+            }
             devopsDeployRecordService.saveRecord(
                     jobRecordDTO.getProjectId(),
                     DeployType.AUTO,
                     null,
                     DeployModeEnum.HOST,
-                    devopsHostDTO.getId(),
-                    devopsHostDTO.getName(),
+                    hostId,
+                    hostName,
                     PipelineStatus.FAILED.toValue(),
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
@@ -516,14 +529,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             sshExec(ssh, c7nNexusDeployDTO, jarDeploy, log);
             devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
+            Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+            String hostName = null;
+            if (hostId == null) {
+                hostName = cdHostDeployConfigVO.getHostConnectionVO().getHostIp();
+            } else {
+                DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+                hostName = devopsHostDTO != null ? devopsHostDTO.getName() : null;
+            }
             devopsDeployRecordService.saveRecord(
                     jobRecordDTO.getProjectId(),
                     DeployType.AUTO,
                     null,
                     DeployModeEnum.HOST,
-                    devopsHostDTO.getId(),
-                    devopsHostDTO.getName(),
+                    hostId,
+                    hostName,
                     PipelineStatus.SUCCESS.toValue(),
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
@@ -533,14 +553,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             e.printStackTrace();
             status = false;
             jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
-            DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(cdHostDeployConfigVO.getHostConnectionVO().getHostId());
+            Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+            String hostName = null;
+            if (hostId == null) {
+                hostName = cdHostDeployConfigVO.getHostConnectionVO().getHostIp();
+            } else {
+                DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+                hostName = devopsHostDTO != null ? devopsHostDTO.getName() : null;
+            }
             devopsDeployRecordService.saveRecord(
                     jobRecordDTO.getProjectId(),
                     DeployType.AUTO,
                     null,
                     DeployModeEnum.HOST,
-                    devopsHostDTO.getId(),
-                    devopsHostDTO.getName(),
+                    hostId,
+                    hostName,
                     PipelineStatus.FAILED.toValue(),
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
