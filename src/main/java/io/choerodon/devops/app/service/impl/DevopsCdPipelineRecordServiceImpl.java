@@ -594,7 +594,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             stopJar.append(System.lineSeparator());
             stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, cdEnvDeployInfoDTO.getJarName()));
             stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
-            LOGGER.info(stopJar.toString());
             Session session = null;
             try {
                 session = ssh.startSession();
@@ -658,7 +657,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            log.append(System.lineSeparator()).append(finalCmdStr);
+            log.append(System.lineSeparator()).append(finalCmdStr.toString().replace(String.format("-u %s:%s", c7nNexusDeployDTO.getPullUserId(),
+                    c7nNexusDeployDTO.getPullUserPassword()), ""));
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
