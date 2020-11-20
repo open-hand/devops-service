@@ -735,7 +735,7 @@
         INNER JOIN devops_branch db ON das.id = db.app_service_id
         INNER JOIN devops_app_service_user_rel dasur
         ON dasur.app_service_id = das.id AND dasur.iam_user_id = #{iamUserId,jdbcType=BIGINT}
-        WHERE das.project_id = #{iamUserId,jdbcType=BIGINT}
+        WHERE das.project_id = #{projectId,jdbcType=BIGINT}
         AND das.is_failed = FALSE
         AND das.is_synchro = TRUE
         AND das.is_active = TRUE
