@@ -778,7 +778,7 @@ public class AppServiceController {
     public ResponseEntity<Map<Long, Integer>> countByProjectId(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "longList") List<Long> projectIds) {
+            @RequestBody List<Long> projectIds) {
         return new ResponseEntity<>(applicationServiceService.countByProjectId(projectIds), HttpStatus.OK);
     }
 
