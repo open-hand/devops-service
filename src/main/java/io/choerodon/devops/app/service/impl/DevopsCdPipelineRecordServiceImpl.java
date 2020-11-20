@@ -602,6 +602,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
                 String logInfo = IOUtils.readFully(cmd.getInputStream()).toString();
                 String errorInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
+                log.append(stopJar).append(System.lineSeparator());
                 log.append(logInfo);
                 log.append(errorInfo);
             } finally {
@@ -657,6 +658,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            log.append(System.lineSeparator()).append(finalCmdStr);
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
