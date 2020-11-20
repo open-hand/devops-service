@@ -111,11 +111,19 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             if (!CollectionUtils.isEmpty(projectDTOS)) {
                 projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
             }
-        } else if (!isCreateUser) {
+        } else {
             // 创建用户时不需要删除之前的权限
-            // 原本的此用户可能是组织管理员,需要将此组织下所有的项目的group的权限判断一遍
-            // 如果这里过慢,可以考虑让hzero-iam发送更新用户前的标签数据
-            deleteGitLabPermissionsForOrgAdmin(gitlabGroupMemberVO);
+            // 此用户现在不是组织管理员，但是原本的此用户可能是组织管理员,需要将此组织下所有的项目的group的权限判断一遍
+            if (!isCreateUser) {
+                // 如果这个字段为null, 说明没传，不走这个逻辑，直接进去删除，
+                // 如果传了（即使为空数组），可以方便的判断权限的变更，避免轮询组织下所有的项目来操作权限
+                // 如果更新前用户的label不包含组织层admin的标签，就跳过之后删除权限的逻辑 (2020-11-19)
+                if (gitlabGroupMemberVO.getPreviousRoleLabels() != null
+                        && !gitlabGroupMemberVO.getPreviousRoleLabels().contains(LabelType.TENANT_ADMIN.getValue())) {
+                    return;
+                }
+                deleteGitLabPermissionsForOrgAdmin(gitlabGroupMemberVO);
+            }
         }
     }
 
@@ -133,22 +141,30 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         List<UserProjectLabelVO> labels = baseServiceClientOperator.listRoleLabelsForUserInTheProject(gitlabGroupMemberVO.getUserId(), projectIds);
         Map<Long, UserProjectLabelVO> projectLabels = labels.stream().collect(Collectors.toMap(UserProjectLabelVO::getProjectId, Function.identity()));
 
+        // 遍历项目，处理权限
         projectDTOS.forEach(projectDTO -> {
-            LOGGER.info("start delete project id is {} for gitlab org owner", projectDTO.getId());
-            // 如果删除的成员为该项目下的项目所有者，则不删除gitlab相应的权限
-            if (!baseServiceClientOperator.isProjectOwner(gitlabGroupMemberVO.getUserId(), projectDTO.getId())) {
-                deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId(), true);
-
-                // 如果不是所有者, 同步一次项目层权限,
-                // 假如用户在gitlab的project是develop权限, 但是在group是owner, 删除group的owner后,
-                // project中的develop权限也会被gitlab删除
-                UserProjectLabelVO label = projectLabels.get(projectDTO.getId());
-                MemberHelper memberHelper = getGitlabGroupMemberRole(label == null || CollectionUtils.isEmpty(label.getRoleLabels()) ? Collections.emptyList() : new ArrayList<>(label.getRoleLabels()));
-                operation(projectDTO.getId(),
-                        ResourceLevel.PROJECT.value(),
-                        memberHelper,
-                        gitlabGroupMemberVO.getUserId());
+            // 获取用户在此项目下的现在的角色标签, 可能为null
+            UserProjectLabelVO projectLabel = projectLabels.get(projectDTO.getId());
+            if (projectLabel != null
+                    && projectLabel.getRoleLabels() != null
+                    && projectLabel.getRoleLabels().contains(LabelType.GITLAB_PROJECT_OWNER.getValue())) {
+                // 如果在项目层有gitlab owner这个标签就不删除权限，没有的话清除掉之前admin带来的group的owner权限
+                return;
             }
+
+            LOGGER.info("start to delete gitlab org owner for project with id {} for user with id {}", projectDTO.getId(), gitlabGroupMemberVO.getUserId());
+
+            deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId(), true);
+
+            // 如果不是所有者, 同步一次项目层权限,
+            // 假如用户在gitlab的project是develop权限, 但是在group是owner, 删除group的owner后,
+            // project中的develop权限也会被gitlab删除
+            UserProjectLabelVO label = projectLabels.get(projectDTO.getId());
+            MemberHelper memberHelper = getGitlabGroupMemberRole(label == null || CollectionUtils.isEmpty(label.getRoleLabels()) ? Collections.emptyList() : new ArrayList<>(label.getRoleLabels()));
+            operation(projectDTO.getId(),
+                    ResourceLevel.PROJECT.value(),
+                    memberHelper,
+                    gitlabGroupMemberVO.getUserId());
         });
     }
 
