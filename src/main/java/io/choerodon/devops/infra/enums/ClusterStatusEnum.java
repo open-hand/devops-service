@@ -13,6 +13,8 @@ public enum ClusterStatusEnum {
      * 集群未连接
      */
     DISCONNECT("disconnect"),
+
+    UNKNOWN("unknown"),
     /**
      * agent已连接，集群运行中
      */

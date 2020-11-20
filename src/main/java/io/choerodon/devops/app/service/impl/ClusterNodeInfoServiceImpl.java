@@ -191,7 +191,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 clusterNodeInfoVO.setId(node.getId());
                 clusterNodeInfoVO.setClusterType(node.getType());
                 clusterNodeInfoVO.setNodeName(node.getName());
-                clusterNodeInfoVO.setStatus(ClusterStatusEnum.DISCONNECT.value());
+                clusterNodeInfoVO.setStatus(ClusterStatusEnum.UNKNOWN.value());
                 clusterNodeInfoVO.setRole(ClusterNodeRoleEnum.getRoleNamesByFlag(node.getRole()));
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 clusterNodeInfoVO.setCreateTime(simpleDateFormat.format(node.getCreationDate()));
