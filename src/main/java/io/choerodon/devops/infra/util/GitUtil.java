@@ -329,29 +329,6 @@ public class GitUtil {
     }
 
     /**
-     * Git克隆
-     */
-    public String cloneAppMarket(String name, String commit, String remoteUrl, String adminToken) {
-        Git git = null;
-        String workingDirectory = getWorkingDirectory(name);
-        File localPathFile = new File(workingDirectory);
-        deleteDirectory(localPathFile);
-        try {
-            git = Git.cloneRepository()
-                    .setURI(remoteUrl)
-                    .setDirectory(localPathFile)
-                    .setCredentialsProvider(StringUtils.isEmpty(adminToken) ? null : new UsernamePasswordCredentialsProvider("", adminToken))
-                    .call();
-            git.checkout().setName(commit).call();
-            git.close();
-            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
-        } catch (Exception e) {
-            throw new CommonException(ERROR_GIT_CLONE, e);
-        }
-        return workingDirectory;
-    }
-
-    /**
      * 克隆公开仓库的或者根据access token克隆私库的代码所有分支
      *
      * @param dirName     directory name
@@ -611,25 +588,6 @@ public class GitUtil {
             throw new CommonException(ERROR_GIT_CLONE, e);
         }
         return workingDirectory;
-    }
-
-
-    /**
-     * 合并
-     *
-     * @param newFilePath
-     * @param oldFilePath
-     * @return
-     */
-    public Git combineAppMarket(String oldFilePath, String newFilePath) {
-        Git git = null;
-        FileUtil.copyDir(new File(oldFilePath + GIT_SUFFIX), new File(newFilePath + GIT_SUFFIX));
-        try {
-            git = Git.open(new File(newFilePath));
-        } catch (IOException e) {
-            throw new CommonException("error.git.open", e);
-        }
-        return git;
     }
 
     /**
