@@ -591,6 +591,29 @@ public class GitUtil {
     }
 
     /**
+     * Git克隆
+     */
+    public String cloneAppMarket(String name, String commit, String remoteUrl, String adminToken) {
+        Git git = null;
+        String workingDirectory = getWorkingDirectory(name);
+        File localPathFile = new File(workingDirectory);
+        deleteDirectory(localPathFile);
+        try {
+            git = Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setDirectory(localPathFile)
+                    .setCredentialsProvider(StringUtils.isEmpty(adminToken) ? null : new UsernamePasswordCredentialsProvider("", adminToken))
+                    .call();
+            git.checkout().setName(commit).call();
+            git.close();
+            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
+        } catch (Exception e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
+        }
+        return workingDirectory;
+    }
+
+    /**
      * 本地创建tag并推送远程仓库
      *
      * @param git     git repo
