@@ -719,7 +719,6 @@
             </foreach>
         </if>
         <include refid="appServiceCiSqlparams"/>
-       ) tmp
     </select>
 
     <sql id="appServiceCiSqlparams">
