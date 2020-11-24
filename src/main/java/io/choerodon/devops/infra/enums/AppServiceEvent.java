@@ -6,6 +6,10 @@ package io.choerodon.devops.infra.enums;
  * @description
  */
 public enum AppServiceEvent {
+    /**
+     * 能查看应用服务的最小权限(不包含)
+     */
+    CAN_SEE_APP_SERVICE(0),
 
     /**
      * 分支list
