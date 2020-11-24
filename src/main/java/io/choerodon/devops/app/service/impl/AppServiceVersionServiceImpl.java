@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.*;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -29,6 +30,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -140,7 +142,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         newVersion.setRef(ref);
         newVersion.setVersion(version);
         //根据配置id 查询仓库是自定义还是默认
-//        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+        if (Objects.isNull(harborRepoDTO)
+                || Objects.isNull(harborRepoDTO.getHarborRepoConfig())
+                || harborRepoDTO.getHarborRepoConfig().getRepoId().longValue() != harborConfigId) {
+            throw new CommonException("error.harbor.configuration.expiration");
+        }
         newVersion.setHarborConfigId(harborConfigId);
         newVersion.setRepoType(repoType);
 
