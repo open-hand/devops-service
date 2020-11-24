@@ -620,7 +620,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", cdEnvDeployInfoDTO.getJarName()));
             stopJar.append(System.lineSeparator());
             stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, cdEnvDeployInfoDTO.getJarName()));
-            stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
+            stopJar.append(String.format(" rm -f %s/temp-log/%s", workingPath, cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
             LOGGER.info(stopJar.toString());
             Session session = null;
             try {
@@ -629,6 +629,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
                 String logInfo = IOUtils.readFully(cmd.getInputStream()).toString();
                 String errorInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
+                log.append(stopJar.toString());
                 log.append(logInfo);
                 log.append(errorInfo);
             } finally {
@@ -684,6 +685,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            log.append(finalCmdStr.toString());
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
