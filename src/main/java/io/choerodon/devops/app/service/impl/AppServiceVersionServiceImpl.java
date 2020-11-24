@@ -236,6 +236,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 || !Objects.equals(oldVersionInDb.getImage(), newVersion.getImage())
                 || !Objects.equals(oldVersionInDb.getRef(), newVersion.getRef())
                 || !Objects.equals(oldVersionInDb.getRepository(), newVersion.getRepository())) {
+            newVersion.setId(oldVersionInDb.getId());
             newVersion.setObjectVersionNumber(oldVersionInDb.getObjectVersionNumber());
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, newVersion, "error.version.update");
         }
