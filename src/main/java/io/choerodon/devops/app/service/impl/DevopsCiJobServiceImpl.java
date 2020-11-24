@@ -103,6 +103,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     @Transactional
     public DevopsCiJobDTO create(DevopsCiJobDTO devopsCiJobDTO) {
+        devopsCiJobDTO.setId(null);
         if (devopsCiJobMapper.insertSelective(devopsCiJobDTO) != 1) {
             throw new CommonException(CREATE_JOB_FAILED);
         }
