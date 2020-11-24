@@ -146,7 +146,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (Objects.isNull(harborRepoDTO)
                 || Objects.isNull(harborRepoDTO.getHarborRepoConfig())
                 || harborRepoDTO.getHarborRepoConfig().getRepoId().longValue() != harborConfigId) {
-            throw new CommonException("error.harbor.configuration.expiration");
+            throw new DevopsCiInvalidException("error.harbor.configuration.expiration");
         }
         newVersion.setHarborConfigId(harborConfigId);
         newVersion.setRepoType(repoType);
