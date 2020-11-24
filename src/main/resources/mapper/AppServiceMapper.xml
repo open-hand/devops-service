@@ -348,16 +348,11 @@
         WHERE da.project_id = #{projectId}
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
-        <if test='isProjectOwner != null'>
-            <if test='isProjectOwner == false'>
-                AND (da.is_skip_check_permission = 1 OR (
-                da.is_skip_check_permission = 0
-                AND (da.id IN (SELECT daur.app_service_id
-                FROM devops_app_service_user_rel daur
-                WHERE daur.iam_user_id
-                = #{userId}
-                ))))
-            </if>
+        <if test='appServiceIds != null and appServiceIds.size>0'>
+            da.id IN
+            <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
         </if>
         <include refid="sqlparam"/>
     </select>
@@ -724,6 +719,10 @@
             </foreach>
         </if>
         <include refid="appServiceCiSqlparams"/>
+<<<<<<< bc28bd8d41f344be45f682062672f07c873aabd6
+=======
+       ) tmp
+>>>>>>> [IMP] 修改查询应用服务权限
     </select>
 
     <sql id="appServiceCiSqlparams">

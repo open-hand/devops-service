@@ -33,7 +33,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceDTO> listCodeRepository(@Param("projectId") Long projectId,
                                            @Param("searchParam") Map<String, Object> searchParam,
                                            @Param("params") List<String> param,
-                                           @Param("isProjectOwner") Boolean isProjectOwner,
+                                           @Param("appServiceIds") Set<Long> appServiceIds,
                                            @Param("userId") Long userId);
 
     List<AppServiceDTO> listByEnvId(@Param("projectId") Long projectId,

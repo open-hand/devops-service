@@ -651,9 +651,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
+        Set<Long> appServiceIds = new HashSet<>();
+        if (!isProjectOwnerOrRoot) {
+            appServiceIds.addAll(getMemberAppServiceIds(baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId)).getOrganizationId(), projectId, userAttrDTO.getIamUserId()));
+        }
         Page<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwnerOrRoot, userAttrDTO.getIamUserId()));
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), appServiceIds, userAttrDTO.getIamUserId()));
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getContent(), urlSlash);
@@ -2187,7 +2191,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map maps = gson.fromJson(params, Map.class);
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userId));
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), new HashSet<>(), userId));
     }
 
     @Override
