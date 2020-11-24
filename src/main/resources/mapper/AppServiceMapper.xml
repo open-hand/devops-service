@@ -719,10 +719,7 @@
             </foreach>
         </if>
         <include refid="appServiceCiSqlparams"/>
-<<<<<<< bc28bd8d41f344be45f682062672f07c873aabd6
-=======
        ) tmp
->>>>>>> [IMP] 修改查询应用服务权限
     </select>
 
     <sql id="appServiceCiSqlparams">
