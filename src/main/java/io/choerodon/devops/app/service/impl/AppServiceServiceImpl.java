@@ -2782,30 +2782,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public boolean checkAppServicePermissionForUser(Long appSvcId, Long userId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appSvcId);
-
-        // 查询用户是否在该gitlab project下
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
-        if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
-        }
-        // 判断用户是否同步成功
-        userAttrService.checkUserSync(userAttrDTO, TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        // 判断用户是否有应用服务权限
-        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(appServiceDTO.getProjectId())
-                || permissionHelper.isOrganizationRoot(userId, baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId()).getOrganizationId())
-                || appServiceDTO.getIsSkipCheckPermission()) {
-            return true;
-        } else {
-            AppServiceUserRelDTO appServiceUserRelDTO = new AppServiceUserRelDTO();
-            appServiceUserRelDTO.setAppServiceId(appSvcId);
-            appServiceUserRelDTO.setIamUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            return appServiceUserRelMapper.selectCount(appServiceUserRelDTO) > 0;
-        }
-    }
-
-    @Override
     public List<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);

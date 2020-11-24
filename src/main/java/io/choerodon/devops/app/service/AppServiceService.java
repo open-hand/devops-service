@@ -559,15 +559,6 @@ public interface AppServiceService {
     Boolean checkEnableCreateAppSvc(Long projectId);
 
     /**
-     * 校验用户是否拥有应用服务权限
-     *
-     * @param appSvcId 应用服务id
-     * @param userId   用户id
-     * @return
-     */
-    boolean checkAppServicePermissionForUser(Long appSvcId, Long userId);
-
-    /**
      * 分页查询用于创建CI流水线的应用服务
      * 1. 默认查询20条
      * 2. 要用户有权限的
