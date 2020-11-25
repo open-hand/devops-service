@@ -624,9 +624,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
-        // 校验用户是否有应用服务权限
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        permissionHelper.checkProjectOwnerOrGitlabAdmin(projectId, userId);
         // 删除流水线
         if (ciCdPipelineMapper.deleteByPrimaryKey(pipelineId) != 1) {
             throw new CommonException(DELETE_PIPELINE_FAILED);
