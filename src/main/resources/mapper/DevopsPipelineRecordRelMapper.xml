@@ -13,4 +13,18 @@
         AND dprr.creation_date <![CDATA[>=]]> #{startDate}
         AND dprr.creation_date <![CDATA[<=]]> #{endDate}
     </select>
+    <select id="queryLatestedPipelineRecord"
+            resultType="io.choerodon.devops.api.vo.pipeline.PipelineCompositeRecordVO">
+        SELECT
+            dcipr.status AS ci_status,
+            dcdpr.status AS cd_status,
+            dprr.creation_date
+        FROM
+            devops_pipeline_record_rel dprr
+        LEFT JOIN devops_ci_pipeline_record dcipr ON dcipr.id = dprr.ci_pipeline_record_id
+        LEFT JOIN devops_cd_pipeline_record dcdpr ON dcdpr.id = dprr.cd_pipeline_record_id
+        WHERE dprr.pipeline_id =  #{id}
+        order by dprr.id desc
+        limit 1
+    </select>
 </mapper>

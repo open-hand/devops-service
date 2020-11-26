@@ -159,12 +159,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         // 7.读出应用服务的分支存入devops_branch
         createDevopsBranch(gitlabProjectId, gitlabUserId, applicationRepDTO, organizationRegisterEventPayload.getUser().getId());
-
-        // 7. 发布应用
-//        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
-//        applicationReleasingDTO.setAppServiceId(applicationRepDTO.getId());
-//        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
-//        applicationMarketService.create(projectId, applicationReleasingDTO);
     }
 
     private void createDevopsBranch(Integer gitlabProjectId, Integer gitlabUserId, AppServiceRepVO appServiceRepVO, Long userId) {

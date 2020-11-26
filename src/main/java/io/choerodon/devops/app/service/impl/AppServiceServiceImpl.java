@@ -53,6 +53,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
@@ -131,6 +132,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String REAL_NAME = "realName";
     private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
     private static final String APPSERVICE = "app-service";
+    private static final String APP = "app";
 
     /**
      * CI 文件模板
@@ -549,6 +551,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS,
+            description = "同步应用服务状态", inputSchemaClass = DevOpsAppServicePayload.class)
     public Boolean updateActive(Long projectId, Long appServiceId, final Boolean active) {
         AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
 
@@ -580,6 +584,30 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             sendNotificationService.sendWhenAppServiceDisabled(appServiceId);
         }
+
+        //创建saga payload
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        // 查询创建应用服务所在的gitlab应用组
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+        devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
+        devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
+        devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(appServiceId)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefId(String.valueOf(appServiceId))
+                        .withSourceId(projectId));
         return true;
     }
 
@@ -644,8 +672,15 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<AppServiceRepVO> appServiceRepVOS = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
             if (!CollectionUtils.isEmpty(refIds)) {
                 Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APPSERVICE, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE));
+                Map<String, SagaInstanceDetails> sagaInstanceDetailsMapImport = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APP, refIds, SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT));
                 appServiceRepVOS.forEach(appServiceRepVO -> {
-                    appServiceRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(appServiceRepVO.getId())));
+                    Long createSagaId = SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(appServiceRepVO.getId()));
+                    Long importSagaId = SagaInstanceUtils.fillInstanceId(sagaInstanceDetailsMapImport, String.valueOf(appServiceRepVO.getId()));
+                    if (!Objects.isNull(createSagaId)) {
+                        appServiceRepVO.setSagaInstanceId(createSagaId);
+                    } else {
+                        appServiceRepVO.setSagaInstanceId(importSagaId);
+                    }
                 });
             }
             destination.setContent(appServiceRepVOS);
@@ -2027,46 +2062,46 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
-        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
+//        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> list;
-        if (projectOwnerOrRoot) {
-            //是否需要分页
-            if (doPage == null || doPage) {
+//        if (projectOwnerOrRoot) {
+//            //是否需要分页
+//            if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable)));
-            } else {
-                list = appServiceMapper.list(projectId, isActive, hasVersion, type,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable));
-            }
-        } else {
-            // 是否需要进行项目成员gitlab角色校验
-            Set<Long> appServiceIds;
-            if (checkMember) {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
-                if (CollectionUtils.isEmpty(appServiceIds)) {
-                    return new Page<>();
-                }
-            } else {
-                appServiceIds = null;
-            }
-            //是否需要分页
-            if (doPage == null || doPage) {
-                return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
-                        () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId));
-            } else {
-                list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId);
-            }
-        }
-
-        return PageInfoUtil.listAsPage(list);
+//            } else {
+//                list = appServiceMapper.list(projectId, isActive, hasVersion, type,
+//                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+//                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable));
+//            }
+//        } else {
+//            // 是否需要进行项目成员gitlab角色校验
+//            Set<Long> appServiceIds;
+//            if (checkMember) {
+//                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//                appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+//                if (CollectionUtils.isEmpty(appServiceIds)) {
+//                    return new Page<>();
+//                }
+//            } else {
+//                appServiceIds = null;
+//            }
+//            //是否需要分页
+//            if (doPage == null || doPage) {
+//                return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+//                        () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
+//                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+//                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId));
+//            } else {
+//                list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
+//                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+//                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId);
+//            }
+//        }
+//
+//        return PageInfoUtil.listAsPage(list);
     }
 
     @Override

@@ -73,6 +73,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
     private static final Integer ADMIN = 1;
+    private static final Long ADMIN_ID = 1L;
 
     private static final Gson gson = new Gson();
 
@@ -419,12 +420,22 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
             return;
         }
-        // 没有环境权限，状态置为跳过
-        if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
-            LOGGER.info("User have no env Permission, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
-            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-            return;
+        // 判断是否需要校验环境权限
+        // 1.需要： 没有权限将任务状态改为skipped，有权限往下执行
+        // 2.不需要：没有权限使用管理员账户部署，有权限则使用自己账户
+        if (Boolean.TRUE.equals(devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag())) {
+            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
+                LOGGER.info("User have no env Permission, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+                devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                return;
+            }
+        } else {
+            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
+                LOGGER.info("User have no env Permission, user admin account to deploy.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+                CustomContextUtil.setUserContext(ADMIN_ID);
+            }
         }
+
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setDeployInfoId(devopsCdJobRecordDTO.getDeployInfoId());
