@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 public interface DevopsClusterNodeOperatorService {
     void addNode(Long projectId, Long clusterId, String operatingId, DevopsClusterNodeVO nodeVO);
 
-    void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO);
+    void deleteNode(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Long operationRecordId);
 
-    void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role);
+    void deleteNodeRole(Long projectId, DevopsClusterNodeDTO devopsClusterNodeDTO, Integer role, Long operationRecordId);
 }

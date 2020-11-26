@@ -774,11 +774,11 @@ public class AppServiceController {
 
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询项目下应用服务的数量")
-    @GetMapping("/list_by_project_id")
-    public ResponseEntity<Map<Long, Integer>> countByProjectId(
+    @PostMapping("/list_by_project_ids")
+    public ResponseEntity<Map<Long, Integer>> countByProjectIds(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "longList") List<Long> projectIds) {
+            @RequestBody List<Long> projectIds) {
         return new ResponseEntity<>(applicationServiceService.countByProjectId(projectIds), HttpStatus.OK);
     }
 

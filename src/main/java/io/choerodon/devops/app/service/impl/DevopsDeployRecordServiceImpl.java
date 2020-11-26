@@ -226,8 +226,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId) {
         Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
 
-        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.queryEnvDeployRecordByCommandId(commandId);
-        DeployRecordVO deployRecordVO = ConvertUtils.convertObject(devopsDeployRecordDTO, DeployRecordVO.class);
+        DeployRecordVO deployRecordVO = devopsDeployRecordMapper.queryEnvDeployRecordByCommandId(commandId);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(deployRecordVO.getDeployPayloadId());
         if (devopsEnvironmentDTO != null) {
             // 计算集群状态

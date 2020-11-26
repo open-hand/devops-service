@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ClusterHostConnectionVO;
 import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
-import io.choerodon.devops.api.vo.NodeDeleteCheckVO;
-import io.choerodon.devops.api.vo.NodeRoleDeleteCheckVO;
+import io.choerodon.devops.api.vo.NodeOperatingResultVO;
 import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -45,34 +44,33 @@ public class DevopsClusterNodeController {
             @ApiParam(value = "node id")
             @PathVariable(value = "node_id") @Encrypt Long nodeId,
             @ApiParam(value = "role")
-            @PathVariable(value = "role")  Integer role) {
+            @PathVariable(value = "role") Integer role) {
         return ResponseEntity.ok(devopsClusterNodeService.checkEnableDeleteRole(projectId, nodeId, role));
     }
 
     @ApiOperation("删除节点")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{node_id}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<Long> delete(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
             @PathVariable(value = "node_id") @Encrypt Long nodeId) {
-        devopsClusterNodeService.delete(projectId, nodeId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(devopsClusterNodeService.delete(projectId, nodeId));
     }
 
     @ApiOperation("删除节点角色")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{node_id}/roles/{role}")
-    public ResponseEntity<Void> deleteRole(
+    public ResponseEntity<Long> deleteRole(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "node id")
             @PathVariable(value = "node_id") @Encrypt Long nodeId,
             @PathVariable(value = "role") Integer role) {
-        devopsClusterNodeService.deleteRole(projectId, nodeId, role);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(devopsClusterNodeService.deleteRole(projectId, nodeId, role));
     }
+
     @ApiOperation("添加节点")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping
@@ -84,6 +82,16 @@ public class DevopsClusterNodeController {
             @RequestBody DevopsClusterNodeVO nodeVO) {
         devopsClusterNodeService.addNode(projectId, clusterId, nodeVO);
         return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("校验操作结果")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/check_operating_result")
+    public ResponseEntity<NodeOperatingResultVO> checkOperatingResult(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @RequestParam(value = "operationRecordId") Long operationRecordId) {
+        return ResponseEntity.ok(devopsClusterNodeService.checkOperatingResult(projectId,operationRecordId));
     }
 
 }

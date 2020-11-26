@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
 import io.choerodon.devops.infra.constant.ClusterCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
+import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 
 /**
@@ -29,18 +30,15 @@ public class DevopsClusterOperatingRecordServiceImpl implements DevopsClusterOpe
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveOperatingRecord(Long clusterId, Long nodeId, String operatingType, String status, String errorMsg) {
-        try {
-            DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO();
-            devopsClusterOperationRecordDTO.setClusterId(clusterId);
-            devopsClusterOperationRecordDTO.setNodeId(nodeId);
-            devopsClusterOperationRecordDTO.setType(operatingType);
-            devopsClusterOperationRecordDTO.setStatus(status);
-            devopsClusterOperationRecordDTO.setErrorMsg(errorMsg);
-            devopsClusterOperationRecordMapper.insert(devopsClusterOperationRecordDTO);
-        } catch (Exception e) {
-            LOGGER.info("save cluster operating record failed.", e);
-        }
+    public DevopsClusterOperationRecordDTO saveOperatingRecord(Long clusterId, Long nodeId, String operatingType, String status, String errorMsg) {
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = new DevopsClusterOperationRecordDTO();
+        devopsClusterOperationRecordDTO.setClusterId(clusterId);
+        devopsClusterOperationRecordDTO.setNodeId(nodeId);
+        devopsClusterOperationRecordDTO.setType(operatingType);
+        devopsClusterOperationRecordDTO.setStatus(status);
+        devopsClusterOperationRecordDTO.setErrorMsg(errorMsg);
+        devopsClusterOperationRecordMapper.insert(devopsClusterOperationRecordDTO);
+        return devopsClusterOperationRecordMapper.selectByPrimaryKey(devopsClusterOperationRecordDTO.getId());
     }
 
     @Override
@@ -48,5 +46,19 @@ public class DevopsClusterOperatingRecordServiceImpl implements DevopsClusterOpe
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
         return devopsClusterOperationRecordMapper.queryLatestRecordByNodeId(nodeId);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatusInNewTrans(Long operationRecordId, ClusterOperationStatusEnum statusEnum, String errorMsg) {
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordMapper.selectByPrimaryKey(operationRecordId);
+        devopsClusterOperationRecordDTO.setStatus(statusEnum.value());
+        devopsClusterOperationRecordDTO.setErrorMsg(errorMsg);
+        devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+    }
+
+    @Override
+    public DevopsClusterOperationRecordDTO queryById(Long operationRecordId) {
+        return devopsClusterOperationRecordMapper.selectByPrimaryKey(operationRecordId);
     }
 }

@@ -618,9 +618,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (cdEnvDeployInfoDTO != null && !StringUtils.isEmpty(cdEnvDeployInfoDTO.getJarName())) {
             StringBuilder stopJar = new StringBuilder();
             stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", cdEnvDeployInfoDTO.getJarName()));
-            stopJar.append(System.lineSeparator());
-            stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, cdEnvDeployInfoDTO.getJarName()));
-            stopJar.append(String.format(" && rm -f %s/temp-log/%s", workingPath, cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
+            stopJar.append(String.format(";rm -f %s/temp-jar/%s", workingPath, cdEnvDeployInfoDTO.getJarName()));
+            stopJar.append(String.format(";rm -f %s/temp-log/%s", workingPath, cdEnvDeployInfoDTO.getJarName().replace(".jar", ".log")));
+            LOGGER.info(stopJar.toString());
             Session session = null;
             try {
                 session = ssh.startSession();

@@ -266,6 +266,7 @@ public class SagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.ORG_USER_CREAT,
             description = "组织层创建用户并分配角色",
             sagaCode = SagaTaskCodeConstants.ORG_USER_CREAT,
+            concurrentLimitNum = 20,
             maxRetryCount = 5, seq = 1)
     public String createAndUpdateUser(String payload) {
         LOGGER.info("Org create user: the payload is {}", payload);

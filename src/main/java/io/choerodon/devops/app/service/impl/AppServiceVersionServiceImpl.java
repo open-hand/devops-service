@@ -36,6 +36,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -125,6 +126,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     /**
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void create(String image, String harborConfigId, String repoType, String token, String version, String commit, MultipartFile files, String ref) {
         try {
@@ -142,27 +144,32 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
-        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+        AppServiceVersionDTO newVersion = new AppServiceVersionDTO();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        AppServiceVersionDTO newApplicationVersion = baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
-        appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());
-        appServiceVersionDTO.setImage(image);
-        appServiceVersionDTO.setCommit(commit);
-        appServiceVersionDTO.setRef(ref);
-        appServiceVersionDTO.setVersion(version);
+        AppServiceVersionDTO oldVersionInDb = baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
+        newVersion.setAppServiceId(appServiceDTO.getId());
+        newVersion.setImage(image);
+        newVersion.setCommit(commit);
+        newVersion.setRef(ref);
+        newVersion.setVersion(version);
         //根据配置id 查询仓库是自定义还是默认
-//        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
-        appServiceVersionDTO.setHarborConfigId(harborConfigId);
-        appServiceVersionDTO.setRepoType(repoType);
+        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+        if (Objects.isNull(harborRepoDTO)
+                || Objects.isNull(harborRepoDTO.getHarborRepoConfig())
+                || harborRepoDTO.getHarborRepoConfig().getRepoId().longValue() != harborConfigId) {
+            throw new DevopsCiInvalidException("error.harbor.configuration.expiration");
+        }
+        newVersion.setHarborConfigId(harborConfigId);
+        newVersion.setRepoType(repoType);
 
         // 查询helm仓库配置id
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTH_TYPE_PULL);
         ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
         String helmUrl = helmConfig.getUrl();
-        appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
+        newVersion.setHelmConfigId(devopsConfigDTO.getId());
 
-        appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
+        newVersion.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
 
         // 取commit的一部分作为文件路径
         String commitPart = commit == null ? "" : commit.substring(0, 8);
@@ -172,7 +179,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
 
-        //上传chart包到chartmuseum
+        // 上传chart包到 chart museum
         chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
 
         FileUtil.unTarGZ(path, destFilePath);
@@ -193,47 +200,53 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             throw new CommonException(e);
         }
 
-        // 有需求让重新上传chart包，所以校验重复推后
-        if (newApplicationVersion != null) {
-            try {
-                // 重新上传chart包后更新values
-                updateValues(newApplicationVersion.getValueId(), values, newApplicationVersion);
-            } finally {
-                FileUtil.deleteDirectories(storeFilePath);
-            }
-            return;
-        }
-
         try {
             FileUtil.checkYamlFormat(values);
         } catch (CommonException e) {
             FileUtil.deleteDirectories(storeFilePath, destFilePath);
             throw new CommonException("The format of the values.yaml in the chart is invalid!", e);
         }
-        appServiceVersionValueDTO.setValue(values);
-        try {
-            appServiceVersionDTO.setValueId(appServiceVersionValueService
-                    .baseCreate(appServiceVersionValueDTO).getId());
-        } catch (Exception e) {
-            FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException(ERROR_VERSION_INSERT, e);
+
+        // 更新版本纪录和values纪录
+        if (oldVersionInDb != null) {
+            // 重新上传chart包后更新values
+            updateValues(oldVersionInDb.getValueId(), values);
+            updateVersion(oldVersionInDb, newVersion);
+        } else {
+            // 新建版本时的操作
+            appServiceVersionValueDTO.setValue(values);
+            try {
+                newVersion.setValueId(appServiceVersionValueService
+                        .baseCreate(appServiceVersionValueDTO).getId());
+            } catch (Exception e) {
+                FileUtil.deleteDirectories(storeFilePath, destFilePath);
+                throw new CommonException(ERROR_VERSION_INSERT, e);
+            }
+
+            AppServiceVersionReadmeDTO appServiceVersionReadmeDTO = new AppServiceVersionReadmeDTO();
+            appServiceVersionReadmeDTO.setReadme(FileUtil.getReadme(destFilePath));
+            appServiceVersionReadmeMapper.insert(appServiceVersionReadmeDTO);
+
+            newVersion.setReadmeValueId(appServiceVersionReadmeDTO.getId());
+            baseCreate(newVersion);
+            // 触发CD流水线, 鉴于0.24版本时将移除这个入口(要移除CD流水线)，所以0.23版本的修改不支持更新版本时触发CD流水线
+            checkAutoDeploy(newVersion);
         }
 
-        AppServiceVersionReadmeDTO appServiceVersionReadmeDTO = new AppServiceVersionReadmeDTO();
-        appServiceVersionReadmeDTO.setReadme(FileUtil.getReadme(destFilePath));
-        appServiceVersionReadmeMapper.insert(appServiceVersionReadmeDTO);
-
-        appServiceVersionDTO.setReadmeValueId(appServiceVersionReadmeDTO.getId());
-        baseCreate(appServiceVersionDTO);
 
         FileUtil.deleteDirectories(destFilePath, storeFilePath);
-        //流水线
-        checkAutoDeploy(appServiceVersionDTO);
         //生成版本成功后发送webhook json
-        sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
+        sendNotificationService.sendWhenAppServiceVersion(newVersion, appServiceDTO, projectDTO);
     }
 
-    private void updateValues(Long oldValuesId, String values, AppServiceVersionDTO applicationVersion) {
+    private void updateVersion(AppServiceVersionDTO oldVersionInDb, AppServiceVersionDTO newVersion) {
+        newVersion.setId(oldVersionInDb.getId());
+        newVersion.setLastUpdateDate(new Date());
+        newVersion.setObjectVersionNumber(oldVersionInDb.getObjectVersionNumber());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, newVersion, "error.version.update");
+    }
+
+    private void updateValues(Long oldValuesId, String values) {
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         appServiceVersionValueDTO.setId(oldValuesId);
 
@@ -247,8 +260,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (!Objects.equals(old.getValue(), values)) {
             appServiceVersionValueDTO.setValue(values);
             appServiceVersionValueService.baseUpdate(appServiceVersionValueDTO);
-            applicationVersion.setLastUpdateDate(new Date());
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, applicationVersion, "error.version.update");
         }
     }
 

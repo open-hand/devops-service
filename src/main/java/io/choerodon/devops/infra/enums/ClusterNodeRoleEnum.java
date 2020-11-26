@@ -15,16 +15,25 @@ public enum ClusterNodeRoleEnum implements Type {
     /**
      * worker节点
      */
-    WORKER,
+    WORKER("worker"),
     /**
      * etcd节点
      */
-    ETCD,
+    ETCD("etcd"),
     /**
      * master节点
      */
-    MASTER;
+    MASTER("master");
 
+    private String value;
+
+    ClusterNodeRoleEnum(String value) {
+        this.value = value;
+    }
+
+    public String value() {
+        return value;
+    }
     @Override
     public int getMask() {
         return (1 << ordinal());
@@ -111,6 +120,31 @@ public enum ClusterNodeRoleEnum implements Type {
      */
     public static boolean isMasterAndEtcdAndWorker(int flag) {
         return MASTER.isSet(flag) && ETCD.isSet(flag) && WORKER.isSet(flag);
+    }
+
+    public static String getRoleNamesByFlag(int flag) {
+        if (MASTER.getMask() == flag) {
+            return MASTER.value();
+        }
+        if (WORKER.getMask() == flag) {
+            return WORKER.value();
+        }
+        if (ETCD.getMask() == flag) {
+            return ETCD.value();
+        }
+        if ((MASTER.getMask() + WORKER.getMask()) == flag) {
+            return MASTER.value() + "," + WORKER.value();
+        }
+        if ((MASTER.getMask() + ETCD.getMask()) == flag) {
+            return MASTER.value() + "," + ETCD.value();
+        }
+        if ((WORKER.getMask() + ETCD.getMask()) == flag) {
+            return WORKER.value() + "," + ETCD.value();
+        }
+        if ((MASTER.getMask() + WORKER.getMask() + ETCD.getMask()) == flag) {
+            return MASTER.value() + "," + WORKER.value() + "," + ETCD.value();
+        }
+        return null;
     }
 
     public static Set<Integer> listMasterRoleSet() {

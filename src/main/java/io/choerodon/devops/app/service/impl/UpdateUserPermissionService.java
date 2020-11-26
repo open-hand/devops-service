@@ -66,7 +66,8 @@ public abstract class UpdateUserPermissionService {
                 }
                 UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(e));
                 // 目前type一定为env
-                List<Long> gitlabProjectIds = devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId());
+                List<Long> gitlabProjectIds = type.equals("env") ?
+                        devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId()) : null;
                 if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
                     gitlabProjectIds.stream().filter(Objects::nonNull).forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 }
