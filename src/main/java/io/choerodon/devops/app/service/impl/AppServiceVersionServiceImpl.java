@@ -210,7 +210,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         // 更新版本纪录和values纪录
         if (oldVersionInDb != null) {
             // 重新上传chart包后更新values
-            updateValues(oldVersionInDb.getValueId(), values, oldVersionInDb);
+            updateValues(oldVersionInDb.getValueId(), values);
             updateVersion(oldVersionInDb, newVersion);
         } else {
             // 新建版本时的操作
@@ -240,21 +240,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     private void updateVersion(AppServiceVersionDTO oldVersionInDb, AppServiceVersionDTO newVersion) {
-        // 这些字段有变化才需要更新版本的值
-        if (!Objects.equals(oldVersionInDb.getCommit(), newVersion.getCommit())
-                || !Objects.equals(oldVersionInDb.getRepoType(), newVersion.getRepoType())
-                || !Objects.equals(oldVersionInDb.getHelmConfigId(), newVersion.getHelmConfigId())
-                || !Objects.equals(oldVersionInDb.getHarborConfigId(), newVersion.getHarborConfigId())
-                || !Objects.equals(oldVersionInDb.getImage(), newVersion.getImage())
-                || !Objects.equals(oldVersionInDb.getRef(), newVersion.getRef())
-                || !Objects.equals(oldVersionInDb.getRepository(), newVersion.getRepository())) {
-            newVersion.setId(oldVersionInDb.getId());
-            newVersion.setObjectVersionNumber(oldVersionInDb.getObjectVersionNumber());
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, newVersion, "error.version.update");
-        }
+        newVersion.setId(oldVersionInDb.getId());
+        newVersion.setLastUpdateDate(new Date());
+        newVersion.setObjectVersionNumber(oldVersionInDb.getObjectVersionNumber());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, newVersion, "error.version.update");
     }
 
-    private void updateValues(Long oldValuesId, String values, AppServiceVersionDTO applicationVersion) {
+    private void updateValues(Long oldValuesId, String values) {
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         appServiceVersionValueDTO.setId(oldValuesId);
 
@@ -268,8 +260,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (!Objects.equals(old.getValue(), values)) {
             appServiceVersionValueDTO.setValue(values);
             appServiceVersionValueService.baseUpdate(appServiceVersionValueDTO);
-            applicationVersion.setLastUpdateDate(new Date());
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, applicationVersion, "error.version.update");
         }
     }
 
