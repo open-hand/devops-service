@@ -49,6 +49,8 @@ public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
 
     private String jarName; // jar 名称
 
+    private Boolean checkEnvPermissionFlag;     // 部署时是否校验环境权限
+
     public Long getCdJobId() {
         return cdJobId;
     }
@@ -129,6 +131,14 @@ public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
         this.projectId = projectId;
     }
 
+    public Boolean getCheckEnvPermissionFlag() {
+        return checkEnvPermissionFlag;
+    }
+
+    public void setCheckEnvPermissionFlag(Boolean checkEnvPermissionFlag) {
+        this.checkEnvPermissionFlag = checkEnvPermissionFlag;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdEnvDeployInfoDTO{" +
@@ -140,6 +150,9 @@ public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
                 ", deployType='" + deployType + '\'' +
                 ", instanceId=" + instanceId +
                 ", instanceName='" + instanceName + '\'' +
+                ", cdJobId=" + cdJobId +
+                ", jarName='" + jarName + '\'' +
+                ", checkEnvPermissionFlag=" + checkEnvPermissionFlag +
                 '}';
     }
 }

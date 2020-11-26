@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
