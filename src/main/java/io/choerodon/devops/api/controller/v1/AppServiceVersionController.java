@@ -1,9 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -22,6 +19,7 @@ import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
+import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -183,7 +181,7 @@ public class AppServiceVersionController {
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "根据版本id查询版本信息")
+    @ApiOperation(value = "根据版本id查询版本信息(新用的地方用下面的接口，不要用这个)")
     @PostMapping(value = "/list_by_versionIds")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryAppServiceVersionsByIds(
             @Encrypt
@@ -193,6 +191,28 @@ public class AppServiceVersionController {
             @ApiParam(value = "服务ID", required = true)
             @RequestParam Long[] versionIds) {
         return Optional.ofNullable(appServiceVersionService.listByAppServiceVersionIds(Arrays.asList(versionIds)))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+    /**
+     * 根据版本id查询版本信息
+     *
+     * @param projectId  项目ID
+     * @param versionIds 服务版本ID
+     * @return ApplicationVersionRespVO
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据版本id查询版本信息")
+    @PostMapping(value = "/list_by_version_ids")
+    public ResponseEntity<List<AppServiceVersionRespVO>> listAppServiceVersionsByIds(
+            @Encrypt
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "应用服务id", required = true)
+            @RequestBody Set<Long> versionIds) {
+        return Optional.ofNullable(appServiceVersionService.listByAppServiceVersionIds(new ArrayList<>(versionIds)))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
