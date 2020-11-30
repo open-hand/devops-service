@@ -1493,7 +1493,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
-            checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName());
+            checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
@@ -1567,8 +1567,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCiJobDTO.setName(deployConfigVO.getJarDeploy().getPipelineTask());
         }
         if (!StringUtils.isEmpty(devopsCiJobDTO.getName())) {
-            if (CollectionUtils.isEmpty(devopsCiJobMapper.select(devopsCiJobDTO))) {
+            DevopsCiJobDTO ciJobDTO = devopsCiJobMapper.selectOne(devopsCiJobDTO);
+            if (ciJobDTO == null) {
                 throw new CommonException("error.cd.host.job.union.ci.job", devopsCiJobDTO.getName(), cdHostName);
+            }
+            if (!ciJobDTO.getTriggerType().equals(devopsCdJobDTO.getTriggerType())) {
+                throw new CommonException("error.ci.cd.trigger.type.invalid");
             }
         }
     }
