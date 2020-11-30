@@ -40,7 +40,8 @@ public class RetrofitHandler {
                 + configurationProperties.getPassword();
         String token = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
 
-        OkHttpClient okHttpClient = getOkHttpClient(configurationProperties.getInsecureSkipTlsVerify(), configurationProperties.getType(), token);
+        // 跳过tls校验
+        OkHttpClient okHttpClient = getOkHttpClient(true, configurationProperties.getType(), token);
 
         return new Retrofit.Builder()
                 .baseUrl(configurationProperties.getBaseUrl())

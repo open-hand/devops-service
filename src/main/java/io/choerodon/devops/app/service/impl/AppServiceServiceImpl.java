@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -34,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -53,7 +51,6 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
@@ -68,14 +65,11 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.task.DevopsTask;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.RoleDTO;
@@ -85,7 +79,10 @@ import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
-import io.choerodon.devops.infra.feign.*;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
+import io.choerodon.devops.infra.feign.RdupmClient;
+import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -102,12 +99,10 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  * Created by younger on 2018/3/28.
  */
 @Service
-@EnableConfigurationProperties(HarborConfigurationProperties.class)
 public class AppServiceServiceImpl implements AppServiceService {
     public static final String SEVERITIES = "severities";
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
-    private static final String HARBOR = "harbor";
     private static final String AUTHTYPE_PUSH = "push";
     private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
@@ -155,8 +150,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
-    @Autowired
-    private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -1198,57 +1191,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceRepVO queryByCode(Long projectId, String code) {
         return ConvertUtils.convertObject(baseQueryByCode(code, projectId), AppServiceRepVO.class);
-    }
-
-    @Override
-    public Boolean checkHarbor(String url, String userName, String password, String project, String email) {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(url);
-        configurationProperties.setUsername(userName);
-        configurationProperties.setPassword(password);
-        configurationProperties.setInsecureSkipTlsVerify(harborConfigurationProperties.getInsecureSkipTlsVerify());
-        configurationProperties.setProject(project);
-        configurationProperties.setType(HARBOR);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        HarborClient harborClient = retrofit.create(HarborClient.class);
-        Call<User> getUser = harborClient.getCurrentUser();
-        Response<User> userResponse;
-        try {
-            userResponse = getUser.execute();
-            if (userResponse.raw().code() != 200) {
-                if (userResponse.raw().code() == 401) {
-                    throw new CommonException("error.harbor.user.password");
-                } else {
-                    throw new CommonException(userResponse.errorBody().string());
-                }
-            }
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
-        //校验用户的邮箱是否匹配
-        if (!email.equals(userResponse.body().getEmail())) {
-            throw new CommonException("error.user.email.not.equal");
-        }
-
-        //如果传入了project,校验用户是否有project的权限
-        if (project != null) {
-            Call<List<ProjectDetail>> listProject = harborClient.listProject(project);
-            Response<List<ProjectDetail>> projectResponse;
-            try {
-                projectResponse = listProject.execute();
-                if (projectResponse.body() == null) {
-                    throw new CommonException("error.harbor.project.permission");
-                } else {
-                    List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
-                    if (projects.isEmpty()) {
-                        throw new CommonException("error.harbor.project.permission");
-                    }
-                }
-            } catch (IOException e) {
-                throw new CommonException(e);
-            }
-        }
-        return true;
     }
 
     @Override

@@ -6,7 +6,6 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.devops.app.service.AgentPodService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.ProjectConfigHarborService
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
@@ -103,12 +102,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Primary
     TransactionalProducer transactionalProducer() {
         detachedMockFactory.Mock(TransactionalProducer)
-    }
-
-    @Bean("mockProjectConfigHarborService")
-    @Primary
-    ProjectConfigHarborService ProjectConfigHarborService() {
-        detachedMockFactory.Mock(ProjectConfigHarborService)
     }
 
     @PostConstruct
