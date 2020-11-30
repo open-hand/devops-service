@@ -1555,7 +1555,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return appServiceDeployDTO;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName) {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
