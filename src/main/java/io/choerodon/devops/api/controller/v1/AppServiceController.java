@@ -442,35 +442,6 @@ public class AppServiceController {
 //    }
 
     /**
-     * 校验harbor配置信息是否正确
-     *
-     * @param url      harbor地址
-     * @param userName harbor用户名
-     * @param password harbor密码
-     * @param project  harbor项目
-     * @param email    harbor邮箱
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "校验harbor配置信息是否正确")
-    @GetMapping(value = "/check_harbor")
-    public void checkHarbor(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "harbor地址", required = true)
-            @RequestParam String url,
-            @ApiParam(value = "harbor用户名", required = true)
-            @RequestParam String userName,
-            @ApiParam(value = "harbor密码", required = true)
-            @RequestParam String password,
-            @ApiParam(value = "harborProject")
-            @RequestParam(required = false) String project,
-            @ApiParam(value = "harbor邮箱", required = true)
-            @RequestParam String email) {
-        applicationServiceService.checkHarbor(url, userName, password, project, email);
-    }
-
-
-    /**
      * 校验chart仓库配置信息是否正确
      *
      * @param configVO chartMuseum信息

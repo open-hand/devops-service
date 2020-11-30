@@ -19,11 +19,6 @@ spring:
       force: true
       enabled: true
 services:
-  harbor:
-    baseUrl: "harbor.example.com" # harbor地址
-    username: "123456" # harbor用户名
-    password: "123456" # 对应harbor用户名的密码
-    insecureSkipTlsVerify: false
   gitlab:
     url: "gitlab.example.com" # gitlab地址
     sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
