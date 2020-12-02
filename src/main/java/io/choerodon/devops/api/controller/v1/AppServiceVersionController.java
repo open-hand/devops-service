@@ -18,8 +18,8 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
+import io.choerodon.devops.api.vo.AppServiceVersionWithHelmConfigVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -403,5 +403,18 @@ public class AppServiceVersionController {
     ) {
         appServiceVersionService.batchDelete(projectId, appServiceId, versionIds);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "根据id查询版本信息及helm配置/内部接口，market-service用")
+    @GetMapping(value = "/version_with_helm_config")
+    public ResponseEntity<AppServiceVersionWithHelmConfigVO> queryVersionWithHelmConfig(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "应用服务id", required = true)
+            @RequestParam(value = "app_service_id") Long appServiceId) {
+        return ResponseEntity.ok(appServiceVersionService.queryVersionWithHelmConfig(projectId, appServiceId));
     }
 }
