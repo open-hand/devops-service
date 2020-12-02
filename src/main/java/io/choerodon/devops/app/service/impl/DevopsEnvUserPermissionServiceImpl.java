@@ -83,11 +83,15 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Override
     public void checkEnvDeployPermission(Long userId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        // 判断环境是否跳过权限校验
+        if (Boolean.TRUE.equals(devopsEnvironmentDTO.getSkipCheckPermission())) {
+            return;
+        }
         // 判断当前用户是否是项目所有者或者root，如果是，直接跳过校验，如果不是，校验环境权限
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(devopsEnvironmentDTO.getProjectId(), userId)) {
             DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO(envId, userId);
             devopsEnvUserPermissionDO = devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO);
-            if (devopsEnvUserPermissionDO != null && !devopsEnvUserPermissionDO.getPermitted()) {
+            if (devopsEnvUserPermissionDO == null) {
                 throw new CommonException("error.env.user.permission.get");
             }
         }
