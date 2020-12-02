@@ -134,8 +134,6 @@ public class AppServiceServiceImpl implements AppServiceService {
      */
     private static final String CI_FILE_TEMPLATE;
 
-    @Autowired
-    DevopsSagaHandler devopsSagaHandler;
     private final Gson gson = new Gson();
     private final JSON json = new JSON();
     @Value("${services.gitlab.url}")
