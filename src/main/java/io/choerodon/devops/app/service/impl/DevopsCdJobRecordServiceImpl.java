@@ -44,6 +44,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
     @Autowired
+    @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;

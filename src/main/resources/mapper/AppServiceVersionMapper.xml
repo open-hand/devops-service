@@ -528,9 +528,12 @@
         dasv.id,
         dasv.version,
         dasv.app_service_id,
+        dasv.harbor_config_id,
+        dasv.repo_type,
         das. CODE AS appServiceCode,
         das.`name` AS appServiceName,
-        das.type AS appServiceType
+        das.type AS appServiceType,
+        das.project_id AS projectId
         FROM
         devops_app_service_version dasv
         JOIN devops_app_service das ON das.id = dasv.app_service_id
@@ -541,12 +544,7 @@
                 #{versionId}
             </foreach>
         </if>
-        ORDER BY
-        CASE dasv.id
-        <foreach collection="appServiceVersionIds" index="index" item="versionId">
-            WHEN #{versionId} THEN #{index}
-        </foreach>
-        END
+
     </select>
     <delete id="deleteByIds">
         DELETE FROM devops_app_service_version
