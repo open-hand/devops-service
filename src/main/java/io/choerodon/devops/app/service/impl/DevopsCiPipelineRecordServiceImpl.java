@@ -242,7 +242,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         if (pipelineWebHookVO.getObjectAttributes().getStatus().equals(JobStatusEnum.FAILED.value())) {
             sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(),
-                    MessageCodeConstants.PIPELINE_FAILED, devopsCiPipelineRecordDTO.getCreatedBy(), null, null);
+                    MessageCodeConstants.PIPELINE_FAILED, devopsCiPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
         }
     }
 

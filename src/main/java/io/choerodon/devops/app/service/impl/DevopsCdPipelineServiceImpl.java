@@ -291,7 +291,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
         sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                MessageCodeConstants.PIPELINE_FAILED, userId, null, null);
+                MessageCodeConstants.PIPELINE_FAILED, userId, null, new HashMap<>());
     }
 
     private void updateFirstStage(Long pipelineRecordId) {
@@ -792,7 +792,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
                 // 发送失败通知
                 sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                        MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
+                        MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, new HashMap<>());
             }
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
             // 审核不通过
