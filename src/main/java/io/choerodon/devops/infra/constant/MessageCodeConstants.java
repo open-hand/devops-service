@@ -30,7 +30,6 @@ public class MessageCodeConstants {
     public static final String PIPELINE_AUDIT = "PIPELINEAUDIT";
     public static final String PIPELINE_STOP = "PIPELINESTOP";
     public static final String PIPELINE_PASS = "PIPELINEPASS";
-    public static final String PIPELINE_STAGE_AUDIT = "PIPELINESTAGEAUDIT";
     public static final String CREATE_INSTANCE_SUCCESS = "CREATEINSTANCESUCCESS";
     public static final String CREATE_INSTANCE_FAIL = "CREATEINSTANCEFAIL";
     public static final String UPDATE_INSTANCE_SUCCESS = "UPDATEINSTANCESUCCESS";

@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
+import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -32,8 +33,9 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
+import io.choerodon.devops.infra.feign.operator.HzeroMessageClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.CiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -91,6 +93,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     @Lazy
     private PipelineRecordService pipelineRecordService;
+    @Autowired
+    private HzeroMessageClientOperator messageClientOperator;
+    @Autowired
+    private DevopsCiPipelineRecordService ciPipelineRecordService;
+    @Autowired
+    private CiCdPipelineMapper ciCdPipelineMapper;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -754,7 +762,40 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         recordRelDTO.setCdPipelineRecordId(record.getId());
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
         params.put("pipelineIdRecordId", relDTO.getId().toString());
+        addSpecifierList(type, projectDTO.getId(), users);
         sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
+    }
+
+    private void sendCiPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
+        DevopsCiPipelineRecordDTO record = ciPipelineRecordService.queryById(pipelineRecordId);
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(record.getCiPipelineId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
+        LOGGER.info(">>>>>>>>>>>>>>>> sendCiPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCiPipelineRecordDTO is {}", record.toString());
+        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(record.getCiPipelineId()));
+        //pipelineRecordId是relID
+        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+        recordRelDTO.setCiPipelineRecordId(record.getId());
+        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
+        params.put("pipelineIdRecordId", relDTO.getId().toString());
+        addSpecifierList(type, projectDTO.getId(), users);
+        sendNotices(type, users, constructCiParamsForPipeline(ciCdPipelineDTO.getName(), projectDTO, params, stageId, stageName), projectDTO.getId());
+    }
+
+    private void addSpecifierList(String messageCode, Long projectId, List<Receiver> users) {
+        if (messageCode.equals(MessageCodeConstants.PIPELINE_FAILED)
+                || messageCode.equals(MessageCodeConstants.PIPELINE_PASS)) {
+            List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
+            MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO("devops", projectId, messageCode);
+            List<Long> specifierList = new ArrayList<>();
+            if (messageSettingVO != null) {
+                messageSettingVO.getTargetUserDTOS().forEach(t -> {
+                    if (t.getType().equals(TriggerObject.SPECIFIER.getObject()) && !userIds.contains(t.getUserId())) {
+                        specifierList.add(t.getUserId());
+                    }
+                });
+            }
+            baseServiceClientOperator.listUsersByIds(specifierList).forEach(t -> users.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+        }
     }
 
     private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
@@ -778,6 +819,18 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .put("organizationId", projectDTO.getOrganizationId())
                 .put("stageId", stageId)
                 .put("triggerType", record.getTriggerType())
+                .put("stageName", stageName)
+                .putAll(params)
+                .build();
+    }
+
+    private Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+        return StringMapBuilder.newBuilder()
+                .put("pipelineName", pipelineName)
+                .put("projectId", projectDTO.getId())
+                .put("projectName", projectDTO.getName())
+                .put("organizationId", projectDTO.getOrganizationId())
+                .put("stageId", stageId)
                 .put("stageName", stageName)
                 .putAll(params)
                 .build();
@@ -1084,6 +1137,25 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    public void sendCiPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params) {
+        doWithTryCatchAndLog(
+                () -> {
+                    String actualEmail = email;
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+                    if (iamUserDTO == null) {
+                        LogUtil.loggerInfoObjectNullWithId("User", userId, LOGGER);
+                        return;
+                    }
+                    if (actualEmail == null) {
+                        actualEmail = iamUserDTO.getEmail();
+
+                    }
+                    sendCiPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
+                },
+                ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
+    }
+
+    @Override
     public void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params) {
         doWithTryCatchAndLog(
                 () -> sendCdPipelineMessage(pipelineRecordId, type, receivers, params, null, null),
@@ -1144,8 +1216,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             break;
 
                     }
-                    webHookParams.put("objectKind",code);
-                    webHookParams.put("eventName",code);
+                    webHookParams.put("objectKind", code);
+                    webHookParams.put("eventName", code);
                     sendNotices(code, receivers, webHookParams, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Failed to send message WhenInstanceStatusUpdate.", ex)
@@ -1224,6 +1296,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
         messageClient.async().sendMessage(sender);
     }
+
     private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
