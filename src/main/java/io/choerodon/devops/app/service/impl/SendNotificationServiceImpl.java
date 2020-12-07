@@ -96,6 +96,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     private HzeroMessageClientOperator messageClientOperator;
     @Autowired
+    @Lazy
     private DevopsCiPipelineRecordService ciPipelineRecordService;
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
