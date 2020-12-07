@@ -51,6 +51,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -140,6 +141,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private TestServiceClientOperator testServiceClientoperator;
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
+    @Autowired
+    private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
 
     @Override
     @Transactional
@@ -162,6 +165,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
             if (devopsCdPipelineRecordDTO == null) {
                 LOGGER.info("current pipeline have no match record.", pipelineAttr.getId());
+                DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
+                record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(record);
+                sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCiPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
                 return;
             }
             // 执行条件：cd流水线记录状态为pending
