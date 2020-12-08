@@ -157,6 +157,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdStageService devopsCdStageService,
             DevopsCdAuditService devopsCdAuditService,
             DevopsCdJobService devopsCdJobService,
+            @Lazy
             DevopsCdPipelineRecordService devopsCdPipelineRecordService,
             DevopsCdJobRecordService devopsCDJobRecordService,
             DevopsCdStageRecordService devopsCdStageRecordService,
