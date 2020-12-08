@@ -56,12 +56,6 @@ public class HarborServiceImpl implements HarborService {
     @Autowired
     private AppServiceVersionService appServiceVersionService;
 
-    @Value("${services.harbor.baseUrl}")
-    private String baseUrl;
-    @Value("${services.harbor.username}")
-    private String username;
-    @Value("${services.harbor.password}")
-    private String password;
     @Value("${services.harbor.delete.period.seconds: 20}")
     private Long seconds;
 
