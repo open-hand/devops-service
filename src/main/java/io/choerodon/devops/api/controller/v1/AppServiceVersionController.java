@@ -413,8 +413,8 @@ public class AppServiceVersionController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
-            @ApiParam(value = "应用服务id", required = true)
-            @RequestParam(value = "app_service_id") Long appServiceId) {
-        return ResponseEntity.ok(appServiceVersionService.queryVersionWithHelmConfig(projectId, appServiceId));
+            @ApiParam(value = "应用服务版本id", required = true)
+            @RequestParam(value = "app_service_version_id") Long appServiceVersionId) {
+        return ResponseEntity.ok(appServiceVersionService.queryVersionWithHelmConfig(projectId, appServiceVersionId));
     }
 }
