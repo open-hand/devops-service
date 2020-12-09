@@ -672,7 +672,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId,false,false,false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
@@ -685,7 +685,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
         }
 
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(),false);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         List<Long> userIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
         userIds.addAll(applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
@@ -3046,9 +3046,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 如果appServiceId存在，始终添加到第一页
         if (appServiceId != null) {
             AppServiceDTO appServiceDTO = appServiceDTOS.stream().filter(a -> a.getId().equals(appServiceId)).collect(toList()).get(0);
-            List<AppServiceDTO> appServiceVOS = appServiceGroupProjectId.get(appServiceDTO.getProjectId());
+            List<AppServiceDTO> appServiceDTOSUnderSameProject = appServiceGroupProjectId.get(appServiceDTO.getProjectId());
+            List<AppServiceDTO> appServiceDTOToReturn = appServiceDTOSUnderSameProject.stream().filter(a -> !a.getId().equals(appServiceId)).collect(toList());
+            appServiceDTOToReturn.add(0, appServiceDTO);
             String projectName = projectIdAndNameMap.get(appServiceDTO.getProjectId());
-            addAppServiceUnderOrgVO(projectName, appServiceVOS, appServiceUnderOrgVOS);
+            addAppServiceUnderOrgVO(projectName, appServiceDTOToReturn, appServiceUnderOrgVOS);
             appServiceGroupProjectId.remove(appServiceDTO.getProjectId());
         }
 
