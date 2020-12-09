@@ -583,4 +583,12 @@ public interface AppServiceService {
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
 
     void fixAppServiceVersion();
+
+    /**
+     * 列举出同一组织下其他项目的应用服务(每个项目最多取5条)
+     *
+     * @param projectId
+     * @return
+     */
+    Page<AppServiceUnderOrgVO> listAppServiceUnderOrg(Long projectId, Long appServiceId, String searchParam, PageRequest pageRequest);
 }

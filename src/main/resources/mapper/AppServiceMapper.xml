@@ -212,6 +212,14 @@
         ORDER BY da.id DESC
     </select>
 
+
+    <select id="listAllAppServiceIds" resultType="java.lang.Long">
+        SELECT DISTINCT da.id
+        FROM devops_app_service da
+        WHERE da.is_active
+          AND da.project_id=#{projectId,jdbcType=BIGINT}
+    </select>
+
     <sql id="sqlparam">
         <if test='searchParam != null'>
             <if test='searchParam.code != null and searchParam.code.length > 0'>
@@ -788,5 +796,23 @@
             #{id}
         </foreach>
         GROUP BY das.project_id
+    </select>
+
+    <select id="listAppServiceByIdsWithParam" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT *
+        FROM devops_app_service das
+        WHERE
+        das.is_active
+        AND
+        das.id IN
+        <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
+            #{appServiceId}
+        </foreach>
+        <if test='param != null'>
+            AND
+            (das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
     </select>
 </mapper>

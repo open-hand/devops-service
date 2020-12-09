@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.LatestAppServiceVO;
-import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.mybatis.common.BaseMapper;
-
-import org.apache.ibatis.annotations.Param;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by younger on 2018/3/28.
@@ -125,6 +125,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     int updateIsSynchroToTrueWhenFailed();
 
+    List<Long> listAllAppServiceIds(@Param("projectId") Long projectId);
+
     int updateIsActiveNullToTrue();
 
     List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
@@ -181,5 +183,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceDTO> listByActiveAndProjects(@Param("projectIds") List<Long> projectIds);
 
     List<ProjectAppSvcCountVO> countByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+
+    List<AppServiceDTO> listAppServiceByIdsWithParam(@Param("appServiceIds") List<Long> appServiceIds, @Param("param") String param);
 }
 

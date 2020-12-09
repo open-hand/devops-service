@@ -1,5 +1,17 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.*;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -13,17 +25,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.*;
 
 /**
  * Created by younger on 2018/4/4.
@@ -91,6 +92,23 @@ public class AppServiceController {
         return Optional.ofNullable(applicationServiceService.importApp(projectId, appServiceImportVO, isTemplate))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.create"));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目下查询用户在该组织下拥有权限的应用")
+    @CustomPageRequest
+    @GetMapping("/list_service_under_org")
+    public ResponseEntity<Page<AppServiceUnderOrgVO>> appServiceUnderOrg(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id")
+            @Encrypt @RequestParam(name = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "搜索参数")
+            @RequestParam(name = "param", required = false) String searchParam,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest
+    ) {
+        return ResponseEntity.ok(applicationServiceService.listAppServiceUnderOrg(projectId, appServiceId, searchParam, pageRequest));
     }
 
     /**
