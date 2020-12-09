@@ -5,6 +5,8 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 
 public class AppServiceUnderOrgVO {
+    @ApiModelProperty(name = "项目id")
+    private Long projectId;
     @ApiModelProperty(name = "项目名称")
     private String projectName;
     @ApiModelProperty(name = "应用列表")
@@ -24,5 +26,13 @@ public class AppServiceUnderOrgVO {
 
     public void setAppServices(List<AppServiceVO> appServices) {
         this.appServices = appServices;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

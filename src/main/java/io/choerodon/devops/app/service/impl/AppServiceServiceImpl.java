@@ -3050,16 +3050,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<AppServiceDTO> appServiceDTOToReturn = appServiceDTOSUnderSameProject.stream().filter(a -> !a.getId().equals(appServiceId)).collect(toList());
             appServiceDTOToReturn.add(0, appServiceDTO);
             String projectName = projectIdAndNameMap.get(appServiceDTO.getProjectId());
-            addAppServiceUnderOrgVO(projectName, appServiceDTOToReturn, appServiceUnderOrgVOS);
+            addAppServiceUnderOrgVO(appServiceDTO.getProjectId(), projectName, appServiceDTOToReturn, appServiceUnderOrgVOS);
             appServiceGroupProjectId.remove(appServiceDTO.getProjectId());
         }
 
-        appServiceGroupProjectId.forEach((k, v) -> addAppServiceUnderOrgVO(projectIdAndNameMap.get(k), v, appServiceUnderOrgVOS));
+        appServiceGroupProjectId.forEach((k, v) -> addAppServiceUnderOrgVO(k, projectIdAndNameMap.get(k), v, appServiceUnderOrgVOS));
 
         return PageInfoUtil.createPageFromList(appServiceUnderOrgVOS, pageRequest);
     }
 
-    private void addAppServiceUnderOrgVO(String projectName, List<AppServiceDTO> appServiceDTOS, List<AppServiceUnderOrgVO> appServiceUnderOrgVOS) {
+    private void addAppServiceUnderOrgVO(Long projectId, String projectName, List<AppServiceDTO> appServiceDTOS, List<AppServiceUnderOrgVO> appServiceUnderOrgVOS) {
         if (StringUtils.isEmpty(projectName)) {
             return;
         }
@@ -3071,6 +3071,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceVOSTOReturn = ConvertUtils.convertList(appServiceDTOS, AppServiceVO.class);
         }
         AppServiceUnderOrgVO appServiceUnderOrgVO = new AppServiceUnderOrgVO();
+        appServiceUnderOrgVO.setProjectId(projectId);
         appServiceUnderOrgVO.setProjectName(projectName);
         appServiceUnderOrgVO.setAppServices(appServiceVOSTOReturn);
         appServiceUnderOrgVOS.add(appServiceUnderOrgVO);
