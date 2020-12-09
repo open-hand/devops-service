@@ -789,7 +789,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         if (messageCode.equals(MessageCodeConstants.PIPELINE_FAILED)
                 || messageCode.equals(MessageCodeConstants.PIPELINE_SUCCESS)) {
             List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
-            MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEFAULT_NOTIFY.getTypeName(), projectId, messageCode);
+            MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEVOPS_NOTIFY.getTypeName(), projectId, messageCode);
             List<Long> specifierList = new ArrayList<>();
             if (messageSettingVO != null) {
                 Optional<TargetUserDTO> pipelineTriggers = messageSettingVO.getTargetUserDTOS().stream().filter(t -> t.getType().equals(TargetUserType.PIPELINE_TRIGGERS.getTypeName())).findFirst();
