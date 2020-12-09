@@ -25,4 +25,6 @@ public interface DevopsPipelineRecordRelService {
     DevopsPipelineRecordRelDTO queryById(Long pipelineRecordRelId);
 
     PipelineCompositeRecordVO queryLatestedPipelineRecord(Long id);
+
+    DevopsPipelineRecordRelDTO queryByCdPipelineRecordId(Long cdPipelineRecordId);
 }

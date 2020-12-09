@@ -135,4 +135,15 @@ public class DevopsCdPipelineController {
             @RequestParam(value = "deploy_job_name") String deployJobName) {
         return ResponseEntity.ok(devopsCdPipelineService.getDeployStatus(pipelineRecordId, deployJobName));
     }
+
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "执行外部卡点任务")
+    @PostMapping(value = "/execute_external_approval_task")
+    public ResponseEntity<Boolean> executeExternalApprovalTask(
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @RequestParam(value = "job_record_id") Long jobRecordId) {
+        return ResponseEntity.ok(devopsCdPipelineService.executeExternalApprovalTask(pipelineRecordId, stageRecordId, jobRecordId));
+    }
 }

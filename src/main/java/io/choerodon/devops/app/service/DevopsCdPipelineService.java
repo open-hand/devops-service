@@ -82,4 +82,13 @@ public interface DevopsCdPipelineService {
      * @return
      */
     String getDeployStatus(Long pipelineRecordId, String deployJobName);
+
+    /**
+     * 执行外部卡点任务
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @return 执行成功返回 true,失败返回false
+     */
+    Boolean executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 }

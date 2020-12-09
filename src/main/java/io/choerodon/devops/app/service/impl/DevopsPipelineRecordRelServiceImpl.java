@@ -1,14 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.pipeline.PipelineCompositeRecordVO;
 import io.choerodon.devops.app.service.DevopsPipelineRecordRelService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
@@ -75,5 +79,14 @@ public class DevopsPipelineRecordRelServiceImpl implements DevopsPipelineRecordR
     @Override
     public PipelineCompositeRecordVO queryLatestedPipelineRecord(Long id) {
         return devopsPipelineRecordRelMapper.queryLatestedPipelineRecord(id);
+    }
+
+    @Override
+    public DevopsPipelineRecordRelDTO queryByCdPipelineRecordId(Long cdPipelineRecordId) {
+        Assert.notNull(cdPipelineRecordId, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
+        devopsPipelineRecordRelDTO.setCdPipelineRecordId(cdPipelineRecordId);
+        List<DevopsPipelineRecordRelDTO> recordRelDTOS = devopsPipelineRecordRelMapper.select(devopsPipelineRecordRelDTO);
+        return CollectionUtils.isEmpty(recordRelDTOS) ? null : recordRelDTOS.get(0);
     }
 }
