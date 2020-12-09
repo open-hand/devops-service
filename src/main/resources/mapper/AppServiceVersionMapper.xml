@@ -530,6 +530,7 @@
         dasv.app_service_id,
         dasv.harbor_config_id,
         dasv.repo_type,
+        dasv.image,
         das. CODE AS appServiceCode,
         das.`name` AS appServiceName,
         das.type AS appServiceType,
