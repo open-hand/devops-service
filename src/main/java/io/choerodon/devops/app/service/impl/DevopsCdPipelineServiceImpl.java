@@ -23,9 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -35,6 +38,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -43,6 +47,7 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.pipeline.ExternalApprovalInfoDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -52,10 +57,7 @@ import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
-import io.choerodon.devops.infra.util.CustomContextUtil;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.K8sUtil;
+import io.choerodon.devops.infra.util.*;
 
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
@@ -70,6 +72,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
     private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
+    private static final String AUTH_HEADER = "c7n-pipeline-token";
+
+
 
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
@@ -143,6 +148,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    @Autowired
+    private RestTemplate restTemplate;
+    @Autowired
+    @Lazy
+    private CiCdPipelineRecordService ciCdPipelineRecordService;
+
 
     @Override
     @Transactional
@@ -1040,6 +1051,37 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } else {
             return JobStatusEnum.RUNNING.value();
         }
+    }
+
+    @Override
+    @Transactional
+    public Boolean executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(pipelineRecordId);
+
+        CiCdPipelineRecordVO ciCdPipelineRecordVO = ciCdPipelineRecordService.queryPipelineRecordDetails(devopsCdJobRecordDTO.getProjectId(), devopsPipelineRecordRelDTO.getId());
+        ciCdPipelineRecordVO.setCurrentCdJob(devopsCdJobRecordDTO);
+
+        ExternalApprovalJobVO externalApprovalJobVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), ExternalApprovalJobVO.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType(MediaType.APPLICATION_JSON_VALUE);
+        headers.setContentType(type);
+        headers.add(AUTH_HEADER, externalApprovalJobVO.getSecretToken());
+        HttpEntity<Object> entity = new HttpEntity<>(ciCdPipelineRecordVO, headers);
+
+        ResponseEntity<Void> responseEntity = null;
+        try {
+            responseEntity = restTemplate.exchange(externalApprovalJobVO.getTriggerUrl(), HttpMethod.POST, entity, Void.class);
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                throw new RestClientException("error.trigger.external.approval.task");
+            }
+        } catch (RestClientException e) {
+            throw new CommonException("error.trigger.external.approval.task");
+        }
+
+        return true;
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {

@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -58,6 +60,8 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private String pipelineName;
     private Long gitlabProjectId;
     private String viewId;
+
+    private DevopsCdJobRecordDTO currentCdJob;
 
     public String getViewId() {
         return viewId;
@@ -178,5 +182,13 @@ public class CiCdPipelineRecordVO extends BaseDomain {
 
     public void setCommit(CustomCommitVO commit) {
         this.commit = commit;
+    }
+
+    public DevopsCdJobRecordDTO getCurrentCdJob() {
+        return currentCdJob;
+    }
+
+    public void setCurrentCdJob(DevopsCdJobRecordDTO currentCdJob) {
+        this.currentCdJob = currentCdJob;
     }
 }
