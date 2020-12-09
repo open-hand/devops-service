@@ -21,9 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
+import io.choerodon.core.enums.ServiceNotifyType;
+import io.choerodon.core.enums.TargetUserType;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
+import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -786,11 +789,15 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         if (messageCode.equals(MessageCodeConstants.PIPELINE_FAILED)
                 || messageCode.equals(MessageCodeConstants.PIPELINE_SUCCESS)) {
             List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
-            MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO("devops", projectId, messageCode);
+            MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEFAULT_NOTIFY.getTypeName(), projectId, messageCode);
             List<Long> specifierList = new ArrayList<>();
             if (messageSettingVO != null) {
+                Optional<TargetUserDTO> pipelineTriggers = messageSettingVO.getTargetUserDTOS().stream().filter(t -> t.getType().equals(TargetUserType.PIPELINE_TRIGGERS.getTypeName())).findFirst();
+                if (!pipelineTriggers.isPresent()) {
+                    users.clear();
+                }
                 messageSettingVO.getTargetUserDTOS().forEach(t -> {
-                    if (t.getType().equals(TriggerObject.SPECIFIER.getObject()) && !userIds.contains(t.getUserId())) {
+                    if (t.getType().equals(TargetUserType.SPECIFIER.getTypeName()) && !userIds.contains(t.getUserId())) {
                         specifierList.add(t.getUserId());
                     }
                 });
