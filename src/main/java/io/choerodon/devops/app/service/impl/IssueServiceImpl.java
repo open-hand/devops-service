@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -20,6 +17,7 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -86,6 +84,9 @@ public class IssueServiceImpl implements IssueService {
     public List<DevopsBranchVO> getBranchsByIssueId(Long issueId) {
         List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
         List<DevopsBranchVO> devopsBranchVOS = new ArrayList<>();
+
+        Set<Long> projectIds = new HashSet<>();
+
         devopsBranchDTOS.forEach(devopsBranchDO -> {
             Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppServiceId());
 
@@ -97,6 +98,8 @@ public class IssueServiceImpl implements IssueService {
             DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);
             AppServiceDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppServiceId());
+            projectIds.add(applicationDTO.getProjectId());
+            devopsBranchVO.setProjectId(applicationDTO.getProjectId());
             devopsBranchVO.setAppServiceName(applicationDTO.getName());
             List<DevopsMergeRequestDTO> mergeRequests = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
@@ -104,6 +107,13 @@ public class IssueServiceImpl implements IssueService {
                     mergeRequests, devopsBranchDO.getAppServiceId()));
             devopsBranchVOS.add(devopsBranchVO);
         });
+
+        Map<Long, List<ProjectDTO>> projectMap = baseServiceClientOperator.queryProjectsByIds(projectIds).stream().collect(Collectors.groupingBy(ProjectDTO::getId));
+        devopsBranchVOS.forEach(b -> {
+            ProjectDTO projectDTO = projectMap.get(b.getProjectId()).get(0);
+            b.setProjectName(projectDTO.getName());
+        });
+
         return devopsBranchVOS;
     }
 

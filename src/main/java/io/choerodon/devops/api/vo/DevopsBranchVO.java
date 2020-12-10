@@ -33,6 +33,12 @@ public class DevopsBranchVO {
     @ApiModelProperty("分支纪录的版本号")
     private Long objectVersionNumber;
 
+    @ApiModelProperty("所属项目id")
+    private Long projectId;
+
+    @ApiModelProperty("所属项目名称")
+    private String projectName;
+
     public String getOriginBranch() {
         return originBranch;
     }
@@ -95,5 +101,21 @@ public class DevopsBranchVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }
