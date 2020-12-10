@@ -136,8 +136,7 @@ public class AppServiceController {
     /**
      * 项目下查询单个应用服务信息(操作其他项目应用时使用)
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下查询单个应用服务信息(操作其他项目应用时使用)")
     @GetMapping("/other/{app_service_id}")
     public ResponseEntity<AppServiceRepVO> queryOtherProjectAppService(
