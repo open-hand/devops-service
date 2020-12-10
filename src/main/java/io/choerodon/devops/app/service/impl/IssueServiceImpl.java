@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.util.CiCdPipelineUtils.handleId;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,6 +141,7 @@ public class IssueServiceImpl implements IssueService {
                     .queryUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
             CustomMergeRequestVO customMergeRequestVO = new CustomMergeRequestVO();
             customMergeRequestVO.setApplicationId(applicationId);
+            customMergeRequestVO.setViewId(handleId(devopsMergeRequestE.getId()));
             if (authorId != null) {
                 authors.stream().filter(userE -> userE.getId().equals(authorId)).forEach(authorUser -> {
                     customMergeRequestVO.setAuthorName(authorUser.getLoginName() + authorUser.getRealName());

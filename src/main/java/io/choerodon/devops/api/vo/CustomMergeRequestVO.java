@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class CustomMergeRequestVO {
@@ -38,6 +39,9 @@ public class CustomMergeRequestVO {
     private Date createdAt;
 
     private Date updatedAt;
+
+    @ApiModelProperty("前端展示使用的id")
+    private String viewId;
 
     public Long getId() {
         return id;
@@ -157,5 +161,13 @@ public class CustomMergeRequestVO {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
     }
 }
