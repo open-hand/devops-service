@@ -23,6 +23,7 @@ import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final Long ADMIN_ID = 1L;
 
     private static final Gson gson = new Gson();
+
+    @Value(value = "${services.gateway.url: http://api.example.com}")
+    private String gatewayUrl;
 
     @Autowired
     private AppServiceService appServiceService;
@@ -1126,21 +1130,19 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.callbackToken is invalid. ", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
             return;
         }
-
-        LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, status: {}", pipelineRecordId, stageRecordId, jobRecordId, status);
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
-        if (Boolean.TRUE.equals(status)
-                && PipelineStatus.RUNNING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
-            LOGGER.info(">>>>>>> setExternalApprovalTaskStatus, start next task, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
-            startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
+        if (Boolean.TRUE.equals(status)) {
+            devopsCdJobRecordService.updateJobStatusSuccess(jobRecordId);
+            setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, true);
         } else {
-            LOGGER.info(">>>>>>> setExternalApprovalTaskStatus, update status to failed, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
-            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
-            workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
+            setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, false);
         }
+
+    }
+
+    @Override
+    public String queryCallbackUrl() {
+        String callbackUrl = gatewayUrl + "/devops/v1/cd_pipeline/external_approval_task/callback_url?token=xxxx";
+        return callbackUrl;
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {

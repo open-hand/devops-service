@@ -95,4 +95,7 @@ public interface DevopsCdPipelineService {
     void setExternalApprovalTaskStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status);
 
     void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status);
+
+    String queryCallbackUrl();
+
 }

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.swagger.annotation.Permission;
@@ -180,5 +181,12 @@ public class DevopsCdPipelineController {
             @RequestParam(value = "approval_status") Boolean status) {
         devopsCdPipelineService.externalApprovalTaskCallback(pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
         return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询外部卡点任务执行回调接口URL")
+    @GetMapping("/external_approval_task/callback_url")
+    public ResponseEntity<String> queryCallbackUrl() {
+        return ResponseEntity.ok(devopsCdPipelineService.queryCallbackUrl());
     }
 }

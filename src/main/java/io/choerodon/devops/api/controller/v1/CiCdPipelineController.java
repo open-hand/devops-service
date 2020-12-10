@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
