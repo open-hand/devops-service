@@ -2948,12 +2948,16 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         for (AppServiceDTO t : applicationDTOS) {
-            if (t.getGitlabProjectId() != null) {
-                t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode()));
-                t.setRepoUrl(
-                        gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
-                                + t.getCode() + ".git");
-            }
+            initApplicationParams(projectDTO, organizationDTO, t, urlSlash);
+        }
+    }
+
+    private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, AppServiceDTO applicationDTOS, String urlSlash) {
+        if (applicationDTOS.getGitlabProjectId() != null) {
+            applicationDTOS.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTOS.getCode()));
+            applicationDTOS.setRepoUrl(
+                    gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
+                            + applicationDTOS.getCode() + ".git");
         }
     }
 
@@ -3015,9 +3019,26 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public AppServiceRepVO queryOtherProjectAppServiceWithRepositoryInfo(Long projectId, Long appServiceId) {
+
+        AppServiceDTO appServiceDTO = appServiceMapper.selectWithEmptyRepositoryByPrimaryKey(appServiceId);
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        initApplicationParams(projectDTO, organizationDTO, appServiceDTO, urlSlash);
+
+        AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
+        appServiceRepVO.setFail(appServiceDTO.getFailed());
+
+        return appServiceRepVO;
+    }
+
+    @Override
     public Page<AppServiceUnderOrgVO> listAppServiceUnderOrg(Long projectId, Long appServiceId, String searchParam, PageRequest pageRequest) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
 
         UserAppServiceIdsVO userAppServiceIdsVO = rducmClientOperator.getAppServiceIds(projectDTO.getOrganizationId(), userDetails.getUserId());
         // 待查询的appService列表

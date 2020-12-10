@@ -186,5 +186,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
 
     List<AppServiceDTO> listAppServiceByIdsWithParam(@Param("appServiceIds") List<Long> appServiceIds, @Param("param") String param);
+
+    AppServiceDTO selectWithEmptyRepositoryByPrimaryKey(Long appServiceId);
 }
 

@@ -134,6 +134,25 @@ public class AppServiceController {
     }
 
     /**
+     * 项目下查询单个应用服务信息(操作其他项目应用时使用)
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下查询单个应用服务信息(操作其他项目应用时使用)")
+    @GetMapping("/other/{app_service_id}")
+    public ResponseEntity<AppServiceRepVO> queryOtherProjectAppService(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务id", required = true)
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Optional.ofNullable(applicationServiceService.queryOtherProjectAppServiceWithRepositoryInfo(projectId, appServiceId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.service.query"));
+    }
+
+
+    /**
      * 项目下更新服务信息
      *
      * @param projectId           项目id

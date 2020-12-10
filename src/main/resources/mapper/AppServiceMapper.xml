@@ -788,6 +788,7 @@
             #{projectId}
         </foreach>
     </select>
+
     <select id="countByProjectIds" resultType="io.choerodon.devops.api.vo.ProjectAppSvcCountVO">
         SELECT das.project_id, COUNT(*) AS app_svc_num
         FROM devops_app_service das
@@ -802,7 +803,9 @@
         SELECT *
         FROM devops_app_service das
         WHERE
-        das.is_active
+        das.is_active IS TRUE
+        AND das.is_synchro IS TRUE
+        AND das.gitlab_project_id IS NOT NULL
         AND
         das.id IN
         <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
@@ -814,5 +817,14 @@
             OR das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
         </if>
+    </select>
+    <select id="selectWithEmptyRepositoryByPrimaryKey" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT das.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = das.id) AS empty_repository
+        FROM devops_app_service das
+        WHERE
+            das.id=#{appServiceId}
+          AND das.is_active IS TRUE
+          AND das.is_synchro IS TRUE
+          AND das.gitlab_project_id IS NOT NULL
     </select>
 </mapper>
