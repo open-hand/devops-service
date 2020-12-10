@@ -112,6 +112,7 @@ public class IssueServiceImpl implements IssueService {
         devopsBranchVOS.forEach(b -> {
             ProjectDTO projectDTO = projectMap.get(b.getProjectId()).get(0);
             b.setProjectName(projectDTO.getName());
+            b.setProjectCode(projectDTO.getCode());
         });
 
         return devopsBranchVOS;

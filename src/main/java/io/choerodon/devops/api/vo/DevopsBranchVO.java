@@ -39,6 +39,9 @@ public class DevopsBranchVO {
     @ApiModelProperty("所属项目名称")
     private String projectName;
 
+    @ApiModelProperty("所属项目code")
+    private String projectCode;
+
     public String getOriginBranch() {
         return originBranch;
     }
@@ -117,5 +120,13 @@ public class DevopsBranchVO {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
     }
 }
