@@ -19,9 +19,11 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -47,7 +49,6 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.pipeline.ExternalApprovalInfoDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -82,6 +83,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final Long ADMIN_ID = 1L;
 
     private static final Gson gson = new Gson();
+
+    @Value(value = "${services.gateway.url: http://api.example.com}")
+    private String gatewayUrl;
 
     @Autowired
     private AppServiceService appServiceService;
@@ -1055,8 +1059,17 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     @Transactional
-    public Boolean executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+    public void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+
+        // 添加回调token
+        if (devopsCdJobRecordDTO.getCallbackToken() == null) {
+            String callbackToken = UUIDUtils.generateUUID();
+            devopsCdJobRecordDTO.setCallbackToken(callbackToken);
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+        }
+
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
 
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(pipelineRecordId);
 
@@ -1078,10 +1091,58 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 throw new RestClientException("error.trigger.external.approval.task");
             }
         } catch (RestClientException e) {
-            throw new CommonException("error.trigger.external.approval.task");
+            LOGGER.info("error.trigger.external.approval.task", e);
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
+        }
+        // 更新任务状态为执行中
+
+        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toString());
+
+    }
+
+    @Override
+    public void setExternalApprovalTaskStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status) {
+        LOGGER.info("setExternalApprovalTask:pipelineRecordId: {} stageRecordId: {} taskId: {}, status: {}", pipelineRecordId, stageRecordId, jobRecordId, status);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
+        if (Boolean.TRUE.equals(status)) {
+            LOGGER.info(">>>>>>> setExternalApprovalTask, start next task, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
+            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toString());
+        } else {
+            LOGGER.info(">>>>>>> setExternalApprovalTask, update status to failed, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
+        }
+    }
+
+    @Override
+    public void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+
+        // 如果token认证不通过则直接返回
+        if (!Objects.equals(devopsCdJobRecordDTO.getCallbackToken(), callbackToken)) {
+            LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.callbackToken is invalid. ", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
+            return;
+        }
+        if (Boolean.TRUE.equals(status)) {
+            devopsCdJobRecordService.updateJobStatusSuccess(jobRecordId);
+            setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, true);
+        } else {
+            setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, false);
         }
 
-        return true;
+    }
+
+    @Override
+    public String queryCallbackUrl() {
+        String callbackUrl = gatewayUrl + "/devops/v1/cd_pipeline/external_approval_task/callback_url?token=xxxx";
+        return callbackUrl;
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {
