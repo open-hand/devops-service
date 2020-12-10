@@ -90,5 +90,9 @@ public interface DevopsCdPipelineService {
      * @param jobRecordId
      * @return 执行成功返回 true,失败返回false
      */
-    Boolean executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+    void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    void setExternalApprovalTaskStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status);
+
+    void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status);
 }

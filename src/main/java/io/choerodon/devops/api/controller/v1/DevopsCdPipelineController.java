@@ -140,10 +140,45 @@ public class DevopsCdPipelineController {
     @Permission(permissionWithin = true)
     @ApiOperation(value = "执行外部卡点任务")
     @PostMapping(value = "/execute_external_approval_task")
-    public ResponseEntity<Boolean> executeExternalApprovalTask(
+    public ResponseEntity<Void> executeExternalApprovalTask(
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @RequestParam(value = "job_record_id") Long jobRecordId) {
-        return ResponseEntity.ok(devopsCdPipelineService.executeExternalApprovalTask(pipelineRecordId, stageRecordId, jobRecordId));
+        devopsCdPipelineService.executeExternalApprovalTask(pipelineRecordId, stageRecordId, jobRecordId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "接收外部卡点任务状态")
+    @PutMapping("/external_approval_task/status")
+    public ResponseEntity<Void> setExternalApprovalTaskStatus(
+            @ApiParam(value = "流水线记录Id", required = true)
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "阶段记录Id", required = true)
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务Id", required = true)
+            @RequestParam(value = "job_record_id") Long jobRecordId,
+            @ApiParam(value = "状态", required = true)
+            @RequestParam(value = "status") Boolean status) {
+        devopsCdPipelineService.setExternalApprovalTaskStatus(pipelineRecordId, stageRecordId, jobRecordId, status);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "外部卡点任务执行回调接口")
+    @PutMapping("/external_approval_task/callback")
+    public ResponseEntity<Void> externalApprovalTaskCallback(
+            @ApiParam(value = "流水线记录Id", required = true)
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "阶段记录Id", required = true)
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务Id", required = true)
+            @RequestParam(value = "job_record_id") Long jobRecordId,
+            @ApiParam(value = "外部卡点任务回调认证token", required = true)
+            @RequestParam(value = "callback_token") String callbackToken,
+            @ApiParam(value = "状态", required = true)
+            @RequestParam(value = "approval_status") Boolean status) {
+        devopsCdPipelineService.externalApprovalTaskCallback(pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
+        return ResponseEntity.noContent().build();
     }
 }
