@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 
 /**
@@ -70,13 +70,14 @@ public interface DevopsGitService {
     /**
      * 获取工程下所有分支名
      *
-     * @param projectId    项目 ID
-     * @param appServiceId 应用服务ID
-     * @param pageable     分页参数
-     * @param params       search param
+     * @param projectId        项目 ID
+     * @param appServiceId     应用服务ID
+     * @param pageable         分页参数
+     * @param params           search param
+     * @param currentProjectId 当前所处项目id
      * @return Page
      */
-    Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params);
+    Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId);
 
     /**
      * 查询单个分支

@@ -301,7 +301,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params) {
+    public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId) {
         try {
             checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
         } catch (GitlabAccessInvalidException e) {
@@ -347,14 +347,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<Long> lastCommitIamUserIds = lastCommitUser.stream().map(UserAttrVO::getIamUserId).collect(Collectors.toList());
         Map<Long, Long> lastCommitIamUserIdAndGitlabUserIdMap = lastCommitUser.stream().filter(userAttrVO -> userAttrVO.getIamUserId() != null && userAttrVO.getGitlabUserId() != null).collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
 
-        List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).collect(Collectors.toList());
+        List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).filter(Objects::nonNull).collect(Collectors.toList());
 
         Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(createIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
         Map<Long, IamUserDTO> lastCommitUserDTOMap = baseServiceClientOperator.listUsersByIds(lastCommitIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
         Map<Long, IssueDTO> issues = null;
         // 读取敏捷问题列表可能会失败，但是不希望影响查询分支逻辑，所以捕获异常
         try {
-            issues = agileServiceClientOperator.listIssueByIds(projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+            issues = agileServiceClientOperator.listIssueByIds(currentProjectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
         } catch (Exception e) {
             LOGGER.error("query agile issue failed.", e);
         }

@@ -261,8 +261,11 @@ public class DevopsGitController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Results.success(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params));
+            @RequestBody(required = false) String params,
+            @ApiParam(value = "当前所处项目id")
+            @RequestParam(value = "current_project_id") Long currentProjectId
+    ) {
+        return Results.success(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params, currentProjectId));
     }
 
     /**
