@@ -1103,20 +1103,31 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             log.append(responseEntity.getHeaders()).append(System.lineSeparator());
             log.append("Response body:").append(System.lineSeparator());
             log.append(responseEntity.getBody()).append(System.lineSeparator());
-
             devopsCdJobRecordDTO.setLog(log.toString());
             devopsCdJobRecordDTO.setStartedDate(new Date());
             devopsCdJobRecordDTO.setFinishedDate(null);
             // 更新任务状态为执行中
             devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toString());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
-        } catch (RestClientException e) {
+        } catch (Exception e) {
             LOGGER.info("error.trigger.external.approval.task", e);
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            log.append("Response headers:").append(System.lineSeparator());
+            log.append(responseEntity.getHeaders()).append(System.lineSeparator());
+            log.append("Response body:").append(System.lineSeparator());
+            log.append(responseEntity.getBody()).append(System.lineSeparator());
+            devopsCdJobRecordDTO.setLog(log.toString());
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
+            devopsCdJobRecordDTO.setStartedDate(new Date());
+            devopsCdJobRecordDTO.setFinishedDate(new Date());
+            if (devopsCdJobRecordDTO.getStartedDate() != null) {
+                devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+            }
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
+
 
 
     }
