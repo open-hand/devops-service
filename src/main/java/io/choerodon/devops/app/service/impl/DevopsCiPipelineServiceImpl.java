@@ -500,6 +500,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobVO.getMetadata(), CdApiTestConfigVO.class);
                     // 将主键加密，再序列化为json
                     devopsCdJobVO.setMetadata(KeyDecryptHelper.encryptJson(cdApiTestConfigVO));
+                } else if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(devopsCdJobVO.getType())) {
+                    ExternalApprovalJobVO externalApprovalJobVO = JsonHelper.unmarshalByJackson(devopsCdJobVO.getMetadata(), ExternalApprovalJobVO.class);
+                    // 将主键加密，再序列化为json
+                    devopsCdJobVO.setExternalApprovalJobVO(externalApprovalJobVO);
                 }
             }
         }
