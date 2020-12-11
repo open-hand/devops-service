@@ -1115,10 +1115,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
         } catch (Exception e) {
             LOGGER.info("error.trigger.external.approval.task", e);
-            log.append("Response headers:").append(System.lineSeparator());
-            log.append(responseEntity.getHeaders()).append(System.lineSeparator());
-            log.append("Response body:").append(System.lineSeparator());
-            log.append(responseEntity.getBody()).append(System.lineSeparator());
+            log.append("trigger error msg:").append(System.lineSeparator());
+            log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
+
             devopsCdJobRecordDTO.setLog(log.toString());
             devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
             devopsCdJobRecordDTO.setStartedDate(new Date());

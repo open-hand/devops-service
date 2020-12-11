@@ -69,7 +69,7 @@ public class DevopsCdJobRecordController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查看主机部署日志")
+    @ApiOperation(value = "查看主机部署 && 外部卡点任务日志")
     @GetMapping("/log/{job_record_id}")
     public ResponseEntity<String> getHostLog(
             @PathVariable(value = "project_id") Long projectId,
