@@ -11,6 +11,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.client.RestTemplate;
 
 import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
@@ -35,5 +36,11 @@ public class DevopsServiceApplication {
         template.setHashKeySerializer(stringRedisSerializer);
         template.setConnectionFactory(redisConnectionFactory);
         return template;
+    }
+
+
+    @Bean(name = "restTemplateForIp")
+    public RestTemplate restTemplateForIp() {
+        return new RestTemplate();
     }
 }

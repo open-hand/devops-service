@@ -23,6 +23,7 @@ import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
@@ -152,8 +153,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+
     @Autowired
-    private RestTemplate restTemplate;
+    @Qualifier("restTemplateForIp")
+    private RestTemplate restTemplateForIp;
+
     @Autowired
     @Lazy
     private CiCdPipelineRecordService ciCdPipelineRecordService;
@@ -1088,14 +1092,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         StringBuilder log = new StringBuilder();
 
         log.append("Request headers:").append(System.lineSeparator());
-        log.append(entity.getHeaders().values()).append(System.lineSeparator());
+        log.append(entity.getHeaders()).append(System.lineSeparator());
         log.append("Request body:").append(System.lineSeparator());
         log.append(JsonHelper.marshalByJackson(entity.getBody())).append(System.lineSeparator());
 
 
         ResponseEntity<Void> responseEntity = null;
         try {
-            responseEntity = restTemplate.exchange(externalApprovalJobVO.getTriggerUrl(), HttpMethod.POST, entity, Void.class);
+            responseEntity = restTemplateForIp.exchange(externalApprovalJobVO.getTriggerUrl(), HttpMethod.POST, entity, Void.class);
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 throw new RestClientException("error.trigger.external.approval.task");
             }
