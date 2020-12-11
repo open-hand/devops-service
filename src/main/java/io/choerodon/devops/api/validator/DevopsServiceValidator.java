@@ -43,14 +43,14 @@ public class DevopsServiceValidator {
     /**
      * 参数校验
      */
-    public static void checkService(DevopsServiceReqVO devopsServiceReqVO) {
+    public static void checkService(DevopsServiceReqVO devopsServiceReqVO, Long targetServiceId) {
         devopsServiceReqVO.getPorts().forEach(DevopsServiceValidator::checkPorts);
         checkName(devopsServiceReqVO.getName());
         if (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())
                 && !Pattern.matches(EXTERNAL_IP_PATTERN, devopsServiceReqVO.getExternalIp())) {
             throw new CommonException("error.externalIp.notMatch");
         }
-        checkIPAndPortUnique(devopsServiceReqVO);
+        checkIPAndPortUnique(devopsServiceReqVO, targetServiceId);
     }
 
     public static void checkName(String name) {
@@ -76,9 +76,12 @@ public class DevopsServiceValidator {
         return port >= 0 && port <= 65535;
     }
 
-    private static void checkIPAndPortUnique(DevopsServiceReqVO devopsServiceReqVO) {
+    private static void checkIPAndPortUnique(DevopsServiceReqVO devopsServiceReqVO, Long targetServiceId) {
         DevopsServiceService devopsServiceService = ApplicationContextHelper.getContext().getBean(DevopsServiceService.class);
-        Map<String, List<DevopsServiceDTO>> serviceGroupByType = devopsServiceService.baseListByEnvId(devopsServiceReqVO.getEnvId()).stream().collect(Collectors.groupingBy(DevopsServiceDTO::getType));
+        Map<String, List<DevopsServiceDTO>> serviceGroupByType = devopsServiceService.baseListByEnvId(devopsServiceReqVO.getEnvId())
+                .stream()
+                .filter(s -> !s.getId().equals(targetServiceId))
+                .collect(Collectors.groupingBy(DevopsServiceDTO::getType));
         switch (devopsServiceReqVO.getType()) {
             // 同一环境下externalIp和servicePort必须唯一
             case CLUSTER_IP:
