@@ -191,4 +191,26 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     public void setCurrentCdJob(DevopsCdJobRecordDTO currentCdJob) {
         this.currentCdJob = currentCdJob;
     }
+
+    @Override
+    public String toString() {
+        return "CiCdPipelineRecordVO{" +
+                "devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
+                ", ciRecordId=" + ciRecordId +
+                ", cdRecordId=" + cdRecordId +
+                ", gitlabPipelineId=" + gitlabPipelineId +
+                ", cdStatus='" + cdStatus + '\'' +
+                ", ciStatus='" + ciStatus + '\'' +
+                ", status='" + status + '\'' +
+                ", gitlabTriggerRef='" + gitlabTriggerRef + '\'' +
+                ", commit=" + commit +
+                ", ciCdPipelineVO=" + ciCdPipelineVO +
+                ", stageRecordVOS=" + stageRecordVOS +
+                ", devopsCdPipelineDeatilVO=" + devopsCdPipelineDeatilVO +
+                ", pipelineName='" + pipelineName + '\'' +
+                ", gitlabProjectId=" + gitlabProjectId +
+                ", viewId='" + viewId + '\'' +
+                ", currentCdJob=" + currentCdJob +
+                '}';
+    }
 }
