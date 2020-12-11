@@ -68,9 +68,6 @@ public class DevopsCdJobRecordController {
         return ResponseEntity.ok(devopsCdJobRecordService.queryDeployJobLogs(projectId, pipelineRecordId, stageRecordId, jobRecordId));
     }
 
-    /**
-     * 重试cd_job
-     */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查看主机部署日志")
     @GetMapping("/log/{job_record_id}")

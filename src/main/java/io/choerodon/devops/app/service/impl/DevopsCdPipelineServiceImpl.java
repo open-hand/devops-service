@@ -1157,15 +1157,28 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
 
         // 如果token认证不通过则直接返回
         if (!Objects.equals(devopsCdJobRecordDTO.getCallbackToken(), callbackToken)) {
             LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.callbackToken is invalid. ", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
             return;
         }
+
+        // 状态不是待审核，抛出错误信息
+        if (!PipelineStatus.RUNNING.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
+        }
+
         if (Boolean.TRUE.equals(status)) {
-            devopsCdJobRecordService.updateJobStatusSuccess(jobRecordId);
-            setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, true);
+            try {
+                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), "admin", 1L, 0L);
+
+                devopsCdJobRecordService.updateJobStatusSuccess(jobRecordId);
+                setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, true);
+            } catch (Exception e) {
+                setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, false);
+            }
         } else {
             setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, false);
         }
