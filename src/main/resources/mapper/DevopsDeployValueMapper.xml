@@ -28,7 +28,6 @@
             AND dpv.env_id = #{envId}
         </if>
         <include refid="sqlparam"/>
-        ORDER BY  dpv.last_update_date DESC
     </select>
 
     <select id="listByOptionsWithMember" resultType="io.choerodon.devops.infra.dto.DevopsDeployValueDTO">
@@ -94,9 +93,6 @@
         </if>
         <include refid="sqlparam"/>
         ) c
-        ORDER BY c.last_update_date DESC
-
-
     </select>
 
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsDeployValueDTO">
