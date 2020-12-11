@@ -43,7 +43,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询项目下流水线列表（包含5条执行记录）
      */
-    Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name, PageRequest pageRequest);
+    Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest);
 
     /**
      * 查询流水线信息

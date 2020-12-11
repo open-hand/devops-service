@@ -66,6 +66,9 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     @ApiModelProperty("日志信息")
     private String log;
 
+    @Transient
+    private String callbackUrl;
+
     public String getLog() {
         return log;
     }
@@ -309,5 +312,13 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
                 ", log='" + log + '\'' +
                 '}';
+    }
+
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    public void setCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
     }
 }

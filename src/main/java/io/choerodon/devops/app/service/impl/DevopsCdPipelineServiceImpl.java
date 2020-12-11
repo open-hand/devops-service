@@ -1066,8 +1066,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (devopsCdJobRecordDTO.getCallbackToken() == null) {
             String callbackToken = UUIDUtils.generateUUID();
             devopsCdJobRecordDTO.setCallbackToken(callbackToken);
-            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+
         }
+        devopsCdJobRecordDTO.setCallbackUrl(gatewayUrl + "");
 
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
 
@@ -1086,10 +1087,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         ResponseEntity<Void> responseEntity = null;
         try {
+
             responseEntity = restTemplate.exchange(externalApprovalJobVO.getTriggerUrl(), HttpMethod.POST, entity, Void.class);
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 throw new RestClientException("error.trigger.external.approval.task");
             }
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
         } catch (RestClientException e) {
             LOGGER.info("error.trigger.external.approval.task", e);
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);

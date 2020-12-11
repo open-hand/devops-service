@@ -543,7 +543,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name, PageRequest pageRequest) {
+    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest) {
         if (projectId == null) {
             throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
         }
@@ -562,7 +562,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
 
         // 查询流水线
-        Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, name));
+        Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam));
 
         if (CollectionUtils.isEmpty(pipelinePage.getContent())) {
             return pipelinePage;

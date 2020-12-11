@@ -20,7 +20,8 @@
         <where>
             dcp.project_id = #{projectId}
             <if test="name">
-                and das.name like CONCAT(CONCAT('%', #{name}),'%')
+                and das.name like CONCAT(CONCAT('%', #{searchParam}),'%')
+                or dcp.name like CONCAT(CONCAT('%', #{searchParam}),'%')
             </if>
             <if test="appServiceIds!=null and appServiceIds.size>0">
                 and dcp.app_service_id in
