@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -30,6 +31,7 @@ import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -609,7 +611,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsServiceDTO handlerCreateService(DevopsServiceReqVO devopsServiceReqVO) {
 
         //校验service相关参数
-        DevopsServiceValidator.checkService(devopsServiceReqVO);
+        DevopsServiceValidator.checkService(devopsServiceReqVO, null);
 
         initDevopsServicePorts(devopsServiceReqVO);
 
@@ -872,7 +874,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private DevopsServiceDTO handlerUpdateService(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceDTO devopsServiceDTO) {
         //service参数校验
-        DevopsServiceValidator.checkService(devopsServiceReqVO);
+        DevopsServiceValidator.checkService(devopsServiceReqVO, devopsServiceDTO.getId());
         initDevopsServicePorts(devopsServiceReqVO);
 
         if (!devopsServiceDTO.getEnvId().equals(devopsServiceReqVO.getEnvId())) {
