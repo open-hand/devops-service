@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -86,39 +87,43 @@ public class DevopsServiceValidator {
             // 同一环境下externalIp和servicePort必须唯一
             case CLUSTER_IP:
                 List<DevopsServiceDTO> serviceOfClusterIp = serviceGroupByType.get(CLUSTER_IP);
-                serviceOfClusterIp.forEach(s -> {
-                    List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
-                    });
-                    portMapVOList.forEach(portMapVO -> {
-                        Long port = portMapVO.getPort();
-                        String externalIp = s.getExternalIp();
-                        devopsServiceReqVO.getPorts().forEach(p -> {
-                            if (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
-                                if (ObjectUtils.equals(port, p.getPort()) && ObjectUtils.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
-                                    throw new CommonException("error.same.externalIp.port.exist");
+                if (!CollectionUtils.isEmpty(serviceOfClusterIp)) {
+                    serviceOfClusterIp.forEach(s -> {
+                        List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
+                        });
+                        portMapVOList.forEach(portMapVO -> {
+                            Long port = portMapVO.getPort();
+                            String externalIp = s.getExternalIp();
+                            devopsServiceReqVO.getPorts().forEach(p -> {
+                                if (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
+                                    if (ObjectUtils.equals(port, p.getPort()) && ObjectUtils.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
+                                        throw new CommonException("error.same.externalIp.port.exist");
+                                    }
                                 }
-                            }
+                            });
                         });
                     });
-                });
+                }
                 break;
             case NODE_PORT:
                 // 同一环境下，如果nodePort不为空，那么必须唯一
                 List<DevopsServiceDTO> serviceOfNodePort = serviceGroupByType.get(NODE_PORT);
-                serviceOfNodePort.forEach(s -> {
-                    List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
+                if (!CollectionUtils.isEmpty(serviceOfNodePort)) {
+                    serviceOfNodePort.forEach(s -> {
+                        List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
+                        });
+                        portMapVOList.forEach(portMapVO -> {
+                            Long nodePort = portMapVO.getNodePort();
+                            if (nodePort != null) {
+                                devopsServiceReqVO.getPorts().forEach(p -> {
+                                    if (ObjectUtils.equals(nodePort, p.getNodePort())) {
+                                        throw new CommonException("error.same.nodePort.exist");
+                                    }
+                                });
+                            }
+                        });
                     });
-                    portMapVOList.forEach(portMapVO -> {
-                        Long nodePort = portMapVO.getNodePort();
-                        if (nodePort != null) {
-                            devopsServiceReqVO.getPorts().forEach(p -> {
-                                if (ObjectUtils.equals(nodePort, p.getNodePort())) {
-                                    throw new CommonException("error.same.nodePort.exist");
-                                }
-                            });
-                        }
-                    });
-                });
+                }
                 break;
             default:
         }
