@@ -1088,7 +1088,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         StringBuilder log = new StringBuilder();
 
         log.append("Request headers:").append(System.lineSeparator());
-        log.append(entity.getHeaders().values()).append(System.lineSeparator());
+        log.append(entity.getHeaders()).append(System.lineSeparator());
         log.append("Request body:").append(System.lineSeparator());
         log.append(JsonHelper.marshalByJackson(entity.getBody())).append(System.lineSeparator());
 
