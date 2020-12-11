@@ -6,6 +6,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -44,6 +45,8 @@ public class DevopsCdJobRecordVO {
     private Long apiTestTaskRecordId;
     private ApiTestTaskRecordVO apiTestTaskRecordVO;
     private Long commandId;
+
+    private ExternalApprovalJobVO externalApprovalJobVO;
 
     public Long getJobId() {
         return jobId;
@@ -327,5 +330,13 @@ public class DevopsCdJobRecordVO {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public ExternalApprovalJobVO getExternalApprovalJobVO() {
+        return externalApprovalJobVO;
+    }
+
+    public void setExternalApprovalJobVO(ExternalApprovalJobVO externalApprovalJobVO) {
+        this.externalApprovalJobVO = externalApprovalJobVO;
     }
 }
