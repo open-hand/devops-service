@@ -1085,13 +1085,30 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         headers.add(AUTH_HEADER, externalApprovalJobVO.getSecretToken());
         HttpEntity<Object> entity = new HttpEntity<>(ciCdPipelineRecordVO, headers);
 
+        StringBuilder log = new StringBuilder();
+
+        log.append("Request headers:").append(System.lineSeparator());
+        log.append(entity.getHeaders().values()).append(System.lineSeparator());
+        log.append("Request body:").append(System.lineSeparator());
+        log.append(JsonHelper.marshalByJackson(entity.getBody())).append(System.lineSeparator());
+
+
         ResponseEntity<Void> responseEntity = null;
         try {
-
             responseEntity = restTemplate.exchange(externalApprovalJobVO.getTriggerUrl(), HttpMethod.POST, entity, Void.class);
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 throw new RestClientException("error.trigger.external.approval.task");
             }
+            log.append("Response headers:").append(System.lineSeparator());
+            log.append(responseEntity.getHeaders()).append(System.lineSeparator());
+            log.append("Response body:").append(System.lineSeparator());
+            log.append(responseEntity.getBody()).append(System.lineSeparator());
+
+            devopsCdJobRecordDTO.setLog(log.toString());
+            devopsCdJobRecordDTO.setStartedDate(new Date());
+            devopsCdJobRecordDTO.setFinishedDate(null);
+            // 更新任务状态为执行中
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toString());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
         } catch (RestClientException e) {
             LOGGER.info("error.trigger.external.approval.task", e);
@@ -1100,9 +1117,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
-        // 更新任务状态为执行中
 
-        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toString());
 
     }
 
