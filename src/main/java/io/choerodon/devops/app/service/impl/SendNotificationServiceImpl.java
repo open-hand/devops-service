@@ -788,7 +788,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void addSpecifierList(String messageCode, Long projectId, List<Receiver> users) {
         if (messageCode.equals(MessageCodeConstants.PIPELINE_FAILED)
                 || messageCode.equals(MessageCodeConstants.PIPELINE_SUCCESS)) {
-            List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
             MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEVOPS_NOTIFY.getTypeName(), projectId, messageCode);
             List<Long> specifierList = new ArrayList<>();
             if (messageSettingVO != null) {
@@ -796,6 +795,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 if (!pipelineTriggers.isPresent()) {
                     users.clear();
                 }
+                List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
                 messageSettingVO.getTargetUserDTOS().forEach(t -> {
                     if (t.getType().equals(TargetUserType.SPECIFIER.getTypeName()) && !userIds.contains(t.getUserId())) {
                         specifierList.add(t.getUserId());
