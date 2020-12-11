@@ -1065,12 +1065,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Transactional
     public void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
-
+        String callbackToken = UUIDUtils.generateUUID();
         // 添加回调token
         if (devopsCdJobRecordDTO.getCallbackToken() == null) {
-            String callbackToken = UUIDUtils.generateUUID();
             devopsCdJobRecordDTO.setCallbackToken(callbackToken);
-
         }
         devopsCdJobRecordDTO.setCallbackUrl(gatewayUrl + "");
 
@@ -1157,6 +1155,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     public void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
 
         // 如果token认证不通过则直接返回
         if (!Objects.equals(devopsCdJobRecordDTO.getCallbackToken(), callbackToken)) {
@@ -1166,6 +1165,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         // 状态不是待审核，抛出错误信息
         if (!PipelineStatus.RUNNING.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.job status is invalid", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
             throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
         }
 
