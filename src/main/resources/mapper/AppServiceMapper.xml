@@ -811,7 +811,7 @@
         <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
             #{appServiceId}
         </foreach>
-        <if test='param != null'>
+        <if test="param != null and param !=''">
             AND
             (das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')

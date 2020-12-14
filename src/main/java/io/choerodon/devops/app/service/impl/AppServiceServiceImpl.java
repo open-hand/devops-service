@@ -3043,13 +3043,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         UserAppServiceIdsVO userAppServiceIdsVO = rducmClientOperator.getAppServiceIds(projectDTO.getOrganizationId(), userDetails.getUserId());
         // 待查询的appService列表
         List<Long> appServiceIds = userAppServiceIdsVO.getAppServiceIds();
-        if (CollectionUtils.isEmpty(appServiceIds)) {
-            return new Page<>();
-        }
         // 列举出当前项目下的应用服务id
         List<Long> appServiceIdsBelongToCurrentProject = appServiceMapper.listAllAppServiceIds(projectId);
         // 移除当前项目下的所有应用服务
         appServiceIds.removeAll(appServiceIdsBelongToCurrentProject);
+        // 如果在移除当前项目下的所有应用服务后，应用服务列表为空表示其他项目下没有应用服务权限，返回空列表
+        if (CollectionUtils.isEmpty(appServiceIds)) {
+            return new Page<>();
+        }
         // 如果appServiceId存在，添加到查询列表中
         if (appServiceId != null && !appServiceIds.contains(appServiceId)) {
             appServiceIds.add(appServiceId);
