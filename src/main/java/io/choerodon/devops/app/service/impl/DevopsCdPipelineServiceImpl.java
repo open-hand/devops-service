@@ -1094,7 +1094,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         MediaType type = MediaType.parseMediaType(MediaType.APPLICATION_JSON_VALUE);
         headers.setContentType(type);
         headers.add(AUTH_HEADER, externalApprovalJobVO.getSecretToken());
-        HttpEntity<Object> entity = new HttpEntity<>(ciCdPipelineRecordVO, headers);
+        HttpEntity<Object> entity = new HttpEntity<>(externalApprovalInfoVO, headers);
 
         StringBuilder log = new StringBuilder();
 
