@@ -34,7 +34,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_env_deploy_info.groovy') {
 
     changeSet(author: 'wanghao', id: '2020-11-25-add-column') {
         addColumn(tableName: 'devops_cd_env_deploy_info') {
-            column(name: "check_env_permission_flag", type: "TINYINT UNSIGNED", defaultValue: "1", remarks: '是否校验环境权限')
+            column(name: "check_env_permission_flag", type: "TINYINT UNSIGNED", defaultValue: "0", remarks: '是否校验环境权限')
         }
     }
 
