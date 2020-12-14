@@ -41,6 +41,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.pipeline.ExternalApprovalInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
@@ -75,6 +76,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
     private static final String AUTH_HEADER = "c7n-pipeline-token";
+    private static final String STATUS_CODE = "statusCode";
 
 
 
@@ -1070,14 +1072,21 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (devopsCdJobRecordDTO.getCallbackToken() == null) {
             devopsCdJobRecordDTO.setCallbackToken(callbackToken);
         }
-        devopsCdJobRecordDTO.setCallbackUrl(gatewayUrl + "");
 
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(pipelineRecordId);
-
         CiCdPipelineRecordVO ciCdPipelineRecordVO = ciCdPipelineRecordService.queryPipelineRecordDetails(devopsCdJobRecordDTO.getProjectId(), devopsPipelineRecordRelDTO.getId());
-        ciCdPipelineRecordVO.setCurrentCdJob(devopsCdJobRecordDTO);
+
+        // 装配发送内容
+        ExternalApprovalInfoVO externalApprovalInfoVO = new ExternalApprovalInfoVO();
+        externalApprovalInfoVO.setProjectId(devopsCdJobRecordDTO.getId());
+        externalApprovalInfoVO.setPipelineRecordId(pipelineRecordId);
+        externalApprovalInfoVO.setStageRecordId(stageRecordId);
+        externalApprovalInfoVO.setJobRecordId(jobRecordId);
+        externalApprovalInfoVO.setCurrentCdJob(devopsCdJobRecordDTO);
+        externalApprovalInfoVO.setPipelineRecordDetails(ciCdPipelineRecordVO);
+        externalApprovalInfoVO.setCallbackToken(callbackToken);
+
 
         ExternalApprovalJobVO externalApprovalJobVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), ExternalApprovalJobVO.class);
 
@@ -1088,6 +1097,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         HttpEntity<Object> entity = new HttpEntity<>(ciCdPipelineRecordVO, headers);
 
         StringBuilder log = new StringBuilder();
+
+        log.append("General:").append(System.lineSeparator());
+        log.append("Trigger url: ").append("POST: ").append(externalApprovalJobVO.getTriggerUrl()).append(System.lineSeparator());
+        log.append("Status Code:").append(STATUS_CODE).append(System.lineSeparator());
 
         log.append("Request headers:").append(System.lineSeparator());
         log.append(entity.getHeaders()).append(System.lineSeparator());
@@ -1101,11 +1114,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
                 throw new RestClientException("error.trigger.external.approval.task");
             }
+
             log.append("Response headers:").append(System.lineSeparator());
             log.append(responseEntity.getHeaders()).append(System.lineSeparator());
             log.append("Response body:").append(System.lineSeparator());
             log.append(responseEntity.getBody()).append(System.lineSeparator());
-            devopsCdJobRecordDTO.setLog(log.toString());
+            String logStr = log.toString();
+            devopsCdJobRecordDTO.setLog(logStr.replace(STATUS_CODE, responseEntity.getStatusCode().toString()));
             devopsCdJobRecordDTO.setStartedDate(new Date());
             devopsCdJobRecordDTO.setFinishedDate(null);
             // 更新任务状态为执行中
@@ -1115,8 +1130,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             LOGGER.info("error.trigger.external.approval.task", e);
             log.append("trigger error msg:").append(System.lineSeparator());
             log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
+            String logStr = log.toString();
+            if (responseEntity != null) {
+                devopsCdJobRecordDTO.setLog(logStr.replace(STATUS_CODE, responseEntity.getStatusCode().toString()));
+            } else {
+                devopsCdJobRecordDTO.setLog(logStr.replace("${statusCode}", "500"));
+            }
 
-            devopsCdJobRecordDTO.setLog(log.toString());
             devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
             devopsCdJobRecordDTO.setStartedDate(new Date());
             devopsCdJobRecordDTO.setFinishedDate(new Date());
@@ -1131,24 +1151,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
 
 
-    }
-
-    @Override
-    public void setExternalApprovalTaskStatus(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, Boolean status) {
-        LOGGER.info("setExternalApprovalTask:pipelineRecordId: {} stageRecordId: {} taskId: {}, status: {}", pipelineRecordId, stageRecordId, jobRecordId, status);
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
-        if (Boolean.TRUE.equals(status)) {
-            LOGGER.info(">>>>>>> setExternalApprovalTask, start next task, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
-            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toString());
-        } else {
-            LOGGER.info(">>>>>>> setExternalApprovalTask, update status to failed, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
-            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
-            workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
-        }
     }
 
     @Override
@@ -1186,8 +1188,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     public String queryCallbackUrl() {
-        String callbackUrl = gatewayUrl + "/devops/v1/cd_pipeline/external_approval_task/callback_url?token=xxxx";
-        return callbackUrl;
+        return gatewayUrl + "/devops/v1/cd_pipeline/external_approval_task/callback?pipeline_record_id=${xxx}&stage_record_id=${xxx}&job_record_id=${xxx}&callback_token=${xxx}$approval_status=${xxx}";
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {
