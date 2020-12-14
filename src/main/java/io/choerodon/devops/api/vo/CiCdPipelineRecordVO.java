@@ -3,9 +3,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 
 /**
  * 〈功能简述〉
@@ -14,6 +13,7 @@ import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
  * @author wanghao
  * @Date 2020/4/7 22:18
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CiCdPipelineRecordVO extends BaseDomain {
 
     private Long devopsPipelineRecordRelId;
@@ -60,8 +60,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private String pipelineName;
     private Long gitlabProjectId;
     private String viewId;
-
-    private DevopsCdJobRecordDTO currentCdJob;
 
     public String getViewId() {
         return viewId;
@@ -184,14 +182,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
         this.commit = commit;
     }
 
-    public DevopsCdJobRecordDTO getCurrentCdJob() {
-        return currentCdJob;
-    }
-
-    public void setCurrentCdJob(DevopsCdJobRecordDTO currentCdJob) {
-        this.currentCdJob = currentCdJob;
-    }
-
     @Override
     public String toString() {
         return "CiCdPipelineRecordVO{" +
@@ -210,7 +200,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
                 ", pipelineName='" + pipelineName + '\'' +
                 ", gitlabProjectId=" + gitlabProjectId +
                 ", viewId='" + viewId + '\'' +
-                ", currentCdJob=" + currentCdJob +
                 '}';
     }
 }
