@@ -1069,9 +1069,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
         String callbackToken = UUIDUtils.generateUUID();
         // 添加回调token
-        if (devopsCdJobRecordDTO.getCallbackToken() == null) {
-            devopsCdJobRecordDTO.setCallbackToken(callbackToken);
-        }
+        devopsCdJobRecordDTO.setCallbackToken(callbackToken);
 
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(pipelineRecordId);
