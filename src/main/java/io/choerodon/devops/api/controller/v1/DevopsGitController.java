@@ -277,6 +277,7 @@ public class DevopsGitController {
      * @param params       查询参数
      * @return Page
      */
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @CustomPageRequest
     @PostMapping("/page_branch_by_options_filtered_by_issue_id")
     public ResponseEntity<Page<BranchVO>> pageBranchFilteredByIssueId(
