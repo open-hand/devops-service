@@ -193,5 +193,14 @@ public interface DevopsGitService {
 
     BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName);
 
+    /**
+     * 查询
+     * @param projectId
+     * @param pageable
+     * @param appServiceId
+     * @param params
+     * @param issueId
+     * @return
+     */
     Page<BranchVO> pageBranchFilteredByIssueId(Long projectId, PageRequest pageable, Long appServiceId, String params, Long issueId);
 }

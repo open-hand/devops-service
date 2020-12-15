@@ -21,6 +21,9 @@
                 AND db.branch_name LIKE CONCAT(CONCAT('%', #{searchParam.branchName, jdbcType=VARCHAR}), '%')
             </if>
         </if>
+        <if test="issueId !=null">
+            AND db.issue_id!=#{issueId}
+        </if>
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
