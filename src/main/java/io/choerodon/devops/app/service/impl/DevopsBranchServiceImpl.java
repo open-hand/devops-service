@@ -34,7 +34,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     public List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId) {
         DevopsBranchDTO queryDevopsBranchDTO = new DevopsBranchDTO();
         queryDevopsBranchDTO.setIssueId(issueId);
-        return devopsBranchMapper.select(queryDevopsBranchDTO);
+        return devopsBranchMapper.listByIssueIdAndOrderByProjectId(issueId);
     }
 
     @Override

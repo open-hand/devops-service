@@ -32,4 +32,6 @@ public interface DevopsBranchMapper extends BaseMapper<DevopsBranchDTO> {
     List<LatestAppServiceVO> listLatestUseAppServiceIdAndDate(@Param("projectIds") List<Long> projectIds,
                                                               @Param("userId") Long userId,
                                                               @Param("time") Date time);
+
+    List<DevopsBranchDTO> listByIssueIdAndOrderByProjectId(@Param("issueId") Long issueId);
 }

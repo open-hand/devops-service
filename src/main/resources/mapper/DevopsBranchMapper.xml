@@ -87,4 +87,12 @@
         </foreach>
         GROUP BY db.app_service_id, db.last_update_date
     </select>
+
+    <select id="listByIssueIdAndOrderByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        SELECT db.*,das.project_id FROM
+            devops_branch db
+            JOIN devops_app_service das on db.app_service_id = das.id
+        WHERE db.issue_id=#{issueId}
+        ORDER BY project_id
+    </select>
 </mapper>
