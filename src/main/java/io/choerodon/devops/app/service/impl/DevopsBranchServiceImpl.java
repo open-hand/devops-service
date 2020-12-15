@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -122,7 +124,12 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
         List<DevopsBranchDTO> branchDTOList = branchDTOPage.getContent();
         // 过滤掉绑定issueId的分支
-        branchDTOPage.setContent(branchDTOList.stream().filter(b -> !b.getIssueId().equals(issueId)).collect(Collectors.toList()));
+        branchDTOPage.setContent(branchDTOList.stream().filter(b -> {
+            if (issueId != null) {
+                return !Objects.equals(b.getIssueId(), issueId);
+            }
+            return true;
+        }).collect(Collectors.toList()));
 
         return branchDTOPage;
     }
