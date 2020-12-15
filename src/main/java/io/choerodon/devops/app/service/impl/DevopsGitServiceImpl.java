@@ -329,7 +329,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode());
         Page<DevopsBranchDTO> devopsBranchDTOPageInfo =
-                devopsBranchService.basePageBranch(appServiceId, pageable, params);
+                devopsBranchService.basePageBranch(appServiceId, pageable, params, null);
         Page<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
         if (CollectionUtils.isEmpty(devopsBranchVOPageInfo.getContent())) {
@@ -1128,5 +1128,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return gitlabServiceClientOperator.queryBranch(gitLabProjectId, branchName);
     }
 
-
+    @Override
+    public Page<BranchVO> pageBranchFilteredByIssueId(Long projectId, PageRequest pageable, Long appServiceId, String params, Long issueId) {
+        Page<DevopsBranchDTO> branchDTOPage = devopsBranchService.basePageBranch(appServiceId, pageable, params, issueId);
+        return ConvertUtils.convertPage(branchDTOPage, BranchVO.class);
+    }
 }

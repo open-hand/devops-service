@@ -95,7 +95,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
 
     @Override
-    public Page<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageable, String params) {
+    public Page<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageable, String params, Long issueId) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Sort sort = pageable.getSort();
         String sortResult = "";
@@ -115,11 +115,16 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                     .collect(Collectors.joining(","));
         }
         String sortString = sortResult;
-        return PageHelper.doPage(pageable,
+        Page<DevopsBranchDTO> branchDTOPage = PageHelper.doPage(pageable,
                 () -> devopsBranchMapper.list(appServiceId,
                         sortString,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+        List<DevopsBranchDTO> branchDTOList = branchDTOPage.getContent();
+        // 过滤掉绑定issueId的分支
+        branchDTOPage.setContent(branchDTOList.stream().filter(b -> !b.getIssueId().equals(issueId)).collect(Collectors.toList()));
+
+        return branchDTOPage;
     }
 
 

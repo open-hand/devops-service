@@ -24,7 +24,7 @@ public interface DevopsBranchService {
 
     void baseUpdateBranch(DevopsBranchDTO devopsBranchDTO);
 
-    Page<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageable, String params);
+    Page<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageable, String params, Long issueId);
 
     void baseDelete(Long appServiceId, String branchName);
 

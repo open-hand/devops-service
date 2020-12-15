@@ -242,9 +242,10 @@ public class DevopsGitController {
     /**
      * 分页查询服务下的分支
      *
-     * @param projectId    项目 ID
-     * @param appServiceId 服务ID
-     * @param params       查询参数
+     * @param projectId        项目 ID
+     * @param appServiceId     服务ID
+     * @param params           查询参数
+     * @param currentProjectId 当前所处项目id
      * @return PageInfo
      */
     @Permission(level = ResourceLevel.ORGANIZATION,
@@ -266,6 +267,32 @@ public class DevopsGitController {
             @RequestParam(value = "current_project_id", required = false) Long currentProjectId
     ) {
         return Results.success(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params, currentProjectId));
+    }
+
+    /**
+     * 分页查询服务下的分支，并过滤掉绑定issue的分支
+     *
+     * @param projectId    项目id
+     * @param appServiceId 应用服务id
+     * @param params       查询参数
+     * @return Page
+     */
+    @CustomPageRequest
+    @PostMapping("/page_branch_by_options_filtered_by_issue_id")
+    public ResponseEntity<Page<BranchVO>> pageBranchFilteredByIssueId(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务id", required = true)
+            @PathVariable(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageable,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params,
+            @ApiParam(value = "需要过滤的issueId")
+            @Encrypt @RequestParam(value = "issue_id", required = false) Long issueId
+    ) {
+        return Results.success(devopsGitService.pageBranchFilteredByIssueId(projectId, pageable, appServiceId, params, issueId));
     }
 
     /**
