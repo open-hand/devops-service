@@ -1096,13 +1096,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         StringBuilder log = new StringBuilder();
 
-        log.append("General:").append(System.lineSeparator());
-        log.append("Trigger url: ").append("POST: ").append(externalApprovalJobVO.getTriggerUrl()).append(System.lineSeparator());
-        log.append("Status Code:").append(STATUS_CODE).append(System.lineSeparator());
+        log.append("\u001B[0K\u001B[32;1mGeneral: \u001B[0;m").append(System.lineSeparator());
+        log.append("\u001B[36mTrigger url\u001B[0m:").append("POST: ").append(externalApprovalJobVO.getTriggerUrl()).append(System.lineSeparator());
+        log.append("\u001B[36mStatus Code\u001B[0m:").append(STATUS_CODE).append(System.lineSeparator());
 
-        log.append("Request headers:").append(System.lineSeparator());
+        log.append("\u001B[0K\u001B[32;1mRequest headers: \u001B[0;m").append(System.lineSeparator());
         log.append(entity.getHeaders()).append(System.lineSeparator());
-        log.append("Request body:").append(System.lineSeparator());
+        log.append("\u001B[0K\u001B[32;1mRequest body: \u001B[0;m").append(System.lineSeparator());
         log.append(JsonHelper.marshalByJackson(entity.getBody())).append(System.lineSeparator());
 
 
@@ -1113,9 +1113,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 throw new RestClientException("error.trigger.external.approval.task");
             }
 
-            log.append("Response headers:").append(System.lineSeparator());
+            log.append("\u001B[0K\u001B[32;1mResponse headers: \u001B[0;m").append(System.lineSeparator());
             log.append(responseEntity.getHeaders()).append(System.lineSeparator());
-            log.append("Response body:").append(System.lineSeparator());
+            log.append("\u001B[0K\u001B[32;1mResponse body: \u001B[0;m:").append(System.lineSeparator());
             log.append(responseEntity.getBody()).append(System.lineSeparator());
             String logStr = log.toString();
             devopsCdJobRecordDTO.setLog(logStr.replace(STATUS_CODE, responseEntity.getStatusCode().toString()));
@@ -1126,7 +1126,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
         } catch (Exception e) {
             LOGGER.info("error.trigger.external.approval.task", e);
-            log.append("trigger error msg:").append(System.lineSeparator());
+            log.append("\u001B[0K\u001B[31;1mTrigger error msg: \u001B[0;m").append(System.lineSeparator());
             log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
             String logStr = log.toString();
             if (responseEntity != null) {
