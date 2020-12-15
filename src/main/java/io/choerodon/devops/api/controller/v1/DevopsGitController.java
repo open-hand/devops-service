@@ -278,6 +278,7 @@ public class DevopsGitController {
      * @return Page
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询服务下的分支,并过滤掉绑定了指定问题分支")
     @CustomPageRequest
     @PostMapping("/page_branch_by_options_filtered_by_issue_id")
     public ResponseEntity<Page<BranchVO>> pageBranchFilteredByIssueId(
