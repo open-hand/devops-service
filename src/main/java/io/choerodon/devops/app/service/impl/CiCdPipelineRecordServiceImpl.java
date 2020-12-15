@@ -329,12 +329,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                     cancelCdPipeline(cdPipelineRecordId);
                 }
             } else {
-                // ci未完成，则取消ci、cd
+                // ci未完成，则取消ci
                 devopsCiPipelineRecordService.cancel(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
-                // 存在cd阶段 则同时取消cd
-                if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
-                    cancelCdPipeline(cdPipelineRecordId);
-                }
             }
         }
 
