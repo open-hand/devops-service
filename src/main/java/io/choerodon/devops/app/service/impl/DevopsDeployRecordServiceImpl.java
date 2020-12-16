@@ -23,10 +23,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
+import io.choerodon.devops.api.vo.UseRecordType;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.MarketUseRecordService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
@@ -67,6 +69,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private MarketUseRecordService marketUseRecordService;
 
 
     @Override
@@ -113,7 +117,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                            String deployObjectName,
                            String deployVersion,
                            String instanceName,
-                           String deploySource) {
+                           DeploySourceVO deploySource) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                 projectId,
                 type.getType(),
@@ -127,9 +131,10 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 deployObjectName,
                 deployVersion,
                 instanceName,
-                deploySource);
+                JsonHelper.marshalByJackson(deploySource));
         try {
             baseCreate(devopsDeployRecordDTO);
+            marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource);
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}", devopsDeployRecordDTO);
         }
