@@ -9,9 +9,20 @@ public enum AppSourceType {
      */
     MARKET("market"),
     /**
-     * 应用服务来自非市场的平台
+     * 应用服务来自共享
      */
-    PLATFORM("platform");
+    SHARE("share"),
+
+    /**
+     * 未知部署来源
+     */
+    UNKNOWN("unknown"),
+
+    /**
+     * 应用服务来自本项目
+     */
+    CURRENT_PROJECT("currentProject");
+
     private String value;
 
     AppSourceType(String value) {

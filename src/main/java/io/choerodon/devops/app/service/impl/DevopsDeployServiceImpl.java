@@ -17,6 +17,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.JarSourceConfig;
 import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
@@ -100,7 +101,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         StringBuilder log = new StringBuilder();
         DeployConfigVO.JarDeploy jarDeploy;
         C7nNexusComponentDTO c7nNexusComponentDTO = new C7nNexusComponentDTO();
-
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
         try {
             // 0.1 查询部署信息
 
@@ -131,13 +132,17 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 nexusMavenRepoDTO.setNePullUserId(marketMavenConfigVO.getPullUserName());
                 nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
                 mavenRepoDTOList.add(nexusMavenRepoDTO);
-                JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(deployConfigVO.getJarDeploy().getJarSource(),JarSourceConfig.class);
+                JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(deployConfigVO.getJarDeploy().getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
+                deploySourceVO.setType(AppSourceType.MARKET.getValue());
+                deploySourceVO.setMarketAppName(repoConfigVO.getMarketAppName());
+                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceName());
 
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
                 mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
-
+                deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
+                deploySourceVO.setProjectName(projectDTO.getName());
             }
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                 throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
@@ -168,7 +173,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
-                    null);
+                    null,
+                    JsonHelper.marshalByJackson(deploySourceVO));
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             devopsDeployRecordService.saveRecord(
@@ -182,7 +188,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
-                    null);
+                    null,
+                    JsonHelper.marshalByJackson(deploySourceVO));
             throw new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
         } finally {
             sshUtil.closeSsh(ssh, null);
@@ -200,6 +207,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         SSHClient ssh = new SSHClient();
         StringBuilder log = new StringBuilder();
         DeployConfigVO.ImageDeploy imageDeploy = new DeployConfigVO.ImageDeploy();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
         try {
             // 0.1
 
@@ -216,13 +225,20 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 imageTagVo.setPullPassword(marketHarborConfigVO.getToken());
                 HarborC7nImageTagVo harborC7nImageTagVo = new HarborC7nImageTagVo();
                 harborC7nImageTagVo.setPullCmd("docker pull " + deployConfigVO.getImageDeploy().getMarketDockerImageUrl());
-                List<HarborC7nImageTagVo> harborC7nImageTagVos=new ArrayList<>();
+                List<HarborC7nImageTagVo> harborC7nImageTagVos = new ArrayList<>();
                 harborC7nImageTagVos.add(harborC7nImageTagVo);
                 imageTagVo.setImageTagList(harborC7nImageTagVos);
+
+                deploySourceVO.setType(AppSourceType.MARKET.getValue());
+                deploySourceVO.setMarketAppName(repoConfigVO.getMarketAppName());
+                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceName());
+
 
             } else {
                 imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
 
+                deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
+                deploySourceVO.setProjectName(projectDTO.getName());
             }
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);
@@ -254,7 +270,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
-                    null);
+                    null,
+                    JsonHelper.marshalByJackson(deploySourceVO));
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!");
         } catch (Exception e) {
@@ -270,7 +287,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
-                    null);
+                    null,
+                    JsonHelper.marshalByJackson(deploySourceVO));
             throw new CommonException("error.deploy.hostImage.failed.", e);
         } finally {
             sshUtil.closeSsh(ssh, null);
