@@ -52,6 +52,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private DevopsServiceInstanceService devopsServiceInstanceService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
@@ -222,12 +224,43 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             if (appServices.isEmpty()) {
                 throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());
             }
-            for (AppServiceDTO appServiceDTO : appServices) {
+
+            // TODO 待优化查找逻辑
+            // 先尝试从项目下取
+            AppServiceDTO tempApp = appServiceService
+                    .baseQueryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
+            if (tempApp != null) {
                 appServiceVersionDTO = appServiceVersionService
-                        .baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
+                        .baseQueryByAppServiceIdAndVersion(tempApp.getId(), c7nHelmRelease.getSpec().getChartVersion());
                 if (appServiceVersionDTO != null) {
-                    releaseAppServiceId = appServiceDTO.getId();
-                    break;
+                    LOGGER.debug("Found chart {} and version {} in project", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+                }
+            }
+
+            if (appServiceVersionDTO == null) {
+                // 配置库中这个实例的文件中指定的服务id
+                Long gitOpsAppServiceId = c7nHelmRelease.getSpec().getAppServiceId();
+                List<Long> candidateAppServiceIds = appServices.stream().map(AppServiceDTO::getId).collect(Collectors.toList());
+                if (gitOpsAppServiceId != null
+                        && candidateAppServiceIds.contains(gitOpsAppServiceId)) {
+                    // 尝试从配置库指定的服务取
+                    appServiceVersionDTO = appServiceVersionService
+                            .baseQueryByAppServiceIdAndVersion(gitOpsAppServiceId, c7nHelmRelease.getSpec().getChartVersion());
+                    if (appServiceVersionDTO != null) {
+                        LOGGER.info("Found chart {} and version {} via app service in release spec", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+                    }
+                }
+            }
+
+            // 如果还是找不到，就遍历
+            if (appServiceVersionDTO == null) {
+                for (AppServiceDTO appServiceDTO : appServices) {
+                    appServiceVersionDTO = appServiceVersionService
+                            .baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
+                    if (appServiceVersionDTO != null) {
+                        releaseAppServiceId = appServiceDTO.getId();
+                        break;
+                    }
                 }
             }
 
