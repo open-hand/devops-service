@@ -90,3 +90,7 @@ data:
 logging:
   level:
     root: error
+hzero:
+  admin:
+    auto-registry:
+      enable: false

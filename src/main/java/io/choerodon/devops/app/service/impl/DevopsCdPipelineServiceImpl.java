@@ -19,13 +19,19 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -35,6 +41,8 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.pipeline.ExternalApprovalInfoVO;
+import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -51,10 +59,8 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
-import io.choerodon.devops.infra.util.CustomContextUtil;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.K8sUtil;
+import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
+import io.choerodon.devops.infra.util.*;
 
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
@@ -69,12 +75,20 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
     private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
+    private static final String AUTH_HEADER = "c7n-pipeline-token";
+    private static final String STATUS_CODE = "statusCode";
+
+
 
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
     private static final Integer ADMIN = 1;
+    private static final Long ADMIN_ID = 1L;
 
     private static final Gson gson = new Gson();
+
+    @Value(value = "${services.gateway.url: http://api.example.com}")
+    private String gatewayUrl;
 
     @Autowired
     private AppServiceService appServiceService;
@@ -139,6 +153,17 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private TestServiceClientOperator testServiceClientoperator;
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
+    @Autowired
+    private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+
+    @Autowired
+    @Qualifier("restTemplateForIp")
+    private RestTemplate restTemplateForIp;
+
+    @Autowired
+    @Lazy
+    private CiCdPipelineRecordService ciCdPipelineRecordService;
+
 
     @Override
     @Transactional
@@ -161,6 +186,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
             if (devopsCdPipelineRecordDTO == null) {
                 LOGGER.info("current pipeline have no match record.", pipelineAttr.getId());
+                DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
+                record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(record);
+                sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCiPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
                 return;
             }
             // 执行条件：cd流水线记录状态为pending
@@ -283,7 +312,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
         sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                MessageCodeConstants.PIPELINE_FAILED, userId, null, null);
+                MessageCodeConstants.PIPELINE_FAILED, userId, null, new HashMap<>());
     }
 
     private void updateFirstStage(Long pipelineRecordId) {
@@ -419,12 +448,22 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
             return;
         }
-        // 没有环境权限，状态置为跳过
-        if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
-            LOGGER.info("User have no env Permission, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
-            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-            return;
+        // 判断是否需要校验环境权限
+        // 1.需要： 没有权限将任务状态改为skipped，有权限往下执行
+        // 2.不需要：没有权限使用管理员账户部署，有权限则使用自己账户
+        if (Boolean.TRUE.equals(devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag())) {
+            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
+                LOGGER.info("User have no env Permission, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+                devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                return;
+            }
+        } else {
+            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
+                LOGGER.info("User have no env Permission, user admin account to deploy.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+                CustomContextUtil.setUserContext(ADMIN_ID);
+            }
         }
+
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setDeployInfoId(devopsCdJobRecordDTO.getDeployInfoId());
@@ -774,7 +813,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
                 // 发送失败通知
                 sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                        MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, null);
+                        MessageCodeConstants.PIPELINE_FAILED, details.getUserId(), null, new HashMap<>());
             }
         } else if (AuditStatusEnum.REFUSED.value().equals(result)) {
             // 审核不通过
@@ -1022,6 +1061,132 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } else {
             return JobStatusEnum.RUNNING.value();
         }
+    }
+
+    @Override
+    @Transactional
+    public void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        String callbackToken = UUIDUtils.generateUUID();
+        // 添加回调token
+        devopsCdJobRecordDTO.setCallbackToken(callbackToken);
+
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(pipelineRecordId);
+        CiCdPipelineRecordVO ciCdPipelineRecordVO = ciCdPipelineRecordService.queryPipelineRecordDetails(devopsCdJobRecordDTO.getProjectId(), devopsPipelineRecordRelDTO.getId());
+
+        // 装配发送内容
+        ExternalApprovalInfoVO externalApprovalInfoVO = new ExternalApprovalInfoVO();
+        externalApprovalInfoVO.setProjectId(devopsCdJobRecordDTO.getId());
+        externalApprovalInfoVO.setPipelineRecordId(pipelineRecordId);
+        externalApprovalInfoVO.setStageRecordId(stageRecordId);
+        externalApprovalInfoVO.setJobRecordId(jobRecordId);
+        externalApprovalInfoVO.setCurrentCdJob(devopsCdJobRecordDTO);
+        externalApprovalInfoVO.setPipelineRecordDetails(ciCdPipelineRecordVO);
+        externalApprovalInfoVO.setCallbackToken(callbackToken);
+
+
+        ExternalApprovalJobVO externalApprovalJobVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), ExternalApprovalJobVO.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        MediaType type = MediaType.parseMediaType(MediaType.APPLICATION_JSON_VALUE);
+        headers.setContentType(type);
+        headers.add(AUTH_HEADER, externalApprovalJobVO.getSecretToken());
+        HttpEntity<Object> entity = new HttpEntity<>(externalApprovalInfoVO, headers);
+
+        StringBuilder log = new StringBuilder();
+
+        log.append("\u001B[0K\u001B[32;1mGeneral: \u001B[0;m").append(System.lineSeparator());
+        log.append("\u001B[36mTrigger url\u001B[0m:").append("POST: ").append(externalApprovalJobVO.getTriggerUrl()).append(System.lineSeparator());
+        log.append("\u001B[36mStatus Code\u001B[0m:").append(STATUS_CODE).append(System.lineSeparator());
+
+        log.append("\u001B[0K\u001B[32;1mRequest headers: \u001B[0;m").append(System.lineSeparator());
+        log.append(entity.getHeaders()).append(System.lineSeparator());
+        log.append("\u001B[0K\u001B[32;1mRequest body: \u001B[0;m").append(System.lineSeparator());
+        log.append(JsonHelper.marshalByJackson(entity.getBody())).append(System.lineSeparator());
+
+
+        ResponseEntity<Void> responseEntity = null;
+        try {
+            responseEntity = restTemplateForIp.exchange(externalApprovalJobVO.getTriggerUrl(), HttpMethod.POST, entity, Void.class);
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                throw new RestClientException("error.trigger.external.approval.task");
+            }
+
+            log.append("\u001B[0K\u001B[32;1mResponse headers: \u001B[0;m").append(System.lineSeparator());
+            log.append(responseEntity.getHeaders()).append(System.lineSeparator());
+            log.append("\u001B[0K\u001B[32;1mResponse body: \u001B[0;m:").append(System.lineSeparator());
+            log.append(responseEntity.getBody()).append(System.lineSeparator());
+            String logStr = log.toString();
+            devopsCdJobRecordDTO.setLog(logStr.replace(STATUS_CODE, responseEntity.getStatusCode().toString()));
+            devopsCdJobRecordDTO.setStartedDate(new Date());
+            devopsCdJobRecordDTO.setFinishedDate(null);
+            // 更新任务状态为执行中
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toString());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+        } catch (Exception e) {
+            LOGGER.info("error.trigger.external.approval.task", e);
+            log.append("\u001B[0K\u001B[31;1mTrigger error msg: \u001B[0;m").append(System.lineSeparator());
+            log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
+            String logStr = log.toString();
+            if (responseEntity != null) {
+                devopsCdJobRecordDTO.setLog(logStr.replace(STATUS_CODE, responseEntity.getStatusCode().toString()));
+            } else {
+                devopsCdJobRecordDTO.setLog(logStr.replace("${statusCode}", "500"));
+            }
+
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
+            devopsCdJobRecordDTO.setStartedDate(new Date());
+            devopsCdJobRecordDTO.setFinishedDate(new Date());
+            if (devopsCdJobRecordDTO.getStartedDate() != null) {
+                devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+            }
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
+        }
+
+
+
+    }
+
+    @Override
+    public void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
+
+        // 如果token认证不通过则直接返回
+        if (!Objects.equals(devopsCdJobRecordDTO.getCallbackToken(), callbackToken)) {
+            LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.callbackToken is invalid. ", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
+            return;
+        }
+
+        // 状态不是待审核，抛出错误信息
+        if (!PipelineStatus.RUNNING.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            LOGGER.info("setExternalApprovalTaskStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}, callbackToken: {}, status: {}.job status is invalid", pipelineRecordId, stageRecordId, jobRecordId, callbackToken, status);
+            throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
+        }
+
+        if (Boolean.TRUE.equals(status)) {
+            try {
+                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), "admin", 1L, 0L);
+
+                devopsCdJobRecordService.updateJobStatusSuccess(jobRecordId);
+                setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, true);
+            } catch (Exception e) {
+                setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, false);
+            }
+        } else {
+            setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, false);
+        }
+
+    }
+
+    @Override
+    public String queryCallbackUrl() {
+        return gatewayUrl + "/devops/v1/cd_pipeline/external_approval_task/callback?pipeline_record_id=${xxx}&stage_record_id=${xxx}&job_record_id=${xxx}&callback_token=${xxx}$approval_status=${xxx}";
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {

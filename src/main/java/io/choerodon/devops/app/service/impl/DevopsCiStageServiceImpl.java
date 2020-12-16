@@ -35,6 +35,7 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     @Override
     @Transactional
     public DevopsCiStageDTO create(DevopsCiStageDTO devopsCiStageDTO) {
+        devopsCiStageDTO.setId(null);
         if (devopsCiStageMapper.insertSelective(devopsCiStageDTO) != 1) {
             throw new CommonException(CREATE_STAGE_FAILED);
         }

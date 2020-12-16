@@ -123,39 +123,4 @@ public class ChartUtil {
             throw new CommonException("error.download.chart", e.getMessage());
         }
     }
-
-    public String downloadChartForAppMarket(AppServiceVersionDownloadPayload appServiceVersionPayload, String appServiceCode, String destpath) {
-        String repository = appServiceVersionPayload.getImage();
-        repository = repository.replace("http://", "");
-        String[] repositoryArray = repository.split("/");
-
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setType(CHART);
-        configurationProperties.setBaseUrl("http://" + repositoryArray[0]);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        ChartClient chartClient = retrofit.create(ChartClient.class);
-        Call<ResponseBody> getTaz = chartClient.downloadTaz(repositoryArray[1], repositoryArray[2], appServiceCode, appServiceVersionPayload.getVersion());
-        String fileName = String.format("%s%s%s-%s.tgz",
-                destpath,
-                FILE_SEPARATOR,
-                appServiceCode,
-                appServiceVersionPayload.getVersion());
-        try {
-            Response<ResponseBody> response = getTaz.execute();
-            try (FileOutputStream fos = new FileOutputStream(fileName)) {
-                if (response.body() != null) {
-                    InputStream is = response.body().byteStream();
-                    byte[] buffer = new byte[4096];
-                    int r = 0;
-                    while ((r = is.read(buffer)) > 0) {
-                        fos.write(buffer, 0, r);
-                    }
-                    is.close();
-                }
-            }
-        } catch (IOException e) {
-            throw new CommonException(e.getMessage(), e);
-        }
-        return fileName;
-    }
 }

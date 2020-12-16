@@ -1,15 +1,10 @@
 # devops-base镜像的dockerfile
-FROM python:latest as pyinstaller
+FROM python:3.9 as pyinstaller
 WORKDIR /home/yaml
 COPY values_yaml.py ./
-RUN pip3 install --no-cache-dir ruamel.yaml==0.16.10 -i https://mirrors.aliyun.com/pypi/simple/
+RUN pip3 install --no-cache-dir ruamel.yaml==0.16.12 -i https://mirrors.aliyun.com/pypi/simple/
 RUN pip3 install pyinstaller -i https://mirrors.aliyun.com/pypi/simple/
 RUN pyinstaller --noconfirm --clean values_yaml.py
 
-FROM daocloud.io/gcr-mirror/kaniko-project-executor:latest as kaniko
-
-FROM alpine:3.12.0
-# Install yaml
+FROM busybox
 COPY --from=pyinstaller /home/yaml/dist/values_yaml /usr/lib/yaml
-# Install kaniko
-COPY --from=kaniko /kaniko/executor /usr/bin/kaniko

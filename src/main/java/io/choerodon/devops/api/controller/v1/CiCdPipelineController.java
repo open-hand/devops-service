@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -90,10 +89,10 @@ public class CiCdPipelineController {
     public ResponseEntity<Page<CiCdPipelineVO>> listByProjectIdAndAppName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "searchParam", required = false) String searchParam,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, name, pageRequest));
+        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

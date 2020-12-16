@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -12,6 +13,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @author wanghao
  * @Date 2020/4/7 22:18
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CiCdPipelineRecordVO extends BaseDomain {
 
     private Long devopsPipelineRecordRelId;
@@ -178,5 +180,26 @@ public class CiCdPipelineRecordVO extends BaseDomain {
 
     public void setCommit(CustomCommitVO commit) {
         this.commit = commit;
+    }
+
+    @Override
+    public String toString() {
+        return "CiCdPipelineRecordVO{" +
+                "devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
+                ", ciRecordId=" + ciRecordId +
+                ", cdRecordId=" + cdRecordId +
+                ", gitlabPipelineId=" + gitlabPipelineId +
+                ", cdStatus='" + cdStatus + '\'' +
+                ", ciStatus='" + ciStatus + '\'' +
+                ", status='" + status + '\'' +
+                ", gitlabTriggerRef='" + gitlabTriggerRef + '\'' +
+                ", commit=" + commit +
+                ", ciCdPipelineVO=" + ciCdPipelineVO +
+                ", stageRecordVOS=" + stageRecordVOS +
+                ", devopsCdPipelineDeatilVO=" + devopsCdPipelineDeatilVO +
+                ", pipelineName='" + pipelineName + '\'' +
+                ", gitlabProjectId=" + gitlabProjectId +
+                ", viewId='" + viewId + '\'' +
+                '}';
     }
 }

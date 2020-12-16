@@ -254,19 +254,6 @@ public interface AppServiceService {
      */
     AppServiceRepVO queryByCode(Long projectId, String code);
 
-
-    /**
-     * 校验harbor配置信息是否正确
-     *
-     * @param url      harbor地址
-     * @param userName harbor用户名
-     * @param password harbor密码
-     * @param project  harbor项目
-     * @param email    harbor邮箱
-     * @return Boolean
-     */
-    Boolean checkHarbor(String url, String userName, String password, String project, String email);
-
     /**
      * 校验chart配置信息是否正确
      *

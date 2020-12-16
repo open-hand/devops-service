@@ -59,7 +59,7 @@ public class CiCdPipelineVO {
     @Valid
     private List<DevopsCdStageVO> devopsCdStageVOS;
 
-    private Boolean hasMoreRecords;
+    private Boolean hasRecords = false;
     //cicd 流水线下的执行记录
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
 
@@ -222,12 +222,12 @@ public class CiCdPipelineVO {
         this.devopsCdStageVOS = devopsCdStageVOS;
     }
 
-    public Boolean getHasMoreRecords() {
-        return hasMoreRecords;
+    public Boolean getHasRecords() {
+        return hasRecords;
     }
 
-    public void setHasMoreRecords(Boolean hasMoreRecords) {
-        this.hasMoreRecords = hasMoreRecords;
+    public void setHasRecords(Boolean hasRecords) {
+        this.hasRecords = hasRecords;
     }
 
 

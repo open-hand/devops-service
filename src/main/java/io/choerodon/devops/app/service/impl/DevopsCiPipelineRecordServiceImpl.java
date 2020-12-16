@@ -33,6 +33,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
@@ -86,6 +87,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final AppServiceVersionMapper appServiceVersionMapper;
     private StringRedisTemplate stringRedisTemplate;
+    private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -110,7 +112,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
                                              DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
                                              AppServiceVersionMapper appServiceVersionMapper,
-                                             StringRedisTemplate stringRedisTemplate
+                                             StringRedisTemplate stringRedisTemplate,
+                                             SendNotificationService sendNotificationService
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
@@ -133,6 +136,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.appServiceVersionMapper = appServiceVersionMapper;
         this.stringRedisTemplate = stringRedisTemplate;
+        this.sendNotificationService = sendNotificationService;
     }
 
     @Override
@@ -235,6 +239,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
             saveJobRecords(pipelineWebHookVO, pipelineRecordId);
+        }
+        if (pipelineWebHookVO.getObjectAttributes().getStatus().equals(JobStatusEnum.FAILED.value())) {
+            sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(),
+                    MessageCodeConstants.PIPELINE_FAILED, devopsCiPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
         }
     }
 
@@ -518,7 +526,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
             devopsCiStageRecordVOS.add(devopsCiStageRecordVO);
         }
-
 
 
 //        Map<String, List<DevopsCiJobRecordVO>> jobRecordMap = devopsCiJobRecordVOList.stream().collect(Collectors.groupingBy(DevopsCiJobRecordVO::getStage));

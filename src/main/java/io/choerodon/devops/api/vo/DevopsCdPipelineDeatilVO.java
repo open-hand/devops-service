@@ -51,4 +51,15 @@ public class DevopsCdPipelineDeatilVO {
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsCdPipelineDeatilVO{" +
+                "stageName='" + stageName + '\'' +
+                ", stageRecordId=" + stageRecordId +
+                ", taskRecordId=" + taskRecordId +
+                ", type='" + type + '\'' +
+                ", execute=" + execute +
+                '}';
+    }
 }

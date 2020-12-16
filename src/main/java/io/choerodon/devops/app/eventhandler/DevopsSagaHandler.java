@@ -263,7 +263,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CI_PIPELINE,
             description = "gitlab pipeline事件",
             sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitlabCiPipeline(String data) {
@@ -277,7 +277,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
             description = "gitlab pipeline事件",
             sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 20)
     public String gitlabCDPipeline(String data) {
@@ -291,7 +291,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE,
             description = "gitlab pipeline事件",
             sagaCode = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 10)
     public String trigerSimpleCDPipeline(String data) {
@@ -306,7 +306,7 @@ public class DevopsSagaHandler {
             description = "创建流水线环境自动部署实例",
             sagaCode = DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             seq = 1)
     public void pipelineEnvAutoDeployInstance(String data) {
         AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
@@ -605,7 +605,7 @@ public class DevopsSagaHandler {
             description = "创建流水线自动部署实例",
             sagaCode = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             seq = 1)
     public void pipelineAutoDeployInstance(String data) {
         AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);

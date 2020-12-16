@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -90,6 +91,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
+    private static final Gson gson = new Gson();
 
     @Override
     public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId) {
@@ -283,10 +285,13 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 //        }
 
         // 2. 根据装填获取DevopsPipelineDTO
-        DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
 
+        String businessKey = GenerateUUID.generateUUID();
+        DevopsPipelineDTO devopsPipelineDTO = devopsCdPipelineRecordService.createCDWorkFlowDTO(cdPipelineRecordId, true);
+        devopsPipelineDTO.setBusinessKey(businessKey);
         // 3 更新business key 更新状态
-        devopsCdPipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
+        devopsCdPipelineRecordDTO.setBusinessKey(businessKey);
+        devopsCdPipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         devopsCdStageRecordService.updateStatusById(firstStage.getId(), PipelineStatus.RUNNING.toValue());
@@ -324,12 +329,8 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                     cancelCdPipeline(cdPipelineRecordId);
                 }
             } else {
-                // ci未完成，则取消ci、cd
+                // ci未完成，则取消ci
                 devopsCiPipelineRecordService.cancel(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
-                // 存在cd阶段 则同时取消cd
-                if (!PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID.equals(cdPipelineRecordId)) {
-                    cancelCdPipeline(cdPipelineRecordId);
-                }
             }
         }
 
@@ -417,6 +418,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         if (Objects.isNull(devopsPipelineRecordRelDTOS) || CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS.getContent())) {
             return null;
         }
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
         Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, this::dtoToVo);
         cdPipelineRecordVOS.getContent().forEach(recordVO -> {
             DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryByCiPipelineRecordId(recordVO.getCiRecordId());
@@ -429,6 +431,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
                 ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
                 ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
+                ciCdPipelineRecordVO.setGitlabProjectId(ciCdPipelineVO.getGitlabProjectId());
 
                 stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
 
@@ -449,6 +452,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setCiStatus(devopsCiPipelineRecordVO.getStatus());
                 ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
                 ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
+                ciCdPipelineRecordVO.setGitlabProjectId(ciCdPipelineVO.getGitlabProjectId());
                 ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
                 stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
                 ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
@@ -464,6 +468,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
                 ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
                 ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
+                ciCdPipelineRecordVO.setGitlabProjectId(ciCdPipelineVO.getGitlabProjectId());
                 ciCdPipelineRecordVO.setGitlabPipelineId(Objects.isNull(devopsCdPipelineRecordVO.getGitlabPipelineId()) ? null : devopsCdPipelineRecordVO.getGitlabPipelineId());
                 ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
                 stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());

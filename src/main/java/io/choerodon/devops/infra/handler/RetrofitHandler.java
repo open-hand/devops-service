@@ -40,7 +40,8 @@ public class RetrofitHandler {
                 + configurationProperties.getPassword();
         String token = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
 
-        OkHttpClient okHttpClient = getOkHttpClient(configurationProperties.getInsecureSkipTlsVerify(), configurationProperties.getType(), token);
+        // 跳过tls校验
+        OkHttpClient okHttpClient = getOkHttpClient(true, configurationProperties.getType(), token);
 
         return new Retrofit.Builder()
                 .baseUrl(configurationProperties.getBaseUrl())
@@ -52,56 +53,50 @@ public class RetrofitHandler {
     private static OkHttpClient getOkHttpClient(Boolean insecureSkipTlsVerify, String type, String token) {
         if (!type.equals("chart")) {
             if (insecureSkipTlsVerify) {
-                final TrustManager[] trustAllCerts = new TrustManager[]{
-                        new X509TrustManager() {
+                X509TrustManager x509TrustManager = new X509TrustManager() {
 
-                            @Override
-                            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                                //此处是不检验安全证书，避免有些harbor仓库没使用https安全证书导致harbor api失败，如果不抛出异常会出现sonar的问题
-                                if (type == null) {
-                                    try {
-                                        throw new CertificateException("the type is null");
-                                    } catch (CertificateException e) {
-                                        throw new CommonException(e);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                                //此处是不检验安全证书，避免有些harbor仓库没使用https安全证书导致harbor api失败，如果不抛出异常会出现sonar的问题
-                                if (type == null) {
-                                    try {
-                                        throw new CertificateException("the type is null");
-                                    } catch (CertificateException e) {
-                                        throw new CommonException(e);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                                return new java.security.cert.X509Certificate[]{};
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        //此处是不检验安全证书，避免有些harbor仓库没使用https安全证书导致harbor api失败，如果不抛出异常会出现sonar的问题
+                        if (type == null) {
+                            try {
+                                throw new CertificateException("the type is null");
+                            } catch (CertificateException e) {
+                                throw new CommonException(e);
                             }
                         }
+                    }
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                        //此处是不检验安全证书，避免有些harbor仓库没使用https安全证书导致harbor api失败，如果不抛出异常会出现sonar的问题
+                        if (type == null) {
+                            try {
+                                throw new CertificateException("the type is null");
+                            } catch (CertificateException e) {
+                                throw new CommonException(e);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new java.security.cert.X509Certificate[]{};
+                    }
                 };
+                final TrustManager[] trustAllCerts = new TrustManager[]{x509TrustManager};
 
                 // Install the all-trusting trust manager
                 SSLContext sslContext = null;
                 try {
                     sslContext = SSLContext.getInstance("TLSv1.2");
-                    if (sslContext != null) {
-                        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-                    }
+                    sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
                 } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    LOGGER.error(e.getMessage());
+                    throw new CommonException(e);
                 }
 
                 // Create an ssl socket factory with our all-trusting manager
-                SSLSocketFactory sslSocketFactory = null;
-                if (sslContext != null) {
-                    sslSocketFactory = sslContext.getSocketFactory();
-                }
+                SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
                 OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
                 okHttpClientBuilder.interceptors().add((Interceptor.Chain chain) -> {
                     Request original = chain.request();
@@ -112,7 +107,7 @@ public class RetrofitHandler {
                     Request request = requestBuilder.build();
                     return chain.proceed(request);
                 });
-                okHttpClientBuilder.sslSocketFactory(sslSocketFactory);
+                okHttpClientBuilder.sslSocketFactory(sslSocketFactory, x509TrustManager);
                 okHttpClientBuilder.hostnameVerifier((requestedHost, remoteServerSession) -> {
                     return requestedHost.equalsIgnoreCase(remoteServerSession.getPeerHost()); // Compliant
                 });

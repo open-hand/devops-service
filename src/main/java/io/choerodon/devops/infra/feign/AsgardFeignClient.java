@@ -27,5 +27,5 @@ public interface AsgardFeignClient {
 
     @PutMapping("/v1/sagas/projects/{project_id}/tasks/instances/{instance_id}/retry")
     ResponseEntity<Void> retry(@PathVariable("project_id") Long projectId,
-                               @PathVariable Long instance_id);
+                               @PathVariable("instance_id") Long instance_id);
 }

@@ -28,6 +28,7 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.chart.ChartTagVO;
@@ -839,6 +840,25 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public AppServiceVersionDTO queryByCommitShaAndRef(Long appServiceId, String commitSha, String ref) {
 
         return appServiceVersionMapper.queryByCommitShaAndRef(appServiceId, commitSha, ref);
+    }
+
+    @Override
+    public AppServiceVersionWithHelmConfigVO queryVersionWithHelmConfig(Long projectId, Long appServiceVersionId) {
+        AppServiceVersionWithHelmConfigVO appServiceVersionWithHelmConfigVO = io.choerodon.core.utils.ConvertUtils.convertObject(appServiceVersionMapper.selectByPrimaryKey(appServiceVersionId), AppServiceVersionWithHelmConfigVO.class);
+        if (appServiceVersionWithHelmConfigVO != null) {
+            Long helmConfigId = appServiceVersionWithHelmConfigVO.getHelmConfigId();
+            if (helmConfigId == null) {
+                throw new FeignException("error.helm.config.id.null");
+            }
+
+            DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(helmConfigId);
+            if (devopsConfigDTO == null) {
+                throw new FeignException("error.helm.config.not.exist");
+            }
+
+            appServiceVersionWithHelmConfigVO.setHelmConfig(JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), ConfigVO.class));
+        }
+        return appServiceVersionWithHelmConfigVO;
     }
 
     /**

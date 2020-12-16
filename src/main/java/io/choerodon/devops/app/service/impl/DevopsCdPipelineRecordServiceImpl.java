@@ -41,6 +41,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
@@ -628,7 +629,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
                 String logInfo = IOUtils.readFully(cmd.getInputStream()).toString();
                 String errorInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
-                log.append(stopJar.toString());
+                log.append(stopJar).append(System.lineSeparator());
                 log.append(logInfo);
                 log.append(errorInfo);
             } finally {
@@ -684,7 +685,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            log.append(finalCmdStr.toString());
+            log.append(System.lineSeparator()).append(finalCmdStr.toString().replace(String.format("-u %s:%s", c7nNexusDeployDTO.getPullUserId(),
+                    c7nNexusDeployDTO.getPullUserPassword()), ""));
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
@@ -1149,6 +1151,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             }
 
+            if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(devopsCdJobRecordVO.getType())) {
+                ExternalApprovalJobVO externalApprovalJobVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), ExternalApprovalJobVO.class);
+                devopsCdJobRecordVO.setExternalApprovalJobVO(externalApprovalJobVO);
+            }
         });
 
     }

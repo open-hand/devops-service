@@ -82,4 +82,29 @@ public interface DevopsCdPipelineService {
      * @return
      */
     String getDeployStatus(Long pipelineRecordId, String deployJobName);
+
+    /**
+     * 执行外部卡点任务
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     */
+    void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    /**
+     * 外部卡点任务回调接口，用于接收审批结果
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @param callbackToken 回调时用于认证的token
+     * @param status 审批结果 true,false
+     */
+    void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status);
+
+    /**
+     * 查询外部卡点任务回调接口地址
+     * @return
+     */
+    String queryCallbackUrl();
+
 }

@@ -53,4 +53,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: 'log', type: 'text', remarks: '日志信息', beforeColumn: "countersigned")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-12-10-add-column') {
+        addColumn(tableName: 'devops_cd_job_record') {
+            column(name: 'callback_token', type: 'VARCHAR(255)', remarks: '外部卡点任务回调认证token', beforeColumn: "countersigned")
+        }
+    }
 }

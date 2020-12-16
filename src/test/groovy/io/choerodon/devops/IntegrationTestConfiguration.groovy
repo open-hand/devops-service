@@ -6,13 +6,13 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.devops.app.service.AgentPodService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.ProjectConfigHarborService
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
+import org.hzero.core.message.RedisMessageSource
+import org.hzero.core.redis.RedisHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
@@ -31,14 +31,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
-import org.springframework.test.context.TestPropertySource
 import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.Statement
-
 /**
  * Created by hailuoliu@choerodon.io on 2018/7/13.
  */
@@ -76,6 +74,18 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Primary
+    @Bean("redisHelper")
+    RedisHelper redisHelper() {
+        detachedMockFactory.Mock(RedisHelper)
+    }
+
+    @Primary
+    @Bean("redisMessageSource")
+    RedisMessageSource redisMessageSource() {
+        detachedMockFactory.Mock(RedisMessageSource)
+    }
+
+    @Primary
     @Bean("mockGitlabServiceClientOperator")
     GitlabServiceClientOperator gitlabServiceClientOperator() {
         detachedMockFactory.Mock(GitlabServiceClientOperator)
@@ -103,12 +113,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Primary
     TransactionalProducer transactionalProducer() {
         detachedMockFactory.Mock(TransactionalProducer)
-    }
-
-    @Bean("mockProjectConfigHarborService")
-    @Primary
-    ProjectConfigHarborService ProjectConfigHarborService() {
-        detachedMockFactory.Mock(ProjectConfigHarborService)
     }
 
     @PostConstruct

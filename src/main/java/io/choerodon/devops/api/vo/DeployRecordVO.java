@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -58,6 +59,24 @@ public class DeployRecordVO {
     private Long createdBy;
 
     private String commandStatus;
+    private String deploySource;
+    private DeploySourceVO deploySourceVO;
+
+    public String getDeploySource() {
+        return deploySource;
+    }
+
+    public void setDeploySource(String deploySource) {
+        this.deploySource = deploySource;
+    }
+
+    public DeploySourceVO getDeploySourceVO() {
+        return deploySourceVO;
+    }
+
+    public void setDeploySourceVO(DeploySourceVO deploySourceVO) {
+        this.deploySourceVO = deploySourceVO;
+    }
 
     public Long getId() {
         return id;

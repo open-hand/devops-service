@@ -70,7 +70,6 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STAGE_NAME = "stageName";
-    private static final String NONTIFY_TYPE = "devops";
     private static final String PIPELINE_ERROR_INFO = "Environment status error";
 
     private static final Gson gson = new Gson();

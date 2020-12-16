@@ -23,9 +23,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
+import io.choerodon.devops.api.vo.UseRecordType;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.MarketUseRecordService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
@@ -39,6 +42,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -65,6 +69,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private MarketUseRecordService marketUseRecordService;
 
 
     @Override
@@ -94,6 +100,41 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 instanceName);
         try {
             baseCreate(devopsDeployRecordDTO);
+        } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}", devopsDeployRecordDTO);
+        }
+    }
+
+    @Override
+    public void saveRecord(Long projectId,
+                           DeployType type,
+                           Long deployId,
+                           DeployModeEnum deployMode,
+                           Long deployPayloadId,
+                           String deployPayloadName,
+                           String deployResult,
+                           DeployObjectTypeEnum deployObjectType,
+                           String deployObjectName,
+                           String deployVersion,
+                           String instanceName,
+                           DeploySourceVO deploySource) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+                projectId,
+                type.getType(),
+                deployId,
+                deployMode.value(),
+                deployPayloadId,
+                deployPayloadName,
+                deployResult,
+                new Date(),
+                deployObjectType.value(),
+                deployObjectName,
+                deployVersion,
+                instanceName,
+                JsonHelper.marshalByJackson(deploySource));
+        try {
+            baseCreate(devopsDeployRecordDTO);
+            marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource);
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}", devopsDeployRecordDTO);
         }
@@ -192,6 +233,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         deployRecordVOPage.getContent().forEach(v -> {
+            v.setDeploySourceVO(JsonHelper.unmarshalByJackson(v.getDeploySource(), DeploySourceVO.class));
             IamUserDTO iamUserDTO = userMap.get(v.getCreatedBy());
             if (iamUserDTO != null) {
                 v.setExecuteUser(iamUserDTO);
