@@ -27,6 +27,6 @@ public interface MarketServiceClient {
     @GetMapping("/v1/market/deploy/{project_id}/repo/config")
     ResponseEntity<RepoConfigVO> queryRepoConfig(
             @PathVariable("project_id") Long projectId,
-            @RequestParam("app_id") Long appId,
+            @RequestParam("app_service_id") Long appId,
             @RequestParam("app_service_version_id") Long appServiceVersionId);
 }

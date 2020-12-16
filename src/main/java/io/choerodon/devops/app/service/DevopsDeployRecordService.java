@@ -22,6 +22,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsDeployRecordService {
 
     void saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName);
+    void saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName,String deploySourceVO);
 
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
