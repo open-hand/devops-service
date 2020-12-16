@@ -144,6 +144,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
                 deploySourceVO.setProjectName(projectDTO.getName());
             }
+            deploySourceVO.setAppServiceId(jarDeploy.getAppServiceId());
+            deploySourceVO.setAppServiceVersionId(jarDeploy.getAppServiceVersionId());
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                 throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
             }
@@ -174,7 +176,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
                     null,
-                    JsonHelper.marshalByJackson(deploySourceVO));
+                    deploySourceVO);
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             devopsDeployRecordService.saveRecord(
@@ -189,7 +191,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
                     null,
-                    JsonHelper.marshalByJackson(deploySourceVO));
+                    deploySourceVO);
             throw new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
         } finally {
             sshUtil.closeSsh(ssh, null);
@@ -240,6 +242,10 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
                 deploySourceVO.setProjectName(projectDTO.getName());
             }
+
+            deploySourceVO.setAppServiceId(imageDeploy.getAppServiceId());
+            deploySourceVO.setAppServiceVersionId(imageDeploy.getAppServiceVersionId());
+
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);
             }
@@ -271,7 +277,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
                     null,
-                    JsonHelper.marshalByJackson(deploySourceVO));
+                    deploySourceVO);
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!");
         } catch (Exception e) {
@@ -288,7 +294,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
                     null,
-                    JsonHelper.marshalByJackson(deploySourceVO));
+                    deploySourceVO);
             throw new CommonException("error.deploy.hostImage.failed.", e);
         } finally {
             sshUtil.closeSsh(ssh, null);
