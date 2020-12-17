@@ -2002,46 +2002,46 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
-//        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> list;
-//        if (projectOwnerOrRoot) {
-//            //是否需要分页
-//            if (doPage == null || doPage) {
+        if (projectOwnerOrRoot) {
+            //是否需要分页
+            if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable)));
-//            } else {
-//                list = appServiceMapper.list(projectId, isActive, hasVersion, type,
-//                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-//                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable));
-//            }
-//        } else {
-//            // 是否需要进行项目成员gitlab角色校验
-//            Set<Long> appServiceIds;
-//            if (checkMember) {
-//                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-//                appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
-//                if (CollectionUtils.isEmpty(appServiceIds)) {
-//                    return new Page<>();
-//                }
-//            } else {
-//                appServiceIds = null;
-//            }
-//            //是否需要分页
-//            if (doPage == null || doPage) {
-//                return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
-//                        () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-//                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-//                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId));
-//            } else {
-//                list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-//                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-//                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId);
-//            }
-//        }
-//
-//        return PageInfoUtil.listAsPage(list);
+            } else {
+                list = appServiceMapper.list(projectId, isActive, hasVersion, type,
+                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable));
+            }
+        } else {
+            // 是否需要进行项目成员gitlab角色校验
+            Set<Long> appServiceIds;
+            if (checkMember) {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+                if (CollectionUtils.isEmpty(appServiceIds)) {
+                    return new Page<>();
+                }
+            } else {
+                appServiceIds = null;
+            }
+            //是否需要分页
+            if (doPage == null || doPage) {
+                return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
+                        () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
+                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId));
+            } else {
+                list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
+                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId);
+            }
+        }
+
+        return PageInfoUtil.listAsPage(list);
     }
 
     @Override
