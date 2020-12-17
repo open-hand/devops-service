@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.google.gson.JsonParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -233,7 +234,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         deployRecordVOPage.getContent().forEach(v -> {
-            v.setDeploySourceVO(JsonHelper.unmarshalByJackson(v.getDeploySource(), DeploySourceVO.class));
+            try {
+                v.setDeploySourceVO(JsonHelper.unmarshalByJackson(v.getDeploySource(), DeploySourceVO.class));
+            } catch (Exception e) {
+                LOGGER.info("deploy source is unknown ");
+            }
             IamUserDTO iamUserDTO = userMap.get(v.getCreatedBy());
             if (iamUserDTO != null) {
                 v.setExecuteUser(iamUserDTO);
