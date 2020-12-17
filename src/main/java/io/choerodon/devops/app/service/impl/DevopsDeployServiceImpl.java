@@ -135,8 +135,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(deployConfigVO.getJarDeploy().getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
                 deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(repoConfigVO.getMarketAppName());
-                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceName());
+                deploySourceVO.setMarketAppName(repoConfigVO.getMarketServiceVO().getMarketAppName());
+                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceVO().getMarketServiceName());
 
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
@@ -232,8 +232,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 imageTagVo.setImageTagList(harborC7nImageTagVos);
 
                 deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(repoConfigVO.getMarketAppName());
-                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceName());
+                deploySourceVO.setMarketAppName(repoConfigVO.getMarketServiceVO().getMarketAppName());
+                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceVO().getMarketServiceName());
 
 
             } else {

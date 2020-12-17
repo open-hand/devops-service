@@ -5,11 +5,9 @@ package io.choerodon.devops.api.vo.market;
  */
 public class RepoConfigVO {
 
-    private String marketAppName;
+    private MarketServiceVO marketServiceVO;
 
-    private String marketServiceName;
-
-
+    private MarketServiceDeployObjectVO marketServiceDeployObjectDTO;
 
     private MarketMavenConfigVO marketMavenConfigVO;
 
@@ -17,20 +15,21 @@ public class RepoConfigVO {
 
     private MarketChartConfigVO marketChartConfigVO;
 
-    public String getMarketAppName() {
-        return marketAppName;
+
+    public MarketServiceVO getMarketServiceVO() {
+        return marketServiceVO;
     }
 
-    public void setMarketAppName(String marketAppName) {
-        this.marketAppName = marketAppName;
+    public void setMarketServiceVO(MarketServiceVO marketServiceVO) {
+        this.marketServiceVO = marketServiceVO;
     }
 
-    public String getMarketServiceName() {
-        return marketServiceName;
+    public MarketServiceDeployObjectVO getMarketServiceDeployObjectDTO() {
+        return marketServiceDeployObjectDTO;
     }
 
-    public void setMarketServiceName(String marketServiceName) {
-        this.marketServiceName = marketServiceName;
+    public void setMarketServiceDeployObjectDTO(MarketServiceDeployObjectVO marketServiceDeployObjectDTO) {
+        this.marketServiceDeployObjectDTO = marketServiceDeployObjectDTO;
     }
 
     public MarketMavenConfigVO getMarketMavenConfigVO() {
