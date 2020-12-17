@@ -461,7 +461,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCiStageVO.setType(StageType.CI.getType());
         }
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
-
+        ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
         //查询CD相关的阶段以及JOB
         List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageService.queryByPipelineId(pipelineId);
         List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByPipelineId(pipelineId);
