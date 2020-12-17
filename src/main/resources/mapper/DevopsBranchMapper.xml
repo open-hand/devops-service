@@ -22,7 +22,7 @@
             </if>
         </if>
         <if test="issueId !=null">
-            AND db.issue_id!=#{issueId}
+            AND (ISNULL(db.issue_id) OR db.issue_id!=#{issueId})
         </if>
         <if test='params != null and params.size > 0'>
             AND
