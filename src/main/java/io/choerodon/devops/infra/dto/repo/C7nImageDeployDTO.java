@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto.repo;
 
+import com.google.gson.annotations.SerializedName;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
