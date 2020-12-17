@@ -7,6 +7,8 @@ package io.choerodon.devops.infra.dto.market;
 public class MarketServiceVersionDTO {
     private Long id;
 
+    private Long marketAppServiceId;
+
     private Long devopsAppServiceId;
 
     private Long devopsAppServiceVersionId;
@@ -73,6 +75,14 @@ public class MarketServiceVersionDTO {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public Long getMarketAppServiceId() {
+        return marketAppServiceId;
+    }
+
+    public void setMarketAppServiceId(Long marketAppServiceId) {
+        this.marketAppServiceId = marketAppServiceId;
     }
 
     // TODO

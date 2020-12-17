@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -14,6 +15,9 @@ public class MarketInstanceCreationRequestVO {
     @Encrypt
     @ApiModelProperty("实例id")
     private Long instanceId;
+
+    @Encrypt
+    private Long marketAppServiceId;
 
     @Encrypt
     @ApiModelProperty("市场市场服务版本id")
@@ -37,6 +41,14 @@ public class MarketInstanceCreationRequestVO {
 
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private Boolean notChanged;
+
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    private Long commandId;
 
     @Nullable
     public Long getInstanceId() {
@@ -101,5 +113,29 @@ public class MarketInstanceCreationRequestVO {
 
     public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
         this.devopsIngressVO = devopsIngressVO;
+    }
+
+    public Long getMarketAppServiceId() {
+        return marketAppServiceId;
+    }
+
+    public void setMarketAppServiceId(Long marketAppServiceId) {
+        this.marketAppServiceId = marketAppServiceId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
+
+    public Boolean getNotChanged() {
+        return notChanged;
+    }
+
+    public void setNotChanged(Boolean notChanged) {
+        this.notChanged = notChanged;
     }
 }

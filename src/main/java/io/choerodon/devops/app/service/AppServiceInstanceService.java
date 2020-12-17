@@ -94,6 +94,15 @@ public interface AppServiceInstanceService {
      */
     AppServiceInstanceVO createOrUpdateByGitOps(AppServiceDeployVO appServiceDeployVO, Long userId);
 
+
+    /**
+     * 部署应用,GitOps
+     *
+     * @param appServiceDeployVO 部署信息
+     * @return ApplicationInstanceVO
+     */
+    AppServiceInstanceVO createOrUpdateMarketInstanceByGitOps(MarketInstanceCreationRequestVO appServiceDeployVO, Long userId);
+
     /**
      * 查询运行中的实例
      *
