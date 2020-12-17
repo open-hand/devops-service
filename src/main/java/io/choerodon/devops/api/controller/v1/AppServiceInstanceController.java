@@ -24,7 +24,7 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
@@ -73,6 +73,31 @@ public class AppServiceInstanceController {
         return new ResponseEntity<>(appServiceInstanceService.queryInfoById(instanceId), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("部署应用市场的服务")
+    @PostMapping("/market/instances")
+    public ResponseEntity<AppServiceInstanceVO> deployMarketService(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+        marketInstanceCreationRequestVO.setCommandType(CommandType.CREATE.getType());
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("部署应用市场的服务")
+    @PostMapping("/market/instances/{instance_id}")
+    public ResponseEntity<AppServiceInstanceVO> updateMarketServiceInstance(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "实例id", required = true)
+            @PathVariable(value = "instance_id") Long instanceId,
+            @RequestBody MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+        marketInstanceCreationRequestVO.setCommandType(CommandType.UPDATE.getType());
+        marketInstanceCreationRequestVO.setInstanceId(instanceId);
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
+    }
 
     /**
      * 分页查询环境下实例信息（基本信息）

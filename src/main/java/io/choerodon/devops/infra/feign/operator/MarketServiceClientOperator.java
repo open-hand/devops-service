@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.market.RepoConfigVO;
+import io.choerodon.devops.infra.dto.market.MarketServiceDTO;
+import io.choerodon.devops.infra.dto.market.MarketServiceVersionDTO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
 
 /**
@@ -29,4 +31,13 @@ public class MarketServiceClientOperator {
         marketServiceClient.createUseRecord(marketAppUseRecordDTO).getBody();
     }
 
+    public MarketServiceDTO queryMarketService(Long marketServiceId) {
+        // TODO
+        return new MarketServiceDTO();
+    }
+
+    public MarketServiceVersionDTO queryVersion(Long marketServiceVersionId) {
+        // TODO
+        return new MarketServiceVersionDTO();
+    }
 }

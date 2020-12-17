@@ -20,14 +20,20 @@ public class AppServiceInstanceDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ApiModelProperty("实例的code")
     private String code;
+    @ApiModelProperty("应用服务的id/当source为market时存市场服务的id")
     private Long appServiceId;
+    @ApiModelProperty("实例部署的来源")
+    private String source;
     /**
      * 这个应用服务版本是可能为空的，是集群中实际部署的实例的版本id
      * 假如第一次部署就失败了，这个值就可能是空的
      */
     @Nullable
     private Long appServiceVersionId;
+    @ApiModelProperty("市场服务版本id")
+    private Long marketServiceVersionId;
     private Long envId;
     /**
      * 因为脏数据，还有可能为空
@@ -302,5 +308,21 @@ public class AppServiceInstanceDTO extends AuditDomain {
 
     public void setComponentChartName(String componentChartName) {
         this.componentChartName = componentChartName;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public Long getMarketServiceVersionId() {
+        return marketServiceVersionId;
+    }
+
+    public void setMarketServiceVersionId(Long marketServiceVersionId) {
+        this.marketServiceVersionId = marketServiceVersionId;
     }
 }

@@ -77,6 +77,15 @@ public interface AppServiceInstanceService {
     AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline);
 
     /**
+     * 创建或者更新应用市场实例
+     *
+     * @param projectId                       项目id
+     * @param marketInstanceCreationRequestVO 请求参数
+     * @return 实例信息
+     */
+    AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO);
+
+    /**
      * 部署应用,GitOps
      *
      * @param appServiceDeployVO 部署信息
