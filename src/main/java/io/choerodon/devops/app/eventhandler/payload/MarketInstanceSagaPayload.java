@@ -1,11 +1,8 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.MarketInstanceCreationRequestVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.market.MarketServiceDTO;
 import io.choerodon.devops.infra.dto.market.MarketServiceVersionDTO;
@@ -21,8 +18,6 @@ public class MarketInstanceSagaPayload {
     private String secretCode;
     private MarketServiceDTO marketServiceDTO;
     private MarketServiceVersionDTO marketServiceVersionDTO;
-    private AppServiceDTO applicationDTO;
-    private AppServiceVersionDTO appServiceVersionDTO;
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
     private MarketInstanceCreationRequestVO marketInstanceCreationRequestVO;
     private DevopsServiceReqVO devopsServiceReqVO;
@@ -63,22 +58,6 @@ public class MarketInstanceSagaPayload {
 
     public void setSecretCode(String secretCode) {
         this.secretCode = secretCode;
-    }
-
-    public AppServiceDTO getApplicationDTO() {
-        return applicationDTO;
-    }
-
-    public void setApplicationDTO(AppServiceDTO applicationDTO) {
-        this.applicationDTO = applicationDTO;
-    }
-
-    public AppServiceVersionDTO getAppServiceVersionDTO() {
-        return appServiceVersionDTO;
-    }
-
-    public void setAppServiceVersionDTO(AppServiceVersionDTO appServiceVersionDTO) {
-        this.appServiceVersionDTO = appServiceVersionDTO;
     }
 
     public DevopsEnvironmentDTO getDevopsEnvironmentDTO() {

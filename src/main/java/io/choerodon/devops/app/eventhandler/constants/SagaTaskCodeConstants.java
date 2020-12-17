@@ -97,6 +97,11 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_CREATE_INSTANCE = "devopsCreateInstance";
 
     /**
+     * devops创建市场实例
+     */
+    public static final String DEVOPS_CREATE_MARKET_INSTANCE = "devops-process-market-instance";
+
+    /**
      * devops创建网络
      */
     public static final String DEVOPS_CREATE_SERVICE = "devopsCreateService";

@@ -674,6 +674,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
     }
 
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
+            description = "Devops创建市场实例", inputSchemaClass = MarketInstanceSagaPayload.class)
     @Override
     public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO) {
         // 查询环境
@@ -738,8 +740,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
 
-
-
         //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         if (changed) {
             //存储数据
@@ -754,7 +754,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
-
 
 
             //插入部署记录
@@ -773,12 +772,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 //                    appServiceInstanceDTO.getCode());
 
 
-
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
                 appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
             }
+            appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             MarketInstanceSagaPayload instanceSagaPayload = new MarketInstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
 //            instanceSagaPayload.setApplicationDTO(appServiceDTO);
             instanceSagaPayload.setMarketServiceDTO(appServiceDTO);
@@ -789,14 +788,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             instanceSagaPayload.setDevopsServiceReqVO(appServiceDeployVO.getDevopsServiceReqVO());
 
 
-
             producer.apply(
                     StartSagaBuilder
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
                             .withSourceId(devopsEnvironmentDTO.getProjectId())
                             .withRefType("env")
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE),
                     builder -> builder
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
@@ -869,6 +867,78 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 throw e;
             }
             if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType())) {
+                //创建实例资源失败，发送webhook json
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                        .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
+            }
+            // 更新的超时情况暂未处理
+        }
+    }
+
+    @Override
+    public void createMarketInstanceBySaga(MarketInstanceSagaPayload instanceSagaPayload) {
+        //更新实例的时候判断当前容器目录下是否存在环境对应的GitOps文件目录，不存在则克隆
+        String filePath = null;
+        if (instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType().equals(UPDATE)) {
+            filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getProjectId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
+        }
+
+
+        //创建实例时，如果选择了创建网络
+        if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
+            instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getMarketServiceDTO().getId());
+            devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
+        }
+
+        try {
+            //在gitops库处理instance文件
+            ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(getC7NHelmReleaseForMarketServiceInstance(
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceName(),
+                    instanceSagaPayload.getMarketServiceVersionDTO().getChartRepo(),
+                    instanceSagaPayload.getMarketServiceDTO().getId(),
+                    instanceSagaPayload.getCommandId(),
+                    instanceSagaPayload.getMarketServiceVersionDTO().getDevopsAppServiceCode(),
+                    instanceSagaPayload.getMarketServiceVersionDTO().getChartVersion(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getValues(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getMarketAppServiceVersionId(),
+                    instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO()));
+
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
+                    RELEASE_PREFIX + instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceName(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType(),
+                    instanceSagaPayload.getGitlabUserId(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+
+            //创建实例成功 发送web hook json
+            if (CREATE.equals(instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType())) {
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceId());
+                appServiceInstanceDTO.setProjectId(instanceSagaPayload.getProjectId());
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                        .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, InstanceStatus.RUNNING.getStatus());
+            }
+        } catch (Exception e) {
+            //有异常更新实例以及command的状态
+            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceId());
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(instanceSagaPayload.getDevopsEnvironmentDTO().getId(), appServiceInstanceDTO.getId(), HELM_RELEASE);
+            filePath = devopsEnvFileResourceDTO == null ? RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
+            // 这里只考虑了创建失败的情况，这说明是gitlab超时
+            if (!CREATE.equals(instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType()) || !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+                    filePath)) {
+                throw e;
+            }
+            if (CREATE.equals(instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType())) {
                 //创建实例资源失败，发送webhook json
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                         .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
@@ -1695,6 +1765,35 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         } else {
             versionValue = appServiceVersionService.baseQueryValue(deployVersionId);
         }
+
+        c7nHelmRelease.getSpec().setValues(
+                getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
+        return c7nHelmRelease;
+    }
+
+    private C7nHelmRelease getC7NHelmReleaseForMarketServiceInstance(String code, String repository,
+                                                                     Long appServiceId,
+                                                                     Long commandId, String appServiceCode,
+                                                                     String version, String deployValue,
+                                                                     Long marketServiceVersionId, String secretName,
+                                                                     DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
+        c7nHelmRelease.getMetadata().setName(code);
+        // 设置这个app-service-id是防止不同项目的应用服务被网络根据应用服务code误选择，要以id作为标签保证准确性
+        c7nHelmRelease.getSpec().setAppServiceId(appServiceId);
+        c7nHelmRelease.getSpec().setRepoUrl(repository);
+        c7nHelmRelease.getSpec().setChartName(appServiceCode);
+        c7nHelmRelease.getSpec().setChartVersion(version);
+        c7nHelmRelease.getSpec().setCommandId(commandId);
+        if (secretName != null) {
+            c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
+        }
+
+        // 如果是组件的实例进行部署
+        String versionValue;
+        // TODO 从market-service查询values
+        // versionValue = appServiceVersionService.baseQueryValue(deployVersionId);
+        versionValue = "TODO";
 
         c7nHelmRelease.getSpec().setValues(
                 getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());

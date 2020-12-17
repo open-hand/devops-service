@@ -11,6 +11,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
+import io.choerodon.devops.app.eventhandler.payload.MarketInstanceSagaPayload;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -316,6 +317,8 @@ public interface AppServiceInstanceService {
      * @param instanceSagaPayload
      */
     void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload);
+
+    void createMarketInstanceBySaga(MarketInstanceSagaPayload marketInstanceSagaPayload);
 
     /**
      * @param commandId
