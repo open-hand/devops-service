@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import net.schmizz.sshj.SSHClient;
@@ -10,39 +10,31 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
-import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.market.JarSourceConfig;
-import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
-import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
-import io.choerodon.devops.api.vo.market.RepoConfigVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsDeployService;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.HostDeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
-import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.SshUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -76,8 +68,6 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
-    @Autowired
-    private MarketServiceClientOperator marketServiceClientOperator;
 
     @Override
     public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
@@ -101,7 +91,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         StringBuilder log = new StringBuilder();
         DeployConfigVO.JarDeploy jarDeploy;
         C7nNexusComponentDTO c7nNexusComponentDTO = new C7nNexusComponentDTO();
-        DeploySourceVO deploySourceVO = new DeploySourceVO();
+
         try {
             // 0.1 查询部署信息
 
@@ -118,37 +108,11 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             String version = jarDeploy.getVersion();
 
             // 0.3 获取并记录信息
-            List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
-            List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
-            if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
-                RepoConfigVO repoConfigVO = marketServiceClientOperator.queryRepoConfig(projectId, deployConfigVO.getJarDeploy().getAppServiceId(), deployConfigVO.getJarDeploy().getAppServiceVersionId());
-                MarketMavenConfigVO marketMavenConfigVO = repoConfigVO.getMarketMavenConfigVO();
-                C7nNexusComponentDTO nNexusComponentDTO = new C7nNexusComponentDTO();
-                nNexusComponentDTO.setDownloadUrl(marketMavenConfigVO.getRepoUrl());
-                nNexusComponentDTO.setName(deployConfigVO.getJarDeploy().getServerName());
-                nNexusComponentDTO.setVersion(deployConfigVO.getJarDeploy().getVersion());
-                nexusComponentDTOList.add(nNexusComponentDTO);
-                NexusMavenRepoDTO nexusMavenRepoDTO = new NexusMavenRepoDTO();
-                nexusMavenRepoDTO.setNePullUserId(marketMavenConfigVO.getPullUserName());
-                nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
-                mavenRepoDTOList.add(nexusMavenRepoDTO);
-                JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(deployConfigVO.getJarDeploy().getJarSource(), JarSourceConfig.class);
-                jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
-                deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(repoConfigVO.getMarketServiceVO().getMarketAppName());
-                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceVO().getMarketServiceName());
-
-            } else {
-                nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
-                mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
-                deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
-                deploySourceVO.setProjectName(projectDTO.getName());
-            }
-            deploySourceVO.setAppServiceId(jarDeploy.getAppServiceId());
-            deploySourceVO.setAppServiceVersionId(jarDeploy.getAppServiceVersionId());
+            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                 throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
             }
+            List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
                 throw new CommonException("error.get.maven.config");
             }
@@ -161,7 +125,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             sshUtil.sshConnect(deployConfigVO.getHostConnectionVO(), ssh);
 
             // 2. 执行jar部署
-            sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(), jarDeploy.getWorkingPath(), log);
+            sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(),jarDeploy.getWorkingPath(), log);
             sshUtil.sshExec(ssh, c7nNexusDeployDTO, jarDeploy.getValue(), jarDeploy.getWorkingPath(), log);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             devopsDeployRecordService.saveRecord(
@@ -175,8 +139,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
-                    null,
-                    deploySourceVO);
+                    null);
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             devopsDeployRecordService.saveRecord(
@@ -190,8 +153,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
-                    null,
-                    deploySourceVO);
+                    null);
             throw new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
         } finally {
             sshUtil.closeSsh(ssh, null);
@@ -209,43 +171,14 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         SSHClient ssh = new SSHClient();
         StringBuilder log = new StringBuilder();
         DeployConfigVO.ImageDeploy imageDeploy = new DeployConfigVO.ImageDeploy();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        DeploySourceVO deploySourceVO = new DeploySourceVO();
         try {
             // 0.1
 
             imageDeploy = deployConfigVO.getImageDeploy();
             imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
-            HarborC7nRepoImageTagVo imageTagVo = null;
             C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
-            if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
-                RepoConfigVO repoConfigVO = marketServiceClientOperator.queryRepoConfig(projectId, deployConfigVO.getImageDeploy().getAppServiceId(), deployConfigVO.getImageDeploy().getAppServiceVersionId());
-                MarketHarborConfigVO marketHarborConfigVO = repoConfigVO.getMarketHarborConfigVO();
-                imageTagVo.setPullAccount(marketHarborConfigVO.getRobotName());
-                imageTagVo.setHarborUrl(marketHarborConfigVO.getRepoUrl());
-                imageTagVo.setPullPassword(marketHarborConfigVO.getToken());
-                HarborC7nImageTagVo harborC7nImageTagVo = new HarborC7nImageTagVo();
-                harborC7nImageTagVo.setPullCmd("docker pull " + deployConfigVO.getImageDeploy().getMarketDockerImageUrl());
-                List<HarborC7nImageTagVo> harborC7nImageTagVos = new ArrayList<>();
-                harborC7nImageTagVos.add(harborC7nImageTagVo);
-                imageTagVo.setImageTagList(harborC7nImageTagVos);
-
-                deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(repoConfigVO.getMarketServiceVO().getMarketAppName());
-                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceVO().getMarketServiceName());
-
-
-            } else {
-                imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
-
-                deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
-                deploySourceVO.setProjectName(projectDTO.getName());
-            }
-
-            deploySourceVO.setAppServiceId(imageDeploy.getAppServiceId());
-            deploySourceVO.setAppServiceVersionId(imageDeploy.getAppServiceVersionId());
-
+            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);
             }
@@ -276,11 +209,10 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
-                    null,
-                    deploySourceVO);
+                    null);
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!");
-        } catch (Exception e) {
+        }catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             devopsDeployRecordService.saveRecord(
                     projectId,
@@ -293,8 +225,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     imageDeploy.getTag(),
-                    null,
-                    deploySourceVO);
+                    null);
             throw new CommonException("error.deploy.hostImage.failed.", e);
         } finally {
             sshUtil.closeSsh(ssh, null);

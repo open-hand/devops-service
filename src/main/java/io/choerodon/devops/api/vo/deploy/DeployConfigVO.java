@@ -38,19 +38,6 @@ public class DeployConfigVO {
     @Valid
     private AppServiceDeployVO appServiceDeployVO;
 
-    /**
-     * 服务来源  是否是市场服务
-     */
-    private String appSource;
-
-    public String getAppSource() {
-        return appSource;
-    }
-
-    public void setAppSource(String appSource) {
-        this.appSource = appSource;
-    }
-
     public static class ImageDeploy {
 
         @ApiModelProperty("仓库名")
@@ -87,45 +74,6 @@ public class DeployConfigVO {
         @ApiModelProperty("容器名称")
         @NotNull(message = "error.containerName.is.null")
         private String containerName;
-
-        /**
-         *  市场服务下应用服务id 应用服务版本
-         */
-        private Long appServiceId;
-
-        /**
-         *   应用服务版本id
-         */
-        private Long appServiceVersionId;
-
-        /**
-         * 市应用要部署的镜像地址
-         */
-        private String marketDockerImageUrl;
-
-        public String getMarketDockerImageUrl() {
-            return marketDockerImageUrl;
-        }
-
-        public void setMarketDockerImageUrl(String marketDockerImageUrl) {
-            this.marketDockerImageUrl = marketDockerImageUrl;
-        }
-
-        public Long getAppServiceId() {
-            return appServiceId;
-        }
-
-        public void setAppServiceId(Long appServiceId) {
-            this.appServiceId = appServiceId;
-        }
-
-        public Long getAppServiceVersionId() {
-            return appServiceVersionId;
-        }
-
-        public void setAppServiceVersionId(Long appServiceVersionId) {
-            this.appServiceVersionId = appServiceVersionId;
-        }
 
         public String getValue() {
             return value;
@@ -224,43 +172,6 @@ public class DeployConfigVO {
         @ApiModelProperty("工作目录,默认值/temp")
         @NotNull(message = "error.workingPath.is.null")
         private String workingPath;
-
-
-        /**
-         *  市场服务下应用服务id 应用服务版本
-         */
-        private Long appServiceId;
-
-        /**
-         *   应用服务版本id
-         */
-        private Long appServiceVersionId;
-
-        private String jarSource;
-
-        public String getJarSource() {
-            return jarSource;
-        }
-
-        public void setJarSource(String jarSource) {
-            this.jarSource = jarSource;
-        }
-
-        public Long getAppServiceId() {
-            return appServiceId;
-        }
-
-        public void setAppServiceId(Long appServiceId) {
-            this.appServiceId = appServiceId;
-        }
-
-        public Long getAppServiceVersionId() {
-            return appServiceVersionId;
-        }
-
-        public void setAppServiceVersionId(Long appServiceVersionId) {
-            this.appServiceVersionId = appServiceVersionId;
-        }
 
         public String getWorkingPath() {
             return workingPath;
