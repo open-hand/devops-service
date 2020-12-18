@@ -217,6 +217,15 @@ public interface AppServiceInstanceService {
     InstanceValueVO queryUpgradeValue(Long instanceId, Long versionId);
 
     /**
+     * 获取升级 Value
+     *
+     * @param instanceId           实例id
+     * @param marketDeployObjectId 市场发布对象id
+     * @return InstanceValueVO
+     */
+    InstanceValueVO queryUpgradeValueForMarketInstance(Long instanceId, Long marketDeployObjectId);
+
+    /**
      * 获取部署时长报表
      *
      * @param projectId     项目id

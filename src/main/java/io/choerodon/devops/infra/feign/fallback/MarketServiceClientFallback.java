@@ -9,6 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.RepoConfigVO;
+import io.choerodon.devops.infra.dto.market.MarketChartValueDTO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
 
 
@@ -28,5 +29,10 @@ public class MarketServiceClientFallback implements MarketServiceClient {
     @Override
     public ResponseEntity<Void> createUseRecord(MarketAppUseRecordDTO marketAppUseRecordDTO) {
         throw new CommonException("error.create.use.record");
+    }
+
+    @Override
+    public ResponseEntity<MarketChartValueDTO> queryValuesForDeployObject(Long projectId, Long deployObjectId) {
+        throw new CommonException("error.query.values.from.market");
     }
 }

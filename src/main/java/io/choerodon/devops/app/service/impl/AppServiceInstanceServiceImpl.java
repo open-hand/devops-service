@@ -256,6 +256,31 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return instanceValueVO;
     }
 
+    @Override
+    public InstanceValueVO queryUpgradeValueForMarketInstance(Long instanceId, Long marketDeployObjectId) {
+        AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        // 上次实例部署时的完整values
+        String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
+        // 这里不能直接用app_service_version_id字段查version的values，因为它可能为空
+        String lastVersionValue = appServiceInstanceMapper.queryLastCommandVersionValueByInstanceId(instanceId);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Objects.requireNonNull(appServiceInstanceMapper.queryLastCommandId(instanceId)));
+
+        // 上次实例部署时的values相较于上次版本的默认values的变化值
+        String lastDeltaValues = getReplaceResult(Objects.requireNonNull(lastVersionValue),
+                Objects.requireNonNull(yaml))
+                .getDeltaYaml();
+
+        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
+        String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(marketDeployObjectId) ? lastVersionValue : marketServiceClientOperator.queryValues(appServiceInstanceDTO.getProjectId(), marketDeployObjectId).getValues();
+
+        InstanceValueVO instanceValueVO = new InstanceValueVO();
+        fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
+
+        // 将新的版本的values和上次部署的变化值进行合并
+        instanceValueVO.setYaml(getReplaceResult(newVersionValue, lastDeltaValues).getYaml());
+        return instanceValueVO;
+    }
+
     /**
      * 填充部署配置相关信息（如果有）
      *

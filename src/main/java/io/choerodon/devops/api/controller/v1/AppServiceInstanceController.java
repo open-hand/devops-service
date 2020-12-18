@@ -357,6 +357,33 @@ public class AppServiceInstanceController {
     }
 
     /**
+     * 获取当前实例升级到特定版本的Values
+     *
+     * @param projectId            项目id
+     * @param instanceId           实例id
+     * @param marketDeployObjectId 版本Id
+     * @return InstanceValueVO
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取当前市场实例升级到特定版本的Values")
+    @GetMapping(value = "/{instance_id}/upgrade_value")
+    public ResponseEntity<InstanceValueVO> queryUpgradeValueForMarketInstance(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "instance_id") Long instanceId,
+            @Encrypt
+            @ApiParam(value = "市场发布包Id", required = true)
+            @RequestParam(value = "market_deploy_object_id") Long marketDeployObjectId) {
+        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValueForMarketInstance(instanceId, marketDeployObjectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.instance.value.get"));
+    }
+
+    /**
      * 查询服务部署时value
      *
      * @param projectId  项目id
