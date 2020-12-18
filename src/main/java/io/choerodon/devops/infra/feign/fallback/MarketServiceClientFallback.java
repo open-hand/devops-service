@@ -7,12 +7,18 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.RepoConfigVO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
 
 
 @Component
 public class MarketServiceClientFallback implements MarketServiceClient {
+
+    @Override
+    public ResponseEntity<MarketServiceDeployObjectVO> queryDeployObject(Long projectId, Long deployObjectId) {
+        throw new CommonException("error.query.deploy.object.config");
+    }
 
     @Override
     public ResponseEntity<RepoConfigVO> queryRepoConfig(Long projectId, Long appId, Long appServiceVersionId) {

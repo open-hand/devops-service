@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java.util.Objects;
 import net.schmizz.sshj.SSHClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +20,7 @@ import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.market.JarSourceConfig;
-import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
-import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
-import io.choerodon.devops.api.vo.market.RepoConfigVO;
+import io.choerodon.devops.api.vo.market.*;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsDeployService;
@@ -121,8 +119,13 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
             List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
             if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
-                RepoConfigVO repoConfigVO = marketServiceClientOperator.queryRepoConfig(projectId, deployConfigVO.getJarDeploy().getAppServiceId(), deployConfigVO.getJarDeploy().getAppServiceVersionId());
-                MarketMavenConfigVO marketMavenConfigVO = repoConfigVO.getMarketMavenConfigVO();
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, jarDeploy.getDeployObjectId());
+                if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())){
+                    throw new CommonException("error.maven.deploy.object.not.exist");
+                }
+
+
+                MarketMavenConfigVO marketMavenConfigVO = marketServiceDeployObjectVO.getMarketMavenConfigVO();
                 C7nNexusComponentDTO nNexusComponentDTO = new C7nNexusComponentDTO();
                 nNexusComponentDTO.setDownloadUrl(marketMavenConfigVO.getRepoUrl());
                 nNexusComponentDTO.setName(deployConfigVO.getJarDeploy().getServerName());
@@ -132,11 +135,12 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 nexusMavenRepoDTO.setNePullUserId(marketMavenConfigVO.getPullUserName());
                 nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
                 mavenRepoDTOList.add(nexusMavenRepoDTO);
-                JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(deployConfigVO.getJarDeploy().getJarSource(), JarSourceConfig.class);
+
+                JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
                 deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(repoConfigVO.getMarketServiceVO().getMarketAppName());
-                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceVO().getMarketServiceName());
+                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName());
+                deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName());
 
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
@@ -144,8 +148,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
                 deploySourceVO.setProjectName(projectDTO.getName());
             }
-            deploySourceVO.setAppServiceId(jarDeploy.getAppServiceId());
-            deploySourceVO.setAppServiceVersionId(jarDeploy.getAppServiceVersionId());
+            deploySourceVO.setDeployObjectId(deployConfigVO.getJarDeploy().getDeployObjectId());
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                 throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
             }
@@ -220,20 +223,23 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             HarborC7nRepoImageTagVo imageTagVo = null;
             C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
             if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
-                RepoConfigVO repoConfigVO = marketServiceClientOperator.queryRepoConfig(projectId, deployConfigVO.getImageDeploy().getAppServiceId(), deployConfigVO.getImageDeploy().getAppServiceVersionId());
-                MarketHarborConfigVO marketHarborConfigVO = repoConfigVO.getMarketHarborConfigVO();
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, deployConfigVO.getImageDeploy().getDeployObjectId());
+                if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())){
+                    throw new CommonException("error.harbor.deploy.object.not.exist");
+                }
+                MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
                 imageTagVo.setPullAccount(marketHarborConfigVO.getRobotName());
                 imageTagVo.setHarborUrl(marketHarborConfigVO.getRepoUrl());
                 imageTagVo.setPullPassword(marketHarborConfigVO.getToken());
                 HarborC7nImageTagVo harborC7nImageTagVo = new HarborC7nImageTagVo();
-                harborC7nImageTagVo.setPullCmd("docker pull " + deployConfigVO.getImageDeploy().getMarketDockerImageUrl());
+                harborC7nImageTagVo.setPullCmd("docker pull " + marketServiceDeployObjectVO.getMarketDockerImageUrl());
                 List<HarborC7nImageTagVo> harborC7nImageTagVos = new ArrayList<>();
                 harborC7nImageTagVos.add(harborC7nImageTagVo);
                 imageTagVo.setImageTagList(harborC7nImageTagVos);
 
                 deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(repoConfigVO.getMarketServiceVO().getMarketAppName());
-                deploySourceVO.setMarketServiceName(repoConfigVO.getMarketServiceVO().getMarketServiceName());
+                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName());
+                deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName());
 
 
             } else {
@@ -242,9 +248,10 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
                 deploySourceVO.setProjectName(projectDTO.getName());
             }
+            deploySourceVO.setDeployObjectId(imageDeploy.getDeployObjectId());
 
-            deploySourceVO.setAppServiceId(imageDeploy.getAppServiceId());
-            deploySourceVO.setAppServiceVersionId(imageDeploy.getAppServiceVersionId());
+//            deploySourceVO.setAppServiceId(imageDeploy.getAppServiceId());
+//            deploySourceVO.setAppServiceVersionId(imageDeploy.getAppServiceVersionId());
 
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);

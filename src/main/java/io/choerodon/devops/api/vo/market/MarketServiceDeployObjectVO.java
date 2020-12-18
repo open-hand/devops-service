@@ -62,6 +62,62 @@ public class MarketServiceDeployObjectVO {
     @Encrypt
     private Long mavenConfigId;
 
+    private MarketChartConfigVO marketChartConfigVO;
+
+    private MarketHarborConfigVO marketHarborConfigVO;
+
+    private MarketMavenConfigVO marketMavenConfigVO;
+
+    /**
+     * 市场应用的名称
+     */
+    private String marketAppName;
+
+    /**
+     * 市场服务名称
+     */
+    private String marketServiceName;
+
+    public String getMarketAppName() {
+        return marketAppName;
+    }
+
+    public void setMarketAppName(String marketAppName) {
+        this.marketAppName = marketAppName;
+    }
+
+    public String getMarketServiceName() {
+        return marketServiceName;
+    }
+
+    public void setMarketServiceName(String marketServiceName) {
+        this.marketServiceName = marketServiceName;
+    }
+
+    public MarketChartConfigVO getMarketChartConfigVO() {
+        return marketChartConfigVO;
+    }
+
+    public void setMarketChartConfigVO(MarketChartConfigVO marketChartConfigVO) {
+        this.marketChartConfigVO = marketChartConfigVO;
+    }
+
+    public MarketHarborConfigVO getMarketHarborConfigVO() {
+        return marketHarborConfigVO;
+    }
+
+    public void setMarketHarborConfigVO(MarketHarborConfigVO marketHarborConfigVO) {
+        this.marketHarborConfigVO = marketHarborConfigVO;
+    }
+
+    public MarketMavenConfigVO getMarketMavenConfigVO() {
+        return marketMavenConfigVO;
+    }
+
+    public void setMarketMavenConfigVO(MarketMavenConfigVO marketMavenConfigVO) {
+        this.marketMavenConfigVO = marketMavenConfigVO;
+    }
+
     public Long getId() {
         return id;
     }

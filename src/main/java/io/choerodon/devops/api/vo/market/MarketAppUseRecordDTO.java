@@ -39,28 +39,17 @@ public class MarketAppUseRecordDTO {
     @ApiModelProperty("用途")
     private String purpose;
 
-    private Long appServiceId;
 
-    /**
-     *   应用服务版本id
-     */
-    private Long appServiceVersionId;
+    private Long deployObjectId;
 
-    public Long getAppServiceId() {
-        return appServiceId;
+    public Long getDeployObjectId() {
+        return deployObjectId;
     }
 
-    public void setAppServiceId(Long appServiceId) {
-        this.appServiceId = appServiceId;
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
     }
 
-    public Long getAppServiceVersionId() {
-        return appServiceVersionId;
-    }
-
-    public void setAppServiceVersionId(Long appServiceVersionId) {
-        this.appServiceVersionId = appServiceVersionId;
-    }
 
     public Long getId() {
         return id;

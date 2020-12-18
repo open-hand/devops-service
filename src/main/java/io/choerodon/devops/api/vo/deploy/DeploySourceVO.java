@@ -27,28 +27,16 @@ public class DeploySourceVO {
      */
     private String marketServiceName;
 
-    private Long appServiceId;
+    private Long deployObjectId;
 
-    /**
-     *   应用服务版本id
-     */
-    private Long appServiceVersionId;
-
-    public Long getAppServiceId() {
-        return appServiceId;
+    public Long getDeployObjectId() {
+        return deployObjectId;
     }
 
-    public void setAppServiceId(Long appServiceId) {
-        this.appServiceId = appServiceId;
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
     }
 
-    public Long getAppServiceVersionId() {
-        return appServiceVersionId;
-    }
-
-    public void setAppServiceVersionId(Long appServiceVersionId) {
-        this.appServiceVersionId = appServiceVersionId;
-    }
 
     public String getType() {
         return type;

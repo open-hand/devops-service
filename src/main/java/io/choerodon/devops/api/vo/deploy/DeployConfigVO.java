@@ -40,6 +40,8 @@ public class DeployConfigVO {
 
     /**
      * 服务来源  是否是市场服务
+     *
+     *       {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
     private String appSource;
 
@@ -89,42 +91,16 @@ public class DeployConfigVO {
         private String containerName;
 
         /**
-         *  市场服务下应用服务id 应用服务版本
+         *  部署对象id
          */
-        private Long appServiceId;
+        private Long deployObjectId;
 
-        /**
-         *   应用服务版本id
-         */
-        private Long appServiceVersionId;
-
-        /**
-         * 市应用要部署的镜像地址
-         */
-        private String marketDockerImageUrl;
-
-        public String getMarketDockerImageUrl() {
-            return marketDockerImageUrl;
+        public Long getDeployObjectId() {
+            return deployObjectId;
         }
 
-        public void setMarketDockerImageUrl(String marketDockerImageUrl) {
-            this.marketDockerImageUrl = marketDockerImageUrl;
-        }
-
-        public Long getAppServiceId() {
-            return appServiceId;
-        }
-
-        public void setAppServiceId(Long appServiceId) {
-            this.appServiceId = appServiceId;
-        }
-
-        public Long getAppServiceVersionId() {
-            return appServiceVersionId;
-        }
-
-        public void setAppServiceVersionId(Long appServiceVersionId) {
-            this.appServiceVersionId = appServiceVersionId;
+        public void setDeployObjectId(Long deployObjectId) {
+            this.deployObjectId = deployObjectId;
         }
 
         public String getValue() {
@@ -227,39 +203,16 @@ public class DeployConfigVO {
 
 
         /**
-         *  市场服务下应用服务id 应用服务版本
+         *  部署对象id
          */
-        private Long appServiceId;
+        private Long deployObjectId;
 
-        /**
-         *   应用服务版本id
-         */
-        private Long appServiceVersionId;
-
-        private String jarSource;
-
-        public String getJarSource() {
-            return jarSource;
+        public Long getDeployObjectId() {
+            return deployObjectId;
         }
 
-        public void setJarSource(String jarSource) {
-            this.jarSource = jarSource;
-        }
-
-        public Long getAppServiceId() {
-            return appServiceId;
-        }
-
-        public void setAppServiceId(Long appServiceId) {
-            this.appServiceId = appServiceId;
-        }
-
-        public Long getAppServiceVersionId() {
-            return appServiceVersionId;
-        }
-
-        public void setAppServiceVersionId(Long appServiceVersionId) {
-            this.appServiceVersionId = appServiceVersionId;
+        public void setDeployObjectId(Long deployObjectId) {
+            this.deployObjectId = deployObjectId;
         }
 
         public String getWorkingPath() {

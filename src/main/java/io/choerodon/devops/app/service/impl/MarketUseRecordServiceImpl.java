@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.MarketUseRecordService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
@@ -42,17 +43,17 @@ public class MarketUseRecordServiceImpl implements MarketUseRecordService {
     public void saveMarketUseRecord(String purpose, Long projectId, DeploySourceVO deploySourceVO) {
         MarketAppUseRecordDTO marketAppUseRecordDTO = new MarketAppUseRecordDTO();
         marketAppUseRecordDTO.setPurpose(purpose);
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(deploySourceVO.getAppServiceId());
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(deploySourceVO.getAppServiceVersionId());
-        ProjectDTO userProject = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, deploySourceVO.getDeployObjectId());
+
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceId());
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceVersionId());
+        marketAppUseRecordDTO.setAppServiceAndVersion(appServiceDTO.getName() + "(" + appServiceVersionDTO.getVersion() + ")");
         ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
 
-        marketAppUseRecordDTO.setAppServiceAndVersion(appServiceDTO.getName() + "(" + appServiceVersionDTO.getVersion() + ")");
-
-        marketAppUseRecordDTO.setAppServiceId(deploySourceVO.getAppServiceId());
-        marketAppUseRecordDTO.setAppServiceVersionId(deploySourceVO.getAppServiceVersionId());
-        marketAppUseRecordDTO.setUserName(userProject.getName());
+        marketAppUseRecordDTO.setUserName(projectDTO.getName());
         marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());
+        marketAppUseRecordDTO.setDeployObjectId(deploySourceVO.getDeployObjectId());
 
         marketServiceClientOperator.createUseRecord(marketAppUseRecordDTO);
     }
