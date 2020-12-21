@@ -734,24 +734,33 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
         AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
-        if (instanceDTO != null && !instanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+        if (instanceDTO == null) {
+            logger.info("update instance status: the release {} in namespace {} doesn't exist in db", releaseName, KeyParseUtil.getNamespace(key));
+            return;
+        }
+
+        // 如果实例状态不是 running， 才允许更新
+        if (!instanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
             instanceDTO.setStatus(instanceStatus);
             appServiceInstanceService.baseUpdate(instanceDTO);
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                    .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
-            devopsEnvCommandDTO.setStatus(commandStatus);
-            devopsEnvCommandDTO.setError(msg);
-            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-            // 如果是创建实例失败，发送通知
-            if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
-                    && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
-                logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
-                sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
-            }
-            if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus))
-                    && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
-                sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, instanceStatus);
-            }
+        }
+
+        // 更新command的状态
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
+        devopsEnvCommandDTO.setStatus(commandStatus);
+        devopsEnvCommandDTO.setError(msg);
+        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+
+        // 如果是创建实例失败，发送通知
+        if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
+                && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+            logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
+            sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
+        }
+        if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus))
+                && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+            sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, instanceStatus);
         }
     }
 
