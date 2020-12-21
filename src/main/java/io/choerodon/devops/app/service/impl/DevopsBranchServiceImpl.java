@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -15,6 +17,7 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.devops.infra.util.LogUtil;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -135,5 +138,12 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     @Override
     public void deleteAllBaranch(Long appServiceId) {
         devopsBranchMapper.deleteByAppServiceId(appServiceId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void removeIssueAssociation(DevopsBranchDTO devopsBranchDTO) {
+        devopsBranchDTO.setIssueId(null);
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsBranchMapper, devopsBranchDTO, "error.branch.remove.issue.association");
     }
 }
