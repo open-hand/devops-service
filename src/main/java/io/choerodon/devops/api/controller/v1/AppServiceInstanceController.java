@@ -85,8 +85,8 @@ public class AppServiceInstanceController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation("部署应用市场的服务")
-    @PostMapping("/market/instances/{instance_id}")
+    @ApiOperation("更新应用市场的服务实例")
+    @PutMapping("/market/instances/{instance_id}")
     public ResponseEntity<AppServiceInstanceVO> updateMarketServiceInstance(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
