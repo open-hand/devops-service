@@ -518,6 +518,23 @@ public interface AppServiceService {
     void fixAppServiceVersion();
 
     /**
+     * 查询其他项目应用服务信息
+     *
+     * @param projectId
+     * @param appServiceId
+     * @return
+     */
+    AppServiceRepVO queryOtherProjectAppServiceWithRepositoryInfo(Long projectId, Long appServiceId);
+
+    /**
+     * 列举出同一组织下其他项目的应用服务(每个项目最多取5条)
+     *
+     * @param projectId
+     * @return
+     */
+    Page<AppServiceUnderOrgVO> listAppServiceUnderOrg(Long projectId, Long appServiceId, String searchParam, PageRequest pageRequest);
+
+    /**
      * 查看sonarqube相关信息
      *
      * @param projectId    项目Id

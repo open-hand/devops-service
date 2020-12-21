@@ -94,6 +94,23 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException("error.app.service.create"));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目下查询用户在该组织下拥有权限的应用")
+    @CustomPageRequest
+    @GetMapping("/list_service_under_org")
+    public ResponseEntity<Page<AppServiceUnderOrgVO>> appServiceUnderOrg(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id")
+            @Encrypt @RequestParam(name = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "搜索参数")
+            @RequestParam(name = "param", required = false) String searchParam,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest
+    ) {
+        return ResponseEntity.ok(applicationServiceService.listAppServiceUnderOrg(projectId, appServiceId, searchParam, pageRequest));
+    }
+
     /**
      * 项目下查询单个服务信息
      *
@@ -115,6 +132,24 @@ public class AppServiceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.query"));
     }
+
+    /**
+     * 项目下查询单个应用服务信息(操作其他项目应用时使用)
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目下查询单个应用服务信息(操作其他项目应用时使用)")
+    @GetMapping("/other/{app_service_id}")
+    public ResponseEntity<AppServiceRepVO> queryOtherProjectAppService(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务id", required = true)
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Optional.ofNullable(applicationServiceService.queryOtherProjectAppServiceWithRepositoryInfo(projectId, appServiceId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.service.query"));
+    }
+
 
     /**
      * 项目下更新服务信息

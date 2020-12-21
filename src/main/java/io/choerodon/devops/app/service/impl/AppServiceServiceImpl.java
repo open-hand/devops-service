@@ -51,6 +51,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
@@ -87,6 +88,7 @@ import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
+import io.choerodon.devops.infra.feign.operator.RducmClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -199,6 +201,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Lazy
     @Autowired
     private RdupmClient rdupmClient;
+    @Autowired
+    private RducmClientOperator rducmClientOperator;
     @Autowired
     private HarborService harborService;
     @Autowired
@@ -2717,12 +2721,16 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         for (AppServiceDTO t : applicationDTOS) {
-            if (t.getGitlabProjectId() != null) {
-                t.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), t.getCode()));
-                t.setRepoUrl(
-                        gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
-                                + t.getCode() + ".git");
-            }
+            initApplicationParams(projectDTO, organizationDTO, t, urlSlash);
+        }
+    }
+
+    private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, AppServiceDTO applicationDTOS, String urlSlash) {
+        if (applicationDTOS.getGitlabProjectId() != null) {
+            applicationDTOS.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTOS.getCode()));
+            applicationDTOS.setRepoUrl(
+                    gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
+                            + applicationDTOS.getCode() + ".git");
         }
     }
 
@@ -2781,6 +2789,87 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void fixAppServiceVersion() {
         devopsTask.fixAppServiceVersion(null);
+    }
+
+    @Override
+    public AppServiceRepVO queryOtherProjectAppServiceWithRepositoryInfo(Long projectId, Long appServiceId) {
+
+        AppServiceDTO appServiceDTO = appServiceMapper.selectWithEmptyRepositoryByPrimaryKey(appServiceId);
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        initApplicationParams(projectDTO, organizationDTO, appServiceDTO, urlSlash);
+
+        AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
+        appServiceRepVO.setFail(appServiceDTO.getFailed());
+
+        return appServiceRepVO;
+    }
+
+    @Override
+    public Page<AppServiceUnderOrgVO> listAppServiceUnderOrg(Long projectId, Long appServiceId, String searchParam, PageRequest pageRequest) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+
+        UserAppServiceIdsVO userAppServiceIdsVO = rducmClientOperator.getAppServiceIds(projectDTO.getOrganizationId(), userDetails.getUserId());
+        // 待查询的appService列表
+        List<Long> appServiceIds = userAppServiceIdsVO.getAppServiceIds();
+        // 列举出当前项目下的应用服务id
+        List<Long> appServiceIdsBelongToCurrentProject = appServiceMapper.listAllAppServiceIds(projectId);
+        // 移除当前项目下的所有应用服务
+        appServiceIds.removeAll(appServiceIdsBelongToCurrentProject);
+        // 如果在移除当前项目下的所有应用服务后，应用服务列表为空表示其他项目下没有应用服务权限，返回空列表
+        if (CollectionUtils.isEmpty(appServiceIds)) {
+            return new Page<>();
+        }
+        // 如果appServiceId存在，添加到查询列表中
+        if (appServiceId != null && !appServiceIds.contains(appServiceId)) {
+            appServiceIds.add(appServiceId);
+        }
+
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listOwnedProjects(projectDTO.getOrganizationId(), userDetails.getUserId());
+
+        List<AppServiceDTO> appServiceDTOS = appServiceMapper.listAppServiceByIdsWithParam(userAppServiceIdsVO.getAppServiceIds(), searchParam);
+
+        List<AppServiceUnderOrgVO> appServiceUnderOrgVOS = new ArrayList<>();
+
+        Map<Long, List<AppServiceDTO>> appServiceGroupProjectId = appServiceDTOS.stream().collect(groupingBy(AppServiceDTO::getProjectId));
+        Map<Long, String> projectIdAndNameMap = projectDTOS.stream().collect(Collectors.toMap(ProjectDTO::getId, ProjectDTO::getName));
+
+        // 如果appServiceId存在，始终添加到第一页
+        if (appServiceId != null) {
+            AppServiceDTO appServiceDTO = appServiceDTOS.stream().filter(a -> a.getId().equals(appServiceId)).collect(toList()).get(0);
+            List<AppServiceDTO> appServiceDTOSUnderSameProject = appServiceGroupProjectId.get(appServiceDTO.getProjectId());
+            List<AppServiceDTO> appServiceDTOToReturn = appServiceDTOSUnderSameProject.stream().filter(a -> !a.getId().equals(appServiceId)).collect(toList());
+            appServiceDTOToReturn.add(0, appServiceDTO);
+            String projectName = projectIdAndNameMap.get(appServiceDTO.getProjectId());
+            addAppServiceUnderOrgVO(appServiceDTO.getProjectId(), projectName, appServiceDTOToReturn, appServiceUnderOrgVOS);
+            appServiceGroupProjectId.remove(appServiceDTO.getProjectId());
+        }
+
+        appServiceGroupProjectId.forEach((k, v) -> addAppServiceUnderOrgVO(k, projectIdAndNameMap.get(k), v, appServiceUnderOrgVOS));
+
+        return PageInfoUtil.createPageFromList(appServiceUnderOrgVOS, pageRequest);
+    }
+
+    private void addAppServiceUnderOrgVO(Long projectId, String projectName, List<AppServiceDTO> appServiceDTOS, List<AppServiceUnderOrgVO> appServiceUnderOrgVOS) {
+        if (StringUtils.isEmpty(projectName)) {
+            return;
+        }
+        int size = appServiceDTOS.size();
+        List<AppServiceVO> appServiceVOSTOReturn;
+        if (size > 5) {
+            appServiceVOSTOReturn = ConvertUtils.convertList(appServiceDTOS.subList(0, 5), AppServiceVO.class);
+        } else {
+            appServiceVOSTOReturn = ConvertUtils.convertList(appServiceDTOS, AppServiceVO.class);
+        }
+        AppServiceUnderOrgVO appServiceUnderOrgVO = new AppServiceUnderOrgVO();
+        appServiceUnderOrgVO.setProjectId(projectId);
+        appServiceUnderOrgVO.setProjectName(projectName);
+        appServiceUnderOrgVO.setAppServices(appServiceVOSTOReturn);
+        appServiceUnderOrgVOS.add(appServiceUnderOrgVO);
     }
 
     @Override

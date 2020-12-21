@@ -119,6 +119,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     int updateIsSynchroToTrueWhenFailed();
 
+    List<Long> listAllAppServiceIds(@Param("projectId") Long projectId);
+
     int updateIsActiveNullToTrue();
 
     List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
@@ -166,5 +168,10 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceDTO> listByActiveAndProjects(@Param("projectIds") List<Long> projectIds);
 
     List<ProjectAppSvcCountVO> countByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+
+    List<AppServiceDTO> listAppServiceByIdsWithParam(@Param("appServiceIds") List<Long> appServiceIds, @Param("param") String param);
+
+    AppServiceDTO selectWithEmptyRepositoryByPrimaryKey(Long appServiceId);
 }
 

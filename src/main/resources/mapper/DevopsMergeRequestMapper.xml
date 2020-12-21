@@ -11,10 +11,11 @@
 
 
     <select id="listBySourceBranch" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
-        SELECT *
-        FROM devops_merge_request
-        WHERE gitlab_project_id = #{projectId}
-          AND source_branch = #{branchName}
+        SELECT dmr.*,das.project_id
+        FROM devops_merge_request dmr
+            JOIN devops_app_service das ON dmr.gitlab_project_id=das.gitlab_project_id
+        WHERE dmr.gitlab_project_id = #{projectId}
+          AND dmr.source_branch = #{branchName}
         ORDER by id desc
     </select>
 
