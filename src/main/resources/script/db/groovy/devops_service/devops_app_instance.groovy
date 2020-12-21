@@ -91,7 +91,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
 
     changeSet(id: '2020-12-14-add-market-columns', author: 'zmf') {
         addColumn(tableName: 'devops_app_service_instance') {
-            column(name: 'source', type: 'VARCHAR(32)', remarks: '实例的部署来源/normal/market', afterColumn: 'market_service_id', defaultValue: 'normal') {
+            column(name: 'source', type: 'VARCHAR(32)', remarks: '实例的部署来源/normal/market', afterColumn: 'app_service_id', defaultValue: 'normal') {
                 constraints(nullable: false)
             }
         }
