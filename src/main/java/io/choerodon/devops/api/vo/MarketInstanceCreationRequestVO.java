@@ -21,7 +21,7 @@ public class MarketInstanceCreationRequestVO {
 
     @Encrypt
     @ApiModelProperty("市场市场服务版本id")
-    private Long marketAppServiceVersionId;
+    private Long marketDeployObjectId;
 
     @ApiModelProperty("values内容")
     private String values;
@@ -63,12 +63,12 @@ public class MarketInstanceCreationRequestVO {
         this.instanceId = instanceId;
     }
 
-    public Long getMarketAppServiceVersionId() {
-        return marketAppServiceVersionId;
+    public Long getMarketDeployObjectId() {
+        return marketDeployObjectId;
     }
 
-    public void setMarketAppServiceVersionId(Long marketAppServiceVersionId) {
-        this.marketAppServiceVersionId = marketAppServiceVersionId;
+    public void setMarketDeployObjectId(Long marketDeployObjectId) {
+        this.marketDeployObjectId = marketDeployObjectId;
     }
 
     public String getValues() {

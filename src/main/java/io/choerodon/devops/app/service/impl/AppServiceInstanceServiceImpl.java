@@ -774,8 +774,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         // 查询市场应用服务, 确认存在
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceDeployVO.getMarketAppServiceId());
 
-        MarketServiceDeployObjectVO appServiceVersionDTO = marketServiceClientOperator.queryDeployObject(projectId, appServiceDeployVO.getMarketAppServiceVersionId());
-        CommonExAssertUtil.assertNotNull(appServiceVersionDTO, "error.version.id.not.exist", appServiceDeployVO.getMarketAppServiceVersionId());
+        MarketServiceDeployObjectVO appServiceVersionDTO = marketServiceClientOperator.queryDeployObject(projectId, appServiceDeployVO.getMarketDeployObjectId());
+        CommonExAssertUtil.assertNotNull(appServiceVersionDTO, "error.version.id.not.exist", appServiceDeployVO.getMarketDeployObjectId());
 
         if (appServiceDeployVO.getCommandType().equals(UPDATE)) {
             AppServiceInstanceDTO oldInstance = appServiceInstanceMapper.selectByPrimaryKey(Objects.requireNonNull(appServiceDeployVO.getInstanceId()));
@@ -794,6 +794,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         // 获取市场部署实例时授权secret的code
         String secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersionDTO);
 
+        appServiceDeployVO.setNotChanged(false);
         // 初始化自定义实例名
         String code;
         if (appServiceDeployVO.getCommandType().equals(CREATE)) {
@@ -812,7 +813,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             AppServiceInstanceDTO oldAppServiceInstanceDTO = baseQuery(appServiceDeployVO.getInstanceId());
             String deployValue = baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
             // 用上次的chart版本及values和这次的chart版本及values进行对比, 设置isNotChanged
-            if (appServiceDeployVO.getMarketAppServiceVersionId().equals(oldAppServiceInstanceDTO.getAppServiceVersionId()) && deployValue.equals(appServiceDeployVO.getValues())) {
+            if (appServiceDeployVO.getMarketDeployObjectId().equals(oldAppServiceInstanceDTO.getAppServiceVersionId()) && deployValue.equals(appServiceDeployVO.getValues())) {
                 appServiceDeployVO.setNotChanged(true);
             }
         }
@@ -994,7 +995,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getMarketServiceDeployObjectVO().getDevopsAppServiceCode(),
                     instanceSagaPayload.getMarketServiceDeployObjectVO().getDevopsAppServiceVersion(),
                     instanceSagaPayload.getMarketInstanceCreationRequestVO().getValues(),
-                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getMarketAppServiceVersionId(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getMarketDeployObjectId(),
                     instanceSagaPayload.getSecretCode(),
                     instanceSagaPayload.getDevopsEnvironmentDTO()));
 
@@ -1989,7 +1990,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsEnvCommandDTO.setCommandType(CommandType.DELETE.getType());
                 break;
         }
-        devopsEnvCommandDTO.setObjectVersionId(appServiceDeployVO.getMarketAppServiceVersionId());
+        devopsEnvCommandDTO.setObjectVersionId(appServiceDeployVO.getMarketDeployObjectId());
         devopsEnvCommandDTO.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandDTO;

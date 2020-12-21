@@ -40,7 +40,8 @@ public class MarketServiceClientOperator {
     }
 
     public MarketServiceDeployObjectVO queryDeployObject(Long projectId, Long deployObjectId) {
-        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClient.queryDeployObject(projectId, deployObjectId).getBody();
+        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClient.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployObjectId))
+                .getBody();
         if (marketServiceDeployObjectVO == null) {
             throw new CommonException("error.query.deploy.object.config");
 

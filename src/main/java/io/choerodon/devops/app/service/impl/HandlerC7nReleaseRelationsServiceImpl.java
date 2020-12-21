@@ -454,7 +454,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         marketInstanceCreationRequestVO.setCommandType(type);
         // 设置values为配置库的values和版本的values合并值
         marketInstanceCreationRequestVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
-        marketInstanceCreationRequestVO.setMarketAppServiceVersionId(appServiceVersion.getId());
+        marketInstanceCreationRequestVO.setMarketDeployObjectId(appServiceVersion.getId());
         marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getDevopsAppServiceVersion());
         marketInstanceCreationRequestVO.setMarketAppServiceId(appServiceVersion.getMarketServiceId());
         marketInstanceCreationRequestVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
