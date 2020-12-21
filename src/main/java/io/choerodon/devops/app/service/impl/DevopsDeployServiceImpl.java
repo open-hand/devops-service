@@ -100,13 +100,16 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         DeployConfigVO.JarDeploy jarDeploy;
         C7nNexusComponentDTO c7nNexusComponentDTO = new C7nNexusComponentDTO();
         DeploySourceVO deploySourceVO = new DeploySourceVO();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        deploySourceVO.setType(deployConfigVO.getAppSource());
+        deploySourceVO.setProjectName(projectDTO.getName());
+        deploySourceVO.setDeployObjectId(deployConfigVO.getJarDeploy().getDeployObjectId());
         try {
             // 0.1 查询部署信息
 
             jarDeploy = deployConfigVO.getJarDeploy();
             jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), "UTF-8"));
             C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
             // 0.2 从制品库获取仓库信息
 
@@ -138,9 +141,6 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
                 JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
-                deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName());
-                deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName());
 
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
@@ -215,7 +215,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(deployConfigVO.getImageDeploy().getDeployObjectId());
-        deploySourceVO.setType(AppSourceType.MARKET.getValue());
+        deploySourceVO.setType(deployConfigVO.getAppSource());
         deploySourceVO.setProjectName(projectDTO.getName());
         try {
             // 0.1
