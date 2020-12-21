@@ -214,13 +214,16 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         DeployConfigVO.ImageDeploy imageDeploy = new DeployConfigVO.ImageDeploy();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setDeployObjectId(deployConfigVO.getImageDeploy().getDeployObjectId());
+        deploySourceVO.setType(AppSourceType.MARKET.getValue());
+        deploySourceVO.setProjectName(projectDTO.getName());
         try {
             // 0.1
 
             imageDeploy = deployConfigVO.getImageDeploy();
             imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
-            HarborC7nRepoImageTagVo imageTagVo = null;
+            HarborC7nRepoImageTagVo imageTagVo = new HarborC7nRepoImageTagVo();
             C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
             if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
                 MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployConfigVO.getImageDeploy().getDeployObjectId()));
@@ -237,21 +240,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 harborC7nImageTagVos.add(harborC7nImageTagVo);
                 imageTagVo.setImageTagList(harborC7nImageTagVos);
 
-                deploySourceVO.setType(AppSourceType.MARKET.getValue());
-                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName());
-                deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName());
-
-
             } else {
                 imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
-
-                deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
-                deploySourceVO.setProjectName(projectDTO.getName());
             }
-            deploySourceVO.setDeployObjectId(imageDeploy.getDeployObjectId());
-
-//            deploySourceVO.setAppServiceId(imageDeploy.getAppServiceId());
-//            deploySourceVO.setAppServiceVersionId(imageDeploy.getAppServiceVersionId());
 
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);

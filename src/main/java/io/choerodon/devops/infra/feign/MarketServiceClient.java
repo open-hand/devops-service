@@ -27,10 +27,10 @@ public interface MarketServiceClient {
     /**
      * 根据部署对象的id 查询部署对象的配置
      */
-    @GetMapping("/v1/market/deploy/{project_id}/{deploy_object_id}/repo/config")
+    @GetMapping("/v1/projects/{project_id}/deploy/object/{deploy_object_id}/repo/config")
     ResponseEntity<MarketServiceDeployObjectVO> queryDeployObject(
             @PathVariable("project_id") Long projectId,
-            @PathVariable("deploy_object_id") Long deployObjectId);
+            @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
 
     /**
      * queryRepoConfig
@@ -38,8 +38,8 @@ public interface MarketServiceClient {
     @GetMapping("/v1/projects/{project_id}/deploy/{project_id}/repo/config")
     ResponseEntity<RepoConfigVO> queryRepoConfig(
             @PathVariable("project_id") Long projectId,
-            @RequestParam("app_service_id") Long appId,
-            @RequestParam("app_service_version_id") Long appServiceVersionId);
+            @Encrypt @RequestParam("app_service_id") Long appId,
+            @Encrypt @RequestParam("app_service_version_id") Long appServiceVersionId);
 
 
     @PostMapping("/v1/application/use/record")
