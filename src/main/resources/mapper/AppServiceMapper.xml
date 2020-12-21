@@ -210,6 +210,14 @@
         ORDER BY da.id DESC
     </select>
 
+
+    <select id="listAllAppServiceIds" resultType="java.lang.Long">
+        SELECT DISTINCT da.id
+        FROM devops_app_service da
+        WHERE da.is_active
+          AND da.project_id=#{projectId,jdbcType=BIGINT}
+    </select>
+
     <sql id="sqlparam">
         <if test='searchParam != null'>
             <if test='searchParam.code != null and searchParam.code.length > 0'>
@@ -735,6 +743,7 @@
             #{projectId}
         </foreach>
     </select>
+
     <select id="countByProjectIds" resultType="io.choerodon.devops.api.vo.ProjectAppSvcCountVO">
         SELECT das.project_id, COUNT(*) AS app_svc_num
         FROM devops_app_service das
@@ -743,5 +752,34 @@
             #{id}
         </foreach>
         GROUP BY das.project_id
+    </select>
+
+    <select id="listAppServiceByIdsWithParam" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT *
+        FROM devops_app_service das
+        WHERE
+        das.is_active IS TRUE
+        AND das.is_synchro IS TRUE
+        AND das.gitlab_project_id IS NOT NULL
+        AND
+        das.id IN
+        <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
+            #{appServiceId}
+        </foreach>
+        <if test="param != null and param !=''">
+            AND
+            (das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </select>
+    <select id="selectWithEmptyRepositoryByPrimaryKey" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT das.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = das.id) AS empty_repository
+        FROM devops_app_service das
+        WHERE
+            das.id=#{appServiceId}
+          AND das.is_active IS TRUE
+          AND das.is_synchro IS TRUE
+          AND das.gitlab_project_id IS NOT NULL
     </select>
 </mapper>

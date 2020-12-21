@@ -34,7 +34,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     public List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId) {
         DevopsBranchDTO queryDevopsBranchDTO = new DevopsBranchDTO();
         queryDevopsBranchDTO.setIssueId(issueId);
-        return devopsBranchMapper.select(queryDevopsBranchDTO);
+        return devopsBranchMapper.listByIssueIdAndOrderByProjectId(issueId);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
 
     @Override
-    public Page<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageable, String params) {
+    public Page<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageable, String params, Long issueId) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Sort sort = pageable.getSort();
         String sortResult = "";
@@ -119,7 +119,8 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 () -> devopsBranchMapper.list(appServiceId,
                         sortString,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
+                        issueId));
     }
 
 

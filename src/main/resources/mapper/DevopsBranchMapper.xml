@@ -21,6 +21,9 @@
                 AND db.branch_name LIKE CONCAT(CONCAT('%', #{searchParam.branchName, jdbcType=VARCHAR}), '%')
             </if>
         </if>
+        <if test="issueId !=null">
+            AND (ISNULL(db.issue_id) OR db.issue_id!=#{issueId})
+        </if>
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
@@ -83,5 +86,13 @@
             #{projectId}
         </foreach>
         GROUP BY db.app_service_id, db.last_update_date
+    </select>
+
+    <select id="listByIssueIdAndOrderByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        SELECT db.*,das.project_id FROM
+            devops_branch db
+            JOIN devops_app_service das on db.app_service_id = das.id
+        WHERE db.issue_id=#{issueId}
+        ORDER BY project_id
     </select>
 </mapper>
