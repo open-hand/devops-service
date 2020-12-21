@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -179,20 +180,71 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         BeanUtils.copyProperties(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getClusterId()));
+
+        // 为市场实例填充版本信息
+        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
+            fillMarketVersionForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
+        }
+
         return appServiceInstanceInfoVO;
+    }
+
+    private void fillMarketVersionForMarketInstance(AppServiceInstanceInfoDTO appServiceInstanceInfoDTO, AppServiceInstanceInfoVO appServiceInstanceInfoVO) {
+        Set<Long> deployObjectIds = new HashSet<>();
+        deployObjectIds.add(appServiceInstanceInfoDTO.getCommandVersionId());
+        // 这个id可能为空
+        if (appServiceInstanceInfoDTO.getEffectCommandVersionId() != null) {
+            deployObjectIds.add(appServiceInstanceInfoDTO.getEffectCommandVersionId());
+        }
+        Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
+        if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
+            appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
+        }
+        if (versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()) != null) {
+            appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
+        }
     }
 
     @Override
     public Page<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
+        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
                 envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
-        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
+        Set<Long> marketInstanceCommandVersionIds = new HashSet<>();
+        Set<Long> appServiceIds = new HashSet<>();
+
+        // 收集ids
+        pageInfo.getContent().forEach(ins -> {
+            if (AppServiceInstanceSource.MARKET.getValue().equals(ins.getSource())) {
+                marketInstanceCommandVersionIds.add(ins.getCommandVersionId());
+            }
+            appServiceIds.add(ins.getAppServiceId());
+        });
+
+        // 如果市场实例不为空，从市场服务查询版本信息
+        Map<Long, MarketServiceDeployObjectVO> deployObjects;
+        if (!CollectionUtils.isEmpty(marketInstanceCommandVersionIds)) {
+            deployObjects = marketServiceClientOperator.listDeployObjectsByIds(projectId, marketInstanceCommandVersionIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
+        } else {
+            deployObjects = Collections.emptyMap();
+        }
+
+        // 查询应用服务信息
+        Map<Long, AppServiceDTO> appServices = applicationService.baseListByIds(appServiceIds).stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
+
         pageInfo.getContent().forEach(appServiceInstanceInfoVO -> {
-                    AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
-                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO.getProjectId()));
+                    AppServiceDTO appServiceDTO = appServices.get(appServiceInstanceInfoVO.getAppServiceId());
+                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO == null ? null : appServiceDTO.getProjectId()));
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
+
+                    // 为应用市场实例填充版本信息
+                    if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoVO.getSource())) {
+                        if (deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()) != null) {
+                            appServiceInstanceInfoVO.setCommandVersion(deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()).getDevopsAppServiceVersion());
+                        }
+                    }
                 }
         );
         return pageInfo;

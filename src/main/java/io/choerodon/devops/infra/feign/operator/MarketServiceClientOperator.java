@@ -73,10 +73,19 @@ public class MarketServiceClientOperator {
     }
 
     public List<MarketServiceVO> queryMarketServiceByIds(Long projectId, Set<Long> ids) {
-        CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(ids), "error.ids.empty");
+        CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(ids), "error.ids.params.empty");
         ResponseEntity<List<MarketServiceVO>> result = marketServiceClient.queryMarketServiceByIds(projectId, ids);
         if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null) {
             throw new CommonException("error.list.market.service.by.ids");
+        }
+        return result.getBody();
+    }
+
+    public List<MarketServiceDeployObjectVO> listDeployObjectsByIds(Long projectId, Set<Long> deployObjectIds) {
+        CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(deployObjectIds), "error.ids.params.empty");
+        ResponseEntity<List<MarketServiceDeployObjectVO>> result = marketServiceClient.listDeployObjectsByIds(projectId, deployObjectIds);
+        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null) {
+            throw new CommonException("error.list.deploy.objects.by.ids");
         }
         return result.getBody();
     }

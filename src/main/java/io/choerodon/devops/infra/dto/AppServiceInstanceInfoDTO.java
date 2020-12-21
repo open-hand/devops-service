@@ -35,6 +35,10 @@ public class AppServiceInstanceInfoDTO {
     private String effectCommandVersion;
     @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
     private String effectCommandStatus;
+    @ApiModelProperty("当前实例生效的版本id/可能为null")
+    private Long effectCommandVersionId;
+    @ApiModelProperty("实例来源")
+    private String source;
 
 
     public Long getId() {
@@ -211,5 +215,21 @@ public class AppServiceInstanceInfoDTO {
 
     public void setEffectCommandStatus(String effectCommandStatus) {
         this.effectCommandStatus = effectCommandStatus;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public Long getEffectCommandVersionId() {
+        return effectCommandVersionId;
+    }
+
+    public void setEffectCommandVersionId(Long effectCommandVersionId) {
+        this.effectCommandVersionId = effectCommandVersionId;
     }
 }

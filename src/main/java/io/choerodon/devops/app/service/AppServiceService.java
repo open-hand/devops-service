@@ -525,4 +525,6 @@ public interface AppServiceService {
      * @return 信息
      */
     SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId);
+
+    List<AppServiceDTO> baseListByIds(Set<Long> appServiceIds);
 }

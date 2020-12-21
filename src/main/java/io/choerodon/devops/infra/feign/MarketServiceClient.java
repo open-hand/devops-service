@@ -47,12 +47,12 @@ public interface MarketServiceClient {
             @RequestBody MarketAppUseRecordDTO marketAppUseRecordDTO);
 
     @ApiOperation(value = "根据发布对象id查询values")
-    @GetMapping("/v1/projects/{project_id}/deploy/values")
+    @GetMapping("/v1/projects/{project_id}/deploy/deploy_objects/{deploy_object_id}/values")
     ResponseEntity<MarketChartValueDTO> queryValuesForDeployObject(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("发布对象的id")
-            @Encrypt @RequestParam("deploy_object_id") Long deployObjectId);
+            @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
 
     @ApiOperation(value = "根据市场id查询市场服务本身的信息")
     @GetMapping("/v1/projects/{project_id}/market/service/{market_service_id}")
@@ -61,7 +61,7 @@ public interface MarketServiceClient {
             @Encrypt @PathVariable("market_service_id") Long marketServiceId);
 
     @ApiOperation(value = "根据应用服务的code和版本 查询市场服务发布的部署对象（是否包含helm配置）/ (devops使用)")
-    @GetMapping("/v1/projects/{project_id}/deploy/service/deploy/object")
+    @GetMapping("/v1/projects/{project_id}/deploy/deploy_objects")
     @Permission(permissionWithin = true)
     ResponseEntity<MarketServiceDeployObjectVO> queryDeployObjectByCodeAndService(
             @PathVariable("project_id") Long projectId,
@@ -75,4 +75,12 @@ public interface MarketServiceClient {
     ResponseEntity<List<MarketServiceVO>> queryMarketServiceByIds(
             @PathVariable("project_id") Long projectId,
             @RequestBody Set<Long> ids);
+
+    @ApiOperation(value = "根据多个发布对象id查询发布对象基础信息/不包含级联信息")
+    @GetMapping("/v1/projects/{project_id}/deploy/deploy_objects/list/by_ids")
+    ResponseEntity<List<MarketServiceDeployObjectVO>> listDeployObjectsByIds(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("发布对象id集合")
+            @RequestBody Set<Long> deployObjectIds);
 }

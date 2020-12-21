@@ -54,4 +54,9 @@ public class MarketServiceClientFallback implements MarketServiceClient {
     public ResponseEntity<List<MarketServiceVO>> queryMarketServiceByIds(Long projectId, Set<Long> ids) {
         throw new CommonException("error.list.market.service.by.ids");
     }
+
+    @Override
+    public ResponseEntity<List<MarketServiceDeployObjectVO>> listDeployObjectsByIds(Long projectId, Set<Long> deployObjectIds) {
+        throw new CommonException("error.list.deploy.objects.by.ids");
+    }
 }

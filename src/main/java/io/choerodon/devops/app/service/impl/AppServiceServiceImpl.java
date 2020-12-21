@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.IOUtils;
@@ -28,6 +29,7 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -2793,5 +2795,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             return JsonHelper.unmarshalByJackson(jsonBody, SonarContentsVO.class);
         }
+    }
+
+    @Override
+    public List<AppServiceDTO> baseListByIds(Set<Long> appServiceIds) {
+        if (CollectionUtils.isEmpty(appServiceIds)) {
+            return Collections.emptyList();
+        }
+        return appServiceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(appServiceIds));
     }
 }
