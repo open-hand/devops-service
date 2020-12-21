@@ -1135,11 +1135,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void removeAssociation(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO) {
+    public void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(devopsBranchUpdateVO.getAppServiceId(), devopsBranchUpdateVO.getBranchName());
+        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appServiceId, branchName);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        CommonExAssertUtil.assertTrue(devopsBranchUpdateVO.getIssueId().equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
+        CommonExAssertUtil.assertTrue(issueId.equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
         devopsBranchService.removeIssueAssociation(devopsBranchDTO);
     }
 }
