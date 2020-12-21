@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Objects;
+import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,7 @@ import io.choerodon.devops.app.service.MarketUseRecordService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -41,13 +44,13 @@ public class MarketUseRecordServiceImpl implements MarketUseRecordService {
     public void saveMarketUseRecord(String purpose, Long projectId, DeploySourceVO deploySourceVO) {
         MarketAppUseRecordDTO marketAppUseRecordDTO = new MarketAppUseRecordDTO();
         marketAppUseRecordDTO.setPurpose(purpose);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, deploySourceVO.getDeployObjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId));
+        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deploySourceVO.getDeployObjectId()));
 
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceVersionId());
         marketAppUseRecordDTO.setAppServiceAndVersion(appServiceDTO.getName() + "(" + appServiceVersionDTO.getVersion() + ")");
-        ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(appServiceDTO.getProjectId()));
 
         marketAppUseRecordDTO.setUserName(projectDTO.getName());
         marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());

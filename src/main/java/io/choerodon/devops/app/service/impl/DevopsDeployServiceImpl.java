@@ -119,7 +119,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
             List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
             if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
-                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, jarDeploy.getDeployObjectId());
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeploy.getDeployObjectId()));
                 if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())){
                     throw new CommonException("error.maven.deploy.object.not.exist");
                 }
@@ -223,7 +223,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             HarborC7nRepoImageTagVo imageTagVo = null;
             C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
             if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
-                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, deployConfigVO.getImageDeploy().getDeployObjectId());
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployConfigVO.getImageDeploy().getDeployObjectId()));
                 if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())){
                     throw new CommonException("error.harbor.deploy.object.not.exist");
                 }
