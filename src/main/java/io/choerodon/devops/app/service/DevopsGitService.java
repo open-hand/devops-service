@@ -208,9 +208,10 @@ public interface DevopsGitService {
     /**
      * 删除分支和问题关联关系
      *
-     * @param projectId            项目id
-     * @param appServiceId         应用id
-     * @param devopsBranchUpdateVO 分支信息
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @param branchName   分支名称
+     * @param issueId      关联问题id
      */
-    void removeAssociation(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO);
+    void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId);
 }
