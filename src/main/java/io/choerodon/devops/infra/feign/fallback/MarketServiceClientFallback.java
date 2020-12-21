@@ -2,6 +2,9 @@ package io.choerodon.devops.infra.feign.fallback;
 
 
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -45,5 +48,10 @@ public class MarketServiceClientFallback implements MarketServiceClient {
     @Override
     public ResponseEntity<MarketServiceDeployObjectVO> queryDeployObjectByCodeAndService(Long projectId, String devopsAppServiceCode, String devopsAppServiceVersion, Boolean withHelmConfig) {
         throw new CommonException("error.query.deploy.object.by.code.and.service");
+    }
+
+    @Override
+    public ResponseEntity<List<MarketServiceVO>> queryMarketServiceByIds(Long projectId, Set<Long> ids) {
+        throw new CommonException("error.list.market.service.by.ids");
     }
 }

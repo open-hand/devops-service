@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
+import java.util.List;
+import java.util.Set;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -65,4 +68,11 @@ public interface MarketServiceClient {
             @RequestParam("devops_app_service_code") String devopsAppServiceCode,
             @RequestParam("devops_app_service_version") String devopsAppServiceVersion,
             @RequestParam(value = "with_helm_config", required = false, defaultValue = "false") Boolean withHelmConfig);
+
+    @ApiOperation(value = "根据多个市场服务ids查询市场服务的信息")
+    @GetMapping("/v1/projects/{project_id}/market/service/list/by_ids")
+    @Permission(permissionWithin = true)
+    ResponseEntity<List<MarketServiceVO>> queryMarketServiceByIds(
+            @PathVariable("project_id") Long projectId,
+            @RequestBody Set<Long> ids);
 }

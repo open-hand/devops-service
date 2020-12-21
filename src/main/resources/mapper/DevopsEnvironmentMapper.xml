@@ -11,6 +11,7 @@
                     notNullColumn="app_service_id">
             <id property="id" column="app_service_id"/>
             <result property="name" column="app_name"/>
+            <result property="projectId" column="app_project_id"/>
             <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceViewDTO"
                         notNullColumn="ins_id">
                 <id property="id" column="ins_id"/>
@@ -128,8 +129,9 @@
         SELECT any_value(env.id)                                                                as env_id,
                any_value(env.name)                                                              as env_name,
                any_value(env.code)                                                              as env_code,
-               any_value(app.id)                                                                as app_service_id,
+               any_value(env_app.app_service_id)                                                as app_service_id,
                any_value(app.name)                                                              as app_name,
+               any_value(app.project_id)                                                        as app_project_id,
                any_value(ins.id)                                                                as ins_id,
                any_value(ins.code)                                                              as ins_code,
                any_value(ins.status)                                                            as ins_status,
@@ -158,8 +160,9 @@
         (SELECT any_value(env.id)                                                                as env_id,
                 any_value(env.name)                                                              as env_name,
                 any_value(env.code)                                                              as env_code,
-                any_value(app.id)                                                                as app_service_id,
+                any_value(env_app.app_service_id)                                                as app_service_id,
                 any_value(app.name)                                                              as app_name,
+                any_value(app.project_id)                                                        as app_project_id,
                 any_value(ins.id)                                                                as ins_id,
                 any_value(ins.code)                                                              as ins_code,
                 any_value(ins.status)                                                            as ins_status,
@@ -190,8 +193,9 @@
                 SELECT any_value(env.id)                                                                as env_id,
                        any_value(env.name)                                                              as env_name,
                        any_value(env.code)                                                              as env_code,
-                       any_value(app.id)                                                                as app_service_id,
+                       any_value(env_app.app_service_id)                                                as app_service_id,
                        any_value(app.name)                                                              as app_name,
+                       any_value(app.project_id)                                                        as app_project_id,
                        any_value(ins.id)                                                                as ins_id,
                        any_value(ins.code)                                                              as ins_code,
                        any_value(ins.status)                                                            as ins_status,

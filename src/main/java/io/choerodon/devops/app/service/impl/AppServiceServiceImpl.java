@@ -2361,11 +2361,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public String checkAppServiceType(Long projectId, AppServiceDTO appServiceDTO) {
+    public String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId) {
         String type = null;
-        if (!appServiceDTO.getProjectId().equals(projectId)) {
+        if (appServiceProjectId == null) {
+            return AppServiceType.MARKET_SERVICE.getType();
+        } else if (!appServiceProjectId.equals(projectId)) {
             type = AppServiceType.SHARE_SERVICE.getType();
-        } else if (appServiceDTO.getProjectId().equals(projectId)) {
+        } else {
             type = AppServiceType.NORMAL_SERVICE.getType();
         }
         return type;

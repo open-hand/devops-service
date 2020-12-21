@@ -191,7 +191,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         pageInfo.getContent().forEach(appServiceInstanceInfoVO -> {
                     AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
-                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO));
+                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO.getProjectId()));
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
                 }
         );
@@ -770,7 +770,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (!appServiceDeployVO.getNotChanged()) {
             //存储数据
             if (appServiceDeployVO.getCommandType().equals(CREATE)) {
-                // 市场服务不用创建关联关系
+                // 创建关联关系
+                devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId());
                 appServiceInstanceDTO.setCode(code);
                 appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
             }
@@ -1068,6 +1069,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //实例相关对象数据库操作
         if (appServiceDeployVO.getCommandType().equals(CREATE)) {
+            // 创建关联关系
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
             appServiceInstanceDTO.setCode(appServiceDeployVO.getInstanceName());
             appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
         } else {
