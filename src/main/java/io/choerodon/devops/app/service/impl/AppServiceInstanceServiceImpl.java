@@ -1112,9 +1112,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public AppServiceInstanceDTO baseQueryByCodeAndEnv(String code, Long envId) {
-        // todo
-//        Assert.notNull(code, "error.code.is.null");
-//        Assert.notNull(envId, "error.envId.is.null");
+        Assert.notNull(code, "error.code.is.null");
+        Assert.notNull(envId, "error.envId.is.null");
 
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setCode(code);
@@ -1372,10 +1371,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 }
             }
         }
-
-        // 插入批量部署的部署纪录及其相关信息
-        // TODO 删除0.24前批量部署记录相关代码、数据库
-//        devopsDeployRecordService.createRecordForBatchDeployment(projectId, devopsEnvironmentDTO.getId(), recordInstances);
 
         // 构造saga的payload
         BatchDeploymentPayload batchDeploymentPayload = new BatchDeploymentPayload();
