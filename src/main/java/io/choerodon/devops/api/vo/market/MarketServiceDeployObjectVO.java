@@ -78,7 +78,7 @@ public class MarketServiceDeployObjectVO {
 
     @Nullable
     @ApiModelProperty("版本的values")
-    private String values;
+    private String value;
 
     public String getMarketAppName() {
         return marketAppName;
@@ -257,11 +257,11 @@ public class MarketServiceDeployObjectVO {
     }
 
     @Nullable
-    public String getValues() {
-        return values;
+    public String getValue() {
+        return value;
     }
 
-    public void setValues(@Nullable String values) {
-        this.values = values;
+    public void setValue(@Nullable String value) {
+        this.value = value;
     }
 }

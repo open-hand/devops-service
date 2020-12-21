@@ -28,7 +28,7 @@ public class MarketChartValueDTO extends AuditDomain {
 
     @NotNull
     @ApiModelProperty("对应的chart包的values")
-    private String values;
+    private String value;
 
     @NotNull
     @ApiModelProperty("市场部署对象id")
@@ -42,12 +42,12 @@ public class MarketChartValueDTO extends AuditDomain {
         this.id = id;
     }
 
-    public String getValues() {
-        return values;
+    public String getValue() {
+        return value;
     }
 
-    public void setValues(String values) {
-        this.values = values;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public Long getMarketDeployObjectId() {

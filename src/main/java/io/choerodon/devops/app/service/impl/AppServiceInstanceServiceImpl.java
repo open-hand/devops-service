@@ -325,7 +325,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 .getDeltaYaml();
 
         // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
-        String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(marketDeployObjectId) ? lastVersionValue : marketServiceClientOperator.queryValues(appServiceInstanceDTO.getProjectId(), marketDeployObjectId).getValues();
+        String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(marketDeployObjectId) ? lastVersionValue : marketServiceClientOperator.queryValues(appServiceInstanceDTO.getProjectId(), marketDeployObjectId).getValue();
 
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
@@ -1912,7 +1912,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         // 从market-service查询values
-        String versionValue = marketServiceClientOperator.queryValues(devopsEnvironmentDTO.getProjectId(), marketServiceVersionId).getValues();
+        String versionValue = marketServiceClientOperator.queryValues(devopsEnvironmentDTO.getProjectId(), marketServiceVersionId).getValue();
 
         c7nHelmRelease.getSpec().setValues(
                 getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());

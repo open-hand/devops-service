@@ -440,7 +440,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         MarketServiceDeployObjectVO appServiceVersion = marketServiceClientOperator.queryDeployObjectByCodeAndVersion(projectId, c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
 
         validateVersion(appServiceVersion, filePath, c7nHelmRelease);
-        String versionValue = appServiceVersion.getValues();
+        String versionValue = appServiceVersion.getValue();
         validateValues(versionValue, filePath);
 
         // 校验应用服务id是实例的实际应用服务id

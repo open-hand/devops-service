@@ -50,7 +50,7 @@ public class MarketServiceClientOperator {
 
     public MarketChartValueDTO queryValues(Long projectId, Long deployObjectId) {
         ResponseEntity<MarketChartValueDTO> result = marketServiceClient.queryValuesForDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployObjectId));
-        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null || result.getBody().getValues() == null) {
+        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null || result.getBody().getValue() == null) {
             throw new CommonException("error.query.values.from.market");
         }
         return result.getBody();
