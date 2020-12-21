@@ -1,23 +1,23 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.MarketInstanceCreationRequestVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.market.MarketServiceDTO;
-import io.choerodon.devops.infra.dto.market.MarketServiceVersionDTO;
 
-/**
- * Created by Sheep on 2019/7/4.
- */
 public class MarketInstanceSagaPayload {
-
     private Long projectId;
     private Long gitlabUserId;
     private Long commandId;
+
+    @ApiModelProperty("拉取镜像的密文的code")
     private String secretCode;
-    private MarketServiceDTO marketServiceDTO;
-    private MarketServiceVersionDTO marketServiceVersionDTO;
+    @ApiModelProperty("应用市场的发布对象")
+    private MarketServiceDeployObjectVO marketServiceDeployObjectVO;
+
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
     private MarketInstanceCreationRequestVO marketInstanceCreationRequestVO;
     private DevopsServiceReqVO devopsServiceReqVO;
@@ -100,19 +100,11 @@ public class MarketInstanceSagaPayload {
         this.commandId = commandId;
     }
 
-    public MarketServiceDTO getMarketServiceDTO() {
-        return marketServiceDTO;
+    public MarketServiceDeployObjectVO getMarketServiceDeployObjectVO() {
+        return marketServiceDeployObjectVO;
     }
 
-    public void setMarketServiceDTO(MarketServiceDTO marketServiceDTO) {
-        this.marketServiceDTO = marketServiceDTO;
-    }
-
-    public MarketServiceVersionDTO getMarketServiceVersionDTO() {
-        return marketServiceVersionDTO;
-    }
-
-    public void setMarketServiceVersionDTO(MarketServiceVersionDTO marketServiceVersionDTO) {
-        this.marketServiceVersionDTO = marketServiceVersionDTO;
+    public void setMarketServiceDeployObjectVO(MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+        this.marketServiceDeployObjectVO = marketServiceDeployObjectVO;
     }
 }

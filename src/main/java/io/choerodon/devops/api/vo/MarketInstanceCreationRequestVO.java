@@ -50,6 +50,10 @@ public class MarketInstanceCreationRequestVO {
     @ApiModelProperty(hidden = true)
     private Long commandId;
 
+    @JsonIgnore
+    @ApiModelProperty(value = "chart版本", hidden = true)
+    private String chartVersion;
+
     @Nullable
     public Long getInstanceId() {
         return instanceId;
@@ -137,5 +141,13 @@ public class MarketInstanceCreationRequestVO {
 
     public void setNotChanged(Boolean notChanged) {
         this.notChanged = notChanged;
+    }
+
+    public String getChartVersion() {
+        return chartVersion;
+    }
+
+    public void setChartVersion(String chartVersion) {
+        this.chartVersion = chartVersion;
     }
 }

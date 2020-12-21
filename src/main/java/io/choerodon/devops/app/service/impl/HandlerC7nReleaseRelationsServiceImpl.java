@@ -19,18 +19,18 @@ import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.MarketInstanceCreationRequestVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.dto.market.MarketServiceDTO;
-import io.choerodon.devops.infra.dto.market.MarketServiceVersionDTO;
 import io.choerodon.devops.infra.enums.AppServiceInstanceSource;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -61,6 +61,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
@@ -309,7 +311,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      * @param filePath             文件路径
      * @param c7nHelmRelease       release信息
      */
-    private void validateVersion(MarketServiceVersionDTO appServiceVersionDTO, String filePath, C7nHelmRelease c7nHelmRelease) {
+    private void validateVersion(MarketServiceDeployObjectVO appServiceVersionDTO, String filePath, C7nHelmRelease c7nHelmRelease) {
         if (appServiceVersionDTO == null) {
             throw new GitOpsExplainException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
         }
@@ -434,23 +436,16 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     private MarketInstanceCreationRequestVO getMarketInstanceCreationRequestVO(C7nHelmRelease c7nHelmRelease,
                                                                                Long projectId, Long envId, String filePath, String type) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-//        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        String versionValue = null;
-        MarketServiceDTO marketServiceDTO = null;
+        // 从市场服务根据code和版本号查询市场服务版本
+        MarketServiceDeployObjectVO appServiceVersion = marketServiceClientOperator.queryDeployObjectByCodeAndVersion(projectId, c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
 
-        // TODO 从市场服务根据code和版本号查询市场服务版本
-        // TODO 设置版本的values
-        MarketServiceVersionDTO marketServiceVersionDTO = null;
-
-        // TODO 如果版本已删除或者已下架并且上次还是部署的这个版本，就给实例更新为失败，给个错误信息
-
-        validateVersion(marketServiceVersionDTO, filePath, c7nHelmRelease);
-//        versionValue = appServiceVersionService.baseQueryValue(appServiceVersionDTO.getId());
+        validateVersion(appServiceVersion, filePath, c7nHelmRelease);
+        String versionValue = appServiceVersion.getValues();
+        validateValues(versionValue, filePath);
 
         // 校验应用服务id是实例的实际应用服务id
         if (c7nHelmRelease.getSpec().getAppServiceId() != null
-                && !Objects.equals(marketServiceDTO.getId(), c7nHelmRelease.getSpec().getAppServiceId())) {
+                && !Objects.equals(appServiceVersion.getMarketServiceId(), c7nHelmRelease.getSpec().getAppServiceId())) {
             throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_MISMATCH.getError(), filePath);
         }
 
@@ -459,8 +454,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         marketInstanceCreationRequestVO.setCommandType(type);
         // 设置values为配置库的values和版本的values合并值
         marketInstanceCreationRequestVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
-        marketInstanceCreationRequestVO.setMarketAppServiceVersionId(marketServiceVersionDTO.getId());
-        marketInstanceCreationRequestVO.setMarketAppServiceId(marketServiceDTO.getId());
+        marketInstanceCreationRequestVO.setMarketAppServiceVersionId(appServiceVersion.getId());
+        marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getDevopsAppServiceVersion());
+        marketInstanceCreationRequestVO.setMarketAppServiceId(appServiceVersion.getMarketServiceId());
         marketInstanceCreationRequestVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals(CommandType.UPDATE.getType())) {
             DevopsEnvCommandDTO devopsEnvCommandDTO;
@@ -479,12 +475,18 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             InstanceValueVO compareResult = appServiceInstanceService.getReplaceResult(lastDeployMergedValues, marketInstanceCreationRequestVO.getValues());
             if (lastDeployRawValue != null
                     && (compareResult.getDeltaYaml() == null || compareResult.getDeltaYaml().equals("") || compareResult.getDeltaYaml().trim().equals(COMPARE_VALUES))
-                    && Objects.equals(marketServiceVersionDTO.getId(), devopsEnvCommandDTO.getObjectVersionId())) {
+                    && Objects.equals(appServiceVersion.getId(), devopsEnvCommandDTO.getObjectVersionId())) {
                 marketInstanceCreationRequestVO.setNotChanged(true);
             }
             marketInstanceCreationRequestVO.setInstanceId(appServiceInstanceDTO.getId());
             marketInstanceCreationRequestVO.setCommandId(appServiceInstanceDTO.getCommandId());
         }
         return marketInstanceCreationRequestVO;
+    }
+
+    private void validateValues(String values, String filePath) {
+        if (values == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.MARKET_APP_SERVICE_VERSION_VALUES_NULL.getError(), filePath);
+        }
     }
 }

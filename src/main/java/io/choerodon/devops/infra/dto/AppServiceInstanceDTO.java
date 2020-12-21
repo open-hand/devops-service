@@ -30,10 +30,9 @@ public class AppServiceInstanceDTO extends AuditDomain {
      * 这个应用服务版本是可能为空的，是集群中实际部署的实例的版本id
      * 假如第一次部署就失败了，这个值就可能是空的
      */
+    @ApiModelProperty("应用版本id/如果是市场服务，就存的发布对象的id")
     @Nullable
     private Long appServiceVersionId;
-    @ApiModelProperty("市场服务版本id")
-    private Long marketServiceVersionId;
     private Long envId;
     /**
      * 因为脏数据，还有可能为空
@@ -316,13 +315,5 @@ public class AppServiceInstanceDTO extends AuditDomain {
 
     public void setSource(String source) {
         this.source = source;
-    }
-
-    public Long getMarketServiceVersionId() {
-        return marketServiceVersionId;
-    }
-
-    public void setMarketServiceVersionId(Long marketServiceVersionId) {
-        this.marketServiceVersionId = marketServiceVersionId;
     }
 }

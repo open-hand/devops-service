@@ -25,7 +25,7 @@ public class DevopsRegistrySecretDTO extends AuditDomain {
     private Long id;
     @ApiModelProperty("环境id，在0.21版本修复数据之后，0.22版本可以删除此字段")
     private Long envId;
-    @ApiModelProperty("docker仓库配置id")
+    @ApiModelProperty("docker仓库配置id/如果是市场服务实例的secret，就是存的市场服务的docker配置id")
     private Long configId;
     @ApiModelProperty("拉取镜像的secret的code")
     private String secretCode;

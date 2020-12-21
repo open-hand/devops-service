@@ -1,18 +1,16 @@
 package io.choerodon.devops.api.vo.market;
 
+import javax.annotation.Nullable;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-
-/**
- * Created by wangxiang on 2020/12/17
- */
 public class MarketServiceDeployObjectVO {
 
     private Long id;
 
     @ApiModelProperty("市场服务id")
-    private String marketServiceId;
+    private Long marketServiceId;
 
     @Encrypt
     @ApiModelProperty("应用服务id")
@@ -78,6 +76,10 @@ public class MarketServiceDeployObjectVO {
      */
     private String marketServiceName;
 
+    @Nullable
+    @ApiModelProperty("版本的values")
+    private String values;
+
     public String getMarketAppName() {
         return marketAppName;
     }
@@ -126,12 +128,11 @@ public class MarketServiceDeployObjectVO {
         this.id = id;
     }
 
-
-    public String getMarketServiceId() {
+    public Long getMarketServiceId() {
         return marketServiceId;
     }
 
-    public void setMarketServiceId(String marketServiceId) {
+    public void setMarketServiceId(Long marketServiceId) {
         this.marketServiceId = marketServiceId;
     }
 
@@ -253,5 +254,14 @@ public class MarketServiceDeployObjectVO {
 
     public void setMavenConfigId(Long mavenConfigId) {
         this.mavenConfigId = mavenConfigId;
+    }
+
+    @Nullable
+    public String getValues() {
+        return values;
+    }
+
+    public void setValues(@Nullable String values) {
+        this.values = values;
     }
 }

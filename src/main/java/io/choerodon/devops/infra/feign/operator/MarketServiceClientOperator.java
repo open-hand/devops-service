@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -7,10 +9,9 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.api.vo.market.RepoConfigVO;
 import io.choerodon.devops.infra.dto.market.MarketChartValueDTO;
-import io.choerodon.devops.infra.dto.market.MarketServiceDTO;
-import io.choerodon.devops.infra.dto.market.MarketServiceVersionDTO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
 
 /**
@@ -43,22 +44,27 @@ public class MarketServiceClientOperator {
         return marketServiceDeployObjectVO;
     }
 
-
-    public MarketServiceDTO queryMarketService(Long marketServiceId) {
-        // TODO
-        return new MarketServiceDTO();
-    }
-
-    public MarketServiceVersionDTO queryVersion(Long marketServiceVersionId) {
-        // TODO
-        return new MarketServiceVersionDTO();
-    }
-
     public MarketChartValueDTO queryValues(Long projectId, Long deployObjectId) {
-        ResponseEntity<MarketChartValueDTO> result = marketServiceClient.queryValuesForDeployObject(projectId, deployObjectId);
+        ResponseEntity<MarketChartValueDTO> result = marketServiceClient.queryValuesForDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployObjectId));
         if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null || result.getBody().getValues() == null) {
             throw new CommonException("error.query.values.from.market");
         }
         return result.getBody();
+    }
+
+    public MarketServiceVO queryMarketService(Long projectId, Long marketServiceId) {
+        ResponseEntity<MarketServiceVO> result = marketServiceClient.queryMarketService(Objects.requireNonNull(projectId), Objects.requireNonNull(marketServiceId));
+        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null || result.getBody().getId() == null) {
+            throw new CommonException("error.query.market.service");
+        }
+        return result.getBody();
+    }
+
+    public MarketServiceDeployObjectVO queryDeployObjectByCodeAndVersion(Long projectId, String chartName, String chartVersion) {
+        ResponseEntity<MarketServiceDeployObjectVO> deployObject = marketServiceClient.queryDeployObjectByCodeAndService(Objects.requireNonNull(projectId), Objects.requireNonNull(chartName), Objects.requireNonNull(chartVersion), false);
+        if (!deployObject.getStatusCode().is2xxSuccessful() || deployObject.getBody() == null || deployObject.getBody().getId() == null) {
+            throw new CommonException("error.query.deploy.object.by.code.and.service");
+        }
+        return deployObject.getBody();
     }
 }
