@@ -1133,4 +1133,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Page<DevopsBranchDTO> branchDTOPage = devopsBranchService.basePageBranch(appServiceId, pageable, params, issueId);
         return ConvertUtils.convertPage(branchDTOPage, BranchVO.class);
     }
+
+    @Override
+    public void removeAssociation(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(devopsBranchUpdateVO.getAppServiceId(), devopsBranchUpdateVO.getBranchName());
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(devopsBranchUpdateVO.getIssueId().equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
+        devopsBranchService.removeIssueAssociation(devopsBranchDTO);
+    }
 }

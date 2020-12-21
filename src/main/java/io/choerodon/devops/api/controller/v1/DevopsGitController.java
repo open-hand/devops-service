@@ -368,6 +368,23 @@ public class DevopsGitController {
     }
 
     /**
+     * 删除分支和问题的关联关系
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除分支和问题的关联关系")
+    @DeleteMapping("/branch/issue/remove_association")
+    public ResponseEntity<Void> removeAssociation(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "app_service_id") Long appServiceId,
+            @RequestBody @Valid DevopsBranchUpdateVO devopsBranchUpdateVO
+    ) {
+        devopsGitService.removeAssociation(projectId, appServiceId, devopsBranchUpdateVO);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * 查看所有合并请求
      *
      * @param projectId    项目id
