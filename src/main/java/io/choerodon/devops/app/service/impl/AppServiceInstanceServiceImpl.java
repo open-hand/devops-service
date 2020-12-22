@@ -1100,6 +1100,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             instanceValueVO = FileUtil.replaceNew(absoluteFilePath);
         } catch (Exception e) {
             FileUtil.deleteFile(absoluteFilePath);
+            LOGGER.warn("Failed to replace values. the version values is {} and deploy value is {}", versionValue, deployValue);
             throw new CommonException(e.getMessage(), e);
         }
         if (instanceValueVO.getHighlightMarkers() == null) {
