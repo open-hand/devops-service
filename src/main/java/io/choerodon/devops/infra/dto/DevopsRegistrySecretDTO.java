@@ -38,6 +38,10 @@ public class DevopsRegistrySecretDTO extends AuditDomain {
     private Boolean status;
     private Long objectVersionNumber;
     private Long projectId;
+    /**
+     * {@link io.choerodon.devops.infra.enums.DevopsRegistryRepoType}
+     */
+    @ApiModelProperty("仓库类型")
     private String repoType;
 
 

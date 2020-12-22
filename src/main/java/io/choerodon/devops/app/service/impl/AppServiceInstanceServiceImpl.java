@@ -43,6 +43,8 @@ import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.kubernetes.Metadata;
+import io.choerodon.devops.api.vo.market.MarketChartConfigVO;
+import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -2099,17 +2101,33 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return secretCode;
     }
 
-    private String makeMarketSecret(Long project, DevopsEnvironmentDTO devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
-        // TODO
-        return "TODO";
-//        MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
-//        ConfigVO configVO = new ConfigVO();
-//        configVO.setUrl(marketHarborConfigVO.getRepoUrl());
-//        configVO.setProject();
-//        DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), marketServiceDeployObjectVO.getHarborConfigId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId(), devopsConfigDTO.getType());
+    private String makeMarketSecret(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+        // 先处理chart的认证信息
+        sendChartMuseumAuthForMarket(devopsEnvironmentDTO.getClusterId(), marketServiceDeployObjectVO.getMarketChartConfigVO());
+        // 处理镜像的认证
+        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), marketServiceDeployObjectVO.getHarborConfigId(), projectId);
+        String secretCode;
+        if (devopsRegistrySecretDTO == null) {
+            //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
+            secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
+            MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
+            ConfigVO configVO = new ConfigVO();
+            String[] harborUrlAndRepo = parseMarketRepo(marketHarborConfigVO.getRepoUrl());
+            configVO.setUrl(harborUrlAndRepo[0]);
+            configVO.setProject(harborUrlAndRepo[1]);
+            configVO.setUserName(marketHarborConfigVO.getRobotName());
+            configVO.setPassword(marketHarborConfigVO.getToken());
+            devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), marketServiceDeployObjectVO.getHarborConfigId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), projectId, DevopsRegistryRepoType.MARKET_REPO.getType());
+            devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
+            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
+        }
+        // 市场服务的harbor config不会更新，所以这里的secret也不考虑更新
+        secretCode = devopsRegistrySecretDTO.getSecretCode();
+        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), gson.fromJson(devopsRegistrySecretDTO.getSecretDetail(), ConfigVO.class), UPDATE);
+        return secretCode;
     }
 
-    private String[] parseMarketHarborRepo(String harborRepo) {
+    private String[] parseMarketRepo(String harborRepo) {
         if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);
         }
@@ -2140,6 +2158,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (Boolean.TRUE.equals(helmConfig.getPrivate())) {
                 agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);
             }
+        }
+    }
+
+    private void sendChartMuseumAuthForMarket(Long clusterId, MarketChartConfigVO marketChartConfigVO) {
+        ConfigVO configVO = new ConfigVO();
+        String[] domainAndRepo = parseMarketRepo(marketChartConfigVO.getRepoUrl());
+        configVO.setUrl(domainAndRepo[0]);
+        configVO.setUserName(marketChartConfigVO.getUsername());
+        configVO.setPassword(marketChartConfigVO.getPassword());
+        if (configVO.getUserName() != null && configVO.getPassword() != null) {
+            agentCommandService.sendChartMuseumAuthentication(clusterId, configVO);
         }
     }
 
