@@ -56,30 +56,24 @@ public class DeployConfigVO {
     public static class ImageDeploy {
 
         @ApiModelProperty("仓库名")
-        @NotNull(message = "error.repoName.is.null")
         private String repoName;
 
         @ApiModelProperty("仓库类型")
-        @NotNull(message = "error.repoType.is.null")
         private String repoType;
 
         @Encrypt
         @ApiModelProperty("仓库Id")
-        @NotNull(message = "error.repoId.is.null")
         private String repoId;
 
         @ApiModelProperty("镜像名称")
-        @NotNull(message = "error.imageName.is.null")
         private String imageName;
 
         @Encrypt
         @ApiModelProperty("镜像Id")
-        @NotNull(message = "error.imageId.is.null")
         private Long imageId;
 
 
         @ApiModelProperty("镜像版本")
-        @NotNull(message = "error.tag.is.null")
         private String tag;
 
         @ApiModelProperty("部署values")
@@ -93,6 +87,7 @@ public class DeployConfigVO {
         /**
          *  部署对象id
          */
+        @NotNull(message = "error.deployObjectId.is.null")
         private Long deployObjectId;
 
         public Long getDeployObjectId() {
@@ -171,26 +166,21 @@ public class DeployConfigVO {
     public static class JarDeploy {
 
         @ApiModelProperty("服务名")
-        @NotNull(message = "error.serverName.is.null")
         private String serverName;
         @ApiModelProperty("仓库名")
         private String neRepositoryName;
 
         @Encrypt
         @ApiModelProperty("仓库id")
-        @NotNull(message = "error.repositoryId.is.null")
         private Long repositoryId;
 
         @ApiModelProperty("groupId")
-        @NotNull(message = "error.groupId.is.null")
         private String groupId;
 
         @ApiModelProperty("artifactId")
-        @NotNull(message = "error.artifactId.is.null")
         private String artifactId;
 
         @ApiModelProperty("版本")
-        @NotNull(message = "error.version.is.null")
         private String version;
 
         @ApiModelProperty("部署values")
@@ -205,6 +195,7 @@ public class DeployConfigVO {
         /**
          *  部署对象id
          */
+        @NotNull(message = "error.deployObjectId.is.null")
         private Long deployObjectId;
 
         public Long getDeployObjectId() {
