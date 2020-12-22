@@ -70,14 +70,14 @@ public interface MarketServiceClient {
             @RequestParam(value = "with_helm_config", required = false, defaultValue = "false") Boolean withHelmConfig);
 
     @ApiOperation(value = "根据多个市场服务ids查询市场服务的信息")
-    @GetMapping("/v1/projects/{project_id}/market/service/list/by_ids")
+    @PostMapping("/v1/projects/{project_id}/market/service/list/by_ids")
     @Permission(permissionWithin = true)
     ResponseEntity<List<MarketServiceVO>> queryMarketServiceByIds(
             @PathVariable("project_id") Long projectId,
             @RequestBody Set<Long> ids);
 
     @ApiOperation(value = "根据多个发布对象id查询发布对象基础信息/不包含级联信息")
-    @GetMapping("/v1/projects/{project_id}/deploy/deploy_objects/list/by_ids")
+    @PostMapping("/v1/projects/{project_id}/deploy/deploy_objects/list/by_ids")
     ResponseEntity<List<MarketServiceDeployObjectVO>> listDeployObjectsByIds(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
