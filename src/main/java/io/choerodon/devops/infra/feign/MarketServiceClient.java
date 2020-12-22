@@ -47,12 +47,12 @@ public interface MarketServiceClient {
             @RequestBody MarketAppUseRecordDTO marketAppUseRecordDTO);
 
     @ApiOperation(value = "根据发布对象id查询values")
-    @GetMapping("/v1/projects/{project_id}/deploy/deploy_objects/{deploy_object_id}/values")
+    @GetMapping("/v1/projects/{project_id}/deploy/values")
     ResponseEntity<MarketChartValueDTO> queryValuesForDeployObject(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("发布对象的id")
-            @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
+            @Encrypt @RequestParam("deploy_object_id") Long deployObjectId);
 
     @ApiOperation(value = "根据市场id查询市场服务本身的信息")
     @GetMapping("/v1/projects/{project_id}/market/service/{market_service_id}")
