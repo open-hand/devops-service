@@ -242,7 +242,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     // 为应用市场实例填充版本信息
                     if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoVO.getSource())) {
                         if (deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()) != null) {
-                            appServiceInstanceInfoVO.setCommandVersion(deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()).getDevopsAppServiceVersion());
+                            MarketServiceDeployObjectVO deployObject = deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId());
+                            appServiceInstanceInfoVO.setCommandVersion(deployObject.getDevopsAppServiceVersion());
+                            appServiceInstanceInfoVO.setAppServiceName(deployObject.getMarketServiceName());
                         }
                     }
                 }
