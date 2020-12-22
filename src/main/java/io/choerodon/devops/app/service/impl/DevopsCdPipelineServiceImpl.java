@@ -1132,7 +1132,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             if (responseEntity != null) {
                 devopsCdJobRecordDTO.setLog(logStr.replace(STATUS_CODE, responseEntity.getStatusCode().toString()));
             } else {
-                devopsCdJobRecordDTO.setLog(logStr.replace("${statusCode}", "500"));
+                devopsCdJobRecordDTO.setLog(logStr.replace(STATUS_CODE, "500"));
             }
 
             devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
