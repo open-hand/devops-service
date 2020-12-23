@@ -70,7 +70,7 @@ public class ResourceConvertToYamlHandler<T> {
      * @param filePath           环境库在本地的目录
      * @return 返回修改后的文件的sha值
      */
-    public String operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
+    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
                                          Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
         GitlabServiceClientOperator gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
         Tag tag = new Tag(type.getClass().toString());
@@ -97,8 +97,8 @@ public class ResourceConvertToYamlHandler<T> {
         }
         if (operationType.equals("create")) {
             String path = fileCode + ".yaml";
-            return gitlabServiceClientOperator.createFile(gitlabEnvProjectId, path, content,
-                    "ADD FILE", TypeUtil.objToInteger(userId)).getCommitId();
+            gitlabServiceClientOperator.createFile(gitlabEnvProjectId, path, content,
+                    "ADD FILE", TypeUtil.objToInteger(userId));
 
         } else {
             DevopsEnvFileResourceService devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
@@ -106,9 +106,9 @@ public class ResourceConvertToYamlHandler<T> {
             if (devopsEnvFileResourceDTO == null) {
                 throw new CommonException("error.fileResource.not.exist");
             }
-            return gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
+            gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
                     endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
-                    "UPDATE FILE", TypeUtil.objToInteger(userId)).getCommitId();
+                    "UPDATE FILE", TypeUtil.objToInteger(userId));
         }
     }
 
