@@ -282,7 +282,7 @@ public class GitlabServiceClientOperator {
         return groupDTOResponseEntity.getBody();
     }
 
-    public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+    public RepositoryFileDTO createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
             fileCreationVO.setPath(path);
@@ -294,8 +294,9 @@ public class GitlabServiceClientOperator {
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
-        } catch (RetryableException e) {
-            LOGGER.info(e.getMessage(), e);
+            return result.getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
         }
     }
 
@@ -327,7 +328,7 @@ public class GitlabServiceClientOperator {
      * @param commitMessage 提交信息
      * @param userId        gitlab用户id
      */
-    public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+    public RepositoryFileDTO updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
             fileCreationVO.setUserId(userId);
@@ -336,11 +337,12 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setCommitMessage(commitMessage);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .updateFile(projectId, fileCreationVO);
-            if (result.getBody().getFilePath() == null) {
+            if (result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.update");
             }
-        } catch (RetryableException e) {
-            LOGGER.info(e.getMessage(), e);
+            return result.getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
         }
     }
 

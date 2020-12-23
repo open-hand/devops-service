@@ -1127,12 +1127,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(serviceSagaPayLoad.getV1Service());
 
-            resourceConvertToYamlHandler.operationEnvGitlabFile(
+            String commitSha = resourceConvertToYamlHandler.operationEnvGitlabFile(
                     GitOpsConstants.SERVICE_PREFIX + serviceSagaPayLoad.getDevopsServiceDTO().getName(),
                     serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
                     serviceSagaPayLoad.getCreated() ? CommandType.CREATE.getType() : CommandType.UPDATE.getType(),
                     serviceSagaPayLoad.getGitlabUserId(),
                     serviceSagaPayLoad.getDevopsServiceDTO().getId(), SERVICE, serviceSagaPayLoad.getV1Endpoints(), false, serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), filePath);
+
+            // 更新对应的command的sha值
+            devopsEnvCommandService.baseUpdateSha(serviceSagaPayLoad.getDevopsServiceDTO().getCommandId(), commitSha);
 
             //创建实例时，如果选了创建域名
             if (serviceSagaPayLoad.getDevopsIngressVO() != null) {

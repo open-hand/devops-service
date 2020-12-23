@@ -21,6 +21,7 @@ import io.choerodon.devops.app.service.DevopsEnvCommandValueService;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -72,6 +73,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Override
     public void baseUpdateSha(Long commandId, String sha) {
+        CommonExAssertUtil.assertNotNull(sha, "error.commit.sha.null");
         devopsEnvCommandMapper.updateSha(commandId, sha);
     }
 

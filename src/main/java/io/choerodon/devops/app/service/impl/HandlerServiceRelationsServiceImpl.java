@@ -108,10 +108,15 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 v1Endpoints,
                                 envId);
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
-                        devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceDTO.getId(), devopsServiceReqVO, userId);
+                        String currentFileCommit = GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath);
+                        // 如果相等，就代表是由界面更新的service，不需要再更新service
+                        if (!currentFileCommit.equals(devopsEnvCommandDTO.getSha())) {
+                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceDTO.getId(), devopsServiceReqVO, userId);
+                            devopsServiceDTO = devopsServiceService.baseQuery(devopsServiceDTO.getId());
+                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
+                            devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), currentFileCommit);
+                        }
 
-                        devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                                 .baseQueryByEnvIdAndResourceId(envId, devopsServiceDTO.getId(), v1Service.getKind());
