@@ -16,6 +16,7 @@ import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDTO;
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceMapper;
@@ -115,6 +116,8 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                     devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newDevopsCustomizeResourceDTO.getCommandId());
                 }
 
+                // 更新之前的command为成功
+                devopsEnvCommandService.updateOperatingToSuccessBeforeDate(ObjectType.CUSTOM, devopsEnvCommandDTO.getObjectId(), devopsEnvCommandDTO.getCreationDate());
                 //没发生改变,更新commit记录，更新文件对应关系记录
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());

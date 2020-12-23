@@ -147,4 +147,12 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
             return devopsEnvCommandDTOS.get(0);
         }
     }
+
+    @Override
+    public void updateOperatingToSuccessBeforeDate(ObjectType objectType, Long objectId, Date beforeDate) {
+        CommonExAssertUtil.assertNotNull(objectType, "error.object.type.null");
+        CommonExAssertUtil.assertNotNull(objectId, "error.object.id.null");
+        CommonExAssertUtil.assertNotNull(beforeDate, "error.before.date.null");
+        devopsEnvCommandMapper.updateOperatingToSuccessBeforeDate(objectType.getType(), objectId, beforeDate);
+    }
 }
