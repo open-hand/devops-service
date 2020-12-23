@@ -1014,7 +1014,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         ApiTestTaskRecordDTO taskRecordDTO;
 
         // 设置用户上下文
-        DetailsHelper.setCustomUserDetails(devopsCdJobRecordDTO.getCreatedBy(), BaseConstants.DEFAULT_LOCALE_STR);
+        CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
 
         // 更新记录状态为执行中
         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
