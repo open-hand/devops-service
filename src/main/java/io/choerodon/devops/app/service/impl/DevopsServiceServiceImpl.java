@@ -1136,8 +1136,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             if (Boolean.FALSE.equals(serviceSagaPayLoad.getCreated())) {
                 DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), serviceSagaPayLoad.getDevopsServiceDTO().getId(), ObjectType.SERVICE.getType());
                 // 更新对应的command的sha值
-                RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), GitOpsConstants.MASTER, devopsEnvFileResourceDTO.getFilePath());
-                devopsEnvCommandService.baseUpdateSha(serviceSagaPayLoad.getDevopsServiceDTO().getCommandId(), repositoryFile.getCommitId());
+                if (devopsEnvFileResourceDTO != null) {
+                    RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), GitOpsConstants.MASTER, devopsEnvFileResourceDTO.getFilePath());
+                    devopsEnvCommandService.baseUpdateSha(serviceSagaPayLoad.getDevopsServiceDTO().getCommandId(), repositoryFile.getCommitId());
+                }
             }
 
             //创建实例时，如果选了创建域名
