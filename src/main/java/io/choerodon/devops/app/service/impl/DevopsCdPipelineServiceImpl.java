@@ -19,6 +19,7 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1011,6 +1012,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
         CdApiTestConfigVO cdApiTestConfigVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
         ApiTestTaskRecordDTO taskRecordDTO;
+
+        // 设置用户上下文
+        DetailsHelper.setCustomUserDetails(devopsCdJobRecordDTO.getCreatedBy(), BaseConstants.DEFAULT_LOCALE_STR);
 
         // 更新记录状态为执行中
         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
