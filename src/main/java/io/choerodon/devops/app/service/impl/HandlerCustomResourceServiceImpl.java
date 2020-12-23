@@ -110,6 +110,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                 if (!isNotChange) {
                     devopsCustomizeResourceDTO.setProjectId(projectId);
                     devopsCustomizeResourceDTO.setCommandId(devopsCustomizeResourceDTO.getContentId());
+                    devopsCustomizeResourceDTO.setResourceContent(customResource.getResourceContent());
                     devopsCustomizeResourceService.createOrUpdateResourceByGitOps(UPDATE, devopsCustomizeResourceDTO, userId, envId);
                     DevopsCustomizeResourceDTO newDevopsCustomizeResourceDTO = devopsCustomizeResourceService
                             .queryByEnvIdAndKindAndName(envId, customResource.getK8sKind(), customResource.getName());

@@ -168,7 +168,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     @Override
     public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceDTO devopsCustomizeResourceDTO, Long envId, Long userId) {
-
+        CommonExAssertUtil.assertNotNull(devopsCustomizeResourceDTO.getResourceContent(), "error.resource.content.null");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceDTO.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
