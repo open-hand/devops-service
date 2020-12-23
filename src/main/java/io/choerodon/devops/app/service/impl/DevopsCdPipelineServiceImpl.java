@@ -1013,9 +1013,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         CdApiTestConfigVO cdApiTestConfigVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
         ApiTestTaskRecordDTO taskRecordDTO;
 
-        // 设置用户上下文
-        CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
-
         // 更新记录状态为执行中
         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
         try {
@@ -1029,6 +1026,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} e: {}<<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId(), e.getCause());
             // 更新记录状态为失败
             devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
+            devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
         }
 
 
