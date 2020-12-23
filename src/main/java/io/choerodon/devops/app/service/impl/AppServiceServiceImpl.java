@@ -1802,7 +1802,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
                 resultPermissionVOs.add(userPermissionVO);
             }
-            resultPermissionVOs = PageRequestUtil.sortUserPermission(resultPermissionVOs, new Sort(Sort.Direction.DESC, "creationDate"));
+            resultPermissionVOs = PageRequestUtil.sortUserPermission(resultPermissionVOs, pageable.getSort());
             return PageInfoUtil.createPageFromList(new ArrayList<>(resultPermissionVOs), pageable);
         }
     }
