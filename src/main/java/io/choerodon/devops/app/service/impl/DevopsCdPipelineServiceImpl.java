@@ -80,7 +80,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String STATUS_CODE = "statusCode";
 
 
-
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
     private static final Integer ADMIN = 1;
@@ -573,10 +572,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
         if (Boolean.TRUE.equals(status)
                 && PipelineStatus.RUNNING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
-            LOGGER.info(">>>>>>> setAppDeployStatus, start next task, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
+            LOGGER.info(">>>>>>> setAppDeployStatus, start next task, pipelineStatus is :{}<<<<<<<<<<<", devopsCdPipelineRecordDTO.getStatus());
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
-            LOGGER.info(">>>>>>> setAppDeployStatus, update status to failed, pipelineStatus is :{}<<<<<<<<<<<",  devopsCdPipelineRecordDTO.getStatus());
+            LOGGER.info(">>>>>>> setAppDeployStatus, update status to failed, pipelineStatus is :{}<<<<<<<<<<<", devopsCdPipelineRecordDTO.getStatus());
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
@@ -1016,7 +1015,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 更新记录状态为执行中
         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
         try {
-            taskRecordDTO = testServiceClientoperator.executeTask(devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+            taskRecordDTO = testServiceClientoperator
+                    .executeTask(devopsCdJobRecordDTO.getProjectId(),
+                            cdApiTestConfigVO.getApiTestTaskId(),
+                            devopsCdJobRecordDTO.getCreatedBy());
 
             DevopsCdJobRecordDTO devopsCdJobRecordDTO1 = devopsCdJobRecordService.queryById(jobRecordId);
             devopsCdJobRecordDTO1.setApiTestTaskRecordId(taskRecordDTO.getId());
@@ -1029,7 +1031,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
         }
-
 
 
     }
@@ -1149,7 +1150,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
-
 
 
     }

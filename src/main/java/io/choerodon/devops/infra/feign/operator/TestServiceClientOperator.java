@@ -31,12 +31,13 @@ public class TestServiceClientOperator {
      *
      * @param projectId
      * @param taskId
+     * @param createdBy
      * @return
      */
-    public ApiTestTaskRecordDTO executeTask(Long projectId, Long taskId) {
+    public ApiTestTaskRecordDTO executeTask(Long projectId, Long taskId, Long createdBy) {
         ApiTestExecuteVO apiTestExecuteVO = new ApiTestExecuteVO();
         apiTestExecuteVO.setTaskId(taskId);
-        ResponseEntity<ApiTestTaskRecordDTO> entity = testServiceClient.executeTask(projectId, apiTestExecuteVO);
+        ResponseEntity<ApiTestTaskRecordDTO> entity = testServiceClient.executeTask(projectId, apiTestExecuteVO, createdBy);
 
         if (entity != null && !entity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.execute.api.test.task");
