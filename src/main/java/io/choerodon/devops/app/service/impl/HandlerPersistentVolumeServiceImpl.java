@@ -18,10 +18,13 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1PersistentVolume;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +41,7 @@ import java.util.stream.Collectors;
 @Service
 public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRelationsService<V1PersistentVolume> {
     private static final String GIT_SUFFIX = "/.git";
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerPersistentVolumeServiceImpl.class);
 
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
@@ -102,6 +106,11 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvDTO.getCommandId());
                 devopsPvReqVO.setId(devopsPvDTO.getId());
                 if (!isNotChange) {
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("The pv {} is changed", devopsPvDTO.getName());
+                        LOGGER.info("And the record in db is {}", JsonHelper.marshalByJackson(devopsPvDTO));
+                        LOGGER.info("And the pv from GitOps is {}", JsonHelper.marshalByJackson(devopsPvReqVO));
+                    }
                     // PV不允许更改
                     throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_UNMODIFIED.getError(), filePath, new Object[]{devopsPvReqVO.getName()});
                 }

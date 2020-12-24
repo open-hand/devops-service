@@ -306,7 +306,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
 
                 if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {
-                    logger.warn("Unexpected empty value '{}' for command of release payload.", releasePayloadVO.getCommit());
+                    logger.warn("Unexpected empty value '{}' for commit of release payload.", releasePayloadVO.getCommit());
                 } else {
                     Long effectCommandId = getEffectCommandId(appServiceInstanceDTO.getId(), releasePayloadVO.getCommit());
                     if (effectCommandId != null) {

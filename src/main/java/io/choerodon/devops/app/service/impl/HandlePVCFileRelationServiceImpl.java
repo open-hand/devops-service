@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,7 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -36,6 +39,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Component
 public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelationsService<V1PersistentVolumeClaim> {
     private static final String GIT_SUFFIX = "/.git";
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlePVCFileRelationServiceImpl.class);
 
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
@@ -63,6 +67,11 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
                 devopsPvcReqVO.setId(devopsPvcDTO.getId());
                 if (!isNotChange) {
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("The pvc {} is changed", devopsPvcReqVO.getName());
+                        LOGGER.info("And the record in db is {}", JsonHelper.marshalByJackson(devopsPvcDTO));
+                        LOGGER.info("And the pvc from GitOps is {}", JsonHelper.marshalByJackson(devopsPvcReqVO));
+                    }
                     // PVC不允许更改
                     throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_UNMODIFIED.getError(), filePath, new Object[]{devopsPvcDTO.getName()});
                 }
