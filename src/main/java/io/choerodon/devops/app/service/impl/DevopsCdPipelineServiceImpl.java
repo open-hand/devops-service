@@ -1009,7 +1009,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (!JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordDTO.getType())) {
             throw new CommonException("error.invalid.job.type");
         }
-        CdApiTestConfigVO cdApiTestConfigVO = gson.fromJson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+        CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
         ApiTestTaskRecordDTO taskRecordDTO;
 
         // 更新记录状态为执行中
