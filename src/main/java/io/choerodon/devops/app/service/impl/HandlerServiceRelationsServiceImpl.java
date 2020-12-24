@@ -61,6 +61,14 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+        //删除service,和文件对象关联关系
+        beforeService.forEach(serviceName -> {
+            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(serviceName, envId);
+            if (devopsServiceDTO != null) {
+                devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceDTO.getId());
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsServiceDTO.getId(), SERVICE);
+            }
+        });
         //比较已存在网络和新增要处理的网络,获取新增网络，更新网络，删除网络
         List<V1Service> addV1Service = new ArrayList<>();
         List<V1Service> updateV1Service = new ArrayList<>();
@@ -76,14 +84,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         addService(objectPath, envId, projectId, addV1Service, v1Endpoints, path, userId);
         //更新service
         updateService(objectPath, envId, projectId, updateV1Service, v1Endpoints, path, userId);
-        //删除service,和文件对象关联关系
-        beforeService.forEach(serviceName -> {
-            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(serviceName, envId);
-            if (devopsServiceDTO != null) {
-                devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsServiceDTO.getId(), SERVICE);
-            }
-        });
     }
 
     @Override
