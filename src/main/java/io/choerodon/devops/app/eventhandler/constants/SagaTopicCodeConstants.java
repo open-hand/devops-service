@@ -21,6 +21,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_INSTANCE = "devops-create-instance";
 
     /**
+     * Devops创建市场实例
+     */
+    public static final String DEVOPS_CREATE_MARKET_INSTANCE = "devops-create-market-instance";
+
+    /**
      * Devops创建网络
      */
     public static final String DEVOPS_CREATE_SERVICE = "devops-create-service";

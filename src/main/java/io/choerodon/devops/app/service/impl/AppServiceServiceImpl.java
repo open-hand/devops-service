@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.IOUtils;
@@ -28,6 +29,7 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -2363,11 +2365,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public String checkAppServiceType(Long projectId, AppServiceDTO appServiceDTO) {
+    public String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId) {
         String type = null;
-        if (!appServiceDTO.getProjectId().equals(projectId)) {
+        if (appServiceProjectId == null) {
+            return AppServiceType.MARKET_SERVICE.getType();
+        } else if (!appServiceProjectId.equals(projectId)) {
             type = AppServiceType.SHARE_SERVICE.getType();
-        } else if (appServiceDTO.getProjectId().equals(projectId)) {
+        } else {
             type = AppServiceType.NORMAL_SERVICE.getType();
         }
         return type;
@@ -2878,5 +2882,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             return JsonHelper.unmarshalByJackson(jsonBody, SonarContentsVO.class);
         }
+    }
+
+    @Override
+    public List<AppServiceDTO> baseListByIds(Set<Long> appServiceIds) {
+        if (CollectionUtils.isEmpty(appServiceIds)) {
+            return Collections.emptyList();
+        }
+        return appServiceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(appServiceIds));
     }
 }

@@ -47,8 +47,6 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
-    private DevopsGitService devopsGitService;
-    @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Override

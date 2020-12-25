@@ -6,8 +6,9 @@ package io.choerodon.devops.infra.enums;
  */
 public enum AppServiceType {
     NORMAL_SERVICE("normal_service"),
+    MARKET_SERVICE("market_service"),
     SHARE_SERVICE("share_service");
-    private String type;
+    private final String type;
     AppServiceType(String type){this.type = type;}
 
     public String getType() {
