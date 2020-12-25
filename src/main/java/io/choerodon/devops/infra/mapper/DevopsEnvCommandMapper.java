@@ -2,7 +2,9 @@ package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.sql.Date;
@@ -18,11 +20,6 @@ public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDTO> 
 
     /**
      * 取出所有应用实例的操作记录
-     *
-     * @param objectType
-     * @param objectId
-     * @param startTime
-     * @return
      */
     List<DevopsEnvCommandDTO> listByInstanceIdsAndStartDate(@Param("objectType") String objectType, @Param("objectIds") List<Long> objectId, @Param("startTime") java.util.Date startTime);
 
@@ -42,4 +39,13 @@ public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDTO> 
      */
     List<Command> listCommandsToSync(@Param("envId") Long envId,
                                      @Param("beforeDate") String beforeDate);
+
+    /**
+     * 将指定日期之前的特定对象的处于operating状态的command更新为success
+     *
+     * @param objectType 对象类型
+     * @param objectId   对象id
+     * @param beforeTime 截止日期
+     */
+    void updateOperatingToSuccessBeforeDate(@Param("objectType") String objectType, @Param("objectId") Long objectId, @Param("beforeTime") java.util.Date beforeTime);
 }

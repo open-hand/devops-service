@@ -58,7 +58,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.sonar.*;
-import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
@@ -84,11 +83,7 @@ import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
-import io.choerodon.devops.infra.feign.operator.RducmClientOperator;
+import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -1807,7 +1802,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
                 resultPermissionVOs.add(userPermissionVO);
             }
-            resultPermissionVOs = PageRequestUtil.sortUserPermission(resultPermissionVOs, new Sort(Sort.Direction.DESC, "creationDate"));
+            resultPermissionVOs = PageRequestUtil.sortUserPermission(resultPermissionVOs, pageable.getSort());
             return PageInfoUtil.createPageFromList(new ArrayList<>(resultPermissionVOs), pageable);
         }
     }
@@ -2264,8 +2259,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
                 List<Long> appServiceIds = new ArrayList<>();
                 baseServiceClientOperator.listIamProjectByOrgId(organizationId)
-                        .forEach(pro ->
-                                baseListByProjectId(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                        .forEach(pro -> {
+                                    if (!pro.getId().equals(projectId)) {
+                                        baseListByProjectId(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()));
+                                    }
+                                }
                         );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()

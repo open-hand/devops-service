@@ -27,7 +27,8 @@ public interface TestServiceClient {
     @PostMapping(value = "/v1/projects/{project_id}/api_test/tasks/execute")
     ResponseEntity<ApiTestTaskRecordDTO> executeTask(
             @PathVariable("project_id") Long projectId,
-            @RequestBody ApiTestExecuteVO apiTestExecuteVO);
+            @RequestBody ApiTestExecuteVO apiTestExecuteVO,
+            @RequestParam(value = "executor_id") Long executorId);
 
     @ApiOperation("根据纪录id查询纪录详情 / 不带有测试请求详情")
     @GetMapping("/v1/projects/{project_id}/api-test-records/{record_id}")

@@ -227,6 +227,10 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
 
         DeployRecordVO deployRecordVO = devopsDeployRecordMapper.queryEnvDeployRecordByCommandId(commandId);
+        if(deployRecordVO == null) {
+            return null;
+        }
+
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(deployRecordVO.getDeployPayloadId());
         if (devopsEnvironmentDTO != null) {
             // 计算集群状态

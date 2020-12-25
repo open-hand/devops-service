@@ -61,7 +61,7 @@ class DevopsCdPipelineServiceImplSpec extends Specification {
         then:
         1 * devopsCdJobRecordService.queryById(jobRecordId) >> cdApiTestJob
         2 * devopsCdJobRecordService.updateStatusById(_, _)
-        1 * testServiceClientOperator.executeTask(_, _) >> {throw new CommonException("error.execute.api.test.task")}
+        1 * testServiceClientOperator.executeTask(_, _, devopsCdJobRecordDTO.getCreatedBy()) >> {throw new CommonException("error.execute.api.test.task")}
         0 * devopsCdJobRecordService.update(_)
 
         when: "执行成功"
@@ -69,7 +69,7 @@ class DevopsCdPipelineServiceImplSpec extends Specification {
         then:
         2 * devopsCdJobRecordService.queryById(jobRecordId) >> cdApiTestJob
         1 * devopsCdJobRecordService.updateStatusById(_, _)
-        1 * testServiceClientOperator.executeTask(_, _) >> taskRecordDTO
+        1 * testServiceClientOperator.executeTask(_, _, devopsCdJobRecordDTO.getCreatedBy()) >> taskRecordDTO
         1 * devopsCdJobRecordService.update(_)
     }
 }

@@ -153,4 +153,14 @@
         </foreach>
         AND creation_date <![CDATA[>]]> #{startTime}
     </select>
+
+    <update id="updateOperatingToSuccessBeforeDate">
+        UPDATE
+        devops_env_command
+        SET status = 'success'
+        WHERE object_id = #{objectId}
+        AND object = #{objectType}
+        AND status = 'operating'
+        AND creation_date <![CDATA[<]]> #{beforeTime}
+    </update>
 </mapper>
