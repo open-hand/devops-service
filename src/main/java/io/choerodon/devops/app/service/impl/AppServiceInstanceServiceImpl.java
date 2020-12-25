@@ -55,6 +55,7 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
@@ -713,7 +714,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
 
+            boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
             //插入部署记录
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
             devopsDeployRecordService.saveRecord(
                     devopsEnvironmentDTO.getProjectId(),
                     isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
@@ -725,7 +728,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     DeployObjectTypeEnum.APP,
                     appServiceDTO.getName(),
                     appServiceVersionDTO.getVersion(),
-                    appServiceInstanceDTO.getCode());
+                    appServiceInstanceDTO.getCode(),
+                    new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
@@ -1092,9 +1096,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId());
         }
 
-        //插入部署记录
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId());
+
+        boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
+        //插入部署记录
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
                 DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
@@ -1105,7 +1112,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 DeployObjectTypeEnum.APP,
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
-                appServiceInstanceDTO.getCode());
+                appServiceInstanceDTO.getCode(),
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);

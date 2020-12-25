@@ -8,7 +8,7 @@ import io.choerodon.devops.infra.enums.AppSourceType;
 public class DeploySourceVO {
 
     /**
-     *  {@link AppSourceType}
+     * {@link AppSourceType}
      */
     private String type;
 
@@ -28,6 +28,14 @@ public class DeploySourceVO {
     private String marketServiceName;
 
     private Long deployObjectId;
+
+    public DeploySourceVO() {
+    }
+
+    public DeploySourceVO(AppSourceType type, String projectName) {
+        this.type = type.getValue();
+        this.projectName = projectName;
+    }
 
     public Long getDeployObjectId() {
         return deployObjectId;
