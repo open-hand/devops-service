@@ -357,7 +357,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<Long, IssueDTO> issues = null;
         // 读取敏捷问题列表可能会失败，但是不希望影响查询分支逻辑，所以捕获异常
         try {
-            issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+            if (!CollectionUtils.isEmpty(issuedIds)) {
+                issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+            }
         } catch (Exception e) {
             LOGGER.error("query agile issue failed.", e);
         }
