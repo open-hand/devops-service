@@ -263,6 +263,7 @@
 		SELECT
 			ddr.id AS id,
 		    ddr.deploy_type,
+		    ddr.deploy_source,
 		    denc.status AS command_status,
 			denc.object_id AS instance_id,
 			ddr.instance_name,
