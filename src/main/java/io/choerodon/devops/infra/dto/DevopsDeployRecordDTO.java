@@ -14,7 +14,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @ModifyAudit
 @VersionAudit
-@Table(name="devops_deploy_record")
+@Table(name = "devops_deploy_record")
 public class DevopsDeployRecordDTO extends AuditDomain {
 
     @Id
@@ -45,7 +45,28 @@ public class DevopsDeployRecordDTO extends AuditDomain {
 
     private String instanceName;
 
+    /**
+     * 部署来源
+     */
+    private String deploySource;
+
     public DevopsDeployRecordDTO() {
+    }
+
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName, String deploySource) {
+        this.projectId = projectId;
+        this.deployType = deployType;
+        this.deployId = deployId;
+        this.deployMode = deployMode;
+        this.deployPayloadId = deployPayloadId;
+        this.deployPayloadName = deployPayloadName;
+        this.deployResult = deployResult;
+        this.deployTime = deployTime;
+        this.deployObjectType = deployObjectType;
+        this.deployObjectName = deployObjectName;
+        this.deployObjectVersion = deployObjectVersion;
+        this.instanceName = instanceName;
+        this.deploySource = deploySource;
     }
 
     public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName) {
@@ -168,6 +189,14 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.instanceName = instanceName;
     }
 
+    public String getDeploySource() {
+        return deploySource;
+    }
+
+    public void setDeploySource(String deploySource) {
+        this.deploySource = deploySource;
+    }
+
     @Override
     public String toString() {
         return "DevopsDeployRecordDTO{" +
@@ -184,6 +213,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
                 ", deployObjectName='" + deployObjectName + '\'' +
                 ", deployObjectVersion='" + deployObjectVersion + '\'' +
                 ", instanceName='" + instanceName + '\'' +
+                ", deploySource=" + deploySource + '\'' +
                 '}';
     }
 }

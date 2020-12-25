@@ -92,6 +92,8 @@ mybatis:
       meta-provider-redis-db: ${SPRING_REDIS_DATABASE:1}
       meta-provider-redis-refresh-interval: 540000
       meta-provider-redis-expire: 600000
+      # 五位，配置为5位最大值
+      data-center-id: 31
 
 feign:
   hystrix:
