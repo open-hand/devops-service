@@ -87,7 +87,6 @@ public class DeployConfigVO {
         /**
          *  部署对象id
          */
-        @NotNull(message = "error.deployObjectId.is.null")
         private Long deployObjectId;
 
         public Long getDeployObjectId() {
@@ -195,7 +194,6 @@ public class DeployConfigVO {
         /**
          *  部署对象id
          */
-        @NotNull(message = "error.deployObjectId.is.null")
         private Long deployObjectId;
 
         public Long getDeployObjectId() {
