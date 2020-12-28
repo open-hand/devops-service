@@ -1,4 +1,4 @@
-FROM registry.cn-shanghai.aliyuncs.com/c7n/devops-base:0.7.8 as base
+FROM registry.cn-shanghai.aliyuncs.com/c7n/devops-base:0.7.9 as base
 FROM registry.cn-shanghai.aliyuncs.com/c7n/javabase:0.10.0
 COPY --from=base --chown=www-data:www-data /usr/lib/yaml /usr/lib/yaml
 RUN mkdir /choerodon && chown -R www-data:www-data /choerodon
