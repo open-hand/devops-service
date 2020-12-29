@@ -1,4 +1,4 @@
-FROM registry.cn-shanghai.aliyuncs.com/c7n/devops-base:0.7.9 as base
+FROM registry.cn-shanghai.aliyuncs.com/c7n/devops-base:0.7.7 as base
 FROM registry.cn-shanghai.aliyuncs.com/c7n/javabase:0.9.0
 # Install kaniko
 COPY --from=base /usr/lib/yaml /usr/lib/yaml
