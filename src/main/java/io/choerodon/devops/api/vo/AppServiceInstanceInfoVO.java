@@ -72,6 +72,11 @@ public class AppServiceInstanceInfoVO {
     @Encrypt
     private Long clusterId;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppServiceInstanceSource}
+     */
+    private String source;
+
     public Long getEffectCommandId() {
         return effectCommandId;
     }
@@ -252,7 +257,17 @@ public class AppServiceInstanceInfoVO {
         return effectCommandStatus;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     public void setEffectCommandStatus(String effectCommandStatus) {
         this.effectCommandStatus = effectCommandStatus;
+
+
     }
 }

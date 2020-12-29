@@ -386,6 +386,19 @@ public class DevopsSagaHandler {
         return data;
     }
 
+    /**
+     * devops创建市场实例
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
+            description = "devops创建市场实例",
+            sagaCode = DEVOPS_CREATE_MARKET_INSTANCE,
+            maxRetryCount = 3,
+            seq = 1)
+    public String devopsCreateMarketInstance(String data) {
+        appServiceInstanceService.createMarketInstanceBySaga(JsonHelper.unmarshalByJackson(data, MarketInstanceSagaPayload.class));
+        return data;
+    }
+
 
     /**
      * devops创建网络

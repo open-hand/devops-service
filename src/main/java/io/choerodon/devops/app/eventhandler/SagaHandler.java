@@ -6,6 +6,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.util.stream.Collectors;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,8 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
+import io.choerodon.devops.api.vo.iam.ProjectCategoryDTO;
+import io.choerodon.devops.api.vo.iam.ProjectMapCategoryVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
@@ -47,6 +50,10 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
+    /**
+     * devops项目类型
+     */
+    private static final String devops = "DEVOPS";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -64,6 +71,8 @@ public class SagaHandler {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private ChartService chartService;
+    @Autowired
+    private GitlabHandleService gitlabHandleService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -337,5 +346,29 @@ public class SagaHandler {
         CustomResourceVO customResourceVO = gson.fromJson(payload, CustomResourceVO.class);
         chartService.batchDeleteChartVersion(customResourceVO.getChartTagVOS());
         return payload;
+    }
+
+    /**
+     * devops 同步项目类型的处理
+     *
+     * @param msg
+     * @return
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PROJECT_CATEGORY_SYNC,
+            description = "devops 同步项目类型的处理",
+            sagaCode = SagaTopicCodeConstants.ADD_PROJECT_CATEGORY,
+            maxRetryCount = 3,
+            seq = 1)
+    public String handleProjectCategoryEvent(String msg) {
+        LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
+        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
+        List<ProjectCategoryDTO> projectCategoryDTOS = projectPayload.getProjectMapCategoryVOList().stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).collect(Collectors.toList());
+        //不包含devops项目类型不做同步
+        if (!projectCategoryDTOS.stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toList()).contains(devops)) {
+            return msg;
+        }
+        gitlabHandleService.handleProjectCategoryEvent(projectPayload);
+        LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
+        return msg;
     }
 }
