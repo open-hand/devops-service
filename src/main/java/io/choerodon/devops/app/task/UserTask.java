@@ -58,6 +58,9 @@ public class UserTask implements CommandLineRunner {
                 userAttrDTO.setGitlabAdmin(Boolean.TRUE);
                 userAttrDTO.setGitlabUserId(GITLAB_ADMIN_ID);
                 userAttrService.baseInsert(userAttrDTO);
+                LOGGER.info("Successfully insert admin user relation data iamUserId: {}, gitlabUserId: {}", iamAdminId, GITLAB_ADMIN_ID);
+            } else {
+                LOGGER.info("Admin user relation data exists. Skip...");
             }
         } catch (Exception ex) {
             LOGGER.warn("Failed to insert admin user relation data. ");
