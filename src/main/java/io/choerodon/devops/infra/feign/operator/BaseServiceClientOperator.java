@@ -426,4 +426,9 @@ public class BaseServiceClientOperator {
         ResponseEntity<List<UserProjectLabelVO>> labels = baseServiceClient.listRoleLabelsForUserInTheProject(Objects.requireNonNull(userId), projectIds);
         return labels.getBody();
     }
+
+    public List<IamUserDTO> queryUserByProjectId(Long projectId) {
+        ResponseEntity<List<IamUserDTO>> labels = baseServiceClient.queryUserByProjectId(Objects.requireNonNull(projectId));
+        return labels.getBody();
+    }
 }

@@ -304,6 +304,16 @@ public class IamUserDTO extends AuditDomain {
     @ApiModelProperty("角色")
     private List<RoleDTO> roles;
 
+    private String userName;
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     private int selectFlag = 0;
 
     public IamUserDTO() {

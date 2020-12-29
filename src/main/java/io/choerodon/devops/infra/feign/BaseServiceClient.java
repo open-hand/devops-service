@@ -222,4 +222,13 @@ public interface BaseServiceClient {
 
     @GetMapping("/choerodon/v1/sync/user")
     ResponseEntity<List<UserVO>> listUserByCreationDate();
+
+    /**
+     * 查询项目下的用户
+     * @param requireNonNull
+     * @return
+     */
+    @GetMapping("/choerodon/v1/projects/{project_id}/users")
+    ResponseEntity<List<IamUserDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId);
+
 }
