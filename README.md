@@ -108,6 +108,25 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
     gateway:
       url: "http://api.example.com" # 网关地址
   hzero:
+    service:
+      platform:
+        name: choerodon-platform
+      oauth:
+        name: choerodon-oauth
+      iam:
+        name: choerodon-iam
+      file:
+        name: choerodon-file
+      message:
+        name: choerodon-message
+      admin:
+        name: choerodon-admin
+      swagger:
+        name: choerodon-swagger
+      gateway:
+        name: choerodon-gateway
+      monitor:
+        name: choerodon-monitor
     websocket:
       # 用于连接websocket的路径
       websocket: /websocket
@@ -158,6 +177,11 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
       ReadTimeout: 50000
 
   devops:
+    ansible:
+      image: registry.cn-shanghai.aliyuncs.com/c7n/kubeadm-ha:0.1.0
+    # helm 下载地址
+    helm:
+      download-url: https://file.choerodon.com.cn/kubernetes-helm/v3.2.4/helm-v3.2.4-linux-amd64.tar.gz
     # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
     ci:
       default:

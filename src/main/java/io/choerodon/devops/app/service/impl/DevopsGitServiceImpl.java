@@ -357,7 +357,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<Long, IssueDTO> issues = null;
         // 读取敏捷问题列表可能会失败，但是不希望影响查询分支逻辑，所以捕获异常
         try {
-            issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+            if (!CollectionUtils.isEmpty(issuedIds)) {
+                issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+            }
         } catch (Exception e) {
             LOGGER.error("query agile issue failed.", e);
         }
@@ -1137,5 +1139,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public Page<BranchVO> pageBranchFilteredByIssueId(Long projectId, PageRequest pageable, Long appServiceId, String params, Long issueId) {
         Page<DevopsBranchDTO> branchDTOPage = devopsBranchService.basePageBranch(appServiceId, pageable, params, issueId);
         return ConvertUtils.convertPage(branchDTOPage, BranchVO.class);
+    }
+
+    @Override
+    public void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appServiceId, branchName);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(issueId.equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
+        devopsBranchService.removeIssueAssociation(devopsBranchDTO);
     }
 }

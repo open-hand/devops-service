@@ -3,7 +3,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 
 
-
+# 将变化后的值设置到指定的键上面
 def set_map_item(follow_list, delta_map, value):
     # len of key_list must >= 1
     def get_map(key_list, follow_map):
@@ -16,8 +16,9 @@ def set_map_item(follow_list, delta_map, value):
             return get_map(new_list, follow_map[key_list[0]])
         else:
             return follow_map[key_list[0]]
+
     inner_map = get_map(follow_list, delta_map)
-    inner_map[follow_list[len(follow_list)-1]] = value
+    inner_map[follow_list[len(follow_list) - 1]] = value
 
 
 # version_value_map 原来的配置
@@ -72,28 +73,29 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
                         add_list.append(follow_keys_copy)
                         version_value_map[key] = deploy_value_map[key]
                         set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
-
                     # 原来数组长度与现在数组长度不相等，且原来数组长度不为0则为更新
                     elif len(version_value_map[key]) != len(deploy_value_map[key]) and len(version_value_map[key]) != 0:
                         update_list.append(follow_keys_copy)
                         version_value_map[key] = deploy_value_map[key]
                         set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
-
                     # 原来数组长度与现在数组长度相等，从左往右，只要对应索引位置的元素不同则为更新
                     elif len(version_value_map[key]) == len(deploy_value_map[key]):
-
                         for i in range(0, len(version_value_map[key])):
                             if version_value_map[key][i] != deploy_value_map[key][i]:
                                 update_list.append(follow_keys_copy)
                                 version_value_map[key] = deploy_value_map[key]
                                 set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+                    # 其他情况，直接视为更新
+                else:
+                    update_list.append(follow_keys_copy)
+                    version_value_map[key] = deploy_value_map[key]
+                    set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+
             else:
                 # add list
                 add_list.append(follow_keys_copy)
                 version_value_map[key] = deploy_value_map[key]
                 set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
-
-
 
 
 def main():
@@ -109,10 +111,13 @@ def main():
         else:
             code_new = doc
         i = i + 1
+    # 保存变化后的值,由set_map_item设置
     delta_map = CommentedMap()
+    # 每一次traversal的递归遍历处理过的key,每一次递归完成回到root层时该key将会清空
     follow_keys = list()
-
+    # 此次对比增加的key
     add = list()
+    # 此次对比更新的key
     update = list()
     traversal(code_old, code_new, follow_keys, delta_map, update, add)
     yaml.dump(code_old, sys.stdout)

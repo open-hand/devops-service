@@ -29,4 +29,10 @@ public interface DevopsBranchService {
     void baseDelete(Long appServiceId, String branchName);
 
     void deleteAllBaranch(Long appServiceId);
+
+    /**
+     * 移除问题和分支关联关系
+     * @param devopsBranchDTO
+     */
+    void removeIssueAssociation(DevopsBranchDTO devopsBranchDTO);
 }

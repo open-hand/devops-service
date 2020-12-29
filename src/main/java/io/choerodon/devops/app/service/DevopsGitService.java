@@ -195,6 +195,7 @@ public interface DevopsGitService {
 
     /**
      * 查询
+     *
      * @param projectId
      * @param pageable
      * @param appServiceId
@@ -203,4 +204,14 @@ public interface DevopsGitService {
      * @return
      */
     Page<BranchVO> pageBranchFilteredByIssueId(Long projectId, PageRequest pageable, Long appServiceId, String params, Long issueId);
+
+    /**
+     * 删除分支和问题关联关系
+     *
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @param branchName   分支名称
+     * @param issueId      关联问题id
+     */
+    void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId);
 }
