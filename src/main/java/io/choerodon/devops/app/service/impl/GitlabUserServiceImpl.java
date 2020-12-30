@@ -45,6 +45,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class GitlabUserServiceImpl implements GitlabUserService {
     private static final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabUserService.class);
+    private static final String ANONYMOUS_USER_LOGIN_NAME = "ANONYMOUS";
     /**
      * 创建的用户邮箱重复的失败信息
      */
@@ -191,6 +192,10 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             index++;
             Objects.requireNonNull(user.getEnabled());
             Objects.requireNonNull(user.getAdmin());
+            if (ANONYMOUS_USER_LOGIN_NAME.equals(user.getLoginName())) {
+                // 跳过匿名用户
+                return;
+            }
             // 更新锁过期时间和进度
             redisTemplate.opsForValue().set(USER_SYNC_REDIS_KEY, processStringRepresentation(processedSize + index, totalSize), LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
             LOGGER.info("Start to sync user {} with id {}", user.getLoginName(), user.getId());
