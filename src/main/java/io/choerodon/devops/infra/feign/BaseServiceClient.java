@@ -55,7 +55,7 @@ public interface BaseServiceClient {
     ResponseEntity<IamUserDTO> queryById(@PathVariable("id") Long id);
 
     @PostMapping(value = "/choerodon/v1/users/ids")
-    ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
+    ResponseEntity<String> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
 
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/users")
     ResponseEntity<Page<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
