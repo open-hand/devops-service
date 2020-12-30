@@ -231,4 +231,10 @@ public interface BaseServiceClient {
     @GetMapping("/choerodon/v1/projects/{project_id}/users")
     ResponseEntity<List<IamUserDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId);
 
+    /**
+     * 查询所有root
+     * @return
+     */
+    ResponseEntity<List<IamUserDTO>> queryRoot();
+
 }
