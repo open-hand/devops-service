@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -18,4 +19,6 @@ public interface UserAttrMapper extends BaseMapper<UserAttrDTO> {
 
     void updateIsGitlabAdmin(@Param("iamUserId") Long iamUserId,
                              @Param("isGitlabAdmin") Boolean isGitlabAdmin);
+
+    Set<Long> selectAllUserIds();
 }

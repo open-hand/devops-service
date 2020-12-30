@@ -6,7 +6,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
+import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,8 +138,8 @@ public class BaseServiceClientOperator {
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
-                userDTOS = baseServiceClient
-                        .listUsersByIds(ids.toArray(newIds), false).getBody();
+                userDTOS = ResponseUtils.getResponse(baseServiceClient
+                        .listUsersByIds(ids.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {});
                 if (userDTOS == null) {
                     userDTOS = Collections.emptyList();
                 }
@@ -146,6 +148,19 @@ public class BaseServiceClientOperator {
             }
         }
         return userDTOS;
+    }
+
+    public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
+        try {
+            List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
+                    .listUsersByIds(ids, onlyEnabled), new TypeReference<List<IamUserDTO>>() {});
+            if (userDTOS == null) {
+                userDTOS = Collections.emptyList();
+            }
+            return userDTOS;
+        } catch (Exception e) {
+            throw new CommonException("error.users.get", e);
+        }
     }
 
     public IamUserDTO queryUserByUserId(Long id) {
@@ -435,5 +450,15 @@ public class BaseServiceClientOperator {
     public List<IamUserDTO> queryRoot() {
         ResponseEntity<List<IamUserDTO>> labels = baseServiceClient.queryRoot();
         return labels.getBody();
+    }
+
+    public long queryAllUserCount() {
+        // TODO
+        return 0L;
+    }
+
+    public Set<Long> queryAllUserIds() {
+        // TODO
+        return Collections.emptySet();
     }
 }

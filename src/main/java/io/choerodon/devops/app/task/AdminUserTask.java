@@ -25,11 +25,11 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
  * @since 2020/12/29
  */
 @Component
-public class UserTask implements CommandLineRunner {
+public class AdminUserTask implements CommandLineRunner {
     private static final Long GITLAB_ADMIN_ID = 1L;
     private static final String IAM_ADMIN_LOGIN_NAME = "admin";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserTask.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AdminUserTask.class);
 
     @Autowired
     private UserAttrService userAttrService;
