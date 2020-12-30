@@ -431,4 +431,9 @@ public class BaseServiceClientOperator {
         ResponseEntity<List<IamUserDTO>> labels = baseServiceClient.queryUserByProjectId(Objects.requireNonNull(projectId));
         return labels.getBody();
     }
+
+    public List<IamUserDTO> queryRoot() {
+        ResponseEntity<List<IamUserDTO>> labels = baseServiceClient.queryRoot();
+        return labels.getBody();
+    }
 }

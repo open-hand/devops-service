@@ -355,7 +355,7 @@ public class SagaHandler {
      * @return
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PROJECT_CATEGORY_SYNC,
-            description = "devops 同步项目类型的处理",
+            description = "devops 同步项目类型的处理(group与角色同步事件)",
             sagaCode = SagaTopicCodeConstants.ADD_PROJECT_CATEGORY,
             maxRetryCount = 3,
             seq = 1)

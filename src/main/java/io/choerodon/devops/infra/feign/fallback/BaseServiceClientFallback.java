@@ -174,4 +174,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<List<IamUserDTO>> queryUserByProjectId(Long projectId) {
        throw new CommonException("error.query.user.by.project.id");
     }
+
+    @Override
+    public ResponseEntity<List<IamUserDTO>> queryRoot() {
+        throw new CommonException("error.query.root.user");
+    }
 }
