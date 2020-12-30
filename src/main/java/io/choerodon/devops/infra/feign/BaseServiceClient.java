@@ -235,6 +235,7 @@ public interface BaseServiceClient {
      * 查询所有root
      * @return
      */
+    @GetMapping("/choerodon/v1/users/root")
     ResponseEntity<List<IamUserDTO>> queryRoot();
 
 }
