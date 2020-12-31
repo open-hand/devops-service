@@ -179,4 +179,14 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<List<IamUserDTO>> queryRoot() {
         throw new CommonException("error.query.root.user");
     }
+
+    @Override
+    public ResponseEntity<String> countAllUsers() {
+        throw new CommonException("error.count.all.users");
+    }
+
+    @Override
+    public ResponseEntity<String> listAllUserIds() {
+        throw new CommonException("error.list.all.user.ids");
+    }
 }

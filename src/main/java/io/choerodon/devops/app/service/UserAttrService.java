@@ -81,7 +81,7 @@ public interface UserAttrService {
      *
      * @return 数量
      */
-    long allUserCount();
+    int allUserCount();
 
     /**
      * 所有 devops_user 纪录的 iam_user_id

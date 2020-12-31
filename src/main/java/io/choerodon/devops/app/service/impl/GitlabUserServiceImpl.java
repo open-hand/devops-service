@@ -139,9 +139,9 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 return;
             }
 
-            // 查询iam所有的用户的count
-            long iamUserCount = baseServiceClientOperator.queryAllUserCount();
-            long devopsUserCount = userAttrService.allUserCount();
+            // 查询iam所有的用户的count, 去掉匿名用户的数量
+            int iamUserCount = baseServiceClientOperator.queryAllUserCount() - 1;
+            int devopsUserCount = userAttrService.allUserCount();
 
             // 和devops-service的devops-user表的纪录进行对照
             // 如果数量不对，请求iam，查询所有的用户的id，
