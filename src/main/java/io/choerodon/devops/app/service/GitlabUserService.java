@@ -23,6 +23,11 @@ public interface GitlabUserService {
     void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);
 
     /**
+     * 如果后台没有同步用户任务，触发异步同步用户任务
+     */
+    void asyncHandleAllUsers();
+
+    /**
      * 同步所有用户
      */
     void syncAllUsers();

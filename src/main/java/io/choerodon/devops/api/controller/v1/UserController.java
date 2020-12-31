@@ -6,10 +6,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.GitlabUserService;
@@ -39,5 +36,13 @@ public class UserController {
             @ApiParam(value = "猪齿鱼用户id", required = true)
             @PathVariable(value = "user_id") Long userId) {
         return new ResponseEntity<>(gitlabUserService.resetGitlabPassword(userId), HttpStatus.OK);
+    }
+
+    @ApiOperation("如果后台没有同步用户任务，触发异步同步用户任务")
+    @Permission(level = ResourceLevel.SITE)
+    @PostMapping("/trigger_syncing")
+    public ResponseEntity<Void> triggerSyncingUser() {
+        gitlabUserService.asyncHandleAllUsers();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
