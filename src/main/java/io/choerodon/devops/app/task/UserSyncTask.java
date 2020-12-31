@@ -18,7 +18,7 @@ public class UserSyncTask implements CommandLineRunner {
     /**
      * 本地测试，可以将这个值设置为true
      */
-    @Value("local.test:false")
+    @Value("${local.test:false}")
     private Boolean localTest;
 
     @Autowired
