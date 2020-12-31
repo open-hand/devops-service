@@ -226,7 +226,7 @@ public interface BaseServiceClient {
     /**
      * 查询项目下的用户
      */
-    @GetMapping("/choerodon/v1/projects/{project_id}/users")
+    @GetMapping("/choerodon/v1/projects/{project_id}/all/users")
     ResponseEntity<List<IamUserDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId);
 
     /**
