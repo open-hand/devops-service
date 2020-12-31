@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabUserReqDTO;
@@ -127,6 +129,12 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
         }
+    }
+
+    @Async(GitOpsConstants.USER_SYNC_EXECUTOR)
+    @Override
+    public void asyncHandleAllUsers() {
+        syncAllUsers();
     }
 
     @Override
