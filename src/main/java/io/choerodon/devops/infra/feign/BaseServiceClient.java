@@ -225,17 +225,27 @@ public interface BaseServiceClient {
 
     /**
      * 查询项目下的用户
-     * @param requireNonNull
-     * @return
      */
     @GetMapping("/choerodon/v1/projects/{project_id}/users")
     ResponseEntity<List<IamUserDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId);
 
     /**
      * 查询所有root
-     * @return
      */
     @GetMapping("/choerodon/v1/users/root")
     ResponseEntity<List<IamUserDTO>> queryRoot();
 
+    /**
+     * @return {@link UserCountVO}
+     */
+    @ApiOperation(value = "查询平台中所有用户的数量")
+    @GetMapping(value = "/choerodon/v1/users/all_user_count")
+    ResponseEntity<String> countAllUsers();
+
+    /**
+     * @return {@link Set<Long>}
+     */
+    @ApiOperation(value = "查询平台中所有用户的id")
+    @GetMapping(value = "/all_user_ids")
+    ResponseEntity<String> listAllUserIds();
 }

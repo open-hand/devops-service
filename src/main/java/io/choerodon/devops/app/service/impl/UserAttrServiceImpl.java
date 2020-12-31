@@ -179,7 +179,7 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
-    public long allUserCount() {
+    public int allUserCount() {
         return userAttrMapper.selectCount(new UserAttrDTO());
     }
 

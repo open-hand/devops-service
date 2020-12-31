@@ -139,7 +139,8 @@ public class BaseServiceClientOperator {
             Long[] newIds = new Long[ids.size()];
             try {
                 userDTOS = ResponseUtils.getResponse(baseServiceClient
-                        .listUsersByIds(ids.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {});
+                        .listUsersByIds(ids.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
+                });
                 if (userDTOS == null) {
                     userDTOS = Collections.emptyList();
                 }
@@ -153,7 +154,8 @@ public class BaseServiceClientOperator {
     public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
         try {
             List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
-                    .listUsersByIds(ids, onlyEnabled), new TypeReference<List<IamUserDTO>>() {});
+                    .listUsersByIds(ids, onlyEnabled), new TypeReference<List<IamUserDTO>>() {
+            });
             if (userDTOS == null) {
                 userDTOS = Collections.emptyList();
             }
@@ -452,13 +454,12 @@ public class BaseServiceClientOperator {
         return labels.getBody();
     }
 
-    public long queryAllUserCount() {
-        // TODO
-        return 0L;
+    public int queryAllUserCount() {
+        return ResponseUtils.getResponse(baseServiceClient.countAllUsers(), UserCountVO.class).getCount();
     }
 
     public Set<Long> queryAllUserIds() {
-        // TODO
-        return Collections.emptySet();
+        return ResponseUtils.getResponse(baseServiceClient.listAllUserIds(), new TypeReference<Set<Long>>() {
+        });
     }
 }
