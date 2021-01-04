@@ -36,6 +36,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.*;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
@@ -46,6 +47,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
@@ -158,6 +160,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -297,13 +301,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                // 兼容集群组件
-                if (appServiceInstanceDTO.getAppServiceId() != null) {
-                    AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
-                    appServiceInstanceDTO.setAppServiceVersionId(Objects.requireNonNull(appServiceVersionDTO.getId()));
-                } else {
-                    appServiceInstanceDTO.setComponentVersion(Objects.requireNonNull(releasePayloadVO.getChartVersion()));
-                }
+                setAppVersionIdForInstance(appServiceInstanceDTO, releasePayloadVO);
 
                 if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {
                     logger.warn("Unexpected empty value '{}' for commit of release payload.", releasePayloadVO.getCommit());
@@ -337,6 +335,21 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
             }
+        }
+    }
+
+    private void setAppVersionIdForInstance(AppServiceInstanceDTO appServiceInstanceDTO, ReleasePayloadVO releasePayloadVO) {
+        // 兼容集群组件
+        if (appServiceInstanceDTO.getAppServiceId() != null) {
+            if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())) {
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObjectByCodeAndVersion(0L, releasePayloadVO.getChartName(), releasePayloadVO.getChartVersion());
+                appServiceInstanceDTO.setAppServiceVersionId(marketServiceDeployObjectVO.getId());
+            } else {
+                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
+                appServiceInstanceDTO.setAppServiceVersionId(Objects.requireNonNull(appServiceVersionDTO.getId()));
+            }
+        } else {
+            appServiceInstanceDTO.setComponentVersion(Objects.requireNonNull(releasePayloadVO.getChartVersion()));
         }
     }
 
