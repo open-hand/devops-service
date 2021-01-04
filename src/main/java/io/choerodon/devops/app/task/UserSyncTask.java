@@ -35,7 +35,11 @@ public class UserSyncTask implements CommandLineRunner {
             return;
         }
         LOGGER.info("Start task: try to handle users async...");
-        gitlabUserService.asyncHandleAllUsers();
-        LOGGER.info("Start task: submit task to handle users...");
+        try {
+            gitlabUserService.asyncHandleAllUsers();
+            LOGGER.info("Start task: submit task to handle users...");
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to submit task to handle users. And the ex is:", ex);
+        }
     }
 }
