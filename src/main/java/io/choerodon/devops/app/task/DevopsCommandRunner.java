@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import retrofit2.Call;
@@ -36,6 +37,7 @@ import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
  * Date:  16:44 2019/3/11
  * Description:
  */
+@Order(100)
 @Component
 public class DevopsCommandRunner implements CommandLineRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCommandRunner.class);

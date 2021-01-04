@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.UserAttrService;
@@ -25,6 +26,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
  * @author zmf
  * @since 2020/12/29
  */
+@Order(200)
 @Component
 public class AdminUserTask implements CommandLineRunner {
     private static final Long GITLAB_ADMIN_ID = 1L;
@@ -49,6 +51,7 @@ public class AdminUserTask implements CommandLineRunner {
             return;
         }
         try {
+            LOGGER.info("Start task: try to init data for admin user...");
             // 先查询有么有
             UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(GITLAB_ADMIN_ID);
             if (userAttrDTO == null) {
