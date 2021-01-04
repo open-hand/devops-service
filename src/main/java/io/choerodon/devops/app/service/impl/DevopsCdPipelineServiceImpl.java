@@ -82,6 +82,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
+    private static final String AUDIT_TASK_CALLBACK_URL = "/devops/v1/cd_pipeline/external_approval_task/callback";
+
     private static final Integer ADMIN = 1;
     private static final Long ADMIN_ID = 1L;
 
@@ -1172,6 +1174,19 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             throw new CommonException(ERROR_PIPELINE_STATUS_CHANGED);
         }
 
+        // 记录回调日志
+        StringBuilder logStB = new StringBuilder(devopsCdJobRecordDTO.getLog());
+        logStB.append("\u001B[0K\u001B[32;1mCallBack Info: \u001B[0;m").append(System.lineSeparator());
+        String url = gatewayUrl + BaseConstants.Symbol.SLASH + AUDIT_TASK_CALLBACK_URL;
+        logStB.append("\u001B[36mTrigger url\u001B[0m:").append("PUT: ").append(url).append(System.lineSeparator());
+        logStB.append("\u001B[36mpipeline_record_id\u001B[0m:").append(pipelineRecordId).append(System.lineSeparator());
+        logStB.append("\u001B[36mstage_record_id\u001B[0m:").append(stageRecordId).append(System.lineSeparator());
+        logStB.append("\u001B[36mjob_record_id\u001B[0m:").append(jobRecordId).append(System.lineSeparator());
+        logStB.append("\u001B[36mcallback_token\u001B[0m:").append(callbackToken).append(System.lineSeparator());
+        logStB.append("\u001B[36mapproval_status\u001B[0m:").append(status).append(System.lineSeparator());
+
+        StringBuilder log = new StringBuilder(devopsCdJobRecordDTO.getLog()).append(logStB);
+        devopsCdJobRecordService.updateLogById(jobRecordId, log);
         if (Boolean.TRUE.equals(status)) {
             try {
                 approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), "admin", 1L, 0L);
@@ -1189,7 +1204,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     public String queryCallbackUrl() {
-        return gatewayUrl + "/devops/v1/cd_pipeline/external_approval_task/callback?pipeline_record_id=${xxx}&stage_record_id=${xxx}&job_record_id=${xxx}&callback_token=${xxx}$approval_status=${xxx}";
+        return gatewayUrl + AUDIT_TASK_CALLBACK_URL + "?pipeline_record_id=${xxx}&stage_record_id=${xxx}&job_record_id=${xxx}&callback_token=${xxx}$approval_status=${xxx}";
     }
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {
