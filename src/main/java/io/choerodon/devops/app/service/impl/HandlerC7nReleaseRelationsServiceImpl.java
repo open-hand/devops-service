@@ -312,7 +312,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      * @param c7nHelmRelease       release信息
      */
     private void validateVersion(MarketServiceDeployObjectVO appServiceVersionDTO, String filePath, C7nHelmRelease c7nHelmRelease) {
-        if (appServiceVersionDTO == null) {
+        if (appServiceVersionDTO == null || appServiceVersionDTO.getMarketServiceId() == null) {
             throw new GitOpsExplainException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
         }
     }

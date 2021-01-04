@@ -1150,7 +1150,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         baseUpdate(appServiceInstanceDTO);
 
         // 插入部署记录
-        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(appServiceInstanceDTO.getProjectId(), appServiceDeployVO.getMarketAppServiceId());
+        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getMarketAppServiceId());
         saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceDeployVO.getChartVersion());
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
