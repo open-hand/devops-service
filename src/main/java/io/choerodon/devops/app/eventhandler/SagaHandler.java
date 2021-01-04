@@ -53,7 +53,7 @@ public class SagaHandler {
     /**
      * devops项目类型
      */
-    private static final String devops = "DEVOPS";
+    private static final String devops = "N_DEVOPS";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -352,7 +352,7 @@ public class SagaHandler {
      * devops 同步项目类型的处理
      *
      * @param msg
-     * @return
+     * @return  string
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PROJECT_CATEGORY_SYNC,
             description = "devops 同步项目类型的处理(group与角色同步事件)",
@@ -362,9 +362,8 @@ public class SagaHandler {
     public String handleProjectCategoryEvent(String msg) {
         LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        List<ProjectCategoryDTO> projectCategoryDTOS = projectPayload.getProjectMapCategoryVOList().stream().map(ProjectMapCategoryVO::getProjectCategoryDTO).collect(Collectors.toList());
         //不包含devops项目类型不做同步
-        if (!projectCategoryDTOS.stream().map(ProjectCategoryDTO::getCode).collect(Collectors.toList()).contains(devops)) {
+        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(devops)) {
             return msg;
         }
         gitlabHandleService.handleProjectCategoryEvent(projectPayload);
