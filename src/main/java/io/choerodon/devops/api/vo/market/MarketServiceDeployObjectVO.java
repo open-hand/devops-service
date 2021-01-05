@@ -75,15 +75,40 @@ public class MarketServiceDeployObjectVO {
      * 市场应用的名称
      */
     private String marketAppName;
+    /**
+     * 应用市场版本
+     */
+    private String marketAppVersion;
 
     /**
      * 市场服务名称
      */
     private String marketServiceName;
 
+    /**
+     * 市场服务版本
+     */
+    private String marketServiceVersion;
+
     @Nullable
     @ApiModelProperty("版本的values")
     private String value;
+
+    public String getMarketAppVersion() {
+        return marketAppVersion;
+    }
+
+    public void setMarketAppVersion(String marketAppVersion) {
+        this.marketAppVersion = marketAppVersion;
+    }
+
+    public String getMarketServiceVersion() {
+        return marketServiceVersion;
+    }
+
+    public void setMarketServiceVersion(String marketServiceVersion) {
+        this.marketServiceVersion = marketServiceVersion;
+    }
 
     public String getMarketAppName() {
         return marketAppName;

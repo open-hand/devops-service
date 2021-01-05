@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import java.util.Objects;
 import net.schmizz.sshj.SSHClient;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,14 +215,17 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         deploySourceVO.setDeployObjectId(deployConfigVO.getImageDeploy().getDeployObjectId());
         deploySourceVO.setType(deployConfigVO.getAppSource());
         deploySourceVO.setProjectName(projectDTO.getName());
+        String deployObjectName = null;
+        String deployVersion = null;
+        String instanceName = null;
         try {
             // 0.1
-
             imageDeploy = deployConfigVO.getImageDeploy();
             imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
             // 0.2
             HarborC7nRepoImageTagVo imageTagVo = new HarborC7nRepoImageTagVo();
             C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
+
             if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
                 MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployConfigVO.getImageDeploy().getDeployObjectId()));
                 if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
@@ -239,9 +240,18 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 List<HarborC7nImageTagVo> harborC7nImageTagVos = new ArrayList<>();
                 harborC7nImageTagVos.add(harborC7nImageTagVo);
                 imageTagVo.setImageTagList(harborC7nImageTagVos);
+                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName());
+                //部署对象的名称
+                deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
+                deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
+//                instanceName = marketServiceDeployObjectVO.getDevopsAppServiceCode() + BaseConstants.Symbol.MIDDLE_LINE + UUID.randomUUID().toString().substring(0, 5);
 
+                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
+                deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
             } else {
                 imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
+                deployObjectName = imageDeploy.getImageName();
+                deployVersion = imageDeploy.getTag();
             }
 
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
@@ -272,8 +282,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     devopsHostDTO.getName(),
                     PipelineStatus.SUCCESS.toValue(),
                     DeployObjectTypeEnum.IMAGE,
-                    imageDeploy.getImageName(),
-                    imageDeploy.getTag(),
+                    deployObjectName,
+                    deployVersion,
                     null,
                     deploySourceVO);
             LOGGER.info("========================================");
@@ -289,8 +299,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     devopsHostDTO.getName(),
                     PipelineStatus.FAILED.toValue(),
                     DeployObjectTypeEnum.IMAGE,
-                    imageDeploy.getImageName(),
-                    imageDeploy.getTag(),
+                    deployObjectName,
+                    deployVersion,
                     null,
                     deploySourceVO);
             throw new CommonException("error.deploy.hostImage.failed.", e);
