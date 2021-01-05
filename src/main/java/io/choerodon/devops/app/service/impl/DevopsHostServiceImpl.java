@@ -697,8 +697,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public List<DevopsHostDTO> listDistributionTestHostsByIds() {
-        return devopsHostMapper.listDistributionTestHosts();
+    public Page<DevopsHostDTO> listDistributionTestHosts(PageRequest pageRequest) {
+       return PageHelper.doPage(pageRequest,()->devopsHostMapper.listDistributionTestHosts());
     }
 
     @Override
