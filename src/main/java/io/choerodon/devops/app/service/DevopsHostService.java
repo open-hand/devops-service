@@ -190,9 +190,10 @@ public interface DevopsHostService {
     /**
      * 查询所有的测试主机，数据迁移使用
      *
+     * @param pageRequest
      * @return 主机信息
      */
-    List<DevopsHostDTO> listDistributionTestHostsByIds();
+    Page<DevopsHostDTO> listDistributionTestHosts(PageRequest pageRequest);
 
     /**
      * 将主机设置为占用状态
