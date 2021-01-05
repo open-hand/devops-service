@@ -1302,6 +1302,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         instanceSagaPayload.setMarketServiceDeployObjectVO(appServiceVersion);
         instanceSagaPayload.setMarketInstanceCreationRequestVO(appServiceDeployVO);
         instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        instanceSagaPayload.setCommandId(devopsEnvCommandDTO.getId());
 
 
         producer.apply(
