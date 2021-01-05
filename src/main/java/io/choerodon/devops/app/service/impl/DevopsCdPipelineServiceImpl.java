@@ -1185,8 +1185,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         logStB.append("\u001B[36mcallback_token\u001B[0m:").append(callbackToken).append(System.lineSeparator());
         logStB.append("\u001B[36mapproval_status\u001B[0m:").append(status).append(System.lineSeparator());
 
-        StringBuilder log = new StringBuilder(devopsCdJobRecordDTO.getLog()).append(logStB);
-        devopsCdJobRecordService.updateLogById(jobRecordId, log);
+        devopsCdJobRecordService.updateLogById(jobRecordId, logStB);
         if (Boolean.TRUE.equals(status)) {
             try {
                 approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), "admin", 1L, 0L);
