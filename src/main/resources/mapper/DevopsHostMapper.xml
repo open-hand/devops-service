@@ -201,4 +201,11 @@
             #{hostId,jdbcType=BIGINT}
         </foreach>
     </update>
+
+    <select id="listDistributionTestHosts" resultType="io.choerodon.devops.infra.dto.DevopsHostDTO">
+        SELECT dh.*
+        FROM devops_host dh
+        WHERE dh.type='distribute_test'
+    </select>
+
 </mapper>
