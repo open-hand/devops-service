@@ -378,7 +378,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "市场发布包Id", required = true)
             @RequestParam(value = "market_deploy_object_id") Long marketDeployObjectId) {
-        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValueForMarketInstance(instanceId, marketDeployObjectId))
+        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValueForMarketInstance(projectId, instanceId, marketDeployObjectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.instance.value.get"));
     }
