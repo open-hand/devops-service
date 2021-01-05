@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.hzero.core.util.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -75,10 +77,7 @@ public class MarketServiceClientOperator {
 
     public List<MarketServiceDeployObjectVO> listDeployObjectsByIds(Long projectId, Set<Long> deployObjectIds) {
         CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(deployObjectIds), "error.ids.params.empty");
-        ResponseEntity<List<MarketServiceDeployObjectVO>> result = marketServiceClient.listDeployObjectsByIds(projectId, deployObjectIds);
-        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null) {
-            throw new CommonException("error.list.deploy.objects.by.ids");
-        }
-        return result.getBody();
+        return ResponseUtils.getResponse(marketServiceClient.listDeployObjectsByIds(projectId, deployObjectIds), new TypeReference<List<MarketServiceDeployObjectVO>>() {
+        });
     }
 }
