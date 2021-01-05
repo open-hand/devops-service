@@ -1001,7 +1001,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getMarketServiceDeployObjectVO().getMarketChartRepository(),
                     instanceSagaPayload.getMarketServiceDeployObjectVO().getMarketServiceId(),
                     instanceSagaPayload.getCommandId(),
-                    instanceSagaPayload.getMarketServiceDeployObjectVO().getDevopsAppServiceCode(),
+                    instanceSagaPayload.getMarketServiceDeployObjectVO().getMarketArtifactCode(),
                     instanceSagaPayload.getMarketServiceDeployObjectVO().getDevopsAppServiceVersion(),
                     instanceSagaPayload.getMarketInstanceCreationRequestVO().getValues(),
                     instanceSagaPayload.getMarketInstanceCreationRequestVO().getMarketDeployObjectId(),

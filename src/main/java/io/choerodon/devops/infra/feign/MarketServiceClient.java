@@ -32,14 +32,14 @@ public interface MarketServiceClient {
             @PathVariable("project_id") Long projectId,
             @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
 
-    /**
-     * queryRepoConfig
-     */
-    @GetMapping("/v1/projects/{project_id}/deploy/{project_id}/repo/config")
-    ResponseEntity<RepoConfigVO> queryRepoConfig(
-            @PathVariable("project_id") Long projectId,
-            @Encrypt @RequestParam("app_service_id") Long appId,
-            @Encrypt @RequestParam("app_service_version_id") Long appServiceVersionId);
+//    /**
+//     * queryRepoConfig
+//     */
+//    @GetMapping("/v1/projects/{project_id}/deploy/{project_id}/repo/config")
+//    ResponseEntity<RepoConfigVO> queryRepoConfig(
+//            @PathVariable("project_id") Long projectId,
+//            @Encrypt @RequestParam("app_service_id") Long appId,
+//            @Encrypt @RequestParam("app_service_version_id") Long appServiceVersionId);
 
 
     @PostMapping("/v1/application/use/record")

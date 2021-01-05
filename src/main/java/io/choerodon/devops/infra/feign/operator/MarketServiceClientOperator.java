@@ -26,15 +26,6 @@ public class MarketServiceClientOperator {
     @Autowired
     private MarketServiceClient marketServiceClient;
 
-
-    public RepoConfigVO queryRepoConfig(Long projectId, Long appId, Long appServiceVersionId) {
-        RepoConfigVO repoConfigVO = marketServiceClient.queryRepoConfig(projectId, appId, appServiceVersionId).getBody();
-        if (repoConfigVO == null) {
-            throw new CommonException("error.query.repo.config");
-        }
-        return repoConfigVO;
-    }
-
     public void createUseRecord(MarketAppUseRecordDTO marketAppUseRecordDTO) {
         marketServiceClient.createUseRecord(marketAppUseRecordDTO).getBody();
     }

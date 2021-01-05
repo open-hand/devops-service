@@ -4,7 +4,6 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -42,7 +41,6 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
