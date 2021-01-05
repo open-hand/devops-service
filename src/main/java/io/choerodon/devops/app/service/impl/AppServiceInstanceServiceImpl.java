@@ -317,13 +317,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public InstanceValueVO queryUpgradeValueForMarketInstance(Long instanceId, Long marketDeployObjectId) {
+    public InstanceValueVO queryUpgradeValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
         // 上次实例部署时的完整values
         String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
-        // 这里不能直接用app_service_version_id字段查version的values，因为它可能为空
-        String lastVersionValue = appServiceInstanceMapper.queryLastCommandVersionValueByInstanceId(instanceId);
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Objects.requireNonNull(appServiceInstanceMapper.queryLastCommandId(instanceId)));
+        String lastVersionValue = marketServiceClientOperator.queryValues(projectId, devopsEnvCommandDTO.getObjectVersionId()).getValue();
 
         // 上次实例部署时的values相较于上次版本的默认values的变化值
         String lastDeltaValues = getReplaceResult(Objects.requireNonNull(lastVersionValue),

@@ -223,7 +223,7 @@ public interface AppServiceInstanceService {
      * @param marketDeployObjectId 市场发布对象id
      * @return InstanceValueVO
      */
-    InstanceValueVO queryUpgradeValueForMarketInstance(Long instanceId, Long marketDeployObjectId);
+    InstanceValueVO queryUpgradeValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId);
 
     /**
      * 获取部署时长报表
