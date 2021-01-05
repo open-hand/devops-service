@@ -1177,7 +1177,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 记录回调日志
         StringBuilder logStB = new StringBuilder(devopsCdJobRecordDTO.getLog());
         logStB.append("\u001B[0K\u001B[32;1mCallBack Info: \u001B[0;m").append(System.lineSeparator());
-        String url = gatewayUrl + BaseConstants.Symbol.SLASH + AUDIT_TASK_CALLBACK_URL;
+        String url = gatewayUrl + AUDIT_TASK_CALLBACK_URL;
         logStB.append("\u001B[36mTrigger url\u001B[0m:").append("PUT: ").append(url).append(System.lineSeparator());
         logStB.append("\u001B[36mpipeline_record_id\u001B[0m:").append(pipelineRecordId).append(System.lineSeparator());
         logStB.append("\u001B[36mstage_record_id\u001B[0m:").append(stageRecordId).append(System.lineSeparator());
