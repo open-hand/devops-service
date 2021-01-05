@@ -265,4 +265,13 @@ public class DevopsHostController {
             @RequestBody Set<Long> hostIds) {
         return Results.success(devopsHostService.unOccupyHosts(projectId, hostIds));
     }
+
+    @ApiOperation("查询所有的测试主机信息,数据迁移使用")
+    @Permission(level = ResourceLevel.ORGANIZATION,permissionWithin = true)
+    @GetMapping("/list_distribute_host")
+    public ResponseEntity<List<DevopsHostDTO>> listDistributeHost(
+        @ApiParam(value = "项目id", required = true)
+        @PathVariable("project_id") Long projectId){
+            return Results.success(devopsHostService.listDistributionTestHostsByIds());
+        }
 }

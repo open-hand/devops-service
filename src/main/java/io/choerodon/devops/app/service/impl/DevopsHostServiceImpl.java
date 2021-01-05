@@ -697,6 +697,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public List<DevopsHostDTO> listDistributionTestHostsByIds() {
+        return devopsHostMapper.listDistributionTestHosts();
+    }
+
+    @Override
     public boolean occupyHosts(Long projectId, Long recordId, Set<Long> hostIds) {
         if (CollectionUtils.isEmpty(hostIds)) {
             return false;
