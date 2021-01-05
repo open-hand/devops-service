@@ -89,8 +89,34 @@ public class DeployConfigVO {
          */
         private Long deployObjectId;
 
+        /**
+         * 部署对象的名称
+         */
+        private String deployObjectName;
+
+        /**
+         * 部署对象的版本
+         */
+        private String deployVersion;
+
+        public String getDeployObjectName() {
+            return deployObjectName;
+        }
+
+        public void setDeployObjectName(String deployObjectName) {
+            this.deployObjectName = deployObjectName;
+        }
+
         public Long getDeployObjectId() {
             return deployObjectId;
+        }
+
+        public String getDeployVersion() {
+            return deployVersion;
+        }
+
+        public void setDeployVersion(String deployVersion) {
+            this.deployVersion = deployVersion;
         }
 
         public void setDeployObjectId(Long deployObjectId) {
