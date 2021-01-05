@@ -21,6 +21,12 @@ public class MarketServiceDeployObjectVO {
     @ApiModelProperty("应用服务code")
     private String devopsAppServiceCode;
 
+    /**
+     * 形如: devops-service-129089145980129
+     */
+    @ApiModelProperty("市场的制品code/有发布部署包时才有值")
+    private String marketArtifactCode;
+
     @ApiModelProperty("devops应用服务版本id")
     private Long devopsAppServiceVersionId;
 
@@ -262,5 +268,13 @@ public class MarketServiceDeployObjectVO {
 
     public void setValue(@Nullable String value) {
         this.value = value;
+    }
+
+    public String getMarketArtifactCode() {
+        return marketArtifactCode;
+    }
+
+    public void setMarketArtifactCode(String marketArtifactCode) {
+        this.marketArtifactCode = marketArtifactCode;
     }
 }
