@@ -76,9 +76,14 @@ public interface MarketServiceClient {
             @PathVariable("project_id") Long projectId,
             @RequestBody Set<Long> ids);
 
+    /**
+     * @param projectId       项目id
+     * @param deployObjectIds 部署对象id
+     * @return {@link List<MarketServiceDeployObjectVO>}
+     */
     @ApiOperation(value = "根据多个发布对象id查询发布对象基础信息/不包含级联信息")
     @PostMapping("/v1/projects/{project_id}/deploy/deploy_objects/list/by_ids")
-    ResponseEntity<List<MarketServiceDeployObjectVO>> listDeployObjectsByIds(
+    ResponseEntity<String> listDeployObjectsByIds(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("发布对象id集合")
