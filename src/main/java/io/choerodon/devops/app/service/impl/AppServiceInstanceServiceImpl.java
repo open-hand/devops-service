@@ -1183,6 +1183,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        if (AppServiceInstanceSource.NORMAL.getValue().equals(appServiceInstanceDTO.getSource())) {
+            return doRestartNormalInstance(projectId, appServiceInstanceDTO, isFromPipeline);
+        } else {
+            return doRestartMarketInstance(projectId, appServiceInstanceDTO);
+        }
+    }
+
+    private DevopsEnvCommandDTO doRestartNormalInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO, boolean isFromPipeline) {
+        Long instanceId = appServiceInstanceDTO.getId();
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
 
@@ -1209,7 +1218,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
 
         //插入部署记录
-        devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
+        boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        devopsDeployRecordService.saveRecord(
+                devopsEnvironmentDTO.getProjectId(),
                 isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
                 DeployModeEnum.ENV,
@@ -1219,7 +1231,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 DeployObjectTypeEnum.APP,
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
-                appServiceInstanceDTO.getCode());
+                appServiceInstanceDTO.getCode(),
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
@@ -1242,6 +1255,63 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
+                builder -> builder
+                        .withPayloadAndSerialize(instanceSagaPayload)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+
+        return devopsEnvCommandDTO;
+
+    }
+
+    private DevopsEnvCommandDTO doRestartMarketInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO) {
+        // 查询市场应用服务, 确认存在
+        Long instanceId = appServiceInstanceDTO.getId();
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+        MarketServiceDeployObjectVO appServiceVersion = marketServiceClientOperator.queryDeployObject(projectId, devopsEnvCommandDTO.getObjectVersionId());
+        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceVersion.getMarketServiceId());
+
+        String value = baseQueryValueByInstanceId(instanceId);
+
+        devopsEnvCommandDTO.setId(null);
+        devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
+
+        //获取授权secret
+        String secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersion);
+
+        //插入部署记录
+        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceVersion.getDevopsAppServiceVersion());
+
+
+        MarketInstanceCreationRequestVO appServiceDeployVO = new MarketInstanceCreationRequestVO();
+        appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
+        appServiceDeployVO.setValues(value);
+        appServiceDeployVO.setMarketDeployObjectId(appServiceVersion.getId());
+        appServiceDeployVO.setCommandType(CommandType.UPDATE.getType());
+        MarketInstanceSagaPayload instanceSagaPayload = new MarketInstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
+        instanceSagaPayload.setMarketServiceDeployObjectVO(appServiceVersion);
+        instanceSagaPayload.setMarketInstanceCreationRequestVO(appServiceDeployVO);
+        instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE),
                 builder -> builder
                         .withPayloadAndSerialize(instanceSagaPayload)
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
