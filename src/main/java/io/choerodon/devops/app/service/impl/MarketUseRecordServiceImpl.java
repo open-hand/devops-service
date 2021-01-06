@@ -49,11 +49,15 @@ public class MarketUseRecordServiceImpl implements MarketUseRecordService {
 
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceVersionId());
-        marketAppUseRecordDTO.setAppServiceAndVersion(appServiceDTO.getName() + "(" + appServiceVersionDTO.getVersion() + ")");
-        ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(appServiceDTO.getProjectId()));
-
+        if (!Objects.isNull(appServiceDTO)) {
+            marketAppUseRecordDTO.setAppServiceAndVersion(appServiceDTO.getName() + "(" + appServiceVersionDTO.getVersion() + ")");
+            ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(appServiceDTO.getProjectId()));
+            marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());
+        } else {
+            ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId));
+            marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());
+        }
         marketAppUseRecordDTO.setUserName(projectDTO.getName());
-        marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());
         marketAppUseRecordDTO.setDeployObjectId(deploySourceVO.getDeployObjectId());
 
         marketServiceClientOperator.createUseRecord(marketAppUseRecordDTO);

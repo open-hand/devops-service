@@ -102,6 +102,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         deploySourceVO.setType(deployConfigVO.getAppSource());
         deploySourceVO.setProjectName(projectDTO.getName());
         deploySourceVO.setDeployObjectId(deployConfigVO.getJarDeploy().getDeployObjectId());
+        String deployObjectName = null;
+        String deployVersion = null;
+        String instanceName = null;
         try {
             // 0.1 查询部署信息
 
@@ -125,10 +128,12 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     throw new CommonException("error.maven.deploy.object.not.exist");
                 }
 
+                deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();
+                deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
 
                 MarketMavenConfigVO marketMavenConfigVO = marketServiceDeployObjectVO.getMarketMavenConfigVO();
                 C7nNexusComponentDTO nNexusComponentDTO = new C7nNexusComponentDTO();
-                nNexusComponentDTO.setDownloadUrl(marketMavenConfigVO.getRepoUrl());
+
                 nNexusComponentDTO.setName(deployConfigVO.getJarDeploy().getServerName());
                 nNexusComponentDTO.setVersion(deployConfigVO.getJarDeploy().getVersion());
                 nexusComponentDTOList.add(nNexusComponentDTO);
@@ -139,12 +144,15 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
                 JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
+                nNexusComponentDTO.setDownloadUrl(getDownloadUrl(JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class)));
 
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
                 mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
                 deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
                 deploySourceVO.setProjectName(projectDTO.getName());
+                deployObjectName = nexusComponentDTOList.get(0).getName();
+                deployVersion = nexusComponentDTOList.get(0).getVersion();
             }
             deploySourceVO.setDeployObjectId(deployConfigVO.getJarDeploy().getDeployObjectId());
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
@@ -174,8 +182,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     devopsHostDTO.getName(),
                     PipelineStatus.SUCCESS.toValue(),
                     DeployObjectTypeEnum.JAR,
-                    c7nNexusComponentDTO.getName(),
-                    c7nNexusComponentDTO.getVersion(),
+                    deployObjectName,
+                    deployVersion,
                     null,
                     deploySourceVO);
         } catch (Exception e) {
@@ -189,14 +197,22 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     devopsHostDTO.getName(),
                     PipelineStatus.FAILED.toValue(),
                     DeployObjectTypeEnum.JAR,
-                    c7nNexusComponentDTO.getName(),
-                    c7nNexusComponentDTO.getVersion(),
+                    deployObjectName,
+                    deployVersion,
                     null,
                     deploySourceVO);
             throw new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
         } finally {
             sshUtil.closeSsh(ssh, null);
         }
+    }
+
+    private String getDownloadUrl(JarReleaseConfigVO jarReleaseConfigVO) {
+        //拼接download URL http://xxxx:17145/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210106.020444-2.jar
+        return jarReleaseConfigVO.getNexusRepoUrl() + BaseConstants.Symbol.SLASH +
+                jarReleaseConfigVO.getGroupId().replace(".", "/") +
+                BaseConstants.Symbol.SLASH + jarReleaseConfigVO.getArtifactId() + BaseConstants.Symbol.SLASH + jarReleaseConfigVO.getVersion() +
+                BaseConstants.Symbol.SLASH + jarReleaseConfigVO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + jarReleaseConfigVO.getSnapshotTimestamp() + ".jar";
     }
 
     private String getJarName(String url) {
