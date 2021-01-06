@@ -246,6 +246,6 @@ public interface BaseServiceClient {
      * @return {@link Set<Long>}
      */
     @ApiOperation(value = "查询平台中所有用户的id")
-    @GetMapping(value = "/all_user_ids")
+    @GetMapping(value = "/choerodon/v1/users/all_user_ids")
     ResponseEntity<String> listAllUserIds();
 }

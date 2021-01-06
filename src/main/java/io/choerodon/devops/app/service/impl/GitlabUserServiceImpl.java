@@ -67,7 +67,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     /**
      * 设置用户处理的分布式锁时，锁的key
      */
-    private static final String USER_SYNC_REDIS_KEY = "user-sync-key";
+    private static final String USER_SYNC_REDIS_KEY = "devops-service:user-sync-key";
     /**
      * 用户请求失败的阈值, 超过阈值，睡眠一段时间
      */
@@ -139,14 +139,14 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void syncAllUsers() {
+        // 只需要一个实例进行处理就行了，并行处理可能导致gitlab不可用
+        // 获取分布式锁
+        Boolean ownLock = redisTemplate.opsForValue().setIfAbsent(USER_SYNC_REDIS_KEY, USER_SYNC_REDIS_KEY, LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
+        if (!Boolean.TRUE.equals(ownLock)) {
+            LOGGER.info("Failed to get lock to sync users. So skip...");
+            return;
+        }
         try {
-            // 只需要一个实例进行处理就行了，并行处理可能导致gitlab不可用
-            // 获取分布式锁
-            Boolean ownLock = redisTemplate.opsForValue().setIfAbsent(USER_SYNC_REDIS_KEY, USER_SYNC_REDIS_KEY, LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
-            if (!Boolean.TRUE.equals(ownLock)) {
-                return;
-            }
-
             // 查询iam所有的用户的count, 去掉匿名用户的数量
             int iamUserCount = baseServiceClientOperator.queryAllUserCount() - 1;
             int devopsUserCount = userAttrService.allUserCount();
@@ -170,16 +170,17 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 // 已经处理的用户
                 int processedSize = 0;
                 int totalSize = iamUsers.size();
-                // 设置进度
+                // 设置进度，并刷新锁过期时间
                 redisTemplate.opsForValue().set(USER_SYNC_REDIS_KEY, processStringRepresentation(processedSize, totalSize), LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
                 while (userIterator.hasNext()) {
                     try {
-                        ApplicationContextHelper.getContext().getBean(GitlabUserService.class).batchSyncUsersInNewTx(iamUsers.iterator(), USER_BATCH_SIZE, processedSize, totalSize);
+                        ApplicationContextHelper.getContext().getBean(GitlabUserService.class).batchSyncUsersInNewTx(userIterator, USER_BATCH_SIZE, processedSize, totalSize);
                     } catch (Exception ex) {
                         LOGGER.info("User sync: ex occurred when calling batch method:", ex);
                     }
                     processedSize += USER_BATCH_SIZE;
                 }
+                LOGGER.info("Successfully sync all users...");
             }
         } finally {
             redisTemplate.delete(USER_SYNC_REDIS_KEY);
@@ -202,7 +203,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             Objects.requireNonNull(user.getAdmin());
             if (ANONYMOUS_USER_LOGIN_NAME.equals(user.getLoginName())) {
                 // 跳过匿名用户
-                return;
+                continue;
             }
             // 更新锁过期时间和进度
             redisTemplate.opsForValue().set(USER_SYNC_REDIS_KEY, processStringRepresentation(processedSize + index, totalSize), LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
@@ -221,20 +222,24 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 // 创建用户
                 createGitlabUser(gitlabUserReqDTO);
                 UserAttrDTO userAttrDTO = userAttrService.baseQueryById(user.getId());
-                // 如果用户是停用的，block gitlab 用户
-                if (!user.getEnabled()) {
-                    disEnabledGitlabUser(userAttrDTO);
-                }
+
                 // 如果用户是admin，为admin同步root权限
                 if (user.getAdmin()) {
                     assignAdmin(userAttrDTO);
                 }
-                // 都成功则将计数清0
+
+                // 如果用户是停用的，block gitlab 用户
+                if (!user.getEnabled()) {
+                    disEnabledGitlabUser(userAttrDTO);
+                }
+
+                // 都成功则将连续失败计数清0
                 consecutiveFailedCount.value = 0;
                 if (LOGGER.isDebugEnabled()) {
                     // 输出成功调用同步这个用户的耗时
                     LOGGER.debug("User sync: {} ms used for user {}", System.currentTimeMillis() - start, user.getLoginName());
                 }
+                LOGGER.info("Finished to sync user {} with id {}", user.getLoginName(), user.getId());
             } catch (Exception ex) {
                 handleExWhenSyncingUser(consecutiveFailedCount, ex, user);
             }

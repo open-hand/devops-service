@@ -188,3 +188,6 @@ websocket:
   buffer:
     maxTextMessageSize: 4194304
     maxBinaryMessageSize: 4194304
+# 本地测试，可以将这个值设置为true，以跳过数据的处理
+#local:
+#  test: false

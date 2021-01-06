@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -37,6 +38,7 @@ import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
  * Date:  16:44 2019/3/11
  * Description:
  */
+@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
 @Order(100)
 @Component
 public class DevopsCommandRunner implements CommandLineRunner {
@@ -59,8 +61,6 @@ public class DevopsCommandRunner implements CommandLineRunner {
     private String servicesHelmUserName;
     @Value("${services.helm.password:#{null}}")
     private String servicesHelmPassword;
-    @Value("${services.harbor.update:true}")
-    private Boolean servicesHarborUpdate;
     @Value("${services.sonarqube.url:}")
     private String sonarqubeUrl;
     @Value("${services.sonarqube.username:}")
@@ -70,24 +70,22 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        if (servicesHarborUpdate) {
-            try {
-                ConfigVO chartConfig = new ConfigVO();
-                chartConfig.setUrl(servicesHelmUrl);
-                // 只有helm的用户名密码都设置了, 才设置到数据库中
-                if (!StringUtils.isEmpty(servicesHelmUserName) && !StringUtils.isEmpty(servicesHelmPassword)) {
-                    chartConfig.setUserName(servicesHelmUserName);
-                    chartConfig.setPassword(servicesHelmPassword);
-                    chartConfig.setPrivate(Boolean.TRUE);
-                }
-                initConfig(chartConfig, DEFAULT_CHART_NAME, ProjectConfigType.CHART.getType());
-
-                if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
-                    createSonarToken();
-                }
-            } catch (Exception e) {
-                throw new CommonException("error.init.project.config", e);
+        try {
+            ConfigVO chartConfig = new ConfigVO();
+            chartConfig.setUrl(servicesHelmUrl);
+            // 只有helm的用户名密码都设置了, 才设置到数据库中
+            if (!StringUtils.isEmpty(servicesHelmUserName) && !StringUtils.isEmpty(servicesHelmPassword)) {
+                chartConfig.setUserName(servicesHelmUserName);
+                chartConfig.setPassword(servicesHelmPassword);
+                chartConfig.setPrivate(Boolean.TRUE);
             }
+            initConfig(chartConfig, DEFAULT_CHART_NAME, ProjectConfigType.CHART.getType());
+
+            if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
+                createSonarToken();
+            }
+        } catch (Exception e) {
+            throw new CommonException("error.init.project.config", e);
         }
     }
 
