@@ -5,8 +5,8 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
  * @author zmf
  * @since 2020/12/29
  */
+@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
 @Order(200)
 @Component
 public class AdminUserTask implements CommandLineRunner {
@@ -34,12 +35,6 @@ public class AdminUserTask implements CommandLineRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminUserTask.class);
 
-    /**
-     * 本地测试，可以将这个值设置为true
-     */
-    @Value("${local.test:false}")
-    private Boolean localTest;
-
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
@@ -47,9 +42,6 @@ public class AdminUserTask implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (Boolean.TRUE.equals(localTest)) {
-            return;
-        }
         try {
             LOGGER.info("Start task: try to init data for admin user...");
             // 先查询有么有
