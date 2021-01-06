@@ -6,6 +6,8 @@
         SELECT ins.id,
                ins.code,
                ins.status,
+               ins.source,
+               env.project_id,
                (SELECT count(1)
                 FROM devops_env_pod dp
                 WHERE dp.instance_id = ins.id) pod_count,
