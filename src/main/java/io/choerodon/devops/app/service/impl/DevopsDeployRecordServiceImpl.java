@@ -35,6 +35,7 @@ import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.UseRecordType;
@@ -136,7 +137,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 JsonHelper.marshalByJackson(deploySource));
         try {
             baseCreate(devopsDeployRecordDTO);
-            if (StringUtils.endsWithIgnoreCase(PipelineStatus.SUCCESS.toValue(), deployResult)) {
+            if (StringUtils.endsWithIgnoreCase(PipelineStatus.SUCCESS.toValue(), deployResult)
+                    && org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
                 marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource);
             }
         } catch (Exception e) {
