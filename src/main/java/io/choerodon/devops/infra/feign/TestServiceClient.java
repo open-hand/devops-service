@@ -6,8 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.test.ApiTestExecuteVO;
-import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
-import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 
 
 /**
@@ -25,18 +23,18 @@ public interface TestServiceClient {
      */
     @ApiOperation(value = "执行任务或者自选用例")
     @PostMapping(value = "/v1/projects/{project_id}/api_test/tasks/execute")
-    ResponseEntity<ApiTestTaskRecordDTO> executeTask(
+    ResponseEntity<String> executeTask(
             @PathVariable("project_id") Long projectId,
             @RequestBody ApiTestExecuteVO apiTestExecuteVO,
             @RequestParam(value = "executor_id") Long executorId);
 
     @ApiOperation("根据纪录id查询纪录详情 / 不带有测试请求详情")
     @GetMapping("/v1/projects/{project_id}/api-test-records/{record_id}")
-    ResponseEntity<ApiTestTaskRecordVO> queryById(@PathVariable("project_id") Long projectId,
-                                                  @PathVariable("record_id") Long recordId);
+    ResponseEntity<String> queryById(@PathVariable("project_id") Long projectId,
+                                     @PathVariable("record_id") Long recordId);
 
     @ApiOperation("测试jmeter服务器是够可用于分布式测试 / devops-service用")
     @GetMapping("/v1/distribute_hosts/connection_test")
-    ResponseEntity<Boolean> testConnection(@RequestParam("host_ip") String hostIp,
-                                           @RequestParam("jmeter_port") Integer jmeterPort);
+    ResponseEntity<String> testConnection(@RequestParam("host_ip") String hostIp,
+                                          @RequestParam("jmeter_port") Integer jmeterPort);
 }

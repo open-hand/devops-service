@@ -18,23 +18,19 @@ import java.util.List;
 public interface AgileServiceClient {
 
     @GetMapping(value = "/v1/projects/{project_id}/issues/{issueId}")
-    ResponseEntity<IssueDTO> queryIssue(
+    ResponseEntity<String> queryIssue(
             @PathVariable("project_id") Long projectId,
             @PathVariable("issueId") Long issueId,
             @RequestParam("organizationId") Long organizationId);
 
-    @GetMapping(value = "/v1/projects/{project_id}/project_info")
-    ResponseEntity<ProjectInfoDTO> queryProjectInfo(
-            @PathVariable("project_id") Long projectId);
-
     @GetMapping(value = "/v1/projects/{project_id}/issues/query_issue_ids")
-    ResponseEntity<List<IssueDTO>> queryIssues(@ApiParam(value = "项目id", required = true)
+    ResponseEntity<String> queryIssues(@ApiParam(value = "项目id", required = true)
                                                @PathVariable(name = "project_id") Long projectId,
                                                @ApiParam(value = "issue编号", required = true)
                                                @RequestBody List<Long> issueIds);
 
     @GetMapping(value = "/v1/projects/{project_id}/sprint/active/{organization_id}")
-    ResponseEntity<SprintDTO> getActiveSprint(
+    ResponseEntity<String> getActiveSprint(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "组织id", required = true)
