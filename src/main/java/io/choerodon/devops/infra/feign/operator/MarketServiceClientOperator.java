@@ -1,21 +1,21 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.hzero.core.util.ResponseUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.utils.FeignClientUtils;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
-import io.choerodon.devops.api.vo.market.RepoConfigVO;
 import io.choerodon.devops.infra.dto.market.MarketChartValueDTO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.util.CommonExAssertUtil;
  */
 @Component
 public class MarketServiceClientOperator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MarketServiceClientOperator.class);
     @Autowired
     private MarketServiceClient marketServiceClient;
 
@@ -33,51 +34,40 @@ public class MarketServiceClientOperator {
     }
 
     public MarketServiceDeployObjectVO queryDeployObject(Long projectId, Long deployObjectId) {
-        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClient.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployObjectId))
-                .getBody();
-        if (marketServiceDeployObjectVO == null) {
-            throw new CommonException("error.query.deploy.object.config");
-
-        }
-        return marketServiceDeployObjectVO;
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployObjectId)), MarketServiceDeployObjectVO.class);
     }
 
     public MarketChartValueDTO queryValues(Long projectId, Long deployObjectId) {
-        ResponseEntity<MarketChartValueDTO> result = marketServiceClient.queryValuesForDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployObjectId));
-        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null || result.getBody().getValue() == null) {
-            throw new CommonException("error.query.values.from.market");
-        }
-        return result.getBody();
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryValuesForDeployObject(projectId, deployObjectId), MarketChartValueDTO.class);
     }
 
     public MarketServiceVO queryMarketService(Long projectId, Long marketServiceId) {
-        ResponseEntity<MarketServiceVO> result = marketServiceClient.queryMarketService(Objects.requireNonNull(projectId), Objects.requireNonNull(marketServiceId));
-        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null || result.getBody().getId() == null) {
-            throw new CommonException("error.query.market.service");
-        }
-        return result.getBody();
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryMarketService(Objects.requireNonNull(projectId), Objects.requireNonNull(marketServiceId)), MarketServiceVO.class);
     }
 
     public MarketServiceDeployObjectVO queryDeployObjectByCodeAndVersion(Long projectId, String chartName, String chartVersion) {
-        ResponseEntity<MarketServiceDeployObjectVO> deployObject = marketServiceClient.queryDeployObjectByCodeAndService(Objects.requireNonNull(projectId), Objects.requireNonNull(chartName), Objects.requireNonNull(chartVersion), false);
-        if (!deployObject.getStatusCode().is2xxSuccessful() || deployObject.getBody() == null || deployObject.getBody().getId() == null) {
-            throw new CommonException("error.query.deploy.object.by.code.and.service");
-        }
-        return deployObject.getBody();
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObjectByCodeAndService(Objects.requireNonNull(projectId), Objects.requireNonNull(chartName), Objects.requireNonNull(chartVersion), false), MarketServiceDeployObjectVO.class);
     }
 
     public List<MarketServiceVO> queryMarketServiceByIds(Long projectId, Set<Long> ids) {
         CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(ids), "error.ids.params.empty");
-        ResponseEntity<List<MarketServiceVO>> result = marketServiceClient.queryMarketServiceByIds(projectId, ids);
-        if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null) {
-            throw new CommonException("error.list.market.service.by.ids");
+        try {
+            return FeignClientUtils.doRequest(() -> marketServiceClient.queryMarketServiceByIds(projectId, ids), new TypeReference<List<MarketServiceVO>>() {
+            });
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to queryMarketServiceByIds due to ex with message {}", ex.getMessage());
+            return Collections.emptyList();
         }
-        return result.getBody();
     }
 
     public List<MarketServiceDeployObjectVO> listDeployObjectsByIds(Long projectId, Set<Long> deployObjectIds) {
         CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(deployObjectIds), "error.ids.params.empty");
-        return ResponseUtils.getResponse(marketServiceClient.listDeployObjectsByIds(projectId, deployObjectIds), new TypeReference<List<MarketServiceDeployObjectVO>>() {
-        });
+        try {
+            return FeignClientUtils.doRequest(() -> marketServiceClient.listDeployObjectsByIds(projectId, deployObjectIds), new TypeReference<List<MarketServiceDeployObjectVO>>() {
+            });
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to listDeployObjectsByIds due to ex with message {}", ex.getMessage());
+            return Collections.emptyList();
+        }
     }
 }

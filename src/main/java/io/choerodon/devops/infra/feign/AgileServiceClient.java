@@ -1,9 +1,7 @@
 package io.choerodon.devops.infra.feign;
 
-import io.choerodon.devops.infra.dto.agile.IssueDTO;
-import io.choerodon.devops.infra.dto.agile.ProjectInfoDTO;
-import io.choerodon.devops.infra.dto.agile.SprintDTO;
-import io.choerodon.devops.infra.feign.fallback.AgileServiceClientFallback;
+import java.util.List;
+
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
+import io.choerodon.devops.infra.feign.fallback.AgileServiceClientFallback;
 
 @FeignClient(value = "agile-service", fallback = AgileServiceClientFallback.class)
 public interface AgileServiceClient {
