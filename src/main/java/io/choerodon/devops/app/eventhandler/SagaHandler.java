@@ -112,12 +112,22 @@ public class SagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String handleUpdateGitOpsGroupEvent(String msg) {
+        LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
-        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
-        loggerInfo(msg);
-        gitlabGroupService.updateGroups(gitlabGroupPayload);
+        //不包含devops项目类型不做同步
+        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(devops)) {
+            return msg;
+        }
+        gitlabHandleService.handleProjectCategoryEvent(projectPayload);
+        LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
         return msg;
+
+//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
+//        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
+//        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
+//        loggerInfo(msg);
+//        gitlabGroupService.updateGroups(gitlabGroupPayload);
+//        return msg;
     }
 
     /**
@@ -354,20 +364,20 @@ public class SagaHandler {
      * @param msg
      * @return  string
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PROJECT_CATEGORY_SYNC,
-            description = "devops 同步项目类型的处理(group与角色同步事件)",
-            sagaCode = SagaTopicCodeConstants.ADD_PROJECT_CATEGORY,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleProjectCategoryEvent(String msg) {
-        LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
-        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        //不包含devops项目类型不做同步
-        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(devops)) {
-            return msg;
-        }
-        gitlabHandleService.handleProjectCategoryEvent(projectPayload);
-        LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
-        return msg;
-    }
+//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PROJECT_CATEGORY_SYNC,
+//            description = "devops 同步项目类型的处理(group与角色同步事件)",
+//            sagaCode = SagaTopicCodeConstants.ADD_PROJECT_CATEGORY,
+//            maxRetryCount = 3,
+//            seq = 1)
+//    public String handleProjectCategoryEvent(String msg) {
+//        LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
+//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
+//        //不包含devops项目类型不做同步
+//        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(devops)) {
+//            return msg;
+//        }
+//        gitlabHandleService.handleProjectCategoryEvent(projectPayload);
+//        LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
+//        return msg;
+//    }
 }

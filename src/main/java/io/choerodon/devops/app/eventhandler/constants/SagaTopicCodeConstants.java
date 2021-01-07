@@ -269,7 +269,7 @@ public class SagaTopicCodeConstants {
     /**
      * iam添加项目类型
      */
-    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
+//    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
 
     private SagaTopicCodeConstants() {
     }
