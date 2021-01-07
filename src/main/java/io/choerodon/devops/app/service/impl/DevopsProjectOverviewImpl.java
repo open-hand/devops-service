@@ -1,5 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.devops.api.vo.CountVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
@@ -10,14 +18,6 @@ import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import org.springframework.util.CollectionUtils;
 
 @Service
 public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
@@ -105,7 +105,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     public CountVO getCommitCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
-        if (sprintDTO.getSprintId() == null) {
+        if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
         List<Date> dateList = devopsGitlabCommitMapper.queryCountByProjectIdAndDate(projectId, new java.sql.Date(sprintDTO.getStartDate().getTime()), new java.sql.Date(sprintDTO.getEndDate().getTime()));
@@ -145,7 +145,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         }
 
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
-        if (sprintDTO.getSprintId() == null) {
+        if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
 
@@ -180,7 +180,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     public CountVO getCiCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
-        if (sprintDTO.getSprintId() == null) {
+        if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
         //根据项目的id查询项目下所有的流水线的id
