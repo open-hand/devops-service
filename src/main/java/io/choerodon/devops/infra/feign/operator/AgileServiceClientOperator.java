@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.feign.operator;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,7 @@ import io.choerodon.devops.infra.feign.AgileServiceClient;
 
 @Component
 public class AgileServiceClientOperator {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgileServiceClientOperator.class);
 
     @Autowired
     private AgileServiceClient agileServiceClient;
@@ -28,7 +30,7 @@ public class AgileServiceClientOperator {
         try {
             return FeignClientUtils.doRequest(() -> agileServiceClient.queryIssue(projectId, issueId, organizationId), IssueDTO.class, "error.issue.get");
         } catch (ServiceUnavailableException e) {
-            return new IssueDTO();
+            return null;
         }
     }
 
@@ -41,7 +43,8 @@ public class AgileServiceClientOperator {
         try {
             return FeignClientUtils.doRequest(() -> agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class, "error.active.sprint.get");
         } catch (ServiceUnavailableException e) {
-            return new SprintDTO();
+            LOGGER.warn(e.getMessage());
+            return null;
         }
     }
 }
