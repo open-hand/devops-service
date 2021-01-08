@@ -318,7 +318,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public DeployFrequencyVO listDeployFrequency(Long projectId, Long[] envIds,
                                                  Long appServiceId, Date startTime, Date endTime) {
-        if (envIds.length == 0) {
+        if (Objects.isNull(envIds) || envIds.length == 0) {
             return new DeployFrequencyVO();
         }
         List<DeployDTO> deployDTOS = baseListDeployFrequency(projectId, envIds, appServiceId, startTime, endTime);
