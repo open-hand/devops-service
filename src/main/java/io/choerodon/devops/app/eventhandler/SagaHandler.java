@@ -53,7 +53,7 @@ public class SagaHandler {
     /**
      * devops项目类型
      */
-    private static final String devops = "N_DEVOPS";
+    private static final String DEVOPS = "N_DEVOPS";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -90,6 +90,9 @@ public class SagaHandler {
             seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
+        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
+            return msg;
+        }
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
         loggerInfo(gitlabGroupPayload);
@@ -115,7 +118,7 @@ public class SagaHandler {
         LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
         //不包含devops项目类型不做同步
-        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(devops)) {
+        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
             return msg;
         }
         gitlabHandleService.handleProjectCategoryEvent(projectPayload);
