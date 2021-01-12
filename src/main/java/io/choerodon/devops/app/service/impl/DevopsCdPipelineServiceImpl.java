@@ -67,15 +67,6 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
-    private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
-    private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
-    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
-    private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
-    private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
-    private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
-    private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
-    private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
     private static final String AUTH_HEADER = "c7n-pipeline-token";
     private static final String STATUS_CODE = "statusCode";
 
@@ -431,7 +422,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             e.printStackTrace();
             sendFailedSiteMessage(devopsCdPipelineRecordDTO.getId(), GitUserNameUtil.getUserId());
             devopsCdPipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-//            devopsCdPipelineRecordDTO.setErrorInfo(e.getMessage());
             devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
         }
     }

@@ -11,7 +11,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -92,7 +91,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private String defaultCiImage;
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final DevopsCiJobMapper devopsCiJobMapper;
@@ -105,7 +103,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final AppServiceService appServiceService;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
     private final DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
-    private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsProjectService devopsProjectService;
     private final BaseServiceClientOperator baseServiceClientOperator;
     private final RdupmClientOperator rdupmClientOperator;
@@ -140,20 +137,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
-            PipelineAppDeployService pipelineAppDeployService,
             RdupmClientOperator rdupmClientOperator,
             DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
             AppServiceMapper appServiceMapper,
-            DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
             CiCdPipelineMapper ciCdPipelineMapper,
             DevopsCdStageService devopsCdStageService,
             DevopsCdAuditService devopsCdAuditService,
             DevopsCdJobService devopsCdJobService,
-            @Lazy
-            DevopsCdPipelineRecordService devopsCdPipelineRecordService,
-            DevopsCdJobRecordService devopsCDJobRecordService,
-            DevopsCdStageRecordService devopsCdStageRecordService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper,
             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
@@ -171,7 +162,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.appServiceService = appServiceService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
-        this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
         this.rdupmClientOperator = rdupmClientOperator;
@@ -414,6 +404,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (!Objects.isNull(appServiceDTO)) {
             ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
             ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
+            ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
         }
         //查询CI相关的阶段以及JOB
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(pipelineId);
@@ -449,7 +440,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCiStageVO.setType(StageType.CI.getType());
         }
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
-        ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
         //查询CD相关的阶段以及JOB
         List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageService.queryByPipelineId(pipelineId);
         List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByPipelineId(pipelineId);
@@ -687,7 +677,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         List<DevopsPipelineRecordRelVO> devopsPipelineRecordRelVOS = ConvertUtils.convertList(select, this::relDtoToRelVO);
         CiCdPipelineUtils.recordListSort(devopsPipelineRecordRelVOS);
-        return devopsPipelineRecordRelDTO.getId().compareTo(devopsPipelineRecordRelVOS.get(devopsPipelineRecordRelVOS.size() - 1).getId()) == 0 ? true : false;
+        return devopsPipelineRecordRelDTO.getId().compareTo(devopsPipelineRecordRelVOS.get(devopsPipelineRecordRelVOS.size() - 1).getId()) == 0;
 
     }
 
@@ -1364,15 +1354,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             int repoUrlIndex = -1;
             // 寻找包含这两个锚点的字符串位置
             for (int i = 0; i < templateShells.size(); i++) {
-                if (repoIdIndex == -1) {
-                    if (templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_ID)) {
-                        repoIdIndex = i;
-                    }
+                if (repoIdIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_ID)) {
+                    repoIdIndex = i;
                 }
-                if (repoUrlIndex == -1) {
-                    if (templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_URL)) {
-                        repoUrlIndex = i;
-                    }
+                if (repoUrlIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_URL)) {
+                    repoUrlIndex = i;
                 }
                 if (repoIdIndex != -1 && repoUrlIndex != -1) {
                     // 没必要再找了
@@ -1504,7 +1490,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
         } else if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(t.getType())) {
-           // 后续如果需要对外部卡点任务处理逻辑可以写这里
+            // 后续如果需要对外部卡点任务处理逻辑可以写这里
         }
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();
