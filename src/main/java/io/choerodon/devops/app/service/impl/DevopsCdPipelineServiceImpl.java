@@ -1206,7 +1206,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
 
 
-        if (Boolean.TRUE.equals(apiTestCompleteEventVO.getStatus())) {
+        if (Boolean.TRUE.equals(Boolean.parseBoolean(apiTestCompleteEventVO.getStatus()))) {
             try {
                 approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(),
                         devopsCdPipelineRecordDTO.getBusinessKey(),
