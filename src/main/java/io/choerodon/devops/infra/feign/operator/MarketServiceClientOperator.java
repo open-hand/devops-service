@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.utils.FeignClientUtils;
+import io.choerodon.devops.api.vo.market.MarketAppSubscribeRelVO;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
@@ -69,5 +70,10 @@ public class MarketServiceClientOperator {
             LOGGER.warn("Failed to listDeployObjectsByIds due to ex with message {}", ex.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    public MarketAppSubscribeRelVO subscribeApplication(Long marketAppId, Long userId) {
+        MarketAppSubscribeRelVO marketAppSubscribeRelVO = marketServiceClient.subscribeApplication(Objects.requireNonNull(marketAppId), Objects.requireNonNull(userId)).getBody();
+        return marketAppSubscribeRelVO;
     }
 }

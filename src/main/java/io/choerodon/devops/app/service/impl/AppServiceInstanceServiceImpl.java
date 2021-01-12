@@ -37,6 +37,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -845,6 +846,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             // 插入部署记录
             saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceVersionDTO.getDevopsAppServiceVersion());
+            //如果是市场部署将部署人员添加为应用的订阅人员
+            marketServiceClientOperator.subscribeApplication(appServiceVersionDTO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());

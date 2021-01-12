@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import java.util.Set;
 
@@ -10,10 +11,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
-import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
-import io.choerodon.devops.api.vo.market.MarketServiceVO;
-import io.choerodon.devops.api.vo.market.RepoConfigVO;
+import io.choerodon.devops.api.vo.market.*;
 import io.choerodon.devops.infra.dto.market.MarketChartValueDTO;
 import io.choerodon.devops.infra.feign.fallback.MarketServiceClientFallback;
 import io.choerodon.swagger.annotation.Permission;
@@ -26,6 +24,7 @@ public interface MarketServiceClient {
 
     /**
      * 根据部署对象的id 查询部署对象的配置
+     *
      * @return {@link MarketServiceDeployObjectVO}
      */
     @GetMapping("/v1/projects/{project_id}/deploy/object/{deploy_object_id}/repo/config")
@@ -101,4 +100,12 @@ public interface MarketServiceClient {
             @PathVariable("project_id") Long projectId,
             @ApiParam("发布对象id集合")
             @RequestBody Set<Long> deployObjectIds);
+
+
+    @ApiModelProperty(value = "增加应用订阅关系")
+    @PostMapping("/v1/application/subscribe")
+    ResponseEntity<MarketAppSubscribeRelVO> subscribeApplication(
+            @Encrypt @RequestParam(name = "marketAppId") Long marketAppId,
+            @Encrypt @RequestParam(name = "userId") Long userId);
+
 }

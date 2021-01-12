@@ -90,6 +90,8 @@ public class MarketServiceDeployObjectVO {
      */
     private String marketServiceVersion;
 
+    private Long marketAppId;
+
     @Nullable
     @ApiModelProperty("版本的values")
     private String value;
@@ -132,6 +134,14 @@ public class MarketServiceDeployObjectVO {
 
     public void setMarketChartConfigVO(MarketChartConfigVO marketChartConfigVO) {
         this.marketChartConfigVO = marketChartConfigVO;
+    }
+
+    public Long getMarketAppId() {
+        return marketAppId;
+    }
+
+    public void setMarketAppId(Long marketAppId) {
+        this.marketAppId = marketAppId;
     }
 
     public MarketHarborConfigVO getMarketHarborConfigVO() {
