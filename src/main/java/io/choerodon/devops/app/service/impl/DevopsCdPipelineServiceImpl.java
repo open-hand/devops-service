@@ -1237,18 +1237,21 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
         }
-        assert apiTestTaskRecordVO != null;
-        double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
-        double failCount = (double) apiTestTaskRecordVO.getFailCount();
-        double successRate = successCount /  (successCount + failCount);
-        CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
-        if (cdApiTestConfigVO.getWarningSettingVO() != null
-                && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())
-                && successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
-            // todo 发送通知
-            Map<String, String> param = new HashMap<>();
-            sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
+        if(apiTestTaskRecordVO != null
+                && apiTestTaskRecordVO.getSuccessCount() != null
+                && apiTestTaskRecordVO.getFailCount() != null) {
+            double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
+            double failCount = (double) apiTestTaskRecordVO.getFailCount();
+            double successRate = successCount /  (successCount + failCount);
+            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+            if (cdApiTestConfigVO.getWarningSettingVO() != null
+                    && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())
+                    && successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
+                Map<String, String> param = new HashMap<>();
+                sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
+            }
         }
+
 
     }
 
