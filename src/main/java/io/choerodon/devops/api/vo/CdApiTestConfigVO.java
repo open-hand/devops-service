@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
 import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
 
 /**
@@ -11,12 +12,13 @@ import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
  * @author wanghao
  * @since 2020/9/9 9:55
  */
-public class CdApiTestConfigVO extends DevopsCdEnvDeployInfoDTO {
+public class CdApiTestConfigVO {
     @Encrypt
     private Long apiTestTaskId;
     private String apiTestTaskName;
     private Boolean blockAfterJob;
     private String deployJobName;
+    private WarningSettingVO warningSettingVO;
 
 
     public Long getApiTestTaskId() {
@@ -49,5 +51,24 @@ public class CdApiTestConfigVO extends DevopsCdEnvDeployInfoDTO {
 
     public void setDeployJobName(String deployJobName) {
         this.deployJobName = deployJobName;
+    }
+
+    public WarningSettingVO getWarningSettingVO() {
+        return warningSettingVO;
+    }
+
+    public void setWarningSettingVO(WarningSettingVO warningSettingVO) {
+        this.warningSettingVO = warningSettingVO;
+    }
+
+    @Override
+    public String toString() {
+        return "CdApiTestConfigVO{" +
+                "apiTestTaskId=" + apiTestTaskId +
+                ", apiTestTaskName='" + apiTestTaskName + '\'' +
+                ", blockAfterJob=" + blockAfterJob +
+                ", deployJobName='" + deployJobName + '\'' +
+                ", warningSettingVO=" + warningSettingVO +
+                '}';
     }
 }
