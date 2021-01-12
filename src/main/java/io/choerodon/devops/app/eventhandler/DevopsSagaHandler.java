@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
@@ -33,6 +34,7 @@ import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.test.ApiTestTaskTriggerTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -657,6 +659,23 @@ public class DevopsSagaHandler {
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
             LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
+        }
+    }
+
+    /**
+     * 创建流水线自动部署实例
+     */
+    @SagaTask(code = SagaTaskCodeConstants.HANDLE_API_TEST_TASK_COMPLETE_EVENT,
+            description = "创建流水线自动部署实例",
+            sagaCode = SagaTopicCodeConstants.API_TEST_TASK_COMPLETE_EVENT,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handleApiTestTaskCompleteEvent(String data) {
+        ApiTestCompleteEventVO apiTestCompleteEventVO = JsonHelper.unmarshalByJackson(data, ApiTestCompleteEventVO.class);
+        // 只处理流水线触发的api测试任务
+        if (ApiTestTaskTriggerTypeEnum.PIPELINE.value().equals(apiTestCompleteEventVO.getTriggerType())) {
+            devopsCdPipelineService.handleApiTestTaskCompleteEvent(apiTestCompleteEventVO);
         }
     }
 
