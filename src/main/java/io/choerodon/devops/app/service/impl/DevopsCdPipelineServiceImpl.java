@@ -1205,7 +1205,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdJobRecordDTO.getPipelineRecordId());
 
 
-
         if (Boolean.TRUE.equals(Boolean.parseBoolean(apiTestCompleteEventVO.getStatus()))) {
             try {
                 approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(),
@@ -1247,6 +1246,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())
                 && successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
             // todo 发送通知
+            Map<String, String> param = new HashMap<>();
+            sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
         }
 
     }
