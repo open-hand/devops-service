@@ -36,7 +36,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionService {
     private final DevopsEnvironmentService devopsEnvironmentService;
-    private final DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     private final UserAttrService userAttrService;
     private final DevopsProjectService devopsProjectService;
     private final GitlabServiceClientOperator gitlabServiceClientOperator;
@@ -46,7 +45,6 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator, AppServiceMapper appServiceMapper, DevopsEnvironmentMapper devopsEnvironmentMapper) {
         super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper,baseServiceClientOperator);
         this.devopsEnvironmentService = devopsEnvironmentService;
-        this.devopsEnvUserPermissionService = devopsEnvUserPermissionService;
         this.userAttrService = userAttrService;
         this.devopsProjectService = devopsProjectService;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;

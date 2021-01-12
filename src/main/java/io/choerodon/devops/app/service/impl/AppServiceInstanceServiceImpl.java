@@ -81,7 +81,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String CHOERODON = "choerodon-test";
-    private static final String HARBOR = "harbor";
     private static final String AUTHTYPE = "pull";
     private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
@@ -92,6 +91,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
     private static final String NAMESPACE = "namespace";
+    private static final String INSTANCE_NAME_TEMPLATE="%s-%s";
     private static final Gson gson = new Gson();
 
     @Autowired
@@ -681,7 +681,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String code;
         if (appServiceDeployVO.getType().equals(CREATE)) {
             if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
-                code = String.format("%s-%s", appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+                code = String.format(INSTANCE_NAME_TEMPLATE, appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), isFromPipeline);
                 code = appServiceDeployVO.getInstanceName();
@@ -807,7 +807,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String code;
         if (appServiceDeployVO.getCommandType().equals(CREATE)) {
             if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
-                code = String.format("%s-%s", appServiceVersionDTO.getDevopsAppServiceCode(), GenerateUUID.generateUUID().substring(0, 5));
+                code = String.format(INSTANCE_NAME_TEMPLATE, appServiceVersionDTO.getDevopsAppServiceCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), false);
                 code = appServiceDeployVO.getInstanceName();
@@ -1684,7 +1684,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         // 初始化自定义实例名
         String code;
         if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
-            code = String.format("%s-%s", appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+            code = String.format(INSTANCE_NAME_TEMPLATE, appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
         } else {
             checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), false);
             code = appServiceDeployVO.getInstanceName();

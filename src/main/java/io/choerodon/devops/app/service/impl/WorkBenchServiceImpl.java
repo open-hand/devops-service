@@ -74,7 +74,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
             projectDTOList = Collections.singletonList(projectDTO);
         }
-        if (projectDTOList.size() == 0) {
+        if (CollectionUtils.isEmpty(projectDTOList)) {
             return new ArrayList<>();
         } else {
             return listLatestUserAppServiceDTO(tenant, projectDTOList);
@@ -93,7 +93,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
             projectDTOList = Collections.singletonList(projectDTO);
         }
-        if (projectDTOList.size() == 0) {
+        if (CollectionUtils.isEmpty(projectDTOList)) {
             return new ArrayList<>();
         } else {
             return listApprovalVOByProject(tenant, projectDTOList);
@@ -154,7 +154,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         CommonExAssertUtil.assertNotNull(userId, "error.user.get");
         // 查出该用户待审批的流水线阶段(旧流水线)
         List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
-        if (pipelineRecordDTOList.size() != 0) {
+        if (!CollectionUtils.isEmpty(pipelineRecordDTOList)) {
             List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
                     .filter(pipelineRecordDTO -> (pipelineRecordDTO.getRecordAudit() != null && pipelineRecordDTO.getRecordAudit().contains(String.valueOf(userId))) ||
                             (pipelineRecordDTO.getStageAudit() != null && pipelineRecordDTO.getStageAudit().contains(String.valueOf(userId))) ||
@@ -178,7 +178,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
 
         List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
-        if (jobRecordIds.size() != 0) {
+        if (!CollectionUtils.isEmpty(jobRecordIds)) {
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
             devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
@@ -209,7 +209,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         latestAppServiceVOList.addAll(devopsGitlabCommitMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
         latestAppServiceVOList.addAll(devopsMergeRequestMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
 
-        if (latestAppServiceVOList.size() == 0) {
+        if (CollectionUtils.isEmpty(latestAppServiceVOList)) {
             return latestAppServiceVOList;
         }
 

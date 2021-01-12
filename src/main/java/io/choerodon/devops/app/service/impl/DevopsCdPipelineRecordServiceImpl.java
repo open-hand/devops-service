@@ -4,6 +4,7 @@ import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -14,10 +15,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,12 +80,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
     private static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
-    private static final String ERROR_DOCKER_LOGIN = "error.docker.login";
-    private static final String ERROR_DOCKER_PULL = "error.docker.pull";
-    private static final String ERROR_DOCKER_RUN = "error.docker.run";
     private static final String ERROR_DOWNLOAD_JAY = "error.download.jar";
-    private static final String ERROR_JAVA_JAR = "error.java.jar";
-    private static final String UNAUTHORIZED = "unauthorized";
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STOP = "stop";
@@ -312,7 +305,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
             imageDeploy = cdHostDeployConfigVO.getImageDeploy();
-            imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), "UTF-8"));
+            imageDeploy.setValue(new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8));
             // 0.2
             C7nImageDeployDTO c7nImageDeployDTO = new C7nImageDeployDTO();
             if (imageDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
@@ -472,7 +465,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
 
             jarDeploy = cdHostDeployConfigVO.getJarDeploy();
-            jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), "UTF-8"));
+            jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), StandardCharsets.UTF_8));
 
             C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
             DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
@@ -592,7 +585,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             // 0.1 查询部署信息
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
             CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-            String value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), "UTF-8");
+            String value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), StandardCharsets.UTF_8);
             sshUtil.sshConnect(cdHostDeployConfigVO.getHostConnectionVO(), ssh);
             sshExecCustom(ssh, value, log);
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
@@ -678,7 +671,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             String javaJarExec = values.replace("${jar}", jarPathAndName);
 
             cmdStr.append(javaJarExec);
-            StringBuilder finalCmdStr=new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
+            StringBuilder finalCmdStr = new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
             LOGGER.info(finalCmdStr.toString());
 
             final Session.Command cmd = session.exec(finalCmdStr.toString());
@@ -916,7 +909,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 addAuditStateInfo(devopsCdPipelineRecordVO);
                 devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
             } else {
-                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
+                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.emptyList());
             }
         });
         return pipelineRecordInfo;
@@ -1054,10 +1047,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             });
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
-            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
+            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.emptyList());
         }
         // 计算流水线当前停留的审核节点
-        if(PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
+        if (PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordVO.getStatus())) {
             addAuditStateInfo(devopsCdPipelineRecordVO);
         }
 
@@ -1240,7 +1233,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
-            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.EMPTY_LIST);
+            devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.emptyList());
         }
 
         return devopsCdPipelineRecordVO;

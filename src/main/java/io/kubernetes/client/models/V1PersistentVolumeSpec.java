@@ -5,12 +5,12 @@
 
 package io.kubernetes.client.models;
 
+import java.util.*;
+
 import com.google.gson.annotations.SerializedName;
 import io.kubernetes.client.custom.Quantity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.*;
 
 @ApiModel(
         description = "PersistentVolumeSpec is the specification of a persistent volume."
@@ -83,7 +83,7 @@ public class V1PersistentVolumeSpec {
 
     public V1PersistentVolumeSpec addAccessModesItem(String accessModesItem) {
         if (this.accessModes == null) {
-            this.accessModes = new ArrayList();
+            this.accessModes = new ArrayList<>();
         }
 
         this.accessModes.add(accessModesItem);
@@ -148,7 +148,7 @@ public class V1PersistentVolumeSpec {
 
     public V1PersistentVolumeSpec putCapacityItem(String key, Quantity capacityItem) {
         if (this.capacity == null) {
-            this.capacity = new HashMap();
+            this.capacity = new HashMap<>();
         }
 
         this.capacity.put(key, capacityItem);
@@ -325,7 +325,7 @@ public class V1PersistentVolumeSpec {
 
     public V1PersistentVolumeSpec addMountOptionsItem(String mountOptionsItem) {
         if (this.mountOptions == null) {
-            this.mountOptions = new ArrayList();
+            this.mountOptions = new ArrayList<>();
         }
 
         this.mountOptions.add(mountOptionsItem);
@@ -501,10 +501,12 @@ public class V1PersistentVolumeSpec {
         }
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(new Object[]{this.accessModes, this.awsElasticBlockStore, this.azureDisk, this.azureFile, this.capacity, this.cephfs, this.cinder, this.claimRef, this.fc, this.flexVolume, this.flocker, this.gcePersistentDisk, this.glusterfs, this.hostPath, this.iscsi, this.local, this.mountOptions, this.nfs, this.persistentVolumeReclaimPolicy, this.photonPersistentDisk, this.portworxVolume, this.quobyte, this.rbd, this.scaleIO, this.storageClassName, this.storageos, this.vsphereVolume, this.nodeAffinity});
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("class V1PersistentVolumeSpec {\n");

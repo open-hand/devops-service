@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 import java.nio.charset.StandardCharsets;
@@ -49,8 +48,8 @@ import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
@@ -61,7 +60,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * 〈功能简述〉
@@ -80,8 +78,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
     private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
-    private static final String QUERY_PIPELINE_FAILED = "error.pipeline.query";
-    private static final String ERROR_USER_HAVE_NO_APP_PERMISSION = "error.user.have.no.app.permission";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
@@ -121,16 +117,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsCdStageService devopsCdStageService;
     private final DevopsCdAuditService devopsCdAuditService;
     private final DevopsCdJobService devopsCdJobService;
-    private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    private final DevopsCdJobRecordService devopsCDJobRecordService;
-    private final DevopsCdStageRecordService devopsCdStageRecordService;
     private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     private final DevopsEnvironmentMapper devopsEnvironmentMapper;
     private final DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     private final DevopsDeployValueMapper devopsDeployValueMapper;
-    private final PipelineAppDeployService pipelineAppDeployService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -182,7 +174,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
-        this.pipelineAppDeployService = pipelineAppDeployService;
         this.rdupmClientOperator = rdupmClientOperator;
         this.devopsConfigService = devopsConfigService;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
@@ -192,9 +183,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdStageService = devopsCdStageService;
         this.devopsCdAuditService = devopsCdAuditService;
         this.devopsCdJobService = devopsCdJobService;
-        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
-        this.devopsCDJobRecordService = devopsCDJobRecordService;
-        this.devopsCdStageRecordService = devopsCdStageRecordService;
         this.devopsCdEnvDeployInfoService = devopsCdEnvDeployInfoService;
         this.devopsEnvironmentMapper = devopsEnvironmentMapper;
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
@@ -771,7 +759,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
         //删除 cd  pipeline记录 stage记录 以及Job记录
-        devopsCdPipelineRecordService.deleteByPipelineId(pipelineId);
 
         // 删除content file
         devopsCiContentService.deleteByPipelineId(pipelineId);
@@ -1200,6 +1187,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId, jobId, config, targetRepos);
                                 result.addAll(buildMavenJarDeployScripts(projectId, jobId, hasMavenSettings, config, targetRepos));
                                 break;
+                            default:
                         }
                     });
 
@@ -1406,7 +1394,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
 
             // 只生成一个jar包元数据上传指令用于CD阶段
-            shells.add(GitlabCiUtil.saveJarMetadata((Long) ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds()));
+            shells.add(GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds()));
         } else {
             // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
             shells.addAll(templateShells);

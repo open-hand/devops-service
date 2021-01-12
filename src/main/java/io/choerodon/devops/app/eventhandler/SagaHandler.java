@@ -2,11 +2,11 @@ package io.choerodon.devops.app.eventhandler;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.util.stream.Collectors;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +20,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
-import io.choerodon.devops.api.vo.iam.ProjectCategoryDTO;
-import io.choerodon.devops.api.vo.iam.ProjectMapCategoryVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
@@ -90,7 +88,7 @@ public class SagaHandler {
             seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
+        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
             return msg;
         }
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
@@ -118,7 +116,7 @@ public class SagaHandler {
         LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
         //不包含devops项目类型不做同步
-        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
+        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
             return msg;
         }
         gitlabHandleService.handleProjectCategoryEvent(projectPayload);
@@ -365,7 +363,7 @@ public class SagaHandler {
      * devops 同步项目类型的处理
      *
      * @param msg
-     * @return  string
+     * @return string
      */
 //    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PROJECT_CATEGORY_SYNC,
 //            description = "devops 同步项目类型的处理(group与角色同步事件)",

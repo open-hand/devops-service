@@ -26,7 +26,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.chart.ChartDeleteResponseVO;
 import io.choerodon.devops.api.vo.chart.ChartTagVO;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadPayload;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -86,7 +85,7 @@ public class ChartUtil {
         ChartClient chartClient = retrofit.create(ChartClient.class);
         Call<ChartDeleteResponseVO> call = chartClient.deleteChartVersion(chartTagVO.getOrgCode(), chartTagVO.getProjectCode(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
         try {
-            Response<ChartDeleteResponseVO> response = call.execute();
+            call.execute();
         } catch (Exception e) {
             LOGGER.error("error.delete.chart。repository: {}, chartName：{}，chartVersion：{} ", chartTagVO.getRepository(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
         }

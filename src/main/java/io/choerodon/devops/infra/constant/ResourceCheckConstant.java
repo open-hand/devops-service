@@ -8,6 +8,9 @@ package io.choerodon.devops.infra.constant;
  * @since 2020/7/11 18:25
  */
 public class ResourceCheckConstant {
+    private ResourceCheckConstant() {
+
+    }
 
     // app service version
     public static final String ERROR_SERVICE_VERSION_VALUE_ID_IS_NULL = "error.service.version.value.id.is.null";
@@ -23,9 +26,6 @@ public class ResourceCheckConstant {
 
     // env
     public static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
-
-
-
 
 
 }

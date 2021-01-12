@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,25 +17,25 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 public class CiCdPipelineUtils {
     private static final Integer VIEWID_DIGIT = 6;
 
+    private CiCdPipelineUtils() {
+
+    }
+
 
     public static <T extends BaseDomain> void recordListSort(List<T> list) {
-        Collections.sort(list, new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                try {
-                    if (o1.getCreatedDate().getTime() > o2.getCreatedDate().getTime()) {
-                        return -1;
-                    } else if (o1.getCreatedDate().getTime() < o2.getCreatedDate().getTime()) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+        Collections.sort(list, (o1, o2) -> {
+            try {
+                if (o1.getCreatedDate().getTime() > o2.getCreatedDate().getTime()) {
+                    return -1;
+                } else if (o1.getCreatedDate().getTime() < o2.getCreatedDate().getTime()) {
+                    return 1;
+                } else {
+                    return 0;
                 }
-                return 0;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            return 0;
         });
     }
 

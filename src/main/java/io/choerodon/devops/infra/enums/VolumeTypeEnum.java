@@ -27,7 +27,7 @@ public enum VolumeTypeEnum {
     }
 
     @SuppressWarnings("unchecked")
-    private static final JacksonJsonEnumHelper<VolumeTypeEnum> enumHelper = new JacksonJsonEnumHelper(VolumeTypeEnum.class);
+    private static final JacksonJsonEnumHelper<VolumeTypeEnum> enumHelper = new JacksonJsonEnumHelper<>(VolumeTypeEnum.class);
 
     @JsonCreator
     public static VolumeTypeEnum forValue(String value) {

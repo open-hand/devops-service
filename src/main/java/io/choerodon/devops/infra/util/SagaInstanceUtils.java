@@ -18,6 +18,9 @@ public class SagaInstanceUtils {
 
     private static final String FAILED = "FAILED";
 
+    private SagaInstanceUtils() {
+    }
+
     public static Long fillInstanceId(Map<String, SagaInstanceDetails> map, String refId) {
         if (!MapUtils.isEmpty(map) && !Objects.isNull(map.get(refId)) && FAILED.equalsIgnoreCase(map.get(refId).getStatus().trim())) {
             return map.get(refId).getId();

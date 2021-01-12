@@ -58,7 +58,7 @@ public class V1NodeSelectorTerm {
 
     public V1NodeSelectorTerm addMatchFieldsItem(V1NodeSelectorRequirement matchFieldsItem) {
         if (this.matchFields == null) {
-            this.matchFields = new ArrayList();
+            this.matchFields = new ArrayList<>();
         }
 
         this.matchFields.add(matchFieldsItem);
@@ -86,10 +86,12 @@ public class V1NodeSelectorTerm {
         }
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(new Object[]{this.matchExpressions, this.matchFields});
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("class V1NodeSelectorTerm {\n");

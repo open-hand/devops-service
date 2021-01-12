@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo.polaris;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 

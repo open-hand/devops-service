@@ -29,8 +29,6 @@ import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
-    private static final String SUCCESS = "success";
-    private static final String FAILED = "failed";
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
@@ -61,7 +59,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     class UpgradeTask implements Runnable {
         private String version;
-        private Long env;
 
         UpgradeTask(String version) {
             this.version = version;
@@ -69,7 +66,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         UpgradeTask(String version, Long env) {
             this.version = version;
-            this.env = env;
         }
 
         @Override
@@ -86,9 +82,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("修复数据开始!");
                     appServiceVersionService.fixHarbor();
                     LOGGER.info("修复数据完成!!!!!!");
-                } else if("0.23.0-alpha.4".equals(version)){
-
-                } else if ("0.23.3".equals(version)) {
+                }  else if ("0.23.3".equals(version)) {
                     LOGGER.info("修复数据开始");
                     devopsCdAuditService.fixProjectId();
                     devopsCdAuditRecordService.fixProjectId();

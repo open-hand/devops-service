@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**

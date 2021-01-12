@@ -1,14 +1,15 @@
 package io.choerodon.devops.infra.util;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
-import io.choerodon.devops.infra.enums.ClusterResourceType;
-import org.yaml.snakeyaml.Yaml;
-
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.yaml.snakeyaml.Yaml;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
+import io.choerodon.devops.infra.enums.ClusterResourceType;
 
 public class ComponentValuesTemplateUtil {
     private static final String TEMPLATE = "/component/template/%s.yml";
