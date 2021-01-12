@@ -55,7 +55,7 @@ public class BaseServiceClientOperator {
     public Long getRoleId(Long organizationId, String code, String labelName) {
         ResponseEntity<List<RoleDTO>> roleResponseEntity = baseServiceClient.getRoleByCode(organizationId, code, labelName);
         List<RoleDTO> roleDTOList = roleResponseEntity.getBody();
-        if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && roleDTOList.size() != 0) {
+        if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && !CollectionUtils.isEmpty(roleDTOList)) {
             return roleDTOList.get(0).getId();
         } else {
             throw new CommonException("error.organization.role.id.get", code);
@@ -376,7 +376,7 @@ public class BaseServiceClientOperator {
      */
     public Boolean isRoot(Long userId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsRoot(userId);
-        return responseEntity == null ? false : responseEntity.getBody();
+        return responseEntity != null && responseEntity.getBody();
     }
 
     /**
@@ -388,7 +388,7 @@ public class BaseServiceClientOperator {
      */
     public Boolean isOrganzationRoot(Long userId, Long organizationId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsOrgRoot(organizationId, userId);
-        return responseEntity == null ? false : responseEntity.getBody();
+        return responseEntity != null && responseEntity.getBody();
     }
 
     /**
@@ -400,7 +400,7 @@ public class BaseServiceClientOperator {
      */
     public Boolean isProjectOwner(Long userId, Long projectId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsProjectOwner(userId, projectId);
-        return responseEntity == null ? false : responseEntity.getBody();
+        return responseEntity != null && responseEntity.getBody();
     }
 
     /**
@@ -427,8 +427,7 @@ public class BaseServiceClientOperator {
 
     public Page<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
         ResponseEntity<Page<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
-        Page<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
-        return body;
+        return pageInfoResponseEntity.getBody();
     }
 
     public ResourceLimitVO queryResourceLimit() {

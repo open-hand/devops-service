@@ -43,10 +43,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class DevopsCiJobServiceImpl implements DevopsCiJobService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiJobServiceImpl.class);
 
     private static final String CREATE_JOB_FAILED = "create.job.failed";
-    private static final String DELETE_JOB_FAILED = "delete.job.failed";
     private static final String ERROR_STAGE_ID_IS_NULL = "error.stage.id.is.null";
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
@@ -55,7 +54,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final String ERROR_CI_JOB_NON_EXIST = "error.ci.job.non.exist";
     private static final String ERROR_TOKEN_PIPELINE_MISMATCH = "error.app.service.token.pipeline.mismatch";
 
-    private static final String SONAR_KEY = "%s-%s:%s";
     private static final String SONAR = "sonar";
 
     private DevopsCiJobMapper devopsCiJobMapper;
@@ -67,8 +65,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiPipelineService devopsCiPipelineService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
-    private FileClient fileClient;
-    private BaseServiceClientOperator baseServiceClientOperator;
     private AppServiceMapper appServiceMapper;
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
 
@@ -94,10 +90,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.devopsCiPipelineService = devopsCiPipelineService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
-        this.fileClient = fileClient;
         this.appServiceMapper = appServiceMapper;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
-        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -265,7 +259,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             devopsCiJobDTO.setCiPipelineId(ciPipelineDTO.getId());
             devopsCiJobDTO.setType(JobTypeEnum.SONAR.value());
             DevopsCiJobDTO ciJobDTO = devopsCiJobMapper.selectOne(devopsCiJobDTO);
-            if (!Objects.isNull(ciJobDTO) & !StringUtils.isEmpty(ciJobDTO.getMetadata())) {
+            if (!Objects.isNull(ciJobDTO) && !StringUtils.isEmpty(ciJobDTO.getMetadata())) {
                 sonarInfoVO = JsonHelper.unmarshalByJackson(ciJobDTO.getMetadata(), SonarInfoVO.class);
             }
         }

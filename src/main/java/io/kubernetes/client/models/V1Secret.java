@@ -13,19 +13,13 @@
 
 package io.kubernetes.client.models;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
+
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.kubernetes.client.models.V1ObjectMeta;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * ===========复制这个类的主要目的是将data的类型从 Map<String, byte[]>改为Map<String, String>
@@ -77,7 +71,7 @@ public class V1Secret {
 
   public V1Secret putDataItem(String key, String dataItem) {
     if (this.data == null) {
-      this.data = new HashMap<String, String>();
+      this.data = new HashMap<>();
     }
     this.data.put(key, dataItem);
     return this;
@@ -139,7 +133,7 @@ public class V1Secret {
 
   public V1Secret putStringDataItem(String key, String stringDataItem) {
     if (this.stringData == null) {
-      this.stringData = new HashMap<String, String>();
+      this.stringData = new HashMap<>();
     }
     this.stringData.put(key, stringDataItem);
     return this;

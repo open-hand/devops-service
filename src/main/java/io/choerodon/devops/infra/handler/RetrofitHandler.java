@@ -108,9 +108,9 @@ public class RetrofitHandler {
                     return chain.proceed(request);
                 });
                 okHttpClientBuilder.sslSocketFactory(sslSocketFactory, x509TrustManager);
-                okHttpClientBuilder.hostnameVerifier((requestedHost, remoteServerSession) -> {
-                    return requestedHost.equalsIgnoreCase(remoteServerSession.getPeerHost()); // Compliant
-                });
+                okHttpClientBuilder.hostnameVerifier((requestedHost, remoteServerSession) ->
+                        requestedHost.equalsIgnoreCase(remoteServerSession.getPeerHost()) // Compliant
+                );
                 okHttpClientBuilder.followRedirects(true);
                 return okHttpClientBuilder.build();
             } else {

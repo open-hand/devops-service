@@ -2,8 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Objects;
 
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 public class ProjectReqVO {
     private Long id;
     private String name;

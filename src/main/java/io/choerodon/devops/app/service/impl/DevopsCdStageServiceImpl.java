@@ -18,15 +18,10 @@ import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
 @Service
 public class DevopsCdStageServiceImpl implements DevopsCdStageService {
     private static final String CREATE_STAGE_FAILED = "create.stage.failed";
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
-    private static final String DELETE_STAGE_FAILED = "delete.stage.failed";
-    private static final String UPDATE_STAGE_FAILED = "update.stage.failed";
 
 
     @Autowired
     private DevopsCdStageMapper devopsCdStageMapper;
-    @Autowired
-    private DevopsCdAuditMapper devopsCdAuditMapper;
 
     @Override
     public List<DevopsCdStageDTO> queryByPipelineId(Long pipelineId) {

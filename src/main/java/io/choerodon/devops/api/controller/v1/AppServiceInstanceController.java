@@ -43,6 +43,7 @@ import io.choerodon.swagger.annotation.Permission;
 public class AppServiceInstanceController {
 
     private static final String ERROR_APP_INSTANCE_QUERY = "error.instance.query";
+    private static final String ERROR_APP_INSTANCE_GET = "error.instance.value.get";
 
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
@@ -187,7 +188,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "instance_Id") Long instanceId) {
         return Optional.ofNullable(appServiceInstanceService.queryLastDeployValue(instanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.instance.value.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
 
 
@@ -353,7 +354,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "version_id") Long versionId) {
         return Optional.ofNullable(appServiceInstanceService.queryUpgradeValue(instanceId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.instance.value.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
 
     /**
@@ -380,7 +381,7 @@ public class AppServiceInstanceController {
             @RequestParam(value = "market_deploy_object_id") Long marketDeployObjectId) {
         return Optional.ofNullable(appServiceInstanceService.queryUpgradeValueForMarketInstance(projectId, instanceId, marketDeployObjectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.instance.value.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
 
     /**

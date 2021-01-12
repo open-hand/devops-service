@@ -91,7 +91,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 
 /**
@@ -114,7 +113,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
     private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
-    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -208,7 +206,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
-    private DevopsCiCdPipelineMapper DevopsCiCdPipelineMapper;
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     @Autowired
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired
@@ -285,7 +283,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("app-service")
+                        .withRefType(APPSERVICE)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
                         .withPayloadAndSerialize(devOpsAppServicePayload)
                         .withRefId(String.valueOf(appServiceDTO.getId()))
@@ -636,7 +634,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
         devopsCiPipelineDTO.setProjectId(projectId);
-        return DevopsCiCdPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
+        return devopsCiCdPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
     }
 
     @Override
@@ -1911,19 +1909,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             importPayloadList.add(appServiceImportPayload);
         });
 
-        importPayloadList.forEach(payload -> {
-            producer.apply(
-                    StartSagaBuilder
-                            .newBuilder()
-                            .withLevel(ResourceLevel.PROJECT)
-                            .withRefType("app")
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
-                            .withPayloadAndSerialize(payload)
-                            .withRefId(String.valueOf(payload.getAppServiceId()))
-                            .withSourceId(projectId),
-                    builder -> {
-                    });
-        });
+        importPayloadList.forEach(payload -> producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
+                        .withPayloadAndSerialize(payload)
+                        .withRefId(String.valueOf(payload.getAppServiceId()))
+                        .withSourceId(projectId),
+                builder -> {
+                }));
     }
 
     @Override
@@ -2128,28 +2124,26 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private void getRate(SonarContentVO sonarContentVO, List<Facet> facets) {
         sonarContentVO.setRate("A");
-        facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> {
-            facet.getValues().forEach(value -> {
-                if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
-                    if (sonarContentVO.getRate().equals("A")) {
-                        sonarContentVO.setRate("B");
-                    }
+        facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> facet.getValues().forEach(value -> {
+            if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
+                if (sonarContentVO.getRate().equals("A")) {
+                    sonarContentVO.setRate("B");
                 }
-                if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
-                    if (!sonarContentVO.getRate().equals("D") && !sonarContentVO.getRate().equals("E")) {
-                        sonarContentVO.setRate("C");
-                    }
+            }
+            if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
+                if (!sonarContentVO.getRate().equals("D") && !sonarContentVO.getRate().equals("E")) {
+                    sonarContentVO.setRate("C");
                 }
-                if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
-                    if (!sonarContentVO.getRate().equals("E")) {
-                        sonarContentVO.setRate("D");
-                    }
+            }
+            if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
+                if (!sonarContentVO.getRate().equals("E")) {
+                    sonarContentVO.setRate("D");
                 }
-                if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
-                    sonarContentVO.setRate("E");
-                }
-            });
-        });
+            }
+            if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
+                sonarContentVO.setRate("E");
+            }
+        }));
     }
 
     private Map<String, String> getQueryMap(String key, String type, Boolean newAdd) {

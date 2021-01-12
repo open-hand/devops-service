@@ -25,14 +25,12 @@ public abstract class UpdateUserPermissionService {
 
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
-    private AppServiceMapper appServiceMapper;
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     private BaseServiceClientOperator baseServiceClientOperator;
 
     protected UpdateUserPermissionService() {
         this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
         this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
-        this.appServiceMapper = ApplicationContextHelper.getSpringFactory().getBean(AppServiceMapper.class);
         this.devopsEnvironmentMapper = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvironmentMapper.class);
         this.baseServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(BaseServiceClientOperator.class);
     }
@@ -44,7 +42,6 @@ public abstract class UpdateUserPermissionService {
                                           BaseServiceClientOperator baseServiceClientOperator) {
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
-        this.appServiceMapper = appServiceMapper;
         this.devopsEnvironmentMapper = devopsEnvironmentMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
     }

@@ -15,7 +15,7 @@ public enum SystemEnvSupportedResourceType {
     PERSISTENT_VOLUME("PersistentVolume");
 
     @SuppressWarnings("unchecked")
-    private static final JacksonJsonEnumHelper<SystemEnvSupportedResourceType> enumHelper = new JacksonJsonEnumHelper(SystemEnvSupportedResourceType.class);
+    private static final JacksonJsonEnumHelper<SystemEnvSupportedResourceType> enumHelper = new JacksonJsonEnumHelper<>(SystemEnvSupportedResourceType.class);
 
     private String type;
 

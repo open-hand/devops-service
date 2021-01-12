@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 /**
  * Created by younger on 2018/4/25.
  */

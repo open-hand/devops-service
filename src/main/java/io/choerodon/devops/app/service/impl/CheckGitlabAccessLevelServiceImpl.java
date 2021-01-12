@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +46,12 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
             if (CollectionUtils.isEmpty(viewDTOList) || viewDTOList.get(0).getAccessLevel() == null) {
                 throw new CommonException("error.empty.gitlab.access.level");
             }
-            Integer maxAccessLevel = viewDTOList.stream().map(MemberPrivilegeViewDTO::getAccessLevel).collect(Collectors.toSet()).stream().max(Integer::compare).get();
-            if (maxAccessLevel <= appServiceEvent.getAccessLevel()) {
-                throw new GitlabAccessInvalidException("error.gitlab.access.level", AccessLevel.getAccessLevelName(maxAccessLevel));
+            Optional<Integer> max = viewDTOList.stream().map(MemberPrivilegeViewDTO::getAccessLevel).collect(Collectors.toSet()).stream().max(Integer::compare);
+            if (max.isPresent()) {
+                Integer maxAccessLevel = max.get();
+                if (maxAccessLevel <= appServiceEvent.getAccessLevel()) {
+                    throw new GitlabAccessInvalidException("error.gitlab.access.level", AccessLevel.getAccessLevelName(maxAccessLevel));
+                }
             }
         }
     }

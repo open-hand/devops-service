@@ -58,6 +58,18 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String ORGANIZATION = "Organization";
     private static final String WEB_HOOK = "WEB_HOOK";
     private static final String STAGE_NAME = "stageName";
+    private static final String STAGE_ID = "stageId";
+    private static final String APP_SERVICE = "AppService";
+    private static final String ENV_NAME = "envName";
+    private static final String IAM_USER = "IamUser";
+    private static final String APP_SERVICE_ID = "appServiceId";
+    private static final String CURRENT_STATUS = "currentStatus";
+    private static final String CLUSTER_ID = "clusterId";
+    private static final String PIPE_LINE_NAME = "pipelineName";
+    private static final String ORGANIZATION_ID = "organizationId";
+    private static final String PROJECT_NAME = "projectName";
+    private static final String PROJECT_ID = "projectId";
+    private static final String APP_SERVICE_NAME = "appServiceName";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -114,7 +126,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void sendNoticeAboutAppService(Long appServiceId, String sendSettingCode, Function<AppServiceDTO, List<Receiver>> targetSupplier) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("AppService", appServiceId, LOGGER);
+            LogUtil.loggerInfoObjectNullWithId(APP_SERVICE, appServiceId, LOGGER);
             return;
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
@@ -143,7 +155,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      */
     private void sendNoticeAboutAppService(AppServiceDTO appServiceDTO, String sendSettingCode, Function<AppServiceDTO, List<Receiver>> targetSupplier) {
         if (appServiceDTO == null) {
-            LogUtil.loggerInfoObjectNullWithId("AppService", null, LOGGER);
+            LogUtil.loggerInfoObjectNullWithId(APP_SERVICE, null, LOGGER);
             return;
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
@@ -175,11 +187,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      */
     private Map<String, String> makeAppServiceParams(Long organizationId, Long projectId, String projectName, String projectCategory, AppServiceDTO appServiceDTO) {
         return StringMapBuilder.newBuilder()
-                .put("organizationId", organizationId)
-                .put("projectId", projectId)
-                .put("projectName", projectName)
+                .put(ORGANIZATION_ID, organizationId)
+                .put(PROJECT_ID, projectId)
+                .put(PROJECT_NAME, projectName)
                 .put("projectCategory", projectCategory)
-                .put("appServiceName", appServiceDTO.getName())
+                .put(APP_SERVICE_NAME, appServiceDTO.getName())
                 .put("appServerId", appServiceDTO.getId())
                 .put("appServerCode", appServiceDTO.getCode())
                 .put("appServerName", appServiceDTO.getName())
@@ -201,7 +213,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenAppServiceFailure(Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (Objects.isNull(appServiceDTO)) {
-            LogUtil.loggerWarnObjectNullWithId("AppService", appServiceId, LOGGER);
+            LogUtil.loggerWarnObjectNullWithId(APP_SERVICE, appServiceId, LOGGER);
             return;
         }
         doWithTryCatchAndLog(
@@ -218,7 +230,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenAppServiceEnabled(Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (Objects.isNull(appServiceDTO)) {
-            LogUtil.loggerWarnObjectNullWithId("AppService", appServiceId, LOGGER);
+            LogUtil.loggerWarnObjectNullWithId(APP_SERVICE, appServiceId, LOGGER);
             return;
         }
         doWithTryCatchAndLog(
@@ -237,7 +249,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenAppServiceDisabled(Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (Objects.isNull(appServiceDTO)) {
-            LogUtil.loggerWarnObjectNullWithId("AppService", appServiceId, LOGGER);
+            LogUtil.loggerWarnObjectNullWithId(APP_SERVICE, appServiceId, LOGGER);
             return;
         }
 
@@ -290,12 +302,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             .put("gitlabUrl", gitlabUrl)
                             .put("organizationCode", organizationDTO.getTenantNum())
                             .put("projectCode", projectDTO.getCode())
-                            .put("projectName", projectDTO.getName())
+                            .put(PROJECT_NAME, projectDTO.getName())
                             .put("appServiceCode", appServiceDTO.getCode())
-                            .put("appServiceName", appServiceDTO.getName())
+                            .put(APP_SERVICE_NAME, appServiceDTO.getName())
                             .put("gitlabPipelineId", gitlabPipelineId)
-                            .put("projectId", projectDTO.getId())
-                            .put("appServiceId", appServiceDTO.getId())
+                            .put(PROJECT_ID, projectDTO.getId())
+                            .put(APP_SERVICE_ID, appServiceDTO.getId())
                             .put("status", "failed")
                             .build();
 
@@ -328,10 +340,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);
 
             Map<String, String> params = StringMapBuilder.newBuilder()
-                    .put("projectId", projectDTO.getId())
-                    .put("projectName", projectDTO.getName())
-                    .put("appServiceId", appServiceDTO.getId())
-                    .put("appServiceName", appServiceDTO.getName())
+                    .put(PROJECT_ID, projectDTO.getId())
+                    .put(PROJECT_NAME, projectDTO.getName())
+                    .put(APP_SERVICE_ID, appServiceDTO.getId())
+                    .put(APP_SERVICE_NAME, appServiceDTO.getName())
                     .put("status", "success")
                     .build();
             sendNotices(SendSettingEnum.GITLAB_CD_SUCCESS.value(),
@@ -345,9 +357,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(() -> {
                     Map<String, String> params = StringMapBuilder.newBuilder()
                             .put("projectid", projectDTO.getId())
-                            .put("projectName", projectDTO.getName())
-                            .put("appServiceId", appServiceDTO.getId())
-                            .put("appServiceName", appServiceDTO.getName())
+                            .put(PROJECT_NAME, projectDTO.getName())
+                            .put(APP_SERVICE_ID, appServiceDTO.getId())
+                            .put(APP_SERVICE_NAME, appServiceDTO.getName())
                             .put("appServiceVersionId", appServiceVersionDTO.getId())
                             .put("version", appServiceVersionDTO.getVersion())
                             .build();
@@ -386,9 +398,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .put("gitlabUrl", gitlabUrl)
                 .put("organizationCode", organizationCode)
                 .put("projectCode", projectCode)
-                .put("projectName", projectName)
+                .put(PROJECT_NAME, projectName)
                 .put("appServiceCode", appServiceCode)
-                .put("appServiceName", appServiceName)
+                .put(APP_SERVICE_NAME, appServiceName)
                 .put("realName", realName)
                 .put("mergeRequestId", mergeRequestId)
                 .build();
@@ -419,7 +431,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     IamUserDTO authorUser = baseServiceClientOperator.queryUserByUserId(author.getIamUserId());
                     if (authorUser == null) {
-                        LogUtil.loggerInfoObjectNullWithId("IamUser", author.getIamUserId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(IAM_USER, author.getIamUserId(), LOGGER);
                         return;
                     }
 
@@ -431,7 +443,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
                     if (iamUserDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("IamUser", userAttrDTO.getIamUserId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(IAM_USER, userAttrDTO.getIamUserId(), LOGGER);
                         return;
                     }
 
@@ -485,7 +497,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     // merge request的操作者
                     IamUserDTO authorUser = baseServiceClientOperator.queryUserByLoginName(TypeUtil.objToString(userIdFromGitlab));
                     if (authorUser == null) {
-                        LogUtil.loggerInfoObjectNullWithId("IamUser", TypeUtil.objToLong(userIdFromGitlab), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(IAM_USER, TypeUtil.objToLong(userIdFromGitlab), LOGGER);
                         return;
                     }
 
@@ -498,7 +510,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
                     if (iamUserDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("IamUser", userAttrDTO.getIamUserId(), LOGGER);
+                        LogUtil.loggerInfoObjectNullWithId(IAM_USER, userAttrDTO.getIamUserId(), LOGGER);
                         return;
                     }
 
@@ -583,8 +595,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             String finalResourceName = StringUtils.isEmpty(resourceName) ? devopsEnvironmentDTO.getName() : resourceName;
 
             Map<String, String> params = StringMapBuilder.newBuilder()
-                    .put("projectName", Objects.requireNonNull(projectDTO.getName()))
-                    .put("envName", Objects.requireNonNull(devopsEnvironmentDTO.getName()))
+                    .put(PROJECT_NAME, Objects.requireNonNull(projectDTO.getName()))
+                    .put(ENV_NAME, Objects.requireNonNull(devopsEnvironmentDTO.getName()))
                     .put("resourceName", Objects.requireNonNull(finalResourceName))
                     .putAll(webHookParams)
                     .build();
@@ -808,38 +820,38 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineName", record.getPipelineName())
-                .put("projectId", record.getProjectId())
-                .put("projectName", projectDTO.getName())
-                .put("organizationId", projectDTO.getOrganizationId())
-                .put("stageId", stageId)
+                .put(PIPE_LINE_NAME, record.getPipelineName())
+                .put(PROJECT_ID, record.getProjectId())
+                .put(PROJECT_NAME, projectDTO.getName())
+                .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
+                .put(STAGE_ID, stageId)
                 .put("triggerType", record.getTriggerType())
-                .put("stageName", stageName)
+                .put(STAGE_NAME, stageName)
                 .putAll(params)
                 .build();
     }
 
     private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineName", record.getPipelineName())
-                .put("projectId", record.getProjectId())
-                .put("projectName", projectDTO.getName())
-                .put("organizationId", projectDTO.getOrganizationId())
-                .put("stageId", stageId)
+                .put(PIPE_LINE_NAME, record.getPipelineName())
+                .put(PROJECT_ID, record.getProjectId())
+                .put(PROJECT_NAME, projectDTO.getName())
+                .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
+                .put(STAGE_ID, stageId)
                 .put("triggerType", record.getTriggerType())
-                .put("stageName", stageName)
+                .put(STAGE_NAME, stageName)
                 .putAll(params)
                 .build();
     }
 
     private Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put("pipelineName", pipelineName)
-                .put("projectId", projectDTO.getId())
-                .put("projectName", projectDTO.getName())
-                .put("organizationId", projectDTO.getOrganizationId())
-                .put("stageId", stageId)
-                .put("stageName", stageName)
+                .put(PIPE_LINE_NAME, pipelineName)
+                .put(PROJECT_ID, projectDTO.getId())
+                .put(PROJECT_NAME, projectDTO.getName())
+                .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
+                .put(STAGE_ID, stageId)
+                .put(STAGE_NAME, stageName)
                 .putAll(params)
                 .build();
     }
@@ -901,7 +913,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     }
 
                     Map<String, String> params = StringMapBuilder.newBuilder()
-                            .put("organizationId", organizationId)
+                            .put(ORGANIZATION_ID, organizationId)
                             .put("gitlabPassword", Objects.requireNonNull(password))
                             .build();
 
@@ -915,9 +927,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 // 不是打错，模板就是这样
                 .put("enveId", devopsEnvironmentDTO.getId())
                 .put("envCode", devopsEnvironmentDTO.getCode())
-                .put("envName", devopsEnvironmentDTO.getName())
-                .put("clusterId", devopsEnvironmentDTO.getClusterId())
-                .put("organizationId", organizationId)
+                .put(ENV_NAME, devopsEnvironmentDTO.getName())
+                .put(CLUSTER_ID, devopsEnvironmentDTO.getClusterId())
+                .put(ORGANIZATION_ID, organizationId)
                 .build();
     }
 
@@ -981,10 +993,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private Map<String, String> constructParamsForCluster(DevopsClusterDTO devopsClusterDTO, Long organizationId, @Nullable String message) {
         return StringMapBuilder.newBuilder()
-                .put("clusterId", devopsClusterDTO.getId())
+                .put(CLUSTER_ID, devopsClusterDTO.getId())
                 .put("clusterCode", devopsClusterDTO.getCode())
                 .put("clusterName", devopsClusterDTO.getName())
-                .put("organizationId", organizationId)
+                .put(ORGANIZATION_ID, organizationId)
                 .put("msg", message)
                 .build();
     }
@@ -1024,10 +1036,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .put("resourceId", resourceId)
                 .put("resourceName", resourceName)
                 .put("k8sKind", k8sKind)
-                .put("projectId", projectId)
-                .put("projectName", projectName)
+                .put(PROJECT_ID, projectId)
+                .put(PROJECT_NAME, projectName)
                 .put("envId", envId)
-                .put("envName", envName)
+                .put(ENV_NAME, envName)
                 .build();
     }
 
@@ -1069,8 +1081,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     Map<String, String> params = StringMapBuilder.newBuilder()
                             .put("resourceId", devopsClusterResourceDTO.getId())
                             .put("resourceType", type)
-                            .put("clusterId", clusterId)
-                            .put("organizationId", devopsClusterDTO.getOrganizationId())
+                            .put(CLUSTER_ID, clusterId)
+                            .put(ORGANIZATION_ID, devopsClusterDTO.getOrganizationId())
                             .put("msg", payload)
                             .build();
                     sendNotices(value, WEB_HOOK, params, devopsClusterDTO.getProjectId());
@@ -1181,14 +1193,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     List<Receiver> receivers = new ArrayList<>();
                     Map<String, String> webHookParams = StringMapBuilder.newBuilder()
                             .put("createdAt", LocalDateTime.now())
-                            .put("projectName", projectDTO.getName())
-                            .put("envName", devopsEnvironmentDTO.getName())
+                            .put(PROJECT_NAME, projectDTO.getName())
+                            .put(ENV_NAME, devopsEnvironmentDTO.getName())
                             .put("instanceId", appServiceInstanceDTO.getId())
                             .put("instanceName", appServiceInstanceDTO.getCode())
                             .put("envId", devopsEnvironmentDTO.getId()).build();
                     switch (CommandType.valueOf(devopsEnvCommandDTO.getCommandType().toUpperCase())) {
                         case CREATE:
-                            webHookParams.put("currentStatus", currentStatus);
+                            webHookParams.put(CURRENT_STATUS, currentStatus);
                             webHookParams.put("deployVersion", appServiceInstanceDTO.getAppServiceVersion());
                             //成功
                             if (InstanceStatus.FAILED != InstanceStatus.valueOf(currentStatus.toUpperCase())) {
@@ -1203,7 +1215,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             }
                             break;
                         case UPDATE:
-                            webHookParams.put("currentStatus", currentStatus);
+                            webHookParams.put(CURRENT_STATUS, currentStatus);
                             webHookParams.put("deployVersion", appServiceInstanceDTO.getAppServiceVersion());
                             //成功
                             if (InstanceStatus.FAILED != InstanceStatus.valueOf(currentStatus.toUpperCase())) {
@@ -1215,14 +1227,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             }
                             break;
                         case STOP:
-                            webHookParams.put("currentStatus", currentStatus);
+                            webHookParams.put(CURRENT_STATUS, currentStatus);
                             code = MessageCodeConstants.STOP_INSTANCE;
                             break;
                         case RESTART:
-                            webHookParams.put("currentStatus", currentStatus);
+                            webHookParams.put(CURRENT_STATUS, currentStatus);
                             code = MessageCodeConstants.ENABLE_INSTANCE;
                             break;
-
+                        default:
                     }
                     webHookParams.put("objectKind", code);
                     webHookParams.put("eventName", code);

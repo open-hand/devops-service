@@ -24,7 +24,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     private static final String UP = "up";
     private static final String DOWN = "down";
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
@@ -140,7 +140,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
                 .map(DevopsEnvironmentDTO::getId)
                 .collect(Collectors.toList());
 
-        if (envIds.size() == 0) {
+        if (envIds.isEmpty()) {
             return new CountVO();
         }
 
@@ -190,13 +190,11 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         }
         //查询流水线在这个冲刺中的部署次数
         List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = new ArrayList<>();
-        ciCdPipelineDTOS.forEach(ciCdPipelineDTO -> {
-            //当前冲刺下流水线的触发次数
-            devopsPipelineRecordRelDTOS.addAll(devopsPipelineRecordRelMapper.selectBySprint(ciCdPipelineDTO.getId(),
-                    new java.sql.Date(sprintDTO.getStartDate().getTime()),
-                    new java.sql.Date(sprintDTO.getEndDate().getTime())));
-
-        });
+        ciCdPipelineDTOS.forEach(ciCdPipelineDTO ->
+                //当前冲刺下流水线的触发次数
+                devopsPipelineRecordRelDTOS.addAll(devopsPipelineRecordRelMapper.selectBySprint(ciCdPipelineDTO.getId(),
+                        new java.sql.Date(sprintDTO.getStartDate().getTime()),
+                        new java.sql.Date(sprintDTO.getEndDate().getTime()))));
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
             return new CountVO();
         }

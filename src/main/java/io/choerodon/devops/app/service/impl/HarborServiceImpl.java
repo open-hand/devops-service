@@ -100,7 +100,7 @@ public class HarborServiceImpl implements HarborService {
 
     @Override
     public DevopsConfigDTO queryRepoConfigToDevopsConfig(Long projectId, Long appServiceId, String operateType) {
-        HarborRepoDTO harborRepoDTO = new HarborRepoDTO();
+        HarborRepoDTO harborRepoDTO;
         AppServiceShareRuleDTO appServiceShareRuleDTO = queryShareAppService(appServiceId);
         if (!Objects.isNull(appServiceShareRuleDTO)) {
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
@@ -181,8 +181,7 @@ public class HarborServiceImpl implements HarborService {
     private AppServiceShareRuleDTO queryShareAppService(Long appServiceId) {
         AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
         appServiceShareRuleDTO.setAppServiceId(appServiceId);
-        AppServiceShareRuleDTO serviceShareRuleDTO = appServiceShareRuleMapper.selectOne(appServiceShareRuleDTO);
-        return serviceShareRuleDTO;
+        return appServiceShareRuleMapper.selectOne(appServiceShareRuleDTO);
     }
 
     private DevopsConfigDTO repoDTOToDevopsConfigDTO(HarborRepoDTO harborRepoDTO, String operateType) {
