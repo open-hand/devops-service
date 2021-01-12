@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.market.MarketAppSubscribeRelVO;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
 
@@ -52,5 +53,10 @@ public class MarketServiceClientFallback implements MarketServiceClient {
     @Override
     public ResponseEntity<String> listDeployObjectsByIds(Long projectId, Set<Long> deployObjectIds) {
         throw new CommonException("error.list.deploy.objects.by.ids");
+    }
+
+    @Override
+    public ResponseEntity<MarketAppSubscribeRelVO> subscribeApplication(Long marketAppId, Long userId) {
+        throw new CommonException("error.subscribe.application");
     }
 }

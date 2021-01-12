@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
@@ -145,7 +146,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
                 nNexusComponentDTO.setDownloadUrl(getDownloadUrl(JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class)));
-
+                //如果是市场部署将部署人员添加为应用的订阅人员
+                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
                 mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
@@ -264,6 +266,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
                 deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
                 deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
+                //如果是市场部署将部署人员添加为应用的订阅人员
+                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
+
             } else {
                 imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
                 deployObjectName = imageDeploy.getImageName();
