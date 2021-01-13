@@ -1129,14 +1129,16 @@ public class GitlabServiceClientOperator {
      * 更新gitlab项目的ci文件地址
      *
      * @param gitlabProjectId gitlab项目名称
+     * @param userId          gitlab用户id
      * @param ciConfigPath    ci文件地址
      */
-    public void updateProjectCiConfigPath(Integer gitlabProjectId, String ciConfigPath) {
+    public void updateProjectCiConfigPath(Integer gitlabProjectId, Integer userId, String ciConfigPath) {
         CommonExAssertUtil.assertNotNull(gitlabProjectId, "error.project.id.null");
         CommonExAssertUtil.assertNotNull(ciConfigPath, "error.ci.config.path.null");
+        CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
         Project project = new Project();
         project.setId(gitlabProjectId);
         project.setCiConfigPath(ciConfigPath);
-        ResponseUtils.getResponse(gitlabServiceClient.updateProject(gitlabProjectId, project), Project.class);
+        ResponseUtils.getResponse(gitlabServiceClient.updateProject(userId, project), Project.class);
     }
 }
