@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Functions;
 import feign.RetryableException;
+import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +29,7 @@ import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.util.FeignResponseStatusCodeParse;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.PageInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
@@ -1125,5 +1123,20 @@ public class GitlabServiceClientOperator {
 
     public List<Long> listMergeRequestIds(Integer gitlabProjectId) {
         return gitlabServiceClient.listIds(gitlabProjectId).getBody();
+    }
+
+    /**
+     * 更新gitlab项目的ci文件地址
+     *
+     * @param gitlabProjectId gitlab项目名称
+     * @param ciConfigPath    ci文件地址
+     */
+    public void updateProjectCiConfigPath(Integer gitlabProjectId, String ciConfigPath) {
+        CommonExAssertUtil.assertNotNull(gitlabProjectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(ciConfigPath, "error.ci.config.path.null");
+        Project project = new Project();
+        project.setId(gitlabProjectId);
+        project.setCiConfigPath(ciConfigPath);
+        ResponseUtils.getResponse(gitlabServiceClient.updateProject(gitlabProjectId, project), Project.class);
     }
 }
