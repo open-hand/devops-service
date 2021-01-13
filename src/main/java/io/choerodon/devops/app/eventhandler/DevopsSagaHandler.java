@@ -34,7 +34,7 @@ import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.test.ApiTestTaskTriggerTypeEnum;
+import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -674,7 +674,7 @@ public class DevopsSagaHandler {
     public void handleApiTestTaskCompleteEvent(String data) {
         ApiTestCompleteEventVO apiTestCompleteEventVO = JsonHelper.unmarshalByJackson(data, ApiTestCompleteEventVO.class);
         // 只处理流水线触发的api测试任务
-        if (ApiTestTaskTriggerTypeEnum.PIPELINE.value().equals(apiTestCompleteEventVO.getTriggerType())) {
+        if (ApiTestTriggerType.PIPELINE.getValue().equals(apiTestCompleteEventVO.getTriggerType())) {
             devopsCdPipelineService.handleApiTestTaskCompleteEvent(apiTestCompleteEventVO);
         }
     }
