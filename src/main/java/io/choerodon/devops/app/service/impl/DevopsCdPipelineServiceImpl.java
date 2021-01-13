@@ -76,6 +76,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
     private static final String AUDIT_TASK_CALLBACK_URL = "/devops/v1/cd_pipeline/external_approval_task/callback";
+    private static final String API_TEST_LINK_URL_TEMPLATE = "/#/testManager/test-task?type=project&id=%s&name=%s&organizationId=%s&taskId=%s&recordId=%s";
+
 
     private static final Integer ADMIN = 1;
     private static final Long ADMIN_ID = 1L;
@@ -1258,12 +1260,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                 Map<String, String> param = new HashMap<>();
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+                String link = String.format(API_TEST_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), apiTestTaskRecordVO.getTaskId(), apiTestTaskRecordVO.getId());
                 param.put("projectName", projectDTO.getName());
                 param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
                 param.put("taskName", devopsCdJobRecordDTO.getName());
                 param.put("successRate", String.valueOf(successRate));
                 param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
-                param.put("link", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
+                param.put("link", gatewayUrl + link);
+                param.put("link_web", link);
                 sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
             }
         }
