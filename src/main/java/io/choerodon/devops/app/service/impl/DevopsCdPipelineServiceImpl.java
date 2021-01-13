@@ -1210,7 +1210,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());
 
 
-        if (Boolean.TRUE.equals(Boolean.parseBoolean(apiTestCompleteEventVO.getStatus()))) {
+        if (PipelineStatus.SUCCESS.toValue().equals(apiTestCompleteEventVO.getStatus())) {
             try {
                 approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(),
                         devopsCdPipelineRecordDTO.getBusinessKey(),
