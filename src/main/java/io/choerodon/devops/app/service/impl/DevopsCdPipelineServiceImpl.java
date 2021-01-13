@@ -1206,7 +1206,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Transactional
     public void handleApiTestTaskCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(apiTestCompleteEventVO.getTriggerId());
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdJobRecordDTO.getPipelineRecordId());
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(devopsCdJobRecordDTO.getStageRecordId());
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());
 
 
         if (Boolean.TRUE.equals(Boolean.parseBoolean(apiTestCompleteEventVO.getStatus()))) {
