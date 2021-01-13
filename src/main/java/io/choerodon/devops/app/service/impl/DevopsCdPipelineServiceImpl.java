@@ -1219,19 +1219,19 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         0L);
 
                 devopsCdJobRecordService.updateJobStatusSuccess(devopsCdJobRecordDTO.getId());
-                setAppDeployStatus(devopsCdJobRecordDTO.getPipelineRecordId(),
-                        devopsCdJobRecordDTO.getStageRecordId(),
+                setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
+                        devopsCdStageRecordDTO.getId(),
                         devopsCdJobRecordDTO.getId(),
                         true);
             } catch (Exception e) {
-                setAppDeployStatus(devopsCdJobRecordDTO.getPipelineRecordId(),
-                        devopsCdJobRecordDTO.getStageRecordId(),
+                setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
+                        devopsCdStageRecordDTO.getId(),
                         devopsCdJobRecordDTO.getId(),
                         true);
             }
         } else {
-            setAppDeployStatus(devopsCdJobRecordDTO.getPipelineRecordId(),
-                    devopsCdJobRecordDTO.getStageRecordId(),
+            setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
+                    devopsCdStageRecordDTO.getId(),
                     devopsCdJobRecordDTO.getId(),
                     true);
         }
