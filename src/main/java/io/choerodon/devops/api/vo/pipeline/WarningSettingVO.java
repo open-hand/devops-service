@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public class WarningSettingVO {
     private Boolean enableWarningSetting;
-    private Double PerformThreshold;
+    private Double performThreshold;
     private Set<Long> notifyUserIds;
     private Boolean sendEmail;
     private Boolean sendSiteMessage;
@@ -25,11 +25,11 @@ public class WarningSettingVO {
     }
 
     public Double getPerformThreshold() {
-        return PerformThreshold;
+        return performThreshold;
     }
 
     public void setPerformThreshold(Double performThreshold) {
-        PerformThreshold = performThreshold;
+        this.performThreshold = performThreshold;
     }
 
     public Set<Long> getNotifyUserIds() {
