@@ -52,6 +52,7 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -1251,6 +1252,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())
                     && successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
                 Map<String, String> param = new HashMap<>();
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+                param.put("projectName", projectDTO.getName());
+                param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
+                param.put("taskName", devopsCdJobRecordDTO.getName());
+                param.put("successRate", String.valueOf(successRate));
+                param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
+                param.put("link", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
                 sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
             }
         }
