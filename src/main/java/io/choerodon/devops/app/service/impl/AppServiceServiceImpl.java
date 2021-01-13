@@ -866,6 +866,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         // clone外部代码仓库
         String applicationDir = APPLICATION + GenerateUUID.generateUUID();
 
+        // 更改默认仓库的ci文件为这个，避免导入应用时跑ci，导入完成后改回默认
+        gitlabServiceClientOperator.updateProjectCiConfigPath(gitlabProjectDO.getId(), GitOpsConstants.TEMP_CI_CONFIG_PATH);
+
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
             String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
             if (tempUrl.length < 2) {
@@ -963,6 +966,10 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             releaseResources(applicationWorkDir, repositoryGit);
         }
+
+        // 将ci文件位置改回默认
+        gitlabServiceClientOperator.updateProjectCiConfigPath(gitlabProjectDO.getId(), GitOpsConstants.DEFAULT_CI_CONFIG_PATH);
+
         try {
             // 设置application的属性
             String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());

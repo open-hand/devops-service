@@ -69,11 +69,6 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDTO> updateProject(Integer projectId, Integer userId) {
-        throw new CommonException("error.project.update");
-    }
-
-    @Override
     public ResponseEntity<GitlabProjectDTO> createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
         throw new CommonException("error.project.create");
     }
@@ -477,5 +472,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<List<Long>> listIds(Integer projectId) {
         throw new CommonException("error.gitlab.mergeRequest.ids.list");
+    }
+
+    @Override
+    public ResponseEntity<String> updateProject(Integer userId, Project project) {
+        throw new CommonException("error.update.gitlab.project");
     }
 }
