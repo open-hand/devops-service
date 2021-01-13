@@ -55,6 +55,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
@@ -1012,7 +1013,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             taskRecordDTO = testServiceClientoperator
                     .executeTask(devopsCdJobRecordDTO.getProjectId(),
                             cdApiTestConfigVO.getApiTestTaskId(),
-                            devopsCdJobRecordDTO.getCreatedBy());
+                            devopsCdJobRecordDTO.getCreatedBy(),
+                            ApiTestTriggerType.PIPELINE.getValue(),
+                            jobRecordId);
 
             DevopsCdJobRecordDTO devopsCdJobRecordDTO1 = devopsCdJobRecordService.queryById(jobRecordId);
             devopsCdJobRecordDTO1.setApiTestTaskRecordId(taskRecordDTO.getId());

@@ -26,7 +26,9 @@ public interface TestServiceClient {
     ResponseEntity<String> executeTask(
             @PathVariable("project_id") Long projectId,
             @RequestBody ApiTestExecuteVO apiTestExecuteVO,
-            @RequestParam(value = "executor_id") Long executorId);
+            @RequestParam(value = "executor_id") Long executorId,
+            @RequestParam(value = "trigger_type") String triggerType,
+            @RequestParam(value = "trigger_id") Long triggerId);
 
     @ApiOperation("根据纪录id查询纪录详情 / 不带有测试请求详情")
     @GetMapping("/v1/projects/{project_id}/api-test-records/{record_id}")

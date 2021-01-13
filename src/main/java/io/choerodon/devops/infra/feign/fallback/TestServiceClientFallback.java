@@ -13,8 +13,9 @@ import io.choerodon.devops.infra.feign.TestServiceClient;
  */
 @Component
 public class TestServiceClientFallback implements TestServiceClient {
+
     @Override
-    public ResponseEntity<String> executeTask(Long projectId, ApiTestExecuteVO apiTestExecuteVO, Long executorId) {
+    public ResponseEntity<String> executeTask(Long projectId, ApiTestExecuteVO apiTestExecuteVO, Long executorId, String triggerType, Long triggerId) {
         throw new CommonException("error.failed.to.execute.task");
     }
 
