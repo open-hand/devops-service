@@ -86,6 +86,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Value(value = "${services.gateway.url: http://api.example.com}")
     private String gatewayUrl;
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
 
     @Autowired
     private AppServiceService appServiceService;
@@ -1266,7 +1268,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 param.put("taskName", devopsCdJobRecordDTO.getName());
                 param.put("successRate", String.valueOf(successRate));
                 param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
-                param.put("link", gatewayUrl + link);
+                param.put("link", frontUrl + link);
                 param.put("link_web", link);
                 sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
             }

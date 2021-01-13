@@ -106,6 +106,8 @@ env:
 
     # Choerodon 平台 api 地址
     SERVICES_GATEWAY_URL: http://api.example.com
+    # Choerodon 平台 前端 地址
+    SERVICES_FRONT_URL: http://app.example.com
 
     # 指定 cluster-agent 与本服务匹配的版本
     AGENT_VERSION: 0.22.1

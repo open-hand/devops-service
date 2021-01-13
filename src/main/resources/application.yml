@@ -29,6 +29,8 @@ services:
     password: # Helm chart 仓库 的密码, 选填(与用户名要配对)
   gateway:
     url: "http://api.example.com" # 网关地址
+  front:
+    url: "http://app.example.com"
   sonarqube:
     url: http://sonarqube.example.com/
     username: admin
