@@ -1227,15 +1227,16 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
                         devopsCdStageRecordDTO.getId(),
                         devopsCdJobRecordDTO.getId(),
-                        true);
+                        false);
             }
         } else {
             setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
                     devopsCdStageRecordDTO.getId(),
                     devopsCdJobRecordDTO.getId(),
-                    true);
+                    false);
         }
         // 发送告警
+        LOGGER.info(">>>>>>>>>>>>>>>>>>> Start send warning message <<<<<<<<<<<<<<<<<<<<");
         ApiTestTaskRecordVO apiTestTaskRecordVO = null;
         try {
             apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
@@ -1245,13 +1246,16 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if(apiTestTaskRecordVO != null
                 && apiTestTaskRecordVO.getSuccessCount() != null
                 && apiTestTaskRecordVO.getFailCount() != null) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, apiTestTaskRecordVO: {} <<<<<<<<<<<<<<<<<<<<", apiTestTaskRecordVO);
             double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
             double failCount = (double) apiTestTaskRecordVO.getFailCount();
             double successRate = successCount /  (successCount + failCount);
             CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, cdApiTestConfigVO: {} <<<<<<<<<<<<<<<<<<<<", cdApiTestConfigVO);
             if (cdApiTestConfigVO.getWarningSettingVO() != null
                     && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())
                     && successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                 Map<String, String> param = new HashMap<>();
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
                 param.put("projectName", projectDTO.getName());

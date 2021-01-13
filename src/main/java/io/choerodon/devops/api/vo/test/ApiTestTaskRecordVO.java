@@ -132,4 +132,21 @@ public class ApiTestTaskRecordVO {
     public void setDeployJobName(String deployJobName) {
         this.deployJobName = deployJobName;
     }
+
+    @Override
+    public String toString() {
+        return "ApiTestTaskRecordVO{" +
+                "id=" + id +
+                ", taskId=" + taskId +
+                ", status='" + status + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", successCount=" + successCount +
+                ", failCount=" + failCount +
+                ", executorInfo=" + executorInfo +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", viewId='" + viewId + '\'' +
+                ", deployJobName='" + deployJobName + '\'' +
+                '}';
+    }
 }
