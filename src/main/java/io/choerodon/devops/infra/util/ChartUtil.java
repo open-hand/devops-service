@@ -46,13 +46,14 @@ public class ChartUtil {
     private static final String FILE_SEPARATOR = "/";
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
+    private static final String DEFAULT_ERROR_MESSAGE_FOR_UPLOADING = "error.upload.with.null.response";
 
     private static final Gson GSON = new Gson();
 
     @Autowired
     DevopsConfigService devopsConfigService;
 
-    public void uploadChart(String repository, String organizationCode, String projectCode, File file, @Nullable String username, @Nullable String password) {
+    public static void uploadChart(String repository, String organizationCode, String projectCode, File file, @Nullable String username, @Nullable String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
         repository = repository.endsWith("/") ? repository.substring(0, repository.length() - 1) : repository;
@@ -61,15 +62,50 @@ public class ChartUtil {
         configurationProperties.setPassword(password);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         file = new File(file.getAbsolutePath());
+
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData(CHART, file.getName(), requestFile);
         ChartClient chartClient = retrofit.create(ChartClient.class);
         Call<Object> uploadTaz = chartClient.uploadTaz(organizationCode, projectCode, body);
+
+        Response<Object> response;
         try {
-            uploadTaz.execute();
-        } catch (IOException e) {
+            response = uploadTaz.execute();
+        } catch (Exception e) {
             throw new CommonException(e);
         }
+
+        // 判断响应结果
+        if (!response.isSuccessful()) {
+            // 报409，可能是chart包已经存在，而chart museum又设置为不允许覆盖，这种情况认为是成功的
+            // 报错信息形如:  {"error":"test/test/code-i-0.1.0.tgz already exists"}
+            if (response.code() == 409) {
+                LOGGER.info("409 for uploading chart: the repo: {}, orgCode {}, proCode {}, file name {}, username {}, password is null: {}", repository, organizationCode, projectCode, file.getName(), username, password == null);
+                return;
+            }
+
+            // 读取错误信息
+            String errorMessage = response.body() == null ? null : response.body().toString();
+            if (errorMessage == null) {
+                errorMessage = readErrorMessage(response, repository, organizationCode, projectCode, file, username, password);
+            }
+            throw new CommonException(errorMessage == null ? DEFAULT_ERROR_MESSAGE_FOR_UPLOADING : errorMessage);
+        }
+    }
+
+    private static String readErrorMessage(Response<?> response, String repository, String organizationCode, String projectCode, File file, @Nullable String username, @Nullable String password) {
+        ResponseBody errorBody = response.errorBody();
+        if (errorBody != null) {
+            try {
+                return errorBody.string();
+            } catch (Exception e) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Failed to read error response. the repo: {}, orgCode {}, proCode {}, file name {}, username {}, password is null: {}", repository, organizationCode, projectCode, file.getName(), username, password == null);
+                    LOGGER.debug("And the ex is", e);
+                }
+            }
+        }
+        return null;
     }
 
     public void deleteChart(ChartTagVO chartTagVO) {

@@ -39,8 +39,10 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
                         set_map_item(follow_keys_copy, delta_map, dict(deploy_value_map[key]))
 
                     else:
-                        traversal(version_value_map[key], deploy_value_map[key], follow_keys_copy, delta_map, update_list, add_list)
-                elif version_value_map[key] == None or type(version_value_map[key]).__name__ == 'str' or type(version_value_map[key]).__name__ == 'int' or type(version_value_map[key]).__name__ == 'bool':
+                        traversal(version_value_map[key], deploy_value_map[key], follow_keys_copy, delta_map,
+                                  update_list, add_list)
+                elif version_value_map[key] == None or type(version_value_map[key]).__name__ == 'str' or type(
+                        version_value_map[key]).__name__ == 'int' or type(version_value_map[key]).__name__ == 'bool':
                     version_value_map[key] = deploy_value_map[key]
                     add_list.append(follow_keys_copy)
                     set_map_item(follow_keys_copy, delta_map, dict(deploy_value_map[key]))
@@ -49,10 +51,18 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
                 add_list.append(follow_keys_copy)
                 version_value_map[key] = deploy_value_map[key]
                 set_map_item(follow_keys_copy, delta_map, dict(deploy_value_map[key]))
-        elif type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int' or type(deploy_value_map[key]).__name__ == 'bool' or type(deploy_value_map[key]).__name__ == 'PreservedScalarString':
+        elif type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int' or type(
+                deploy_value_map[key]).__name__ == 'bool' or type(
+            deploy_value_map[key]).__name__ == 'PreservedScalarString' or type(
+            deploy_value_map[key]).__name__ == 'FoldedScalarString':
             # check if exist
             if key in version_value_map.keys():
-                if (type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int' or type(deploy_value_map[key]).__name__ == 'bool' or  type(deploy_value_map[key]).__name__ == 'PreservedScalarString') and (version_value_map[key] != deploy_value_map[key]):
+                if (type(deploy_value_map[key]).__name__ == 'str' or type(
+                        deploy_value_map[key]).__name__ == 'int' or type(
+                    deploy_value_map[key]).__name__ == 'bool' or type(
+                    deploy_value_map[key]).__name__ == 'PreservedScalarString' or type(
+                    deploy_value_map[key]).__name__ == 'FoldedScalarString') and (
+                        version_value_map[key] != deploy_value_map[key]):
                     # not equal,replace
                     #
                     update_list.append(follow_keys_copy)
@@ -96,6 +106,15 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
                 add_list.append(follow_keys_copy)
                 version_value_map[key] = deploy_value_map[key]
                 set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+        elif type(deploy_value_map[key]).__name__ == 'NoneType':
+            if key in version_value_map.keys() and type(version_value_map[key]).__name__ != 'NoneType':
+                update_list.append(follow_keys_copy)
+                version_value_map[key] = deploy_value_map[key]
+                set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
+        else:
+            update_list.append(follow_keys_copy)
+            version_value_map[key] = deploy_value_map[key]
+            set_map_item(follow_keys_copy, delta_map, deploy_value_map[key])
 
 
 def main():
@@ -111,8 +130,10 @@ def main():
         else:
             code_new = doc
         i = i + 1
+
     # 保存变化后的值,由set_map_item设置
     delta_map = CommentedMap()
+
     # 每一次traversal的递归遍历处理过的key,每一次递归完成回到root层时该key将会清空
     follow_keys = list()
     # 此次对比增加的key
