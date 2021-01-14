@@ -404,7 +404,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public DeployFrequencyVO listDeployFrequency(Long projectId, Long[] envIds,
                                                  Long appServiceId, Date startTime, Date endTime) {
-        if (envIds.length == 0) {
+        if (Objects.isNull(envIds) || envIds.length == 0) {
             return new DeployFrequencyVO();
         }
         List<DeployDTO> deployDTOS = baseListDeployFrequency(projectId, envIds, appServiceId, startTime, endTime);
@@ -2050,7 +2050,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsConfigDTO devopsConfigDTO;
         if (appServiceVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
-                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), null);
+                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), AUTHTYPE);
         } else {
             //查询harbor的用户名密码
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
