@@ -48,31 +48,33 @@ public class SyncServiceImpl implements SyncService {
         CustomContextUtil.setUserContext(0L);
         if (roleResponseEntity.getStatusCode().is2xxSuccessful() && userVOList != null && !CollectionUtils.isEmpty(userVOList)) {
             userVOList.forEach(t -> {
-                UserAttrDTO queryDTO = new UserAttrDTO();
-                queryDTO.setIamUserId(t.getId());
-                UserAttrDTO userAttrDTO = userAttrMapper.selectOne(queryDTO);
-                if (ObjectUtils.isEmpty(userAttrDTO) || userAttrDTO.getIamUserId() == null) {
-                    List<GitlabUserVO> list = new ArrayList<>();
-                    GitlabUserVO gitlabUserVO = new GitlabUserVO();
-                    gitlabUserVO.setEmail(t.getEmail());
-                    gitlabUserVO.setName(t.getRealName());
-                    gitlabUserVO.setUsername(t.getLoginName());
-                    gitlabUserVO.setId(t.getId() + "");
-                    list.add(gitlabUserVO);
-                    String input = null;
-                    try {
-                        input = mapper.writeValueAsString(list);
-                        producer.apply(StartSagaBuilder.newBuilder()
-                                        .withSagaCode(IAM_CREATE_USER)
-                                        .withJson(input)
-                                        .withRefType("user")
-                                        .withRefId(t.getId() + "")
-                                        .withLevel(ResourceLevel.ORGANIZATION)
-                                        .withSourceId(t.getOrganizationId()),
-                                build -> {
-                                });
-                    } catch (Exception e) {
-                        throw new CommonException("error.sync.user.gitlab");
+                if (t.getId() != -1) {
+                    UserAttrDTO queryDTO = new UserAttrDTO();
+                    queryDTO.setIamUserId(t.getId());
+                    UserAttrDTO userAttrDTO = userAttrMapper.selectOne(queryDTO);
+                    if (ObjectUtils.isEmpty(userAttrDTO) || userAttrDTO.getIamUserId() == null) {
+                        List<GitlabUserVO> list = new ArrayList<>();
+                        GitlabUserVO gitlabUserVO = new GitlabUserVO();
+                        gitlabUserVO.setEmail(t.getEmail());
+                        gitlabUserVO.setName(t.getRealName());
+                        gitlabUserVO.setUsername(t.getLoginName());
+                        gitlabUserVO.setId(t.getId() + "");
+                        list.add(gitlabUserVO);
+                        String input = null;
+                        try {
+                            input = mapper.writeValueAsString(list);
+                            producer.apply(StartSagaBuilder.newBuilder()
+                                            .withSagaCode(IAM_CREATE_USER)
+                                            .withJson(input)
+                                            .withRefType("user")
+                                            .withRefId(t.getId() + "")
+                                            .withLevel(ResourceLevel.ORGANIZATION)
+                                            .withSourceId(t.getOrganizationId()),
+                                    build -> {
+                                    });
+                        } catch (Exception e) {
+                            throw new CommonException("error.sync.user.gitlab");
+                        }
                     }
                 }
             });
