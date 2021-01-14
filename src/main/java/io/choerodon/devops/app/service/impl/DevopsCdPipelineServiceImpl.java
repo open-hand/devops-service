@@ -76,7 +76,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
     private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
     private static final String AUDIT_TASK_CALLBACK_URL = "/devops/v1/cd_pipeline/external_approval_task/callback";
-    private static final String API_TEST_LINK_URL_TEMPLATE = "/#/testManager/test-task?type=project&id=%s&name=%s&organizationId=%s&taskId=%s&recordId=%s";
+    private static final String PIPELINE_LINK_URL_TEMPLATE = "/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
 
 
     private static final Integer ADMIN = 1;
@@ -1212,7 +1212,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(apiTestCompleteEventVO.getTriggerId());
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(devopsCdJobRecordDTO.getStageRecordId());
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());
-
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
 
         if (PipelineStatus.SUCCESS.toValue().equals(apiTestCompleteEventVO.getStatus())) {
             try {
@@ -1263,7 +1263,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                 Map<String, String> param = new HashMap<>();
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
-                String link = String.format(API_TEST_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), apiTestTaskRecordVO.getTaskId(), apiTestTaskRecordVO.getId());
+                String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
                 param.put("projectName", projectDTO.getName());
                 param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
                 param.put("taskName", devopsCdJobRecordDTO.getName());
