@@ -1254,6 +1254,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
             double failCount = (double) apiTestTaskRecordVO.getFailCount();
             double successRate = (successCount /  (successCount + failCount)) * 100;
+            successRate = (double) Math.round(successRate * 100) / 100;
             CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
             LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, cdApiTestConfigVO: {} <<<<<<<<<<<<<<<<<<<<", cdApiTestConfigVO);
             if (cdApiTestConfigVO.getWarningSettingVO() != null
