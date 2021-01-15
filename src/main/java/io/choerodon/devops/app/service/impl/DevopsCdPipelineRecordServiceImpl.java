@@ -1144,7 +1144,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         LOGGER.warn("Failed to query api test task record..., the ex code is {}", ex.getMessage());
                     }
                 }
-
             }
 
             if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(devopsCdJobRecordVO.getType())) {
