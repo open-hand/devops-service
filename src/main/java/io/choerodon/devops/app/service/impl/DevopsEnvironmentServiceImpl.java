@@ -888,7 +888,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 创建环境时初始化用户权限，分为gitlab权限和devops环境用户表权限
         gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
-        initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentDTO.getId(), projectDTO.getId());
+        try {
+            initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentDTO.getId(), projectDTO.getId());
+        } catch (Exception ex) {
+            LOGGER.info("Failed to init user permission when creating env {}", devopsEnvironmentDTO.getCode());
+            LOGGER.info("And the ex is", ex);
+        }
 
         devopsEnvironmentDTO.setSynchro(true);
         baseUpdate(devopsEnvironmentDTO);
@@ -908,11 +913,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
             gitlabServiceClientOperator.denyAllAccessRequestInvolved(gitlabUserIds, gitlabProjectPayload.getGroupId());
 
-            gitlabUserIds.forEach(userId -> updateGitlabMemberPermission(
-                    gitlabProjectPayload.getGroupId(),
-                    gitlabProjectPayload.getGitlabProjectId(),
-                    userId)
-            );
+            gitlabUserIds.forEach(userId -> {
+                try {
+                    updateGitlabMemberPermission(
+                            gitlabProjectPayload.getGroupId(),
+                            gitlabProjectPayload.getGitlabProjectId(),
+                            userId);
+                } catch (Exception ex) {
+                    LOGGER.info("Skip user permission for env due to ex. User id: {}, env: {}", userId, envId);
+                    LOGGER.info("The ex is ", ex);
+                }
+            });
             return;
         }
 
@@ -963,6 +974,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             List<Long> gitlabProjectIds = devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrDTO.getIamUserId());
             if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
                 gitlabProjectIds.forEach(aLong -> {
+                    if (aLong == null) {
+                        return;
+                    }
                     MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, TypeUtil.objToInteger(aLong));
                     if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
                         gitlabServiceClientOperator.createProjectMember(gitlabProjectId, new MemberDTO(TypeUtil.objToInteger(aLong), 40, ""));
