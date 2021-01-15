@@ -262,7 +262,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         taskDTO.setMultiAssign(taskUsers.size() > 1);
                     } else if (jobRecordDTO.getType().equals(JobTypeEnum.CD_API_TEST.value())) {
                         CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(jobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
-                        taskDTO.setBlockAfterJob(cdApiTestConfigVO.getBlockAfterJob());
                         taskDTO.setDeployJobName(cdApiTestConfigVO.getDeployJobName());
                     }
                     taskDTO.setTaskType(jobRecordDTO.getType());
@@ -1137,9 +1136,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (devopsCdJobRecordVO.getApiTestTaskRecordId() != null) {
                     try {
                         ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordVO.getProjectId(), devopsCdJobRecordVO.getApiTestTaskRecordId());
-                        ApiTestTaskRecordVO meta = gson.fromJson(devopsCdJobRecordVO.getMetadata(), ApiTestTaskRecordVO.class);
-                        apiTestTaskRecordVO.setDeployJobName(meta.getDeployJobName());
-
+                        CdApiTestConfigVO cdApiTestConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdApiTestConfigVO.class);
+                        apiTestTaskRecordVO.setDeployJobName(cdApiTestConfigVO.getDeployJobName());
+                        apiTestTaskRecordVO.setPerformThreshold(cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold());
                         devopsCdJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
                     } catch (Exception ex) {
                         LOGGER.warn("Failed to query api test task record..., the ex code is {}", ex.getMessage());
