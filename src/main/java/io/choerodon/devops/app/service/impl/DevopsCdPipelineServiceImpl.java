@@ -589,26 +589,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             return PipelineStatus.FAILED.toValue();
         }
         return jobRecordDTO.getStatus();
-        // TODO 逻辑替换后删除
-        // api测试任务状态需要去test-manager查询
-//        if (JobTypeEnum.CD_API_TEST.value().equals(jobRecordDTO.getType())) {
-//            ApiTestTaskRecordVO apiTestTaskRecordVO = null;
-//            try {
-//                apiTestTaskRecordVO = testServiceClientoperator.queryById(jobRecordDTO.getProjectId(), jobRecordDTO.getApiTestTaskRecordId());
-//            } catch (Exception e) {
-//                LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", jobRecordDTO.getProjectId(), jobRecordDTO.getApiTestTaskRecordId());
-//            }
-//
-//            String status = apiTestTaskRecordVO == null ? PipelineStatus.PENDING.toValue() : apiTestTaskRecordVO.getStatus();
-//
-//            if (apiTestTaskRecordVO != null
-//                    && PipelineStatus.SUCCESS.toValue().equals(apiTestTaskRecordVO.getStatus())) {
-//                devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SUCCESS.toValue());
-//            }
-//            return status;
-//        } else {
-//            return jobRecordDTO.getStatus();
-//        }
     }
 
     private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
@@ -1214,69 +1194,97 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
 
-        if (PipelineStatus.SUCCESS.toValue().equals(apiTestCompleteEventVO.getStatus())) {
-            try {
-                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(),
-                        devopsCdPipelineRecordDTO.getBusinessKey(),
-                        "admin",
-                        1L,
-                        0L);
+        // 流水线状态
+        // 失败：
+        // 1. API测试任务执行失败
+        // 2. API测试任务执行成功，开启了告警设置，成功率低于阈值，设置了阻塞
 
-                devopsCdJobRecordService.updateJobStatusSuccess(devopsCdJobRecordDTO.getId());
-                setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
-                        devopsCdStageRecordDTO.getId(),
-                        devopsCdJobRecordDTO.getId(),
-                        true);
+        // 执行结果
+        boolean result = false;
+
+        if (PipelineStatus.SUCCESS.toValue().equals(apiTestCompleteEventVO.getStatus())) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Start send warning message <<<<<<<<<<<<<<<<<<<<");
+            ApiTestTaskRecordVO apiTestTaskRecordVO = null;
+            try {
+                apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
             } catch (Exception e) {
-                setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
-                        devopsCdStageRecordDTO.getId(),
-                        devopsCdJobRecordDTO.getId(),
-                        false);
+                LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
             }
+            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+            // 发送告警
+            // 启用了告警设置，则需要判断成功率与阈值
+            if(cdApiTestConfigVO.getWarningSettingVO() != null
+                    && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())) {
+                if(apiTestTaskRecordVO != null
+                        && apiTestTaskRecordVO.getSuccessCount() != null
+                        && apiTestTaskRecordVO.getFailCount() != null) {
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, apiTestTaskRecordVO: {} <<<<<<<<<<<<<<<<<<<<", apiTestTaskRecordVO);
+                    double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
+                    double failCount = (double) apiTestTaskRecordVO.getFailCount();
+                    double successRate = (successCount /  (successCount + failCount)) * 100;
+                    successRate = (double) Math.round(successRate * 100) / 100;
+
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, cdApiTestConfigVO: {} <<<<<<<<<<<<<<<<<<<<", cdApiTestConfigVO);
+                    // 低于阈值
+                    if (successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
+                        // 未开启阻塞，则执行成功
+                        if (Boolean.FALSE.equals(cdApiTestConfigVO.getWarningSettingVO().getBlockAfterJob())) {
+                            result = true;
+                        }
+                        LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
+                        Map<String, String> param = new HashMap<>();
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+                        String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
+                        param.put("projectName", projectDTO.getName());
+                        param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
+                        param.put("taskName", devopsCdJobRecordDTO.getName());
+                        param.put("successRate", String.valueOf(successRate));
+                        param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
+                        param.put("link", frontUrl + link);
+                        param.put("link_web", link);
+                        sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
+                    } else {
+                        // 高于阈值
+                        result = true;
+                    }
+                }
+            } else {
+                // 未开启告警设置则直接成功
+                result = true;
+            }
+        }
+
+        if (result) {
+            handlerJobSuccess(devopsCdJobRecordDTO, devopsCdStageRecordDTO, devopsCdPipelineRecordDTO);
         } else {
             setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
                     devopsCdStageRecordDTO.getId(),
                     devopsCdJobRecordDTO.getId(),
                     false);
         }
-        // 发送告警
-        LOGGER.info(">>>>>>>>>>>>>>>>>>> Start send warning message <<<<<<<<<<<<<<<<<<<<");
-        ApiTestTaskRecordVO apiTestTaskRecordVO = null;
-        try {
-            apiTestTaskRecordVO = testServiceClientoperator.queryById(devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
-        } catch (Exception e) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
-        }
-        if(apiTestTaskRecordVO != null
-                && apiTestTaskRecordVO.getSuccessCount() != null
-                && apiTestTaskRecordVO.getFailCount() != null) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, apiTestTaskRecordVO: {} <<<<<<<<<<<<<<<<<<<<", apiTestTaskRecordVO);
-            double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
-            double failCount = (double) apiTestTaskRecordVO.getFailCount();
-            double successRate = (successCount /  (successCount + failCount)) * 100;
-            successRate = (double) Math.round(successRate * 100) / 100;
-            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
-            LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, cdApiTestConfigVO: {} <<<<<<<<<<<<<<<<<<<<", cdApiTestConfigVO);
-            if (cdApiTestConfigVO.getWarningSettingVO() != null
-                    && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())
-                    && successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
-                LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
-                Map<String, String> param = new HashMap<>();
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
-                String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
-                param.put("projectName", projectDTO.getName());
-                param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
-                param.put("taskName", devopsCdJobRecordDTO.getName());
-                param.put("successRate", String.valueOf(successRate));
-                param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
-                param.put("link", frontUrl + link);
-                param.put("link_web", link);
-                sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
-            }
-        }
-
-
     }
+
+    private void handlerJobSuccess(DevopsCdJobRecordDTO devopsCdJobRecordDTO, DevopsCdStageRecordDTO devopsCdStageRecordDTO, DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO) {
+        try {
+            approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(),
+                    devopsCdPipelineRecordDTO.getBusinessKey(),
+                    "admin",
+                    1L,
+                    0L);
+
+            devopsCdJobRecordService.updateJobStatusSuccess(devopsCdJobRecordDTO.getId());
+            setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
+                    devopsCdStageRecordDTO.getId(),
+                    devopsCdJobRecordDTO.getId(),
+                    true);
+        } catch (Exception e) {
+            setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
+                    devopsCdStageRecordDTO.getId(),
+                    devopsCdJobRecordDTO.getId(),
+                    false);
+        }
+    }
+
 
     private void calculatAuditUserName(List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOList, AduitStatusChangeVO aduitStatusChangeVO) {
 

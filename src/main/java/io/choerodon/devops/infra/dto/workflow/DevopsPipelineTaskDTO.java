@@ -24,9 +24,9 @@ public class DevopsPipelineTaskDTO {
      */
     private Long sign;
 
-    private Boolean blockAfterJob;
-
     private String deployJobName;
+
+    private Double performThreshold;
 
     public Long getTaskRecordId() {
         return taskRecordId;
@@ -76,20 +76,20 @@ public class DevopsPipelineTaskDTO {
         this.multiAssign = multiAssign;
     }
 
-    public Boolean getBlockAfterJob() {
-        return blockAfterJob;
-    }
-
-    public void setBlockAfterJob(Boolean blockAfterJob) {
-        this.blockAfterJob = blockAfterJob;
-    }
-
     public String getDeployJobName() {
         return deployJobName;
     }
 
     public void setDeployJobName(String deployJobName) {
         this.deployJobName = deployJobName;
+    }
+
+    public Double getPerformThreshold() {
+        return performThreshold;
+    }
+
+    public void setPerformThreshold(Double performThreshold) {
+        this.performThreshold = performThreshold;
     }
 
     @Override
@@ -101,8 +101,8 @@ public class DevopsPipelineTaskDTO {
                 ", taskType='" + taskType + '\'' +
                 ", multiAssign=" + multiAssign +
                 ", sign=" + sign +
-                ", blockAfterJob=" + blockAfterJob +
                 ", deployJobName='" + deployJobName + '\'' +
+                ", performThreshold=" + performThreshold +
                 '}';
     }
 }

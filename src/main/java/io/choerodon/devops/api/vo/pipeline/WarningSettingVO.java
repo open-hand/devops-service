@@ -15,6 +15,7 @@ public class WarningSettingVO {
     private Set<Long> notifyUserIds;
     private Boolean sendEmail;
     private Boolean sendSiteMessage;
+    private Boolean blockAfterJob;
 
     public Boolean getEnableWarningSetting() {
         return enableWarningSetting;
@@ -54,5 +55,13 @@ public class WarningSettingVO {
 
     public void setSendSiteMessage(Boolean sendSiteMessage) {
         this.sendSiteMessage = sendSiteMessage;
+    }
+
+    public Boolean getBlockAfterJob() {
+        return blockAfterJob;
+    }
+
+    public void setBlockAfterJob(Boolean blockAfterJob) {
+        this.blockAfterJob = blockAfterJob;
     }
 }
