@@ -905,8 +905,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         try {
             initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentDTO.getId(), projectDTO.getId());
         } catch (Exception ex) {
-            LOGGER.info("Failed to init user permission when creating env {}", devopsEnvironmentDTO.getCode());
-            LOGGER.info("And the ex is", ex);
+            LOGGER.warn("Failed to init user permission when creating env {}", devopsEnvironmentDTO.getCode());
+            LOGGER.warn("And the ex is", ex);
         }
 
         devopsEnvironmentDTO.setSynchro(true);
@@ -934,8 +934,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                             gitlabProjectPayload.getGitlabProjectId(),
                             userId);
                 } catch (Exception ex) {
-                    LOGGER.info("Skip user permission for env due to ex. User id: {}, env: {}", userId, envId);
-                    LOGGER.info("The ex is ", ex);
+                    LOGGER.warn("Skip user permission for env due to ex. User id: {}, env: {}", userId, envId);
+                    LOGGER.warn("The ex is ", ex);
                 }
             });
             return;
