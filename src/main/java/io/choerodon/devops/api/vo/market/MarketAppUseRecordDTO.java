@@ -1,22 +1,35 @@
 package io.choerodon.devops.api.vo.market;
 
 import io.swagger.annotations.ApiModelProperty;
+import javax.persistence.*;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 
 /**
  * Created by wangxiang on 2020/12/16
  */
+
 public class MarketAppUseRecordDTO {
 
+    @Id
+    @Encrypt
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty("使用组织或项目")
-    private String userName;
+    private String userOrg;
 
     @ApiModelProperty("市场应用id")
-    private String marketAppId;
+    private Long marketAppId;
 
-    @ApiModelProperty("应用及版本")
+    @ApiModelProperty("部署人员的id，用于删除版本的时候通知订阅人员")
+    private Long deployUserId;
+
+    @ApiModelProperty("应用和版本（部署记录不应该随着删除版本而删除  所以需要记录）")
     private String appAndVersion;
+
+    @ApiModelProperty("部署应用版本的id,用于删除版本的时候通知订阅人员")
+    private Long marketAppVersionId;
 
     @ApiModelProperty("应用服务及版本")
     private String appServiceAndVersion;
@@ -30,8 +43,54 @@ public class MarketAppUseRecordDTO {
     @ApiModelProperty("用途")
     private String purpose;
 
+    @Transient
+    private Long appServiceId;
 
+    /**
+     * 发布对象id
+     */
+    @Transient
     private Long deployObjectId;
+
+    public String getAppServiceAndVersion() {
+        return appServiceAndVersion;
+    }
+
+    public void setAppServiceAndVersion(String appServiceAndVersion) {
+        this.appServiceAndVersion = appServiceAndVersion;
+    }
+
+    public String getUserOrg() {
+        return userOrg;
+    }
+
+    public void setUserOrg(String userOrg) {
+        this.userOrg = userOrg;
+    }
+
+    public Long getDeployUserId() {
+        return deployUserId;
+    }
+
+    public void setDeployUserId(Long deployUserId) {
+        this.deployUserId = deployUserId;
+    }
+
+    public Long getMarketAppVersionId() {
+        return marketAppVersionId;
+    }
+
+    public void setMarketAppVersionId(Long marketAppVersionId) {
+        this.marketAppVersionId = marketAppVersionId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
 
     public Long getDeployObjectId() {
         return deployObjectId;
@@ -41,7 +100,6 @@ public class MarketAppUseRecordDTO {
         this.deployObjectId = deployObjectId;
     }
 
-
     public Long getId() {
         return id;
     }
@@ -50,19 +108,12 @@ public class MarketAppUseRecordDTO {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
-    }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getMarketAppId() {
+    public Long getMarketAppId() {
         return marketAppId;
     }
 
-    public void setMarketAppId(String marketAppId) {
+    public void setMarketAppId(Long marketAppId) {
         this.marketAppId = marketAppId;
     }
 
@@ -74,13 +125,6 @@ public class MarketAppUseRecordDTO {
         this.appAndVersion = appAndVersion;
     }
 
-    public String getAppServiceAndVersion() {
-        return appServiceAndVersion;
-    }
-
-    public void setAppServiceAndVersion(String appServiceAndVersion) {
-        this.appServiceAndVersion = appServiceAndVersion;
-    }
 
     public String getAppServiceSource() {
         return appServiceSource;

@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
@@ -139,7 +140,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             baseCreate(devopsDeployRecordDTO);
             if (StringUtils.endsWithIgnoreCase(PipelineStatus.SUCCESS.toValue(), deployResult)
                     && org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
-                marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource);
+                marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource, DetailsHelper.getUserDetails().getUserId());
             }
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}", devopsDeployRecordDTO);
