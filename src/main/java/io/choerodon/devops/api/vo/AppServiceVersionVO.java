@@ -14,6 +14,8 @@ public class AppServiceVersionVO {
     @Encrypt
     private Long appServiceId;
     private Date creationDate;
+    private String repoType;
+    private Boolean deleteFlag = true;
 
     public Long getId() {
         return id;
@@ -45,5 +47,21 @@ public class AppServiceVersionVO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
+
+    public Boolean getDeleteFlag() {
+        return deleteFlag;
+    }
+
+    public void setDeleteFlag(Boolean deleteFlag) {
+        this.deleteFlag = deleteFlag;
     }
 }

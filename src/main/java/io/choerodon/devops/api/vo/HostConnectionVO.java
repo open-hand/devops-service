@@ -1,6 +1,11 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.enums.HostSourceEnum;
 
 /**
  * @author scp
@@ -12,10 +17,10 @@ public class HostConnectionVO {
     private String hostIp;
 
     @ApiModelProperty("主机port")
-    private String hostPort;
+    private Integer hostPort;
 
     @ApiModelProperty("用户名")
-    private String userName;
+    private String username;
 
     @ApiModelProperty("密码")
     private String password;
@@ -24,7 +29,35 @@ public class HostConnectionVO {
     private String accountKey;
 
     @ApiModelProperty("账号配置类型")
-    private String accountType;
+    private String authType;
+
+
+    @ApiModelProperty("主机id")
+    @Encrypt
+    private Long hostId;
+
+    /**
+     * {@link HostSourceEnum}
+     */
+    @ApiModelProperty("主机来源")
+    @NotNull(message = "error.hostSource.is.null")
+    private String hostSource;
+
+    public Long getHostId() {
+        return hostId;
+    }
+
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
+    }
+
+    public String getHostSource() {
+        return hostSource;
+    }
+
+    public void setHostSource(String hostSource) {
+        this.hostSource = hostSource;
+    }
 
     public String getAccountKey() {
         return accountKey;
@@ -42,20 +75,20 @@ public class HostConnectionVO {
         this.hostIp = hostIp;
     }
 
-    public String getHostPort() {
+    public Integer getHostPort() {
         return hostPort;
     }
 
-    public void setHostPort(String hostPort) {
+    public void setHostPort(Integer hostPort) {
         this.hostPort = hostPort;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -66,11 +99,11 @@ public class HostConnectionVO {
         this.password = password;
     }
 
-    public String getAccountType() {
-        return accountType;
+    public String getAuthType() {
+        return authType;
     }
 
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
+    public void setAuthType(String authType) {
+        this.authType = authType;
     }
 }

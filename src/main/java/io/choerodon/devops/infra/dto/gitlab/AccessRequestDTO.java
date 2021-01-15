@@ -24,9 +24,6 @@ public class AccessRequestDTO {
     private String webUrl;
     private Date requestedAt;
 
-    public AccessRequestDTO() {
-    }
-
     public String getAvatarUrl() {
         return this.avatarUrl;
     }

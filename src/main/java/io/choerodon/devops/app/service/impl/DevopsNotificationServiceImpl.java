@@ -103,7 +103,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
 
             if (TriggerObject.HANDLER.getObject().equals(targetUserDTO.getType())) {
-                userIdsSet.add(GitUserNameUtil.getUserId().longValue());
+                userIdsSet.add(GitUserNameUtil.getUserId());
             }
             if (TriggerObject.SPECIFIER.getObject().equals(targetUserDTO.getType())) {
                 userIdsSet.add(targetUserDTO.getUserId());
@@ -148,7 +148,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), MessageCodeConstants.RESOURCE_DELETE_CONFIRMATION, envId, objectType);
 
         StringMapBuilder params = StringMapBuilder.newBuilder();
-        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(ArrayUtil.singleAsList(GitUserNameUtil.getUserId().longValue()));
+        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(ArrayUtil.singleAsList(GitUserNameUtil.getUserId()));
         if (!userES.isEmpty()) {
             if (userES.get(0).getRealName() != null) {
                 params.put("user", userES.get(0).getRealName());
@@ -178,7 +178,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 Receiver user = new Receiver();
                 phones.add(userES.get(0).getPhone());
                 user.setEmail(GitUserNameUtil.getEmail());
-                user.setUserId(GitUserNameUtil.getUserId().longValue());
+                user.setUserId(GitUserNameUtil.getUserId());
                 user.setTargetUserTenantId(DetailsHelper.getUserDetails().getTenantId());
                 user.setPhone(userES.get(0).getPhone());
                 users.add(user);

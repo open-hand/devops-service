@@ -57,8 +57,6 @@ public interface PipelineService {
 
     CheckAuditVO checkAudit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);
 
-    void executeAutoDeploy(Long pipelineId);
-
     void failed(Long projectId, Long recordId);
 
     PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
@@ -78,4 +76,6 @@ public interface PipelineService {
     void setPipelineRecordDetail(Boolean projectOwner, DevopsDeployRecordVO devopsDeployRecordVO);
 
     PipelineDTO checkExistAndGet(Long pipelineId);
+
+    void executeAutoDeploy(Long pipelineId);
 }

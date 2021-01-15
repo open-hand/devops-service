@@ -151,6 +151,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             }
             //获取更新内容
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            // TODO 这里的get(0)似乎意味着不支持多个资源的更新
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
@@ -167,7 +168,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     @Override
     public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceDTO devopsCustomizeResourceDTO, Long envId, Long userId) {
-
+        CommonExAssertUtil.assertNotNull(devopsCustomizeResourceDTO.getResourceContent(), "error.resource.content.null");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceDTO.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 

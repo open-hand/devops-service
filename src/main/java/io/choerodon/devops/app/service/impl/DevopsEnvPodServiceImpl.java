@@ -292,4 +292,9 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         agentCommandService.deletePod(devopsEnvPodDTO.getName(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());
     }
+
+    @Override
+    public List<PodResourceDetailsDTO> queryResourceDetailsByInstanceId(Long instanceId) {
+        return devopsEnvPodMapper.queryResourceDetailsByInstanceId(instanceId);
+    }
 }

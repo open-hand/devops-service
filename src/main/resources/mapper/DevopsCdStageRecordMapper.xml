@@ -21,7 +21,7 @@
             devops_cd_stage_record dcsr
         WHERE
             dcsr.pipeline_record_id = #{pipelineRecordId}
-            AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED')
+            AND (dcsr.`status` = 'FAILED' or  dcsr.status='CANCELED' or  dcsr.status='created')
 
     </select>
 

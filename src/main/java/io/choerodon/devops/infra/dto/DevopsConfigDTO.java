@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -33,6 +30,9 @@ public class DevopsConfigDTO extends AuditDomain {
     private Long appServiceId;
 
     private String type;
+
+    @Transient
+    private String image;
 
     public Long getId() {
         return id;
@@ -88,5 +88,13 @@ public class DevopsConfigDTO extends AuditDomain {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

@@ -1,22 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.CLUSTER_INFO_REDIS_KEY_TEMPLATE;
+import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.NODE_CHECK_STEP_REDIS_KEY_TEMPLATE;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.PolarisScopeType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +21,44 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.DevopsClusterValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallInfoVO;
+import io.choerodon.devops.app.eventhandler.payload.DevopsClusterInstallPayload;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ClusterCheckConstant;
+import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterServiceImpl.class);
     private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
+    private static final String SAGA_INSTALL_K8S_REF_TYPE = "install-cluster";
+    private static final String SAGA_RETRY_INSTALL_K8S_REF_TYPE = "retry-install";
 
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
@@ -50,8 +67,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
+    private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
+
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
@@ -85,6 +104,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private DevopsClusterNodeService devopsClusterNodeService;
+    @Autowired
+    private DevopsClusterValidator devopsClusterValidator;
+    @Autowired
+    private TransactionalProducer producer;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private DevopsClusterOperationRecordService devopsClusterOperationRecordService;
 
     static {
         InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
@@ -124,37 +153,137 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return String.format(CLUSTER_INFO_KEY_TEMPLATE, Objects.requireNonNull(clusterId));
     }
 
-    @Override
     @Transactional
+    @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_INSTALL_K8S, description = "创建集群", inputSchema = "{}")
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        String clusterInfoRedisKey = String.format(CLUSTER_INFO_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
+        String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
+
+        // 如果这个key存在，表明已经有相同的集群处于创建中，禁止重复创建
+        Boolean exists = stringRedisTemplate.hasKey(redisKey);
+        if (exists) {
+            throw new CommonException("error.cluster.installing");
+        }
+
         // 判断组织下是否还能创建集群
         checkEnableCreateClusterOrThrowE(projectId);
+        // 检查节点满足要求
+        devopsClusterValidator.check(devopsClusterReqVO);
+
+        // 提供外网信息节点
+        DevopsClusterNodeVO devopsClusterOutterNodeVO = devopsClusterReqVO.getDevopsClusterOutterNodeVO();
+        // 集群节点
+        List<DevopsClusterNodeVO> devopsClusterInnerNodeVOList = devopsClusterReqVO.getDevopsClusterInnerNodeVOList();
+        // 需要保存的节点
+        List<DevopsClusterNodeDTO> devopsClusterNodeToSaveDTOList = new ArrayList<>();
+
+        HostConnectionVO hostConnectionVO;
+        // 选出进行ssh连接的节点
+        if (devopsClusterOutterNodeVO != null && !StringUtils.isEmpty(devopsClusterOutterNodeVO.getHostIp())) {
+            devopsClusterOutterNodeVO.setName(devopsClusterReqVO.getCode() + "-sshNode");
+            devopsClusterOutterNodeVO.setType(ClusterNodeTypeEnum.OUTTER.getType());
+            hostConnectionVO = ConvertUtils.convertObject(devopsClusterOutterNodeVO, HostConnectionVO.class);
+            devopsClusterNodeToSaveDTOList.add(ConvertUtils.convertObject(devopsClusterOutterNodeVO, DevopsClusterNodeDTO.class));
+        } else {
+            hostConnectionVO = ConvertUtils.convertObject(devopsClusterInnerNodeVOList.get(0), HostConnectionVO.class);
+            devopsClusterReqVO.setDevopsClusterOutterNodeVO(null);
+        }
+
+        devopsClusterNodeToSaveDTOList.addAll(ConvertUtils.convertList(devopsClusterInnerNodeVOList, DevopsClusterNodeDTO.class));
+
+        DevopsClusterInstallInfoVO devopsClusterInstallInfoVO = new DevopsClusterInstallInfoVO()
+                .setDevopsClusterReqVO(devopsClusterReqVO)
+                .setProjectId(projectId)
+                .setHostConnectionVO(hostConnectionVO)
+                .setRedisKey(redisKey)
+                .setDevopsClusterNodeToSaveDTOList(devopsClusterNodeToSaveDTOList);
+
+        stringRedisTemplate.opsForValue().set(clusterInfoRedisKey, JsonHelper.marshalByJackson(devopsClusterInstallInfoVO));
+
+        DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
+                .setProjectId(projectId)
+                .setRedisKey(redisKey)
+                .setClusterInfoRedisKey(clusterInfoRedisKey);
+
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType(SAGA_INSTALL_K8S_REF_TYPE)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_INSTALL_K8S),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsClusterInstallPayload)
+                        .withRefId(devopsClusterReqVO.getCode())
+                        .withSourceId(projectId));
+
+        return redisKey;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S, description = "重试创建集群", inputSchema = "{}")
+    public void retryInstallK8s(Long projectId, Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {
+            throw new CommonException("error.cluster.status");
+        }
+        CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(clusterId, ClusterOperationTypeEnum.INSTALL_K8S.getType());
+        devopsClusterOperationRecordDTO.setErrorMsg("");
+        devopsClusterOperationRecordDTO.setStatus(ClusterOperationStatusEnum.OPERATING.value());
+
+        devopsClusterOperationRecordService.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
+
+        devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsClusterMapper, devopsClusterDTO, "error.update.cluster");
+
+        LOGGER.info("update cluster and cluster operation status");
+
+        DevopsClusterInstallPayload devopsClusterInstallPayload = new DevopsClusterInstallPayload()
+                .setProjectId(projectId)
+                .setClusterId(clusterId)
+                .setOperationRecordId(devopsClusterOperationRecordDTO.getId());
+
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType(SAGA_RETRY_INSTALL_K8S_REF_TYPE)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsClusterInstallPayload)
+                        .withRefId(devopsClusterDTO.getCode())
+                        .withSourceId(projectId));
+    }
+
+    @Override
+    public DevopsNodeCheckResultVO checkProgress(Long projectId, String redisKey) {
+        String value = stringRedisTemplate.opsForValue().get(redisKey);
+        if (StringUtils.isEmpty(value)) {
+            return new DevopsNodeCheckResultVO();
+        }
+        DevopsNodeCheckResultVO devopsNodeCheckResultVO = JsonHelper.unmarshalByJackson(value, DevopsNodeCheckResultVO.class);
+        // 如果不是OPERATING状态，表示节点检查完成，删除这个key
+        if (!ClusterOperationStatusEnum.OPERATING.value().equalsIgnoreCase(devopsNodeCheckResultVO.getStatus())) {
+            LOGGER.info(">>>>>>>>> [check node] key {}:check complete , result: {}", redisKey, value);
+            stringRedisTemplate.delete(redisKey);
+        }
+        return devopsNodeCheckResultVO;
+    }
+
+    @Override
+    @Transactional
+    public String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         ProjectDTO iamProject = null;
         DevopsClusterDTO devopsClusterDTO = null;
-        Map<String, String> params = new HashMap<>();
+        IamUserDTO iamUserDTO;
         try {
-            iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
-            // 插入记录
-            devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
-            devopsClusterDTO.setToken(GenerateUUID.generateUUID());
-            devopsClusterDTO.setProjectId(projectId);
-            devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
-            devopsClusterDTO.setSkipCheckProjectPermission(true);
-            devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
-
-
-            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-
-            // 渲染激活环境的命令参数
-            params.put("{VERSION}", agentExpectVersion);
-            params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterDTO.getCode());
-            params.put("{SERVICEURL}", agentServiceUrl);
-            params.put("{TOKEN}", devopsClusterDTO.getToken());
-            params.put("{EMAIL}", iamUserDTO == null ? "" : iamUserDTO.getEmail());
-            params.put("{CHOERODONID}", devopsClusterDTO.getChoerodonId());
-            params.put("{REPOURL}", agentRepoUrl);
-            params.put("{CLUSTERID}", devopsClusterDTO
-                    .getId().toString());
+            devopsClusterDTO = insertClusterInfo(projectId, devopsClusterReqVO, ClusterTypeEnum.IMPORTED.value());
+            iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId());
         } catch (Exception e) {
             //创建集群失败发送webhook json
             sendNotificationService.sendWhenCreateClusterFail(devopsClusterDTO, iamProject, e.getMessage());
@@ -163,6 +292,28 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         //创建集群成功发送web_hook
         sendNotificationService.sendWhenCreateCluster(devopsClusterDTO, iamProject);
+        return getInstallString(devopsClusterDTO, iamUserDTO == null ? "" : iamUserDTO.getEmail());
+    }
+
+    /**
+     * 获得agent安装命令
+     *
+     * @return agent安装命令
+     */
+    @Override
+    public String getInstallString(DevopsClusterDTO devopsClusterDTO, String userEmail) {
+        Map<String, String> params = new HashMap<>();
+        // 渲染激活环境的命令参数
+        params.put("{VERSION}", agentExpectVersion);
+        params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterDTO.getCode());
+        params.put("{SERVICEURL}", agentServiceUrl);
+        params.put("{TOKEN}", devopsClusterDTO.getToken());
+        params.put("{EMAIL}", StringUtils.isEmpty(userEmail) ? "" : userEmail);
+        params.put("{CHOERODONID}", devopsClusterDTO.getChoerodonId());
+        params.put("{REPOURL}", agentRepoUrl);
+        params.put("{CLUSTERID}", devopsClusterDTO
+                .getId().toString());
+
         return FileUtil.replaceReturnString(CLUSTER_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
@@ -238,7 +389,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         Page<ClusterWithNodesVO> devopsClusterRepDTOPage = ConvertUtils.convertPage(devopsClusterRepVOPageInfo, ClusterWithNodesVO.class);
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOPageInfo.getContent().forEach(devopsClusterRepVO -> devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId())));
+        devopsClusterRepVOPageInfo.getContent().forEach(devopsClusterRepVO -> {
+            if (updatedEnvList.contains(devopsClusterRepVO.getId())) {
+                devopsClusterRepVO.setConnect(true);
+                if (devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                    devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+                }
+
+            }
+        });
 
         devopsClusterRepDTOPage.setContent(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getContent(), projectId));
         return devopsClusterRepDTOPage;
@@ -393,12 +552,25 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         // 未连接的集群
         List<DevopsClusterBasicInfoVO> unconnectedClusters = new ArrayList<>();
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
+
             boolean connect = updatedEnvList.contains(devopsClusterBasicInfoVO.getId());
-            devopsClusterBasicInfoVO.setConnect(connect);
             if (connect) {
+                devopsClusterBasicInfoVO.setConnect(connect);
+                // 如果在数据库中保存的状态是UNCONNECTED,则将状态置为CONNECTED
+                if (devopsClusterBasicInfoVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                    devopsClusterBasicInfoVO.setStatus(ClusterStatusEnum.RUNNING.value());
+                }
                 connectedClusters.add(devopsClusterBasicInfoVO);
             } else {
                 unconnectedClusters.add(devopsClusterBasicInfoVO);
+            }
+
+            // 如果集群状态是失败，设置错误信息
+            if (ClusterStatusEnum.FAILED.value().equalsIgnoreCase(devopsClusterBasicInfoVO.getStatus())) {
+                DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(devopsClusterBasicInfoVO.getId(), ClusterOperationTypeEnum.INSTALL_K8S.getType());
+                if (devopsClusterOperationRecordDTO != null) {
+                    devopsClusterBasicInfoVO.setErrorMessage(devopsClusterOperationRecordDTO.getErrorMsg());
+                }
             }
         });
 
@@ -484,7 +656,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 校验集群是否能够删除
-        checkConnectEnvsAndPV(clusterId);
+        checkConnectAndExistEnvsOrPV(clusterId);
 
         if (!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
             baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
@@ -496,6 +668,23 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         baseDelete(clusterId);
         //删除集群后发送webhook
         sendNotificationService.sendWhenDeleteCluster(devopsClusterDTO);
+    }
+
+    private void checkConnectAndExistEnvsOrPV(Long clusterId) {
+        List<Long> connectedEnvList = clusterConnectionHandler.getUpdatedClusterList();
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+
+        if (connectedEnvList.contains(clusterId)) {
+            throw new CommonException("error.cluster.connected");
+        }
+        if (!devopsEnvironmentDTOS.isEmpty()) {
+            throw new CommonException("error.cluster.delete");
+        }
+        //集群是否存在PV
+        List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
+        if (!Objects.isNull(clusterDTOList) && !clusterDTOList.isEmpty()) {
+            throw new CommonException("error.cluster.pv.exist");
+        }
     }
 
     @Override
@@ -526,7 +715,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             return null;
         }
         List<Long> upToDateList = clusterConnectionHandler.getUpdatedClusterList();
-        result.setConnect(upToDateList.contains(clusterId));
+        if (upToDateList.contains(clusterId)) {
+            result.setConnect(true);
+            if (result.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                result.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
+        }
         return result;
     }
 
@@ -598,6 +792,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void baseDelete(Long clusterId) {
         devopsClusterMapper.deleteByPrimaryKey(clusterId);
+        devopsClusterNodeService.deleteByClusterId(clusterId);
+        devopsClusterOperationRecordService.deleteByClusterId(clusterId);
     }
 
     @Override
@@ -681,6 +877,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return new ClusterOverViewVO(updatedCount, allCount - updatedCount);
     }
 
+
     /**
      * pod dto to cluster pod vo
      *
@@ -707,7 +904,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return devopsClusterRepVOS.stream().map(cluster -> {
             ClusterWithNodesVO clusterWithNodesDTO = new ClusterWithNodesVO();
             BeanUtils.copyProperties(cluster, clusterWithNodesDTO);
-            if (Boolean.TRUE.equals(clusterWithNodesDTO.getConnect())) {
+            if (clusterWithNodesDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.RUNNING.value())) {
                 clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageClusterNodeInfo(cluster.getId(), projectId, pageable));
             }
             return clusterWithNodesDTO;
@@ -718,9 +915,80 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterRepVO devopsClusterRepVO = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
-        devopsClusterRepVO.setConnect(updatedEnvList.contains(devopsClusterRepVO.getId()));
+        if (updatedEnvList.contains(clusterId)) {
+            devopsClusterRepVO.setConnect(true);
+            if (devopsClusterRepVO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                devopsClusterRepVO.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
+        }
         return devopsClusterRepVO;
     }
 
+    @Override
+    public DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO, String type) {
+        // 判断组织下是否还能创建集群
+        checkEnableCreateClusterOrThrowE(projectId);
+        ProjectDTO iamProject;
+        DevopsClusterDTO devopsClusterDTO;
+        iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
+        // 插入记录
+        devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
+        devopsClusterDTO.setToken(GenerateUUID.generateUUID());
+        devopsClusterDTO.setProjectId(projectId);
+        devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
+        devopsClusterDTO.setSkipCheckProjectPermission(true);
+        devopsClusterDTO.setType(type);
+        switch (ClusterTypeEnum.valueOf(devopsClusterDTO.getType().toUpperCase())) {
+            case CREATED:
+                devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
+                break;
+            case IMPORTED:
+                devopsClusterDTO.setStatus(ClusterStatusEnum.DISCONNECT.value());
+                break;
+            default:
+        }
+        return baseCreateCluster(devopsClusterDTO);
+    }
 
+    @Override
+    @Transactional
+    public void updateClusterStatusToOperating(Long clusterId) {
+        if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
+            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateClusterStatusToOperatingInNewTrans(Long clusterId) {
+        if (devopsClusterMapper.updateClusterStatusToOperating(clusterId) != 1) {
+            throw new CommonException(ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_OPERATING);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateStatusById(Long clusterId, ClusterStatusEnum status) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        devopsClusterDTO.setStatus(status.value());
+        if (devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_CLUSTER_STATUS_FAILED);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatusByIdInNewTrans(Long clusterId, ClusterStatusEnum status) {
+        Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
+        Assert.notNull(status, ClusterCheckConstant.ERROR_CLUSTER_STATUS_IS_NULL);
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        devopsClusterDTO.setStatus(status.value());
+        if (devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO) != 1) {
+            throw new CommonException(ERROR_UPDATE_CLUSTER_STATUS_FAILED);
+        }
+    }
 }

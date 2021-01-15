@@ -11,10 +11,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.AppServiceInstanceOverViewDTO;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.devops.infra.dto.DeployDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -131,7 +128,7 @@ public interface AppServiceInstanceService {
      * @param projectId  项目id
      * @param instanceId 实例id
      */
-    void restartInstance(Long projectId, Long instanceId);
+    DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline);
 
     /**
      * 实例删除

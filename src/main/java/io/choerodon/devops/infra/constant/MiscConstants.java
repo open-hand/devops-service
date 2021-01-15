@@ -29,4 +29,9 @@ public final class MiscConstants {
      * devops_branch表的last_commit_message的最大长度限制
      */
     public static final int DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH = 510;
+
+    /**
+     * 查看jmeter脚本的指令模板, 参数是 $JMETER_HOME
+     */
+    public static final String LS_JMETER_COMMAND = "ls %s/bin/jmeter";
 }

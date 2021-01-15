@@ -218,6 +218,12 @@ public interface SendNotificationService {
 
     void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params);
 
+    void sendCiPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params);
+
     void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params);
 
+    /**
+     * 实例状态变更发送webhook josn
+     */
+    void sendInstanceStatusUpdate(AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String currentStatus);
 }

@@ -294,8 +294,8 @@ public class GitlabServiceClientOperator {
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
-        } catch (RetryableException e) {
-            LOGGER.info(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new CommonException(e);
         }
     }
 
@@ -336,11 +336,11 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setCommitMessage(commitMessage);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .updateFile(projectId, fileCreationVO);
-            if (result.getBody().getFilePath() == null) {
+            if (result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.update");
             }
-        } catch (RetryableException e) {
-            LOGGER.info(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new CommonException(e);
         }
     }
 
@@ -1099,6 +1099,9 @@ public class GitlabServiceClientOperator {
         try {
             pipeline = gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
         } catch (Exception e) {
+            throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
+        }
+        if (pipeline == null || pipeline.getBody() == null) {
             throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
         }
         return pipeline.getBody();

@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.vo;
 
 
-import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -13,31 +13,49 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @author wanghao
  * @Date 2020/4/7 22:18
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CiCdPipelineRecordVO extends BaseDomain {
 
     private Long devopsPipelineRecordRelId;
     @Encrypt
-    //ci 执行记录的id
+    /**
+     * ci 执行记录的id
+     */
     private Long ciRecordId;
     @Encrypt
-    //cd 执行记录的id
+    /**
+     * cd 执行记录的id
+     */
     private Long cdRecordId;
-    //gitlab的流水线id
+    /**
+     * gitlab的流水线id
+     */
     private Long gitlabPipelineId;
-    //cd流水线记录的状态
+
+    /**
+     * cd流水线记录的状态
+     */
     private String cdStatus;
-    //ci的流水线记录状态
+    /**
+     * ci的流水线记录状态
+     */
     private String ciStatus;
-    //cicd 流水线的状态
+    /**
+     * cicd 流水线的状态
+     */
     private String status;
     private String gitlabTriggerRef;
     private CustomCommitVO commit;
 
     private CiCdPipelineVO ciCdPipelineVO;
 
-    // ci和cd阶段记录的集合
+    /**
+     * ci和cd阶段记录的集合
+     */
     private List<StageRecordVO> stageRecordVOS;
-    // 待审核状态是需要一些数据
+    /**
+     * 待审核状态是需要一些数据
+     */
     private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
     private String pipelineName;
     private Long gitlabProjectId;
@@ -162,5 +180,26 @@ public class CiCdPipelineRecordVO extends BaseDomain {
 
     public void setCommit(CustomCommitVO commit) {
         this.commit = commit;
+    }
+
+    @Override
+    public String toString() {
+        return "CiCdPipelineRecordVO{" +
+                "devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
+                ", ciRecordId=" + ciRecordId +
+                ", cdRecordId=" + cdRecordId +
+                ", gitlabPipelineId=" + gitlabPipelineId +
+                ", cdStatus='" + cdStatus + '\'' +
+                ", ciStatus='" + ciStatus + '\'' +
+                ", status='" + status + '\'' +
+                ", gitlabTriggerRef='" + gitlabTriggerRef + '\'' +
+                ", commit=" + commit +
+                ", ciCdPipelineVO=" + ciCdPipelineVO +
+                ", stageRecordVOS=" + stageRecordVOS +
+                ", devopsCdPipelineDeatilVO=" + devopsCdPipelineDeatilVO +
+                ", pipelineName='" + pipelineName + '\'' +
+                ", gitlabProjectId=" + gitlabProjectId +
+                ", viewId='" + viewId + '\'' +
+                '}';
     }
 }

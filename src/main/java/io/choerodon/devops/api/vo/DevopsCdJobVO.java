@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -70,6 +71,8 @@ public class DevopsCdJobVO {
     private Long projectId;
     private Date lastUpdateDate;
     private Long objectVersionNumber;
+
+    private ExternalApprovalJobVO externalApprovalJobVO;
 
     public String getEnvName() {
         return envName;
@@ -199,5 +202,13 @@ public class DevopsCdJobVO {
 
     public void setDeployInfoId(Long deployInfoId) {
         this.deployInfoId = deployInfoId;
+    }
+
+    public ExternalApprovalJobVO getExternalApprovalJobVO() {
+        return externalApprovalJobVO;
+    }
+
+    public void setExternalApprovalJobVO(ExternalApprovalJobVO externalApprovalJobVO) {
+        this.externalApprovalJobVO = externalApprovalJobVO;
     }
 }

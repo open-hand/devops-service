@@ -49,8 +49,6 @@ public abstract class UpdateUserPermissionService {
         this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
-    public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
-
     public void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
                                            List<Integer> deleteGitlabUserIds) {
         gitlabServiceClientOperator.denyAllAccessRequestInvolved(addGitlabUserIds, gitlabGroupId);
@@ -67,6 +65,7 @@ public abstract class UpdateUserPermissionService {
                     }
                 }
                 UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(e));
+                // 目前type一定为env
                 List<Long> gitlabProjectIds = type.equals("env") ?
                         devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId()) : null;
                 if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {

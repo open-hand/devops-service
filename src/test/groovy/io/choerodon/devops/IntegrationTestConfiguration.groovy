@@ -6,14 +6,13 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.devops.app.service.AgentPodService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.ProjectConfigHarborService
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
-import org.powermock.api.mockito.PowerMockito
+import org.hzero.core.message.RedisMessageSource
+import org.hzero.core.redis.RedisHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
@@ -32,26 +31,23 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
-import org.springframework.test.context.TestPropertySource
 import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.Statement
-
 /**
  * Created by hailuoliu@choerodon.io on 2018/7/13.
  */
 @TestConfiguration
 @Import(LiquibaseConfig)
 @Order(2)
-@TestPropertySource("classpath:application-test.yml")
 class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
     private final detachedMockFactory = new DetachedMockFactory()
 
-    @Value('${choerodon.oauth.jwt.key:choerodon}')
+    @Value('${choerodon.oauth.jwt.key:hzero}')
     String key
 
     @Value('${spring.datasource.url}')
@@ -62,9 +58,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
     @Value('${spring.datasource.password}')
     String dataBasePassword
-
-    @Value('${liquibase.init:true}')
-    boolean isToExecuteLiquibase
 
     @Autowired
     TestRestTemplate testRestTemplate
@@ -77,31 +70,37 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Primary
     @Bean("mockAgentPodInfoService")
     AgentPodService agentPodService() {
-        PowerMockito.mock(AgentPodService)
+        detachedMockFactory.Mock(AgentPodService)
     }
 
     @Primary
-    @Bean("mockBaseServiceClientOperator")
-    BaseServiceClientOperator baseServiceClientOperator() {
-        PowerMockito.mock(BaseServiceClientOperator)
+    @Bean("redisHelper")
+    RedisHelper redisHelper() {
+        detachedMockFactory.Mock(RedisHelper)
+    }
+
+    @Primary
+    @Bean("redisMessageSource")
+    RedisMessageSource redisMessageSource() {
+        detachedMockFactory.Mock(RedisMessageSource)
     }
 
     @Primary
     @Bean("mockGitlabServiceClientOperator")
     GitlabServiceClientOperator gitlabServiceClientOperator() {
-        PowerMockito.mock(GitlabServiceClientOperator)
+        detachedMockFactory.Mock(GitlabServiceClientOperator)
     }
 
     @Primary
     @Bean("mockGitlabGroupMemberService")
     GitlabGroupMemberService gitlabGroupMemberService() {
-        PowerMockito.mock(GitlabGroupMemberService)
+        detachedMockFactory.Mock(GitlabGroupMemberService)
     }
 
     @Primary
     @Bean("mockClusterConnectionHandler")
     ClusterConnectionHandler clusterConnectionHandler() {
-        PowerMockito.mock(ClusterConnectionHandler)
+        detachedMockFactory.Mock(ClusterConnectionHandler)
     }
 
     @Bean("mockGitUtil")
@@ -113,21 +112,12 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Bean("mockTransactionalProducer")
     @Primary
     TransactionalProducer transactionalProducer() {
-        PowerMockito.mock(TransactionalProducer)
-    }
-
-    @Bean("mockProjectConfigHarborService")
-    @Primary
-    ProjectConfigHarborService ProjectConfigHarborService() {
-        detachedMockFactory.Mock(ProjectConfigHarborService)
+        detachedMockFactory.Mock(TransactionalProducer)
     }
 
     @PostConstruct
     void init() {
-        if (isToExecuteLiquibase) {
-            liquibaseExecutor.execute()
-        }
-//        initSqlFunction()
+        liquibaseExecutor.execute()
         setTestRestTemplateJWT()
     }
 
@@ -146,27 +136,31 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         }
     }
 
+    /**
+     * 请求头添加jwt_token
+     */
     private void setTestRestTemplateJWT() {
         testRestTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory())
         testRestTemplate.getRestTemplate().setInterceptors([new ClientHttpRequestInterceptor() {
             @Override
             ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes, ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
                 httpRequest.getHeaders()
-                        .add('Authorization', createJWT(key, objectMapper))
+                        .add('Jwt_token', createJWT(key, objectMapper))
                 return clientHttpRequestExecution.execute(httpRequest, bytes)
             }
         }])
     }
 
-    static String createJWT(final String key, final ObjectMapper objectMapper) {
+    String createJWT(final String key, final ObjectMapper objectMapper) {
         Signer signer = new MacSigner(key)
-        CustomUserDetails defaultUserDetails = new CustomUserDetails('default', 'unknown', Collections.emptyList())
-        defaultUserDetails.setUserId(1L)
-        defaultUserDetails.setOrganizationId(0L)
-        defaultUserDetails.setLanguage('zh_CN')
-        defaultUserDetails.setTimeZone('CCT')
+        CustomUserDetails details = new CustomUserDetails('default', 'unknown', Collections.emptyList())
+        details.setUserId(1L);
+        details.setLanguage("zh_CN");
+        details.setTimeZone("GMT+8");
+        details.setEmail("hand@hand-china.com");
+        details.setOrganizationId(1L);
         try {
-            return 'Bearer ' + JwtHelper.encode(objectMapper.writeValueAsString(defaultUserDetails), signer).getEncoded()
+            return 'Bearer ' + JwtHelper.encode(objectMapper.writeValueAsString(details), signer).getEncoded()
         } catch (IOException e) {
             throw new CommonException(e)
         }

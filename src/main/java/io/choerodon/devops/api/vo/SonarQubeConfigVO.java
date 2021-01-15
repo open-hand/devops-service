@@ -20,6 +20,12 @@ public class SonarQubeConfigVO {
 
     @ApiModelProperty("配置类型, 如果是default就不需要其他字段 / default或custom")
     private String configType;
+    @ApiModelProperty("sonar scanner 类型")
+    private String scannerType;
+    @ApiModelProperty("是否跳过单测， true 跳过， false 不跳过")
+    private Boolean skipTests;
+    @ApiModelProperty("要扫描的文件目录，多个文件夹使用','隔开")
+    private String sources;
 
     public String getToken() {
         return token;
@@ -86,5 +92,29 @@ public class SonarQubeConfigVO {
     public int hashCode() {
 
         return Objects.hash(sonarUrl, username, password, authType, token, configType);
+    }
+
+    public String getScannerType() {
+        return scannerType;
+    }
+
+    public void setScannerType(String scannerType) {
+        this.scannerType = scannerType;
+    }
+
+    public Boolean getSkipTests() {
+        return skipTests;
+    }
+
+    public void setSkipTests(Boolean skipTests) {
+        this.skipTests = skipTests;
+    }
+
+    public String getSources() {
+        return sources;
+    }
+
+    public void setSources(String sources) {
+        this.sources = sources;
     }
 }

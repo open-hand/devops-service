@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
@@ -51,7 +52,6 @@ public class AppServiceInstanceController {
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private AppServiceInstanceValidator appServiceInstanceValidator;
-
 
     /**
      * 根据实例id获取实例信息
@@ -605,7 +605,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.restartInstance(projectId, instanceId);
+        appServiceInstanceService.restartInstance(projectId, instanceId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

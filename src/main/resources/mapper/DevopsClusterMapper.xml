@@ -3,10 +3,10 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterMapper">
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
-        select dc.id,dc.`name`,dc.skip_check_project_permission from devops_cluster dc where dc.skip_check_project_permission is true and
+        select dc.id,dc.status,dc.`name`,dc.skip_check_project_permission from devops_cluster dc where dc.skip_check_project_permission is true and
         dc.organization_id = #{organizationId}
         UNION ALL
-        select dc.id,dc.`name`,dc.skip_check_project_permission from devops_cluster dc
+        select dc.id,dc.status,dc.`name`,dc.skip_check_project_permission from devops_cluster dc
         join devops_cluster_pro_rel dcp on dc.id = dcp.cluster_id
         where dcp.project_id = #{projectId}
     </select>
@@ -85,6 +85,11 @@
         WHERE
             dc.organization_id = #{orgId}
     </update>
+    <update id="updateClusterStatusToOperating">
+        UPDATE devops_cluster dc
+        SET dc.status = 'operating'
+        WHERE dc.id = #{clusterId} and dc.status != 'operating'
+    </update>
 
     <select id="listAllClustersToMigrate" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
         SELECT devops_cluster.*
@@ -119,5 +124,13 @@
         <if test="projectId != null">
             AND dc.project_id = #{projectId,jdbcType=BIGINT}
         </if>
+    </select>
+
+    <select id="listByClusterIds" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
+        SELECT * FROM devops_cluster dc
+        WHERE dc.id IN
+        <foreach collection="clusterIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 </mapper>

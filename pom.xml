@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>devops-service</artifactId>
-    <version>0.23.14.RELEASE</version>
+    <version>0.24.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/choerodon/devops-service</url>
 
@@ -11,7 +11,7 @@
     <parent>
         <groupId>io.choerodon</groupId>
         <artifactId>choerodon-framework-parent</artifactId>
-        <version>0.17.1.RELEASE</version>
+        <version>0.18.0.RELEASE</version>
     </parent>
 
 
@@ -21,6 +21,8 @@
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
         <choerodon.dom4j.version>2.1.3</choerodon.dom4j.version>
+        <spring.data.redis.version>2.1.0.RELEASE</spring.data.redis.version>
+        <hzero.websocket.version>1.6.0-SNAPSHOT</hzero.websocket.version>
     </properties>
 
 
@@ -62,12 +64,20 @@
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-websocket</artifactId>
+            <version>${hzero.websocket.version}</version>
+            <!-- 这里exclude hzero-starter-core的依赖是因为单独升级了websocket的版本，避免引入依赖冲突 -->
+            <!-- 如果websocket的版本和 hzero-starter-core 的版本一致，不需要 exclude-->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hzero.starter</groupId>
+                    <artifactId>hzero-starter-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-metric</artifactId>
-            <version>${hzero.starter.version}</version>
         </dependency>
 
         <dependency>
@@ -75,12 +85,6 @@
             <artifactId>hzero-starter-feign-replay</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-liquibase</artifactId>
-            <version>0.16.1.RELEASE</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-asgard</artifactId>
@@ -150,13 +154,7 @@
             <artifactId>rxjava</artifactId>
             <version>2.2.8</version>
         </dependency>
-        <!-- test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
@@ -216,7 +214,16 @@
                     <groupId>org.springframework.data</groupId>
                     <artifactId>spring-data-commons</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-redis</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>${spring.data.redis.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -232,17 +239,38 @@
             <artifactId>feign-form-spring</artifactId>
             <version>3.0.3</version>
         </dependency>
+
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>logging-interceptor</artifactId>
+            <version>3.7.0</version>
+        </dependency>
+
+        <!--sshj 依赖-->
+        <dependency>
+            <groupId>com.hierynomus</groupId>
+            <artifactId>sshj</artifactId>
+            <version>0.30.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>${choerodon.dom4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hzero.starter</groupId>
+            <artifactId>hzero-starter-keyencrypt</artifactId>
+        </dependency>
+        <!--单元测试相关依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.197</version>
-            <scope>test</scope>
-        </dependency>
+        <!--spock-->
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
@@ -255,83 +283,34 @@
             <version>1.1-groovy-2.4-rc-3</version>
             <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/cglib/cglib-nodep -->
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <version>2.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>logging-interceptor</artifactId>
-            <version>3.7.0</version>
-        </dependency>
-
-        <!--use powermock-->
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-classloading-xstream</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4-rule</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4-rule-agent</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
         </dependency>
-
-        <!--sshj 依赖-->
+        <!--数据库-->
         <dependency>
-            <groupId>com.hierynomus</groupId>
-            <artifactId>sshj</artifactId>
-            <version>0.24.0</version>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.197</version>
+            <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>${choerodon.dom4j.version}</version>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-liquibase</artifactId>
+            <version>0.15.1.RELEASE</version>
+            <scope>test</scope>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.ini4j/ini4j -->
         <dependency>
-            <groupId>org.hzero.starter</groupId>
-            <artifactId>hzero-starter-keyencrypt</artifactId>
-            <version>1.4.1-BETA.1</version>
+            <groupId>org.ini4j</groupId>
+            <artifactId>ini4j</artifactId>
+            <version>0.5.4</version>
         </dependency>
-
     </dependencies>
 
     <build>
         <finalName>app</finalName>
-<!--        设置资源编译插件, 避免编译导致一些文件损坏不可用, 比如code-i.tgz这个文件-->
+        <!--        设置资源编译插件, 避免编译导致一些文件损坏不可用, 比如code-i.tgz这个文件-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -344,6 +323,32 @@
                         <nonFilteredFileExtension>json</nonFilteredFileExtension>
                         <nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
                     </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
+            <!--使用spock测试框架需要添加groovy编译插件-->
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>1.9.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>addTestSources</goal>
+                            <goal>compileTests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--maven测试插件-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--添加要测试的类-->
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Spec.java</include>
+                    </includes>
                 </configuration>
             </plugin>
         </plugins>

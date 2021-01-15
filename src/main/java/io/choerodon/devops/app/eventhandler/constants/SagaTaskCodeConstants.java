@@ -259,6 +259,30 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
 
+    /**
+     * devops 删除habor镜像
+     */
+    public static final String DEVOPS_DELETE_HABOR_IMAGE_TAGS = "devops-delete-habor-image-tags";
+    /**
+     * devops 删除chart versions
+     */
+    public static final String DEVOPS_DELETE_CHART_VERSIONS = "devops-delete-chart-versions";
+
+    /**
+     * 执行k8s安装命令
+     */
+    public static final String EXECUTE_INSTALL_K8S_COMMAND = "execute-install-k8s-command";
+
+    /**
+     * 检查节点
+     */
+    public static final String DEVOPS_NODE_CHECK = "devops-node-check";
+
+    /**
+     * 添加节点
+     */
+    public static final String DEVOPS_CLUSTER_ADD_NODE_TASK = "devops_cluster_add_node_task";
+
     private SagaTaskCodeConstants() {
     }
 }

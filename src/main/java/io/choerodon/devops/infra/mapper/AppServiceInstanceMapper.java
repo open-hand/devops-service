@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.mybatis.common.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-
-import javax.annotation.Nullable;
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.mybatis.common.BaseMapper;
 
 
 /**
@@ -133,4 +134,8 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
      * @return 版本
      */
     AppServiceVersionDTO queryVersion(Long appServiceInstanceId);
+
+    List<AppServiceVersionDTO> queryVersionByAppId(@Param("appServiceId") Long appServiceId);
+
+    List<AppServiceVersionDTO> queryEffectVersionByAppId(@Param("appServiceId") Long appServiceId);
 }

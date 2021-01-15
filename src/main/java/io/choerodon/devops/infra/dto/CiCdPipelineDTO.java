@@ -36,6 +36,16 @@ public class CiCdPipelineDTO extends AuditDomain {
     private String token;
     @ApiModelProperty("流水线镜像地址")
     private String image;
+    @ApiModelProperty("自定义版本名称")
+    private String versionName;
+
+    public String getVersionName() {
+        return versionName;
+    }
+
+    public void setVersionName(String versionName) {
+        this.versionName = versionName;
+    }
 
     public Long getId() {
         return id;

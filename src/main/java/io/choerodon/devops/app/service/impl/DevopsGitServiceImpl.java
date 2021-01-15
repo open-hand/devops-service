@@ -53,6 +53,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
@@ -70,6 +71,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
+    private static final String PROJECT = "project";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private final Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
 
@@ -130,6 +132,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private List<HandlerObjectFileRelationsService> handlerObjectFileRelationsServices;
     @Autowired
     private List<ConvertK8sObjectService> convertK8sObjectServices;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
     /**
      * 初始化转换类和处理关系的类
@@ -241,7 +245,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Long devopsBranchId = devopsBranchDTO.getId();
 
         BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
-
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
@@ -251,7 +254,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH),
                 builder -> builder
                         .withPayloadAndSerialize(branchSagaPayLoad)
-                        .withRefId(projectId.toString()));
+                        .withRefId(String.valueOf(devopsBranchId)));
     }
 
     @Override
@@ -354,12 +357,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<Long, IssueDTO> issues = null;
         // 读取敏捷问题列表可能会失败，但是不希望影响查询分支逻辑，所以捕获异常
         try {
-            issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+            if (!CollectionUtils.isEmpty(issuedIds)) {
+                issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+            }
         } catch (Exception e) {
             LOGGER.error("query agile issue failed.", e);
         }
 
         Map<Long, IssueDTO> finalIssues = issues;
+        List<String> refIds = devopsBranchDTOPageInfo.getContent().stream().map(devopsBranchDTO -> String.valueOf(devopsBranchDTO.getId())).collect(Collectors.toList());
+        Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH));
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
             if (!CollectionUtils.isEmpty(finalIssues)) {
@@ -374,7 +381,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Long lastCommitUserId = lastCommitIamUserIdAndGitlabUserIdMap.get(t.getLastCommitUser());
             IamUserDTO commitUserDTO = lastCommitUserId == null ? null : lastCommitUserDTOMap.get(lastCommitUserId);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
+            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())));
         }).collect(Collectors.toList()));
         return devopsBranchVOPageInfo;
     }
@@ -1017,8 +1024,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO
-            commitUserDTO, IamUserDTO userDTO,
-                                 IssueDTO issue) {
+            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
@@ -1040,7 +1046,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 createUserName,
                 createUserRealName,
                 devopsBranchDTO.getStatus(),
-                devopsBranchDTO.getErrorMessage());
+                devopsBranchDTO.getErrorMessage(),
+                sagaInstanceId);
     }
 
     private void deleteBranchSync(PushWebHookVO pushWebHookVO, Long appServiceId) {

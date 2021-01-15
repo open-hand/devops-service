@@ -117,7 +117,7 @@ public class DevopsGitController {
             @ApiParam(value = "标签名称", required = true)
             @RequestParam String tag,
             @ApiParam(value = "发布日志")
-            @RequestBody String releaseNotes) {
+            @RequestBody(required = false) String releaseNotes) {
         devopsGitService.updateTag(projectId, appServiceId, tag, releaseNotes);
         return new ResponseEntity<>(HttpStatus.OK);
     }

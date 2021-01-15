@@ -65,4 +65,46 @@ public interface DevopsCdPipelineService {
     void trigerSimpleCDPipeline(PipelineWebHookVO pipelineWebHookVO);
 
     void initPipelineRecordWithStageAndJob(Long projectId, Long gitlabPipelineId, String commitSha, String ref, Boolean tag, CiCdPipelineDTO devopsCiPipelineDTO);
+
+    /**
+     * 执行api测试任务
+     *
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     */
+    void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    /**
+     * 查询部署任务的部署结果
+     * @param pipelineRecordId
+     * @param deployJobName
+     * @return
+     */
+    String getDeployStatus(Long pipelineRecordId, String deployJobName);
+
+    /**
+     * 执行外部卡点任务
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     */
+    void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+
+    /**
+     * 外部卡点任务回调接口，用于接收审批结果
+     * @param pipelineRecordId
+     * @param stageRecordId
+     * @param jobRecordId
+     * @param callbackToken 回调时用于认证的token
+     * @param status 审批结果 true,false
+     */
+    void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status);
+
+    /**
+     * 查询外部卡点任务回调接口地址
+     * @return
+     */
+    String queryCallbackUrl();
+
 }

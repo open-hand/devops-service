@@ -1,13 +1,17 @@
 package io.choerodon.devops.api.vo;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
 public class ClusterNodeInfoVO {
+    @Encrypt
+    private Long id;
     /**
      * values: master/node
      */
-    private String type;
+    private String role;
     private String nodeName;
     private String status;
     private String createTime;
@@ -27,13 +31,24 @@ public class ClusterNodeInfoVO {
     private Long podTotal;
     private Long podCount;
     private String podPercentage;
+    private String clusterType;
 
-    public String getType() {
-        return type;
+    private String operatingStatus;
+
+    private String errorMsg;
+
+    private Boolean enableDeleteMasterRole = false;
+    private Boolean enableDeleteEtcdRole = false;
+    private Boolean enableDeleteNode = false;
+
+    private Boolean outerNodeFlag = false;
+
+    public String getRole() {
+        return role;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getNodeName() {
@@ -162,5 +177,69 @@ public class ClusterNodeInfoVO {
 
     public void setPodPercentage(String podPercentage) {
         this.podPercentage = podPercentage;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getClusterType() {
+        return clusterType;
+    }
+
+    public void setClusterType(String clusterType) {
+        this.clusterType = clusterType;
+    }
+
+    public String getOperatingStatus() {
+        return operatingStatus;
+    }
+
+    public void setOperatingStatus(String operatingStatus) {
+        this.operatingStatus = operatingStatus;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
+    public Boolean getEnableDeleteMasterRole() {
+        return enableDeleteMasterRole;
+    }
+
+    public void setEnableDeleteMasterRole(Boolean enableDeleteMasterRole) {
+        this.enableDeleteMasterRole = enableDeleteMasterRole;
+    }
+
+    public Boolean getEnableDeleteEtcdRole() {
+        return enableDeleteEtcdRole;
+    }
+
+    public void setEnableDeleteEtcdRole(Boolean enableDeleteEtcdRole) {
+        this.enableDeleteEtcdRole = enableDeleteEtcdRole;
+    }
+
+    public Boolean getEnableDeleteNode() {
+        return enableDeleteNode;
+    }
+
+    public void setEnableDeleteNode(Boolean enableDeleteNode) {
+        this.enableDeleteNode = enableDeleteNode;
+    }
+
+    public Boolean getOuterNodeFlag() {
+        return outerNodeFlag;
+    }
+
+    public void setOuterNodeFlag(Boolean outerNodeFlag) {
+        this.outerNodeFlag = outerNodeFlag;
     }
 }

@@ -38,8 +38,10 @@ public class CiCdPipelineVO {
 
     private Long gitlabProjectId;
     @ApiModelProperty("runner镜像地址")
-
     private String image;
+
+    @ApiModelProperty("自定义版本名称")
+    private String versionName;
     @ApiModelProperty("是否启用/nullable")
     private Boolean enabled;
     @ApiModelProperty("流水线触发方式")
@@ -57,7 +59,7 @@ public class CiCdPipelineVO {
     @Valid
     private List<DevopsCdStageVO> devopsCdStageVOS;
 
-    private Boolean hasMoreRecords;
+    private Boolean hasRecords = false;
     //cicd 流水线下的执行记录
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
 
@@ -92,6 +94,13 @@ public class CiCdPipelineVO {
         this.ciCdPipelineRecordVOS = ciCdPipelineRecordVOS;
     }
 
+    public String getVersionName() {
+        return versionName;
+    }
+
+    public void setVersionName(String versionName) {
+        this.versionName = versionName;
+    }
 
     public Long getTime() {
         return time;
@@ -213,12 +222,12 @@ public class CiCdPipelineVO {
         this.devopsCdStageVOS = devopsCdStageVOS;
     }
 
-    public Boolean getHasMoreRecords() {
-        return hasMoreRecords;
+    public Boolean getHasRecords() {
+        return hasRecords;
     }
 
-    public void setHasMoreRecords(Boolean hasMoreRecords) {
-        this.hasMoreRecords = hasMoreRecords;
+    public void setHasRecords(Boolean hasRecords) {
+        this.hasRecords = hasRecords;
     }
 
 

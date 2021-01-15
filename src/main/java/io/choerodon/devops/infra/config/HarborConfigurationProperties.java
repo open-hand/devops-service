@@ -1,8 +1,5 @@
 package io.choerodon.devops.infra.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-@ConfigurationProperties(prefix = "services.harbor")
 public class HarborConfigurationProperties {
 
     private Boolean enabled;

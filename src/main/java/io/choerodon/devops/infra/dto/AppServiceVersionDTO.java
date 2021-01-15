@@ -51,6 +51,8 @@ public class AppServiceVersionDTO extends AuditDomain {
     private String values;
     @Transient
     private String chartName;
+    @Transient
+    private Long projectId;
 
 
     public String getChartName() {
@@ -203,5 +205,13 @@ public class AppServiceVersionDTO extends AuditDomain {
 
     public void setRef(String ref) {
         this.ref = ref;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

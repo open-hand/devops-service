@@ -24,6 +24,10 @@ public class DevopsPipelineTaskDTO {
      */
     private Long sign;
 
+    private Boolean blockAfterJob;
+
+    private String deployJobName;
+
     public Long getTaskRecordId() {
         return taskRecordId;
     }
@@ -70,5 +74,35 @@ public class DevopsPipelineTaskDTO {
 
     public void setMultiAssign(Boolean multiAssign) {
         this.multiAssign = multiAssign;
+    }
+
+    public Boolean getBlockAfterJob() {
+        return blockAfterJob;
+    }
+
+    public void setBlockAfterJob(Boolean blockAfterJob) {
+        this.blockAfterJob = blockAfterJob;
+    }
+
+    public String getDeployJobName() {
+        return deployJobName;
+    }
+
+    public void setDeployJobName(String deployJobName) {
+        this.deployJobName = deployJobName;
+    }
+
+    @Override
+    public String toString() {
+        return "DevopsPipelineTaskDTO{" +
+                "taskRecordId=" + taskRecordId +
+                ", taskName='" + taskName + '\'' +
+                ", usernames=" + usernames +
+                ", taskType='" + taskType + '\'' +
+                ", multiAssign=" + multiAssign +
+                ", sign=" + sign +
+                ", blockAfterJob=" + blockAfterJob +
+                ", deployJobName='" + deployJobName + '\'' +
+                '}';
     }
 }

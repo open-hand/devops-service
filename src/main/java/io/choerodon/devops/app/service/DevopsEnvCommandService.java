@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -55,4 +56,13 @@ public interface DevopsEnvCommandService {
      */
     @Nullable
     DevopsEnvCommandDTO queryByInstanceIdAndCommitSha(Long instanceId, String sha);
+
+    /**
+     * 将之前的操作中的资源更新为成功
+     *
+     * @param objectType 对象类型
+     * @param objectId   对象id
+     * @param beforeDate 截止日期
+     */
+    void updateOperatingToSuccessBeforeDate(ObjectType objectType, Long objectId, Date beforeDate);
 }

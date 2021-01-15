@@ -46,6 +46,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devops-create-application-service";
 
     /**
+     * Devops删除应用服务版本
+     */
+    public static final String DEVOPS_DELETE_APPLICATION_SERVICE_VERSION = "devops-delete-application-service-version";
+
+    /**
      * Devopsn导入应用服务（内部）
      */
     public static final String DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE = "devops-import-internal-application-service";
@@ -56,9 +61,9 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_APP_DELETE = "devops-app-delete";
 
     /**
-     * Devops更新gitlab用户
+     * 同步应用服务状态
      */
-    public static final String DEVOPS_UPDATE_GITLAB_USERS = "devops-update-gitlab-users";
+    public static final String DEVOPS_APP_SYNC_STATUS = "devops-app-sync-status";
 
     /**
      * 同步iam应用状态
@@ -130,12 +135,6 @@ public class SagaTopicCodeConstants {
      * 测试应用Release状态
      */
     public static final String TEST_STATUS_SAGA = "test-status-saga";
-
-
-    /**
-     * 创建流水线自动部署实例
-     */
-    public static final String DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE = "devops-pipeline-auto-deploy-instance";
 
     /**
      * 创建流水线环境自动部署实例
@@ -241,6 +240,27 @@ public class SagaTopicCodeConstants {
      * devops 主机部署
      */
     public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
+
+    /**
+     * 创建集群
+     */
+    public static final String DEVOPS_INSTALL_K8S = "devops-install-k8s";
+
+    /**
+     * 重试创建集群
+     */
+    public static final String DEVOPS_RETRY_INSTALL_K8S = "devops-retry-install-k8s";
+
+    /**
+     * 添加集群节点
+     */
+    public static final String DEVOPS_CLUSTER_ADD_NODE = "devops_cluster_add_node";
+
+    /**
+     * 创建流水线自动部署实例
+     */
+    public static final String DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE = "devops-pipeline-auto-deploy-instance";
+
 
     private SagaTopicCodeConstants() {
     }
