@@ -7,5 +7,5 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
  */
 public interface MarketUseRecordService {
 
-    void saveMarketUseRecord(String purpose, Long projectId, DeploySourceVO deploySourceVO);
+    void saveMarketUseRecord(String purpose, Long projectId, DeploySourceVO deploySourceVO, Long userId);
 }

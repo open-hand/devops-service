@@ -40,7 +40,7 @@ public class MarketUseRecordServiceImpl implements MarketUseRecordService {
 
     @Override
     @Async
-    public void saveMarketUseRecord(String purpose, Long projectId, DeploySourceVO deploySourceVO) {
+    public void saveMarketUseRecord(String purpose, Long projectId, DeploySourceVO deploySourceVO, Long userId) {
         MarketAppUseRecordDTO marketAppUseRecordDTO = new MarketAppUseRecordDTO();
         marketAppUseRecordDTO.setPurpose(purpose);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId));
@@ -56,9 +56,10 @@ public class MarketUseRecordServiceImpl implements MarketUseRecordService {
             ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId));
             marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());
         }
-        marketAppUseRecordDTO.setUserName(projectDTO.getName());
+        marketAppUseRecordDTO.setUserOrg(projectDTO.getName());
         marketAppUseRecordDTO.setDeployObjectId(deploySourceVO.getDeployObjectId());
-
+        //部署记录存一个部署人员id，用于通知订阅人员
+        marketAppUseRecordDTO.setDeployUserId(userId);
         marketServiceClientOperator.createUseRecord(marketAppUseRecordDTO);
     }
 }
