@@ -39,6 +39,8 @@ public class MarketServiceClientOperator {
     }
 
     public MarketChartValueDTO queryValues(Long projectId, Long deployObjectId) {
+        CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(deployObjectId, "error.deploy.object.id.null");
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryValuesForDeployObject(projectId, deployObjectId), MarketChartValueDTO.class);
     }
 
