@@ -78,4 +78,12 @@ public class MarketServiceClientOperator {
         MarketAppSubscribeRelVO marketAppSubscribeRelVO = marketServiceClient.subscribeApplication(Objects.requireNonNull(marketAppId), Objects.requireNonNull(userId)).getBody();
         return marketAppSubscribeRelVO;
     }
+
+    public List<MarketServiceDeployObjectVO> queryUpgradeDeployObjects(Long projectId, Long marketServiceId, Long currentDeployObjectId) {
+        CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(marketServiceId, "error.market.service.id.null");
+        CommonExAssertUtil.assertNotNull(currentDeployObjectId, "error.deploy.object.id.null");
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryUpgradeMarketService(projectId, marketServiceId, currentDeployObjectId), new TypeReference<List<MarketServiceDeployObjectVO>>() {
+        });
+    }
 }

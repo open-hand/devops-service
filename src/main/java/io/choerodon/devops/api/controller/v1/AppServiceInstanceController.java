@@ -71,7 +71,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        return new ResponseEntity<>(appServiceInstanceService.queryInfoById(instanceId), HttpStatus.OK);
+        return new ResponseEntity<>(appServiceInstanceService.queryInfoById(projectId, instanceId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
