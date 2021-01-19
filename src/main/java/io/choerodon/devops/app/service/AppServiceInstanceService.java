@@ -29,7 +29,7 @@ public interface AppServiceInstanceService {
      * @param instanceId 实例id
      * @return 实例信息
      */
-    AppServiceInstanceInfoVO queryInfoById(Long instanceId);
+    AppServiceInstanceInfoVO queryInfoById(Long projectId, Long instanceId);
 
 
     /**

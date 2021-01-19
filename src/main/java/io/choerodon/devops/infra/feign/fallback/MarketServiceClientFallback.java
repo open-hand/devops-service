@@ -59,4 +59,9 @@ public class MarketServiceClientFallback implements MarketServiceClient {
     public ResponseEntity<MarketAppSubscribeRelVO> subscribeApplication(Long marketAppId, Long userId) {
         throw new CommonException("error.subscribe.application");
     }
+
+    @Override
+    public ResponseEntity<String> queryUpgradeMarketService(Long projectId, Long marketServiceId, Long deployObjectId) {
+        throw new CommonException("error.query.market.upgrade.version");
+    }
 }

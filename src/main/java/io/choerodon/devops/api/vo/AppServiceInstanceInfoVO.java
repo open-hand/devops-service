@@ -66,6 +66,11 @@ public class AppServiceInstanceInfoVO {
     private String effectCommandVersion;
     @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
     private String effectCommandStatus;
+    
+    @ApiModelProperty("应用市场所属的实例部署的当前版本是否可用, 如果被删除就是false/只有市场实例需要")
+    private Boolean currentVersionAvailable;
+    @ApiModelProperty("应用市场所属的实例是否有更新版本可以升级，如果有是true/只有市场实例需要")
+    private Boolean upgradeAvailable;
 
     @JsonIgnore
     @ApiModelProperty(value = "集群id", hidden = true)
@@ -267,7 +272,21 @@ public class AppServiceInstanceInfoVO {
 
     public void setEffectCommandStatus(String effectCommandStatus) {
         this.effectCommandStatus = effectCommandStatus;
+    }
 
+    public Boolean getCurrentVersionAvailable() {
+        return currentVersionAvailable;
+    }
 
+    public void setCurrentVersionAvailable(Boolean currentVersionAvailable) {
+        this.currentVersionAvailable = currentVersionAvailable;
+    }
+
+    public Boolean getUpgradeAvailable() {
+        return upgradeAvailable;
+    }
+
+    public void setUpgradeAvailable(Boolean upgradeAvailable) {
+        this.upgradeAvailable = upgradeAvailable;
     }
 }

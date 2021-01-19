@@ -92,7 +92,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
     private static final String NAMESPACE = "namespace";
-    private static final String INSTANCE_NAME_TEMPLATE="%s-%s";
+    private static final String INSTANCE_NAME_TEMPLATE = "%s-%s";
     private static final Gson gson = new Gson();
 
     @Autowired
@@ -176,7 +176,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
+    public AppServiceInstanceInfoVO queryInfoById(Long projectId, Long instanceId) {
         AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(instanceId);
         if (appServiceInstanceInfoDTO == null) {
             return null;
@@ -188,13 +188,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 为市场实例填充版本信息
         if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
-            fillMarketVersionForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
+            fillInformationForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         }
 
         return appServiceInstanceInfoVO;
     }
 
-    private void fillMarketVersionForMarketInstance(AppServiceInstanceInfoDTO appServiceInstanceInfoDTO, AppServiceInstanceInfoVO appServiceInstanceInfoVO) {
+    private void fillInformationForMarketInstance(AppServiceInstanceInfoDTO appServiceInstanceInfoDTO, AppServiceInstanceInfoVO appServiceInstanceInfoVO) {
         Set<Long> deployObjectIds = new HashSet<>();
         deployObjectIds.add(appServiceInstanceInfoDTO.getCommandVersionId());
         // 这个id可能为空
@@ -204,9 +204,22 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
         if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
             appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
+            appServiceInstanceInfoVO.setCurrentVersionAvailable(true);
+        } else {
+            appServiceInstanceInfoVO.setCommandVersion("版本已被删除");
+            appServiceInstanceInfoVO.setCurrentVersionAvailable(false);
         }
         if (versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()) != null) {
             appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
+        }
+
+        List<MarketServiceDeployObjectVO> upgradeAble = marketServiceClientOperator.queryUpgradeDeployObjects(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId(), appServiceInstanceInfoDTO.getCommandVersionId());
+        // 这里查出的版本是包含当前的版本和最新的版本，两个版本
+        // 如果只查出一个版本，但不是当前版本，就是可升级的
+        if (upgradeAble.size() > 1) {
+            appServiceInstanceInfoVO.setUpgradeAvailable(true);
+        } else {
+            appServiceInstanceInfoVO.setUpgradeAvailable(upgradeAble.size() == 1 && !appServiceInstanceInfoDTO.getCommandVersionId().equals(upgradeAble.get(0).getId()));
         }
     }
 

@@ -1,9 +1,9 @@
 package io.choerodon.devops.infra.feign;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 import java.util.Set;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -11,7 +11,10 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.devops.api.vo.market.*;
+import io.choerodon.devops.api.vo.market.MarketAppSubscribeRelVO;
+import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.infra.dto.market.MarketChartValueDTO;
 import io.choerodon.devops.infra.feign.fallback.MarketServiceClientFallback;
 import io.choerodon.swagger.annotation.Permission;
@@ -108,4 +111,14 @@ public interface MarketServiceClient {
             @Encrypt @RequestParam(name = "marketAppId") Long marketAppId,
             @Encrypt @RequestParam(name = "userId") Long userId);
 
+
+    /**
+     * {@link List<MarketServiceDeployObjectVO>}
+     */
+    @ApiOperation(value = "市场服务升级的时候查询可以升级的版本,返回最新的和当前的版本(deploy_object_id为当前部署id)")
+    @GetMapping("/v1/projects/{project_id}/deploy/application/version/upgrade/{deploy_object_id}")
+    ResponseEntity<String> queryUpgradeMarketService(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam("market_service_id") Long marketServiceId,
+            @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
 }
