@@ -221,6 +221,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         } else {
             appServiceInstanceInfoVO.setUpgradeAvailable(upgradeAble.size() == 1 && !appServiceInstanceInfoDTO.getCommandVersionId().equals(upgradeAble.get(0).getId()));
         }
+
+        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId());
+        appServiceInstanceInfoVO.setAppServiceName(marketServiceVO != null ? marketServiceVO.getMarketServiceName() : "UnknownService");
     }
 
     @Override
