@@ -8,7 +8,9 @@ import io.choerodon.devops.api.vo.DevopsDeployValueUpdateVO;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
@@ -57,6 +59,7 @@ public class DevopsDeployValueController {
             @ApiParam(value = "环境Id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
+            @SortDefault(value = "lastUpdateDate", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
