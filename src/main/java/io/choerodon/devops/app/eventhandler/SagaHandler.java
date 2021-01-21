@@ -116,6 +116,9 @@ public class SagaHandler {
         LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
         //不包含devops项目类型不做同步
+        if (CollectionUtils.isEmpty(projectPayload.getProjectCategoryVOS())) {
+            return msg;
+        }
         if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
             return msg;
         }
