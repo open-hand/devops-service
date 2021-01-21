@@ -34,4 +34,14 @@ public final class MiscConstants {
      * 查看jmeter脚本的指令模板, 参数是 $JMETER_HOME
      */
     public static final String LS_JMETER_COMMAND = "ls %s/bin/jmeter";
+
+    /**
+     * 设置同步用户的分布式锁时，锁的key
+     */
+    public static final String USER_SYNC_REDIS_KEY = "devops-service:user-sync-key";
+
+    /**
+     * 用户同步失败的文件存放的桶名称
+     */
+    public static final String USER_SYNC_ERROR_FILE_BUCKET_NAME = "devops-service:user-sync:error-file";
 }
