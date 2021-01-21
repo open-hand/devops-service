@@ -146,6 +146,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
                 nNexusComponentDTO.setDownloadUrl(getDownloadUrl(JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class)));
+                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
+                deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
+
                 //如果是市场部署将部署人员添加为应用的订阅人员
                 marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
             } else {
@@ -258,7 +261,6 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 List<HarborC7nImageTagVo> harborC7nImageTagVos = new ArrayList<>();
                 harborC7nImageTagVos.add(harborC7nImageTagVo);
                 imageTagVo.setImageTagList(harborC7nImageTagVos);
-                deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName());
                 //部署对象的名称
                 deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
                 deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
