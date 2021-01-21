@@ -9,6 +9,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.devops.infra.enums.UserSyncType;
 
 /**
  * 用于启动时同步创建未同步到gitlab的用户
@@ -28,7 +29,7 @@ public class UserSyncTask implements CommandLineRunner {
     public void run(String... args) {
         LOGGER.info("Start task: try to handle users async...");
         try {
-            gitlabUserService.asyncHandleAllUsers();
+            gitlabUserService.asyncHandleAllUsers(UserSyncType.AUTO);
             LOGGER.info("Start task: submit task to handle users...");
         } catch (Exception ex) {
             LOGGER.warn("Failed to submit task to handle users. And the ex is:", ex);

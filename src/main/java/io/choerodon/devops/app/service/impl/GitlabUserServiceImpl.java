@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.USER_SYNC_REDIS_KEY;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -24,21 +26,21 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
+import io.choerodon.devops.app.service.DevopsUserSyncRecordService;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.DevopsUserSyncRecordDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabUserReqDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.UserSyncType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.LogUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 
 /**
  * Created by Zenger on 2018/3/28.
@@ -64,10 +66,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
      * 分批处理用户时，一批用户的数量
      */
     private static final int USER_BATCH_SIZE = 50;
-    /**
-     * 设置用户处理的分布式锁时，锁的key
-     */
-    private static final String USER_SYNC_REDIS_KEY = "devops-service:user-sync-key";
+
+    private static final int USER_ERROR_MAX_LENGTH = 300;
     /**
      * 用户请求失败的阈值, 超过阈值，睡眠一段时间
      */
@@ -91,7 +91,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
+    @Autowired
+    private DevopsUserSyncRecordService devopsUserSyncRecordService;
 
     @Override
     public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
@@ -133,15 +134,17 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Async(GitOpsConstants.USER_SYNC_EXECUTOR)
     @Override
-    public void asyncHandleAllUsers() {
-        syncAllUsers();
+    public void asyncHandleAllUsers(UserSyncType userSyncType) {
+        // 初始化记录
+        DevopsUserSyncRecordDTO userSyncRecordDTO = devopsUserSyncRecordService.initRecord(userSyncType);
+        syncAllUsers(userSyncType, userSyncRecordDTO);
     }
 
     @Override
-    public void syncAllUsers() {
+    public void syncAllUsers(UserSyncType userSyncType, DevopsUserSyncRecordDTO userSyncRecordDTO) {
         // 只需要一个实例进行处理就行了，并行处理可能导致gitlab不可用
         // 获取分布式锁
-        Boolean ownLock = redisTemplate.opsForValue().setIfAbsent(USER_SYNC_REDIS_KEY, USER_SYNC_REDIS_KEY, LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
+        Boolean ownLock = redisTemplate.opsForValue().setIfAbsent(USER_SYNC_REDIS_KEY, processStringRepresentation(0, 0), LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
         if (!Boolean.TRUE.equals(ownLock)) {
             LOGGER.info("Failed to get lock to sync users. So skip...");
             return;
@@ -155,6 +158,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             // 如果数量不对，请求iam，查询所有的用户的id，
             if (iamUserCount <= devopsUserCount) {
                 LOGGER.info("The iamUserCount {} is less than devopsUserCount {}, so skip syncing", iamUserCount, devopsUserCount);
+                // 未同步用户也发送一次记录
+                devopsUserSyncRecordService.finishEmptyRecord(userSyncRecordDTO.getId());
             } else {
                 LOGGER.info("The iamUserCount is {} and the devopsUserCount is {}", iamUserCount, devopsUserCount);
                 Set<Long> devopsUsers = userAttrService.allUserIds();
@@ -170,18 +175,24 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 // 已经处理的用户
                 int processedSize = 0;
                 int totalSize = iamUsers.size();
+                UserSyncErrorBuilder userSyncErrorBuilder = new UserSyncErrorBuilder();
+
                 // 设置进度，并刷新锁过期时间
                 redisTemplate.opsForValue().set(USER_SYNC_REDIS_KEY, processStringRepresentation(processedSize, totalSize), LOCK_HOLD_MINUTES, TimeUnit.MINUTES);
                 while (userIterator.hasNext()) {
                     try {
-                        ApplicationContextHelper.getContext().getBean(GitlabUserService.class).batchSyncUsersInNewTx(userIterator, USER_BATCH_SIZE, processedSize, totalSize);
+                        ApplicationContextHelper.getContext().getBean(GitlabUserService.class).batchSyncUsersInNewTx(userIterator, USER_BATCH_SIZE, processedSize, totalSize, userSyncRecordDTO, userSyncErrorBuilder);
                     } catch (Exception ex) {
                         LOGGER.info("User sync: ex occurred when calling batch method:", ex);
                     }
                     processedSize += USER_BATCH_SIZE;
                 }
+
+                devopsUserSyncRecordService.finish(userSyncRecordDTO.getId(), userSyncRecordDTO.getSuccessCount(), userSyncRecordDTO.getFailCount(), userSyncErrorBuilder.build());
                 LOGGER.info("Successfully sync all users...");
             }
+        } catch (Exception ex) {
+            // TODO 考虑同步失败的情况
         } finally {
             redisTemplate.delete(USER_SYNC_REDIS_KEY);
         }
@@ -189,7 +200,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void batchSyncUsersInNewTx(Iterator<Long> iamUserIds, int batchSize, int processedSize, int totalSize) {
+    public void batchSyncUsersInNewTx(Iterator<Long> iamUserIds, int batchSize, int processedSize, int totalSize, DevopsUserSyncRecordDTO devopsUserSyncRecordDTO, UserSyncErrorBuilder userSyncErrorBuilder) {
         // 查询用户信息
         List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(readSomeElements(iamUserIds, batchSize), false);
 
@@ -239,14 +250,17 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                     // 输出成功调用同步这个用户的耗时
                     LOGGER.debug("User sync: {} ms used for user {}", System.currentTimeMillis() - start, user.getLoginName());
                 }
+                devopsUserSyncRecordDTO.setSuccessCount(devopsUserSyncRecordDTO.getSuccessCount() + 1);
                 LOGGER.info("Finished to sync user {} with id {}", user.getLoginName(), user.getId());
             } catch (Exception ex) {
-                handleExWhenSyncingUser(consecutiveFailedCount, ex, user);
+                String errorMessage = handleExWhenSyncingUser(consecutiveFailedCount, ex, user);
+                userSyncErrorBuilder.addErrorUser(user.getId(), user.getRealName(), user.getLoginName(), errorMessage);
+                devopsUserSyncRecordDTO.setFailCount(devopsUserSyncRecordDTO.getFailCount() + 1);
             }
         }
     }
 
-    private void handleExWhenSyncingUser(IntegerHolder consecutiveFailedCount, Exception ex, IamUserDTO user) {
+    private String handleExWhenSyncingUser(IntegerHolder consecutiveFailedCount, Exception ex, IamUserDTO user) {
         // 吞掉并打印异常
         // 获取异常
         String exTrace = LogUtil.readContentOfThrowable(ex);
@@ -265,10 +279,13 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                     // 给两次机会
                     consecutiveFailedCount.value -= 2;
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     LOGGER.info("InterruptedException: ", e);
                 }
             }
         }
+        // 代替换行
+        return LogUtil.deleteNewLine(LogUtil.cutOutString(exTrace, USER_ERROR_MAX_LENGTH));
     }
 
     private static Long[] readSomeElements(Iterator<Long> it, int size) {

@@ -9,7 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsUserSyncRecordVO;
+import io.choerodon.devops.app.service.DevopsUserSyncRecordService;
 import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.devops.infra.enums.UserSyncType;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -21,6 +24,8 @@ import io.choerodon.swagger.annotation.Permission;
 public class UserController {
     @Autowired
     private GitlabUserService gitlabUserService;
+    @Autowired
+    private DevopsUserSyncRecordService devopsUserSyncRecordService;
 
     /**
      * 重置用户的gitlab密码
@@ -42,7 +47,14 @@ public class UserController {
     @Permission(level = ResourceLevel.SITE)
     @PostMapping("/trigger_syncing")
     public ResponseEntity<Void> triggerSyncingUser() {
-        gitlabUserService.asyncHandleAllUsers();
+        gitlabUserService.asyncHandleAllUsers(UserSyncType.MANUAL);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ApiOperation("查询最新的同步记录")
+    @Permission(level = ResourceLevel.SITE)
+    @GetMapping("/sync_records")
+    public ResponseEntity<DevopsUserSyncRecordVO> latestSyncRecord() {
+        return ResponseEntity.ok(devopsUserSyncRecordService.queryLatestRecord());
     }
 }
