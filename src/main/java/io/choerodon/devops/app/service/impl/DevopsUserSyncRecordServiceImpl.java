@@ -100,6 +100,7 @@ public class DevopsUserSyncRecordServiceImpl implements DevopsUserSyncRecordServ
 
         // 如果有失败的用户，上传失败信息文件
         if (failCount > 0) {
+            LOGGER.debug("The failed users information for recordId {} is: \n{}", recordId, errorInformationCsv);
             String fileName = "user-sync-" + recordId + ".csv";
             try {
                 String resultFileUrl = fileClient.uploadFile(0L, MiscConstants.USER_SYNC_ERROR_FILE_BUCKET_NAME, null, fileName, "text/csv", errorInformationCsv.getBytes(StandardCharsets.UTF_8));
