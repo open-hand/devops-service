@@ -102,7 +102,7 @@ public class DevopsUserSyncRecordServiceImpl implements DevopsUserSyncRecordServ
         if (failCount > 0) {
             String fileName = "user-sync-" + recordId + ".csv";
             try {
-                String resultFileUrl = fileClient.uploadFile(0L, MiscConstants.USER_SYNC_ERROR_FILE_BUCKET_NAME, null, fileName, 0, new MockMultipartFile(fileName, fileName, null, errorInformationCsv.getBytes(StandardCharsets.UTF_8)));
+                String resultFileUrl = fileClient.uploadFile(0L, MiscConstants.USER_SYNC_ERROR_FILE_BUCKET_NAME, null, fileName, "text/csv", errorInformationCsv.getBytes(StandardCharsets.UTF_8));
                 devopsUserSyncRecordDTO.setErrorUserResultUrl(resultFileUrl);
             } catch (Exception ex) {
                 LOGGER.warn("Failed to upload user error information", ex);
