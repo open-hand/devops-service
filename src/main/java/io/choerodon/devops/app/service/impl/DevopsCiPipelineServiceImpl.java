@@ -147,7 +147,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdAuditService devopsCdAuditService,
             PipelineAppDeployService pipelineAppDeployService,
             DevopsCdJobService devopsCdJobService,
-            DevopsCdPipelineRecordService devopsCdPipelineRecordService,
+            @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
             DevopsCdJobRecordService devopsCDJobRecordService,
             DevopsCdStageRecordService devopsCdStageRecordService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
@@ -196,9 +196,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<Repository> repositories = new ArrayList<>();
 
         mavenRepoList.forEach(m -> {
-            String[] types = Objects.requireNonNull(m.getType()).split(GitOpsConstants.COMMA);
-            if (types.length > 2) {
-                throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+            if (m.getType() != null) {
+                String[] types = m.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                }
             }
             if (Boolean.TRUE.equals(m.getPrivateRepo())) {
                 servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
@@ -207,8 +209,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     Objects.requireNonNull(m.getName()),
                     Objects.requireNonNull(m.getName()),
                     Objects.requireNonNull(m.getUrl()),
-                    new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
-                    new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
         });
         return MavenSettingsUtil.generateMavenSettings(servers, repositories);
     }
@@ -953,7 +955,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if ("MIXED".equals(nexusMavenRepoDTO.getVersionPolicy())) {
             mavenRepoVO.setType(GitOpsConstants.SNAPSHOT + "," + GitOpsConstants.RELEASE);
         } else {
-            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
+            // group 类型的仓库没有版本类型
+            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy() == null ? null : nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
         }
         mavenRepoVO.setUrl(nexusMavenRepoDTO.getUrl());
         mavenRepoVO.setUsername(nexusMavenRepoDTO.getNeUserId());
