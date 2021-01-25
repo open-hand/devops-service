@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.DEFAULT_PIPELINE_RECORD_SIZE;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 import java.nio.charset.StandardCharsets;
@@ -49,8 +48,8 @@ import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
@@ -61,7 +60,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * 〈功能简述〉
@@ -158,8 +156,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdStageService devopsCdStageService,
             DevopsCdAuditService devopsCdAuditService,
             DevopsCdJobService devopsCdJobService,
-            @Lazy
-            DevopsCdPipelineRecordService devopsCdPipelineRecordService,
+            @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
             DevopsCdJobRecordService devopsCDJobRecordService,
             DevopsCdStageRecordService devopsCdStageRecordService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
@@ -209,9 +206,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<Repository> repositories = new ArrayList<>();
 
         mavenRepoList.forEach(m -> {
-            String[] types = Objects.requireNonNull(m.getType()).split(GitOpsConstants.COMMA);
-            if (types.length > 2) {
-                throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+            if (m.getType() != null) {
+                String[] types = m.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                }
             }
             if (Boolean.TRUE.equals(m.getPrivateRepo())) {
                 servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
@@ -220,8 +219,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     Objects.requireNonNull(m.getName()),
                     Objects.requireNonNull(m.getName()),
                     Objects.requireNonNull(m.getUrl()),
-                    new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
-                    new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
         });
         return MavenSettingsUtil.generateMavenSettings(servers, repositories);
     }
@@ -1106,7 +1105,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if ("MIXED".equals(nexusMavenRepoDTO.getVersionPolicy())) {
             mavenRepoVO.setType(GitOpsConstants.SNAPSHOT + "," + GitOpsConstants.RELEASE);
         } else {
-            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
+            // group 类型的仓库没有版本类型
+            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy() == null ? null : nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
         }
         mavenRepoVO.setUrl(nexusMavenRepoDTO.getUrl());
         mavenRepoVO.setUsername(nexusMavenRepoDTO.getNeUserId());
@@ -1517,7 +1517,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
         } else if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(t.getType())) {
-           // 后续如果需要对外部卡点任务处理逻辑可以写这里
+            // 后续如果需要对外部卡点任务处理逻辑可以写这里
         }
 
         Long jobId = devopsCdJobService.create(devopsCdJobDTO).getId();
