@@ -5,7 +5,6 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -62,8 +61,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecordService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
-
-    private static final Pattern JOB_NAME_REGEX_PATTERN = Pattern.compile("(.*) \\d/\\d");
 
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
@@ -157,21 +154,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
         // 检验是否是手动修改gitlab-ci.yaml文件生成的流水线记录
         for (CiJobWebHookVO job : pipelineWebHookVO.getBuilds()) {
-            String jobName = job.getName();
-            DevopsCiJobDTO devopsCiJobDTO = jobMap.get(jobName);
+            DevopsCiJobDTO devopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(job.getName(), jobMap);
             if (devopsCiJobDTO == null) {
-                Matcher matcher = JOB_NAME_REGEX_PATTERN.matcher(jobName);
-                if (matcher.matches()) {
-                    jobName = matcher.group(1);
-                    devopsCiJobDTO = jobMap.get(jobName);
-                    if (devopsCiJobDTO == null) {
-                        LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", jobName);
-                        return;
-                    }
-                } else {
-                    LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", jobName);
-                    return;
-                }
+                LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", job.getName());
+                return;
             }
             DevopsCiStageDTO devopsCiStageDTO = stageMap.get(devopsCiJobDTO.getCiStageId());
             if (devopsCiStageDTO == null || !devopsCiStageDTO.getName().equals(job.getStage())) {
@@ -381,7 +367,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 如果不符合流水线设置， 提前退出， 只同步流水线的状态， stage的跳过
         Map<Integer, String> jobType = new HashMap<>();
         for (JobDTO job : jobs) {
-            DevopsCiJobDTO devopsCiJobDTO = jobMap.get(job.getName());
+            DevopsCiJobDTO devopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(job.getName(),jobMap);
             if (devopsCiJobDTO == null) {
                 LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", job.getName());
                 return;
