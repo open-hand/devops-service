@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -68,6 +69,8 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private static final String AUTH_HEADER = "c7n-pipeline-token";
     private static final String STATUS_CODE = "statusCode";
@@ -1213,15 +1216,15 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
             // 发送告警
             // 启用了告警设置，则需要判断成功率与阈值
-            if(cdApiTestConfigVO.getWarningSettingVO() != null
+            if (cdApiTestConfigVO.getWarningSettingVO() != null
                     && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())) {
-                if(apiTestTaskRecordVO != null
+                if (apiTestTaskRecordVO != null
                         && apiTestTaskRecordVO.getSuccessCount() != null
                         && apiTestTaskRecordVO.getFailCount() != null) {
                     LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, apiTestTaskRecordVO: {} <<<<<<<<<<<<<<<<<<<<", apiTestTaskRecordVO);
                     double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
                     double failCount = (double) apiTestTaskRecordVO.getFailCount();
-                    double successRate = (successCount /  (successCount + failCount)) * 100;
+                    double successRate = (successCount / (successCount + failCount)) * 100;
                     successRate = (double) Math.round(successRate * 100) / 100;
 
                     LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, cdApiTestConfigVO: {} <<<<<<<<<<<<<<<<<<<<", cdApiTestConfigVO);
@@ -1242,6 +1245,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
                         param.put("link", frontUrl + link);
                         param.put("link_web", link);
+                        param.put("startTime",simpleDateFormat.format(apiTestTaskRecordVO.getStartTime()));
+                        param.put("costTime",TimeUtil.getStageTimeInStr(apiTestTaskRecordVO.getStartTime(),apiTestTaskRecordVO.getEndTime()));
+                        param.put("successCount",String.valueOf(apiTestTaskRecordVO.getSuccessCount()));
+                        param.put("failedCount",String.valueOf(apiTestTaskRecordVO.getFailCount()));
+                        param.put("caseCount",String.valueOf(apiTestTaskRecordVO.getSuccessCount()+apiTestTaskRecordVO.getFailCount()));
                         sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
                     } else {
                         // 高于阈值
