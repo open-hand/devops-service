@@ -40,6 +40,10 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     private Long deployInfoId;
     private Long commandId;
 
+    private Long apiTestTaskRecordId;
+    @ApiModelProperty("外部卡点任务回调认证token")
+    private String callbackToken;
+
     @Transient
     @ApiModelProperty("流水线记录id")
     private Long pipelineRecordId;
@@ -58,6 +62,17 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("ci 和 cd 关联关系id")
     private Long devopsPipelineRecordRelId;
+
+    @ApiModelProperty("日志信息")
+    private String log;
+
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log;
+    }
 
     public Long getPipelineRecordId() {
         return pipelineRecordId;
@@ -248,6 +263,22 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
         return this;
     }
 
+    public Long getApiTestTaskRecordId() {
+        return apiTestTaskRecordId;
+    }
+
+    public void setApiTestTaskRecordId(Long apiTestTaskRecordId) {
+        this.apiTestTaskRecordId = apiTestTaskRecordId;
+    }
+
+    public String getCallbackToken() {
+        return callbackToken;
+    }
+
+    public void setCallbackToken(String callbackToken) {
+        this.callbackToken = callbackToken;
+    }
+
     @Override
     public String toString() {
         return "DevopsCdJobRecordDTO{" +
@@ -269,11 +300,14 @@ public class DevopsCdJobRecordDTO extends AuditDomain {
                 ", deployMetadata='" + deployMetadata + '\'' +
                 ", deployInfoId=" + deployInfoId +
                 ", commandId=" + commandId +
+                ", apiTestTaskRecordId=" + apiTestTaskRecordId +
+                ", callbackToken='" + callbackToken + '\'' +
                 ", pipelineRecordId=" + pipelineRecordId +
                 ", stageName='" + stageName + '\'' +
                 ", pipelineName='" + pipelineName + '\'' +
                 ", pipelineId=" + pipelineId +
                 ", devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
-                "} ";
+                ", log='" + log + '\'' +
+                '}';
     }
 }

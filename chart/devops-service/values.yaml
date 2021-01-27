@@ -99,15 +99,6 @@ env:
     # Helm chart 仓库 的密码, 选填(与用户名要配对)
     SERVICES_HELM_PASSWORD:
 
-    # Harbor 访问地址
-    SERVICES_HARBOR_BASEURL: https://registry.example.com
-    # Harbor 管理员用户名
-    SERVICES_HARBOR_USERNAME:  admin
-    # Harbor 管理员密码
-    SERVICES_HARBOR_PASSWORD: Harbor12345
-    # 是否跳过 tls CA 证书校验，默认 false
-    SERVICES_HARBOR_INSECURESKIPTLSVERIFY: true
-
     # Choerodon 平台 api 地址
     SERVICES_GATEWAY_URL: http://api.example.com
 

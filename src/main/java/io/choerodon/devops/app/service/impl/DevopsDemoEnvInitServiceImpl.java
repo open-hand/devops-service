@@ -159,12 +159,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         // 7.读出应用服务的分支存入devops_branch
         createDevopsBranch(gitlabProjectId, gitlabUserId, applicationRepDTO, organizationRegisterEventPayload.getUser().getId());
-
-        // 7. 发布应用
-//        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
-//        applicationReleasingDTO.setAppServiceId(applicationRepDTO.getId());
-//        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
-//        applicationMarketService.create(projectId, applicationReleasingDTO);
     }
 
     private void createDevopsBranch(Integer gitlabProjectId, Integer gitlabUserId, AppServiceRepVO appServiceRepVO, Long userId) {
@@ -212,7 +206,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
-        applicationDTO.setSkipCheckPermission(Boolean.TRUE);
         applicationDTO.setToken(GenerateUUID.generateUUID());
 
         // 查询创建应用所在的gitlab应用组
@@ -242,7 +235,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppServicePayload.setUserIds(Collections.emptyList());
-        devOpsAppServicePayload.setSkipCheckPermission(Boolean.TRUE);
 
         //设置仓库Id
 //        List<DevopsConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");

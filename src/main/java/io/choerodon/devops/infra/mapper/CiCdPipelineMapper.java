@@ -21,5 +21,5 @@ public interface CiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
 
     List<CiCdPipelineVO> queryByProjectIdAndName(@Param("projectId") Long projectId,
                                                  @Param("appServiceIds") Set<Long> appServiceIds,
-                                                 @Param("name") String name);
+                                                 @Param("searchParam") String searchParam);
 }

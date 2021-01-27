@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.core.base.BaseConstants;
@@ -43,6 +44,24 @@ public final class JsonHelper {
         Assert.notNull(type, "Type should not be null");
         try {
             return OBJECT_MAPPER.readValue(json, type);
+        } catch (IOException e) {
+            throw new CommonException("Failed to unmarshal by jackson. It's unexpected and may be an internal error. The json is: " + json, e);
+        }
+    }
+
+    /**
+     * 通过jackson反序列化对象
+     *
+     * @param json          json内容
+     * @param typeReference 类型
+     * @param <T>           泛型
+     * @return 对象
+     */
+    public static <T> T unmarshalByJackson(String json, TypeReference<T> typeReference) {
+        Assert.hasLength(json, "JSON to be unmarshalled should not be empty");
+        Assert.notNull(typeReference, "Type should not be null");
+        try {
+            return OBJECT_MAPPER.readValue(json, typeReference);
         } catch (IOException e) {
             throw new CommonException("Failed to unmarshal by jackson. It's unexpected and may be an internal error. The json is: " + json, e);
         }

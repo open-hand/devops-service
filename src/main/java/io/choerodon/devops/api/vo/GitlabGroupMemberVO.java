@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by Zenger on 2018/3/28.
  */
@@ -26,6 +28,9 @@ public class GitlabGroupMemberVO {
      * 权限列表
      */
     private List<String> roleLabels;
+
+    @ApiModelProperty("用户更新之前的角色标签/目前是组织层有传这个数据,2020-11-19")
+    private List<String> previousRoleLabels;
 
     /**
      * 被更改角色的用户的id
@@ -80,5 +85,13 @@ public class GitlabGroupMemberVO {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public List<String> getPreviousRoleLabels() {
+        return previousRoleLabels;
+    }
+
+    public void setPreviousRoleLabels(List<String> previousRoleLabels) {
+        this.previousRoleLabels = previousRoleLabels;
     }
 }

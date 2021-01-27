@@ -1,13 +1,14 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.enums.ClusterStatusEnum;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public interface DevopsClusterService {
     /**
@@ -32,9 +33,14 @@ public interface DevopsClusterService {
      *
      * @param projectId          项目id
      * @param devopsClusterReqVO 集群信息
-     * @return
+     * @return 本次操作id
      */
-    String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
+    String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) throws Exception;
+
+    /**
+     * 激活集群
+     */
+    String activateCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
 
     /**
      * 更新集群
@@ -215,4 +221,52 @@ public interface DevopsClusterService {
      * @return
      */
     Boolean checkEnableCreateCluster(Long projectId);
+
+    /**
+     * 重试安装k8s
+     */
+    void retryInstallK8s(Long projectId, Long clusterId);
+
+    /**
+     * 获得节点检查进度
+     *
+     * @param projectId 项目id
+     * @param key       redisKey
+     */
+    DevopsNodeCheckResultVO checkProgress(Long projectId, String key);
+
+    /**
+     * 获得agent安装命令
+     *
+     * @param devopsClusterDTO 集群dto
+     * @param userEmail        用户信息
+     * @return 安装命令
+     */
+    String getInstallString(DevopsClusterDTO devopsClusterDTO, String userEmail);
+
+    /**
+     * 保存集群信息
+     *
+     * @param projectId          项目id
+     * @param devopsClusterReqVO 集群信息
+     * @param type               类型
+     * @return
+     */
+    DevopsClusterDTO insertClusterInfo(Long projectId, DevopsClusterReqVO devopsClusterReqVO, String type);
+
+    /**
+     * 更新集群操作状态为操作中
+     * @param clusterId
+     */
+    void updateClusterStatusToOperating(Long clusterId);
+    void updateClusterStatusToOperatingInNewTrans(Long clusterId);
+
+    /**
+     * 更新集群状态
+     * @param clusterId
+     * @param disconnect
+     */
+    void updateStatusById(Long clusterId, ClusterStatusEnum disconnect);
+
+    void updateStatusByIdInNewTrans(Long clusterId, ClusterStatusEnum disconnect);
 }

@@ -19,8 +19,9 @@
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
         <where>
             dcp.project_id = #{projectId}
-            <if test="name">
-                and das.name like CONCAT(CONCAT('%', #{name}),'%')
+            <if test="searchParam != null">
+                and das.name like CONCAT(CONCAT('%', #{searchParam}),'%')
+                or dcp.name like CONCAT(CONCAT('%', #{searchParam}),'%')
             </if>
             <if test="appServiceIds!=null and appServiceIds.size>0">
                 and dcp.app_service_id in
@@ -33,54 +34,4 @@
         ORDER BY dcp.id DESC
     </select>
 
-<!--    <select id="queryByProjectIdAndNameForProjectMember" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">-->
-<!--        SELECT *-->
-<!--        FROM (-->
-<!--        SELECT-->
-<!--        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,-->
-<!--        das.`name` AS app_service_name, das.gitlab_project_id, dcp.image-->
-<!--        FROM devops_ci_pipeline dcp-->
-<!--        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id-->
-<!--        <where>-->
-<!--            dcp.project_id = #{projectId}-->
-<!--            <if test="name">-->
-<!--                and das.name like CONCAT(CONCAT('%', #{name}),'%')-->
-<!--            </if>-->
-<!--            AND das.is_skip_check_permission = TRUE-->
-<!--        </where>-->
-
-<!--        UNION ALL-->
-
-<!--        SELECT-->
-<!--        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,-->
-<!--        das.`name` AS app_service_name, das.gitlab_project_id, dcp.image-->
-<!--        FROM devops_ci_pipeline dcp-->
-<!--        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id-->
-<!--        INNER JOIN devops_app_service_user_rel dasur ON dasur.app_service_id = das.id-->
-<!--        AND dasur.iam_user_id = #{memberId,jdbcType=BIGINT}-->
-<!--        <where>-->
-<!--            dcp.project_id = #{projectId}-->
-<!--            <if test="name">-->
-<!--                and das.name like CONCAT(CONCAT('%', #{name}),'%')-->
-<!--            </if>-->
-<!--            AND das.is_skip_check_permission = FALSE-->
-<!--        </where>-->
-<!--                 ) all_ci-->
-<!--        ORDER BY all_ci.id DESC-->
-<!--    </select>-->
-
-<!--    <select id="queryById" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineVO">-->
-<!--        SELECT-->
-<!--        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.trigger_type,dcp.project_id,-->
-<!--        das.`name` AS app_service_name, das.gitlab_project_id, dcp.image-->
-<!--        FROM devops_ci_pipeline dcp-->
-<!--        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id-->
-<!--        where dcp.id = #{ciPipelineId}-->
-<!--    </select>-->
-
-<!--    <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineDTO">-->
-<!--        SELECT dcp.id, dcp.name, dcp.project_id, dcp.app_service_id, dcp.trigger_type, dcp.object_version_number, dcp.created_by, dcp.creation_date, dcp.last_updated_by, dcp.last_update_date, dcp.is_enabled as enabled, dcp.token, dcp.image-->
-<!--        FROM devops_ci_pipeline dcp-->
-<!--        WHERE dcp.token = #{token,jdbcType=VARCHAR}-->
-<!--    </select>-->
 </mapper>

@@ -1,10 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -44,7 +43,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询项目下流水线列表（包含5条执行记录）
      */
-    List<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String name);
+    Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest);
 
     /**
      * 查询流水线信息

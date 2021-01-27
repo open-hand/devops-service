@@ -6,10 +6,7 @@ import java.util.Set;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
-import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
-import io.choerodon.devops.api.vo.AppServiceVersionVO;
-import io.choerodon.devops.api.vo.DeployVersionVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -139,17 +136,13 @@ public interface AppServiceVersionService {
 
     AppServiceVersionDTO baseQueryByAppServiceIdAndVersion(Long appServiceId, String version);
 
-    Page<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageable,
-                                                 String searchParam, Boolean isProjectOwner,
-                                                 Long userId);
-
     void baseUpdate(AppServiceVersionDTO appServiceVersionDTO);
 
     List<AppServiceVersionDTO> baseListUpgradeVersion(Long appServiceServiceId);
 
     void baseCheckByProjectAndVersionId(Long projectId, Long appServiceServiceId);
 
-    AppServiceVersionDTO baseQueryByCommitSha(Long appServiceId, String ref, String sha);
+    List<AppServiceVersionDTO> baseQueryByCommitSha(Long appServiceId, String ref, String sha);
 
     AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId);
 
@@ -201,5 +194,16 @@ public interface AppServiceVersionService {
 
     void fixHarbor();
 
-    AppServiceVersionDTO queryByCommitShaAndRef(String commitSha, String gitlabTriggerRef);
+    /**
+     * 批量删除应用服务版本
+     *
+     * @param projectId
+     * @param appServiceId
+     * @param versionIds
+     */
+    void batchDelete(Long projectId, Long appServiceId, Set<Long> versionIds);
+
+    AppServiceVersionDTO queryByCommitShaAndRef(Long appServiceId, String commitSha, String ref);
+
+    AppServiceVersionWithHelmConfigVO queryVersionWithHelmConfig(Long projectId, Long appServiceVersionId);
 }

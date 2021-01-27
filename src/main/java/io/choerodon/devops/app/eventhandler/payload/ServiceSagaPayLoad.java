@@ -5,6 +5,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Service;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by Sheep on 2019/7/29.
@@ -13,6 +14,7 @@ public class ServiceSagaPayLoad {
 
     private Long projectId;
     private Long gitlabUserId;
+    @ApiModelProperty("是否创建网络/true表示这个是创建操作")
     private Boolean created;
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
     private DevopsServiceDTO devopsServiceDTO;

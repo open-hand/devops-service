@@ -59,6 +59,8 @@ spec:
 #            exec:
 #              command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.env.open.SERVER_PORT }}/pre_stop"]
         env:
+        - name: "CHART_VERSION"
+          value: {{ .Chart.Version }}
 {{- range $name, $value := .Values.env.open }}
 {{- if ne (len ($value | quote)) 0 }}
         - name: {{ $name | quote }}

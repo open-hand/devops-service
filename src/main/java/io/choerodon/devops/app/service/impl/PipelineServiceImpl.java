@@ -70,7 +70,6 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STAGE_NAME = "stageName";
-    private static final String NONTIFY_TYPE = "devops";
     private static final String PIPELINE_ERROR_INFO = "Environment status error";
 
     private static final Gson gson = new Gson();
@@ -292,7 +291,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordDTO = pipelineRecordService.baseCreate(pipelineRecordDTO);
 
         //插入部署记录
-        createDeployRecord(pipelineRecordDTO);
+//        createDeployRecord(pipelineRecordDTO);
 
         //校验流水线中所有环境是否“已删除”或者“未连接”
         if (!checkEnvStatus(pipelineId, pipelineRecordDTO)) {
@@ -794,56 +793,6 @@ public class PipelineServiceImpl implements PipelineService {
             stageRecordE.setStatus(status);
             pipelineStageRecordService.baseCreateOrUpdate(stageRecordE);
         }
-    }
-
-    /**
-     * 执行自动部署流水线
-     */
-    @Override
-    public void executeAutoDeploy(Long pipelineId) {
-        PipelineDTO pipelineDTO = baseQueryById(pipelineId);
-        CustomContextUtil.setUserContext(pipelineDTO.getCreatedBy());
-        PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO(pipelineId, pipelineDTO.getTriggerType(), pipelineDTO.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineDTO.getName());
-        String uuid = GenerateUUID.generateUUID();
-        pipelineRecordDTO.setBusinessKey(uuid);
-        pipelineRecordDTO = pipelineRecordService.baseCreate(pipelineRecordDTO);
-
-
-        //插入部署记录
-        createDeployRecord(pipelineRecordDTO);
-
-        //校验流水线中所有环境是否“已删除”或者“未连接”
-        if (!checkEnvStatus(pipelineId, pipelineRecordDTO)) {
-            return;
-        }
-
-        DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordDTO.getId(), pipelineId, uuid);
-        pipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
-        pipelineRecordDTO = pipelineRecordService.baseUpdate(pipelineRecordDTO);
-        try {
-            CustomUserDetails details = DetailsHelper.getUserDetails();
-            createWorkFlow(pipelineDTO.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
-            List<PipelineStageRecordDTO> stageRecordES = pipelineStageRecordService.baseListByRecordAndStageId(pipelineRecordDTO.getId(), null);
-            if (!CollectionUtils.isEmpty(stageRecordES)) {
-                PipelineStageRecordDTO stageRecordE = stageRecordES.get(0);
-                stageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
-                stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
-                pipelineStageRecordService.baseCreateOrUpdate(stageRecordE);
-            }
-        } catch (Exception e) {
-            pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            pipelineRecordService.baseUpdate(pipelineRecordDTO);
-            throw new CommonException(e);
-        }
-    }
-
-    private void createDeployRecord(PipelineRecordDTO pipelineRecordDTO) {
-
-
-        List<PipelineRecordDTO> pipelineRecordDTOS = pipelineRecordMapper.listAllPipelineRecordAndEnv(pipelineRecordDTO.getId());
-
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTOS.get(0).getProjectId(), DeployType.AUTO.getType(), pipelineRecordDTO.getId(), pipelineRecordDTOS.get(0).getEnv(), pipelineRecordDTO.getCreationDate());
-        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
     }
 
     @Override
@@ -1629,6 +1578,47 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         return true;
+    }
+    /**
+     * 执行自动部署流水线
+     */
+    @Override
+    public void executeAutoDeploy(Long pipelineId) {
+        PipelineDTO pipelineDTO = baseQueryById(pipelineId);
+        CustomContextUtil.setUserContext(pipelineDTO.getCreatedBy());
+        PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO(pipelineId, pipelineDTO.getTriggerType(), pipelineDTO.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineDTO.getName());
+        String uuid = GenerateUUID.generateUUID();
+        pipelineRecordDTO.setBusinessKey(uuid);
+        pipelineRecordDTO = pipelineRecordService.baseCreate(pipelineRecordDTO);
+
+
+        //插入部署记录
+        // todo
+//        createDeployRecord(pipelineRecordDTO);
+
+        //校验流水线中所有环境是否“已删除”或者“未连接”
+        if (!checkEnvStatus(pipelineId, pipelineRecordDTO)) {
+            return;
+        }
+
+        DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordDTO.getId(), pipelineId, uuid);
+        pipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
+        pipelineRecordDTO = pipelineRecordService.baseUpdate(pipelineRecordDTO);
+        try {
+            CustomUserDetails details = DetailsHelper.getUserDetails();
+            createWorkFlow(pipelineDTO.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
+            List<PipelineStageRecordDTO> stageRecordES = pipelineStageRecordService.baseListByRecordAndStageId(pipelineRecordDTO.getId(), null);
+            if (!CollectionUtils.isEmpty(stageRecordES)) {
+                PipelineStageRecordDTO stageRecordE = stageRecordES.get(0);
+                stageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+                stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
+                pipelineStageRecordService.baseCreateOrUpdate(stageRecordE);
+            }
+        } catch (Exception e) {
+            pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            pipelineRecordService.baseUpdate(pipelineRecordDTO);
+            throw new CommonException(e);
+        }
     }
 }
 

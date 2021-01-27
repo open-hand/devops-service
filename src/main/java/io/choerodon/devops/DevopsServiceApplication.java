@@ -1,5 +1,7 @@
 package io.choerodon.devops;
 
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -10,7 +12,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.client.RestTemplate;
 
 import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
@@ -36,5 +41,16 @@ public class DevopsServiceApplication {
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
-    
+
+
+    @Bean(name = "restTemplateForIp")
+    public RestTemplate restTemplateForIp() {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        //30s
+        requestFactory.setConnectTimeout(301000);
+        requestFactory.setReadTimeout(301000);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+        return restTemplate;
+    }
 }

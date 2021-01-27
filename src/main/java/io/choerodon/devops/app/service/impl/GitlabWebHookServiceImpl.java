@@ -79,8 +79,6 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 if (PipelineStatus.SUCCESS.toValue().equals(pipelineWebHookVO.getObjectAttributes().getStatus())) {
                     devopsCdPipelineService.handlerCiPipelineStatusSuccess(pipelineWebHookVO, token);
                 }
-
-                devopsCdPipelineService.handlerCiPipelineStatusSuccess(pipelineWebHookVO, token);
                 break;
             case "build":
                 JobWebHookVO jobWebHookVO = JSONArray.parseObject(body, JobWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());

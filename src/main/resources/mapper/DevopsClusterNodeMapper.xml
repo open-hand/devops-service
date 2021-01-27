@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper">
+    <insert id="batchInsert">
+        INSERT INTO devops_cluster_node (name, inner_node_name, role, type, project_id, cluster_id, host_ip, host_port, auth_type, username, password)
+        VALUES
+        <foreach collection="devopsClusterNodeDTOList" item="item" separator=",">
+            (#{item.name},
+            #{item.innerNodeName},
+            #{item.role},
+            #{item.type},
+            #{item.projectId},
+            #{item.clusterId},
+            #{item.hostIp},
+            #{item.hostPort},
+            #{item.authType},
+            #{item.username},
+            #{item.password})
+        </foreach>
+    </insert>
+    <select id="countByRoleSet" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM  devops_cluster_node dcn
+        WHERE dcn.cluster_id = #{clusterId} AND dcn.role IN
+        <foreach collection="roleSet" index="i" separator="," open="(" close=")" item="role">
+            #{role}
+        </foreach>
+    </select>
+
+    <select id="listByClusterId" resultType="io.choerodon.devops.infra.dto.DevopsClusterNodeDTO">
+        SELECT dcn.*
+        FROM devops_cluster_node dcn
+        WHERE dcn.cluster_id=#{clusterId}
+    </select>
+
+    <delete id="deleteByClusterId">
+        DELETE FROM devops_cluster_node WHERE cluster_id=#{clusterId}
+    </delete>
+</mapper>

@@ -329,29 +329,6 @@ public class GitUtil {
     }
 
     /**
-     * Git克隆
-     */
-    public String cloneAppMarket(String name, String commit, String remoteUrl, String adminToken) {
-        Git git = null;
-        String workingDirectory = getWorkingDirectory(name);
-        File localPathFile = new File(workingDirectory);
-        deleteDirectory(localPathFile);
-        try {
-            git = Git.cloneRepository()
-                    .setURI(remoteUrl)
-                    .setDirectory(localPathFile)
-                    .setCredentialsProvider(StringUtils.isEmpty(adminToken) ? null : new UsernamePasswordCredentialsProvider("", adminToken))
-                    .call();
-            git.checkout().setName(commit).call();
-            git.close();
-            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
-        } catch (Exception e) {
-            throw new CommonException(ERROR_GIT_CLONE, e);
-        }
-        return workingDirectory;
-    }
-
-    /**
      * 克隆公开仓库的或者根据access token克隆私库的代码所有分支
      *
      * @param dirName     directory name
@@ -463,6 +440,26 @@ public class GitUtil {
 
             // 推代码
             git.push().add(localRef)
+                    .setRemote(repoUrl)
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
+                    .call();
+        } catch (GitAPIException e) {
+            throw new CommonException(ERROR_GIT_PUSH, e);
+        }
+    }
+
+    /**
+     * 将本地已经存在的单个tag推送到远程仓库
+     *
+     * @param git         Git对象
+     * @param repoUrl     仓库地址
+     * @param accessToken 访问token
+     * @param tagName  要推送的tag名
+     */
+    public void pushLocalTag(Git git, String repoUrl, String accessToken, String tagName) {
+        try {
+            // 推代码
+            git.push().add(tagName)
                     .setRemote(repoUrl)
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
@@ -593,23 +590,27 @@ public class GitUtil {
         return workingDirectory;
     }
 
-
     /**
-     * 合并
-     *
-     * @param newFilePath
-     * @param oldFilePath
-     * @return
+     * Git克隆
      */
-    public Git combineAppMarket(String oldFilePath, String newFilePath) {
+    public String cloneAppMarket(String name, String commit, String remoteUrl, String adminToken) {
         Git git = null;
-        FileUtil.copyDir(new File(oldFilePath + GIT_SUFFIX), new File(newFilePath + GIT_SUFFIX));
+        String workingDirectory = getWorkingDirectory(name);
+        File localPathFile = new File(workingDirectory);
+        deleteDirectory(localPathFile);
         try {
-            git = Git.open(new File(newFilePath));
-        } catch (IOException e) {
-            throw new CommonException("error.git.open", e);
+            git = Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setDirectory(localPathFile)
+                    .setCredentialsProvider(StringUtils.isEmpty(adminToken) ? null : new UsernamePasswordCredentialsProvider("", adminToken))
+                    .call();
+            git.checkout().setName(commit).call();
+            git.close();
+            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
+        } catch (Exception e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
         }
-        return git;
+        return workingDirectory;
     }
 
     /**

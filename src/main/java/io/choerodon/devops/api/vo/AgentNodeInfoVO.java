@@ -6,7 +6,7 @@ package io.choerodon.devops.api.vo;
 public class AgentNodeInfoVO {
     private String nodeName;
     private String status;
-    private String type;
+    private String role;
     private String createTime;
     private String cpuCapacity;
     private String cpuAllocatable;
@@ -36,12 +36,12 @@ public class AgentNodeInfoVO {
         this.status = status;
     }
 
-    public String getType() {
-        return type;
+    public String getRole() {
+        return role;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getCreateTime() {

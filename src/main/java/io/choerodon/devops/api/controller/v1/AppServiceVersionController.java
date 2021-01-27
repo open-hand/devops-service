@@ -1,9 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -21,6 +18,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
+import io.choerodon.devops.api.vo.AppServiceVersionWithHelmConfigVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -183,7 +181,7 @@ public class AppServiceVersionController {
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "根据版本id查询版本信息")
+    @ApiOperation(value = "根据版本id查询版本信息(新用的地方用下面的接口，不要用这个)")
     @PostMapping(value = "/list_by_versionIds")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryAppServiceVersionsByIds(
             @Encrypt
@@ -193,6 +191,28 @@ public class AppServiceVersionController {
             @ApiParam(value = "服务ID", required = true)
             @RequestParam Long[] versionIds) {
         return Optional.ofNullable(appServiceVersionService.listByAppServiceVersionIds(Arrays.asList(versionIds)))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+    /**
+     * 根据版本id查询版本信息
+     *
+     * @param projectId  项目ID
+     * @param versionIds 服务版本ID
+     * @return ApplicationVersionRespVO
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据版本id查询版本信息")
+    @PostMapping(value = "/list_by_version_ids")
+    public ResponseEntity<List<AppServiceVersionRespVO>> listAppServiceVersionsByIds(
+            @Encrypt
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "应用服务id", required = true)
+            @RequestBody Set<Long> versionIds) {
+        return Optional.ofNullable(appServiceVersionService.listByAppServiceVersionIds(new ArrayList<>(versionIds)))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -368,5 +388,33 @@ public class AppServiceVersionController {
                 appServiceVersionService.listVersionById(projectId, id, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.versions.get"));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "批量删除应用服务版本")
+    @DeleteMapping(value = "/batch")
+    public ResponseEntity<Void> batchDelete(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "应用服务id", required = true)
+            @RequestParam(value = "app_service_id") Long appServiceId,
+            @Encrypt @RequestBody Set<Long> versionIds
+    ) {
+        appServiceVersionService.batchDelete(projectId, appServiceId, versionIds);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+    @ApiOperation(value = "根据id查询版本信息及helm配置/内部接口，market-service用")
+    @GetMapping(value = "/version_with_helm_config")
+    public ResponseEntity<AppServiceVersionWithHelmConfigVO> queryVersionWithHelmConfig(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "应用服务版本id", required = true)
+            @RequestParam(value = "app_service_version_id") Long appServiceVersionId) {
+        return ResponseEntity.ok(appServiceVersionService.queryVersionWithHelmConfig(projectId, appServiceVersionId));
     }
 }

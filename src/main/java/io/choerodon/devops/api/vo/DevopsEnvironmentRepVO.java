@@ -25,6 +25,16 @@ public class DevopsEnvironmentRepVO {
     private Boolean isFailed;
     private Boolean skipCheckPermission;
     private Long objectVersionNumber;
+    @Encrypt
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;

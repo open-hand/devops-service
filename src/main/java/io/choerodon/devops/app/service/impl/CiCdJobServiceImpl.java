@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -50,7 +51,9 @@ public class CiCdJobServiceImpl implements CiCdJobService {
         devopsCiJobDTO.setStageId(Objects.requireNonNull(stageId));
         return ciCdJobMapper.select(devopsCiJobDTO);
     }
+
     @Override
+    @Transactional
     public void deleteByStageId(Long stageId) {
         if (stageId == null) {
             throw new CommonException(ERROR_STAGE_ID_IS_NULL);

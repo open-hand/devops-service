@@ -1,6 +1,33 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+## [0.24.0] 2020-12-24
+
+#### Add
+- Pipeline: add Maven single test function in code inspection task
+- Added external stuck tasks in the CD stage of the pipeline to trigger external workflows or other systems
+- Added support for batch deletion in the application service version
+- The deployment module adds a host configuration function to support project personnel to maintain and manage deployment types of hosts here
+- The manual deployment module adds a new host deployment method, which supports the direct deployment of jar packages and Docker images to existing hosts
+- The cluster module adds a new "New Cluster" operation, which supports new clusters by entering nodes
+- The cluster module adds support for adding or subtracting "platform cluster" nodes, and supports removing master or etcd roles from nodes
+
+#### Optimization
+- Optimize the search in the application pipeline tree structure, directly filter out objects containing fields, and deepen the font color
+- The interface of creating and modifying pipelines is newly added to change the order of stages and tasks by dragging and dropping
+- Optimized the refresh loading speed of the pipeline page
+- For the external IP and port of the service under the same cluster, a restriction that cannot be repeated has been added
+
+
+#### Fix
+- Fixed the problem that the order of each field in the deployment configuration page list was incorrectly reported
+- Fixed the issue of empty application services when creating pipelines and adding tasks
+- Fixed the problem of manual stuck point tasks in the pipeline, and members who do not have application service permissions can be selected as reviewers
+- Fixed the problem that configuration information modification is not supported in the application pipeline-CD stage-deployment task
+- Fixed the display problem of the information in the shared application service details in the instance view
+- Fixed the problem of displaying the failure message of deployment timeout after resource-network modification
+- Fixed the issue of content loss after custom resource update
+
 ## [0.23.6] 2020-10-10
 
 #### Add

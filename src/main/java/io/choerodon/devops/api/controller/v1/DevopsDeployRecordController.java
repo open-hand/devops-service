@@ -17,9 +17,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
+import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -32,28 +35,30 @@ public class DevopsDeployRecordController {
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
 
-    /**
-     * 项目下获取部署记录
-     *
-     * @param projectId 项目Id
-     * @param pageable  分页参数
-     * @param params    查询参数
-     * @return 部署纪录页
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下分页查询部署记录")
     @CustomPageRequest
-    @PostMapping("/page_by_options")
-    public ResponseEntity<Page<DevopsDeployRecordVO>> pageByOptions(
+    @GetMapping("/paging")
+    public ResponseEntity<Page<DeployRecordVO>> paging(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsDeployRecordService.pageByProjectId(projectId, params, pageable))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.list"));
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "部署类型")
+            @RequestParam(value = "deploy_type", required = false) String deployType,
+            @ApiParam(value = "部署方式")
+            @RequestParam(value = "deploy_mode", required = false) String deployMode,
+            @ApiParam(value = "部署载体名")
+            @RequestParam(value = "deploy_payload_name", required = false) String deployPayloadName,
+            @ApiParam(value = "部署结果")
+            @RequestParam(value = "deploy_result", required = false) String deployResult,
+            @ApiParam(value = "部署对象名")
+            @RequestParam(value = "deploy_object_name", required = false) String deployObjectName,
+            @ApiParam(value = "部署对象版本")
+            @RequestParam(value = "deploy_object_version", required = false) String deployObjectVersion
+            ) {
+        return ResponseEntity.ok(devopsDeployRecordService.paging(projectId, pageRequest, deployType, deployMode, deployPayloadName, deployResult, deployObjectName, deployObjectVersion));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)

@@ -18,6 +18,9 @@ public interface SonarClient {
     @GET("api/measures/component")
     Call<SonarComponent> getSonarComponent(@QueryMap Map<String, String> maps);
 
+    @GET("api/navigation/component")
+    Call<SonarComponent> getSonarAnalysisDate(@QueryMap Map<String, String> maps);
+
     @GET("api/project_analyses/search")
     Call<SonarAnalyses> getAnalyses(@QueryMap Map<String, String> maps);
 

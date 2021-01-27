@@ -15,9 +15,13 @@ import io.choerodon.devops.api.ws.AbstractSocketInterceptor;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 
 /**
+ * // TODO to be delete at 0.25
+ * polaris结果的返回不再通过websocket，而是http，这个逻辑不再使用了
+ *
  * @author zmf
  * @since 20-5-9
  */
+@Deprecated
 @Component
 public class AgentPolarisSocketInterceptor extends AbstractSocketInterceptor {
     @Autowired

@@ -71,4 +71,24 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
             column(name: 'client_id', type: 'BIGINT UNSIGNED', remarks: 'client_id', afterColumn: 'system_env_id')
         }
     }
+
+    changeSet(author: 'lihao',id:'2020-10-19-add-type-column'){
+        addColumn(tableName: 'devops_cluster'){
+            column(name: 'type',type: 'VARCHAR(10)',remarks: 'agent集群类型，created或者imported',afterColumn: 'id')
+        }
+    }
+
+    changeSet(author: 'lihao', id: '2020-10-19-fix-type') {
+        sql("UPDATE devops_cluster SET type='imported'")
+    }
+
+    changeSet(author: 'lihao',id: '2020-10-23-add-status-column'){
+        addColumn(tableName: 'devops_cluster'){
+            column(name: 'status',type: 'VARCHAR(32)',remarks: '集群状态',afterColumn: 'type')
+        }
+    }
+
+    changeSet(author: 'lihao',id: '2020-10-30-fix-status'){
+        sql("UPDATE devops_cluster SET status='disconnect' WHERE type='imported'")
+    }
 }

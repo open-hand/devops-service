@@ -58,6 +58,73 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("是否跳过harbor的证书校验 / true表示跳过")
     private Boolean skipDockerTlsVerify;
 
+    @ApiModelProperty("是否自定义镜像名")
+    private Boolean customDockerTagName;
+
+    @ApiModelProperty("自定义镜像名")
+    private String dockerTagName;
+
+    @ApiModelProperty("是否自定义chart版本名")
+    private Boolean customChartVersionName;
+
+    @ApiModelProperty("自定义chart版本名")
+    private String chartVersionName;
+
+    @ApiModelProperty("chart关联docker任务名")
+    private String dockerJobName;
+
+    @Encrypt
+    @ApiModelProperty("chart关联docker任务 Id")
+    private Long dockerJobId;
+
+    public Boolean getCustomChartVersionName() {
+        return customChartVersionName;
+    }
+
+    public void setCustomChartVersionName(Boolean customChartVersionName) {
+        this.customChartVersionName = customChartVersionName;
+    }
+
+    public String getDockerJobName() {
+        return dockerJobName;
+    }
+
+    public void setDockerJobName(String dockerJobName) {
+        this.dockerJobName = dockerJobName;
+    }
+
+    public Long getDockerJobId() {
+        return dockerJobId;
+    }
+
+    public void setDockerJobId(Long dockerJobId) {
+        this.dockerJobId = dockerJobId;
+    }
+
+    public String getChartVersionName() {
+        return chartVersionName;
+    }
+
+    public void setChartVersionName(String chartVersionName) {
+        this.chartVersionName = chartVersionName;
+    }
+
+    public String getDockerTagName() {
+        return dockerTagName;
+    }
+
+    public void setDockerTagName(String dockerTagName) {
+        this.dockerTagName = dockerTagName;
+    }
+
+    public Boolean getCustomDockerTagName() {
+        return customDockerTagName;
+    }
+
+    public void setCustomDockerTagName(Boolean customDockerTagName) {
+        this.customDockerTagName = customDockerTagName;
+    }
+
     public String getName() {
         return name;
     }

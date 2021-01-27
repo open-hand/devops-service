@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper">
+    <select id="queryLatestRecordByNodeId"
+            resultType="io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO">
+        SELECT *
+        FROM devops_cluster_operation_record dcor
+        WHERE dcor.node_id = #{nodeId}
+        order by dcor.id desc
+        limit 1
+    </select>
+
+    <delete id="deleteByClusterId">
+        DELETE FROM devops_cluster_operation_record WHERE cluster_id=#{clusterId}
+    </delete>
+
+    <select id="selectByClusterIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO">
+        SELECT * FROM devops_cluster_operation_record WHERE cluster_id=#{clusterId} AND type=#{type}
+    </select>
+</mapper>

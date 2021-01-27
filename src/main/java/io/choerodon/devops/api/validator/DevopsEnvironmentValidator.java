@@ -2,12 +2,13 @@ package io.choerodon.devops.api.validator;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.DevopsCdEnvDeployInfoService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.DevopsServiceService;
-import io.choerodon.devops.app.service.PipelineAppDeployService;
 import io.choerodon.devops.infra.enums.InstanceStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Creator: Runge
@@ -24,7 +25,7 @@ public class DevopsEnvironmentValidator {
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     /**
      * 验证环境是否可以禁用
@@ -43,7 +44,7 @@ public class DevopsEnvironmentValidator {
         if (devopsIngressService.baseCheckByEnv(envId)) {
             throw new CommonException("error.env.stop.IngressExist");
         }
-        if (!pipelineAppDeployService.baseQueryByEnvId(envId).isEmpty()) {
+        if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
             throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
         }
     }

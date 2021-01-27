@@ -13,8 +13,14 @@ public class DevopsClusterBasicInfoVO {
     private String code;
     @ApiModelProperty(value = "是否已经连接")
     private Boolean connect;
+    @ApiModelProperty(value = "集群状态")
+    private String status;
     @ApiModelProperty(value = "节点列表")
     private List<String> nodes;
+    @ApiModelProperty(value = "集群类型")
+    private String type;
+    @ApiModelProperty(value = "集群安装错误信息")
+    private String errorMessage;
 
     public Long getId() {
         return id;
@@ -40,19 +46,45 @@ public class DevopsClusterBasicInfoVO {
         this.code = code;
     }
 
-    public Boolean getConnect() {
-        return connect;
-    }
-
-    public void setConnect(Boolean connect) {
-        this.connect = connect;
-    }
-
     public List<String> getNodes() {
         return nodes;
     }
 
     public void setNodes(List<String> nodes) {
         this.nodes = nodes;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public DevopsClusterBasicInfoVO setStatus(String status) {
+        this.status = status;
+        return this;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public DevopsClusterBasicInfoVO setType(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public Boolean getConnect() {
+        return connect;
+    }
+
+    public void setConnect(Boolean connect) {
+        this.connect = connect;
     }
 }

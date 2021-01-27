@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
 
 /**
@@ -20,4 +22,8 @@ public interface DevopsCdEnvDeployInfoService {
     void updateOrUpdateByCdJob(Long cdJobId, String jarName);
 
     DevopsCdEnvDeployInfoDTO queryByCdJobId(Long cdJobId);
+
+    List<DevopsCdEnvDeployInfoDTO> queryCurrentByValueId(Long valueId);
+
+    List<DevopsCdEnvDeployInfoDTO> queryCurrentByEnvId(Long environmentId);
 }

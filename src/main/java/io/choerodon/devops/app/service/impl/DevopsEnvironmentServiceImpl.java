@@ -1,9 +1,25 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -31,29 +47,13 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/4/9.
@@ -132,8 +132,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
-    @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
     private DevopsServiceMapper devopsServiceMapper;
@@ -185,6 +183,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private PolarisScanningService polarisScanningService;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private PipelineAppDeployService pipelineAppDeployService;
 
     @PostConstruct
     private void init() {
@@ -411,7 +415,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (groupId == null) {
             groupId = 0L;
         }
-        return sort(ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class)).get(groupId);
+        List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
+        List<String> refIds = devopsEnvironmentRepVOS.stream().map(devopsEnvironmentRepVO -> String.valueOf(devopsEnvironmentRepVO.getId())).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(refIds)) {
+            Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(ENV.toLowerCase(), refIds, SagaTopicCodeConstants.DEVOPS_CREATE_ENV));
+            devopsEnvironmentRepVOS.forEach(devopsEnvironmentRepVO -> {
+                devopsEnvironmentRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(devopsEnvironmentRepVO.getId())));
+            });
+        }
+        return sort(devopsEnvironmentRepVOS).get(groupId);
     }
 
     private Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
@@ -591,7 +603,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
             } else {
-                if (!pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
+                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))
+                        || !pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
                     throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
                 }
             }
@@ -701,7 +714,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public void retryGitOps(Long projectId, Long envId) {
         // TODO 参考{@link io.choerodon.devops.app.service.impl.DevopsClusterResourceServiceImpl.retrySystemEnvGitOps}改写
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
@@ -736,7 +749,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return false;
         }
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
@@ -882,6 +895,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvironmentDTO.setHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
         }
         if (!gitlabServiceClientOperator.getFile(gitlabProjectDO.getId(), MASTER, README)) {
+            LOGGER.info("Add readme for env with id {}", devopsEnvironmentDTO.getId());
             gitlabServiceClientOperator.createFile(gitlabProjectDO.getId(),
                     README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
         }
@@ -1319,8 +1333,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                Boolean isProjectOwner) {
         if (devopsEnvironmentDTO.getSkipCheckPermission()) {
             devopsEnvironmentDTO.setPermission(true);
-        } else
+        } else {
             devopsEnvironmentDTO.setPermission(permissionEnvIds.contains(devopsEnvironmentDTO.getId()) || isProjectOwner);
+        }
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_ENV,
@@ -1328,7 +1343,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteDeactivatedOrFailedEnvironment(Long projectId, Long envId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         //排除掉运行中的环境
@@ -1336,7 +1353,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException("error.env.delete");
         }
 
-        if (!CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId))) {
+        if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
             throw new CommonException("error.delete.env.with.pipeline");
         }
 
@@ -1359,7 +1376,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void deleteEnvSaga(Long envId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
         if (devopsEnvironmentDTO == null) {
             LogUtil.loggerInfoObjectNullWithId("env", envId, LOGGER);
             LOGGER.info("Delete env: environment with id {} is skipped", envId);
@@ -1387,7 +1404,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceService.baseDeleteServiceAndInstanceByEnvId(envId);
 
         // 删除实例对应的部署纪录
-        devopsDeployRecordService.deleteManualAndBatchRecordByEnv(envId);
+        devopsDeployRecordService.deleteRecordByEnv(envId);
 
         // 删除环境对应的secret
         devopsSecretService.baseListByEnv(envId).forEach(secretE ->
@@ -1438,7 +1455,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         //更新集群关联的namespaces数据
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
-        if (devopsClusterDTO.getNamespaces() != null) {
+        if (devopsClusterDTO != null && devopsClusterDTO.getNamespaces() != null) {
             List<String> namespaces = JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class);
             namespaces.remove(devopsEnvironmentDTO.getCode());
             devopsClusterDTO.setNamespaces((JSONArray.toJSONString(namespaces)));
@@ -1625,7 +1642,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        devopsClusterRepVOS.forEach(t -> t.setConnect(upgradeClusterList.contains(t.getId())));
+        devopsClusterRepVOS.forEach(t -> {
+            if (upgradeClusterList.contains(t.getId())) {
+                t.setConnect(true);
+                if (t.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                    t.setStatus(ClusterStatusEnum.RUNNING.value());
+                }
+            }
+        });
         return devopsClusterRepVOS;
     }
 
@@ -1793,7 +1817,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean disableCheck(Long projectId, Long envId) {
         // 停用环境校验资源和流水线
         // pipeLineAppDeploy为空
-        boolean pipeLineAppDeployEmpty = pipelineAppDeployService.baseQueryByEnvId(envId).isEmpty();
+        boolean pipeLineAppDeployEmpty = CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
 
         DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(envId);
 
@@ -1811,7 +1835,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Boolean deleteCheck(Long projectId, Long envId) {
         // 删除环境只校验是否有流水线
-        return CollectionUtils.isEmpty(pipelineAppDeployService.baseQueryByEnvId(envId));
+        return CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
     }
 
     @Override

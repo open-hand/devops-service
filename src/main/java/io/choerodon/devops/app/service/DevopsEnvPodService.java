@@ -4,6 +4,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.dto.PodResourceDetailsDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
@@ -55,4 +56,5 @@ public interface DevopsEnvPodService {
 
     void deleteEnvPodById(Long projectId, Long envId, Long podId);
 
+    List<PodResourceDetailsDTO> queryResourceDetailsByInstanceId(Long instanceId);
 }

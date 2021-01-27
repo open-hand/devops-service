@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
@@ -15,17 +15,16 @@ import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -52,34 +51,6 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         this.devopsProjectService = devopsProjectService;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.baseServiceClientOperator = baseServiceClientOperator;
-    }
-
-    @Override
-    public Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option) {
-        // 更新以前所有有权限的用户
-        List<Long> currentUserIds = devopsEnvUserPermissionService.baseListAll(id).stream()
-                .map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
-        // 待添加的用户
-        List<Long> addIamUserIds = userIds.stream().filter(e -> !currentUserIds.contains(e))
-                .collect(Collectors.toList());
-        List<Integer> addgitlabUserIds = userAttrService.baseListByUserIds(addIamUserIds).stream()
-                .map(UserAttrDTO::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
-        // 待删除的用户
-        List<Long> deleteIamUserIds = currentUserIds.stream().filter(e -> !userIds.contains(e))
-                .collect(Collectors.toList());
-        List<Integer> deleteGitlabUserIds = userAttrService.baseListByUserIds(deleteIamUserIds).stream()
-                .map(UserAttrDTO::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
-        // 更新gitlab权限
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(id);
-
-        Integer gitlabProjectId = devopsEnvironmentDTO.getGitlabEnvProjectId().intValue();
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(devopsEnvironmentDTO.getProjectId());
-        Integer gitlabGroupId = devopsProjectDTO.getDevopsEnvGroupId().intValue();
-
-        super.updateGitlabUserPermission("env", gitlabGroupId, gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
-        devopsEnvUserPermissionService.baseUpdate(id, addIamUserIds, deleteIamUserIds);
-        return true;
     }
 
     /**

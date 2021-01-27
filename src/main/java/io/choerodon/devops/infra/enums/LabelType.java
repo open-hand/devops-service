@@ -9,7 +9,7 @@ public enum LabelType {
     GITLAB_PROJECT_OWNER("GITLAB_OWNER"),
     GITLAB_PROJECT_DEVELOPER("GITLAB_DEVELOPER");
 
-    private String value;
+    private final String value;
 
     LabelType(String value) {
         this.value = value;
