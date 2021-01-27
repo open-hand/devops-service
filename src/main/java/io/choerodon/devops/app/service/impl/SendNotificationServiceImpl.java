@@ -70,9 +70,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String PROJECT_NAME = "projectName";
     private static final String PROJECT_ID = "projectId";
     private static final String APP_SERVICE_NAME = "appServiceName";
+    private static final String LINK = "link";
+    private static final String BASE_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+
+    @Value("${services.front.url}")
+    private String frontUrl;
 
     @Autowired
     @Lazy
@@ -778,6 +783,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         recordRelDTO.setCdPipelineRecordId(record.getId());
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
         params.put("pipelineIdRecordId", relDTO.getId().toString());
+        //加上查看详情的url
+        params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
+                projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(record.getPipelineId()), relDTO.getId().toString()));
         addSpecifierList(type, projectDTO.getId(), users);
         sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
