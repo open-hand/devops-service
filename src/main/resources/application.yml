@@ -184,5 +184,5 @@ devops:
 # websocket的最大缓冲区大小，单位字节byte
 websocket:
   buffer:
-    maxTextMessageSize: 4194304
-    maxBinaryMessageSize: 4194304
+    maxTextMessageSize: 131072
+    maxBinaryMessageSize: 131072
