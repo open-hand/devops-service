@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,6 +19,10 @@ public class MavenRepoVO {
     @ApiModelProperty("仓库地址")
     private String url;
 
+    /**
+     * 如果是group类型的仓库没有仓库类型
+     */
+    @Nullable
     @ApiModelProperty("仓库类型 / release, snapshot 多个值逗号分割")
     private String type;
 
@@ -47,6 +53,7 @@ public class MavenRepoVO {
         this.url = url;
     }
 
+    @Nullable
     public String getType() {
         return type;
     }
