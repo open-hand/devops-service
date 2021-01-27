@@ -145,7 +145,7 @@ public class IssueServiceImpl implements IssueService {
             if (authorId != null) {
                 authors.stream().filter(userE -> userE.getId().equals(authorId)).forEach(authorUser -> {
                     customMergeRequestVO.setAuthorName(authorUser.getLoginName() + authorUser.getRealName());
-                    customMergeRequestVO.setAuthorImageUrl(authorUser.getImageUrl());
+                    customMergeRequestVO.setImageUrl(authorUser.getImageUrl());
                 });
             }
             if (assigneeId != null) {
