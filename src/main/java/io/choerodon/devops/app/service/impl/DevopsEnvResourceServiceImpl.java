@@ -494,34 +494,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         devopsEnvResourceDTO.getPersistentVolumeClaimVOS().add(dto);
     }
 
-    /**
-     * 获取时间间隔
-     *
-     * @param ttime1 起始时间
-     * @param ttime2 结束时间
-     * @return long[]
-     */
-    public Long[] getStageTime(Timestamp ttime1, Timestamp ttime2) {
-        long day = 0;
-        long hour = 0;
-        long min = 0;
-        long sec = 0;
-        long time1 = ttime1.getTime();
-        long time2 = ttime2.getTime();
-        long diff;
-        if (time1 < time2) {
-            diff = time2 - time1;
-        } else {
-            diff = time1 - time2;
-        }
-        day = diff / (24 * 60 * 60 * 1000);
-        hour = (diff / (60 * 60 * 1000) - day * 24);
-        min = ((diff / (60 * 1000)) - day * 24 * 60 - hour * 60);
-        sec = (diff / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-        return new Long[]{day, hour, min, sec};
-    }
-
-
     @Override
     public void baseCreate(DevopsEnvResourceDTO devopsEnvResourceDTO) {
         if (devopsEnvResourceMapper.insert(devopsEnvResourceDTO) != 1) {

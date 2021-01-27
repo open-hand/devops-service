@@ -75,4 +75,18 @@ public interface UserAttrService {
     void updateAdmin(Long iamUserId, Boolean isGitlabAdmin);
 
     Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params);
+
+    /**
+     * 所有 devops_user 纪录的数量
+     *
+     * @return 数量
+     */
+    int allUserCount();
+
+    /**
+     * 所有 devops_user 纪录的 iam_user_id
+     *
+     * @return id
+     */
+    Set<Long> allUserIds();
 }

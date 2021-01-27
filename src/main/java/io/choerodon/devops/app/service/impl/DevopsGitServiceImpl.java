@@ -361,7 +361,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
             }
         } catch (Exception e) {
-            LOGGER.error("query agile issue failed.", e);
+            LOGGER.error("query agile issue failed:{}", e.getMessage());
         }
 
         Map<Long, IssueDTO> finalIssues = issues;

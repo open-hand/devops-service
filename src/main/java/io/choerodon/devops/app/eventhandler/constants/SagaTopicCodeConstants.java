@@ -21,6 +21,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_INSTANCE = "devops-create-instance";
 
     /**
+     * Devops创建市场实例
+     */
+    public static final String DEVOPS_CREATE_MARKET_INSTANCE = "devops-create-market-instance";
+
+    /**
      * Devops创建网络
      */
     public static final String DEVOPS_CREATE_SERVICE = "devops-create-service";
@@ -261,6 +266,15 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE = "devops-pipeline-auto-deploy-instance";
 
+    /**
+     * API测试任务执行完成事件
+     */
+    public static final String API_TEST_TASK_COMPLETE_EVENT = "api-test-task-complete-event";
+
+    /**
+     * iam添加项目类型
+     */
+//    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
 
     private SagaTopicCodeConstants() {
     }

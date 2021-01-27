@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.util;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -441,9 +440,9 @@ public class FileUtil {
     public static int getFileTotalLine(String file) {
         Integer totalLine = 0;
         try (ByteArrayInputStream byteArrayInputStream =
-                     new ByteArrayInputStream(file.getBytes(Charset.forName("utf8")))) {
+                     new ByteArrayInputStream(file.getBytes(StandardCharsets.UTF_8))) {
             try (InputStreamReader inputStreamReader =
-                         new InputStreamReader(byteArrayInputStream, Charset.forName("utf8"))) {
+                         new InputStreamReader(byteArrayInputStream, StandardCharsets.UTF_8)) {
                 try (BufferedReader br = new BufferedReader(inputStreamReader)) {
                     String lineTxt;
                     while ((lineTxt = br.readLine()) != null) {

@@ -21,7 +21,7 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     }
 
     @Override
-    public ResponseEntity<Void> retry(Long projectId, Long instance_id) {
+    public ResponseEntity<Void> retry(Long projectId, Long instanceId) {
         throw new CommonException("error.retry.saga.instance");
     }
 }

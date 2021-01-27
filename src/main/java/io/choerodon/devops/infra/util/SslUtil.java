@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.util;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -34,9 +35,7 @@ public class SslUtil {
     private static final Logger logger = LoggerFactory.getLogger(SslUtil.class);
 
 
-    private static final String DEFAULT_ENCODING = "UTF-8";
-
-    private static final Charset DEFAULT_CHARSET = Charset.forName(DEFAULT_ENCODING);
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     /**
      * 默认是RSA/NONE/PKCS1Padding

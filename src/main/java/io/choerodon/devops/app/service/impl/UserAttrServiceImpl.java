@@ -177,4 +177,14 @@ public class UserAttrServiceImpl implements UserAttrService {
 
         return page;
     }
+
+    @Override
+    public int allUserCount() {
+        return userAttrMapper.selectCount(new UserAttrDTO());
+    }
+
+    @Override
+    public Set<Long> allUserIds() {
+        return userAttrMapper.selectAllUserIds();
+    }
 }

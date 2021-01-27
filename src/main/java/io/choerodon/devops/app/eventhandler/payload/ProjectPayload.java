@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import java.util.List;
 import java.util.Set;
+
+import io.choerodon.devops.api.vo.ProjectCategoryVO;
 
 /**
  * project　event
@@ -11,7 +14,6 @@ public class ProjectPayload {
     private Long projectId;
     private String projectCode;
     private String projectName;
-    private String projectCategory;
     private String organizationCode;
     private String organizationName;
     private String userName;
@@ -21,6 +23,11 @@ public class ProjectPayload {
     private Long applicationId;
 
     private Set<String> roleLabels;
+    /**
+     * 项目类型的集合
+     */
+    private List<ProjectCategoryVO> projectCategoryVOS;
+
 
     public Long getProjectId() {
         return projectId;
@@ -94,12 +101,12 @@ public class ProjectPayload {
         this.imageUrl = imageUrl;
     }
 
-    public String getProjectCategory() {
-        return projectCategory;
+    public List<ProjectCategoryVO> getProjectCategoryVOS() {
+        return projectCategoryVOS;
     }
 
-    public void setProjectCategory(String projectCategory) {
-        this.projectCategory = projectCategory;
+    public void setProjectCategoryVOS(List<ProjectCategoryVO> projectCategoryVOS) {
+        this.projectCategoryVOS = projectCategoryVOS;
     }
 
     public Long getProgramId() {

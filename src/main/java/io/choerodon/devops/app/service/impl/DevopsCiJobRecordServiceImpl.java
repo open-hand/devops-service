@@ -34,7 +34,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
-    private static final String ERROR_PIPELINE_RECORD_ID_IS_NULL = "error.pipeline.record.id.is.null";
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
 
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;

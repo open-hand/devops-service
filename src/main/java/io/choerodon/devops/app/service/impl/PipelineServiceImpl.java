@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE;
-
 import static java.util.Comparator.comparing;
 
 import java.util.*;
@@ -35,7 +34,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -43,10 +41,8 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
-import io.choerodon.devops.infra.feign.HzeroMessageClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;

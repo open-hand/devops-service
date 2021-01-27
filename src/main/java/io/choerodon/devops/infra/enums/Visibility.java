@@ -11,7 +11,7 @@ public enum Visibility {
     PRIVATE,
     INTERNAL;
 
-    private static JacksonJsonEnumHelper<Visibility> enumHelper = new JacksonJsonEnumHelper(Visibility.class);
+    private static JacksonJsonEnumHelper<Visibility> enumHelper = new JacksonJsonEnumHelper<>(Visibility.class);
 
     Visibility() {
     }

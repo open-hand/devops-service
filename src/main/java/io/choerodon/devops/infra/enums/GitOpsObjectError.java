@@ -9,6 +9,7 @@ public enum GitOpsObjectError {
     RELEASE_CHART_VERSION_NOT_FOUND("release.chart.version.not.found"),
     RELEASE_REPO_URL_NOT_FOUND("release.repo.url.not.found"),
     RELEASE_API_VERSION_NOT_FOUND("release.api.version.not.found"),
+    MARKET_APP_SERVICE_VERSION_VALUES_NULL("market.app.service.version.values.null"),
     SERVICE_METADATA_NOT_FOUND("service.metadata.not.found"),
     SERVICE_NAME_NOT_FOUND("service.name.not.found"),
     SERVICE_SPEC_NOT_FOUND("service.spec.not.found"),

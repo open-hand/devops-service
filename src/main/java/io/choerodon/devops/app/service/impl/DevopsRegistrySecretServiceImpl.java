@@ -34,7 +34,6 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
     public DevopsRegistrySecretDTO baseCreate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         if (devopsRegistrySecretMapper.insert(devopsRegistrySecretDTO) != 1) {
             throw new CommonException("error.registry.secret.create.error");

@@ -109,7 +109,7 @@ public class TypeUtil {
         mapParams.put(TypeUtil.PARAMS, null);
 
         if (!StringUtils.isEmpty(params)) {
-            Map maps = gson.fromJson(params, Map.class);
+            Map<String, Object> maps = gson.fromJson(params, Map.class);
             mapParams.put(TypeUtil.SEARCH_PARAM, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
             mapParams.put(TypeUtil.PARAMS, TypeUtil.cast(maps.get(TypeUtil.PARAMS)));
         }
@@ -141,8 +141,8 @@ public class TypeUtil {
         return true;
     }
 
-    public static <T> List<T> getListWithType(Map<Class, List> map, Class<T> key) {
-        return (List<T>) map.get(key);
+    public static <T> List<T> getListWithType(Map<Class<T>, List> map, Class<T> key) {
+        return map.get(key);
     }
 
     /**

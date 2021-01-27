@@ -1,5 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.devops.api.vo.CountVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
@@ -11,20 +19,12 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import org.springframework.util.CollectionUtils;
-
 @Service
 public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     private static final String UP = "up";
     private static final String DOWN = "down";
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
@@ -105,7 +105,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     public CountVO getCommitCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
-        if (sprintDTO.getSprintId() == null) {
+        if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
         List<Date> dateList = devopsGitlabCommitMapper.queryCountByProjectIdAndDate(projectId, new java.sql.Date(sprintDTO.getStartDate().getTime()), new java.sql.Date(sprintDTO.getEndDate().getTime()));
@@ -140,12 +140,12 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
                 .map(DevopsEnvironmentDTO::getId)
                 .collect(Collectors.toList());
 
-        if (envIds.size() == 0) {
+        if (envIds.isEmpty()) {
             return new CountVO();
         }
 
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
-        if (sprintDTO.getSprintId() == null) {
+        if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
 
@@ -180,7 +180,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     public CountVO getCiCount(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
-        if (sprintDTO.getSprintId() == null) {
+        if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
         //根据项目的id查询项目下所有的流水线的id
@@ -190,13 +190,11 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         }
         //查询流水线在这个冲刺中的部署次数
         List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = new ArrayList<>();
-        ciCdPipelineDTOS.forEach(ciCdPipelineDTO -> {
-            //当前冲刺下流水线的触发次数
-            devopsPipelineRecordRelDTOS.addAll(devopsPipelineRecordRelMapper.selectBySprint(ciCdPipelineDTO.getId(),
-                    new java.sql.Date(sprintDTO.getStartDate().getTime()),
-                    new java.sql.Date(sprintDTO.getEndDate().getTime())));
-
-        });
+        ciCdPipelineDTOS.forEach(ciCdPipelineDTO ->
+                //当前冲刺下流水线的触发次数
+                devopsPipelineRecordRelDTOS.addAll(devopsPipelineRecordRelMapper.selectBySprint(ciCdPipelineDTO.getId(),
+                        new java.sql.Date(sprintDTO.getStartDate().getTime()),
+                        new java.sql.Date(sprintDTO.getEndDate().getTime()))));
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
             return new CountVO();
         }

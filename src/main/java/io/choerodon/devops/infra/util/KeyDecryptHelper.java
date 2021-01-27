@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.util;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.COMMA;
-import static org.hzero.core.util.StringPool.COLON;
 import static org.hzero.core.util.StringPool.EMPTY;
 
 import java.io.IOException;

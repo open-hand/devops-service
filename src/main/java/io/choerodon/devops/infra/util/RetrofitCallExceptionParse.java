@@ -66,7 +66,7 @@ public class RetrofitCallExceptionParse {
      * @param exceptionMessage 报错信息
      * @param clazzKey         期望返回Map的key类型
      * @param clazzValue       期望返回Map的value类型
-     * @return Map<K       ,       T>
+     * @return Map<K, T>
      */
     public static <K, T> Map<K, T> executeCallForMap(Call<ResponseBody> call, String exceptionMessage, Class<K> clazzKey, Class<T> clazzValue) {
         Map map = gson.fromJson(parseException(call, exceptionMessage), Map.class);

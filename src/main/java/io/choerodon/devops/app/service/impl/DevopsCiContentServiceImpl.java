@@ -13,8 +13,8 @@ import io.choerodon.devops.app.service.DevopsCiContentService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
 
 /**
  * 〈功能简述〉
