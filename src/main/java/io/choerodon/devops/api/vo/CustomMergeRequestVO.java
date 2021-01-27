@@ -14,7 +14,7 @@ public class CustomMergeRequestVO {
     @Encrypt
     private Long applicationId;
 
-    private String imageUrl;
+    private String authorImageUrl;
 
     private Long gitlabMergeRequestId;
 
@@ -27,6 +27,8 @@ public class CustomMergeRequestVO {
     private Long assigneeId;
 
     private String assigneeName;
+
+    private String assigneeImageUrl;
 
     private String sourceBranch;
 
@@ -155,19 +157,27 @@ public class CustomMergeRequestVO {
         this.applicationId = applicationId;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
     public String getViewId() {
         return viewId;
     }
 
     public void setViewId(String viewId) {
         this.viewId = viewId;
+    }
+
+    public String getAuthorImageUrl() {
+        return authorImageUrl;
+    }
+
+    public void setAuthorImageUrl(String authorImageUrl) {
+        this.authorImageUrl = authorImageUrl;
+    }
+
+    public String getAssigneeImageUrl() {
+        return assigneeImageUrl;
+    }
+
+    public void setAssigneeImageUrl(String assigneeImageUrl) {
+        this.assigneeImageUrl = assigneeImageUrl;
     }
 }
