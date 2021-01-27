@@ -18,11 +18,16 @@ public class WebSocketBufferSizeConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketBufferSizeConfiguration.class);
 
     /**
-     * 单位 byte, 默认 4 * 1024 * 1024
+     * 单位 byte, 默认 128 * 1024，也就是128KiB
+     * 涉及到这块的逻辑有：
+     * 1. prometheus安装后返回的消息大小
+     * 2. 批量部署或正常部署返回的数据大小
+     * <p>
+     * polaris的扫描接口不再通过ws，而是从http，所以不再和这个有关系
      */
-    @Value("${websocket.buffer.maxTextMessageSize:4194304}")
+    @Value("${websocket.buffer.maxTextMessageSize:131072}")
     private Integer maxTextMessageSize;
-    @Value("${websocket.buffer.maxBinaryMessageSize:4194304}")
+    @Value("${websocket.buffer.maxBinaryMessageSize:131072}")
     private Integer maxBinaryMessageSize;
 
     //初始化servletServerContainer 消息缓冲池大小
