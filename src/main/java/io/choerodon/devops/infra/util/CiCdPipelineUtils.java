@@ -1,9 +1,11 @@
 package io.choerodon.devops.infra.util;
 
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -12,6 +14,7 @@ import io.choerodon.devops.api.vo.BaseDomain;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
+import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 
 public class CiCdPipelineUtils {
@@ -21,6 +24,7 @@ public class CiCdPipelineUtils {
 
     }
 
+    private static final Pattern JOB_NAME_REGEX_PATTERN = Pattern.compile("(.*) \\d/\\d");
 
     public static <T extends BaseDomain> void recordListSort(List<T> list) {
         Collections.sort(list, (o1, o2) -> {
@@ -85,5 +89,22 @@ public class CiCdPipelineUtils {
             return StringUtils.reverse(StringUtils.substring(StringUtils.reverse(relId), 0, VIEWID_DIGIT));
         }
         return relId;
+    }
+
+    /**
+     * 判断jobMap中是否有指定名称的job(包含了parallel类型job情况)。存在返回job对象，不存在返回null
+     */
+    public static DevopsCiJobDTO judgeAndGetJob(String jobName, Map<String, DevopsCiJobDTO> jobDTOMap) {
+        DevopsCiJobDTO devopsCiJobDTO = jobDTOMap.get(jobName);
+        if (devopsCiJobDTO != null) {
+            return devopsCiJobDTO;
+        }
+        Matcher matcher = JOB_NAME_REGEX_PATTERN.matcher(jobName);
+        if (matcher.matches()) {
+            jobName = matcher.group(1);
+            return jobDTOMap.get(jobName);
+        } else {
+            return null;
+        }
     }
 }
