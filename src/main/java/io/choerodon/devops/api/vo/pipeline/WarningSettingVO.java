@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo.pipeline;
 
 import java.util.Set;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈API测试任务， 告警设置VO〉
@@ -12,6 +14,7 @@ import java.util.Set;
 public class WarningSettingVO {
     private Boolean enableWarningSetting;
     private Double performThreshold;
+    @Encrypt
     private Set<Long> notifyUserIds;
     private Boolean sendEmail;
     private Boolean sendSiteMessage;
