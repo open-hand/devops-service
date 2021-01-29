@@ -70,6 +70,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final String CHART = "chart";
     private static final String HARBOR_DEFAULT = "harbor_default";
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
+    private static final String ERROR_VERSION_UPDATE="error.version.update";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -244,7 +245,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         newVersion.setId(oldVersionInDb.getId());
         newVersion.setLastUpdateDate(new Date());
         newVersion.setObjectVersionNumber(oldVersionInDb.getObjectVersionNumber());
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, newVersion, "error.version.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceVersionMapper, newVersion, ERROR_VERSION_UPDATE);
     }
 
     private void updateValues(Long oldValuesId, String values) {
@@ -486,7 +487,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
         } else {
             if (appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO) != 1) {
-                throw new CommonException("error.version.update");
+                throw new CommonException(ERROR_VERSION_UPDATE);
             }
         }
         return appServiceVersionDTO;
@@ -591,7 +592,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public void baseUpdate(AppServiceVersionDTO appServiceVersionDTO) {
         if (appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO) != 1) {
-            throw new CommonException("error.version.update");
+            throw new CommonException(ERROR_VERSION_UPDATE);
         }
         //待修改readme
     }

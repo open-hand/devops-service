@@ -4,6 +4,7 @@ import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditCheckVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 
 public interface DevopsCdPipelineService {
@@ -107,4 +108,9 @@ public interface DevopsCdPipelineService {
      */
     String queryCallbackUrl();
 
+    /**
+     * 处理api测试任务执行完成事件
+     * @param apiTestCompleteEventVO
+     */
+    void handleApiTestTaskCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO);
 }

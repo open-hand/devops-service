@@ -38,33 +38,42 @@ public class DeployConfigVO {
     @Valid
     private AppServiceDeployVO appServiceDeployVO;
 
+    /**
+     * 服务来源  是否是市场服务
+     *
+     *       {@link io.choerodon.devops.infra.enums.AppSourceType}
+     */
+    private String appSource;
+
+    public String getAppSource() {
+        return appSource;
+    }
+
+    public void setAppSource(String appSource) {
+        this.appSource = appSource;
+    }
+
     public static class ImageDeploy {
 
         @ApiModelProperty("仓库名")
-        @NotNull(message = "error.repoName.is.null")
         private String repoName;
 
         @ApiModelProperty("仓库类型")
-        @NotNull(message = "error.repoType.is.null")
         private String repoType;
 
         @Encrypt
         @ApiModelProperty("仓库Id")
-        @NotNull(message = "error.repoId.is.null")
         private String repoId;
 
         @ApiModelProperty("镜像名称")
-        @NotNull(message = "error.imageName.is.null")
         private String imageName;
 
         @Encrypt
         @ApiModelProperty("镜像Id")
-        @NotNull(message = "error.imageId.is.null")
         private Long imageId;
 
 
         @ApiModelProperty("镜像版本")
-        @NotNull(message = "error.tag.is.null")
         private String tag;
 
         @ApiModelProperty("部署values")
@@ -74,6 +83,45 @@ public class DeployConfigVO {
         @ApiModelProperty("容器名称")
         @NotNull(message = "error.containerName.is.null")
         private String containerName;
+
+        /**
+         *  部署对象id
+         */
+        private Long deployObjectId;
+
+        /**
+         * 部署对象的名称
+         */
+        private String deployObjectName;
+
+        /**
+         * 部署对象的版本
+         */
+        private String deployVersion;
+
+        public String getDeployObjectName() {
+            return deployObjectName;
+        }
+
+        public void setDeployObjectName(String deployObjectName) {
+            this.deployObjectName = deployObjectName;
+        }
+
+        public Long getDeployObjectId() {
+            return deployObjectId;
+        }
+
+        public String getDeployVersion() {
+            return deployVersion;
+        }
+
+        public void setDeployVersion(String deployVersion) {
+            this.deployVersion = deployVersion;
+        }
+
+        public void setDeployObjectId(Long deployObjectId) {
+            this.deployObjectId = deployObjectId;
+        }
 
         public String getValue() {
             return value;
@@ -143,26 +191,21 @@ public class DeployConfigVO {
     public static class JarDeploy {
 
         @ApiModelProperty("服务名")
-        @NotNull(message = "error.serverName.is.null")
         private String serverName;
         @ApiModelProperty("仓库名")
         private String neRepositoryName;
 
         @Encrypt
         @ApiModelProperty("仓库id")
-        @NotNull(message = "error.repositoryId.is.null")
         private Long repositoryId;
 
         @ApiModelProperty("groupId")
-        @NotNull(message = "error.groupId.is.null")
         private String groupId;
 
         @ApiModelProperty("artifactId")
-        @NotNull(message = "error.artifactId.is.null")
         private String artifactId;
 
         @ApiModelProperty("版本")
-        @NotNull(message = "error.version.is.null")
         private String version;
 
         @ApiModelProperty("部署values")
@@ -172,6 +215,20 @@ public class DeployConfigVO {
         @ApiModelProperty("工作目录,默认值/temp")
         @NotNull(message = "error.workingPath.is.null")
         private String workingPath;
+
+
+        /**
+         *  部署对象id
+         */
+        private Long deployObjectId;
+
+        public Long getDeployObjectId() {
+            return deployObjectId;
+        }
+
+        public void setDeployObjectId(Long deployObjectId) {
+            this.deployObjectId = deployObjectId;
+        }
 
         public String getWorkingPath() {
             return workingPath;

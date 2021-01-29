@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,7 @@ public class SyncServiceImpl implements SyncService {
         ResponseEntity<List<UserVO>> roleResponseEntity = baseServiceClient.listUserByCreationDate();
         List<UserVO> userVOList = roleResponseEntity.getBody();
         CustomContextUtil.setUserContext(0L);
-        if (roleResponseEntity.getStatusCode().is2xxSuccessful() && userVOList != null && userVOList.size() != 0) {
+        if (roleResponseEntity.getStatusCode().is2xxSuccessful() && userVOList != null && !CollectionUtils.isEmpty(userVOList)) {
             userVOList.forEach(t -> {
                 if (t.getId() != -1) {
                     UserAttrDTO queryDTO = new UserAttrDTO();

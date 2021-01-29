@@ -121,7 +121,7 @@ public class ChartUtil {
         ChartClient chartClient = retrofit.create(ChartClient.class);
         Call<ChartDeleteResponseVO> call = chartClient.deleteChartVersion(chartTagVO.getOrgCode(), chartTagVO.getProjectCode(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
         try {
-            Response<ChartDeleteResponseVO> response = call.execute();
+            call.execute();
         } catch (Exception e) {
             LOGGER.error("error.delete.chart。repository: {}, chartName：{}，chartVersion：{} ", chartTagVO.getRepository(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
         }

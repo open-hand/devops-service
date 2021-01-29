@@ -75,10 +75,6 @@ public interface GitlabServiceClient {
             @RequestBody GitlabUserWithPasswordDTO user);
 
 
-    @PutMapping("/v1/projects/{projectId}")
-    ResponseEntity<GitlabProjectDTO> updateProject(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("userId") Integer userId);
-
     @PostMapping("/v1/projects")
     ResponseEntity<GitlabProjectDTO> createProject(@RequestParam("groupId") Integer groupId,
                                                    @RequestParam("projectName") String projectName,
@@ -658,4 +654,19 @@ public interface GitlabServiceClient {
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "variable keys", required = true)
             @RequestBody List<String> key);
+
+    /**
+     * 更新项目
+     *
+     * @param project 项目对象
+     * @param userId  用户Id
+     * @return {@link Project}
+     */
+    @ApiOperation(value = "更新项目")
+    @PutMapping("/v1/projects")
+    ResponseEntity<String> updateProject(
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam Integer userId,
+            @ApiParam(value = "项目信息", required = true)
+            @RequestBody Project project);
 }

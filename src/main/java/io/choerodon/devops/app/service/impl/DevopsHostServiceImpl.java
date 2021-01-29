@@ -55,7 +55,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     /**
      * 主机状态处于处理中的超时时长
      */
-    private static final long OPERATING_TIMEOUT = 60 * 1000;
+    private static final long OPERATING_TIMEOUT = 60L * 1000;
     private static final String CHECKING_HOST = "checking";
 
     /**
@@ -573,7 +573,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private boolean isHostOccupiedTimeout(Date lastUpdateDate) {
         long current = System.currentTimeMillis();
         long lastUpdate = lastUpdateDate.getTime();
-        long hourToMillis = 60 * 60 * 1000;
+        long hourToMillis = 60L * 60L * 1000L;
         // 最后更新时间加上过期时间的毫秒数是否大于现在的毫秒数
         return (lastUpdate + hostOccupyTimeoutHours * hourToMillis) < current;
     }
@@ -678,7 +678,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!page.isEmpty()) {
             List<Long> userIds = page.getContent().stream().map(DevopsHostVO::getLastUpdatedBy).collect(Collectors.toList());
             List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
-            Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(v -> v.getId(), v -> v));
+            Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
             page.getContent().forEach(devopsHostVO -> {
                 if (userDTOMap.get(devopsHostVO.getLastUpdatedBy()) != null) {
                     devopsHostVO.setUpdaterInfo(userDTOMap.get(devopsHostVO.getLastUpdatedBy()));
@@ -694,6 +694,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return Collections.emptyList();
         }
         return devopsHostMapper.listDistributionTestHostsByIds(projectId, hostIds);
+    }
+
+    @Override
+    public Page<DevopsHostDTO> listDistributionTestHosts(PageRequest pageRequest) {
+        return PageHelper.doPage(pageRequest, () -> devopsHostMapper.listDistributionTestHosts());
     }
 
     @Override

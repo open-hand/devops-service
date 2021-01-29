@@ -1,7 +1,28 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONArray;
 import com.google.gson.Gson;
+import io.codearte.props2yaml.Props2YAML;
+import org.hzero.websocket.constant.WebSocketConstant;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.hzero.websocket.vo.MsgVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
@@ -22,26 +43,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
-import io.codearte.props2yaml.Props2YAML;
-import org.hzero.websocket.constant.WebSocketConstant;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.hzero.websocket.vo.MsgVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
 
 
 /**
@@ -63,6 +64,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String HELM_RELEASE_UPGRADE = "helm_release_upgrade";
     private static final String OPERATE_POD_COUNT = "operate_pod_count";
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
+    private static final String CLUSTER_AGENT = "choerodon-cluster-agent-";
 
 
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
@@ -145,10 +147,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 "choerodon-cluster-agent",
                 agentExpectVersion,
                 Props2YAML.fromContent(FileUtil.propertiesToString(configs))
-                        .convert(), "choerodon-cluster-agent-" + devopsClusterDTO.getCode(), null);
+                        .convert(), CLUSTER_AGENT + devopsClusterDTO.getCode(), null);
         msg.setKey(String.format(KEY_FORMAT,
                 devopsClusterDTO.getId(),
-                "choerodon-cluster-agent-" + devopsClusterDTO.getCode()));
+                CLUSTER_AGENT + devopsClusterDTO.getCode()));
         msg.setType(HELM_RELEASE_UPGRADE);
         msg.setPayload(JsonHelper.marshalByJackson(payload));
         String msgPayload = JsonHelper.marshalByJackson(msg);
@@ -192,10 +194,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 agentRepoUrl,
                 "choerodon-cluster-agent",
                 agentExpectVersion,
-                yaml.dump(configs), "choerodon-cluster-agent-" + devopsClusterDTO.getCode(), null);
+                yaml.dump(configs), CLUSTER_AGENT + devopsClusterDTO.getCode(), null);
         msg.setKey(String.format(KEY_FORMAT,
                 devopsClusterDTO.getId(),
-                "choerodon-cluster-agent-" + devopsClusterDTO.getCode()));
+                CLUSTER_AGENT + devopsClusterDTO.getCode()));
         msg.setType(HELM_RELEASE_UPGRADE);
         msg.setPayload(JsonHelper.marshalByJackson(payload));
         return msg;

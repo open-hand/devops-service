@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.hzero.boot.message.entity.Receiver;
@@ -226,4 +227,12 @@ public interface SendNotificationService {
      * 实例状态变更发送webhook josn
      */
     void sendInstanceStatusUpdate(AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String currentStatus);
+
+    /**
+     * 发送API测试告警通知
+     * @param type
+     * @param userIds
+     * @param params
+     */
+    void sendApiTestWarningMessage(Set<Long> userIds, Map<String, String> params, Long projectId);
 }

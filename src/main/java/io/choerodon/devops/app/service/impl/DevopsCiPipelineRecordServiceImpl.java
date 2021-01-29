@@ -86,7 +86,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final AppServiceVersionMapper appServiceVersionMapper;
-    private StringRedisTemplate stringRedisTemplate;
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -135,7 +134,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.appServiceVersionMapper = appServiceVersionMapper;
-        this.stringRedisTemplate = stringRedisTemplate;
         this.sendNotificationService = sendNotificationService;
     }
 
@@ -468,7 +466,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             DevopsCiStageRecordVO devopsCiStageRecordVO = new DevopsCiStageRecordVO();
             devopsCiStageRecordVO.setName(k);
             devopsCiStageRecordVO.setType(StageType.CI.getType());
-            devopsCiStageRecordVO.setSequence(value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).get().getGitlabJobId());
+            value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i-> devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
             // 只返回job的最新记录
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
             Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
@@ -840,7 +838,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             List<DevopsCiJobRecordDTO> value = entry.getValue();
             DevopsCiStageRecordVO devopsCiStageRecordVO = new DevopsCiStageRecordVO();
             devopsCiStageRecordVO.setName(k);
-            devopsCiStageRecordVO.setSequence(value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).get().getGitlabJobId());
+            value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i->devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
             // 只返回job的最新记录
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
             Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));

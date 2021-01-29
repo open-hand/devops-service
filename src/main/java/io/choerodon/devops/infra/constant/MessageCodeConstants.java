@@ -36,6 +36,7 @@ public class MessageCodeConstants {
     public static final String UPDATE_INSTANCE_FAIL = "UPDATEINSTANCEFAIL";
     public static final String ENABLE_INSTANCE = "ENABLEINSTANCE";
     public static final String STOP_INSTANCE = "STOPINSTANCE";
+    public static final String PIPELINE_API_TEST_WARNING = "PIPELINE_API_TEST_WARNING";
 
 
 }

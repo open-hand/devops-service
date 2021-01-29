@@ -5,7 +5,6 @@ import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 public class DevopsCdStageRecordVO extends StageRecordVO {
     @Encrypt

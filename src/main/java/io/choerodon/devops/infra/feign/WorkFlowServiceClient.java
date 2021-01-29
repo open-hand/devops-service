@@ -26,7 +26,7 @@ public interface WorkFlowServiceClient {
             @RequestParam(value = "business_key") String businessKey);
 
     @GetMapping(value = "/v1/projects/{project_id}/process_instances")
-    ResponseEntity stopInstance(
+    ResponseEntity<Void> stopInstance(
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "business_key") String businessKey);
 

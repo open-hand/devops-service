@@ -186,9 +186,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         ciCdPipelineVO.setCreateUserName(userName);
         if (!CollectionUtils.isEmpty(stageRecordVOS)) {
             Optional<Long> reduce = stageRecordVOS.stream().filter(stageRecordVO -> !Objects.isNull(stageRecordVO.getDurationSeconds())).map(StageRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2);
-            if (reduce != null && reduce.isPresent()) {
-                ciCdPipelineVO.setTime(reduce.get());
-            }
+            reduce.ifPresent(ciCdPipelineVO::setTime);
         }
         ciCdPipelineVO.setLatestExecuteDate(executeDate);
         ciCdPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);
@@ -531,15 +529,4 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             }
         });
     }
-
-    private Page<CiCdPipelineRecordVO> assembleCdPage(Page<CiCdPipelineRecordVO> ciCdPipelineRecordVOPage,
-                                                      List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS,
-                                                      Page<DevopsCdPipelineRecordVO> devopsCdPipelineRecordVOS) {
-        calculateRecordStatus(ciCdPipelineRecordVOS);
-        ciCdPipelineRecordVOPage = ConvertUtils.convertPage(devopsCdPipelineRecordVOS, CiCdPipelineRecordVO.class);
-        ciCdPipelineRecordVOPage.setContent(ciCdPipelineRecordVOS);
-        return ciCdPipelineRecordVOPage;
-    }
-
-
 }

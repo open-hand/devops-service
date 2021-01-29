@@ -8,6 +8,9 @@ package io.choerodon.devops.infra.constant;
  * @since 2020/7/2 11:14
  */
 public class PipelineCheckConstant {
+    private PipelineCheckConstant(){
+
+    }
     //
     public static final String ERROR_CANCEL_AUDITING_PIPELINE = "error.cancel.auditing.pipeline";
 

@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 
 /**
  * 带有节点信息的集群信息

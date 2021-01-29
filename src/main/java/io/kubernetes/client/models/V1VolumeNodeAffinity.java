@@ -49,10 +49,12 @@ public class V1VolumeNodeAffinity {
         }
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(new Object[]{this.required});
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("class V1VolumeNodeAffinity {\n");

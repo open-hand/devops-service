@@ -246,4 +246,19 @@ public class GitOpsConstants {
      * 主机状态校准的线程池名称
      */
     public static final String HOST_STATUS_EXECUTOR = "host-status-executor";
+
+    /**
+     * 同步用户的的线程池名称
+     */
+    public static final String USER_SYNC_EXECUTOR = "user-executor";
+
+    /**
+     * gitlab默认的ci文件的位置
+     */
+    public static final String DEFAULT_CI_CONFIG_PATH = ".gitlab-ci.yml";
+
+    /**
+     * 更改默认仓库的ci文件为这个，避免导入应用时跑ci，导入完成后改回默认
+     */
+    public static final String TEMP_CI_CONFIG_PATH = "choerodon-ci.yaml";
 }

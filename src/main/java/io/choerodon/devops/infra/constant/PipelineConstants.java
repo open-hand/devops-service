@@ -9,5 +9,9 @@ package io.choerodon.devops.infra.constant;
  */
 public class PipelineConstants {
 
+    private PipelineConstants() {
+
+    }
+
     public static final Long DEFAULT_CI_CD_PIPELINE_RECORD_ID = 0L;
 }

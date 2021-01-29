@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.IOUtils;
@@ -28,6 +29,7 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -89,7 +91,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 
 /**
@@ -112,7 +113,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
     private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
-    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -206,7 +206,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
-    private DevopsCiCdPipelineMapper DevopsCiCdPipelineMapper;
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     @Autowired
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired
@@ -283,7 +283,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("app-service")
+                        .withRefType(APPSERVICE)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
                         .withPayloadAndSerialize(devOpsAppServicePayload)
                         .withRefId(String.valueOf(appServiceDTO.getId()))
@@ -634,7 +634,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
         devopsCiPipelineDTO.setProjectId(projectId);
-        return DevopsCiCdPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
+        return devopsCiCdPipelineMapper.selectCount(devopsCiPipelineDTO) > 0;
     }
 
     @Override
@@ -866,6 +866,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         // clone外部代码仓库
         String applicationDir = APPLICATION + GenerateUUID.generateUUID();
 
+        // 更改默认仓库的ci文件为这个，避免导入应用时跑ci，导入完成后改回默认
+        gitlabServiceClientOperator.updateProjectCiConfigPath(gitlabProjectDO.getId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), GitOpsConstants.TEMP_CI_CONFIG_PATH);
+
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
             String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
             if (tempUrl.length < 2) {
@@ -963,6 +966,10 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             releaseResources(applicationWorkDir, repositoryGit);
         }
+
+        // 将ci文件位置改回默认
+        gitlabServiceClientOperator.updateProjectCiConfigPath(gitlabProjectDO.getId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), GitOpsConstants.DEFAULT_CI_CONFIG_PATH);
+
         try {
             // 设置application的属性
             String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
@@ -1909,19 +1916,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             importPayloadList.add(appServiceImportPayload);
         });
 
-        importPayloadList.forEach(payload -> {
-            producer.apply(
-                    StartSagaBuilder
-                            .newBuilder()
-                            .withLevel(ResourceLevel.PROJECT)
-                            .withRefType("app")
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
-                            .withPayloadAndSerialize(payload)
-                            .withRefId(String.valueOf(payload.getAppServiceId()))
-                            .withSourceId(projectId),
-                    builder -> {
-                    });
-        });
+        importPayloadList.forEach(payload -> producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
+                        .withPayloadAndSerialize(payload)
+                        .withRefId(String.valueOf(payload.getAppServiceId()))
+                        .withSourceId(projectId),
+                builder -> {
+                }));
     }
 
     @Override
@@ -2126,28 +2131,26 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private void getRate(SonarContentVO sonarContentVO, List<Facet> facets) {
         sonarContentVO.setRate("A");
-        facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> {
-            facet.getValues().forEach(value -> {
-                if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
-                    if (sonarContentVO.getRate().equals("A")) {
-                        sonarContentVO.setRate("B");
-                    }
+        facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> facet.getValues().forEach(value -> {
+            if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
+                if (sonarContentVO.getRate().equals("A")) {
+                    sonarContentVO.setRate("B");
                 }
-                if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
-                    if (!sonarContentVO.getRate().equals("D") && !sonarContentVO.getRate().equals("E")) {
-                        sonarContentVO.setRate("C");
-                    }
+            }
+            if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
+                if (!sonarContentVO.getRate().equals("D") && !sonarContentVO.getRate().equals("E")) {
+                    sonarContentVO.setRate("C");
                 }
-                if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
-                    if (!sonarContentVO.getRate().equals("E")) {
-                        sonarContentVO.setRate("D");
-                    }
+            }
+            if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
+                if (!sonarContentVO.getRate().equals("E")) {
+                    sonarContentVO.setRate("D");
                 }
-                if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
-                    sonarContentVO.setRate("E");
-                }
-            });
-        });
+            }
+            if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
+                sonarContentVO.setRate("E");
+            }
+        }));
     }
 
     private Map<String, String> getQueryMap(String key, String type, Boolean newAdd) {
@@ -2363,11 +2366,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public String checkAppServiceType(Long projectId, AppServiceDTO appServiceDTO) {
+    public String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId) {
         String type = null;
-        if (!appServiceDTO.getProjectId().equals(projectId)) {
+        if (appServiceProjectId == null) {
+            return AppServiceType.MARKET_SERVICE.getType();
+        } else if (!appServiceProjectId.equals(projectId)) {
             type = AppServiceType.SHARE_SERVICE.getType();
-        } else if (appServiceDTO.getProjectId().equals(projectId)) {
+        } else {
             type = AppServiceType.NORMAL_SERVICE.getType();
         }
         return type;
@@ -2878,5 +2883,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             return JsonHelper.unmarshalByJackson(jsonBody, SonarContentsVO.class);
         }
+    }
+
+    @Override
+    public List<AppServiceDTO> baseListByIds(Set<Long> appServiceIds) {
+        if (CollectionUtils.isEmpty(appServiceIds)) {
+            return Collections.emptyList();
+        }
+        return appServiceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(appServiceIds));
     }
 }

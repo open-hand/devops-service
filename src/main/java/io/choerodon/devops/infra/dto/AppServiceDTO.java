@@ -47,6 +47,9 @@ public class AppServiceDTO extends AuditDomain {
     private String type;
     private String imgUrl;
     // TODO delete the field
+    /**
+     * @deprecated
+     */
     @Deprecated
     private Long mktAppId;
 
