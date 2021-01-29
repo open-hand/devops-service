@@ -1042,9 +1042,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     if (Objects.isNull(projectDTO)) {
                         return;
                     }
-                    sendNotices(SendSettingEnum.ACTIVITE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null), projectDTO.getId());
+                    sendNotices(SendSettingEnum.ACTIVATE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null), projectDTO.getId());
                 },
-                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.ACTIVITE_CLUSTER, ex));
+                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.ACTIVATE_CLUSTER, ex));
     }
 
     @Override
