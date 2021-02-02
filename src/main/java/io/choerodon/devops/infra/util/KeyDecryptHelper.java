@@ -80,8 +80,9 @@ public final class KeyDecryptHelper {
      */
     @Nullable
     public static String decryptJsonIds(@Nullable String idJsonArray) {
+        // 如果为空或者不加密，原样返回
         if (idJsonArray == null || !EncryptContext.isEncrypt()) {
-            return null;
+            return idJsonArray;
         }
         List<String> idStringList = GSON.fromJson(idJsonArray, new TypeToken<List<String>>() {
         }.getType());
