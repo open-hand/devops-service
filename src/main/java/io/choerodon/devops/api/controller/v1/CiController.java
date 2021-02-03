@@ -126,6 +126,10 @@ public class CiController {
     public ResponseEntity<Void> saveJarMetaData(
             @ApiParam(value = "制品库id", required = true)
             @RequestParam("nexus_repo_id") Long nexusRepoId,
+            @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
+            @RequestParam("job_id") Long jobId,
+            @ApiParam(value = "制品库id", required = true)
+            @RequestParam("sequence") Long sequence,
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "job_name", required = true)
@@ -134,7 +138,7 @@ public class CiController {
             @RequestParam String token,
             @ApiParam(value = "pom文件", required = true)
             @RequestParam MultipartFile file) {
-        ciPipelineMavenService.createOrUpdate(nexusRepoId, gitlabPipelineId, jobName, token, file);
+        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file);
         return ResponseEntity.ok().build();
     }
 

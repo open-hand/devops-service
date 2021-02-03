@@ -27,6 +27,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
@@ -1116,6 +1117,10 @@ public class FileUtil {
         } catch (IOException e) {
             throw new CommonException("error.package.tgz", e.getMessage());
         }
+    }
+
+    public static String ensureEndWithSlash(String repo) {
+        return !org.springframework.util.StringUtils.isEmpty(repo) && repo.endsWith(BaseConstants.Symbol.SLASH) ? repo : repo + BaseConstants.Symbol.SLASH;
     }
 
 }

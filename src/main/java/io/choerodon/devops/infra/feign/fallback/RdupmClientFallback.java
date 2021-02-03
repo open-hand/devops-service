@@ -105,4 +105,9 @@ public class RdupmClientFallback implements RdupmClient {
     public ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(Long projectId, String repoName, String tagName) {
         throw new CommonException("error.paging.image.tag");
     }
+
+    @Override
+    public ResponseEntity<C7nNexusRepoDTO> getMavenRepo(Long organizationId, Long projectId, Long repositoryId) {
+        throw new CommonException("error.query.repo.by.id");
+    }
 }

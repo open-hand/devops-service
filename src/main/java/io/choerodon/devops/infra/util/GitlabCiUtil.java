@@ -324,12 +324,15 @@ public class GitlabCiUtil {
     }
 
     /**
-     * 保存jar包元数据
+     * 存jar包元数据
      *
-     * @param nexusRepoId nexus制品库id
+     * @param nexusRepoId nexus仓库id
+     * @param jobId       流水线job Id
+     * @param sequence    步骤顺序
      * @return 指令
      */
-    public static String saveJarMetadata(Long nexusRepoId) {
-        return "saveJarMetadata " + nexusRepoId;
+    public static String saveJarMetadata(Long nexusRepoId, Long jobId, Long sequence) {
+        String rawCommand = "saveJarMetadata %s %s %s";
+        return String.format(rawCommand, nexusRepoId, jobId, sequence);
     }
 }
