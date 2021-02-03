@@ -61,6 +61,44 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private Long gitlabProjectId;
     private String viewId;
 
+    /**
+     * ci流水线生成镜像下载命令
+     */
+    private String downloadImage;
+    /**
+     * ci生成jar包地址
+     */
+    private String downloadJar;
+    /**
+     *  ci生成npm包地址
+     */
+    private String downloadNpm;
+
+
+    public String getDownloadImage() {
+        return downloadImage;
+    }
+
+    public void setDownloadImage(String downloadImage) {
+        this.downloadImage = downloadImage;
+    }
+
+    public String getDownloadJar() {
+        return downloadJar;
+    }
+
+    public void setDownloadJar(String downloadJar) {
+        this.downloadJar = downloadJar;
+    }
+
+    public String getDownloadNpm() {
+        return downloadNpm;
+    }
+
+    public void setDownloadNpm(String downloadNpm) {
+        this.downloadNpm = downloadNpm;
+    }
+
     public String getViewId() {
         return viewId;
     }

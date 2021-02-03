@@ -365,7 +365,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 如果不符合流水线设置， 提前退出， 只同步流水线的状态， stage的跳过
         Map<Integer, String> jobType = new HashMap<>();
         for (JobDTO job : jobs) {
-            DevopsCiJobDTO devopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(job.getName(),jobMap);
+            DevopsCiJobDTO devopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(job.getName(), jobMap);
             if (devopsCiJobDTO == null) {
                 LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", job.getName());
                 return;
@@ -435,10 +435,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Override
     public DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long ciPipelineRecordId) {
         if (ciPipelineRecordId == null || ciPipelineRecordId == 0L) {
-            return null;
+            return new DevopsCiPipelineRecordVO();
         }
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
-
+        if (Objects.isNull(devopsCiPipelineRecordDTO)) {
+            return new DevopsCiPipelineRecordVO();
+        }
         ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
@@ -466,7 +468,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             DevopsCiStageRecordVO devopsCiStageRecordVO = new DevopsCiStageRecordVO();
             devopsCiStageRecordVO.setName(k);
             devopsCiStageRecordVO.setType(StageType.CI.getType());
-            value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i-> devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
+            value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i -> devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
             // 只返回job的最新记录
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
             Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
@@ -838,7 +840,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             List<DevopsCiJobRecordDTO> value = entry.getValue();
             DevopsCiStageRecordVO devopsCiStageRecordVO = new DevopsCiStageRecordVO();
             devopsCiStageRecordVO.setName(k);
-            value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i->devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
+            value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i -> devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
             // 只返回job的最新记录
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
             Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));

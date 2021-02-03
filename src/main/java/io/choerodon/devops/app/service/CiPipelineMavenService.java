@@ -17,11 +17,15 @@ public interface CiPipelineMavenService {
      *
      * @param nexusRepoId      制品库id
      * @param gitlabPipelineId gitlab流水线id
+     * @param jobId ci job 的id
+     * @param sequence job的顺序
      * @param jobName          job名称
      * @param token            应用服务token
      * @param file             pom文件
      */
     void createOrUpdate(Long nexusRepoId,
+                        Long jobId,
+                        Long sequence,
                         Long gitlabPipelineId,
                         String jobName,
                         String token,

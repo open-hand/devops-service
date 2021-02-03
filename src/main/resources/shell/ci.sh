@@ -242,11 +242,15 @@ function saveImageMetadata() {
 
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
 # $1 maven制品库id
+# $2 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $3 sequence   猪齿鱼的CI流水线的步骤的序列号
 function saveJarMetadata() {
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
     -F "token=${Token}" \
     -F "nexus_repo_id=$1" \
+    -F "job_id=$2" \
+    -F "sequence=$3" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_name=${CI_JOB_NAME}" \
     -F "file=@pom.xml" \

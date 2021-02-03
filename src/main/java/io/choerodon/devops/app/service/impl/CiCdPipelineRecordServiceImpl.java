@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.google.gson.Gson;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -23,8 +24,12 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.RdupmClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
@@ -91,13 +96,26 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
+    @Autowired
+    private CiPipelineMavenMapper ciPipelineMavenMapper;
+
+    @Autowired
+    private CiPipelineImageMapper ciPipelineImageMapper;
+
+    @Autowired
+    private RdupmClient rdupmClient;
+
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+
+
     private static final Gson gson = new Gson();
 
     @Override
     public CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId) {
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelMapper.selectByPrimaryKey(recordRelId);
         if (Objects.isNull(devopsPipelineRecordRelDTO)) {
-            return null;
+            return new CiCdPipelineRecordVO();
         }
         CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsPipelineRecordRelDTO.getPipelineId());
         DevopsPipelineRecordRelVO devopsPipelineRecordRelVO = relDtoToRelVO(devopsPipelineRecordRelDTO);
@@ -165,7 +183,31 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         }
         //处理viewId
         ciCdPipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(ciCdPipelineRecordVO.getDevopsPipelineRecordRelId()));
+        //填充制品的下载地址
+        fillRepoUrl(projectId, ciCdPipelineRecordVO, devopsCiPipelineRecordVO.getGitlabPipelineId());
         return ciCdPipelineRecordVO;
+    }
+
+    private void fillRepoUrl(Long projectId, CiCdPipelineRecordVO ciCdPipelineRecordVO, Long gitlabPipelineId) {
+        if (Objects.isNull(gitlabPipelineId)) {
+            return;
+        }
+        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
+        ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
+        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
+        if (!Objects.isNull(pipelineMavenDTO)) {
+            //todo 替换成代理的地址  如果这个仓库是私有的 还能下载吗？
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
+            String downloadUrl = c7nNexusRepoDTO.getUrl() + pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) + "/" + pipelineMavenDTO.getArtifactId() + "/" + pipelineMavenDTO.getVersion() + ".jar";
+            ciCdPipelineRecordVO.setDownloadJar(downloadUrl);
+        }
+        CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
+        ciPipelineImageDTO.setGitlabPipelineId(gitlabPipelineId);
+        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
+        if (!Objects.isNull(pipelineImageDTO)) {
+            ciCdPipelineRecordVO.setDownloadImage("docker pull " + pipelineImageDTO.getImageTag());
+        }
     }
 
     private boolean isFirstRecord(DevopsPipelineRecordRelVO devopsPipelineRecordRelVO) {
