@@ -2,11 +2,12 @@ English | [简体中文](./README.md)
 
 # DevOps Service
 
-`DevOps Service` is the continuous delivery service of Choerodon. Current version: `0.21.0`
+`DevOps Service` is the continuous delivery service of Choerodon. Current version: `0.24.6`
 
 DevOps Service integrated several open source tools to automate the process of `planning`, `coding`, `building`, `testing`, `deployment`, `operation` and `monitoring`.
  After a little simple configuration, you'll get the smoothest development experience.
 
+> NOTICE: The previous front code was moved [here](https://github.com/open-hand/choerodon-front-devops)
 
 ## Feature
 `DevOps Service` contains features as follows:    

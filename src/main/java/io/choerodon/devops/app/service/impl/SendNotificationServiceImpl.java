@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.enums.MessageAdditionalType;
 import io.choerodon.core.enums.ServiceNotifyType;
 import io.choerodon.core.enums.TargetUserType;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
@@ -72,6 +73,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String APP_SERVICE_NAME = "appServiceName";
     private static final String LINK = "link";
     private static final String BASE_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
+    private static final String LOGIN_NAME = "loginName";
+    private static final String USER_NAME = "userName";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -1059,9 +1062,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     if (Objects.isNull(projectDTO)) {
                         return;
                     }
-                    sendNotices(SendSettingEnum.ACTIVITE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null), projectDTO.getId());
+                    sendNotices(SendSettingEnum.ACTIVATE_CLUSTER.value(), WEB_HOOK, constructParamsForCluster(devopsClusterDTO, projectDTO.getOrganizationId(), null), projectDTO.getId());
                 },
-                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.ACTIVITE_CLUSTER, ex));
+                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", SendSettingEnum.ACTIVATE_CLUSTER, ex));
     }
 
     @Override
@@ -1307,6 +1310,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         LOGGER.debug("Send Notice: code: {}, receivers: {}, params: {}, projectId: {}", sendSettingCode, receivers, params, projectId);
         doWithTryCatchAndLog(
                 () -> {
+                    setParamsForUserInfo(params);
                     MessageSender sender = constructMessageSender(sendSettingCode, receivers, null, params, null, projectId);
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
@@ -1321,6 +1325,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         LOGGER.debug("Send Notice: code: {}, receivers: {}, params: {}, organizationId: {}", sendSettingCode, receivers, params, organizationId);
         doWithTryCatchAndLog(
                 () -> {
+                    setParamsForUserInfo(params);
                     MessageSender sender = constructOrganizationMessageSender(sendSettingCode, receivers, null, params, null, organizationId);
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
@@ -1332,6 +1337,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private void sendNotices(String sendSettingCode, String receiveType, Map<String, String> params, Long projectId) {
         LOGGER.debug("Send Notice: code: {}, params: {}, projectId: {}", sendSettingCode, params, projectId);
+        setParamsForUserInfo(params);
         MessageSender sender = constructMessageSender(sendSettingCode, null, receiveType, params, null, projectId);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
@@ -1343,5 +1349,16 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
         sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
+    }
+
+    private void setParamsForUserInfo(Map<String, String> params) {
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        if (details == null) {
+            params.put(LOGIN_NAME, DetailsHelper.getAnonymousDetails().getUsername());
+            params.put(USER_NAME, "匿名用户");
+        } else {
+            params.put(LOGIN_NAME, details.getUsername());
+            params.put(USER_NAME, details.getRealName());
+        }
     }
 }
