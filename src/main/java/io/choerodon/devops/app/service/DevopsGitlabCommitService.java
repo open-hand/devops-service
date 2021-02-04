@@ -21,6 +21,8 @@ public interface DevopsGitlabCommitService {
     Page<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, PageRequest pageable,
                                                Date startDate, Date endDate);
 
+    Page<CommitFormRecordVO> pageIndividualCommits(Long projectId, Date startDate, Date endDate, PageRequest pageable);
+
     DevopsGitlabCommitDTO baseCreate(DevopsGitlabCommitDTO devopsGitlabCommitDTO);
 
     DevopsGitlabCommitDTO baseQueryByShaAndRef(String sha, String ref);
@@ -29,7 +31,7 @@ public interface DevopsGitlabCommitService {
 
     Page<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appServiceId,
                                                PageRequest pageable, Map<Long, IamUserDTO> userMap,
-                                               Date startDate, Date endDate);
+                                               Date startDate, Date endDate, Long userId);
 
     void baseUpdate(DevopsGitlabCommitDTO devopsGitlabCommitDTO);
 
