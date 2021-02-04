@@ -12,10 +12,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -41,7 +43,11 @@ import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
@@ -89,6 +95,22 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private CiPipelineMavenMapper ciPipelineMavenMapper;
+
+    @Autowired
+    private CiPipelineImageMapper ciPipelineImageMapper;
+
+    @Autowired
+    private RdupmClient rdupmClient;
+
+    @Autowired
+    private DevopsCiJobMapper devopsCiJobMapper;
+
+    @Autowired
+    private DevopsCiStageMapper devopsCiStageMapper;
+
 
     // @lazy解决循环依赖
     public DevopsCiPipelineRecordServiceImpl(DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
@@ -517,6 +539,32 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         }
                     }
                 }
+
+                // 通过cipipeline_id 和 stageName 找到stageId
+                Long ciPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
+                String stageName = entry.getKey();
+                DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
+                devopsCiStageDTO.setName(stageName);
+                devopsCiStageDTO.setCiPipelineId(ciPipelineId);
+                DevopsCiStageDTO ciStageDTO = devopsCiStageMapper.selectOne(devopsCiStageDTO);
+                if (!Objects.isNull(ciStageDTO)) {
+                    //找到stageId 和job name 查询唯一的job
+                    DevopsCiJobDTO jobDTO = new DevopsCiJobDTO();
+                    jobDTO.setName(devopsCiJobRecordVO.getName());
+                    jobDTO.setCiStageId(ciStageDTO.getId());
+                    //流水线中阶段名字唯一，阶段内的job名字唯一
+                    DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectOne(jobDTO);
+                    if (!Objects.isNull(devopsCiJobDTO)) {
+                        CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
+                        List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+                        List<String> typeList = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList());
+                        //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
+                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())) {
+                            //添加job里面构建结果的下载的地址
+                            fillRepoUrl(projectId, devopsCiJobRecordVO, devopsCiPipelineRecordDTO.getGitlabPipelineId());
+                        }
+                    }
+                }
             });
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
             // 按照gitlab job id正序排序
@@ -563,6 +611,28 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
 
         return devopsCiPipelineRecordVO;
+    }
+
+    private void fillRepoUrl(Long projectId, DevopsCiJobRecordVO devopsCiJobRecordVO, Long gitlabPipelineId) {
+        if (Objects.isNull(gitlabPipelineId)) {
+            return;
+        }
+        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
+        ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
+        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
+        if (!Objects.isNull(pipelineMavenDTO)) {
+            //todo 替换成代理的地址  如果这个仓库是私有的 还能下载吗？
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
+            String downloadUrl = c7nNexusRepoDTO.getUrl() + pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) + "/" + pipelineMavenDTO.getArtifactId() + "/" + pipelineMavenDTO.getVersion() + ".jar";
+            devopsCiJobRecordVO.setDownloadJar(downloadUrl);
+        }
+        CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
+        ciPipelineImageDTO.setGitlabPipelineId(gitlabPipelineId);
+        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
+        if (!Objects.isNull(pipelineImageDTO)) {
+            devopsCiJobRecordVO.setDownloadImage("docker pull " + pipelineImageDTO.getImageTag());
+        }
     }
 
     /**
