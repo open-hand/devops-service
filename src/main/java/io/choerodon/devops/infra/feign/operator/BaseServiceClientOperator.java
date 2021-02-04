@@ -116,7 +116,7 @@ public class BaseServiceClientOperator {
 
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
-        PageRequest customPageRequest = new PageRequest(0, 0);
+        PageRequest customPageRequest = new PageRequest(0, Integer.MAX_VALUE);
         ResponseEntity<Page<ProjectDTO>> pageResponseEntity =
                 baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(customPageRequest), name, code, true, params);
         return Objects.requireNonNull(pageResponseEntity.getBody()).getContent();
