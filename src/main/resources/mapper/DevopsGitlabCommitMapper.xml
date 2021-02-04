@@ -30,6 +30,9 @@
         <if test="endDate != null">
             AND dgc.commit_date <![CDATA[<=]]> CONCAT('', '${endDate}', ' 23:59:59')
         </if>
+        <if test="userId != null">
+        AND dgc.user_id IS NOT NULL AND dgc.user_id=#{userId}
+        </if>
         ORDER BY dgc.commit_date DESC
     </select>
 
