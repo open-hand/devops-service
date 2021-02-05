@@ -184,7 +184,10 @@ devops:
   batch:
     deployment:
       maxSize: 20
-
+  #下载jar的代理地址
+  proxy:
+    # 过滤器拦截的uri前缀
+    uriPrefix: ${NEXUS_PROXY_URIPREFIX:/rdupm/v1/nexus/proxy}
 # websocket的最大缓冲区大小，单位字节byte
 websocket:
   buffer:

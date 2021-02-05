@@ -116,9 +116,12 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             }
             CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
             List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-            List<String> typeList = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList());
-            //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
-            if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())) {
+            // seq 与 type确定一个job内唯一的构建步骤CiConfigTemplateVO
+            List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+                    && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
+            //如果一个job里面 有多次jar上传 会只保留最新的版本
+            if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
+                //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
                 String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
                 // 将maven的setting文件转换为java对象
                 Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
