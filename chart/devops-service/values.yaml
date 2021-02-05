@@ -120,7 +120,7 @@ env:
 
     # 忽略校验的接口路径
     CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
-
+    NEXUS_PROXY_URIPREFIX : /rdupm/v1/nexus/proxy
     ## Skywalking 配置参数
     # SKYWALKING_OPTS: >-
     #   -javaagent:/agent/skywalking-agent.jar

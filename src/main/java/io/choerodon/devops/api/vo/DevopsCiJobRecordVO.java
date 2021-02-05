@@ -61,14 +61,24 @@ public class DevopsCiJobRecordVO {
      * ci流水线生成镜像下载命令
      */
     private String downloadImage;
-    /**
-     * ci生成jar包地址
-     */
-    private String downloadJar;
+
     /**
      *  ci生成npm包地址
      */
     private String downloadNpm;
+
+    /**
+     * ci生成jar包地址
+     */
+    private DownloadMavenJarVO downloadMavenJarVO;
+
+    public DownloadMavenJarVO getDownloadMavenJarVO() {
+        return downloadMavenJarVO;
+    }
+
+    public void setDownloadMavenJarVO(DownloadMavenJarVO downloadMavenJarVO) {
+        this.downloadMavenJarVO = downloadMavenJarVO;
+    }
 
     public String getDownloadImage() {
         return downloadImage;
@@ -78,13 +88,6 @@ public class DevopsCiJobRecordVO {
         this.downloadImage = downloadImage;
     }
 
-    public String getDownloadJar() {
-        return downloadJar;
-    }
-
-    public void setDownloadJar(String downloadJar) {
-        this.downloadJar = downloadJar;
-    }
 
     public String getDownloadNpm() {
         return downloadNpm;
