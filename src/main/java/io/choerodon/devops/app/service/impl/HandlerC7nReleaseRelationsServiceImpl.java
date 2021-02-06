@@ -52,6 +52,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private DevopsServiceInstanceService devopsServiceInstanceService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
@@ -212,7 +214,6 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         boolean isClusterComponent = GitOpsUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
 
         AppServiceVersionDTO appServiceVersionDTO = null;
-        Long releaseAppServiceId = null;
         String versionValue;
         // 根据不同的release情况处理release所属应用服务及其版本
         if (!isClusterComponent) {
@@ -222,12 +223,43 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             if (appServices.isEmpty()) {
                 throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());
             }
-            for (AppServiceDTO appServiceDTO : appServices) {
+
+            // TODO 待优化查找逻辑
+            // 先尝试从项目下取
+            AppServiceDTO tempApp = appServiceService
+                    .baseQueryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
+            if (tempApp != null) {
                 appServiceVersionDTO = appServiceVersionService
-                        .baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
+                        .baseQueryByAppServiceIdAndVersion(tempApp.getId(), c7nHelmRelease.getSpec().getChartVersion());
                 if (appServiceVersionDTO != null) {
-                    releaseAppServiceId = appServiceDTO.getId();
-                    break;
+                    LOGGER.debug("Found chart {} and version {} in project", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+                }
+            }
+
+            List<Long> candidateAppServiceIds = appServices.stream().map(AppServiceDTO::getId).collect(Collectors.toList());
+            if (appServiceVersionDTO == null) {
+                // 配置库中这个实例的文件中指定的服务id
+                Long gitOpsAppServiceId = c7nHelmRelease.getSpec().getAppServiceId();
+                if (gitOpsAppServiceId != null
+                        && candidateAppServiceIds.contains(gitOpsAppServiceId)) {
+                    // 尝试从配置库指定的服务取
+                    appServiceVersionDTO = appServiceVersionService
+                            .baseQueryByAppServiceIdAndVersion(gitOpsAppServiceId, c7nHelmRelease.getSpec().getChartVersion());
+                    if (appServiceVersionDTO != null) {
+                        LOGGER.info("Found chart {} and version {} via app service in release spec", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+                    }
+                }
+            }
+
+            // 如果还是找不到，就遍历
+            if (appServiceVersionDTO == null) {
+                LOGGER.info("Try to find app service version for chart {} and version {} in app service list {}", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion(), candidateAppServiceIds);
+                for (AppServiceDTO appServiceDTO : appServices) {
+                    appServiceVersionDTO = appServiceVersionService
+                            .baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
+                    if (appServiceVersionDTO != null) {
+                        break;
+                    }
                 }
             }
 
@@ -240,22 +272,21 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 // 如果上次版本和这次版本一致, 允许这次部署, 用的是上次部署的版本
                 if (Objects.equals(lastVersion.getVersion(), c7nHelmRelease.getSpec().getChartVersion())) {
                     appServiceVersionDTO = lastVersion;
-                    releaseAppServiceId = lastVersion.getAppServiceId();
                 }
             }
 
             validateVersion(appServiceVersionDTO, filePath, c7nHelmRelease);
             versionValue = appServiceVersionService.baseQueryValue(appServiceVersionDTO.getId());
+
+            // 校验应用服务id是实例的实际应用服务id
+            if (c7nHelmRelease.getSpec().getAppServiceId() != null
+                    && !Objects.equals(appServiceVersionDTO.getAppServiceId(), c7nHelmRelease.getSpec().getAppServiceId())) {
+                throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_MISMATCH.getError(), filePath);
+            }
         } else {
             appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(c7nHelmRelease.getSpec().getChartName());
             validateVersion(appServiceVersionDTO, filePath, c7nHelmRelease);
             versionValue = appServiceVersionDTO.getValues();
-        }
-
-        // 校验应用服务id是实例的实际应用服务id
-        if (c7nHelmRelease.getSpec().getAppServiceId() != null
-                && !Objects.equals(releaseAppServiceId, c7nHelmRelease.getSpec().getAppServiceId())) {
-            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_MISMATCH.getError(), filePath);
         }
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
@@ -263,7 +294,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         appServiceDeployVO.setType(type);
         // 设置values为配置库的values和版本的values合并值
         appServiceDeployVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
-        appServiceDeployVO.setAppServiceId(releaseAppServiceId);
+        appServiceDeployVO.setAppServiceId(appServiceVersionDTO.getAppServiceId());
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals("update")) {

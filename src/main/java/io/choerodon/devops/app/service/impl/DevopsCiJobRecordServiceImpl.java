@@ -20,6 +20,7 @@ import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
+import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -121,8 +122,10 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         recordDTO.setFinishedDate(jobDTO.getFinishedAt());
         recordDTO.setName(jobDTO.getName());
         recordDTO.setTriggerUserId(iamUserId);
-        if (!CollectionUtils.isEmpty(jobMap) && jobMap.get(jobDTO.getName()) != null) {
-            recordDTO.setType(jobMap.get(jobDTO.getName()).getType());
+        DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
+        if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
+            recordDTO.setType(existDevopsCiJobDTO.getType());
+            recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
         }
 
         devopsCiJobRecordMapper.insertSelective(recordDTO);

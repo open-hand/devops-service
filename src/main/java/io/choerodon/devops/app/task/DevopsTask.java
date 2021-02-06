@@ -76,4 +76,15 @@ public class DevopsTask {
         logger.info("begin to fix projectId ");
         devopsCheckLogService.checkLog("0.23.3");
     }
+
+    /**
+     * 同步ldap用户 没有成功创建gitlab用户
+     */
+    @JobTask(maxRetryCount = 3, code = "upgradeVersionTo0.24", description = "修复同步ldap用户没有成功创建gitlab用户")
+    @TimedTask(name = "upgradeVersionTo24", description = "修复同步ldap用户没有成功创建gitlab用户", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixLdapUserToGitLab(Map<String, Object> map) {
+        logger.info("begin to fix projectId ");
+        devopsCheckLogService.checkLog("0.24.0");
+    }
 }

@@ -665,17 +665,27 @@ public class FileUtil {
     }
 
     /**
-     * 保存 json 为文件
+     * 保存为文件
      *
      * @param path     目标路径
      * @param fileName 存储文件名
-     * @param data     json 内容
+     * @param data     内容
      */
     public static void saveDataToFile(String path, String fileName, String data) {
-        File file = new File(path + System.getProperty("file.separator") + fileName);
+        saveDataToFile(path + System.getProperty("file.separator") + fileName, data);
+    }
+
+    /**
+     * 保存为文件
+     *
+     * @param filePath 文件路径
+     * @param data     内容
+     */
+    public static void saveDataToFile(String filePath, String data) {
+        File file = new File(filePath);
         //如果文件不存在，则新建一个
         if (!file.exists()) {
-            new File(path).mkdirs();
+            new File(file.getParent()).mkdirs();
             try {
                 if (!file.createNewFile()) {
                     throw new CommonException("error.file.create");
@@ -696,7 +706,6 @@ public class FileUtil {
         }
         logger.info("文件写入成功！");
     }
-
 
     /**
      * 使用renameTo移动文件，重复文件跳过

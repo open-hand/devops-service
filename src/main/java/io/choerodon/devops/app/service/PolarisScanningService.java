@@ -78,6 +78,15 @@ public interface PolarisScanningService {
     void handleAgentPolarisMessage(PolarisResponsePayloadVO message);
 
     /**
+     * 处理经过http的来自agent的polaris扫描结果消息
+     *
+     * @param token     集群token
+     * @param clusterId 集群id
+     * @param message   消息
+     */
+    void handleAgentPolarisMessageFromHttp(String token, Long clusterId, PolarisResponsePayloadVO message);
+
+    /**
      * 检查纪录是否超时，如果超时，更新状态为超时
      *
      * @param recordId 纪录id

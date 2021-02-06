@@ -21,6 +21,11 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
+    public Call<SonarComponent> getSonarAnalysisDate(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
     public Call<SonarAnalyses> getAnalyses(Map<String, String> maps) {
         return null;
     }

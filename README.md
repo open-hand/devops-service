@@ -2,10 +2,12 @@
  
 # DevOps Service  
 
-`DevOps Service` DevOps Service是Choerodon平台实现持续交付的基础. 当前版本为: `0.22.0`
+`DevOps Service` DevOps Service是Choerodon平台实现持续交付的基础. 当前版本为: `0.24.6`
 
 DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具，以此形成了计划、编码、测试、部署、运维以及监控的DevOps闭环。
 并且只需通过简单的配置，您便能获得最佳的开发体验。
+
+> 注意：原本的前端代码已经移动到[这里](https://github.com/open-hand/choerodon-front-devops)
 
 ## 特性
 `DevOps Service` 含有以下功能:    
@@ -108,6 +110,25 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
     gateway:
       url: "http://api.example.com" # 网关地址
   hzero:
+    service:
+      platform:
+        name: choerodon-platform
+      oauth:
+        name: choerodon-oauth
+      iam:
+        name: choerodon-iam
+      file:
+        name: choerodon-file
+      message:
+        name: choerodon-message
+      admin:
+        name: choerodon-admin
+      swagger:
+        name: choerodon-swagger
+      gateway:
+        name: choerodon-gateway
+      monitor:
+        name: choerodon-monitor
     websocket:
       # 用于连接websocket的路径
       websocket: /websocket
@@ -158,6 +179,11 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
       ReadTimeout: 50000
 
   devops:
+    ansible:
+      image: registry.cn-shanghai.aliyuncs.com/c7n/kubeadm-ha:0.1.0
+    # helm 下载地址
+    helm:
+      download-url: https://file.choerodon.com.cn/kubernetes-helm/v3.2.4/helm-v3.2.4-linux-amd64.tar.gz
     # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
     ci:
       default:

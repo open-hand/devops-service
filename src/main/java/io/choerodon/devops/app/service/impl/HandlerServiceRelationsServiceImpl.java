@@ -72,10 +72,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 addV1Service.add(v1Service);
             }
         });
-        //新增service
-        addService(objectPath, envId, projectId, addV1Service, v1Endpoints, path, userId);
-        //更新service
-        updateService(objectPath, envId, projectId, updateV1Service, v1Endpoints, path, userId);
         //删除service,和文件对象关联关系
         beforeService.forEach(serviceName -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(serviceName, envId);
@@ -84,6 +80,10 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsServiceDTO.getId(), SERVICE);
             }
         });
+        //新增service
+        addService(objectPath, envId, projectId, addV1Service, v1Endpoints, path, userId);
+        //更新service
+        updateService(objectPath, envId, projectId, updateV1Service, v1Endpoints, path, userId);
     }
 
     @Override
@@ -108,10 +108,15 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 v1Endpoints,
                                 envId);
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
-                        devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceDTO.getId(), devopsServiceReqVO, userId);
+                        String currentFileCommit = GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath);
+                        // 如果相等，就代表是由界面更新的service，不需要再更新service
+                        if (!currentFileCommit.equals(devopsEnvCommandDTO.getSha())) {
+                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceDTO.getId(), devopsServiceReqVO, userId);
+                            devopsServiceDTO = devopsServiceService.baseQuery(devopsServiceDTO.getId());
+                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
+                            devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), currentFileCommit);
+                        }
 
-                        devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                                 .baseQueryByEnvIdAndResourceId(envId, devopsServiceDTO.getId(), v1Service.getKind());

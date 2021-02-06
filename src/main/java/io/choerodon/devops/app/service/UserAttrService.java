@@ -3,8 +3,11 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface UserAttrService {
 
@@ -70,4 +73,6 @@ public interface UserAttrService {
      * @param isGitlabAdmin 是否是gitlab管理员
      */
     void updateAdmin(Long iamUserId, Boolean isGitlabAdmin);
+
+    Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params);
 }

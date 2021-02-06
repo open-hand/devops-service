@@ -5,6 +5,8 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.*;
 
+import io.choerodon.devops.api.vo.chart.ChartDeleteResponseVO;
+
 public interface ChartClient {
 
 
@@ -25,5 +27,15 @@ public interface ChartClient {
     @POST("{orgCode}/{proCode}/api/charts")
     Call<Object> uploadTaz(@Path("orgCode") String orgCode, @Path("proCode") String proCode, @Part MultipartBody.Part file);
 
+    @DELETE("{orgCode}/{proCode}/api/charts/{chartName}/{chartVersion}")
+    Call<ChartDeleteResponseVO> deleteChartVersion(@Path("orgCode") String orgCode,
+                                                   @Path("proCode") String proCode,
+                                                   @Path("chartName") String chartName,
+                                                   @Path("chartVersion") String chartVersion);
 
+    @GET("{orgCode}/{proCode}/api/charts/{chartName}/{chartVersion}")
+    Call<ChartDeleteResponseVO> getChartVersion(@Path("orgCode") String orgCode,
+                                                @Path("proCode") String proCode,
+                                                @Path("chartName") String chartName,
+                                                @Path("chartVersion") String chartVersion);
 }

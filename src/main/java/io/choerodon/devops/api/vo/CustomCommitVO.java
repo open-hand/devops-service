@@ -71,4 +71,17 @@ public class CustomCommitVO {
     public void setGitlabProjectUrl(String gitlabProjectUrl) {
         this.gitlabProjectUrl = gitlabProjectUrl;
     }
+
+    @Override
+    public String toString() {
+        return "CustomCommitVO{" +
+                "userName='" + userName + '\'' +
+                ", userHeadUrl='" + userHeadUrl + '\'' +
+                ", commitSha='" + commitSha + '\'' +
+                ", commitUrl='" + commitUrl + '\'' +
+                ", gitlabProjectUrl='" + gitlabProjectUrl + '\'' +
+                ", ref='" + ref + '\'' +
+                ", commitContent='" + commitContent + '\'' +
+                '}';
+    }
 }

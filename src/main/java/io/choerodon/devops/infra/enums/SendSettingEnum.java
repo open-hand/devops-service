@@ -9,32 +9,32 @@ import java.util.Map;
  * Date: 2020/3/23
  */
 public enum SendSettingEnum {
-    CREATE_APPSERVICE("createAppService"),
-    ENABLE_APPSERVICE("enableAppService"),
-    DISABLE_APPSERVICE("disableAppService"),
-    DELETE_APPSERVICE("deleteAppService"),
-    APPSERVICE_CREATIONFAILURE("appServiceCreationFailure"),
-    CREATE_ENV("createEnv"),
-    ENABLE_ENV("enableEnv"),
-    DISABLE_ENV("disableEnv"),
-    DELETE_ENV("deleteEnv"),
-    CREATE_ENVFAILED("createEnvFailed"),
-    UPDATE_ENV_PERMISSIONS("updateEnvPermissions"),
-    CREATE_CLUSTER("createCluster"),
-    ACTIVITE_CLUSTER("activiteCluster"),
-    DELETE_CLUSTER("deleteCluster"),
-    CREATE_CLUSTERFAILED("createClusterFailed"),
-    RESOURCE_INSTALLFAILED("resourceInstallFailed"),
+    CREATE_APPSERVICE("CREATE_APP_SERVICE"),
+    ENABLE_APPSERVICE("ENABLEAPPSERVICE"),
+    DISABLE_APPSERVICE("DISABLEAPPSERVICE"),
+    DELETE_APPSERVICE("DELETEAPPSERVICE"),
+    APPSERVICE_CREATIONFAILURE("APPSERVICECREATIONFAILURE"),
+    CREATE_ENV("CREATE_ENV"),
+    ENABLE_ENV("ENABLE_ENV"),
+    DISABLE_ENV("DISABLE_ENV"),
+    DELETE_ENV("DELETE_ENV"),
+    CREATE_ENVFAILED("CREATE_ENV_FAILED"),
+    UPDATE_ENV_PERMISSIONS("UPDATE_ENV_PERMISSIONS"),
+    CREATE_CLUSTER("CREATE_CLUSTER"),
+    ACTIVATE_CLUSTER("ACTIVATE_CLUSTER"),
+    DELETE_CLUSTER("DELETE_CLUSTER"),
+    CREATE_CLUSTERFAILED("CREATE_CLUSTER_FAILED"),
+    RESOURCE_INSTALLFAILED("RESOURCE_INSTALL_FAILED"),
     GITLAB_CD_FAILURE("gitLabContinuousDeliveryFailure"),
     GITLAB_CD_SUCCESS("gitLabContinuousDeliverySuccess"),
-    CREATE_APPSERVICE_VERSION("createAppServiceVersion"),
-    CREATE_RESOURCE_FAILED("createResourceFailed"),
-    CREATE_RESOURCE("createResource"),
-    DELETE_RESOURCE("deleteResource"),
-    PIPELINE_SUCCESS("pipelinesuccess"),
-    PIPELINE_FAILED("pipelinefailed"),
-    PIPELINE_PASS("pipelinepass"),
-    PIPELINE_STOP("pipelinestop");
+    CREATE_APPSERVICE_VERSION("APP_SERVICE_CREATE_VERSION"),
+    CREATE_RESOURCE_FAILED("CREATE_RESOURCE_FAILED"),
+    CREATE_RESOURCE("CREATE_RESOURCE"),
+    DELETE_RESOURCE("DELETE_RESOURCE"),
+    PIPELINE_SUCCESS("PIPELINESUCCESS"),
+    PIPELINE_FAILED("PIPELINEFAILED"),
+    PIPELINE_PASS("PIPELINEPASS"),
+    PIPELINE_STOP("PIPELINESTOP");
 
 
     private static Map<String, String> map = new HashMap<>();
@@ -55,7 +55,7 @@ public enum SendSettingEnum {
         map.put(SendSettingEnum.CREATE_ENVFAILED.value(), ENV.CREATEENVFAILED);
         map.put(SendSettingEnum.UPDATE_ENV_PERMISSIONS.value(), ENV.UPDATE_ENV_PERMISSIONS);
         map.put(SendSettingEnum.CREATE_CLUSTER.value(), Cluster.CREATE);
-        map.put(SendSettingEnum.ACTIVITE_CLUSTER.value(), Cluster.ACTIVITE);
+        map.put(SendSettingEnum.ACTIVATE_CLUSTER.value(), Cluster.ACTIVITE);
         map.put(SendSettingEnum.DELETE_CLUSTER.value(), Cluster.DELETE);
         map.put(SendSettingEnum.CREATE_CLUSTERFAILED.value(), Cluster.CREATE_FAILED);
         map.put(SendSettingEnum.RESOURCE_INSTALLFAILED.value(), Resource.INSTALL_FAILED);

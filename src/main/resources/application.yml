@@ -19,11 +19,6 @@ spring:
       force: true
       enabled: true
 services:
-  harbor:
-    baseUrl: "harbor.example.com" # harbor地址
-    username: "123456" # harbor用户名
-    password: "123456" # 对应harbor用户名的密码
-    insecureSkipTlsVerify: false
   gitlab:
     url: "gitlab.example.com" # gitlab地址
     sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
@@ -110,6 +105,17 @@ feign:
     enabled: true
 hystrix:
   shareSecurityContext: true
+  # 配置参考 https://github.com/Netflix/Hystrix/wiki/Configuration#ThreadPool
+  threadpool:
+    default:
+      # 最大排队数量
+      maxQueueSize: 30
+      # 排队数量阈值, 超过会被拒绝, 只在maxQueueSize不等于-1时生效
+      queueSizeRejectionThreshold: 15
+      # 线程池最大线程数
+      maximumSize: 20
+      # 核心线程数, 10是默认值
+      coreSize: 10
   command:
     default:
       circuitBreaker:
@@ -119,7 +125,6 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 600000
-
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
@@ -139,10 +144,19 @@ logging:
 
 
 devops:
+  ansible:
+    image: registry.cn-shanghai.aliyuncs.com/c7n/kubeadm-ha:0.1.0
+  # helm 下载地址
+  helm:
+    download-url: https://file.choerodon.com.cn/kubernetes-helm/v3.2.4/helm-v3.2.4-linux-amd64.tar.gz
+  # 占用主机的过期时间, 超过这个时间, 主机会被释放
+  host:
+    occupy:
+      timeout-hours: 24
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     default:
-      image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1
+      image: registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.10.1
     pipeline:
       sync:
         executor:
@@ -170,5 +184,7 @@ devops:
 # websocket的最大缓冲区大小，单位字节byte
 websocket:
   buffer:
-    maxTextMessageSize: 4194304
-    maxBinaryMessageSize: 4194304
+    # 默认 128 KiB
+    maxTextMessageSize: 131072
+    # 默认 512KiB
+    maxBinaryMessageSize: 524288

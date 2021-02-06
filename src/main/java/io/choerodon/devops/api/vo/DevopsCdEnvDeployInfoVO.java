@@ -22,7 +22,7 @@ public class DevopsCdEnvDeployInfoVO {
     private Long instanceId;    // 替换实例时需要
     private String instanceName;    // 新建实例时需要
     private String value;
-
+    private Boolean checkEnvPermissionFlag;     // 部署时是否校验环境权限
     public String getValue() {
         return value;
     }
@@ -85,5 +85,13 @@ public class DevopsCdEnvDeployInfoVO {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+    }
+
+    public Boolean getCheckEnvPermissionFlag() {
+        return checkEnvPermissionFlag;
+    }
+
+    public void setCheckEnvPermissionFlag(Boolean checkEnvPermissionFlag) {
+        this.checkEnvPermissionFlag = checkEnvPermissionFlag;
     }
 }

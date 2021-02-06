@@ -40,18 +40,18 @@ public class PipelineController {
      * @param pipelineReqVO 流水线信息
      * @return PipelineAppDeployDTO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建流水线")
-    @PostMapping
-    public ResponseEntity<PipelineReqVO> create(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "服务信息", required = true)
-            @RequestBody PipelineReqVO pipelineReqVO) {
-        return Optional.ofNullable(pipelineService.create(projectId, pipelineReqVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.create"));
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "项目下创建流水线")
+//    @PostMapping
+//    public ResponseEntity<PipelineReqVO> create(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "服务信息", required = true)
+//            @RequestBody PipelineReqVO pipelineReqVO) {
+//        return Optional.ofNullable(pipelineService.create(projectId, pipelineReqVO))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.pipeline.create"));
+//    }
 
     /**
      * 项目下更新流水线
@@ -60,18 +60,18 @@ public class PipelineController {
      * @param pipelineReqVO 流水线信息
      * @return PipelineAppDeployDTO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下更新流水线")
-    @PutMapping
-    public ResponseEntity<PipelineReqVO> update(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "服务信息", required = true)
-            @RequestBody PipelineReqVO pipelineReqVO) {
-        return Optional.ofNullable(pipelineService.update(projectId, pipelineReqVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.update"));
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "项目下更新流水线")
+//    @PutMapping
+//    public ResponseEntity<PipelineReqVO> update(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "服务信息", required = true)
+//            @RequestBody PipelineReqVO pipelineReqVO) {
+//        return Optional.ofNullable(pipelineService.update(projectId, pipelineReqVO))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.pipeline.update"));
+//    }
 
     /**
      * 项目下删除流水线

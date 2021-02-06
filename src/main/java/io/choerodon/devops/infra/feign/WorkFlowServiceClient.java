@@ -20,7 +20,6 @@ public interface WorkFlowServiceClient {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody DevopsPipelineDTO devopsPipelineDTO);
 
-
     @PutMapping(value = "/v1/projects/{project_id}/process_instances")
     ResponseEntity<Boolean> approveUserTask(
             @PathVariable(value = "project_id") Long projectId,

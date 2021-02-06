@@ -80,8 +80,8 @@ public class RdupmClientOperator {
      * @param imageName
      * @return
      */
-    public HarborC7nRepoImageTagVo listImageTag(String repoType, @Nullable Long repoId, String imageName) {
-        ResponseEntity<HarborC7nRepoImageTagVo> response = rdupmClient.listImageTag(repoType, repoId, imageName, "");
+    public HarborC7nRepoImageTagVo listImageTag(String repoType, @Nullable Long repoId, String imageName, @Nullable String tagName) {
+        ResponseEntity<HarborC7nRepoImageTagVo> response = rdupmClient.listImageTag(repoType, repoId, imageName, tagName);
         if (response == null || response.getBody() == null) {
             throw new CommonException("error.query.nexus.repo.list.tag");
         }

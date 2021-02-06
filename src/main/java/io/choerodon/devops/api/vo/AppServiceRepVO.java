@@ -87,14 +87,34 @@ public class AppServiceRepVO {
     @ApiModelProperty("最近更新者登录名")
     private String updateLoginName;
 
-    @ApiModelProperty("此应用服务是够跳过权限检查，true表示允许项目下所有的项目成员及项目所有者访问")
-    private Boolean skipCheckPermission;
-
     @ApiModelProperty("是否是空仓库(是否没有分支)")
     private Boolean emptyRepository;
 
     @ApiModelProperty("应用服务类型")
     private String serviceType;
+
+    @ApiModelProperty("来源项目名")
+    private String shareProjectName;
+
+    @ApiModelProperty("事务实例id")
+    @Encrypt
+    private Long sagaInstanceId;
+
+    public Long getSagaInstanceId() {
+        return sagaInstanceId;
+    }
+
+    public void setSagaInstanceId(Long sagaInstanceId) {
+        this.sagaInstanceId = sagaInstanceId;
+    }
+
+    public String getShareProjectName() {
+        return shareProjectName;
+    }
+
+    public void setShareProjectName(String shareProjectName) {
+        this.shareProjectName = shareProjectName;
+    }
 
     public HarborRepoConfigDTO getHarborRepoConfigDTO() {
         return harborRepoConfigDTO;
@@ -286,14 +306,6 @@ public class AppServiceRepVO {
 
     public void setUpdateLoginName(String updateLoginName) {
         this.updateLoginName = updateLoginName;
-    }
-
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
     }
 
     public Boolean getEmptyRepository() {

@@ -29,10 +29,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.LogUtil;
-import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.*;
 
 /**
  * @author zmf
@@ -518,6 +515,23 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             handleEnvResults(recordId, polarisScanResultVO.getAuditData().getResults());
         }
     }
+
+    @Override
+    public void handleAgentPolarisMessageFromHttp(String token, Long clusterId, PolarisResponsePayloadVO message) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        if (devopsClusterDTO == null) {
+            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), LOGGER);
+            return;
+        }
+        if (!token.equals(devopsClusterDTO.getToken())) {
+            LOGGER.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
+            return;
+        }
+
+        LOGGER.info("Receive polaris result from agent with cluster id {}", clusterId);
+        handleAgentPolarisMessage(message);
+    }
+
 
     /**
      * 处理环境扫描的结果

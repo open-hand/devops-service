@@ -1,8 +1,27 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -30,24 +49,6 @@ import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nonnull;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -609,7 +610,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsServiceDTO handlerCreateService(DevopsServiceReqVO devopsServiceReqVO) {
 
         //校验service相关参数
-        DevopsServiceValidator.checkService(devopsServiceReqVO);
+        DevopsServiceValidator.checkService(devopsServiceReqVO, null);
 
         initDevopsServicePorts(devopsServiceReqVO);
 
@@ -872,7 +873,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private DevopsServiceDTO handlerUpdateService(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceDTO devopsServiceDTO) {
         //service参数校验
-        DevopsServiceValidator.checkService(devopsServiceReqVO);
+        DevopsServiceValidator.checkService(devopsServiceReqVO, devopsServiceDTO.getId());
         initDevopsServicePorts(devopsServiceReqVO);
 
         if (!devopsServiceDTO.getEnvId().equals(devopsServiceReqVO.getEnvId())) {
@@ -1131,6 +1132,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     serviceSagaPayLoad.getCreated() ? CommandType.CREATE.getType() : CommandType.UPDATE.getType(),
                     serviceSagaPayLoad.getGitlabUserId(),
                     serviceSagaPayLoad.getDevopsServiceDTO().getId(), SERVICE, serviceSagaPayLoad.getV1Endpoints(), false, serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), filePath);
+
+            if (Boolean.FALSE.equals(serviceSagaPayLoad.getCreated())) {
+                DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), serviceSagaPayLoad.getDevopsServiceDTO().getId(), ObjectType.SERVICE.getType());
+                // 更新对应的command的sha值
+                if (devopsEnvFileResourceDTO != null) {
+                    RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), GitOpsConstants.MASTER, devopsEnvFileResourceDTO.getFilePath());
+                    devopsEnvCommandService.baseUpdateSha(serviceSagaPayLoad.getDevopsServiceDTO().getCommandId(), repositoryFile.getCommitId());
+                }
+            }
 
             //创建实例时，如果选了创建域名
             if (serviceSagaPayLoad.getDevopsIngressVO() != null) {

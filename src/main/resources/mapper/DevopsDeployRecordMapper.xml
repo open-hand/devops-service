@@ -219,8 +219,7 @@
     <delete id="deleteRelatedRecordOfInstance">
         DELETE
         FROM devops_deploy_record
-        WHERE deploy_type = 'manual'
-        AND deploy_id IN (SELECT command.id
+        WHERE deploy_id IN (SELECT command.id
         FROM devops_env_command command
         WHERE command.object = 'instance'
         AND command.object_id = #{instanceId,jdbcType=BIGINT})
@@ -260,4 +259,66 @@
         WHERE ddr.env = #{envId,jdbcType=VARCHAR}
         AND ddr.deploy_type = #{deployType,jdbcType=VARCHAR}
     </select>
+    <select id="listByParams" resultType="io.choerodon.devops.api.vo.DeployRecordVO">
+		SELECT
+			ddr.id AS id,
+		    ddr.deploy_type,
+		    denc.status AS command_status,
+			denc.object_id AS instance_id,
+			ddr.instance_name,
+			ddr.deploy_mode,
+			ddr.deploy_payload_id,
+			ddr.deploy_payload_name,
+			ddr.deploy_result,
+			ddr.deploy_object_type,
+			ddr.deploy_object_name,
+			ddr.deploy_object_version,
+		    ddr.deploy_time,
+			ddr.created_by
+		FROM devops_deploy_record ddr
+		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
+		<where>
+			ddr.project_id = #{projectId}
+			<if test="deployType != null">
+				and ddr.deploy_type = #{deployType}
+			</if>
+			<if test="deployMode != null">
+				and ddr.deploy_mode = #{deployMode}
+			</if>
+			<if test="deployPayloadName != null">
+				and ddr.deploy_payload_name LIKE CONCAT(CONCAT('%', #{deployPayloadName, jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="deployResult != null">
+				and (denc.status = #{deployResult} or denc.status = #{deployResult})
+			</if>
+			<if test="deployObjectName != null">
+				and ddr.deploy_object_name LIKE CONCAT(CONCAT('%', #{deployObjectName, jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="deployObjectVersion != null">
+				and ddr.deploy_object_version LIKE CONCAT(CONCAT('%', #{deployObjectVersion, jdbcType=VARCHAR}),'%')
+			</if>
+		</where>
+
+	</select>
+	<select id="queryEnvDeployRecordByCommandId"
+			resultType="io.choerodon.devops.api.vo.DeployRecordVO">
+		SELECT
+		ddr.id AS id,
+		ddr.deploy_type,
+		denc.status AS command_status,
+		denc.object_id AS instance_id,
+		ddr.instance_name,
+		ddr.deploy_mode,
+		ddr.deploy_payload_id,
+		ddr.deploy_payload_name,
+		ddr.deploy_result,
+		ddr.deploy_object_type,
+		ddr.deploy_object_name,
+		ddr.deploy_object_version,
+		ddr.deploy_time,
+		ddr.created_by
+		FROM devops_deploy_record ddr
+		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
+		WHERE ddr.deploy_id = #{commandId} and ddr.deploy_mode = 'env' and ddr.deploy_type = 'auto'
+	</select>
 </mapper>

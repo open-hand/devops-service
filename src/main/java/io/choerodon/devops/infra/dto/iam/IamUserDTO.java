@@ -304,6 +304,8 @@ public class IamUserDTO extends AuditDomain {
     @ApiModelProperty("角色")
     private List<RoleDTO> roles;
 
+    private int selectFlag = 0;
+
     public IamUserDTO() {
     }
 
@@ -917,5 +919,13 @@ public class IamUserDTO extends AuditDomain {
 
     public void setPasswordEncrypt(boolean passwordEncrypt) {
         this.passwordEncrypt = passwordEncrypt;
+    }
+
+    public int getSelectFlag() {
+        return selectFlag;
+    }
+
+    public void setSelectFlag(int selectFlag) {
+        this.selectFlag = selectFlag;
     }
 }

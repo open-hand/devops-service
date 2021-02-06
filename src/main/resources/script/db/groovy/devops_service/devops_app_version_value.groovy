@@ -28,4 +28,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_value.groovy') {
     changeSet(author: 'sheep', id: '2019-8-05-rename-table') {
         renameTable(newTableName: 'devops_app_service_version_value', oldTableName: 'devops_app_version_value')
     }
+
+    changeSet(author: 'zmf', id: '2020-10-29-enlarge-values-length') {
+        modifyDataType(tableName: 'devops_app_service_version_value', columnName: 'value', newDataType: 'MEDIUMTEXT')
+    }
 }

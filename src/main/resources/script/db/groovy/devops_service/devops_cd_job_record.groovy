@@ -41,4 +41,21 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: "stage_record_id")
         }
     }
+
+    changeSet(author: 'wanghao', id: '2020-09-14-add-column') {
+        addColumn(tableName: 'devops_cd_job_record') {
+            column(name: 'api_test_task_record_id', type: 'BIGINT UNSIGNED', remarks: '测试项目记录id', beforeColumn: "deploy_metadata")
+        }
+    }
+
+    changeSet(author: 'scp', id: '2020-09-15-add-column') {
+        addColumn(tableName: 'devops_cd_job_record') {
+            column(name: 'log', type: 'text', remarks: '日志信息', beforeColumn: "countersigned")
+        }
+    }
+    changeSet(author: 'wanghao', id: '2020-12-10-add-column') {
+        addColumn(tableName: 'devops_cd_job_record') {
+            column(name: 'callback_token', type: 'VARCHAR(255)', remarks: '外部卡点任务回调认证token', beforeColumn: "countersigned")
+        }
+    }
 }

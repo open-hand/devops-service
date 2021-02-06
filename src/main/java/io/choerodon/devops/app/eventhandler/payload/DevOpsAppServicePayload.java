@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-
 import java.util.Date;
 import java.util.List;
+
+import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 
 /**
  * @author crcokitwood
@@ -19,7 +19,6 @@ public class DevOpsAppServicePayload {
     private Long organizationId;
     private Long appServiceId;
     private List<Long> userIds;
-    private Boolean skipCheckPermission;
     private Long iamProjectId;
     private Long templateAppServiceId;
     private Long templateAppServiceVersionId;
@@ -107,14 +106,6 @@ public class DevOpsAppServicePayload {
 
     public void setUserIds(List<Long> userIds) {
         this.userIds = userIds;
-    }
-
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
     }
 
     public Long getIamProjectId() {

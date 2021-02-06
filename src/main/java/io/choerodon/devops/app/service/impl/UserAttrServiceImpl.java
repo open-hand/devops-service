@@ -3,23 +3,35 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class UserAttrServiceImpl implements UserAttrService {
 
     @Autowired
     private UserAttrMapper userAttrMapper;
+    @Autowired
+    private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public UserAttrVO queryByUserId(Long userId) {
@@ -122,5 +134,47 @@ public class UserAttrServiceImpl implements UserAttrService {
     @Override
     public void updateAdmin(Long iamUserId, Boolean isGitlabAdmin) {
         userAttrMapper.updateIsGitlabAdmin(Objects.requireNonNull(iamUserId), Objects.requireNonNull(isGitlabAdmin));
+    }
+
+    @Override
+    public Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params) {
+        List<Long> selectedIamUserIds = new ArrayList<>();
+        String realName = null;
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = JSONObject.parseObject(params, Map.class);
+            selectedIamUserIds = KeyDecryptHelper.decryptIdList((JSONArray) maps.get("ids"));
+            realName = (String) maps.get("userName");
+        }
+        RdmMemberQueryDTO rdmMemberQueryDTO = new RdmMemberQueryDTO();
+        rdmMemberQueryDTO.setRepositoryIds(Collections.singleton(appServiceId));
+        rdmMemberQueryDTO.setRealName(realName);
+        List<RdmMemberViewDTO> rdmMemberViewDTOS = hrdsCodeRepoClientOperator.listMembers(null, projectId, rdmMemberQueryDTO);
+
+        List<Long> finalSelectedIamUserIds = selectedIamUserIds;
+        List<IamUserDTO> userDTOS = rdmMemberViewDTOS.stream().map(v -> {
+            IamUserDTO iamUserDTO = new IamUserDTO();
+            iamUserDTO.setId(v.getUserId());
+            if (finalSelectedIamUserIds.contains(v.getUserId())) {
+                iamUserDTO.setSelectFlag(1);
+            }
+            return iamUserDTO;
+        }).sorted(Comparator.comparingInt(IamUserDTO::getSelectFlag).reversed()).collect(Collectors.toList());
+        Page<IamUserDTO> page = PageInfoUtil.createPageFromList(userDTOS, pageRequest);
+
+        List<Long> userIds = page.getContent().stream().map(IamUserDTO::getId).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+        Map<Long, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+        page.getContent().forEach(v -> {
+            IamUserDTO iamUserDTO = userMap.get(v.getId());
+            if (iamUserDTO != null) {
+                v.setLoginName(iamUserDTO.getLoginName());
+                v.setRealName(iamUserDTO.getRealName());
+                v.setLdap(iamUserDTO.getLdap());
+                v.setEmail(iamUserDTO.getEmail());
+            }
+        });
+
+
+        return page;
     }
 }

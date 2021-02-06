@@ -68,9 +68,10 @@ public class ResourceConvertToYamlHandler<T> {
      * @param operationType      operation type
      * @param userId             GitLab user ID
      * @param filePath           环境库在本地的目录
+     * @return 返回修改后的文件的sha值
      */
     public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
-                                       Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
+                                         Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
         GitlabServiceClientOperator gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag, true);
@@ -345,7 +346,7 @@ public class ResourceConvertToYamlHandler<T> {
 
 
     private void handlePVC(T t, String objectType, String operationType, StringBuilder resultBuilder,
-                          JSONObject jsonObject) {
+                           JSONObject jsonObject) {
         JSON json = new JSON();
         V1PersistentVolumeClaim v1PersistentVolumeClaim = json.deserialize(jsonObject.toJSONString(), V1PersistentVolumeClaim.class);
         V1PersistentVolumeClaim newPvc;

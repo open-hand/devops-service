@@ -30,12 +30,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("params") List<String> params);
 
-    List<AppServiceDTO> listCodeRepository(@Param("projectId") Long projectId,
-                                           @Param("searchParam") Map<String, Object> searchParam,
-                                           @Param("params") List<String> param,
-                                           @Param("appServiceIds") Set<Long> appServiceIds,
-                                           @Param("userId") Long userId);
-
     List<AppServiceDTO> listByEnvId(@Param("projectId") Long projectId,
                                     @Param("envId") Long envId,
                                     @Param("appServiceId") Long appServiceId,
@@ -99,7 +93,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                      @Param("type") String type,
                                                      @Param("searchParam") Map<String, Object> searchParam,
                                                      @Param("params") List<String> params,
-                                                     @Param("index") String index,
+                                                     @Param("doSort") Boolean doSort,
                                                      @Param("userId") Long userId);
 
 
@@ -130,15 +124,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     int updateIsActiveNullToTrue();
 
     List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
-
-    /**
-     * 根据gitlabGroupId和iamUserId获取
-     * 在整个项目组用权限的应用对应的gitlabProjectId
-     *
-     * @return
-     */
-    List<Long> listGitlabProjectIdByAppPermission(@Param("gitlabGroupId") Long gitlabGroupId,
-                                                  @Param("iamUserId") Long iamUserId);
 
     List<AppServiceDTO> queryAppServicesHavingVersions(@Param("projectId") Long projectId);
 

@@ -1,8 +1,23 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.asgard.saga.SagaDefinition.TimeoutPolicy.ALERT_ONLY;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Objects;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.kubernetes.client.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
@@ -13,34 +28,17 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
-import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
-
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 
 /**
@@ -65,14 +63,6 @@ public class DevopsSagaHandler {
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
-    @Autowired
-    private PipelineTaskRecordService pipelineTaskRecordService;
-    @Autowired
-    private PipelineStageRecordService pipelineStageRecordService;
-    @Autowired
-    private PipelineService pipelineService;
-    @Autowired
-    private PipelineRecordService pipelineRecordService;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -100,9 +90,24 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
-    private DevopsCdJobService devopsCdJobService;
-    @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private DevopsClusterNodeService devopsClusterNodeService;
+    @Autowired
+    private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
+    @Autowired
+    private DevopsClusterNodeOperatorService devopsClusterNodeOperatorService;
+
+    @Autowired
+    private PipelineTaskRecordService pipelineTaskRecordService;
+    @Autowired
+    private PipelineStageRecordService pipelineStageRecordService;
+    @Autowired
+    private PipelineService pipelineService;
+    @Autowired
+    private PipelineRecordService pipelineRecordService;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     /**
      * devops创建环境
@@ -213,40 +218,6 @@ public class DevopsSagaHandler {
     }
 
     /**
-     * GitOps 用户权限分配处理
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            description = "GitOps 用户权限分配处理",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
-            maxRetryCount = 3,
-            seq = 1)
-    public String updateGitlabUser(String data) {
-        LOGGER.info("DevopsSagaHandler.DEVOPS_UPDATE_GITLAB_USERS:{}", data);
-        DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
-        try {
-            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
-            if (CollectionUtils.isEmpty(devOpsUserPayload.getIamUserIds())) {
-                LOGGER.info("updateGitlabUser: empty users -> skip...");
-            }
-            //如果是用户是组织层的root，则跳过权限跟新
-            devOpsUserPayload.getIamUserIds().forEach(userId -> {
-                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-                if (!baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId())) {
-                    updateUserPermissionService
-                            .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
-                                    Arrays.asList(userId), devOpsUserPayload.getOption());
-                }
-            });
-
-        } catch (Exception e) {
-            LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds());
-            throw e;
-        }
-        return data;
-    }
-
-
-    /**
      * devops处理环境权限分配相应的gitlab操作
      */
     @SagaTask(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION,
@@ -292,7 +263,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CI_PIPELINE,
             description = "gitlab pipeline事件",
             sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitlabCiPipeline(String data) {
@@ -306,7 +277,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
             description = "gitlab pipeline事件",
             sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 20)
     public String gitlabCDPipeline(String data) {
@@ -320,61 +291,12 @@ public class DevopsSagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE,
             description = "gitlab pipeline事件",
             sagaCode = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 10)
     public String trigerSimpleCDPipeline(String data) {
         devopsCdPipelineService.trigerSimpleCDPipeline(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
-    }
-
-    /**
-     * 创建流水线自动部署实例
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
-            description = "创建流水线自动部署实例",
-            sagaCode = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 3,
-            seq = 1)
-    public void pipelineAutoDeployInstance(String data) {
-        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
-        Long taskRecordId = appServiceDeployVO.getRecordId();
-        Long stageRecordId = pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId();
-        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
-        PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
-        Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
-        try {
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
-            if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
-                if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
-                    PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-                    pipelineTaskRecordDTO.setInstanceId(appServiceInstanceVO.getId());
-                    pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
-                    pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
-                    pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
-                    LOGGER.info("create pipeline auto deploy instance success");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("error create pipeline auto deploy instance {}", e);
-            PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-            pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
-            pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
-
-            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
-            stageRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            stageRecordDTO.setExecutionTime(time.toString());
-            pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
-
-            pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            Long userId = GitUserNameUtil.getUserId().longValue();
-            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                    MessageCodeConstants.PIPELINE_FAILED,
-                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
-            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
-        }
     }
 
     /**
@@ -384,7 +306,7 @@ public class DevopsSagaHandler {
             description = "创建流水线环境自动部署实例",
             sagaCode = DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 3,
+            maxRetryCount = 0,
             seq = 1)
     public void pipelineEnvAutoDeployInstance(String data) {
         AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
@@ -414,7 +336,7 @@ public class DevopsSagaHandler {
             devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
 
-            Long userId = GitUserNameUtil.getUserId().longValue();
+            Long userId = GitUserNameUtil.getUserId();
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     userId, GitUserNameUtil.getEmail(), new HashMap<>());
@@ -579,7 +501,7 @@ public class DevopsSagaHandler {
     public void deleteEnv(String data) {
         JsonObject JSONObject = gson.fromJson(data, JsonObject.class);
         Long envId = JSONObject.get("envId").getAsLong();
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
         //删除环境成功，发送webhook
@@ -622,4 +544,107 @@ public class DevopsSagaHandler {
     public void batchDeployment(String payload) {
         appServiceInstanceService.batchDeploymentSaga(new JSON().deserialize(payload, BatchDeploymentPayload.class));
     }
+
+    /**
+     * 检查节点
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_NODE_CHECK,
+            sagaCode = DEVOPS_INSTALL_K8S,
+            description = "Devops检查节点", seq = 1, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
+    public String checkNode(String payload) {
+        DevopsClusterInstallPayload devopsClusterInstallPayload = devopsClusterNodeService.checkAndSaveNode(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+
+        // 到达此处表示节点检查、数据保存成功，创建集群安装操作，接下来开始安装集群
+        DevopsClusterOperationRecordDTO installOperation = new DevopsClusterOperationRecordDTO()
+                .setClusterId(devopsClusterInstallPayload.getClusterId())
+                .setType(ClusterOperationTypeEnum.INSTALL_K8S.getType())
+                .setStatus(ClusterOperationStatusEnum.OPERATING.value());
+        devopsClusterOperationRecordMapper.insert(installOperation);
+        devopsClusterInstallPayload.setOperationRecordId(installOperation.getId());
+
+        return JsonHelper.marshalByJackson(devopsClusterInstallPayload);
+    }
+
+    /**
+     * 通过nohup执行k8s安装命令
+     */
+    @SagaTask(code = SagaTaskCodeConstants.EXECUTE_INSTALL_K8S_COMMAND,
+            sagaCode = DEVOPS_INSTALL_K8S,
+            description = "通过nohup执行k8s安装命令,该saga执行成功不代表k8s安装成功", seq = 2, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
+    public void installK8s(String payload) {
+        devopsClusterNodeService.executeInstallK8sInBackground(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+    }
+
+    /**
+     * 重试安装集群
+     */
+    @SagaTask(code = DEVOPS_RETRY_INSTALL_K8S,
+            sagaCode = DEVOPS_RETRY_INSTALL_K8S,
+            description = "通过nohup重试安装集群,该saga执行成功不代表k8s安装成功", seq = 1, maxRetryCount = 0, timeoutPolicy = ALERT_ONLY)
+    public void retryInstallK8s(String payload) {
+        devopsClusterNodeService.executeInstallK8sInBackground(JsonHelper.unmarshalByJackson(payload, DevopsClusterInstallPayload.class));
+    }
+
+    /**
+     * 添加节点
+     *
+     * @param payload
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLUSTER_ADD_NODE_TASK,
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE,
+            description = "Devops添加节点", seq = 1)
+    public void addNode(String payload) {
+        DevopsAddNodePayload devopsAddNodePayload = JsonHelper.unmarshalByJackson(payload, DevopsAddNodePayload.class);
+        devopsClusterNodeOperatorService.addNode(devopsAddNodePayload.getProjectId(), devopsAddNodePayload.getClusterId(), devopsAddNodePayload.getOperatingId(), devopsAddNodePayload.getNodeVO());
+    }
+
+    /**
+     * 创建流水线自动部署实例
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
+            description = "创建流水线自动部署实例",
+            sagaCode = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void pipelineAutoDeployInstance(String data) {
+        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
+        Long taskRecordId = appServiceDeployVO.getRecordId();
+        Long stageRecordId = pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId();
+        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
+        PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
+        Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
+        try {
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
+            if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
+                if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
+                    PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
+                    pipelineTaskRecordDTO.setInstanceId(appServiceInstanceVO.getId());
+                    pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
+                    pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
+                    pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
+                    LOGGER.info("create pipeline auto deploy instance success");
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("error create pipeline auto deploy instance {}", e);
+            PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
+            pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
+            pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
+
+            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
+            stageRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            stageRecordDTO.setExecutionTime(time.toString());
+            pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
+
+            pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
+            Long userId = GitUserNameUtil.getUserId();
+            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
+                    MessageCodeConstants.PIPELINE_FAILED,
+                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
+            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
+        }
+    }
+
 }
