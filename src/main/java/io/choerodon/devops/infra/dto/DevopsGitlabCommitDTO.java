@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
+import javax.persistence.*;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-
-import javax.persistence.*;
-import java.util.Date;
 
 @ModifyAudit
 @VersionAudit
@@ -27,6 +27,8 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
 
     @Transient
     private String appServiceName;
+    @Transient
+    private String appServiceCode;
     private String url;
 
     public Long getId() {
@@ -99,5 +101,13 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 }

@@ -88,7 +88,8 @@
         dgc.commit_sha,
         dgc.commit_content,
         dgc.url,
-        da.`name` appServiceName
+        da.name AS appServiceName,
+        da.code AS appServiceCode
         FROM devops_gitlab_commit dgc
         JOIN devops_app_service da ON dgc.app_service_id = da.id
         WHERE
