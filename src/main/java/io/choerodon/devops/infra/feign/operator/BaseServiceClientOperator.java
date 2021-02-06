@@ -461,4 +461,9 @@ public class BaseServiceClientOperator {
         return ResponseUtils.getResponse(baseServiceClient.listAllUserIds(), new TypeReference<Set<Long>>() {
         });
     }
+
+    public List<String> listProjectCategoryById(Long projectId) {
+        ResponseEntity<List<String>> categoryList = baseServiceClient.listProjectCategoryById(projectId);
+        return categoryList.getBody();
+    }
 }

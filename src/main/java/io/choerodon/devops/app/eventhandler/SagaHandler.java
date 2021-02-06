@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.eventhandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.AssignAdminVO;
@@ -163,11 +165,22 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
+        List<GitlabGroupMemberVO> tempList = new ArrayList<>(gitlabGroupMemberVOList);
+        tempList.forEach(t -> {
+            if (t.getResourceType().equals(ResourceLevel.PROJECT.value())) {
+                if (!baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).contains(DEVOPS)) {
+                    gitlabGroupMemberVOList.remove(t);
+                }
+            }
+        });
+        if (CollectionUtils.isEmpty(gitlabGroupMemberVOList)) {
+            return tempList;
+        }
         LOGGER.info("delete gitlab role start");
         loggerInfo(gitlabGroupMemberVOList);
         gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
         LOGGER.info("delete gitlab role end");
-        return gitlabGroupMemberVOList;
+        return tempList;
     }
 
     /**
