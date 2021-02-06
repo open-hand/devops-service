@@ -158,12 +158,21 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         List<Long> projectIds = projectDTOList.stream().map(ProjectDTO::getId).collect(Collectors.toList());
         Long userId = DetailsHelper.getUserDetails().getUserId();
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-        Map<Long, IamUserDTO> iamUserDTOMap = new HashMap<>();
-        iamUserDTOMap.put(userId, iamUserDTO);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
         Page<DevopsGitlabCommitDTO> devopsGitlabCommitDTOPage = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                 () -> devopsGitlabCommitMapper.listUserRecentCommits(projectIds, userId, new java.sql.Date(time.getTime())));
-        return getCommitFormRecordVOPage(iamUserDTOMap,devopsGitlabCommitDTOPage);
+        List<CommitFormRecordVO> commitFormRecordVOList = new ArrayList<>();
+        devopsGitlabCommitDTOPage.getContent().forEach(e -> {
+            Long eUserId = e.getUserId();
+            CommitFormRecordVO commitFormRecordVO;
+            commitFormRecordVO = new CommitFormRecordVO(eUserId, e, iamUserDTO.getLdap(), iamUserDTO.getLoginName(), iamUserDTO.getRealName(), iamUserDTO.getEmail(), iamUserDTO.getImageUrl());
+            commitFormRecordVOList.add(commitFormRecordVO);
+        });
+        Page<CommitFormRecordVO> commitFormRecordVOPageInfo = new Page<>();
+        BeanUtils.copyProperties(devopsGitlabCommitDTOPage, commitFormRecordVOPageInfo);
+        commitFormRecordVOPageInfo.setContent(commitFormRecordVOList);
+
+        return commitFormRecordVOPageInfo;
     }
 
     private Map<Long, IamUserDTO> getUserDOMap(List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS) {
@@ -262,10 +271,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                                                       Date startDate, Date endDate) {
         Page<DevopsGitlabCommitDTO> devopsGitlabCommitDTOPage = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                 () -> devopsGitlabCommitMapper.listCommits(projectId, appServiceIds, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime())));
-        return getCommitFormRecordVOPage(userMap,devopsGitlabCommitDTOPage);
+        return getCommitFormRecordVOPage(userMap, devopsGitlabCommitDTOPage);
     }
 
-    private Page<CommitFormRecordVO> getCommitFormRecordVOPage(Map<Long,IamUserDTO> userMap,Page<DevopsGitlabCommitDTO> devopsGitlabCommitDTOPage){
+    private Page<CommitFormRecordVO> getCommitFormRecordVOPage(Map<Long, IamUserDTO> userMap, Page<DevopsGitlabCommitDTO> devopsGitlabCommitDTOPage) {
         List<CommitFormRecordVO> commitFormRecordVOList = new ArrayList<>();
         devopsGitlabCommitDTOPage.getContent().forEach(e -> {
             Long eUserId = e.getUserId();
