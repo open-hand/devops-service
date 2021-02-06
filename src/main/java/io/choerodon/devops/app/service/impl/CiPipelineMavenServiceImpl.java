@@ -114,43 +114,45 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             if (Objects.isNull(devopsCiJobDTO)) {
                 throw new DevopsCiInvalidException("error.ci.job.not.exist");
             }
-            CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
-            List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-            // seq 与 type确定一个job内唯一的构建步骤CiConfigTemplateVO
-            List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
-                    && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
-            //如果一个job里面 有多次jar上传 会只保留最新的版本
-            if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
-                //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
-                String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
-                // 将maven的setting文件转换为java对象
-                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
-                //通过仓库的id 筛选出匹配的server节点和Profiles 节点
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-                C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId).getBody();
+            if (!StringUtils.isEmpty(devopsCiJobDTO.getMetadata())) {
+                CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
+                List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+                // seq 与 type确定一个job内唯一的构建步骤CiConfigTemplateVO
+                List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+                        && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
+                //如果一个job里面 有多次jar上传 会只保留最新的版本
+                if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
+                    //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
+                    String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
+                    // 将maven的setting文件转换为java对象
+                    Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
+                    //通过仓库的id 筛选出匹配的server节点和Profiles 节点
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId).getBody();
 
-                // baseUrl=http://xxx/repository/zmf-test-mixed/ =>http://xx:17145/
-                String baseUrl = null;
-                Server server = null;
-                String neRepositoryName = null;
+                    // baseUrl=http://xxx/repository/zmf-test-mixed/ =>http://xx:17145/
+                    String baseUrl = null;
+                    Server server = null;
+                    String neRepositoryName = null;
 
-                if (!Objects.isNull(c7nNexusRepoDTO)) {
-                    neRepositoryName = c7nNexusRepoDTO.getNeRepositoryName();
-                    String[] temp = c7nNexusRepoDTO.getUrl().split(BaseConstants.Symbol.SLASH);
-                    String repo = temp[temp.length - 1];
-                    if (c7nNexusRepoDTO.getUrl().endsWith("/")) {
-                        c7nNexusRepoDTO.setUrl(c7nNexusRepoDTO.getUrl().substring(0, c7nNexusRepoDTO.getUrl().length() - 1));
+                    if (!Objects.isNull(c7nNexusRepoDTO)) {
+                        neRepositoryName = c7nNexusRepoDTO.getNeRepositoryName();
+                        String[] temp = c7nNexusRepoDTO.getUrl().split(BaseConstants.Symbol.SLASH);
+                        String repo = temp[temp.length - 1];
+                        if (c7nNexusRepoDTO.getUrl().endsWith("/")) {
+                            c7nNexusRepoDTO.setUrl(c7nNexusRepoDTO.getUrl().substring(0, c7nNexusRepoDTO.getUrl().length() - 1));
+                        }
+                        baseUrl = c7nNexusRepoDTO.getUrl().replace(repo, "").replace(temp[temp.length - 2] + BaseConstants.Symbol.SLASH, "");
+                        String finalNeRepositoryName = neRepositoryName;
+                        server = settings.getServers().stream().filter(server1 -> StringUtils.equalsIgnoreCase(server1.getId(), finalNeRepositoryName)).collect(Collectors.toList()).get(0);
                     }
-                    baseUrl = c7nNexusRepoDTO.getUrl().replace(repo, "").replace(temp[temp.length - 2] + BaseConstants.Symbol.SLASH, "");
-                    String finalNeRepositoryName = neRepositoryName;
-                    server = settings.getServers().stream().filter(server1 -> StringUtils.equalsIgnoreCase(server1.getId(), finalNeRepositoryName)).collect(Collectors.toList()).get(0);
-                }
-                // 下载mate_date获取时间戳 0.0.1-20210203.012553-2
-                String jarSnapshotTimestamp = getJarSnapshotTimestamp(baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
-                //
-                //加上小版本   0.0.1-SNAPSHOT/springboot-0.0.1-20210202.063200-1.jar
-                if (!StringUtils.equalsIgnoreCase(jarSnapshotTimestamp, ciPipelineMavenDTO.getVersion())) {
-                    ciPipelineMavenDTO.setVersion(ciPipelineMavenDTO.getVersion() + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + jarSnapshotTimestamp);
+                    // 下载mate_date获取时间戳 0.0.1-20210203.012553-2
+                    String jarSnapshotTimestamp = getJarSnapshotTimestamp(baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
+                    //
+                    //加上小版本   0.0.1-SNAPSHOT/springboot-0.0.1-20210202.063200-1.jar
+                    if (!StringUtils.equalsIgnoreCase(jarSnapshotTimestamp, ciPipelineMavenDTO.getVersion())) {
+                        ciPipelineMavenDTO.setVersion(ciPipelineMavenDTO.getVersion() + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + jarSnapshotTimestamp);
+                    }
                 }
             }
             createOrUpdate(ciPipelineMavenDTO);
