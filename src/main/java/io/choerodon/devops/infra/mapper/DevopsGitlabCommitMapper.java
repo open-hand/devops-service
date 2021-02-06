@@ -14,8 +14,7 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
     List<DevopsGitlabCommitDTO> listCommits(@Param("projectId") Long projectId,
                                             @Param("appServiceIds") List<Long> appServiceIds,
                                             @Param("startDate") Date startDate,
-                                            @Param("endDate") Date endDate,
-                                            @Param("userId") Long userId);
+                                            @Param("endDate") Date endDate);
 
 
     List<DevopsGitlabCommitDTO> queryByAppIdAndBranch(
@@ -32,4 +31,8 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
     List<java.util.Date> queryCountByProjectIdAndDate(@Param("projectId") Long projectId,
                                                       @Param("startDate") java.util.Date startDate,
                                                       @Param("endDate") Date endDate);
+
+    List<DevopsGitlabCommitDTO> listUserRecentCommits(@Param("projectIds") List<Long> projectIds,
+                                                      @Param("userId") Long userId,
+                                                      @Param("date") Date date);
 }
