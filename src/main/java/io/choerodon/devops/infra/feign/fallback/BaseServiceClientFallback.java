@@ -42,7 +42,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId,Boolean withMoreInfo) {
+    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
         throw new CommonException("error.organization.get", organizationId);
     }
 
@@ -172,7 +172,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<List<IamUserDTO>> queryUserByProjectId(Long projectId) {
-       throw new CommonException("error.query.user.by.project.id");
+        throw new CommonException("error.query.user.by.project.id");
     }
 
     @Override
@@ -188,5 +188,10 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<String> listAllUserIds() {
         throw new CommonException("error.list.all.user.ids");
+    }
+
+    @Override
+    public ResponseEntity<List<String>> listProjectCategoryById(Long projectId) {
+        throw new CommonException("error.list.project.category");
     }
 }

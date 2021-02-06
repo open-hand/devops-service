@@ -7,6 +7,7 @@ import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -248,4 +249,9 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询平台中所有用户的id")
     @GetMapping(value = "/choerodon/v1/users/all_user_ids")
     ResponseEntity<String> listAllUserIds();
+
+
+    @ApiOperation(value = "查询平台中所有用户的id")
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/list_project_category")
+    ResponseEntity<List<String>> listProjectCategoryById(@PathVariable(name = "project_id") Long projectId);
 }

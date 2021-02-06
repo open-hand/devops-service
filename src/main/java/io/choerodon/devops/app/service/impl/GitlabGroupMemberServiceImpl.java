@@ -46,6 +46,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private static final String PROJECT = "project";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
+    /**
+     * devops项目类型
+     */
+    private static final String DEVOPS = "N_DEVOPS";
 
     @Autowired
     private DevopsProjectService devopsProjectService;
@@ -67,6 +71,17 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList, boolean isCreateUser) {
+        List<GitlabGroupMemberVO> tempList = new ArrayList<>(gitlabGroupMemberVOList);
+        tempList.forEach(t -> {
+            if (t.getResourceType().equals(ResourceLevel.PROJECT.value())) {
+                if (!baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).contains(DEVOPS)) {
+                    gitlabGroupMemberVOList.remove(t);
+                }
+            }
+        });
+        if (CollectionUtils.isEmpty(gitlabGroupMemberVOList)) {
+            return;
+        }
         gitlabGroupMemberVOList.stream()
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(ResourceLevel.PROJECT.value()))
                 .forEach(gitlabGroupMemberVO -> {
@@ -152,6 +167,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 return;
             }
 
+            List<String> categoryList = baseServiceClientOperator.listProjectCategoryById(projectDTO.getId());
+            if (CollectionUtils.isEmpty(categoryList) || !categoryList.contains(DEVOPS)) {
+                return;
+            }
             LOGGER.info("start to delete gitlab org owner for project with id {} for user with id {}", projectDTO.getId(), gitlabGroupMemberVO.getUserId());
 
             deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId(), true);
@@ -209,6 +228,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      *                            一般是组织层的权限分配会需要跳过
      */
     private void deleteAllPermissionInProjectOfUser(GitlabGroupMemberVO gitlabGroupMemberVO, Long projectId, boolean skipNullProject) {
+        List<String> categoryList = baseServiceClientOperator.listProjectCategoryById(projectId);
+        if (CollectionUtils.isEmpty(categoryList) || !categoryList.contains(DEVOPS)) {
+            return;
+        }
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
         userAttrService.checkUserSync(userAttrDTO, gitlabGroupMemberVO.getUserId());
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
@@ -629,6 +652,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     public void assignGitLabGroupMemberForOwner(ProjectDTO projectDTO, Long userId) {
+        List<String> categoryList = baseServiceClientOperator.listProjectCategoryById(projectDTO.getId());
+        if (CollectionUtils.isEmpty(categoryList) || !categoryList.contains(DEVOPS)) {
+            return;
+        }
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
         DevopsProjectDTO search = new DevopsProjectDTO();
         search.setIamProjectId(projectDTO.getId());
