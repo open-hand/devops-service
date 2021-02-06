@@ -640,26 +640,24 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
             //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
             List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
-                return;
+            if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
+                List<CiConfigTemplateVO> configTemplateVOS = ciConfigTemplateVOS.stream().sorted(Comparator.comparing(CiConfigTemplateVO::getSequence).reversed()).collect(Collectors.toList());
+                String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(devopsCiJobDTO.getId(), configTemplateVOS.get(0).getSequence());
+                if (!StringUtils.isEmpty(queryMavenSettings)) {
+                    // 将maven的setting文件转换为java对象
+                    Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                    C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
+                    Server server = getServer(settings, c7nNexusRepoDTO);
+                    //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                    //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                    String downloadUrl = api + proxy + BaseConstants.Symbol.SLASH + c7nNexusRepoDTO.getNeRepositoryName() + pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) + "/" + pipelineMavenDTO.getArtifactId() + "/" + pipelineMavenDTO.getVersion() + ".jar";
+                    DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
+                    downloadMavenJarVO.setDownloaJar(downloadUrl);
+                    downloadMavenJarVO.setServer(server);
+                    devopsCiJobRecordVO.setDownloadMavenJarVO(downloadMavenJarVO);
+                }
             }
-            List<CiConfigTemplateVO> configTemplateVOS = ciConfigTemplateVOS.stream().sorted(Comparator.comparing(CiConfigTemplateVO::getSequence).reversed()).collect(Collectors.toList());
-            String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(devopsCiJobDTO.getId(), configTemplateVOS.get(0).getSequence());
-            if (StringUtils.isEmpty(queryMavenSettings)) {
-                return;
-            }
-            // 将maven的setting文件转换为java对象
-            Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
-            Server server = getServer(settings, c7nNexusRepoDTO);
-            //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-            //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-            String downloadUrl = api + proxy + BaseConstants.Symbol.SLASH + c7nNexusRepoDTO.getNeRepositoryName() + pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) + "/" + pipelineMavenDTO.getArtifactId() + "/" + pipelineMavenDTO.getVersion() + ".jar";
-            DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
-            downloadMavenJarVO.setDownloaJar(downloadUrl);
-            downloadMavenJarVO.setServer(server);
-            devopsCiJobRecordVO.setDownloadMavenJarVO(downloadMavenJarVO);
         }
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setGitlabPipelineId(gitlabPipelineId);
