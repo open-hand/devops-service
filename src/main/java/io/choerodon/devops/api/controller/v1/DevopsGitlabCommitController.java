@@ -91,22 +91,4 @@ public class DevopsGitlabCommitController {
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));
     }
-
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "工作台查看个人代码提交记录")
-    @GetMapping("/record/individual")
-    public ResponseEntity<Page<CommitFormRecordVO>> getIndividualCommits(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
-            @ApiParam(value = "开始时间start_date", required = true)
-            @RequestParam(value = "start_date") Date startDate,
-            @ApiParam(value = "结束时间end_date", required = true)
-            @RequestParam(value = "end_date") Date endDate){
-        return Optional.ofNullable(devopsGitlabCommitService.pageIndividualCommits(projectId, startDate, endDate,pageable))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.commits.get"));
-    }
 }
