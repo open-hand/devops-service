@@ -72,6 +72,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private String gitlabSshUrl;
 
     @Autowired
+    @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
