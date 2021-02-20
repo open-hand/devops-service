@@ -149,7 +149,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         while (startDate.isBefore(endDate) || startDate.isEqual(endDate)) {
             String date = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             long countNum = 0;
-            // 计算成功发送的邮件数
+            // 计算每天部署数量
             List<DeployDTO> deployDTOList = map.get(date);
             if (!CollectionUtils.isEmpty(deployDTOList)) {
                 countNum = deployDTOList.size();
