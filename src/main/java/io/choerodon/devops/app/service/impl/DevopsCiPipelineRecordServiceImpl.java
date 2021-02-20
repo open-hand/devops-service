@@ -75,6 +75,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
+    private static final String DOWNLOAD_JAR_URL = "%s%s/%s/repository/";
 
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
@@ -651,7 +652,21 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     Server server = getServer(settings, c7nNexusRepoDTO);
                     //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
                     //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-                    String downloadUrl = api + proxy + BaseConstants.Symbol.SLASH + c7nNexusRepoDTO.getNeRepositoryName() + pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) + "/" + pipelineMavenDTO.getArtifactId() + "/" + pipelineMavenDTO.getVersion() + ".jar";
+
+                    //区分RELEASE 和 SNAPSHOT
+                    String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+                    if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
+                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
+                    }
+                    if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
+                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() +
+                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() +
+                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + pipelineMavenDTO.getVersion() + ".jar";
+                    }
                     DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
                     downloadMavenJarVO.setDownloaJar(downloadUrl);
                     downloadMavenJarVO.setServer(server);
