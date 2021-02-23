@@ -578,7 +578,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                             //添加job里面构建结果的下载的地址
                             fillRepoUrl(projectId, devopsCiJobRecordVO, devopsCiPipelineRecordDTO.getGitlabPipelineId(), devopsCiJobDTO);
                         }
-                        //填充docker 下载的命令
+                        //填充docker 下载的命令  需要包含docker的构建命令
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
                             fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
                         }
@@ -636,7 +636,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
         CiPipelineImageDTO pipelineImageDTO = ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
-        if (!Objects.isNull(pipelineImageDTO)) {
+        //job的状态成功才有命令
+        if (!Objects.isNull(pipelineImageDTO) && StringUtils.equalsIgnoreCase(devopsCiJobRecordVO.getStatus(), PipelineStatus.SUCCESS.toValue())) {
             devopsCiJobRecordVO.setDownloadImage("docker pull " + pipelineImageDTO.getImageTag());
         }
     }
