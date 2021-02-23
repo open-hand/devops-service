@@ -467,7 +467,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public Page<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageable, Long[] envIds,
                                                               Long appServiceId, Date startTime, Date endTime) {
-        if (envIds.length == 0) {
+        if (envIds == null || envIds.length == 0) {
             return new Page<>();
         }
         Page<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageable,
