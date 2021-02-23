@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.google.gson.JsonParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -33,6 +32,7 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.MarketUseRecordService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DeployDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -179,15 +179,16 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public DeployRecordCountVO countByDate(Long projectId, Date startTime, Date endTime) {
+
+        List<DeployDTO> deployDTOS = appServiceInstanceService.baseListDeployFrequency(projectId, null, null, startTime, endTime);
+
+
         DeployRecordCountVO deployRecordCountVO = new DeployRecordCountVO();
         deployRecordCountVO.setId(projectId);
 
-        List<DevopsDeployRecordDTO> devopsDeployRecordDTOList = devopsDeployRecordMapper.selectByProjectIdAndDate(projectId,
-                new java.sql.Date(startTime.getTime()),
-                new java.sql.Date(endTime.getTime()));
         // 按日期分组
-        Map<String, List<DevopsDeployRecordDTO>> map = devopsDeployRecordDTOList.stream()
-                .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getDeployTime().getTime()).toString()));
+        Map<String, List<DeployDTO>> map = deployDTOS.stream()
+                .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getCreationDate().getTime()).toString()));
 
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDate startDate = startTime.toInstant().atZone(zoneId).toLocalDate();
@@ -196,10 +197,10 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         while (startDate.isBefore(endDate) || startDate.isEqual(endDate)) {
             String date = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             long countNum = 0;
-            // 计算成功发送的邮件数
-            List<DevopsDeployRecordDTO> devopsDeployRecordDTOS = map.get(date);
-            if (!CollectionUtils.isEmpty(devopsDeployRecordDTOS)) {
-                countNum = devopsDeployRecordDTOS.size();
+            // 计算每天部署数量
+            List<DeployDTO> deployDTOList = map.get(date);
+            if (!CollectionUtils.isEmpty(deployDTOList)) {
+                countNum = deployDTOList.size();
             }
 
             deployRecordCountVO.getData().add(countNum);
@@ -280,6 +281,10 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
 
         DeployRecordVO deployRecordVO = devopsDeployRecordMapper.queryEnvDeployRecordByCommandId(commandId);
+        if (deployRecordVO == null) {
+            return null;
+        }
+
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(deployRecordVO.getDeployPayloadId());
         if (devopsEnvironmentDTO != null) {
             // 计算集群状态
