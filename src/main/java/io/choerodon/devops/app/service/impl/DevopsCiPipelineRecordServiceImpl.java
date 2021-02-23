@@ -578,6 +578,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                             //添加job里面构建结果的下载的地址
                             fillRepoUrl(projectId, devopsCiJobRecordVO, devopsCiPipelineRecordDTO.getGitlabPipelineId(), devopsCiJobDTO);
                         }
+                        //填充docker 下载的命令
+                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+                            fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
+                        }
                     }
                 }
             });
@@ -628,6 +632,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return devopsCiPipelineRecordVO;
     }
 
+    private void fillDockerPull(DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
+        ciPipelineImageDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
+        if (!Objects.isNull(pipelineImageDTO)) {
+            devopsCiJobRecordVO.setDownloadImage("docker pull " + pipelineImageDTO.getImageTag());
+        }
+    }
+
     private void fillRepoUrl(Long projectId, DevopsCiJobRecordVO devopsCiJobRecordVO, Long gitlabPipelineId, DevopsCiJobDTO devopsCiJobDTO) {
         if (Objects.isNull(gitlabPipelineId)) {
             return;
@@ -674,12 +687,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 }
             }
         }
-        CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
-        ciPipelineImageDTO.setGitlabPipelineId(gitlabPipelineId);
-        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
-        if (!Objects.isNull(pipelineImageDTO)) {
-            devopsCiJobRecordVO.setDownloadImage("docker pull " + pipelineImageDTO.getImageTag());
-        }
+
     }
 
     private Server getServer(Settings settings, C7nNexusRepoDTO c7nNexusRepoDTO) {
