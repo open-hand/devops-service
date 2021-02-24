@@ -569,7 +569,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     jobDTO.setCiStageId(ciStageDTO.getId());
                     //流水线中阶段名字唯一，阶段内的job名字唯一
                     DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectOne(jobDTO);
-                    if (!Objects.isNull(devopsCiJobDTO)) {
+                    //job类型要是构建才行
+                    if (!Objects.isNull(devopsCiJobDTO) && StringUtils.equalsIgnoreCase(devopsCiJobDTO.getType(), JobTypeEnum.BUILD.value())) {
                         CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
                         List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
                         List<String> typeList = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList());
