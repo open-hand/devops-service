@@ -575,7 +575,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     if (marketServiceVO != null) {
                         app.setName(marketServiceVO.getMarketServiceName());
                     } else {
-                        app.setName("Unknown service");
+                        app.setName(MiscConstants.UNKNOWN_SERVICE);
                     }
                 }
             }));
