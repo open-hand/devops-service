@@ -450,6 +450,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         }
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO();
+        marketInstanceCreationRequestVO.setNotChanged(false);
         marketInstanceCreationRequestVO.setEnvironmentId(envId);
         marketInstanceCreationRequestVO.setCommandType(type);
         // 设置values为配置库的values和版本的values合并值
