@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -38,7 +37,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.UseRecordType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
@@ -138,8 +136,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 JsonHelper.marshalByJackson(deploySource));
         try {
             baseCreate(devopsDeployRecordDTO);
-            if (StringUtils.endsWithIgnoreCase(PipelineStatus.SUCCESS.toValue(), deployResult)
-                    && org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
                 marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource, DetailsHelper.getUserDetails().getUserId());
             }
         } catch (Exception e) {
