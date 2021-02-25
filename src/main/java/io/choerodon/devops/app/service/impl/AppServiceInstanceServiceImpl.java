@@ -903,7 +903,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         deploySourceVO.setType(AppSourceType.MARKET.getValue());
         deploySourceVO.setMarketAppName(marketServiceVO.getMarketAppName());
         deploySourceVO.setMarketServiceName(marketServiceVO.getMarketServiceName());
-        deploySourceVO.setDeployObjectId(appServiceInstanceDTO.getId());
+        deploySourceVO.setDeployObjectId(appServiceInstanceDTO.getAppServiceId());
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
                 DeployType.MANUAL,
