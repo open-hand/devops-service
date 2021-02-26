@@ -436,8 +436,15 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     private MarketInstanceCreationRequestVO getMarketInstanceCreationRequestVO(C7nHelmRelease c7nHelmRelease,
                                                                                Long projectId, Long envId, String filePath, String type) {
-        // 从市场服务根据code和版本号查询市场服务版本
-        MarketServiceDeployObjectVO appServiceVersion = marketServiceClientOperator.queryDeployObjectByCodeAndVersion(projectId, c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+        // 查询版本
+        MarketServiceDeployObjectVO appServiceVersion;
+        if (c7nHelmRelease.getSpec().getMarketDeployObjectId() != null) {
+            // 如果有填，从指定id查
+            appServiceVersion = marketServiceClientOperator.queryDeployObjectWithValues(projectId, c7nHelmRelease.getSpec().getMarketDeployObjectId());
+        } else {
+            // 如果没填，从市场服务根据code和版本号查询市场服务版本
+            appServiceVersion = marketServiceClientOperator.queryDeployObjectByCodeAndVersion(projectId, c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+        }
 
         validateVersion(appServiceVersion, filePath, c7nHelmRelease);
         String versionValue = appServiceVersion.getValue();

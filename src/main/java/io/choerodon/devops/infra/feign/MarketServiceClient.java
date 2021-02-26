@@ -34,6 +34,7 @@ public interface MarketServiceClient {
     @GetMapping("/v1/projects/{project_id}/deploy/object/{deploy_object_id}/repo/config")
     ResponseEntity<String> queryDeployObject(
             @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "with_values") Boolean withValues,
             @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
 
 //    /**

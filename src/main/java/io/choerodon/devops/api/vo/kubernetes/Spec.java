@@ -13,6 +13,9 @@ public class Spec {
     @ApiModelProperty("这个实例的来源/选填，默认为normal")
     private String source;
 
+    @ApiModelProperty("应用市场的发布对象id/因为多个发布对象之间，chartVersion不一定发生了变化，所以需要这个来确定具体是部署哪个发布对象/应用市场实例需要，可为空")
+    private Long marketDeployObjectId;
+
     @ApiModelProperty("char仓库地址")
     private String repoUrl;
     @ApiModelProperty("chart包名")
@@ -88,5 +91,13 @@ public class Spec {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public Long getMarketDeployObjectId() {
+        return marketDeployObjectId;
+    }
+
+    public void setMarketDeployObjectId(Long marketDeployObjectId) {
+        this.marketDeployObjectId = marketDeployObjectId;
     }
 }

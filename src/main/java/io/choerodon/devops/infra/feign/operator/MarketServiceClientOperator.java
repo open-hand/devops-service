@@ -35,7 +35,11 @@ public class MarketServiceClientOperator {
     }
 
     public MarketServiceDeployObjectVO queryDeployObject(Long projectId, Long deployObjectId) {
-        return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deployObjectId)), MarketServiceDeployObjectVO.class);
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObject(Objects.requireNonNull(projectId), false, Objects.requireNonNull(deployObjectId)), MarketServiceDeployObjectVO.class);
+    }
+
+    public MarketServiceDeployObjectVO queryDeployObjectWithValues(Long projectId, Long deployObjectId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObject(Objects.requireNonNull(projectId), true, Objects.requireNonNull(deployObjectId)), MarketServiceDeployObjectVO.class);
     }
 
     public MarketChartValueDTO queryValues(Long projectId, Long deployObjectId) {

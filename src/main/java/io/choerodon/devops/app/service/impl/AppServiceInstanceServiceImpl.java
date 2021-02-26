@@ -2012,6 +2012,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         c7nHelmRelease.getSpec().setChartVersion(version);
         c7nHelmRelease.getSpec().setCommandId(commandId);
         c7nHelmRelease.getSpec().setSource(AppServiceInstanceSource.MARKET.getValue());
+        c7nHelmRelease.getSpec().setMarketDeployObjectId(marketServiceVersionId);
         if (secretName != null) {
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
         }
