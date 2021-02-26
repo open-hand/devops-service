@@ -297,7 +297,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                setAppVersionIdForInstance(appServiceInstanceDTO, releasePayloadVO);
 
                 if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {
                     logger.warn("Unexpected empty value '{}' for commit of release payload.", releasePayloadVO.getCommit());
@@ -327,6 +326,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     }
                 }
 
+                setAppVersionIdForInstance(appServiceInstanceDTO, releasePayloadVO, appServiceInstanceDTO.getEffectCommandId());
+
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
@@ -334,12 +335,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
-    private void setAppVersionIdForInstance(AppServiceInstanceDTO appServiceInstanceDTO, ReleasePayloadVO releasePayloadVO) {
+    private void setAppVersionIdForInstance(AppServiceInstanceDTO appServiceInstanceDTO, ReleasePayloadVO releasePayloadVO, Long effectCommandId) {
         // 兼容集群组件
         if (appServiceInstanceDTO.getAppServiceId() != null) {
+            // 市场实例通过effect Command查，因为同一个市场服务的多个发布对象之间，
+            // chartVersion不一定发生了变化，所以需要这个来确定具体是部署哪个发布对象，
+            // TODO 普通实例也应该可以通过生效的command来查版本id
             if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())) {
-                MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObjectByCodeAndVersion(0L, releasePayloadVO.getChartName(), releasePayloadVO.getChartVersion());
-                appServiceInstanceDTO.setAppServiceVersionId(marketServiceDeployObjectVO.getId());
+                if (effectCommandId != null) {
+                    DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(effectCommandId);
+                    appServiceInstanceDTO.setAppServiceVersionId(devopsEnvCommandDTO.getObjectVersionId());
+                }
             } else {
                 AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
                 appServiceInstanceDTO.setAppServiceVersionId(Objects.requireNonNull(appServiceVersionDTO.getId()));

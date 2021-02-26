@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.feign.MarketServiceClient;
 public class MarketServiceClientFallback implements MarketServiceClient {
 
     @Override
-    public ResponseEntity<String> queryDeployObject(Long projectId, Long deployObjectId) {
+    public ResponseEntity<String> queryDeployObject(Long projectId, Boolean withValues, Long deployObjectId) {
         throw new CommonException("error.query.deploy.object.config");
     }
 

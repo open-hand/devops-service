@@ -128,6 +128,10 @@ env:
     #   -Dskywalking.agent.sample_n_per_3_secs=6
     #   -Dskywalking.collector.backend_service=oap.skywalking:11800
 
+    # 百分比使用物理内存，预留一部分用于堆外内存以及外部程序
+    JAVA_OPTS: >-
+      -XX:MaxRAMPercentage=80.0
+
 ## Liveness 和 Readiness 探针相关配置
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
 livenessProbe:

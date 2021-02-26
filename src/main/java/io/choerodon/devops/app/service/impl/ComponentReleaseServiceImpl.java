@@ -1,5 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.iam.ResourceLevel;
@@ -16,19 +30,6 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
 import io.choerodon.devops.infra.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * 为集群的组件部署对应的Release
@@ -334,6 +335,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
     private AppServiceInstanceDTO initApplicationInstanceDTO(Long systemEnvId, @Nullable Long instanceId, CommandType commandType) {
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
+        appServiceInstanceDTO.setSource(AppServiceInstanceSource.NORMAL.getValue());
         appServiceInstanceDTO.setEnvId(systemEnvId);
         appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
         if (CommandType.UPDATE == commandType) {

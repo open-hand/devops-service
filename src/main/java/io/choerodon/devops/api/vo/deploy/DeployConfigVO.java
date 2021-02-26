@@ -87,6 +87,7 @@ public class DeployConfigVO {
         /**
          *  部署对象id
          */
+        @Encrypt
         private Long deployObjectId;
 
         /**
@@ -220,6 +221,7 @@ public class DeployConfigVO {
         /**
          *  部署对象id
          */
+        @Encrypt
         private Long deployObjectId;
 
         public Long getDeployObjectId() {

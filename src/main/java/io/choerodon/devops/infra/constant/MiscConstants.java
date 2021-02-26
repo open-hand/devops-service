@@ -45,4 +45,6 @@ public final class MiscConstants {
      * https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
      */
     public static final String USER_SYNC_ERROR_FILE_BUCKET_NAME = "devops-service.user-sync.error-file";
+
+    public static final String UNKNOWN_SERVICE = "UnknownService";
 }

@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
  */
 @Service
 public class MarketUseRecordServiceImpl implements MarketUseRecordService {
+
+    private Logger logger = LoggerFactory.getLogger(MarketUseRecordServiceImpl.class);
 
 
     @Autowired
@@ -60,6 +64,7 @@ public class MarketUseRecordServiceImpl implements MarketUseRecordService {
         marketAppUseRecordDTO.setDeployObjectId(deploySourceVO.getDeployObjectId());
         //部署记录存一个部署人员id，用于通知订阅人员
         marketAppUseRecordDTO.setDeployUserId(userId);
+        logger.info("save use record for deployObject:{}", marketAppUseRecordDTO.getDeployObjectId());
         marketServiceClientOperator.createUseRecord(marketAppUseRecordDTO);
     }
 }
