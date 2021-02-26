@@ -799,6 +799,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 查询市场应用服务, 确认存在
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceDeployVO.getMarketAppServiceId());
+        marketServiceVO.setMarketDeployObjectId(appServiceDeployVO.getMarketDeployObjectId());
 
         MarketServiceDeployObjectVO appServiceVersionDTO = marketServiceClientOperator.queryDeployObject(projectId, appServiceDeployVO.getMarketDeployObjectId());
         CommonExAssertUtil.assertNotNull(appServiceVersionDTO, "error.version.id.not.exist", appServiceDeployVO.getMarketDeployObjectId());
@@ -903,7 +904,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         deploySourceVO.setType(AppSourceType.MARKET.getValue());
         deploySourceVO.setMarketAppName(marketServiceVO.getMarketAppName());
         deploySourceVO.setMarketServiceName(marketServiceVO.getMarketServiceName());
-        deploySourceVO.setDeployObjectId(appServiceInstanceDTO.getAppServiceId());
+        deploySourceVO.setDeployObjectId(marketServiceVO.getMarketDeployObjectId());
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
                 DeployType.MANUAL,
@@ -1170,6 +1171,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 插入部署记录
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getMarketAppServiceId());
+        marketServiceVO.setMarketDeployObjectId(appServiceDeployVO.getMarketDeployObjectId());
         saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceDeployVO.getChartVersion());
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
@@ -1295,6 +1297,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         MarketServiceDeployObjectVO appServiceVersion = marketServiceClientOperator.queryDeployObject(projectId, devopsEnvCommandDTO.getObjectVersionId());
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceVersion.getMarketServiceId());
+        marketServiceVO.setMarketDeployObjectId(appServiceInstanceDTO.getAppServiceVersionId());
 
         String value = baseQueryValueByInstanceId(instanceId);
 
@@ -1503,9 +1506,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceInstanceValidator.checkName(code);
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
-        if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
-            throw new CommonException("error.app.instance.name.already.exist");
-        }
+//        if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
+//            throw new CommonException("error.app.instance.name.already.exist");
+//        }
     }
 
 

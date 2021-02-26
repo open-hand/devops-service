@@ -25,6 +25,8 @@ public class MarketServiceVO {
     @ApiModelProperty("应用市场应用版本id")
     private Long marketAppVersionId;
 
+    @ApiModelProperty("市场应用部署对象id")
+    private Long marketDeployObjectId;
 
     @ApiModelProperty("状态")
     private String status;
@@ -88,4 +90,11 @@ public class MarketServiceVO {
         this.marketAppId = marketAppId;
     }
 
+    public Long getMarketDeployObjectId() {
+        return marketDeployObjectId;
+    }
+
+    public void setMarketDeployObjectId(Long marketDeployObjectId) {
+        this.marketDeployObjectId = marketDeployObjectId;
+    }
 }
