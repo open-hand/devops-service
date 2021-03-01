@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 import net.schmizz.sshj.SSHClient;
 import org.hzero.core.base.BaseConstants;
@@ -125,19 +128,23 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
             if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), deployConfigVO.getAppSource())) {
                 MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeploy.getDeployObjectId()));
+                JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
                 if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
                     throw new CommonException("error.maven.deploy.object.not.exist");
                 }
 
                 deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();
-                deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
 
                 MarketMavenConfigVO marketMavenConfigVO = marketServiceDeployObjectVO.getMarketMavenConfigVO();
                 C7nNexusComponentDTO nNexusComponentDTO = new C7nNexusComponentDTO();
 
-                nNexusComponentDTO.setName(deployConfigVO.getJarDeploy().getServerName());
-                nNexusComponentDTO.setVersion(deployConfigVO.getJarDeploy().getVersion());
+                deployVersion = jarReleaseConfigVO.getVersion();
+                nNexusComponentDTO.setName(jarReleaseConfigVO.getArtifactId());
+                nNexusComponentDTO.setVersion(jarReleaseConfigVO.getVersion());
+                nNexusComponentDTO.setGroup(jarReleaseConfigVO.getGroupId());
+                nNexusComponentDTO.setDownloadUrl(getDownloadUrl(jarReleaseConfigVO));
                 nexusComponentDTOList.add(nNexusComponentDTO);
+
                 NexusMavenRepoDTO nexusMavenRepoDTO = new NexusMavenRepoDTO();
                 nexusMavenRepoDTO.setNePullUserId(marketMavenConfigVO.getPullUserName());
                 nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
@@ -145,7 +152,6 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
                 JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
                 jarDeploy.setArtifactId(jarSourceConfig.getArtifactId());
-                nNexusComponentDTO.setDownloadUrl(getDownloadUrl(JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class)));
                 deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
                 deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
 
