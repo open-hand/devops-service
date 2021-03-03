@@ -40,5 +40,7 @@ do_install() {
 }
 
 do_install
-rm /tmp/kubeadm-ha
+if [ -d "/tmp/kubeadm-ha" ]; then
+    rm -rf /tmp/kubeadm-ha
+fi
 git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha

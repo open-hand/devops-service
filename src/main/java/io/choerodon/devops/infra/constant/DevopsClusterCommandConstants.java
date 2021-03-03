@@ -132,7 +132,7 @@ public class DevopsClusterCommandConstants {
     /**
      * devops中ansible文件保存目录模板
      */
-    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
+    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/Users/lihao/ansible/%s";
 
     /**
      * 基准目录
