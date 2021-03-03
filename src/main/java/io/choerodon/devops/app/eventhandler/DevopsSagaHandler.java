@@ -481,6 +481,27 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * devops导入市场应用服务
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_IMPORT_MARKET_APPLICATION_SERVICE,
+            description = "devops入市场应用服务",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_IMPORT_MARKET_APPLICATION_SERVICE,
+            maxRetryCount = 3,
+            seq = 1)
+    public String importMarketAppServiceGitlab(String data) {
+        AppServiceImportPayload appServiceImportPayload = gson.fromJson(data, AppServiceImportPayload.class);
+        try {
+            appServiceService.importMarketAppServiceGitlab(appServiceImportPayload);
+        } catch (Exception e) {
+            DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+            devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
+            appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId(), appServiceImportPayload.getAppServiceId());
+            throw e;
+        }
+        return data;
+    }
+
+    /**
      * GitOps 应用创建失败处理
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT_ERROR,

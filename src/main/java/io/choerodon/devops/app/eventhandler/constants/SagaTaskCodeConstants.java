@@ -237,6 +237,11 @@ public class SagaTaskCodeConstants {
      * devops导入内部应用服务
      */
     public static final String DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE = "devopsImportInternalAppService";
+
+    /**
+     * devops导入市场应用服务
+     */
+    public static final String DEVOPS_IMPORT_MARKET_APPLICATION_SERVICE = "devopsImportMarketAppService";
     /**
      * 删除环境
      */

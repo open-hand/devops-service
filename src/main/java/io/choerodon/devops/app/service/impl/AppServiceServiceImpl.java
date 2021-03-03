@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -29,6 +30,7 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
+import org.hzero.boot.file.FileClient;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +127,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
     private static final String APPSERVICE = "app-service";
     private static final String APP = "app";
+    public static final String SOURCE_CODE_BUCKET_NAME = "market-source-code-bucket";
 
     /**
      * CI 文件模板
@@ -213,6 +216,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private StringRedisTemplate redisTemplate;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private AppServiceUtils appServiceUtils;
+    @Autowired
+    private FileClient fileClient;
 
     static {
         InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
@@ -235,7 +242,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         // 判断项目下是否还能创建应用服务
-        checkEnableCreateAppSvcOrThrowE(projectId, 1);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
 
         // 校验模板id和模板版本id是否都有值或者都为空
         boolean isTemplateNull = appServiceReqVO.getTemplateAppServiceId() == null;
@@ -298,11 +305,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      *
      * @param projectId 项目id
      */
-    private void checkEnableCreateAppSvcOrThrowE(Long projectId, int appSize) {
-        if (Boolean.FALSE.equals(checkEnableCreateAppSvcWithSize(projectId, appSize))) {
-            throw new CommonException(ERROR_PROJECT_APP_SVC_NUM_MAX);
-        }
-    }
+
 
     @Override
     public AppServiceRepVO query(Long projectId, Long appServiceId) {
@@ -1110,7 +1113,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-        checkEnableCreateAppSvcOrThrowE(projectId, 1);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
 
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -1850,9 +1853,24 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        List<AppServiceImportPayload> importPayloadList = createAppService(projectId, importInternalVOS);
+        importPayloadList.forEach(payload -> producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
+                        .withPayloadAndSerialize(payload)
+                        .withRefId(String.valueOf(payload.getAppServiceId()))
+                        .withSourceId(projectId),
+                builder -> {
+                }));
+    }
 
-        checkEnableCreateAppSvcOrThrowE(projectId, importInternalVOS.size());
+    @Transactional(rollbackFor = Exception.class)
+    public List<AppServiceImportPayload> createAppService(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, importInternalVOS.size());
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<AppServiceImportPayload> importPayloadList = new ArrayList<>();
@@ -1915,20 +1933,69 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceImportPayload.setProjectId(projectId);
             appServiceImportPayload.setProCode(projectDTO.getCode());
             appServiceImportPayload.setOldAppServiceId(importInternalVO.getAppServiceId());
+            appServiceImportPayload.setSourceCodeUrl(importInternalVO.getSourceCodeUrl());
             importPayloadList.add(appServiceImportPayload);
         });
+        return importPayloadList;
+    }
 
-        importPayloadList.forEach(payload -> producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("app")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
-                        .withPayloadAndSerialize(payload)
-                        .withRefId(String.valueOf(payload.getAppServiceId()))
-                        .withSourceId(projectId),
-                builder -> {
-                }));
+    @Override
+    public void importMarketAppServiceGitlab(AppServiceImportPayload appServiceImportPayload) {
+        // TODO: 2021/3/3  方法待抽取
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceImportPayload.getAppServiceId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appServiceImportPayload.getIamUserId());
+
+        String newGroupName = appServiceImportPayload.getOrgCode() + "-" + appServiceImportPayload.getProCode();
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
+                newGroupName,
+                appServiceDTO.getCode(),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        //创建gitlab 应用 一个空的库
+        if (gitlabProjectDTO.getId() == null) {
+            gitlabProjectDTO = gitlabServiceClientOperator.createProject(
+                    appServiceImportPayload.getGitlabGroupId(),
+                    appServiceDTO.getCode(),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), false);
+        }
+
+        appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
+        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        appServiceDTO.setSynchro(true);
+        appServiceDTO.setFailed(false);
+        setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), applicationServiceToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+
+        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+        String repositoryUrl = repoUrl + appServiceImportPayload.getOrgCode() + "-" + appServiceImportPayload.getProCode() + "/" + appServiceDTO.getCode() + GIT;
+        //将文件服务器上的源码下载下来推上去
+        downloadSourceCodeAndPush(appServiceDTO, userAttrDTO, appServiceImportPayload, repositoryUrl, newGroupName);
+        appServiceMapper.updateByIdSelectiveWithoutAudit(appServiceDTO);
+    }
+
+    private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
+        // TODO: 2021/3/3  方法待抽取
+        AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(appServiceImportPayload.getVersionId());
+        // 获取push代码所需的access token
+        String applicationDir = APPLICATION + System.currentTimeMillis();
+        String pushToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
+
+        //获取admin的token
+        String pullToken = gitlabServiceClientOperator.getAdminToken();
+        try {
+            InputStream inputStream = fileClient.downloadFile(0L, SOURCE_CODE_BUCKET_NAME, appServiceImportPayload.getSourceCodeUrl());
+            //获取一个临时的工作目录
+            FileUtil.createDirectory(applicationDir);
+            //下载源码到这个目录
+            FileUtil.unTar(inputStream, applicationDir);
+            Git git = gitUtil.initGit(new File(applicationDir));
+            //push 到远程仓库
+            GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            gitUtil.push(git, applicationDir, "The template version:" + oldAppServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
+            LOGGER.info(">>>>>>>>>>>>The address of the remote git is:{}>>>>>>>>>>>>>", repositoryUrl);
+        } catch (Exception e) {
+            LOGGER.error("push source code git ", e);
+        } finally {
+            FileUtil.deleteFile(applicationDir);
+        }
     }
 
     @Override
@@ -2594,21 +2661,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         return map;
     }
 
-    private Boolean checkEnableCreateAppSvcWithSize(Long projectId, int appSize) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
-        if (baseServiceClientOperator.checkOrganizationIsRegistered(projectDTO.getOrganizationId())) {
-            ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
-            AppServiceDTO example = new AppServiceDTO();
-            example.setProjectId(projectId);
-            int num = appServiceMapper.selectCount(example);
-            return num + appSize <= resourceLimitVO.getAppSvcMaxNumber();
-        }
-        return true;
-    }
 
     @Override
     public Boolean checkEnableCreateAppSvc(Long projectId) {
-        return checkEnableCreateAppSvcWithSize(projectId, 1);
+        return appServiceUtils.checkEnableCreateAppSvcWithSize(projectId, 1);
     }
 
     @Override
