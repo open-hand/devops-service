@@ -36,12 +36,7 @@ public class DevopsClusterCommandConstants {
     /**
      * ansible命令模板，需要指定执行的yml
      */
-    public static final String ANSIBLE_COMMAND_TEMPLATE = "sudo docker run --rm --name ansible \\\n" +
-            "-w /root/kubeadm-ha/ \\\n" +
-            "-v /tmp/ansible/ssh-key:/tmp/ansible/ssh-key \\\n" +
-            "-v /tmp/inventory.ini:/tmp/inventory.ini \\\n" +
-            "%s \\\n" +
-            "ansible-playbook -i /tmp/inventory.ini %s";
+    public static final String ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/kubeadm-ha && ansible-playbook -i /tmp/inventory.ini %s";
 
     /**
      * 获取指定目录内容
@@ -74,7 +69,7 @@ public class DevopsClusterCommandConstants {
      * 第一个%s： 需要执行的命令
      * 第二个%s： 命令的日志输出
      */
-    public static final String BASH_COMMAND_TEMPLATE = "bash %s > %s 2>&1";
+    public static final String BASH_COMMAND_TEMPLATE = "bash %s";
 
     /**
      * 安装helm模版, curl -L -o helm.tar.gz 文件下载地址
@@ -160,9 +155,9 @@ public class DevopsClusterCommandConstants {
     public static final String INSTALL_K8S_LOG = BASE_DIR + StringPool.SLASH + "install.log";
 
     /**
-     * 安装docker的shell文件
+     * pre-kubeadm-ha.sh文件路径
      */
-    public static final String INSTALL_DOCKER_SHELL = BASE_DIR + StringPool.SLASH + "install-docker.sh";
+    public static final String PRE_KUBEADM_HA_SH = BASE_DIR + StringPool.SLASH + "pre-kubeadm-ha.sh";
 
     /**
      * 安装k8s的shell文件
