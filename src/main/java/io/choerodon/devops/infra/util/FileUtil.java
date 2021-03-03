@@ -258,7 +258,7 @@ public class FileUtil {
         }
     }
 
-    private static void unTar(InputStream inputStream, String destDir) {
+    public static void unTar(InputStream inputStream, String destDir) {
 
         TarArchiveInputStream tarIn = new TarArchiveInputStream(inputStream, BUFFER_SIZE);
         TarArchiveEntry entry = null;

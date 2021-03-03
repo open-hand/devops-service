@@ -15,6 +15,18 @@ public class ApplicationImportInternalVO {
     private String type;
     private String appName;
     private String appCode;
+    /**
+     * 源代码在文件服务器上的地址
+     */
+    private String sourceCodeUrl;
+
+    public String getSourceCodeUrl() {
+        return sourceCodeUrl;
+    }
+
+    public void setSourceCodeUrl(String sourceCodeUrl) {
+        this.sourceCodeUrl = sourceCodeUrl;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

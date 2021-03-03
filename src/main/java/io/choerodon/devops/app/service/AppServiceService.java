@@ -544,4 +544,8 @@ public interface AppServiceService {
     SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId);
 
     List<AppServiceDTO> baseListByIds(Set<Long> appServiceIds);
+
+    List<AppServiceImportPayload> createAppService(Long projectId, List<ApplicationImportInternalVO> importInternalVOS);
+
+    void importMarketAppServiceGitlab(AppServiceImportPayload appServiceImportPayload);
 }

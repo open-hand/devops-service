@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import springfox.documentation.service.ApiListing;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:57 2019/8/29
@@ -14,6 +16,15 @@ public class AppServiceImportPayload {
     private String proCode;
     private Long oldAppServiceId;
     private Long projectId;
+    private String sourceCodeUrl;
+
+    public String getSourceCodeUrl() {
+        return sourceCodeUrl;
+    }
+
+    public void setSourceCodeUrl(String sourceCodeUrl) {
+        this.sourceCodeUrl = sourceCodeUrl;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;
