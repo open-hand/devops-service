@@ -117,8 +117,10 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                 CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
                 List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
                 // seq 与 type确定一个job内唯一的构建步骤CiConfigTemplateVO
-                List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
-                        && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
+                List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
+                        (StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+                                || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
+                                && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
                 //如果一个job里面 有多次jar上传 会只保留最新的版本
                 if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
                     logger.info(">>>>>>>>>>>>>>>>>2. >>>>>>>>>>>>>>>>>>>>ciConfigTemplateVOS {}", JsonHelper.marshalByJackson(ciConfigTemplateVOS));
