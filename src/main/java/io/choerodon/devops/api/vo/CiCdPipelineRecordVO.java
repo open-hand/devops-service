@@ -6,6 +6,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -61,7 +64,46 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private Long gitlabProjectId;
     private String viewId;
 
+    private String appServiceName;
 
+    private Long createdBy;
+
+    private IamUserDTO iamUserDTO;
+
+    private Long durationSeconds;
+
+    public Long getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(Long durationSeconds) {
+        this.durationSeconds = durationSeconds;
+    }
+
+    public IamUserDTO getIamUserDTO() {
+        return iamUserDTO;
+    }
+
+    public void setIamUserDTO(IamUserDTO iamUserDTO) {
+        this.iamUserDTO = iamUserDTO;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
+    }
 
     public String getViewId() {
         return viewId;

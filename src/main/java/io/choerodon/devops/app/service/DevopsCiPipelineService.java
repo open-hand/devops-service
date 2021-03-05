@@ -1,7 +1,14 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.api.vo.DeployTimeVO;
+import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -82,4 +89,13 @@ public interface DevopsCiPipelineService {
      * @return 数量
      */
     int selectCountByAppServiceId(Long appServiceId);
+
+    List<CiCdPipelineDTO> devopsPipline(Long projectId);
+
+    PipelineFrequencyVO listPipelineTrigger(Long pipelineId, Date startTime, Date endTime);
+
+    Page<CiCdPipelineRecordVO> pagePipelineTrigger(Long pipelineId, Date startTime, Date endTime, PageRequest pageRequest);
+
+    ExecuteTimeVO pipelineExecuteTime(List<Long> pipelineIds, Date startTime, Date endTime);
+
 }

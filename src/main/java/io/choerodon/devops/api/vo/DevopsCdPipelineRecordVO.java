@@ -6,13 +6,11 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-public class DevopsCdPipelineRecordVO {
-    @Encrypt
-    private Long id;
+public class DevopsCdPipelineRecordVO extends DevopsPipelineRecordVO {
+
     @Encrypt
     private Long pipelineId;
     private Long gitlabPipelineId;
-    private String status;
     private String triggerType;
     private String bpmDefinition;
     private Long projectId;
@@ -25,8 +23,6 @@ public class DevopsCdPipelineRecordVO {
     private String username;
     @ApiModelProperty("触发分支")
     private String gitlabTriggerRef;
-    @ApiModelProperty("创建时间")
-    private Date createdDate;
     @ApiModelProperty("结束时间")
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
@@ -94,13 +90,6 @@ public class DevopsCdPipelineRecordVO {
         this.ciCdPipelineVO = ciCdPipelineVO;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Long getPipelineId() {
         return pipelineId;
@@ -118,13 +107,6 @@ public class DevopsCdPipelineRecordVO {
         this.gitlabPipelineId = gitlabPipelineId;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public String getTriggerType() {
         return triggerType;
@@ -198,13 +180,6 @@ public class DevopsCdPipelineRecordVO {
         this.gitlabTriggerRef = gitlabTriggerRef;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
 
     public Date getFinishedDate() {
         return finishedDate;
