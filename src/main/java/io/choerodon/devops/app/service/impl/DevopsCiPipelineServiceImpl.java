@@ -866,7 +866,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         ciCdPipelineDTOS.forEach(cdPipelineDTO -> {
             //关联应用服务
-            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(cdPipelineDTO.getName());
+            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(cdPipelineDTO.getAppServiceId());
             if (!Objects.isNull(appServiceDTO)) {
                 cdPipelineDTO.setName(cdPipelineDTO.getName() + "(" + appServiceDTO.getName() + ")");
             }
