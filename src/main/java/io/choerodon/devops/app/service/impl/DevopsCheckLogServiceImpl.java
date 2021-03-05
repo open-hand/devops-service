@@ -40,8 +40,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCdAuditService devopsCdAuditService;
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
-    @Autowired
-    private SyncService syncService;
 
     @Override
     public void checkLog(String version) {
@@ -81,8 +79,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("修复数据开始!");
                     appServiceVersionService.fixHarbor();
                     LOGGER.info("修复数据完成!!!!!!");
-                } else if ("0.24.0".equals(version)) {
-                    syncService.userWithOutGitlabUser();
                 } else if ("0.23.3".equals(version)) {
                     LOGGER.info("修复数据开始");
                     devopsCdAuditService.fixProjectId();
