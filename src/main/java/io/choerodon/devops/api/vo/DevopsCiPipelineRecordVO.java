@@ -16,9 +16,8 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @author wanghao
  * @Date 2020/4/7 22:18
  */
-public class DevopsCiPipelineRecordVO {
-    @Encrypt
-    private Long id;
+public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
+
 
     @ApiModelProperty("gitlab流水线记录id")
     private Long gitlabPipelineId;
@@ -26,15 +25,10 @@ public class DevopsCiPipelineRecordVO {
     @Encrypt
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
-
-    @ApiModelProperty("流水线状态")
-    private String status;
     @ApiModelProperty("触发用户")
     private String username;
     @ApiModelProperty("触发分支")
     private String gitlabTriggerRef;
-    @ApiModelProperty("创建时间")
-    private Date createdDate;
     @ApiModelProperty("结束时间")
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
@@ -60,13 +54,6 @@ public class DevopsCiPipelineRecordVO {
         this.gitlabProjectId = gitlabProjectId;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Long getGitlabPipelineId() {
         return gitlabPipelineId;
@@ -84,13 +71,6 @@ public class DevopsCiPipelineRecordVO {
         this.ciPipelineId = ciPipelineId;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public String getUsername() {
         return username;
@@ -100,13 +80,6 @@ public class DevopsCiPipelineRecordVO {
         this.username = username;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
 
     public Date getFinishedDate() {
         return finishedDate;

@@ -21,4 +21,8 @@ public interface DevopsPipelineRecordRelMapper extends BaseMapper<DevopsPipeline
                                                     @Param("endDate") Date endDate);
 
     PipelineCompositeRecordVO queryLatestedPipelineRecord(@Param("id") Long id);
+
+    List<DevopsPipelineRecordRelDTO> listByPipelineId(@Param("pipelineId") Long pipelineId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    List<DevopsPipelineRecordRelDTO> listByPipelineIds(@Param("pipelineIds") List<Long> pipelineIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }
