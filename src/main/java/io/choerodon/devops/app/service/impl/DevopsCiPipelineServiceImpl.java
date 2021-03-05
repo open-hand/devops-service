@@ -1133,7 +1133,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
 
         pipelineSuccessFrequency.add(successCount[0]);
-        pipelineSuccessFrequency.add(failCount[0]);
+        pipelineFailFrequency.add(failCount[0]);
     }
 
     private void deleteGitlabCiFile(Integer gitlabProjectId) {
