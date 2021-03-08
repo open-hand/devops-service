@@ -911,7 +911,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public Page<CiCdPipelineRecordVO> pagePipelineTrigger(Long pipelineId, Date startTime, Date endTime, PageRequest pageRequest) {
-        Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = PageHelper.doPageAndSort(pageRequest, () -> devopsPipelineRecordRelMapper.listByPipelineId(pipelineId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
+        Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = PageHelper.doPage(pageRequest, () -> devopsPipelineRecordRelMapper.listByPipelineId(pipelineId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS.getContent())) {
             return new Page<>();
         }
