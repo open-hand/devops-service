@@ -50,6 +50,7 @@ import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.maven.Settings;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.maven.VersionPolicyEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -649,13 +650,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
+        ciPipelineMavenDTO.setJobName(devopsCiJobDTO.getName());
         CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
         if (!Objects.isNull(pipelineMavenDTO)) {
             //返回代理地址的仓库和用户名密码
             CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
             List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
             //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
-            List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())).collect(Collectors.toList());
+            List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
+                    StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+                            || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
+                    .collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
                 List<CiConfigTemplateVO> configTemplateVOS = ciConfigTemplateVOS.stream().sorted(Comparator.comparing(CiConfigTemplateVO::getSequence).reversed()).collect(Collectors.toList());
                 String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(devopsCiJobDTO.getId(), configTemplateVOS.get(0).getSequence());
@@ -664,23 +669,23 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
                     C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
-                    Server server = getServer(settings, c7nNexusRepoDTO);
+                    Server server = null;
+                    if (!Objects.isNull(settings) && !Objects.isNull(c7nNexusRepoDTO) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
+                        server = getServer(settings, c7nNexusRepoDTO);
+                    }
                     //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
                     //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-
                     //区分RELEASE 和 SNAPSHOT
                     String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
                     if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
                         downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
                                 pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
                                 BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
-                    }
-                    if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
-                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
-                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
-                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() +
-                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() +
-                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + pipelineMavenDTO.getVersion() + ".jar";
+                    } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
+                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                    } else {
+                        // 通过update version函数后还有这种version:2021.3.3-143906-master ，
+                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
                     }
                     DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
                     downloadMavenJarVO.setDownloaJar(downloadUrl);
@@ -690,6 +695,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             }
         }
 
+    }
+
+    private String getReleaseUrl(CiPipelineMavenDTO pipelineMavenDTO, C7nNexusRepoDTO c7nNexusRepoDTO, String downloadUrl) {
+        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() +
+                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() +
+                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + pipelineMavenDTO.getVersion() + ".jar";
+        return downloadUrl;
     }
 
     private Server getServer(Settings settings, C7nNexusRepoDTO c7nNexusRepoDTO) {
