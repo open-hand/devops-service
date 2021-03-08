@@ -18,14 +18,15 @@ public class ApplicationImportInternalVO {
     /**
      * 源代码在文件服务器上的地址
      */
-    private String sourceCodeUrl;
+    @Encrypt
+    private Long deployObjectId;
 
-    public String getSourceCodeUrl() {
-        return sourceCodeUrl;
+    public Long getDeployObjectId() {
+        return deployObjectId;
     }
 
-    public void setSourceCodeUrl(String sourceCodeUrl) {
-        this.sourceCodeUrl = sourceCodeUrl;
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
     }
 
     public Long getAppServiceId() {

@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Functions;
@@ -61,6 +62,7 @@ import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
@@ -220,6 +222,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceUtils appServiceUtils;
     @Autowired
     private FileClient fileClient;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     static {
         InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
@@ -1933,7 +1937,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceImportPayload.setProjectId(projectId);
             appServiceImportPayload.setProCode(projectDTO.getCode());
             appServiceImportPayload.setOldAppServiceId(importInternalVO.getAppServiceId());
-            appServiceImportPayload.setSourceCodeUrl(importInternalVO.getSourceCodeUrl());
+            appServiceImportPayload.setDeployObjectId(importInternalVO.getDeployObjectId());
             importPayloadList.add(appServiceImportPayload);
         });
         return importPayloadList;
@@ -1980,8 +1984,15 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //获取admin的token
         String pullToken = gitlabServiceClientOperator.getAdminToken();
+        //拿到部署对象id 查询文件的地址 project并没有使用
+        Long deployObjectId = appServiceImportPayload.getDeployObjectId();
+        List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.listDeployObjectsByIds(0L, Stream.of(deployObjectId).collect(toSet()));
+        if (CollectionUtils.isEmpty(marketServiceDeployObjectVOS)) {
+            LOGGER.info("deploy object is null ,id is :{}", deployObjectId);
+            return;
+        }
         try {
-            InputStream inputStream = fileClient.downloadFile(0L, SOURCE_CODE_BUCKET_NAME, appServiceImportPayload.getSourceCodeUrl());
+            InputStream inputStream = fileClient.downloadFile(0L, SOURCE_CODE_BUCKET_NAME, marketServiceDeployObjectVOS.get(0).getMarketSourceCodeUrl());
             //获取一个临时的工作目录
             FileUtil.createDirectory(applicationDir);
             //下载源码到这个目录
