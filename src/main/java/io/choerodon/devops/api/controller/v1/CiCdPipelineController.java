@@ -220,13 +220,13 @@ public class CiCdPipelineController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "devops图表 流水线执行时长图（根据流水线列表，时间）")
-    @GetMapping(value = "/execute/time")
+    @PostMapping(value = "/execute/time")
     public ResponseEntity<ExecuteTimeVO> pipelineExecuteTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
-            @ApiParam(value = "pipeline_id")
-            @RequestParam(value = "pipeline_id", required = false) List<Long> pipelineIds,
+            @ApiParam(value = "pipeline_ids")
+            @RequestBody(required = true) List<Long> pipelineIds,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
@@ -235,5 +235,28 @@ public class CiCdPipelineController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "devops图表 流水线执行时长图表格查询")
+    @PostMapping(value = "/execute/time/page")
+    public ResponseEntity<Page<CiCdPipelineRecordVO>> pagePipelineExecuteTime(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "pipeline_ids")
+            @RequestBody(required = true) List<Long> pipelineIds,
+            @ApiParam(value = "start_time")
+            @RequestParam(value = "start_time") Date startTime,
+            @ApiParam(value = "end_time")
+            @RequestParam(value = "end_time") Date endTime,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
+        return Optional.ofNullable(devopsCiPipelineService.pagePipelineExecuteTime(pipelineIds, startTime, endTime, pageRequest))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
+    }
+
 
 }

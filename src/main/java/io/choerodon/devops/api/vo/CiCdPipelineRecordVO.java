@@ -71,6 +71,16 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private IamUserDTO iamUserDTO;
 
     private Long durationSeconds;
+    @Encrypt
+    private Long pipelineId;
+
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+    }
 
     public Long getDurationSeconds() {
         return durationSeconds;
