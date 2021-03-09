@@ -70,8 +70,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     private static final Integer MAX_LOG_MSG_LENGTH = 65535;
 
-    @Value("${devops.ansible.image}")
-    private String ansibleImage;
     @Value(value = "${devops.helm.download-url}")
     private String helmDownloadUrl;
     @Autowired
@@ -377,7 +375,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
             generateAndUploadNodeConfiguration(ssh, devopsClusterDTO.getCode(), inventoryVO);
             // 生成并上传k8s安装命令
-            generateAndUploadAnsibleShellScript(ssh, devopsClusterDTO.getCode(), INSTALL_K8S, INSTALL_K8S_LOG, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode()), ansibleImage);
+            generateAndUploadAnsibleShellScript(ssh, devopsClusterDTO.getCode(), INSTALL_K8S, INSTALL_K8S_LOG, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode()));
             // 上传privateKey信息到节点
             generateAndUploadPrivateKey(ssh, devopsClusterNodeDTOList);
             LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :execute install command in background <<<<<<<<<", devopsClusterInstallPayload.getClusterId());
@@ -410,7 +408,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CAT_FILE, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode())));
         if (resultInfoVO.getExitCode() != 0) {
             if (resultInfoVO.getStdErr().contains("No such file or directory")) {
-                LOGGER.info(">>>>>>>>> [install k8s] installation is not completed <<<<<<<<<");
+                LOGGER.info(">>>>>>>>> [install k8s] installation of cluster 【{}】 is not completed <<<<<<<<<",devopsClusterDTO.getName());
             }
             return false;
         } else {
@@ -539,16 +537,16 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             } catch (IOException e) {
                 throw new Exception(String.format(">>>>>>>>> [check node] failed to connect to host: [ %s ] by ssh <<<<<<<<<", devopsClusterInstallInfoVO.getHostConnectionVO().getHostIp()));
             }
-            // 安装docker
+            // 安装基础环境、git、ansible
             try {
-                LOGGER.info(">>>>>>>>> [check node] key {} :start to install docker <<<<<<<<<", redisKey);
-                uploadInstallDockerShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode());
-                ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, INSTALL_DOCKER_SHELL, BASH_LOG_OUTPUT));
+                LOGGER.info(">>>>>>>>> [check node] key {} :initialize the environment <<<<<<<<<", redisKey);
+                uploadPreKubeadmnHaShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode());
+                ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, PRE_KUBEADM_HA_SH));
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
-                    throw new Exception(String.format(">>>>>>>>> [check node] failed to install docker on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
+                    throw new Exception(String.format(">>>>>>>>> [check node] failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
                 }
             } catch (IOException e) {
-                throw new Exception(String.format(">>>>>>>>> [check node] failed to install docker on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), e.getMessage()));
+                throw new Exception(String.format(">>>>>>>>> [check node] failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), e.getMessage()));
             }
             // 生成相关配置节点
             InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterInstallInfoVO.getDevopsClusterNodeToSaveDTOList());
@@ -572,9 +570,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             devopsNodeCheckResultVO.setErrorMsg(e.getMessage())
                     .setStatus(ClusterOperationStatusEnum.FAILED.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            throw new CommonException(e.getMessage(), e);
+            throw new CommonException(e.getMessage());
         } finally {
-            stringRedisTemplate.expire(redisKey, 3, TimeUnit.MINUTES);
+            stringRedisTemplate.delete(redisKey);
             stringRedisTemplate.delete(clusterInfoRedisKey);
             sshUtil.sshDisconnect(ssh);
         }
@@ -586,7 +584,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 配置检查
             devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, VARIABLE));
+            ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
             if (resultInfoVOForVariable.getExitCode() != 0) {
                 errorMsg = resultInfoVOForVariable.getStdOut() + "\n" + resultInfoVOForVariable.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -602,7 +600,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 节点系统检查
             devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, SYSTEM));
+            ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, SYSTEM));
             if (resultInfoVOForSystem.getExitCode() != 0) {
                 errorMsg = resultInfoVOForSystem.getStdOut() + "\n" + resultInfoVOForSystem.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -618,7 +616,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 内存检查
             devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, MEMORY));
+            ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, MEMORY));
             if (resultInfoVOForMemory.getExitCode() != 0) {
                 errorMsg = resultInfoVOForMemory.getStdOut() + "\n" + resultInfoVOForMemory.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -634,7 +632,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // CPU检查
             devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, ansibleImage, CPU));
+            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, CPU));
             if (resultInfoVOForCPU.getExitCode() != 0) {
                 errorMsg = resultInfoVOForCPU.getStdOut() + "\n" + resultInfoVOForCPU.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -678,8 +676,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath, String ansibleImage) {
-        String configValue = generateShellScript(command, logPath, exitCodePath, ansibleImage);
+    public void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath) {
+        String configValue = generateShellScript(command, logPath, exitCodePath);
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + command;
         String targetFilePath = BASE_DIR + SLASH + command;
         FileUtil.saveDataToFile(filePath, configValue);
@@ -687,13 +685,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public void uploadInstallDockerShell(SSHClient ssh, String suffix) throws IOException {
-        InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/install-docker.sh");
+    public void uploadPreKubeadmnHaShell(SSHClient ssh, String suffix) throws IOException {
+        InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/pre-kubeadm-ha.sh");
         String installDockerShell = IOUtils.toString(shellInputStream);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "install-docker.sh";
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "pre-kubeadm-ha.sh";
         FileUtil.saveDataToFile(filePath, installDockerShell);
-        sshUtil.uploadFile(ssh, filePath, INSTALL_DOCKER_SHELL);
-
+        sshUtil.uploadFile(ssh, filePath, PRE_KUBEADM_HA_SH);
     }
 
     @Override
@@ -812,9 +809,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         return FileUtil.replaceReturnString(inventoryIniInputStream, map);
     }
 
-    private String generateShellScript(String command, String logPath, String exitCodePath, String ansibleImage) {
+    private String generateShellScript(String command, String logPath, String exitCodePath) {
         Map<String, String> param = new HashMap<>();
-        param.put("{{ansible-image}}", ansibleImage);
         param.put("{{command}}", command);
         param.put("{{log-path}}", logPath);
         param.put("{{exit-code-path}}", exitCodePath);

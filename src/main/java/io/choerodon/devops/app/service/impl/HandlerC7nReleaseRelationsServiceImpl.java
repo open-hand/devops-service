@@ -348,16 +348,20 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             }
 
             List<Long> candidateAppServiceIds = appServices.stream().map(AppServiceDTO::getId).collect(Collectors.toList());
-            if (appServiceVersionDTO == null) {
-                // 配置库中这个实例的文件中指定的服务id
-                Long gitOpsAppServiceId = c7nHelmRelease.getSpec().getAppServiceId();
-                if (gitOpsAppServiceId != null
-                        && candidateAppServiceIds.contains(gitOpsAppServiceId)) {
-                    // 尝试从配置库指定的服务取
-                    appServiceVersionDTO = appServiceVersionService
-                            .baseQueryByAppServiceIdAndVersion(gitOpsAppServiceId, c7nHelmRelease.getSpec().getChartVersion());
-                    if (appServiceVersionDTO != null) {
-                        LOGGER.info("Found chart {} and version {} via app service in release spec", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+            // 如果在项目下没有找到应用服务，或者找到的应用服务版本不吻合yaml中指定的应用服务id
+            if (appServiceVersionDTO == null || (!tempApp.getId().equals(c7nHelmRelease.getSpec().getAppServiceId()))) {
+                // 还要这个指定的服务id要是候选的应用服务id
+                if (candidateAppServiceIds.contains(c7nHelmRelease.getSpec().getAppServiceId())) {
+                    // 配置库中这个实例的文件中指定的服务id
+                    Long gitOpsAppServiceId = c7nHelmRelease.getSpec().getAppServiceId();
+                    if (gitOpsAppServiceId != null
+                            && candidateAppServiceIds.contains(gitOpsAppServiceId)) {
+                        // 尝试从配置库指定的服务取
+                        appServiceVersionDTO = appServiceVersionService
+                                .baseQueryByAppServiceIdAndVersion(gitOpsAppServiceId, c7nHelmRelease.getSpec().getChartVersion());
+                        if (appServiceVersionDTO != null) {
+                            LOGGER.info("Found chart {} and version {} via app service in release spec", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
+                        }
                     }
                 }
             }

@@ -1027,6 +1027,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getTenantNum() + "-" + projectDTO.getCode();
+            params.put("{{ SONAR_GROUP_NAME }}", groupName);
             if (harborProjectConfig.getProject() != null) {
                 groupName = harborProjectConfig.getProject();
             }

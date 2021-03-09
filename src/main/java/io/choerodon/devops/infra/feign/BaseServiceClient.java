@@ -221,9 +221,6 @@ public interface BaseServiceClient {
     ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable("organization_id") Long organizationId,
                                                        @PathVariable("user_id") Long userId);
 
-    @GetMapping("/choerodon/v1/sync/user")
-    ResponseEntity<List<UserVO>> listUserByCreationDate();
-
     /**
      * 查询项目下的用户
      */

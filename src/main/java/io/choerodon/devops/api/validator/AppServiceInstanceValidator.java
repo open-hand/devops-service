@@ -86,6 +86,8 @@ public class AppServiceInstanceValidator {
             if (instanceCodes.contains(appServiceDeployVO.getInstanceName())) {
                 throw new CommonException("error.app.service.name.duplicated.in.list", appServiceDeployVO.getInstanceName());
             }
+            // 实例名称最大53，限制于helm release的名称长度，参考issue: https://github.com/helm/helm/issues/6006
+            CommonExAssertUtil.assertTrue(appServiceDeployVO.getInstanceName().length() <= 53, "error.app.instance.name.length");
             instanceCodes.add(appServiceDeployVO.getInstanceName());
 
             // 校验网络

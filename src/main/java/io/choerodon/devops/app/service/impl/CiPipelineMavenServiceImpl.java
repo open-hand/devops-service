@@ -28,8 +28,6 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.CiPipelineMavenDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.maven.Profile;
-import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.maven.Settings;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
@@ -115,13 +113,17 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                 throw new DevopsCiInvalidException("error.ci.job.not.exist");
             }
             if (!StringUtils.isEmpty(devopsCiJobDTO.getMetadata())) {
+//                logger.info(">>>>>>>>>>>>>>>>>1. >>>>>>>>>>>>>>>>>>>>ci job Metadata {}", devopsCiJobDTO.getMetadata());
                 CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
                 List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
                 // seq 与 type确定一个job内唯一的构建步骤CiConfigTemplateVO
-                List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
-                        && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
+                List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
+                        (StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+                                || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
+                                && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
                 //如果一个job里面 有多次jar上传 会只保留最新的版本
                 if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
+//                    logger.info(">>>>>>>>>>>>>>>>>2. >>>>>>>>>>>>>>>>>>>>ciConfigTemplateVOS {}", JsonHelper.marshalByJackson(ciConfigTemplateVOS));
                     //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
                     String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
                     // 将maven的setting文件转换为java对象
@@ -129,7 +131,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                     //通过仓库的id 筛选出匹配的server节点和Profiles 节点
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId).getBody();
-
+//                    logger.info(">>>>>>>>>>>>>>>>>3. >>>>>>>>>>>>>>>>>>>>c7nNexusRepoDTO {}", JsonHelper.marshalByJackson(c7nNexusRepoDTO));
                     // baseUrl=http://xxx/repository/zmf-test-mixed/ =>http://xx:17145/
                     String baseUrl = null;
                     Server server = null;
@@ -147,9 +149,11 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                         server = settings.getServers().stream().filter(server1 -> StringUtils.equalsIgnoreCase(server1.getId(), finalNeRepositoryName)).collect(Collectors.toList()).get(0);
                     }
                     // 下载mate_date获取时间戳 0.0.1-20210203.012553-2
+//                    logger.info(">>>>>>>>>>>>>>>>>4. >>>>>>>>>>>>>>>>>>>>baseUrl {}, neRepositoryName {}， server.getUsername {}， server.getPassword {}，ciPipelineMavenDTO {}",
+//                            baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
                     String jarSnapshotTimestamp = getJarSnapshotTimestamp(baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
-                    //
                     //加上小版本   0.0.1-SNAPSHOT/springboot-0.0.1-20210202.063200-1.jar
+                    logger.info(">>>>>>>>>>>>>>>>>5. >>>>>>>>>>>>>>>>>>>>jarSnapshotTimestamp {}", jarSnapshotTimestamp);
                     if (!StringUtils.equalsIgnoreCase(jarSnapshotTimestamp, ciPipelineMavenDTO.getVersion())) {
                         ciPipelineMavenDTO.setVersion(ciPipelineMavenDTO.getVersion() + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + jarSnapshotTimestamp);
                     }

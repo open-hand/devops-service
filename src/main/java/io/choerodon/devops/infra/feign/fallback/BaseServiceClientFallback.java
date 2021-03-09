@@ -166,11 +166,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<UserVO>> listUserByCreationDate() {
-        throw new CommonException("error.list.user");
-    }
-
-    @Override
     public ResponseEntity<List<IamUserDTO>> queryUserByProjectId(Long projectId) {
         throw new CommonException("error.query.user.by.project.id");
     }

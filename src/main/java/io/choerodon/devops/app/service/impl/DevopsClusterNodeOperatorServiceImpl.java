@@ -1,4 +1,4 @@
-package io.choerodon.devops.app.service;
+package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.ClusterCheckConstant.ERROR_DELETE_NODE_FAILED;
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
@@ -26,11 +26,14 @@ import io.choerodon.devops.api.vo.DevopsClusterNodeVO;
 import io.choerodon.devops.api.vo.ExecResultInfoVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.api.vo.InventoryVO;
+import io.choerodon.devops.app.service.DevopsClusterNodeOperatorService;
+import io.choerodon.devops.app.service.DevopsClusterNodeService;
+import io.choerodon.devops.app.service.DevopsClusterOperatingRecordService;
+import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.constant.DevopsClusterCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.SshUtil;
 
@@ -47,8 +50,6 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
 
     private static final String ADD_NODE_OPERATING_FAILED_FLAG = "add:node:operating:failed:%s:Long";
-    @Value("${devops.ansible.image}")
-    private String ansibleImage;
     @Autowired
     private SshUtil sshUtil;
     @Autowired
@@ -119,7 +120,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
                 throw new CommonException(ERROR_ADD_NODE_FAILED);
             }
 
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, command));
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("add node {} result is, {}", devopsClusterNodeDTO.getName(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
                 throw new CommonException(execResultInfoVO.getStdErr());
@@ -176,7 +177,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             // 上传配置文件
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(devopsClusterNodeDTO.getClusterId()), inventoryVO);
             // 执行删除节点操作
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, DevopsClusterCommandConstants.REMOVE_NODE_YAML));
             LOGGER.info("delete node {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
                 errorMsg = execResultInfoVO.getStdOut() + System.lineSeparator() + execResultInfoVO.getStdErr();
@@ -237,7 +238,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             // 上传配置文件
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(devopsClusterNodeDTO.getClusterId()), inventoryVO);
             // 执行删除节点操作
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, ansibleImage, command));
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsClusterCommandConstants.ANSIBLE_COMMAND_TEMPLATE, command));
             LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
                 errorMsg = execResultInfoVO.getStdOut() + System.lineSeparator() + execResultInfoVO.getStdErr();

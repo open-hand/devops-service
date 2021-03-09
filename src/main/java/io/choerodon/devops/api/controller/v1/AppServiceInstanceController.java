@@ -80,7 +80,7 @@ public class AppServiceInstanceController {
     public ResponseEntity<AppServiceInstanceVO> deployMarketService(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+            @RequestBody @Valid MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
         marketInstanceCreationRequestVO.setCommandType(CommandType.CREATE.getType());
         return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
     }
