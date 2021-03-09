@@ -28,7 +28,7 @@ public class MarketInstanceCreationRequestVO {
     @ApiModelProperty("values内容")
     private String values;
 
-    @Size(min = 1, max = 64, message = "error.app.instance.name.length")
+    @Size(min = 1, max = 53, message = "error.app.instance.name.length")
     @NotBlank(message = "error.app.instance.name.null")
     @ApiModelProperty("实例的code")
     private String instanceName;
