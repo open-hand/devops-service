@@ -2,9 +2,9 @@ package io.choerodon.devops.api.vo;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
@@ -34,7 +34,7 @@ public class AppServiceDeployVO {
     private Long valueId;
 
     @ApiModelProperty("实例名称/必填")
-    @Length(min = 1, max = 64, message = "error.app.instance.name.length")
+    @Size(min = 1, max = 64, message = "error.app.instance.name.length")
     @NotBlank(message = "error.app.instance.name.null")
     private String instanceName;
 
