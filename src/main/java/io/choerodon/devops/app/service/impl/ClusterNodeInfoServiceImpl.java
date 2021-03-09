@@ -99,6 +99,11 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
      */
     private String node2JsonString(AgentNodeInfoVO raw) {
         ClusterNodeInfoVO node = new ClusterNodeInfoVO();
+        // 如果节点没有pod，agent会给PodCount字段返回null
+        if (raw.getPodCount() == null) {
+            raw.setPodCount(0L);
+        }
+
         BeanUtils.copyProperties(raw, node);
         node.setCpuLimit(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(node.getCpuLimit())));
         node.setCpuRequest(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(node.getCpuRequest())));
