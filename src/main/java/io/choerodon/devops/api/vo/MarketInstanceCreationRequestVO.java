@@ -1,9 +1,11 @@
 package io.choerodon.devops.api.vo;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -26,6 +28,8 @@ public class MarketInstanceCreationRequestVO {
     @ApiModelProperty("values内容")
     private String values;
 
+    @Length(min = 1, max = 64, message = "error.app.instance.name.length")
+    @NotBlank(message = "error.app.instance.name.null")
     @ApiModelProperty("实例的code")
     private String instanceName;
 
