@@ -67,6 +67,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     private WorkFlowServiceOperator workFlowServiceOperator;
 
     @Autowired
+    @Lazy
     private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
@@ -493,6 +494,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         CiCdPipelineUtils.fillViewId(ciCdPipelineRecordVOPage.getContent());
         return ciCdPipelineRecordVOPage;
     }
+
 
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();

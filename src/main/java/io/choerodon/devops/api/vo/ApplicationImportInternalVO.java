@@ -15,6 +15,19 @@ public class ApplicationImportInternalVO {
     private String type;
     private String appName;
     private String appCode;
+    /**
+     * 源代码在文件服务器上的地址
+     */
+    @Encrypt
+    private Long deployObjectId;
+
+    public Long getDeployObjectId() {
+        return deployObjectId;
+    }
+
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

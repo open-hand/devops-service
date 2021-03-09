@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:57 2019/8/29
@@ -14,6 +15,15 @@ public class AppServiceImportPayload {
     private String proCode;
     private Long oldAppServiceId;
     private Long projectId;
+    private Long deployObjectId;
+
+    public Long getDeployObjectId() {
+        return deployObjectId;
+    }
+
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;
