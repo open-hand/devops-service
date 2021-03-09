@@ -23,7 +23,12 @@ public class CommitFormRecordVO {
     private Date commitDate;
     private String commitSHA;
     private String appServiceName;
+    private String appServiceCode;
     private String url;
+    private Boolean ldap;
+    private String loginName;
+    private String email;
+    private String realName;
 
     public CommitFormRecordVO() {
     }
@@ -40,6 +45,22 @@ public class CommitFormRecordVO {
         this.commitSHA = devopsGitlabCommitDO.getCommitSha();
         this.appServiceName = devopsGitlabCommitDO.getAppServiceName();
         this.url = devopsGitlabCommitDO.getUrl();
+    }
+
+    public CommitFormRecordVO(Long userId, DevopsGitlabCommitDTO devopsGitlabCommitDO, Boolean ldap, String loginName, String realName, String email, String imgUrl) {
+        this.appServiceId = devopsGitlabCommitDO.getAppServiceId();
+        this.commitContent = devopsGitlabCommitDO.getCommitContent();
+        this.commitDate = devopsGitlabCommitDO.getCommitDate();
+        this.commitSHA = devopsGitlabCommitDO.getCommitSha();
+        this.appServiceName = devopsGitlabCommitDO.getAppServiceName();
+        this.appServiceCode = devopsGitlabCommitDO.getAppServiceCode();
+        this.url = devopsGitlabCommitDO.getUrl();
+        this.userId = userId;
+        this.ldap = ldap;
+        this.loginName = loginName;
+        this.realName = realName;
+        this.email = email;
+        this.imgUrl = imgUrl;
     }
 
     public Long getUserId() {
@@ -106,11 +127,51 @@ public class CommitFormRecordVO {
         this.appServiceName = appServiceName;
     }
 
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
+    }
+
     public String getUrl() {
         return url;
     }
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Boolean getLdap() {
+        return ldap;
+    }
+
+    public void setLdap(Boolean ldap) {
+        this.ldap = ldap;
+    }
+
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 }

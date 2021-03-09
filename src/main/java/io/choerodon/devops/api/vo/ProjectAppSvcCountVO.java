@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 /**
  * 〈功能简述〉
  * 〈统计项目下应用服务数量VO〉

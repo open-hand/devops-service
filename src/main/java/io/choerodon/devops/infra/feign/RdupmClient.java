@@ -5,11 +5,14 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
@@ -22,6 +25,7 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -178,4 +182,10 @@ public interface RdupmClient {
     ResponseEntity<Page<HarborImageTagVo>> pagingImageTag(@PathVariable(value = "projectId") Long projectId,
                                                           @RequestParam(value = "repoName") String repoName,
                                                           @RequestParam(value = "tagName", required = false) String tagName);
+
+    @ApiOperation(value = "根据仓库id查询maven仓库")
+    @GetMapping("/v1/nexus-repositorys/{organizationId}/project/{projectId}/maven/repo/{repositoryId}")
+    ResponseEntity<C7nNexusRepoDTO> getMavenRepo(@ApiParam(value = "组织ID", required = true) @PathVariable(name = "organizationId") Long organizationId,
+                                                 @ApiParam(value = "项目Id", required = true) @PathVariable(name = "projectId") Long projectId,
+                                                 @ApiParam(value = "仓库主键Id", required = true) @PathVariable(name = "repositoryId") @Encrypt Long repositoryId);
 }

@@ -42,7 +42,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId,Boolean withMoreInfo) {
+    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
         throw new CommonException("error.organization.get", organizationId);
     }
 
@@ -62,7 +62,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
+    public ResponseEntity<String> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
         throw new CommonException("error.user.get.byIds");
     }
 
@@ -166,7 +166,27 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<UserVO>> listUserByCreationDate() {
-        throw new CommonException("error.list.user");
+    public ResponseEntity<List<IamUserDTO>> queryUserByProjectId(Long projectId) {
+        throw new CommonException("error.query.user.by.project.id");
+    }
+
+    @Override
+    public ResponseEntity<List<IamUserDTO>> queryRoot() {
+        throw new CommonException("error.query.root.user");
+    }
+
+    @Override
+    public ResponseEntity<String> countAllUsers() {
+        throw new CommonException("error.count.all.users");
+    }
+
+    @Override
+    public ResponseEntity<String> listAllUserIds() {
+        throw new CommonException("error.list.all.user.ids");
+    }
+
+    @Override
+    public ResponseEntity<List<String>> listProjectCategoryById(Long projectId) {
+        throw new CommonException("error.list.project.category");
     }
 }

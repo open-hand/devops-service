@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.UserAttrService;
@@ -24,12 +26,14 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
  * @author zmf
  * @since 2020/12/29
  */
+@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
+@Order(200)
 @Component
-public class UserTask implements CommandLineRunner {
+public class AdminUserTask implements CommandLineRunner {
     private static final Long GITLAB_ADMIN_ID = 1L;
     private static final String IAM_ADMIN_LOGIN_NAME = "admin";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserTask.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AdminUserTask.class);
 
     @Autowired
     private UserAttrService userAttrService;
@@ -39,6 +43,7 @@ public class UserTask implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
+            LOGGER.info("Start task: try to init data for admin user...");
             // 先查询有么有
             UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(GITLAB_ADMIN_ID);
             if (userAttrDTO == null) {

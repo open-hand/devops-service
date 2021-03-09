@@ -78,4 +78,28 @@
           AND dgc.commit_date <![CDATA[>=]]> #{startDate}
           AND dgc.commit_date <![CDATA[<=]]> #{endDate}
     </select>
+
+    <select id="listUserRecentCommits" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO">
+        SELECT dgc.id,
+        dgc.user_id,
+        dgc.app_service_id,
+        dgc.ref,
+        dgc.commit_date,
+        dgc.commit_sha,
+        dgc.commit_content,
+        dgc.url,
+        da.name AS appServiceName,
+        da.code AS appServiceCode
+        FROM devops_gitlab_commit dgc
+        JOIN devops_app_service da ON dgc.app_service_id = da.id
+        WHERE
+        da.is_active = 1
+        AND dgc.user_id=#{userId}
+        AND dgc.commit_date <![CDATA[>=]]> #{date}
+        AND da.project_id IN
+        <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
+            #{projectId}
+        </foreach>
+        ORDER BY dgc.commit_date DESC
+    </select>
 </mapper>

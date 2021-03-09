@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -15,6 +16,7 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,27 +37,32 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.kubernetes.Metadata;
+import io.choerodon.devops.api.vo.market.MarketChartConfigVO;
+import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
-import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
-import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
-import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -75,7 +82,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String CHOERODON = "choerodon-test";
-    private static final String HARBOR = "harbor";
     private static final String AUTHTYPE = "pull";
     private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
@@ -86,6 +92,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
     private static final String NAMESPACE = "namespace";
+    private static final String INSTANCE_NAME_TEMPLATE = "%s-%s";
     private static final Gson gson = new Gson();
 
     @Autowired
@@ -151,6 +158,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsEnvApplicationService devopsEnvApplicationService;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -167,7 +176,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
+    public AppServiceInstanceInfoVO queryInfoById(Long projectId, Long instanceId) {
         AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(instanceId);
         if (appServiceInstanceInfoDTO == null) {
             return null;
@@ -176,20 +185,89 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         BeanUtils.copyProperties(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getClusterId()));
+
+        // 为市场实例填充版本信息
+        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
+            fillInformationForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
+        }
+
         return appServiceInstanceInfoVO;
+    }
+
+    private void fillInformationForMarketInstance(AppServiceInstanceInfoDTO appServiceInstanceInfoDTO, AppServiceInstanceInfoVO appServiceInstanceInfoVO) {
+        Set<Long> deployObjectIds = new HashSet<>();
+        deployObjectIds.add(appServiceInstanceInfoDTO.getCommandVersionId());
+        // 这个id可能为空
+        if (appServiceInstanceInfoDTO.getEffectCommandVersionId() != null) {
+            deployObjectIds.add(appServiceInstanceInfoDTO.getEffectCommandVersionId());
+        }
+        Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
+        if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
+            appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
+            appServiceInstanceInfoVO.setCurrentVersionAvailable(true);
+        } else {
+            appServiceInstanceInfoVO.setCommandVersion("版本已被删除");
+            appServiceInstanceInfoVO.setCurrentVersionAvailable(false);
+        }
+        if (versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()) != null) {
+            appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
+        }
+
+        List<MarketServiceDeployObjectVO> upgradeAble = marketServiceClientOperator.queryUpgradeDeployObjects(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId(), appServiceInstanceInfoDTO.getCommandVersionId());
+        // 这里查出的版本是包含当前的版本和最新的版本，两个版本
+        // 如果只查出一个版本，但不是当前版本，就是可升级的
+        if (upgradeAble.size() > 1) {
+            appServiceInstanceInfoVO.setUpgradeAvailable(true);
+        } else {
+            appServiceInstanceInfoVO.setUpgradeAvailable(upgradeAble.size() == 1 && !appServiceInstanceInfoDTO.getCommandVersionId().equals(upgradeAble.get(0).getId()));
+        }
+
+        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId());
+        appServiceInstanceInfoVO.setAppServiceName(marketServiceVO != null ? marketServiceVO.getMarketServiceName() : MiscConstants.UNKNOWN_SERVICE);
     }
 
     @Override
     public Page<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
+        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
                 envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
-        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
+        Set<Long> marketInstanceCommandVersionIds = new HashSet<>();
+        Set<Long> appServiceIds = new HashSet<>();
+
+        // 收集ids
+        pageInfo.getContent().forEach(ins -> {
+            if (AppServiceInstanceSource.MARKET.getValue().equals(ins.getSource())) {
+                marketInstanceCommandVersionIds.add(ins.getCommandVersionId());
+            }
+            appServiceIds.add(ins.getAppServiceId());
+        });
+
+        // 如果市场实例不为空，从市场服务查询版本信息
+        Map<Long, MarketServiceDeployObjectVO> deployObjects;
+        if (!CollectionUtils.isEmpty(marketInstanceCommandVersionIds)) {
+            deployObjects = marketServiceClientOperator.listDeployObjectsByIds(projectId, marketInstanceCommandVersionIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
+        } else {
+            deployObjects = Collections.emptyMap();
+        }
+
+        // 查询应用服务信息
+        Map<Long, AppServiceDTO> appServices = applicationService.baseListByIds(appServiceIds).stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
+
         pageInfo.getContent().forEach(appServiceInstanceInfoVO -> {
-                    AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
-                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO));
+                    AppServiceDTO appServiceDTO = appServices.get(appServiceInstanceInfoVO.getAppServiceId());
+                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO == null ? null : appServiceDTO.getProjectId()));
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
+
+                    // 为应用市场实例填充版本信息
+                    if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoVO.getSource())) {
+                        if (deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()) != null) {
+                            MarketServiceDeployObjectVO deployObject = deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId());
+                            appServiceInstanceInfoVO.setCommandVersion(deployObject.getDevopsAppServiceVersion());
+                            appServiceInstanceInfoVO.setAppServiceName(deployObject.getMarketServiceName());
+                        }
+                    }
                 }
         );
         return pageInfo;
@@ -246,6 +324,31 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
         String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(appServiceVersionId) ? lastVersionValue : appServiceVersionService.baseQueryValue(appServiceVersionId);
+
+        InstanceValueVO instanceValueVO = new InstanceValueVO();
+        fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
+
+        // 将新的版本的values和上次部署的变化值进行合并
+        instanceValueVO.setYaml(getReplaceResult(newVersionValue, lastDeltaValues).getYaml());
+        return instanceValueVO;
+    }
+
+    @Override
+    public InstanceValueVO queryUpgradeValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId) {
+        AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "instance.not.exist.in.database");
+        // 上次实例部署时的完整values
+        String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Objects.requireNonNull(appServiceInstanceMapper.queryLastCommandId(instanceId)));
+        String lastVersionValue = marketServiceClientOperator.queryValues(projectId, devopsEnvCommandDTO.getObjectVersionId()).getValue();
+
+        // 上次实例部署时的values相较于上次版本的默认values的变化值
+        String lastDeltaValues = getReplaceResult(Objects.requireNonNull(lastVersionValue),
+                Objects.requireNonNull(yaml))
+                .getDeltaYaml();
+
+        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
+        String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(marketDeployObjectId) ? lastVersionValue : marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue();
 
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
@@ -587,7 +690,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
         AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(appServiceDeployVO);
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(appServiceDeployVO);
-        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
 
         //获取部署实例时授权secret的code
         String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
@@ -596,7 +699,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String code;
         if (appServiceDeployVO.getType().equals(CREATE)) {
             if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
-                code = String.format("%s-%s", appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+                code = String.format(INSTANCE_NAME_TEMPLATE, appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), isFromPipeline);
                 code = appServiceDeployVO.getInstanceName();
@@ -628,7 +731,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
 
+            boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
             //插入部署记录
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
             devopsDeployRecordService.saveRecord(
                     devopsEnvironmentDTO.getProjectId(),
                     isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
@@ -640,7 +745,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     DeployObjectTypeEnum.APP,
                     appServiceDTO.getName(),
                     appServiceVersionDTO.getVersion(),
-                    appServiceInstanceDTO.getCode());
+                    appServiceInstanceDTO.getCode(),
+                    new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
@@ -671,6 +777,147 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
+            description = "Devops创建市场实例", inputSchemaClass = MarketInstanceSagaPayload.class)
+    @Override
+    public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO) {
+        // 查询环境
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", appServiceDeployVO.getEnvironmentId());
+        // 校验环境和项目匹配
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        //校验values的格式
+        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
+
+        // 查询市场应用服务, 确认存在
+        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceDeployVO.getMarketAppServiceId());
+        marketServiceVO.setMarketDeployObjectId(appServiceDeployVO.getMarketDeployObjectId());
+
+        MarketServiceDeployObjectVO appServiceVersionDTO = marketServiceClientOperator.queryDeployObject(projectId, appServiceDeployVO.getMarketDeployObjectId());
+        CommonExAssertUtil.assertNotNull(appServiceVersionDTO, "error.version.id.not.exist", appServiceDeployVO.getMarketDeployObjectId());
+
+        if (appServiceDeployVO.getCommandType().equals(UPDATE)) {
+            AppServiceInstanceDTO oldInstance = appServiceInstanceMapper.selectByPrimaryKey(Objects.requireNonNull(appServiceDeployVO.getInstanceId()));
+            CommonExAssertUtil.assertNotNull(oldInstance, "error.instance.id.not.exist");
+            // 校验前后的版本属于同一个服务在同一个应用版本下, 只支持变更同个应用版本下的市场服务的修复版本
+            // 而在同一个市场应用版本下的市场应用服务是同一个id，不同市场应用版本下即使是同一个市场服务名称，id也不一致
+            CommonExAssertUtil.assertTrue(oldInstance.getAppServiceId().equals(appServiceVersionDTO.getMarketServiceId()), "error.app.version.invalid");
+        }
+
+        //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
+        appServiceDeployVO.setMarketAppServiceId(appServiceVersionDTO.getMarketServiceId());
+        AppServiceInstanceDTO appServiceInstanceDTO = initMarketInstanceDTO(appServiceDeployVO);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initMarketInstanceDevopsEnvCommandDTO(appServiceDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
+
+        // 获取市场部署实例时授权secret的code
+        String secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersionDTO);
+
+        appServiceDeployVO.setNotChanged(false);
+        // 初始化自定义实例名
+        String code;
+        if (appServiceDeployVO.getCommandType().equals(CREATE)) {
+            if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
+                code = String.format(INSTANCE_NAME_TEMPLATE, appServiceVersionDTO.getDevopsAppServiceCode(), GenerateUUID.generateUUID().substring(0, 5));
+            } else {
+                checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), false);
+                code = appServiceDeployVO.getInstanceName();
+            }
+        } else {
+            code = appServiceInstanceDTO.getCode();
+            //更新实例的时候校验gitops库文件是否存在,处理部署实例时，由于没有创gitops文件导致的部署失败
+            resourceFileCheckHandler.check(devopsEnvironmentDTO, appServiceDeployVO.getInstanceId(), code, C7NHELM_RELEASE);
+
+            //从未关联部署配置到关联部署配置，或者从一个部署配置关联另外一个部署配置，如果values是一样的，虽然getIsNotChange为false,但是此时也应该直接设置为isNotChange为true
+            AppServiceInstanceDTO oldAppServiceInstanceDTO = baseQuery(appServiceDeployVO.getInstanceId());
+            String deployValue = baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
+            // 用上次的chart版本及values和这次的chart版本及values进行对比, 设置isNotChanged
+            if (appServiceDeployVO.getMarketDeployObjectId().equals(oldAppServiceInstanceDTO.getAppServiceVersionId()) && deployValue.equals(appServiceDeployVO.getValues())) {
+                appServiceDeployVO.setNotChanged(true);
+            }
+        }
+
+
+        //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
+        if (!appServiceDeployVO.getNotChanged()) {
+            //存储数据
+            if (appServiceDeployVO.getCommandType().equals(CREATE)) {
+                // 创建关联关系
+                devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId());
+                appServiceInstanceDTO.setCode(code);
+                appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
+            }
+            devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
+            devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+            appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
+            baseUpdate(appServiceInstanceDTO);
+
+
+            // 插入部署记录
+            saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceVersionDTO.getDevopsAppServiceVersion());
+            //如果是市场部署将部署人员添加为应用的订阅人员
+            marketServiceClientOperator.subscribeApplication(appServiceVersionDTO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
+
+
+            appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+            appServiceDeployVO.setInstanceName(code);
+            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+                appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+            }
+            appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+            MarketInstanceSagaPayload instanceSagaPayload = new MarketInstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
+//            instanceSagaPayload.setApplicationDTO(appServiceDTO);
+            instanceSagaPayload.setMarketServiceDeployObjectVO(appServiceVersionDTO);
+            instanceSagaPayload.setMarketInstanceCreationRequestVO(appServiceDeployVO);
+            instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+            instanceSagaPayload.setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+            instanceSagaPayload.setDevopsServiceReqVO(appServiceDeployVO.getDevopsServiceReqVO());
+
+
+            producer.apply(
+                    StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(devopsEnvironmentDTO.getProjectId())
+                            .withRefType("env")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE),
+                    builder -> builder
+                            .withPayloadAndSerialize(instanceSagaPayload)
+                            .withRefId(devopsEnvironmentDTO.getId().toString()));
+        }
+
+
+        return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
+    }
+
+    private void saveDeployRecord(MarketServiceVO marketServiceVO, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, Long commandId, String chartVersion) {
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setType(AppSourceType.MARKET.getValue());
+        deploySourceVO.setMarketAppName(marketServiceVO.getMarketAppName());
+        deploySourceVO.setMarketServiceName(marketServiceVO.getMarketServiceName());
+        deploySourceVO.setDeployObjectId(marketServiceVO.getMarketDeployObjectId());
+        devopsDeployRecordService.saveRecord(
+                devopsEnvironmentDTO.getProjectId(),
+                DeployType.MANUAL,
+                commandId,
+                DeployModeEnum.ENV,
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getName(),
+                null,
+                DeployObjectTypeEnum.APP,
+                marketServiceVO.getMarketServiceName(),
+                chartVersion,
+                appServiceInstanceDTO.getCode(),
+                deploySourceVO);
     }
 
     @Override
@@ -746,6 +993,78 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
+    public void createMarketInstanceBySaga(MarketInstanceSagaPayload instanceSagaPayload) {
+        //更新实例的时候判断当前容器目录下是否存在环境对应的GitOps文件目录，不存在则克隆
+        String filePath = null;
+        if (instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType().equals(UPDATE)) {
+            filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getProjectId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
+        }
+
+
+        //创建实例时，如果选择了创建网络
+        if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
+            instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getMarketServiceDeployObjectVO().getMarketServiceId());
+            devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
+        }
+
+        try {
+            //在gitops库处理instance文件
+            ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(getC7NHelmReleaseForMarketServiceInstance(
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceName(),
+                    instanceSagaPayload.getMarketServiceDeployObjectVO().getMarketChartRepository(),
+                    instanceSagaPayload.getMarketServiceDeployObjectVO().getMarketServiceId(),
+                    instanceSagaPayload.getCommandId(),
+                    instanceSagaPayload.getMarketServiceDeployObjectVO().getMarketArtifactCode(),
+                    instanceSagaPayload.getMarketServiceDeployObjectVO().getDevopsAppServiceVersion(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getValues(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getMarketDeployObjectId(),
+                    instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO()));
+
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
+                    RELEASE_PREFIX + instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceName(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType(),
+                    instanceSagaPayload.getGitlabUserId(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+
+            //创建实例成功 发送web hook json
+            if (CREATE.equals(instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType())) {
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceId());
+                appServiceInstanceDTO.setProjectId(instanceSagaPayload.getProjectId());
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                        .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, InstanceStatus.RUNNING.getStatus());
+            }
+        } catch (Exception e) {
+            //有异常更新实例以及command的状态
+            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getMarketInstanceCreationRequestVO().getInstanceId());
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(instanceSagaPayload.getDevopsEnvironmentDTO().getId(), appServiceInstanceDTO.getId(), HELM_RELEASE);
+            filePath = devopsEnvFileResourceDTO == null ? RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
+            // 这里只考虑了创建失败的情况，这说明是gitlab超时
+            if (!CREATE.equals(instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType()) || !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+                    filePath)) {
+                throw e;
+            }
+            if (CREATE.equals(instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType())) {
+                //创建实例资源失败，发送webhook json
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                        .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+                sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
+            }
+            // 更新的超时情况暂未处理
+        }
+    }
+
+    @Override
     public AppServiceInstanceRepVO queryByCommandId(Long commandId) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
         if (commandId == null) {
@@ -776,7 +1095,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
         AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(appServiceDeployVO);
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(appServiceDeployVO);
-        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
 
         //实例相关对象数据库操作
         if (appServiceDeployVO.getType().equals(CREATE)) {
@@ -797,9 +1116,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId());
         }
 
-        //插入部署记录
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId());
+
+        boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
+        //插入部署记录
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
                 DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
@@ -810,12 +1132,50 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 DeployObjectTypeEnum.APP,
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
-                appServiceInstanceDTO.getCode());
+                appServiceInstanceDTO.getCode(),
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
     }
 
+    @Override
+    public AppServiceInstanceVO createOrUpdateMarketInstanceByGitOps(MarketInstanceCreationRequestVO appServiceDeployVO, Long userId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
+        //校验环境是否连接
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
+
+        //校验values
+        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
+
+        //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
+        AppServiceInstanceDTO appServiceInstanceDTO = initMarketInstanceDTO(appServiceDeployVO);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initMarketInstanceDevopsEnvCommandDTO(appServiceDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
+
+        //实例相关对象数据库操作
+        if (appServiceDeployVO.getCommandType().equals(CREATE)) {
+            // 创建关联关系
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
+            appServiceInstanceDTO.setCode(appServiceDeployVO.getInstanceName());
+            appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
+        } else {
+            baseUpdate(appServiceInstanceDTO);
+        }
+        devopsEnvCommandDTO.setCreatedBy(userId);
+        devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
+        devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+        appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
+        baseUpdate(appServiceInstanceDTO);
+
+        // 插入部署记录
+        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getMarketAppServiceId());
+        marketServiceVO.setMarketDeployObjectId(appServiceDeployVO.getMarketDeployObjectId());
+        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceDeployVO.getChartVersion());
+
+        return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
+    }
 
     @Override
     public List<RunningInstanceVO> listRunningInstance(Long projectId, Long appServiceId, Long appServiceVersionId, Long envId) {
@@ -844,6 +1204,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        if (AppServiceInstanceSource.NORMAL.getValue().equals(appServiceInstanceDTO.getSource())) {
+            return doRestartNormalInstance(projectId, appServiceInstanceDTO, isFromPipeline);
+        } else {
+            return doRestartMarketInstance(projectId, appServiceInstanceDTO);
+        }
+    }
+
+    private DevopsEnvCommandDTO doRestartNormalInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO, boolean isFromPipeline) {
+        Long instanceId = appServiceInstanceDTO.getId();
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
 
@@ -870,7 +1239,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
 
         //插入部署记录
-        devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
+        boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        devopsDeployRecordService.saveRecord(
+                devopsEnvironmentDTO.getProjectId(),
                 isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
                 DeployModeEnum.ENV,
@@ -880,7 +1252,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 DeployObjectTypeEnum.APP,
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
-                appServiceInstanceDTO.getCode());
+                appServiceInstanceDTO.getCode(),
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
@@ -903,6 +1276,65 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         .withSourceId(devopsEnvironmentDTO.getProjectId())
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
+                builder -> builder
+                        .withPayloadAndSerialize(instanceSagaPayload)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+
+        return devopsEnvCommandDTO;
+
+    }
+
+    private DevopsEnvCommandDTO doRestartMarketInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO) {
+        // 查询市场应用服务, 确认存在
+        Long instanceId = appServiceInstanceDTO.getId();
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+        MarketServiceDeployObjectVO appServiceVersion = marketServiceClientOperator.queryDeployObject(projectId, devopsEnvCommandDTO.getObjectVersionId());
+        MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceVersion.getMarketServiceId());
+        marketServiceVO.setMarketDeployObjectId(appServiceInstanceDTO.getAppServiceVersionId());
+
+        String value = baseQueryValueByInstanceId(instanceId);
+
+        devopsEnvCommandDTO.setId(null);
+        devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
+
+        //获取授权secret
+        String secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersion);
+
+        //插入部署记录
+        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceVersion.getDevopsAppServiceVersion());
+
+
+        MarketInstanceCreationRequestVO appServiceDeployVO = new MarketInstanceCreationRequestVO();
+        appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
+        appServiceDeployVO.setValues(value);
+        appServiceDeployVO.setMarketDeployObjectId(appServiceVersion.getId());
+        appServiceDeployVO.setCommandType(CommandType.UPDATE.getType());
+        MarketInstanceSagaPayload instanceSagaPayload = new MarketInstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
+        instanceSagaPayload.setMarketServiceDeployObjectVO(appServiceVersion);
+        instanceSagaPayload.setMarketInstanceCreationRequestVO(appServiceDeployVO);
+        instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        instanceSagaPayload.setCommandId(devopsEnvCommandDTO.getId());
+
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE),
                 builder -> builder
                         .withPayloadAndSerialize(instanceSagaPayload)
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
@@ -1074,9 +1506,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceInstanceValidator.checkName(code);
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
-        if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
-            throw new CommonException("error.app.instance.name.already.exist");
-        }
+//        if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
+//            throw new CommonException("error.app.instance.name.already.exist");
+//        }
     }
 
 
@@ -1267,7 +1699,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
         AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(appServiceDeployVO);
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(appServiceDeployVO);
-        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
 
         //获取部署实例时授权secret的code
         String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO, envSecrets.computeIfAbsent(devopsEnvironmentDTO.getId(), k -> new ArrayList<>()));
@@ -1275,7 +1707,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         // 初始化自定义实例名
         String code;
         if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
-            code = String.format("%s-%s", appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+            code = String.format(INSTANCE_NAME_TEMPLATE, appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
         } else {
             checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), false);
             code = appServiceDeployVO.getInstanceName();
@@ -1544,8 +1976,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         c7nHelmRelease.getSpec().setChartName(appServiceCode);
         c7nHelmRelease.getSpec().setChartVersion(version);
         c7nHelmRelease.getSpec().setCommandId(commandId);
+        c7nHelmRelease.getSpec().setSource(AppServiceInstanceSource.NORMAL.getValue());
         if (secretName != null) {
-            c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
+            c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
         }
 
         // 如果是组件的实例进行部署
@@ -1558,6 +1991,34 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         } else {
             versionValue = appServiceVersionService.baseQueryValue(deployVersionId);
         }
+
+        c7nHelmRelease.getSpec().setValues(
+                getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
+        return c7nHelmRelease;
+    }
+
+    private C7nHelmRelease getC7NHelmReleaseForMarketServiceInstance(String code, String repository,
+                                                                     Long appServiceId,
+                                                                     Long commandId, String appServiceCode,
+                                                                     String version, String deployValue,
+                                                                     Long marketServiceVersionId, String secretName,
+                                                                     DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
+        c7nHelmRelease.getMetadata().setName(code);
+        // 设置这个app-service-id是防止不同项目的应用服务被网络根据应用服务code误选择，要以id作为标签保证准确性
+        c7nHelmRelease.getSpec().setAppServiceId(appServiceId);
+        c7nHelmRelease.getSpec().setRepoUrl(repository);
+        c7nHelmRelease.getSpec().setChartName(appServiceCode);
+        c7nHelmRelease.getSpec().setChartVersion(version);
+        c7nHelmRelease.getSpec().setCommandId(commandId);
+        c7nHelmRelease.getSpec().setSource(AppServiceInstanceSource.MARKET.getValue());
+        c7nHelmRelease.getSpec().setMarketDeployObjectId(marketServiceVersionId);
+        if (secretName != null) {
+            c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
+        }
+
+        // 从market-service查询values
+        String versionValue = marketServiceClientOperator.queryValues(devopsEnvironmentDTO.getProjectId(), marketServiceVersionId).getValue();
 
         c7nHelmRelease.getSpec().setValues(
                 getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
@@ -1578,7 +2039,23 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
         appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
         appServiceInstanceDTO.setValueId(appServiceDeployVO.getValueId());
+        appServiceInstanceDTO.setSource(AppServiceInstanceSource.NORMAL.getValue());
         if (appServiceDeployVO.getType().equals(UPDATE)) {
+            AppServiceInstanceDTO oldAppServiceInstanceDTO = baseQuery(
+                    appServiceDeployVO.getInstanceId());
+            appServiceInstanceDTO.setCode(oldAppServiceInstanceDTO.getCode());
+            appServiceInstanceDTO.setId(appServiceDeployVO.getInstanceId());
+        }
+        return appServiceInstanceDTO;
+    }
+
+    private AppServiceInstanceDTO initMarketInstanceDTO(MarketInstanceCreationRequestVO appServiceDeployVO) {
+        AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
+        appServiceInstanceDTO.setAppServiceId(appServiceDeployVO.getMarketAppServiceId());
+        appServiceInstanceDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
+        appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
+        appServiceInstanceDTO.setSource(AppServiceInstanceSource.MARKET.getValue());
+        if (CommandType.UPDATE.getType().equals(appServiceDeployVO.getCommandType())) {
             AppServiceInstanceDTO oldAppServiceInstanceDTO = baseQuery(
                     appServiceDeployVO.getInstanceId());
             appServiceInstanceDTO.setCode(oldAppServiceInstanceDTO.getCode());
@@ -1606,10 +2083,29 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvCommandDTO;
     }
 
+    private DevopsEnvCommandDTO initMarketInstanceDevopsEnvCommandDTO(MarketInstanceCreationRequestVO appServiceDeployVO) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+        switch (appServiceDeployVO.getCommandType()) {
+            case CREATE:
+                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
+                break;
+            case UPDATE:
+                devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
+                break;
+            default:
+                devopsEnvCommandDTO.setCommandType(CommandType.DELETE.getType());
+                break;
+        }
+        devopsEnvCommandDTO.setObjectVersionId(appServiceDeployVO.getMarketDeployObjectId());
+        devopsEnvCommandDTO.setObject(ObjectType.INSTANCE.getType());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        return devopsEnvCommandDTO;
+    }
+
     private DevopsEnvCommandValueDTO initDevopsEnvCommandValueDTO
-            (AppServiceDeployVO appServiceDeployVO) {
+            (String values) {
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = new DevopsEnvCommandValueDTO();
-        devopsEnvCommandValueDTO.setValue(appServiceDeployVO.getValues());
+        devopsEnvCommandValueDTO.setValue(values);
         return devopsEnvCommandValueDTO;
     }
 
@@ -1696,7 +2192,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 }
                 // 无论是否修改，都通知agent创建secret，保证secret存在
                 // 解决secret在Kubernetes集群中被删除而猪齿鱼无法感知的问题
-                // 此为临时解决方案，应对0.21.x，在0.22版本将修改
                 agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
                 secretCode = devopsRegistrySecretDTO.getSecretCode();
             }
@@ -1705,6 +2200,47 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         LOGGER.debug("Got secret with code {} for app service with id {} and code {} and version id: {}", secretCode, appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         return secretCode;
+    }
+
+    private String makeMarketSecret(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+        // 先处理chart的认证信息
+        sendChartMuseumAuthForMarket(devopsEnvironmentDTO.getClusterId(), marketServiceDeployObjectVO.getMarketChartConfigVO());
+        // 处理镜像的认证
+        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), marketServiceDeployObjectVO.getHarborConfigId(), projectId);
+        String secretCode;
+        if (devopsRegistrySecretDTO == null) {
+            //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
+            secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
+            MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
+            ConfigVO configVO = new ConfigVO();
+            String[] harborUrlAndRepo = parseMarketRepo(marketHarborConfigVO.getRepoUrl());
+            configVO.setUrl(harborUrlAndRepo[0]);
+            configVO.setProject(harborUrlAndRepo[1]);
+            configVO.setUserName(marketHarborConfigVO.getRobotName());
+            configVO.setPassword(marketHarborConfigVO.getToken());
+            devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), marketServiceDeployObjectVO.getHarborConfigId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), projectId, DevopsRegistryRepoType.MARKET_REPO.getType());
+            devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
+            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
+        }
+        // 市场服务的harbor config不会更新，所以这里的secret也不考虑更新
+        secretCode = devopsRegistrySecretDTO.getSecretCode();
+        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), gson.fromJson(devopsRegistrySecretDTO.getSecretDetail(), ConfigVO.class), UPDATE);
+        return secretCode;
+    }
+
+    private String[] parseMarketRepo(String harborRepo) {
+        if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
+            harborRepo = harborRepo.substring(0, harborRepo.length() - 1);
+        }
+        int lastSlashIndex = harborRepo.lastIndexOf(BaseConstants.Symbol.SLASH);
+        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "error.harbor.repo.invalid.slash");
+        String harborUrl = harborRepo.substring(0, lastSlashIndex);
+        String repoName = harborRepo.substring(lastSlashIndex);
+        CommonExAssertUtil.assertTrue(harborUrl.contains("//"), "error.harbor.repo.invalid.double.slash");
+        String[] result = new String[2];
+        result[0] = harborUrl;
+        result[1] = repoName;
+        return result;
     }
 
     /**
@@ -1723,6 +2259,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (Boolean.TRUE.equals(helmConfig.getPrivate())) {
                 agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);
             }
+        }
+    }
+
+    private void sendChartMuseumAuthForMarket(Long clusterId, MarketChartConfigVO marketChartConfigVO) {
+        ConfigVO configVO = new ConfigVO();
+        String[] domainAndRepo = parseMarketRepo(marketChartConfigVO.getRepoUrl());
+        configVO.setUrl(domainAndRepo[0]);
+        configVO.setUserName(marketChartConfigVO.getUsername());
+        configVO.setPassword(marketChartConfigVO.getPassword());
+        if (configVO.getUserName() != null && configVO.getPassword() != null) {
+            agentCommandService.sendChartMuseumAuthentication(clusterId, configVO);
         }
     }
 

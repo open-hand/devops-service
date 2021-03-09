@@ -13,44 +13,46 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class HarborC7nRepoVo {
-	@Encrypt
-	@ApiModelProperty("仓库ID")
-	private Long repoId;
+    @Encrypt
+    @ApiModelProperty("仓库ID")
+    private Long repoId;
 
-	@ApiModelProperty("仓库名称")
-	private String repoName;
+    @ApiModelProperty("仓库名称")
+    private String repoName;
 
-	@ApiModelProperty("仓库类型")
-	private String repoType;
+    @ApiModelProperty("仓库类型")
+    private String repoType;
 
-	public HarborC7nRepoVo(){}
-	public HarborC7nRepoVo(Long repoId, String repoName, String repoType) {
-		this.repoId = repoId;
-		this.repoName = repoName;
-		this.repoType = repoType;
-	}
+    public HarborC7nRepoVo() {
+    }
 
-	public Long getRepoId() {
-		return repoId;
-	}
+    public HarborC7nRepoVo(Long repoId, String repoName, String repoType) {
+        this.repoId = repoId;
+        this.repoName = repoName;
+        this.repoType = repoType;
+    }
 
-	public void setRepoId(Long repoId) {
-		this.repoId = repoId;
-	}
+    public Long getRepoId() {
+        return repoId;
+    }
 
-	public String getRepoName() {
-		return repoName;
-	}
+    public void setRepoId(Long repoId) {
+        this.repoId = repoId;
+    }
 
-	public void setRepoName(String repoName) {
-		this.repoName = repoName;
-	}
+    public String getRepoName() {
+        return repoName;
+    }
 
-	public String getRepoType() {
-		return repoType;
-	}
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
+    }
 
-	public void setRepoType(String repoType) {
-		this.repoType = repoType;
-	}
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
 }

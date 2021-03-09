@@ -71,6 +71,14 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
     List<DevopsHostDTO> listDistributionTestHostsByIds(@Param("projectId") Long projectId, @Param("hostIds") Set<Long> hostIds);
 
     /**
+     * 查询测试主机
+     *
+     * @return 主机信息
+     */
+    List<DevopsHostDTO> listDistributionTestHosts();
+
+
+    /**
      * 批量更新主机jmeter状态
      *
      * @param hostIds 主机id

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -31,6 +32,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
@@ -50,6 +52,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -189,6 +192,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
     private PipelineAppDeployService pipelineAppDeployService;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     @PostConstruct
     private void init() {
@@ -518,6 +523,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             views = devopsEnvironmentMapper.listMemberInstanceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());
         }
 
+        // 市场服务id
+        Set<Long> marketServiceIds = new HashSet<>();
+
         views.forEach(e -> {
             // 将DTO层对象转为VO
             DevopsEnvironmentViewVO vo = new DevopsEnvironmentViewVO();
@@ -528,8 +536,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
                 DevopsAppServiceViewVO appVO = new DevopsAppServiceViewVO();
                 BeanUtils.copyProperties(app, appVO, "instances");
-                AppServiceDTO appServiceDTO = appServiceService.baseQuery(app.getId());
-                appVO.setType(appServiceService.checkAppServiceType(projectId, appServiceDTO));
+                // 如果应用服务没有名字，认为它是市场服务
+                if (appVO.getName() == null) {
+                    marketServiceIds.add(appVO.getId());
+                }
+                appVO.setType(appServiceService.checkAppServiceType(projectId, app.getProjectId()));
                 appVO.setInstances(app.getInstances().stream().map(ins -> {
                     DevopsAppServiceInstanceViewVO insVO = new DevopsAppServiceInstanceViewVO();
                     BeanUtils.copyProperties(ins, insVO);
@@ -548,7 +559,27 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 为了将环境按照状态排序: 连接（运行中） > 未连接
         connectedEnvs.addAll(unConnectedEnvs);
+
+        // 填充缺失的市场服务的名称
+        fillMarketServiceNames(projectId, marketServiceIds, connectedEnvs);
         return connectedEnvs;
+    }
+
+    private void fillMarketServiceNames(Long projectId, Set<Long> marketServiceIds, List<DevopsEnvironmentViewVO> envs) {
+        if (!marketServiceIds.isEmpty()) {
+            // 如果市场服务不为空，查询数据填充
+            Map<Long, MarketServiceVO> marketServices = marketServiceClientOperator.queryMarketServiceByIds(projectId, marketServiceIds).stream().collect(Collectors.toMap(MarketServiceVO::getId, Function.identity()));
+            envs.forEach(env -> env.getApps().forEach(app -> {
+                if (app.getName() == null) {
+                    MarketServiceVO marketServiceVO = marketServices.get(app.getId());
+                    if (marketServiceVO != null) {
+                        app.setName(marketServiceVO.getMarketServiceName());
+                    } else {
+                        app.setName(MiscConstants.UNKNOWN_SERVICE);
+                    }
+                }
+            }));
+        }
     }
 
     @Override

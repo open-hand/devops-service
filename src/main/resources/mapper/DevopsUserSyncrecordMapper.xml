@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsUserSyncRecordMapper">
+
+    <select id="queryLatestRecord" resultType="io.choerodon.devops.infra.dto.DevopsUserSyncRecordDTO">
+        SELECT *
+        FROM devops_user_sync_record
+        ORDER BY id desc
+        LIMIT 1
+    </select>
+</mapper>

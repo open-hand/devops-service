@@ -6,6 +6,8 @@
         SELECT ins.id,
                ins.code,
                ins.status,
+               ins.source,
+               env.project_id,
                (SELECT count(1)
                 FROM devops_env_pod dp
                 WHERE dp.instance_id = ins.id) pod_count,
@@ -17,6 +19,7 @@
                ins.app_service_id,
                ins.app_service_version_id,
                ins.effect_command_id,
+               effect.object_version_id AS     effect_command_version_id,
                effect.status   AS              effect_command_status,
                (
                        SELECT effect_version.version
@@ -51,6 +54,7 @@
         SELECT ins.id,
                ins.code,
                ins.status,
+               ins.source,
                env.cluster_id,
                (SELECT count(1)
                 FROM devops_env_pod dp

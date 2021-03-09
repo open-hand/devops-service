@@ -45,6 +45,8 @@ public class ApiTestTaskRecordVO {
 
     private String deployJobName;
 
+    private Double performThreshold;
+
     public String getViewId() {
         return viewId;
     }
@@ -131,5 +133,30 @@ public class ApiTestTaskRecordVO {
 
     public void setDeployJobName(String deployJobName) {
         this.deployJobName = deployJobName;
+    }
+
+    public Double getPerformThreshold() {
+        return performThreshold;
+    }
+
+    public void setPerformThreshold(Double performThreshold) {
+        this.performThreshold = performThreshold;
+    }
+
+    @Override
+    public String toString() {
+        return "ApiTestTaskRecordVO{" +
+                "id=" + id +
+                ", taskId=" + taskId +
+                ", status='" + status + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", successCount=" + successCount +
+                ", failCount=" + failCount +
+                ", executorInfo=" + executorInfo +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", viewId='" + viewId + '\'' +
+                ", deployJobName='" + deployJobName + '\'' +
+                '}';
     }
 }

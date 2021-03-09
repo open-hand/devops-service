@@ -30,14 +30,17 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -72,6 +75,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private String gitlabSshUrl;
 
     @Autowired
+    @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
@@ -110,6 +114,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     @Override
     public Boolean checkName(Long envId, String name) {
@@ -678,7 +684,16 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsServiceQueryDTO.getTargetAppServiceId() != null) {
             devopsServiceTargetVO.setTargetAppServiceId(devopsServiceQueryDTO.getTargetAppServiceId());
             AppServiceDTO appServiceDTO = applicationService.baseQuery(devopsServiceQueryDTO.getTargetAppServiceId());
-            devopsServiceTargetVO.setTargetAppServiceName(appServiceDTO.getName());
+            if (appServiceDTO != null) {
+                devopsServiceTargetVO.setTargetAppServiceName(appServiceDTO.getName());
+            } else {
+                MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(0L, devopsServiceQueryDTO.getTargetAppServiceId());
+                if (marketServiceVO != null) {
+                    devopsServiceTargetVO.setTargetAppServiceName(marketServiceVO.getMarketServiceName());
+                } else {
+                    devopsServiceTargetVO.setTargetAppServiceName(MiscConstants.UNKNOWN_SERVICE);
+                }
+            }
         }
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 

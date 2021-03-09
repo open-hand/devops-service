@@ -188,6 +188,14 @@ public interface DevopsHostService {
     List<DevopsHostDTO> listDistributionTestHostsByIds(Long projectId, Set<Long> hostIds);
 
     /**
+     * 查询所有的测试主机，数据迁移使用
+     *
+     * @param pageRequest
+     * @return 主机信息
+     */
+    Page<DevopsHostDTO> listDistributionTestHosts(PageRequest pageRequest);
+
+    /**
      * 将主机设置为占用状态
      *
      * @param projectId 项目id

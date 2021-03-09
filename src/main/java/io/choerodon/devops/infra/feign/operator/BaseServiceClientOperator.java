@@ -6,7 +6,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
+import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +55,7 @@ public class BaseServiceClientOperator {
     public Long getRoleId(Long organizationId, String code, String labelName) {
         ResponseEntity<List<RoleDTO>> roleResponseEntity = baseServiceClient.getRoleByCode(organizationId, code, labelName);
         List<RoleDTO> roleDTOList = roleResponseEntity.getBody();
-        if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && roleDTOList.size() != 0) {
+        if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && !CollectionUtils.isEmpty(roleDTOList)) {
             return roleDTOList.get(0).getId();
         } else {
             throw new CommonException("error.organization.role.id.get", code);
@@ -136,8 +138,9 @@ public class BaseServiceClientOperator {
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
-                userDTOS = baseServiceClient
-                        .listUsersByIds(ids.toArray(newIds), false).getBody();
+                userDTOS = ResponseUtils.getResponse(baseServiceClient
+                        .listUsersByIds(ids.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
+                });
                 if (userDTOS == null) {
                     userDTOS = Collections.emptyList();
                 }
@@ -146,6 +149,20 @@ public class BaseServiceClientOperator {
             }
         }
         return userDTOS;
+    }
+
+    public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
+        try {
+            List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
+                    .listUsersByIds(ids, onlyEnabled), new TypeReference<List<IamUserDTO>>() {
+            });
+            if (userDTOS == null) {
+                userDTOS = Collections.emptyList();
+            }
+            return userDTOS;
+        } catch (Exception e) {
+            throw new CommonException("error.users.get", e);
+        }
     }
 
     public IamUserDTO queryUserByUserId(Long id) {
@@ -359,7 +376,7 @@ public class BaseServiceClientOperator {
      */
     public Boolean isRoot(Long userId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsRoot(userId);
-        return responseEntity == null ? false : responseEntity.getBody();
+        return responseEntity != null && responseEntity.getBody();
     }
 
     /**
@@ -371,7 +388,7 @@ public class BaseServiceClientOperator {
      */
     public Boolean isOrganzationRoot(Long userId, Long organizationId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsOrgRoot(organizationId, userId);
-        return responseEntity == null ? false : responseEntity.getBody();
+        return responseEntity != null && responseEntity.getBody();
     }
 
     /**
@@ -383,7 +400,7 @@ public class BaseServiceClientOperator {
      */
     public Boolean isProjectOwner(Long userId, Long projectId) {
         ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsProjectOwner(userId, projectId);
-        return responseEntity == null ? false : responseEntity.getBody();
+        return responseEntity != null && responseEntity.getBody();
     }
 
     /**
@@ -410,8 +427,7 @@ public class BaseServiceClientOperator {
 
     public Page<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
         ResponseEntity<Page<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
-        Page<OrgAdministratorVO> body = pageInfoResponseEntity.getBody();
-        return body;
+        return pageInfoResponseEntity.getBody();
     }
 
     public ResourceLimitVO queryResourceLimit() {
@@ -425,5 +441,29 @@ public class BaseServiceClientOperator {
         }
         ResponseEntity<List<UserProjectLabelVO>> labels = baseServiceClient.listRoleLabelsForUserInTheProject(Objects.requireNonNull(userId), projectIds);
         return labels.getBody();
+    }
+
+    public List<IamUserDTO> queryUserByProjectId(Long projectId) {
+        ResponseEntity<List<IamUserDTO>> labels = baseServiceClient.queryUserByProjectId(Objects.requireNonNull(projectId));
+        return labels.getBody();
+    }
+
+    public List<IamUserDTO> queryRoot() {
+        ResponseEntity<List<IamUserDTO>> labels = baseServiceClient.queryRoot();
+        return labels.getBody();
+    }
+
+    public int queryAllUserCount() {
+        return ResponseUtils.getResponse(baseServiceClient.countAllUsers(), UserCountVO.class).getCount();
+    }
+
+    public Set<Long> queryAllUserIds() {
+        return ResponseUtils.getResponse(baseServiceClient.listAllUserIds(), new TypeReference<Set<Long>>() {
+        });
+    }
+
+    public List<String> listProjectCategoryById(Long projectId) {
+        ResponseEntity<List<String>> categoryList = baseServiceClient.listProjectCategoryById(projectId);
+        return categoryList.getBody();
     }
 }

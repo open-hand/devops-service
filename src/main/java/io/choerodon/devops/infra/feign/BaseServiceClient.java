@@ -7,6 +7,7 @@ import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +56,7 @@ public interface BaseServiceClient {
     ResponseEntity<IamUserDTO> queryById(@PathVariable("id") Long id);
 
     @PostMapping(value = "/choerodon/v1/users/ids")
-    ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
+    ResponseEntity<String> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
 
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/users")
     ResponseEntity<Page<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
@@ -220,6 +221,34 @@ public interface BaseServiceClient {
     ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable("organization_id") Long organizationId,
                                                        @PathVariable("user_id") Long userId);
 
-    @GetMapping("/choerodon/v1/sync/user")
-    ResponseEntity<List<UserVO>> listUserByCreationDate();
+    /**
+     * 查询项目下的用户
+     */
+    @GetMapping("/choerodon/v1/projects/{project_id}/all/users")
+    ResponseEntity<List<IamUserDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId);
+
+    /**
+     * 查询所有root
+     */
+    @GetMapping("/choerodon/v1/users/root")
+    ResponseEntity<List<IamUserDTO>> queryRoot();
+
+    /**
+     * @return {@link UserCountVO}
+     */
+    @ApiOperation(value = "查询平台中所有用户的数量")
+    @GetMapping(value = "/choerodon/v1/users/all_user_count")
+    ResponseEntity<String> countAllUsers();
+
+    /**
+     * @return {@link Set<Long>}
+     */
+    @ApiOperation(value = "查询平台中所有用户的id")
+    @GetMapping(value = "/choerodon/v1/users/all_user_ids")
+    ResponseEntity<String> listAllUserIds();
+
+
+    @ApiOperation(value = "查询平台中所有用户的id")
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/list_project_category")
+    ResponseEntity<List<String>> listProjectCategoryById(@PathVariable(name = "project_id") Long projectId);
 }

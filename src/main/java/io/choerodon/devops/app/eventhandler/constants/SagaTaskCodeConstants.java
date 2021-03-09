@@ -76,6 +76,10 @@ public class SagaTaskCodeConstants {
      * 创建流水线自动部署实例
      */
     public static final String DEVOPS_PIPELINE_CREATE_INSTANCE = "devops-pipeline-create-instance";
+    /**
+     * 处理API测试任务执行完成后逻辑
+     */
+    public static final String HANDLE_API_TEST_TASK_COMPLETE_EVENT = "handle-api-test-task-complete-event";
 
     /**
      * 创建流水线环境自动部署实例
@@ -95,6 +99,11 @@ public class SagaTaskCodeConstants {
      * devops创建实例
      */
     public static final String DEVOPS_CREATE_INSTANCE = "devopsCreateInstance";
+
+    /**
+     * devops创建市场实例
+     */
+    public static final String DEVOPS_CREATE_MARKET_INSTANCE = "devops-process-market-instance";
 
     /**
      * devops创建网络
@@ -282,6 +291,11 @@ public class SagaTaskCodeConstants {
      * 添加节点
      */
     public static final String DEVOPS_CLUSTER_ADD_NODE_TASK = "devops_cluster_add_node_task";
+
+    /**
+     * devops项目类型同步处理
+     */
+    public static final String DEVOPS_PROJECT_CATEGORY_SYNC = "devops-project-category-sync";
 
     private SagaTaskCodeConstants() {
     }

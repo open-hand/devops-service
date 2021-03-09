@@ -28,6 +28,8 @@ public class CustomMergeRequestVO {
 
     private String assigneeName;
 
+    private String assigneeImageUrl;
+
     private String sourceBranch;
 
     private String targetBranch;
@@ -155,6 +157,14 @@ public class CustomMergeRequestVO {
         this.applicationId = applicationId;
     }
 
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
+    }
+
     public String getImageUrl() {
         return imageUrl;
     }
@@ -163,11 +173,11 @@ public class CustomMergeRequestVO {
         this.imageUrl = imageUrl;
     }
 
-    public String getViewId() {
-        return viewId;
+    public String getAssigneeImageUrl() {
+        return assigneeImageUrl;
     }
 
-    public void setViewId(String viewId) {
-        this.viewId = viewId;
+    public void setAssigneeImageUrl(String assigneeImageUrl) {
+        this.assigneeImageUrl = assigneeImageUrl;
     }
 }

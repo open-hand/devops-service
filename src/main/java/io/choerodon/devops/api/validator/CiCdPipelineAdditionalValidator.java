@@ -25,7 +25,6 @@ import io.choerodon.devops.infra.util.MavenSettingsUtil;
 public class CiCdPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
 
-    private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
     private static final String ERROR_STEP_SEQUENCE_NULl = "error.step.sequence.null";
     private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
     private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "error.maven.repository.type.null";

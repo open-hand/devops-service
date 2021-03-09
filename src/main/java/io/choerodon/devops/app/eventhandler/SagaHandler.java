@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.eventhandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.AssignAdminVO;
@@ -47,6 +50,10 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
+    /**
+     * devops项目类型
+     */
+    private static final String DEVOPS = "N_DEVOPS";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -64,6 +71,8 @@ public class SagaHandler {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private ChartService chartService;
+    @Autowired
+    private GitlabHandleService gitlabHandleService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -81,6 +90,9 @@ public class SagaHandler {
             seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
+        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
+            return msg;
+        }
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
         loggerInfo(gitlabGroupPayload);
@@ -103,12 +115,25 @@ public class SagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String handleUpdateGitOpsGroupEvent(String msg) {
+        LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
-        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
-        loggerInfo(msg);
-        gitlabGroupService.updateGroups(gitlabGroupPayload);
+        //不包含devops项目类型不做同步
+        if (CollectionUtils.isEmpty(projectPayload.getProjectCategoryVOS())) {
+            return msg;
+        }
+        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
+            return msg;
+        }
+        gitlabHandleService.handleProjectCategoryEvent(projectPayload);
+        LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
         return msg;
+
+//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
+//        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
+//        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
+//        loggerInfo(msg);
+//        gitlabGroupService.updateGroups(gitlabGroupPayload);
+//        return msg;
     }
 
     /**
@@ -140,11 +165,22 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
+        List<GitlabGroupMemberVO> tempList = new ArrayList<>(gitlabGroupMemberVOList);
+        tempList.forEach(t -> {
+            if (t.getResourceType().equals(ResourceLevel.PROJECT.value())) {
+                if (!baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).contains(DEVOPS)) {
+                    gitlabGroupMemberVOList.remove(t);
+                }
+            }
+        });
+        if (CollectionUtils.isEmpty(gitlabGroupMemberVOList)) {
+            return tempList;
+        }
         LOGGER.info("delete gitlab role start");
         loggerInfo(gitlabGroupMemberVOList);
         gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
         LOGGER.info("delete gitlab role end");
-        return gitlabGroupMemberVOList;
+        return tempList;
     }
 
     /**
@@ -338,4 +374,27 @@ public class SagaHandler {
         chartService.batchDeleteChartVersion(customResourceVO.getChartTagVOS());
         return payload;
     }
+
+    /**
+     * devops 同步项目类型的处理
+     *
+     * @param msg
+     * @return string
+     */
+//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PROJECT_CATEGORY_SYNC,
+//            description = "devops 同步项目类型的处理(group与角色同步事件)",
+//            sagaCode = SagaTopicCodeConstants.ADD_PROJECT_CATEGORY,
+//            maxRetryCount = 3,
+//            seq = 1)
+//    public String handleProjectCategoryEvent(String msg) {
+//        LOGGER.info(">>>>>>>>>start sync project devops category,playLoad={}", msg);
+//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
+//        //不包含devops项目类型不做同步
+//        if (! projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(devops)) {
+//            return msg;
+//        }
+//        gitlabHandleService.handleProjectCategoryEvent(projectPayload);
+//        LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
+//        return msg;
+//    }
 }

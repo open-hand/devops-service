@@ -11,11 +11,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.ApprovalVO;
+import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.app.service.WorkBenchService;
 import io.choerodon.devops.infra.dto.*;
@@ -26,6 +29,7 @@ import io.choerodon.devops.infra.enums.ApprovalTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class WorkBenchServiceImpl implements WorkBenchService {
@@ -53,9 +57,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     @Autowired
     private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
     @Autowired
-    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
-    @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    @Autowired
+    private DevopsGitlabCommitService devopsGitlabCommitService;
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
@@ -64,17 +68,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
 
     @Override
     public List<LatestAppServiceVO> listLatestAppService(Long organizationId, Long projectId) {
-        Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
-        List<ProjectDTO> projectDTOList;
-        Long userId = DetailsHelper.getUserDetails().getUserId();
-        if (projectId == null) {
-            projectDTOList = baseServiceClientOperator.listOwnedProjects(tenant.getTenantId(), userId);
-        } else {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
-            projectDTOList = Collections.singletonList(projectDTO);
-        }
-        if (projectDTOList.size() == 0) {
+        Object[] orgAndProjectInfo = getOrgAndProjectInfo(organizationId, projectId);
+        Tenant tenant = (Tenant) orgAndProjectInfo[0];
+        List<ProjectDTO> projectDTOList = (List<ProjectDTO>) orgAndProjectInfo[1];
+        if (CollectionUtils.isEmpty(projectDTOList)) {
             return new ArrayList<>();
         } else {
             return listLatestUserAppServiceDTO(tenant, projectDTOList);
@@ -83,6 +80,37 @@ public class WorkBenchServiceImpl implements WorkBenchService {
 
     @Override
     public List<ApprovalVO> listApproval(Long organizationId, Long projectId) {
+        Object[] orgAndProjectInfo = getOrgAndProjectInfo(organizationId, projectId);
+        Tenant tenant = (Tenant) orgAndProjectInfo[0];
+        List<ProjectDTO> projectDTOList = (List<ProjectDTO>) orgAndProjectInfo[1];
+        if (CollectionUtils.isEmpty(projectDTOList)) {
+            return new ArrayList<>();
+        } else {
+            return listApprovalVOByProject(tenant, projectDTOList);
+        }
+    }
+
+
+    @Override
+    public Page<CommitFormRecordVO> listLatestCommits(Long organizationId, Long projectId, PageRequest pageRequest) {
+        Object[] orgAndProjectInfo = getOrgAndProjectInfo(organizationId, projectId);
+        List<ProjectDTO> projectDTOList = (List<ProjectDTO>) orgAndProjectInfo[1];
+        if (CollectionUtils.isEmpty(projectDTOList)) {
+            return new Page<>();
+        } else {
+            return listLatestCommits(projectDTOList, pageRequest);
+        }
+    }
+
+
+    /**
+     * 数组第一个元素组织信息，第二个元素项目信息
+     *
+     * @param organizationId
+     * @param projectId
+     * @return
+     */
+    private Object[] getOrgAndProjectInfo(Long organizationId, Long projectId) {
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
         List<ProjectDTO> projectDTOList;
         Long userId = DetailsHelper.getUserDetails().getUserId();
@@ -93,11 +121,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
             projectDTOList = Collections.singletonList(projectDTO);
         }
-        if (projectDTOList.size() == 0) {
-            return new ArrayList<>();
-        } else {
-            return listApprovalVOByProject(tenant, projectDTOList);
-        }
+        return new Object[]{tenant, projectDTOList};
     }
 
     private List<ApprovalVO> listApprovalVOByProject(Tenant tenant, List<ProjectDTO> projectDTOList) {
@@ -154,7 +178,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         CommonExAssertUtil.assertNotNull(userId, "error.user.get");
         // 查出该用户待审批的流水线阶段(旧流水线)
         List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
-        if (pipelineRecordDTOList.size() != 0) {
+        if (!CollectionUtils.isEmpty(pipelineRecordDTOList)) {
             List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
                     .filter(pipelineRecordDTO -> (pipelineRecordDTO.getRecordAudit() != null && pipelineRecordDTO.getRecordAudit().contains(String.valueOf(userId))) ||
                             (pipelineRecordDTO.getStageAudit() != null && pipelineRecordDTO.getStageAudit().contains(String.valueOf(userId))) ||
@@ -178,7 +202,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
 
         List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
-        if (jobRecordIds.size() != 0) {
+        if (!CollectionUtils.isEmpty(jobRecordIds)) {
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
             devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
@@ -209,7 +233,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         latestAppServiceVOList.addAll(devopsGitlabCommitMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
         latestAppServiceVOList.addAll(devopsMergeRequestMapper.listLatestUseAppServiceIdAndDate(projectIds, userId, time));
 
-        if (latestAppServiceVOList.size() == 0) {
+        if (CollectionUtils.isEmpty(latestAppServiceVOList)) {
             return latestAppServiceVOList;
         }
 
@@ -238,4 +262,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         return latestTenAppServiceList;
     }
 
+    private Page<CommitFormRecordVO> listLatestCommits(List<ProjectDTO> projectDTOList, PageRequest pageRequest) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -7);
+        Date time = calendar.getTime();
+        return devopsGitlabCommitService.listUserRecentCommits(projectDTOList, pageRequest, time);
+    }
 }

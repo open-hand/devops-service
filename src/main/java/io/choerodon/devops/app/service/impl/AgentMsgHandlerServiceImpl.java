@@ -4,7 +4,6 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -36,16 +35,17 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.*;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
@@ -58,12 +58,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public static final String UPDATE_TYPE = "update";
     public static final String EVICTED = "Evicted";
     private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
-    private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String PENDING = "Pending";
     private static final String METADATA = "metadata";
     private static final String SERVICE_KIND = "service";
     private static final String INGRESS_KIND = "ingress";
-    private static final String INSTANCE_KIND = "instance";
     private static final String CONFIGMAP_KIND = "configmap";
     private static final String C7NHELMRELEASE_KIND = "c7nhelmrelease";
     private static final String CERTIFICATE_KIND = "certificate";
@@ -158,6 +156,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -297,13 +297,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                // 兼容集群组件
-                if (appServiceInstanceDTO.getAppServiceId() != null) {
-                    AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
-                    appServiceInstanceDTO.setAppServiceVersionId(Objects.requireNonNull(appServiceVersionDTO.getId()));
-                } else {
-                    appServiceInstanceDTO.setComponentVersion(Objects.requireNonNull(releasePayloadVO.getChartVersion()));
-                }
 
                 if (StringUtils.isEmpty(releasePayloadVO.getCommit())) {
                     logger.warn("Unexpected empty value '{}' for commit of release payload.", releasePayloadVO.getCommit());
@@ -333,10 +326,32 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     }
                 }
 
+                setAppVersionIdForInstance(appServiceInstanceDTO, releasePayloadVO, appServiceInstanceDTO.getEffectCommandId());
+
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
             }
+        }
+    }
+
+    private void setAppVersionIdForInstance(AppServiceInstanceDTO appServiceInstanceDTO, ReleasePayloadVO releasePayloadVO, Long effectCommandId) {
+        // 兼容集群组件
+        if (appServiceInstanceDTO.getAppServiceId() != null) {
+            // 市场实例通过effect Command查，因为同一个市场服务的多个发布对象之间，
+            // chartVersion不一定发生了变化，所以需要这个来确定具体是部署哪个发布对象，
+            // TODO 普通实例也应该可以通过生效的command来查版本id
+            if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())) {
+                if (effectCommandId != null) {
+                    DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(effectCommandId);
+                    appServiceInstanceDTO.setAppServiceVersionId(devopsEnvCommandDTO.getObjectVersionId());
+                }
+            } else {
+                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
+                appServiceInstanceDTO.setAppServiceVersionId(Objects.requireNonNull(appServiceVersionDTO.getId()));
+            }
+        } else {
+            appServiceInstanceDTO.setComponentVersion(Objects.requireNonNull(releasePayloadVO.getChartVersion()));
         }
     }
 
@@ -1109,7 +1124,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 //创建PVC资源失败，发送失败通知JSON
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcDTO.getEnvId());
                 sendNotificationService.sendWhenPVCResource(devopsPvcDTO, devopsEnvironmentDTO, SendSettingEnum.CREATE_RESOURCE_FAILED.value());
-                return;
             } else {
                 //创建PVC资源成功发送 成功通知 JSON
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcDTO.getEnvId());
@@ -1186,52 +1200,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         devopsServiceService.updateStatus(devopsServiceDTO);
     }
-
-//    private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
-//        V1Service v1Service = json.deserialize(msg, V1Service.class);
-//        Map<String, String> lab = v1Service.getMetadata().getLabels();
-//        if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals(SERVICE_KIND)) {
-//            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(
-//                    appServiceInstanceDTO.getEnvId());
-//            if (devopsServiceService.baseQueryByNameAndEnvId(
-//                    v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
-//                devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
-//                devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-//                devopsServiceDTO.setName(v1Service.getMetadata().getName());
-//                devopsServiceDTO.setType(v1Service.getSpec().getType());
-//                devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
-//                devopsServiceDTO.setPorts(gson.fromJson(
-//                        gson.toJson(v1Service.getSpec().getPorts()),
-//                        new TypeToken<ArrayList<PortMapVO>>() {
-//                        }.getType()));
-//                if (v1Service.getSpec().getExternalIPs() != null) {
-//                    devopsServiceDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
-//                }
-////                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
-//                devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
-//                devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
-//
-//                DevopsServiceInstanceDTO devopsServiceInstanceDTO = devopsServiceInstanceService
-//                        .baseQueryByOptions(devopsServiceDTO.getId(), appServiceInstanceDTO.getId());
-//                if (devopsServiceInstanceDTO == null) {
-//                    devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
-//                    devopsServiceInstanceDTO.setServiceId(devopsServiceDTO.getId());
-//                    devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
-//                    devopsServiceInstanceService.baseCreate(devopsServiceInstanceDTO);
-//                }
-//
-//                DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
-//                devopsEnvCommandDTO.setObject(ObjectType.SERVICE.getType());
-//                devopsEnvCommandDTO.setObjectId(devopsServiceDTO.getId());
-//                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
-//                devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
-//                devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
-//            }
-//        } else {
-//            devopsEnvResourceService.deleteByEnvIdAndKindAndName(appServiceInstanceDTO.getEnvId(),
-//                    ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
-//        }
-//    }
 
     private void syncIngress(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
@@ -1489,14 +1457,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             appServiceIds.addAll(appServiceMapper.select(appServiceDTO).stream().map(AppServiceDTO::getId).collect(Collectors.toList()));
         });
         applications.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, null));
-
-        /* 应用市场逻辑
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), true);
-        if (mktAppServiceIds != null && !mktAppServiceIds.isEmpty()) {
-            applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds,null));
-        }
-        */
         return applications;
     }
 

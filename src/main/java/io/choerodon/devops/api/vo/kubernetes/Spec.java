@@ -7,6 +7,14 @@ import java.util.List;
 public class Spec {
     @ApiModelProperty("这个实例所属的应用服务id/选填，由猪齿鱼前端页面创建的实例应该有这个值，便于网络选择此实例进行管理。被用于实例的label: choerodon.io/app-service-id")
     private Long appServiceId;
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppServiceInstanceSource}
+     */
+    @ApiModelProperty("这个实例的来源/选填，默认为normal")
+    private String source;
+
+    @ApiModelProperty("应用市场的发布对象id/因为多个发布对象之间，chartVersion不一定发生了变化，所以需要这个来确定具体是部署哪个发布对象/应用市场实例需要，可为空")
+    private Long marketDeployObjectId;
 
     @ApiModelProperty("char仓库地址")
     private String repoUrl;
@@ -27,6 +35,14 @@ public class Spec {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getRepoUrl() {
@@ -75,5 +91,13 @@ public class Spec {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public Long getMarketDeployObjectId() {
+        return marketDeployObjectId;
+    }
+
+    public void setMarketDeployObjectId(Long marketDeployObjectId) {
+        this.marketDeployObjectId = marketDeployObjectId;
     }
 }

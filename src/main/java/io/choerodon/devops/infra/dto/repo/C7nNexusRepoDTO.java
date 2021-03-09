@@ -17,6 +17,28 @@ public class C7nNexusRepoDTO {
     @ApiModelProperty(value = "仓库名称")
     private String neRepositoryName;
 
+    @ApiModelProperty(value = "访问url")
+    private String url;
+
+    @ApiModelProperty(value = "仓库的版本策略")
+    private String versionPolicy;
+
+    public String getVersionPolicy() {
+        return versionPolicy;
+    }
+
+    public void setVersionPolicy(String versionPolicy) {
+        this.versionPolicy = versionPolicy;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     public Long getConfigId() {
         return configId;
     }

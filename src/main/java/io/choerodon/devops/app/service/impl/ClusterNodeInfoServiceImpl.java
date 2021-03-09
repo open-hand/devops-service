@@ -174,7 +174,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
         String redisKey = getRedisClusterKey(clusterId, projectId);
-        List<ClusterNodeInfoVO> nodes = new ArrayList<>();
+        List<ClusterNodeInfoVO> nodes;
 
 
         if (ClusterTypeEnum.CREATED.value().equals(devopsClusterDTO.getType())) {
@@ -260,10 +260,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                     .opsForList()
                     .range(redisKey, start, stop)
                     .stream()
-                    .map(node -> {
-                        ClusterNodeInfoVO clusterNodeInfoVO = JSONObject.parseObject(node, ClusterNodeInfoVO.class);
-                        return clusterNodeInfoVO;
-                    })
+                    .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                     .collect(Collectors.toList());
             long total = stringRedisTemplate.opsForList().size(redisKey);
 

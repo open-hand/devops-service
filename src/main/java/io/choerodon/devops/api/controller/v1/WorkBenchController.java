@@ -1,22 +1,25 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.ApprovalVO;
-import io.choerodon.devops.api.vo.LatestAppServiceVO;
-import io.choerodon.devops.app.service.WorkBenchService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.List;
-import java.util.Optional;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.ApprovalVO;
+import io.choerodon.devops.api.vo.CommitFormRecordVO;
+import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.app.service.WorkBenchService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 个人工作台
@@ -52,6 +55,20 @@ public class WorkBenchController {
             @ApiParam(value = "项目id")
             @RequestParam(value = "project_id", required = false) Long projectId) {
         return Optional.ofNullable(workBenchService.listLatestAppService(organizationId, projectId))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.latest.app.service"));
+    }
+
+    @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/latest_commit")
+    @ApiOperation("查询最近代码提交提交记录")
+    public ResponseEntity<Page<CommitFormRecordVO>> listLatestCommit(
+            @ApiParam(value = "组织id", required = true)
+            @PathVariable("organization_id") Long organizationId,
+            @ApiParam(value = "项目id")
+            @RequestParam(value = "project_id", required = false) Long projectId,
+            @ApiIgnore PageRequest pageRequest) {
+        return Optional.ofNullable(workBenchService.listLatestCommits(organizationId, projectId, pageRequest))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.latest.app.service"));
     }

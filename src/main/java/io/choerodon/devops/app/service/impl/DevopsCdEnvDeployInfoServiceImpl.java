@@ -26,7 +26,6 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_ENV_ID_IS_NULL = "error.env.id.is.null";
     private static final String ERROR_VALUE_ID_IS_NULL = "error.value.id.is.null";
-    private static final String ERROR_INSTANCE_NAME_IS_NULL = "error.instance.name.id.is.null";
     private static final String ERROR_PARAM_IS_INVALID = "error.param.is.invalid";
 
     private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "error.deploy.info.id.is.null";
@@ -104,13 +103,13 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
 
     @Override
     public List<DevopsCdEnvDeployInfoDTO> queryCurrentByValueId(Long valueId) {
-        Assert.notNull(valueId, "error.value.id.is.null");
+        Assert.notNull(valueId, ERROR_VALUE_ID_IS_NULL);
         return devopsCdEnvDeployInfoMapper.queryCurrentByValueId(valueId);
     }
 
     @Override
     public List<DevopsCdEnvDeployInfoDTO> queryCurrentByEnvId(Long environmentId) {
-        Assert.notNull(environmentId, "error.env.id.is.null");
+        Assert.notNull(environmentId, ERROR_VALUE_ID_IS_NULL);
         return devopsCdEnvDeployInfoMapper.queryCurrentByEnvId(environmentId);
     }
 }

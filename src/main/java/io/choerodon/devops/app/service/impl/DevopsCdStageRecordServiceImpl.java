@@ -32,7 +32,7 @@ import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
  */
 @Service
 public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordService {
-    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdJobRecordServiceImpl.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdStageRecordServiceImpl.class);
 
     private static final String SAVE_STAGE_RECORD_FAILED = "save.stage.record.failed";
     private static final String UPDATE_STAGE_RECORD_FAILED = "update.stage.record.failed";

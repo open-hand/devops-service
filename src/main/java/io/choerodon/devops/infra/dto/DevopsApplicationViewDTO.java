@@ -9,6 +9,7 @@ public class DevopsApplicationViewDTO {
     private Long id;
     private String name;
     private List<AppServiceInstanceViewDTO> instances;
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -32,5 +33,13 @@ public class DevopsApplicationViewDTO {
 
     public void setInstances(List<AppServiceInstanceViewDTO> instances) {
         this.instances = instances;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

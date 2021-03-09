@@ -4,6 +4,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
+import java.util.Objects;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -14,12 +15,16 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.feign.NexusClient;
 import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.util.FileUtil;
 
 public class RetrofitHandler {
 
@@ -49,6 +54,21 @@ public class RetrofitHandler {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
+
+    private static Retrofit initRetrofit(ConfigurationProperties configurationProperties, Converter.Factory factory) {
+        String credentials = configurationProperties.getUsername() + ":"
+                + configurationProperties.getPassword();
+        String token = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+        // 默认跳过证书校验
+        OkHttpClient okHttpClient = getOkHttpClient(true, configurationProperties.getType(), token);
+
+        return new Retrofit.Builder()
+                .baseUrl(configurationProperties.getBaseUrl())
+                .client(okHttpClient)
+                .addConverterFactory(Objects.requireNonNull(factory))
+                .build();
+    }
+
 
     private static OkHttpClient getOkHttpClient(Boolean insecureSkipTlsVerify, String type, String token) {
         if (!type.equals("chart")) {
@@ -108,9 +128,9 @@ public class RetrofitHandler {
                     return chain.proceed(request);
                 });
                 okHttpClientBuilder.sslSocketFactory(sslSocketFactory, x509TrustManager);
-                okHttpClientBuilder.hostnameVerifier((requestedHost, remoteServerSession) -> {
-                    return requestedHost.equalsIgnoreCase(remoteServerSession.getPeerHost()); // Compliant
-                });
+                okHttpClientBuilder.hostnameVerifier((requestedHost, remoteServerSession) ->
+                        requestedHost.equalsIgnoreCase(remoteServerSession.getPeerHost()) // Compliant
+                );
                 okHttpClientBuilder.followRedirects(true);
                 return okHttpClientBuilder.build();
             } else {
@@ -149,5 +169,28 @@ public class RetrofitHandler {
         configurationProperties.setInsecureSkipTlsVerify(true);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         return retrofit.create(SonarClient.class);
+    }
+
+    public static NexusClient getNexusClient(String nexusUrl, String userName, String password) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(FileUtil.ensureEndWithSlash(nexusUrl));
+        configurationProperties.setUsername(userName);
+        configurationProperties.setPassword(password);
+        configurationProperties.setType("nexus");
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        return retrofit.create(NexusClient.class);
+    }
+
+    /**
+     * 用于处理返回字符串的client
+     */
+    public static NexusClient getScalarNexusClient(String nexusUrl, String userName, String password) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(FileUtil.ensureEndWithSlash(nexusUrl));
+        configurationProperties.setUsername(userName);
+        configurationProperties.setPassword(password);
+        configurationProperties.setType("nexus");
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, ScalarsConverterFactory.create());
+        return retrofit.create(NexusClient.class);
     }
 }

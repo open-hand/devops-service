@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;

@@ -64,9 +64,8 @@ public interface DevopsClusterNodeService {
      * @param command      命令
      * @param logPath      日志输出路径
      * @param exitCodePath 退出码保存路径
-     * @param ansibleImage ansible镜像
      */
-    void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath,String ansibleImage);
+    void generateAndUploadAnsibleShellScript(SSHClient ssh, String suffix, String command, String logPath, String exitCodePath);
 
     /**
      * 删除node
@@ -143,7 +142,7 @@ public interface DevopsClusterNodeService {
      * @param suffix
      * @throws Exception
      */
-    void uploadInstallDockerShell(SSHClient ssh, String suffix) throws Exception;
+    void uploadPreKubeadmnHaShell(SSHClient ssh, String suffix) throws Exception;
 
     /**
      * 更新集群安装操作结果的方法

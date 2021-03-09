@@ -35,7 +35,7 @@ public class WorkFlowServiceOperator {
     }
 
     public void stopInstance(Long projectId, String businessKey) {
-        ResponseEntity responseEntity = workFlowServiceClient.stopInstance(projectId, businessKey);
+        ResponseEntity<Void> responseEntity = workFlowServiceClient.stopInstance(projectId, businessKey);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.stop");
         }

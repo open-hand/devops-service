@@ -14,8 +14,10 @@ export DOCKER_USER=$DOCKER_USERNAME
 export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
 # 兼容以往harbor仓库用户密码变量
 export DOCKER_PWD=$DOCKER_PASSWORD
-# 获取的组织编码-项目编码(harbor Project地址)
+# 获取的组织编码-项目编码(harbor Project地址) 也可能是自定一harbor仓库名
 export GROUP_NAME={{ GROUP_NAME }}
+# 获取的组织编码-项目编码(harbor Project地址)
+export SONAR_GROUP_NAME={{ SONAR_GROUP_NAME }}
 # 获取的组织编码-项目编码(harbor Project地址)
 export SONAR_PROJECT_KEY={{ SONAR_PROJECT_KEY }}
 # SONARQUBE的地址
@@ -242,11 +244,15 @@ function saveImageMetadata() {
 
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
 # $1 maven制品库id
+# $2 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $3 sequence   猪齿鱼的CI流水线的步骤的序列号
 function saveJarMetadata() {
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
     -F "token=${Token}" \
     -F "nexus_repo_id=$1" \
+    -F "job_id=$2" \
+    -F "sequence=$3" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_name=${CI_JOB_NAME}" \
     -F "file=@pom.xml" \

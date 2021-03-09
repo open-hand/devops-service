@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.dto.repo;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 

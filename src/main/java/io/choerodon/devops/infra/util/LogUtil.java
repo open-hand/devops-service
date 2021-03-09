@@ -68,4 +68,8 @@ public class LogUtil {
     public static void loggerWarnObjectNullWithId(String objectType, Long objectId, Logger logger) {
         logger.warn("{} is null with id {}", objectType, objectId);
     }
+
+    public static String deleteNewLine(String value) {
+        return value.replace("\n", "");
+    }
 }

@@ -17,10 +17,15 @@ preJob:
     datasources:
       # 多数据源初始化
       platform:
-         url: jdbc:mysql://localhost:3307/?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
+         url: jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
          username: username
          password: password
          driver: com.mysql.jdbc.Driver
+      message:
+        url: jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
+        username: username
+        password: password
+        driver: com.mysql.jdbc.Driver
 
 ## 实例运行数量
 replicaCount: 1
@@ -101,6 +106,8 @@ env:
 
     # Choerodon 平台 api 地址
     SERVICES_GATEWAY_URL: http://api.example.com
+    # Choerodon 平台 前端 地址
+    SERVICES_FRONT_URL: http://app.example.com
 
     # 指定 cluster-agent 与本服务匹配的版本
     AGENT_VERSION: 0.22.1
@@ -113,13 +120,17 @@ env:
 
     # 忽略校验的接口路径
     CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
-
+    NEXUS_PROXY_URIPREFIX : /rdupm/v1/nexus/proxy
     ## Skywalking 配置参数
     # SKYWALKING_OPTS: >-
     #   -javaagent:/agent/skywalking-agent.jar
     #   -Dskywalking.agent.application_code=devops-service
     #   -Dskywalking.agent.sample_n_per_3_secs=6
     #   -Dskywalking.collector.backend_service=oap.skywalking:11800
+
+    # 百分比使用物理内存，预留一部分用于堆外内存以及外部程序
+    JAVA_OPTS: >-
+      -XX:MaxRAMPercentage=80.0
 
 ## Liveness 和 Readiness 探针相关配置
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/

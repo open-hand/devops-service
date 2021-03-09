@@ -11,6 +11,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
+import io.choerodon.devops.app.eventhandler.payload.MarketInstanceSagaPayload;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -28,7 +29,7 @@ public interface AppServiceInstanceService {
      * @param instanceId 实例id
      * @return 实例信息
      */
-    AppServiceInstanceInfoVO queryInfoById(Long instanceId);
+    AppServiceInstanceInfoVO queryInfoById(Long projectId, Long instanceId);
 
 
     /**
@@ -77,12 +78,30 @@ public interface AppServiceInstanceService {
     AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline);
 
     /**
+     * 创建或者更新应用市场实例
+     *
+     * @param projectId                       项目id
+     * @param marketInstanceCreationRequestVO 请求参数
+     * @return 实例信息
+     */
+    AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO);
+
+    /**
      * 部署应用,GitOps
      *
      * @param appServiceDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
     AppServiceInstanceVO createOrUpdateByGitOps(AppServiceDeployVO appServiceDeployVO, Long userId);
+
+
+    /**
+     * 部署应用,GitOps
+     *
+     * @param appServiceDeployVO 部署信息
+     * @return ApplicationInstanceVO
+     */
+    AppServiceInstanceVO createOrUpdateMarketInstanceByGitOps(MarketInstanceCreationRequestVO appServiceDeployVO, Long userId);
 
     /**
      * 查询运行中的实例
@@ -198,6 +217,15 @@ public interface AppServiceInstanceService {
     InstanceValueVO queryUpgradeValue(Long instanceId, Long versionId);
 
     /**
+     * 获取升级 Value
+     *
+     * @param instanceId           实例id
+     * @param marketDeployObjectId 市场发布对象id
+     * @return InstanceValueVO
+     */
+    InstanceValueVO queryUpgradeValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId);
+
+    /**
      * 获取部署时长报表
      *
      * @param projectId     项目id
@@ -307,6 +335,8 @@ public interface AppServiceInstanceService {
      * @param instanceSagaPayload
      */
     void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload);
+
+    void createMarketInstanceBySaga(MarketInstanceSagaPayload marketInstanceSagaPayload);
 
     /**
      * @param commandId

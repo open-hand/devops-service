@@ -33,4 +33,9 @@
             #{gitlabUserId}
         </foreach>
     </select>
+
+    <select id="selectAllUserIds" resultType="java.lang.Long">
+        SELECT iam_user_id
+        FROM devops_user
+    </select>
 </mapper>

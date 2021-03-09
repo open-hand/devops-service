@@ -24,7 +24,7 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
@@ -43,6 +43,7 @@ import io.choerodon.swagger.annotation.Permission;
 public class AppServiceInstanceController {
 
     private static final String ERROR_APP_INSTANCE_QUERY = "error.instance.query";
+    private static final String ERROR_APP_INSTANCE_GET = "error.instance.value.get";
 
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
@@ -70,9 +71,34 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        return new ResponseEntity<>(appServiceInstanceService.queryInfoById(instanceId), HttpStatus.OK);
+        return new ResponseEntity<>(appServiceInstanceService.queryInfoById(projectId, instanceId), HttpStatus.OK);
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("部署应用市场的服务")
+    @PostMapping("/market/instances")
+    public ResponseEntity<AppServiceInstanceVO> deployMarketService(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody @Valid MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+        marketInstanceCreationRequestVO.setCommandType(CommandType.CREATE.getType());
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("更新应用市场的服务实例")
+    @PutMapping("/market/instances/{instance_id}")
+    public ResponseEntity<AppServiceInstanceVO> updateMarketServiceInstance(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "实例id", required = true)
+            @PathVariable(value = "instance_id") Long instanceId,
+            @RequestBody MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+        marketInstanceCreationRequestVO.setCommandType(CommandType.UPDATE.getType());
+        marketInstanceCreationRequestVO.setInstanceId(instanceId);
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
+    }
 
     /**
      * 分页查询环境下实例信息（基本信息）
@@ -162,7 +188,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "instance_Id") Long instanceId) {
         return Optional.ofNullable(appServiceInstanceService.queryLastDeployValue(instanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.instance.value.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
 
 
@@ -328,7 +354,34 @@ public class AppServiceInstanceController {
             @PathVariable(value = "version_id") Long versionId) {
         return Optional.ofNullable(appServiceInstanceService.queryUpgradeValue(instanceId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.instance.value.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
+    }
+
+    /**
+     * 获取当前实例升级到特定版本的Values
+     *
+     * @param projectId            项目id
+     * @param instanceId           实例id
+     * @param marketDeployObjectId 版本Id
+     * @return InstanceValueVO
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取当前市场实例升级到特定版本的Values")
+    @GetMapping(value = "/{instance_id}/upgrade_value")
+    public ResponseEntity<InstanceValueVO> queryUpgradeValueForMarketInstance(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "instance_id") Long instanceId,
+            @Encrypt
+            @ApiParam(value = "市场发布包Id", required = true)
+            @RequestParam(value = "market_deploy_object_id") Long marketDeployObjectId) {
+        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValueForMarketInstance(projectId, instanceId, marketDeployObjectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
 
     /**

@@ -6,6 +6,9 @@ package io.choerodon.devops.infra.constant;
  * @description:
  */
 public class PrometheusConstants {
+    private PrometheusConstants(){
+
+    }
     public static final String SUCCESSED = "successed";
     public static final String OPERATING = "operating";
     public static final String WAITING = "waiting";

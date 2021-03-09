@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabCommitService {
@@ -20,6 +21,8 @@ public interface DevopsGitlabCommitService {
 
     Page<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, PageRequest pageable,
                                                Date startDate, Date endDate);
+
+    Page<CommitFormRecordVO> listUserRecentCommits(List<ProjectDTO> projectDTOList, PageRequest pageable, Date time);
 
     DevopsGitlabCommitDTO baseCreate(DevopsGitlabCommitDTO devopsGitlabCommitDTO);
 

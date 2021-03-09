@@ -61,6 +61,8 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private Long gitlabProjectId;
     private String viewId;
 
+
+
     public String getViewId() {
         return viewId;
     }
