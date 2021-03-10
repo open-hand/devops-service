@@ -124,4 +124,16 @@ public interface MarketServiceClient {
             @PathVariable("project_id") Long projectId,
             @Encrypt @PathVariable("market_service_id") Long marketServiceId,
             @Encrypt @RequestParam("deploy_object_id") Long deployObjectId);
+
+    /**
+     * {@link MarketServiceDeployObjectVO}
+     * 根据中间件名称(对应应用名称)、部署模式(对应市场服务名称)、版本(对应部署对象版本)查出对应的市场服务信息以及部署对象信息
+     */
+    @ApiOperation("根据中间件名称、部署模式、版本查处对应的市场服务信息以及部署对象信息")
+    @Permission(permissionWithin = true)
+    @GetMapping("/v1/middleware/service_release_info")
+    ResponseEntity<String> getMiddlewareServiceReleaseInfo(
+            @RequestParam("appName") String appName,
+            @RequestParam("mode") String mode,
+            @RequestParam("version") String version);
 }

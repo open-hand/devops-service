@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.infra.enums.AppServiceInstanceSource;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -82,6 +83,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
         marketInstanceCreationRequestVO.setCommandType(CommandType.CREATE.getType());
+        marketInstanceCreationRequestVO.setSource(AppServiceInstanceSource.MARKET.getValue());
         return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
     }
 
@@ -97,6 +99,7 @@ public class AppServiceInstanceController {
             @RequestBody MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
         marketInstanceCreationRequestVO.setCommandType(CommandType.UPDATE.getType());
         marketInstanceCreationRequestVO.setInstanceId(instanceId);
+        marketInstanceCreationRequestVO.setSource(AppServiceInstanceSource.MARKET.getValue());
         return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
     }
 

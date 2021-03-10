@@ -12,8 +12,11 @@ public enum AppServiceInstanceSource {
     /**
      * 应用市场的服务部署
      */
-    MARKET("market")
-    ;
+    MARKET("market"),
+    /**
+     * 市场应用的中间件
+     */
+    MIDDLEWARE("middleware");
     private final String value;
 
     AppServiceInstanceSource(String value) {
