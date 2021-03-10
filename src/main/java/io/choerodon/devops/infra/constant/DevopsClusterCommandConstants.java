@@ -130,9 +130,9 @@ public class DevopsClusterCommandConstants {
     public static final String DELETE_NODE_ROLE = "delete_node_role";
 
     /**
-     * devops中ansible文件保存目录模板
+     * devops中ansible相关执行脚本保存目录模板
      */
-    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/Users/lihao/ansible/%s";
+    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
 
     /**
      * 基准目录
