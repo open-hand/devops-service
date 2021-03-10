@@ -21,12 +21,11 @@ public class DevopsIngressValidator {
     //ingress name
     private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
     // ingress subdomain
-    private static final String SUB_PATH_PATTERN = "^\\/(\\S)*$";
+    private static final String SUB_PATH_PATTERN = "^/(\\S)*$";
     /**
-     * Kubernetes Host的正则
-     * // TODO 是不是支持 * 开头
+     * Host的正则
      */
-    private static final Pattern HOST_PATTERN = Pattern.compile("[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*");
+    private static final Pattern HOST_PATTERN = Pattern.compile("^(\\*\\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
 
     /**
      * 子域名正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
@@ -59,12 +58,16 @@ public class DevopsIngressValidator {
         }
     }
 
-    public static void checkVOForBatchDeployment(DevopsIngressVO devopsIngressVO) {
-        checkIngressName(devopsIngressVO.getName());
-        if (StringUtils.isEmpty(devopsIngressVO.getDomain())
-                || !HOST_PATTERN.matcher(devopsIngressVO.getDomain()).matches()) {
+    public static void checkHost(String host) {
+        if (StringUtils.isEmpty(host)
+                || !HOST_PATTERN.matcher(host).matches()) {
             throw new CommonException("error.ingress.host.format");
         }
+    }
+
+    public static void checkVOForBatchDeployment(DevopsIngressVO devopsIngressVO) {
+        checkIngressName(devopsIngressVO.getName());
+        checkHost(devopsIngressVO.getDomain());
         if (devopsIngressVO.getEnvId() == null) {
             throw new CommonException("error.env.id.null");
         }

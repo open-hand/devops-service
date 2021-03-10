@@ -118,6 +118,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         Set<Long> appServiceIds = new HashSet<>();
 
         DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
+        DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
             if (devopsServiceDTO.getAppServiceId() != null) {
@@ -253,6 +254,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
         DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
         DevopsIngressDTO oldDevopsIngressDTO = baseQuery(id);
         if (oldDevopsIngressDTO.getCertId() != null && devopsIngressVO.getCertId() == null) {
