@@ -572,7 +572,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
             throw new CommonException(e.getMessage());
         } finally {
-            stringRedisTemplate.delete(redisKey);
+            // 这里不直接删除redisKey而是设置过期时间的原因是删除该key后，前端就无法通过/check_progress获取节点检查进度了
+            stringRedisTemplate.expire(redisKey, 3, TimeUnit.MINUTES);
             stringRedisTemplate.delete(clusterInfoRedisKey);
             sshUtil.sshDisconnect(ssh);
         }
