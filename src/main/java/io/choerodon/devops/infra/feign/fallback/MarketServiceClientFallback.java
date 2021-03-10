@@ -64,4 +64,9 @@ public class MarketServiceClientFallback implements MarketServiceClient {
     public ResponseEntity<String> queryUpgradeMarketService(Long projectId, Long marketServiceId, Long deployObjectId) {
         throw new CommonException("error.query.market.upgrade.version");
     }
+
+    @Override
+    public ResponseEntity<String> getMiddlewareServiceReleaseInfo(String appName, String mode, String version) {
+        throw new CommonException("error.query.middleware.info");
+    }
 }

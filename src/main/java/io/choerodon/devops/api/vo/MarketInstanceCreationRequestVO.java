@@ -58,6 +58,11 @@ public class MarketInstanceCreationRequestVO {
     @ApiModelProperty(value = "chart版本", hidden = true)
     private String chartVersion;
 
+    /**
+     * 中间件或者普通的市场应用
+     */
+    private String source;
+
     @Nullable
     public Long getInstanceId() {
         return instanceId;
@@ -153,5 +158,13 @@ public class MarketInstanceCreationRequestVO {
 
     public void setChartVersion(String chartVersion) {
         this.chartVersion = chartVersion;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }
