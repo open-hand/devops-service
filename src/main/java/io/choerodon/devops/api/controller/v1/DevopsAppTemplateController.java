@@ -55,7 +55,7 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Boolean> checkNameAndCodeOnSite(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "code", required = false) String code,
-            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "type") String type,
             @RequestParam(value = "app_template_id", required = false) Long appTemplateId) {
         DevopsAppTemplateDTO appTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, 0L, ResourceLevel.SITE.value());
         appTemplateDTO.setName(name);
@@ -72,7 +72,7 @@ public class DevopsAppTemplateController {
         return Results.success();
     }
 
-    @ApiOperation("平台层分配权限给自己")
+    @ApiOperation("平台层启用模板")
     @GetMapping("/site/enable/{app_template_id}")
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> enableAppTemplateOnSite(
@@ -82,7 +82,7 @@ public class DevopsAppTemplateController {
     }
 
 
-    @ApiOperation("平台层分配权限给自己")
+    @ApiOperation("平台层停用模板")
     @GetMapping("/site/disable/{app_template_id}")
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> disableAppTemplateOnSite(
@@ -91,8 +91,8 @@ public class DevopsAppTemplateController {
         return Results.success();
     }
 
-    @ApiOperation("平台层分配权限给自己")
-    @DeleteMapping("/site/enable/{app_template_id}")
+    @ApiOperation("平台层删除模板")
+    @DeleteMapping("/site/{app_template_id}")
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> deleteAppTemplateOnSite(
             @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {

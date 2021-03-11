@@ -109,6 +109,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         devopsAppTemplateDTO.setSourceId(0L);
         devopsAppTemplateDTO.setSourceType(ResourceLevel.SITE.value());
         devopsAppTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.CREATING.getType());
+        devopsAppTemplateDTO.setType("C");
         if (devopsAppTemplateMapper.insertSelective(devopsAppTemplateDTO) != 1) {
             throw new CommonException("error.insert.app.template");
         }
@@ -301,8 +302,14 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     }
 
     @Override
+    @Transactional
     public void deleteAppTemplate(Long appTemplateId) {
+        DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
+        if (devopsAppTemplateDTO.getEnable()) {
+            throw new CommonException("app.template.is.enabled");
+        }
         devopsAppTemplateMapper.deleteByPrimaryKey(appTemplateId);
+        appTemplatePermissionMapper.delete(new DevopsAppTemplatePermissionDTO(appTemplateId, null));
     }
 
     private void updateStatus(Long appTemplateId, Boolean enable) {
