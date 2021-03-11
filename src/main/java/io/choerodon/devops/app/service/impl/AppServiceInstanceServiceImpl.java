@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
@@ -94,6 +95,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String NAMESPACE = "namespace";
     private static final String INSTANCE_NAME_TEMPLATE = "%s-%s";
     private static final Gson gson = new Gson();
+    /**
+     * 中间件chart仓库地址
+     * gateway(%s)+市场服务名(market)+下载地址(market/repo)
+     */
+    private static final String MIDDLEWARE_CHART_REPO_TEMPLATE = "%s/market/market/repo/";
+
+    @Value("${SERVICES_GATEWAY_URL}")
+    private String gateway;
 
     @Autowired
     private AgentCommandService agentCommandService;
@@ -864,10 +873,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
 
-            String chartVersion = "";
+            String chartVersion;
             if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceDeployVO.getSource())) {
                 chartVersion = appServiceVersionDTO.getMarketServiceVersion();
                 appServiceVersionDTO.setDevopsAppServiceVersion(appServiceVersionDTO.getMarketServiceVersion());
+                appServiceVersionDTO.setMarketChartRepository(String.format(MIDDLEWARE_CHART_REPO_TEMPLATE, gateway));
             } else {
                 chartVersion = appServiceVersionDTO.getDevopsAppServiceVersion();
             }
