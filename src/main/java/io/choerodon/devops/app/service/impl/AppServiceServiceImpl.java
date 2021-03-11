@@ -2007,9 +2007,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             InputStream inputStream = fileClient.downloadFile(0L, SOURCE_CODE_BUCKET_NAME, marketSourceCodeVO.getMarketSourceCodeUrl());
             //获取一个临时的工作目录
             FileUtil.createDirectory(applicationDir);
-            //下载源码到这个目录
+            //解压源码到applicationDir这个目录，源码的文件名字
             FileUtil.unTar(new GzipCompressorInputStream(inputStream), applicationDir);
-            Git git = gitUtil.initGit(new File(applicationDir));
+            //处理文件路径 applicationDir=application1615476300950
+            //源码目录  application1615476300950\eureka-demo-4221c90325bb438179c43c3886d6cc5a57250e43-4221c90325bb438179c43c3886d6cc5a57250e43  =》application1615476300950\newcode
+            //目前这个git目录应该是application1615476300950\new-code
+            //todo  处理chart里面的服务名字？
+            reFileName(applicationDir, appServiceDTO.getCode());
+            Git git = gitUtil.initGit(new File(applicationDir + File.separator + appServiceDTO.getCode()));
             //push 到远程仓库
             GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             gitUtil.push(git, applicationDir, "The template version:" + appServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
@@ -2018,6 +2023,22 @@ public class AppServiceServiceImpl implements AppServiceService {
             LOGGER.error("push source code git ", e);
         } finally {
             FileUtil.deleteFile(applicationDir);
+        }
+    }
+
+    private void reFileName(String applicationDir, String newCode) {
+        //找到applicationDir子文件夹
+        File file = new File(applicationDir);
+        File[] listFiles = file.listFiles();
+        if (listFiles == null || listFiles.length == 0) {
+            return;
+        }
+        //应该就只有一个源码的首目录
+        for (File listFile : listFiles) {
+            if (listFile.isDirectory()) {
+                //修改他的名字为new code
+                listFile.renameTo(new File(applicationDir + File.separator + newCode));
+            }
         }
     }
 
