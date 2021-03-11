@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsAppTemplateMapper">
+    <select id="pageAppTemplate" resultType="io.choerodon.devops.infra.dto.DevopsAppTemplateDTO">
+        SELECT
+            dat.*
+        FROM
+            devops_app_template dat
+        WHERE
+            dat.source_id = #{sourceId}
+          AND dat.source_type = #{sourceType}
+          <include refid="sqlparam"/>
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.code != null and searchParam.code.length > 0'>
+                AND dat.code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.type != null'>
+                AND dat.type =  #{searchParam.code, jdbcType=VARCHAR}
+            </if>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
+                AND
+                dat.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.enable != null'>
+                <if test='searchParam.enable == -1'>
+                    AND dat.status = 'F'
+                </if>
+                <if test="searchParam.enable == 0">
+                    AND da.enable = 0
+                </if>
+                <if test="searchParam.enable == 1">
+                    AND da.enable = 1
+                    AND da.status = 'S'
+                </if>
+                <if test="searchParam.enable == 2">
+                    AND da.enable = 1
+                    AND da.status = 'C'
+                </if>
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dat.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dat.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
+        </if>
+    </sql>
+</mapper>

@@ -27,7 +27,11 @@ import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 @EnableAsync
 public class DevopsServiceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(DevopsServiceApplication.class, args);
+        try {
+            SpringApplication.run(DevopsServiceApplication.class, args);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // 初始化redisTemplate
