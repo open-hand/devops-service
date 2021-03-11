@@ -9,7 +9,7 @@
     </schema-merge>
     <service name="hzero_platform" filename="hzero_platform" schema="hzero_platform" env="platform" description="平台服务"/>
     <service name="devops_service" filename="devops_service" schema="devops_service" description="devops服务"/>
-    <service name="hzero_message" filename="hzero_message" schema="hzero_message" env="message" description="消息服务"/>
+    <service name="hzero_message" filename="hzero_message" schema="hzero_message" env="platform" description="消息服务"/>
     <exclusion>
         hmsg_email_server.host,hmsg_email_server.port,hmsg_email_server.protocol,hmsg_email_server.username,hmsg_email_server.password_encrypted,hmsg_email_server.sender,hmsg_email_server.try_times
     </exclusion>

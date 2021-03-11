@@ -12,9 +12,9 @@ java -Dspring.datasource.url="jdbc:mysql://localhost:3306/?serverTimezone=CTT&us
  -Dspring.datasource.username=root \
  -Dspring.datasource.password=root \
  -Dspring.datasource.driver-class-name=com.mysql.jdbc.Driver \
-  -Dinstaller.datasources.message.url="jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true" \
- -Dinstaller.datasources.message.username=root \
- -Dinstaller.datasources.message.password=root \
+ -Dinstaller.datasources.platform.url="jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true" \
+ -Dinstaller.datasources.platform.username=root \
+ -Dinstaller.datasources.platform.password=root \
  -Ddata.init=true \
  -Dlogging.level.root=info \
  -Dinstaller.jarPath=target/app.jar \
