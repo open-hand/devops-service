@@ -45,6 +45,12 @@ public class DevopsAppTemplateDTO  extends AuditDomain {
         this.sourceType = sourceType;
     }
 
+    public DevopsAppTemplateDTO(Long sourceId, String sourceType,  String code) {
+        this.sourceId = sourceId;
+        this.sourceType = sourceType;
+        this.code = code;
+    }
+
     public Long getId() {
         return id;
     }

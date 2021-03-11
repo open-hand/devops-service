@@ -14,8 +14,21 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsAppTemplateService {
     Page<DevopsAppTemplateDTO> pageAppTemplate(Long sourceId, String sourceType, String params, PageRequest pageRequest);
 
-    void createTemplateOnSite(Long sourceId, String sourceType, DevopsAppTemplateCreateVO appTemplateCreateVO);
+    void createTemplate(Long sourceId, String sourceType, DevopsAppTemplateCreateVO appTemplateCreateVO);
 
-    Boolean checkNameAndCode(DevopsAppTemplateDTO appTemplateDTO);
+    void createTemplateSagaTask(DevopsAppTemplateCreateVO appTemplateCreateVO);
+
+    Boolean checkNameAndCode(DevopsAppTemplateDTO appTemplateDTO, String type);
+
+    void modifyName(Long appTemplateId, String name, Long sourceId, String sourceType);
+
+    void addPermission(Long appTemplateId);
+
+    void enableAppTemplate(Long appTemplateId);
+
+    void disableAppTemplate(Long appTemplateId);
+
+    void deleteAppTemplate(Long appTemplateId);
+
 
 }

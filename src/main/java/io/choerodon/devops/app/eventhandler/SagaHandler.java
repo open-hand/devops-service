@@ -73,6 +73,8 @@ public class SagaHandler {
     private ChartService chartService;
     @Autowired
     private GitlabHandleService gitlabHandleService;
+    @Autowired
+    private DevopsAppTemplateService devopsAppTemplateService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -372,6 +374,22 @@ public class SagaHandler {
     public String deleteChartTags(String payload) {
         CustomResourceVO customResourceVO = gson.fromJson(payload, CustomResourceVO.class);
         chartService.batchDeleteChartVersion(customResourceVO.getChartTagVOS());
+        return payload;
+    }
+
+    /**
+     * 处理删除chart version
+     *
+     * @param payload
+     * @return
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+            description = "创建应用模板",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+            maxRetryCount = 5, seq = 10)
+    public String createAppTemplate(String payload) {
+        DevopsAppTemplateCreateVO devopsAppTemplateCreateVO = gson.fromJson(payload, DevopsAppTemplateCreateVO.class);
+        devopsAppTemplateService.createTemplateSagaTask(devopsAppTemplateCreateVO);
         return payload;
     }
 
