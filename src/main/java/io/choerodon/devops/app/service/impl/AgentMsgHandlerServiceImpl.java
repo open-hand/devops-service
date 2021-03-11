@@ -35,7 +35,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.*;
-import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
@@ -341,7 +340,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             // 市场实例通过effect Command查，因为同一个市场服务的多个发布对象之间，
             // chartVersion不一定发生了变化，所以需要这个来确定具体是部署哪个发布对象，
             // TODO 普通实例也应该可以通过生效的command来查版本id
-            if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())) {
+            if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())||AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
                 if (effectCommandId != null) {
                     DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(effectCommandId);
                     appServiceInstanceDTO.setAppServiceVersionId(devopsEnvCommandDTO.getObjectVersionId());
