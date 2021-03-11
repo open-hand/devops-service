@@ -219,7 +219,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceInfoVO.setCurrentVersionAvailable(false);
         }
         if (versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()) != null) {
-            appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
+            // 如果是中间件，直接以应用版本作为生效版本
+            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())){
+                appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getMarketServiceVersion());
+            }else {
+                appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
+            }
         }
 
         List<MarketServiceDeployObjectVO> upgradeAble = marketServiceClientOperator.queryUpgradeDeployObjects(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId(), appServiceInstanceInfoDTO.getCommandVersionId());
