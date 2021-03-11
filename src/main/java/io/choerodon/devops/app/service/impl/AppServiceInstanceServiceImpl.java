@@ -101,7 +101,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      */
     private static final String MIDDLEWARE_CHART_REPO_TEMPLATE = "%s/market/market/repo/";
 
-    @Value("${SERVICES_GATEWAY_URL}")
+    @Value("${services.gateway.url}")
     private String gateway;
 
     @Autowired
@@ -196,7 +196,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getClusterId()));
 
         // 为市场实例填充版本信息
-        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
+        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoDTO.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
             fillInformationForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         }
 
@@ -247,7 +247,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 收集ids
         pageInfo.getContent().forEach(ins -> {
-            if (AppServiceInstanceSource.MARKET.getValue().equals(ins.getSource())) {
+            if (AppServiceInstanceSource.MARKET.getValue().equals(ins.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(ins.getSource())) {
                 marketInstanceCommandVersionIds.add(ins.getCommandVersionId());
             }
             appServiceIds.add(ins.getAppServiceId());
@@ -270,7 +270,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
 
                     // 为应用市场实例填充版本信息
-                    if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoVO.getSource())) {
+                    if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoVO.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoVO.getSource())) {
                         if (deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()) != null) {
                             MarketServiceDeployObjectVO deployObject = deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId());
                             appServiceInstanceInfoVO.setCommandVersion(deployObject.getDevopsAppServiceVersion());

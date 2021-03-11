@@ -14,7 +14,7 @@ public enum AppServiceInstanceSource {
      */
     MARKET("market"),
     /**
-     * 市场应用的中间件
+     * 市场应用的中间件,中间件在devops中的逻辑和市场应用大多都类似
      */
     MIDDLEWARE("middleware");
     private final String value;
