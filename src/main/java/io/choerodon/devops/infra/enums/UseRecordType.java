@@ -8,7 +8,11 @@ public enum UseRecordType {
     /**
      * 部署
      */
-    DEPLOY("deploy");
+    DEPLOY("deploy"),
+    /**
+     *
+     */
+    IMPORT("import");
 
     private final String value;
 
