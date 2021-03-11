@@ -792,7 +792,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-//        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         //校验values的格式
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
@@ -819,7 +819,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
 
         // 获取市场部署实例时授权secret的code
-        String secretCode = "";
+        String secretCode = null;
         if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceDeployVO.getSource())) {
             secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersionDTO);
         }
@@ -864,9 +864,16 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
 
+            String chartVersion = "";
+            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceDeployVO.getSource())) {
+                chartVersion = appServiceVersionDTO.getMarketServiceVersion();
+                appServiceVersionDTO.setDevopsAppServiceVersion(appServiceVersionDTO.getMarketServiceVersion());
+            } else {
+                chartVersion = appServiceVersionDTO.getDevopsAppServiceVersion();
+            }
 
             // 插入部署记录
-            saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceVersionDTO.getDevopsAppServiceVersion());
+            saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(appServiceVersionDTO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
@@ -1028,6 +1035,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getMarketInstanceCreationRequestVO().getValues(),
                     instanceSagaPayload.getMarketInstanceCreationRequestVO().getMarketDeployObjectId(),
                     instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getMarketInstanceCreationRequestVO().getSource(),
                     instanceSagaPayload.getDevopsEnvironmentDTO()));
 
             resourceConvertToYamlHandler.operationEnvGitlabFile(
@@ -2004,6 +2012,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                                                                      Long commandId, String appServiceCode,
                                                                      String version, String deployValue,
                                                                      Long marketServiceVersionId, String secretName,
+                                                                     String source,
                                                                      DevopsEnvironmentDTO devopsEnvironmentDTO) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
@@ -2013,9 +2022,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         c7nHelmRelease.getSpec().setChartName(appServiceCode);
         c7nHelmRelease.getSpec().setChartVersion(version);
         c7nHelmRelease.getSpec().setCommandId(commandId);
-        c7nHelmRelease.getSpec().setSource(AppServiceInstanceSource.MARKET.getValue());
+        c7nHelmRelease.getSpec().setSource(source);
         c7nHelmRelease.getSpec().setMarketDeployObjectId(marketServiceVersionId);
-        if (secretName != null) {
+        // 密钥名称不为空且来源是MARKET
+        if (!StringUtils.isEmpty(secretName) && AppServiceInstanceSource.MARKET.getValue().equals(source)) {
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
         }
 
