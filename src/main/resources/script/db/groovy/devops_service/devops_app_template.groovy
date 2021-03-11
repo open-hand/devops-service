@@ -27,5 +27,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
         addUniqueConstraint(tableName: 'devops_app_template',
                 constraintName: 'uk_source_id_code', columnNames: 'source_id,source_type,code')
     }
+    micro-service-front
 
 }

@@ -49,4 +49,12 @@ public class DevopsAppTemplatePermissionDTO extends AuditDomain {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+
+    public DevopsAppTemplatePermissionDTO() {
+    }
+
+    public DevopsAppTemplatePermissionDTO(Long appTemplateId, Long userId) {
+        this.appTemplateId = appTemplateId;
+        this.userId = userId;
+    }
 }

@@ -332,6 +332,7 @@
                         <nonFilteredFileExtension>yml</nonFilteredFileExtension>
                         <nonFilteredFileExtension>json</nonFilteredFileExtension>
                         <nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>zip</nonFilteredFileExtension>
                     </nonFilteredFileExtensions>
                 </configuration>
             </plugin>

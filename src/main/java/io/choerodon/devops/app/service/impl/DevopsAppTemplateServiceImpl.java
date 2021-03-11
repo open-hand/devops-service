@@ -1,17 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipInputStream;
 
-import javax.xml.soap.Detail;
-
-import org.apache.commons.collections.CollectionUtils;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,28 +15,38 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ResourceUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsAppTemplateCreateVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsAppTemplateService;
 import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
+import io.choerodon.devops.infra.dto.DevopsAppTemplateDTO;
+import io.choerodon.devops.infra.dto.DevopsAppTemplatePermissionDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.enums.DevopsAppTemplateCreateTypeEnum;
 import io.choerodon.devops.infra.enums.DevopsAppTemplateStatusEnum;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsAppTemplateMapper;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.mapper.DevopsAppTemplatePermissionMapper;
+import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -71,6 +75,12 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     private AppServiceService appServiceService;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private TransactionalProducer transactionalProducer;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsAppTemplatePermissionMapper appTemplatePermissionMapper;
 
     @Override
     public Page<DevopsAppTemplateDTO> pageAppTemplate(Long sourceId, String sourceType, String params, PageRequest pageRequest) {
@@ -82,32 +92,88 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
 
     @Override
     @Transactional
-    public void createTemplateOnSite(Long sourceId, String sourceType, DevopsAppTemplateCreateVO appTemplateCreateVO) {
-        // 获取平台层 gitlab项目
-        GroupDTO group = new GroupDTO();
-        String groupName = String.format(GITLAB_GROUP_NAME, "平台层");
-        String groupPath = String.format(GITLAB_GROUP_CODE, "site");
-        group.setName(groupName);
-        group.setPath(groupPath);
-//
-        LOGGER.info("groupPath:{},adminId:{}", group.getPath(), GitUserNameUtil.getAdminId());
-        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), GitUserNameUtil.getAdminId());
-        if (groupDTO == null) {
-            groupDTO = gitlabServiceClientOperator.createGroup(group, GitUserNameUtil.getAdminId());
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+            description = "Devops创建应用模板", inputSchema = "{}")
+    public void createTemplate(Long sourceId, String sourceType, DevopsAppTemplateCreateVO appTemplateCreateVO) {
+        DevopsAppTemplateDTO queryDTO = new DevopsAppTemplateDTO(sourceId, sourceType, appTemplateCreateVO.getCode());
+        queryDTO.setName(appTemplateCreateVO.getName());
+        if (!checkNameAndCode(queryDTO, "name")) {
+            throw new CommonException("app.template.name.already.exists");
         }
-//        // 创建模板 状态为创建中
+        if (!checkNameAndCode(queryDTO, "code")) {
+            throw new CommonException("app.template.code.already.exists");
+        }
+        // 创建模板 状态为创建中
         DevopsAppTemplateDTO devopsAppTemplateDTO = new DevopsAppTemplateDTO();
         BeanUtils.copyProperties(appTemplateCreateVO, devopsAppTemplateDTO);
         devopsAppTemplateDTO.setSourceId(0L);
         devopsAppTemplateDTO.setSourceType(ResourceLevel.SITE.value());
         devopsAppTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.CREATING.getType());
-        devopsAppTemplateMapper.insertSelective(devopsAppTemplateDTO);
-//        // 创建应用服务
+        if (devopsAppTemplateMapper.insertSelective(devopsAppTemplateDTO) != 1) {
+            throw new CommonException("error.insert.app.template");
+        }
+
+        appTemplateCreateVO.setAppTemplateId(devopsAppTemplateDTO.getId());
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withRefType("devopsAppTemplate")
+                        .withRefId(devopsAppTemplateDTO.getId().toString())
+                        .withSagaCode(SagaTaskCodeConstants.DEVOPS_CREATE_APP_TEMPLATE)
+                        .withLevel(ResourceLevel.valueOf(sourceType))
+                        .withSourceId(sourceId)
+                        .withPayloadAndSerialize(appTemplateCreateVO),
+                builder -> {
+                });
+
+    }
+
+    @Override
+    @Transactional
+    public void createTemplateSagaTask(DevopsAppTemplateCreateVO appTemplateCreateVO) {
+        DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateCreateVO.getAppTemplateId());
+        if (devopsAppTemplateDTO == null) {
+            throw new CommonException("error.get.app.template");
+        }
+        // 获取平台层 gitlab group
+        GroupDTO group = new GroupDTO();
+        String groupPath;
+        String groupName;
+        ResourceLevel level = ResourceLevel.valueOf(devopsAppTemplateDTO.getSourceType());
+        switch (level) {
+            case SITE: {
+                groupName = String.format(GITLAB_GROUP_NAME, "平台层");
+                groupPath = String.format(GITLAB_GROUP_CODE, "site");
+                break;
+            }
+            case ORGANIZATION: {
+                Tenant tenant = baseServiceClientOperator.queryOrganizationById(devopsAppTemplateDTO.getSourceId());
+                groupName = String.format(GITLAB_GROUP_NAME, tenant.getTenantName());
+                groupPath = String.format(GITLAB_GROUP_CODE, tenant.getTenantNum());
+                break;
+            }
+            case PROJECT: {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsAppTemplateDTO.getId());
+                Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                groupPath = String.format("%s-%s", tenant.getTenantNum(), projectDTO.getCode());
+                groupName = String.format("%s-%s", tenant.getTenantName(), projectDTO.getName());
+                break;
+            }
+            default:
+                throw new CommonException("error.get.resource.level");
+        }
+
+        group.setName(groupName);
+        group.setPath(groupPath);
+        LOGGER.info("groupPath:{},adminId:{}", group.getPath(), GitUserNameUtil.getAdminId());
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), GitUserNameUtil.getAdminId());
+        if (groupDTO == null) {
+            groupDTO = gitlabServiceClientOperator.createGroup(group, GitUserNameUtil.getAdminId());
+        }
+        //创建gitlab 应用 为创建分配developer角色
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 groupPath,
                 devopsAppTemplateDTO.getCode(),
                 GitUserNameUtil.getAdminId());
-        //创建gitlab 应用 为创建分配developer角色
         if (gitlabProjectDTO.getId() == null) {
             gitlabProjectDTO = gitlabServiceClientOperator.createProject(
                     groupDTO.getId(),
@@ -117,23 +183,33 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         UserAttrDTO createByUser = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         gitlabServiceClientOperator.createProjectMember(gitlabProjectDTO.getId(), new MemberDTO(TypeUtil.objToInteger(createByUser.getGitlabUserId()), 30, ""));
         // 导入模板
-        ClassPathResource cpr = new ClassPathResource("/app-template/choerodon-golang-template");
-        File file = null;
-        try {
-            file = cpr.getFile();
-        } catch (IOException e) {
-            throw new CommonException(e.getMessage());
-        }
-
-//        InputStream inputStream = this.getClass().getResourceAsStream("/app-template/choerodon-golang-template.zip");
-        String workingDirectory = gitUtil.getWorkingDirectory("app-template-import" + File.separator + "site" + File.separator + devopsAppTemplateDTO.getCode());
+        String workingDirectory = gitUtil.getWorkingDirectory("app-template-import" + File.separator + groupPath + File.separator + devopsAppTemplateDTO.getCode());
         File localPathFile = new File(workingDirectory);
-        FileUtil.copyDir(file, localPathFile);
-        //获取admin的token
-        replaceParams(appTemplateCreateVO.getCode(), groupPath, workingDirectory, appTemplateCreateVO.getSelectedTemplateCode(), groupPath, false);
-        Git git = gitUtil.initGit(new File(workingDirectory));
         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(GitUserNameUtil.getAdminId()));
         String pushToken = appServiceService.getToken(gitlabProjectDTO.getId(), workingDirectory, userAttrDTO);
+        Git git;
+        if (appTemplateCreateVO.getCreateType().equals(DevopsAppTemplateCreateTypeEnum.TEMPLATE.getType())) {
+            DevopsAppTemplateDTO templateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateCreateVO.getSelectedTemplateId());
+            if (templateDTO.getType().equals("P")) {
+                ClassPathResource cpr = new ClassPathResource(String.format("/app-template/%s", templateDTO.getCode()));
+                File file = null;
+                try {
+                    file = cpr.getFile();
+                    cpr.getInputStream();
+                } catch (IOException e) {
+                    throw new CommonException(e.getMessage());
+                }
+                FileUtil.copyDir(file, localPathFile);
+                replaceParams(appTemplateCreateVO.getCode(), groupPath, workingDirectory, templateDTO.getCode(), groupPath, false);
+                git = gitUtil.initGit(new File(workingDirectory));
+            } else {
+                git = gitUtil.cloneRepository(workingDirectory, templateDTO.getGitlabUrl(), pushToken);
+            }
+
+        } else {
+            git = gitUtil.cloneRepository(workingDirectory, appTemplateCreateVO.getRepoUrl(), appTemplateCreateVO.getToken());
+        }
+        //获取admin的token
         //push 到远程仓库
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String repositoryUrl = repoUrl + groupPath + "/" + appTemplateCreateVO.getCode() + GIT;
@@ -144,7 +220,9 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         devopsAppTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.SUCCESS.getType());
         devopsAppTemplateDTO.setGitlabProjectId(TypeUtil.objToLong(gitlabProjectDTO.getId()));
         devopsAppTemplateDTO.setGitlabUrl(repositoryUrl);
-        devopsAppTemplateMapper.updateByPrimaryKey(devopsAppTemplateDTO);
+        if (devopsAppTemplateMapper.updateByPrimaryKey(devopsAppTemplateDTO) != 1) {
+            throw new CommonException("error.update.app.template");
+        }
     }
 
     public void replaceParams(String newServiceCode,
@@ -169,9 +247,15 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         }
     }
 
-    public Boolean checkNameAndCode(DevopsAppTemplateDTO appTemplateDTO) {
+    @Override
+    public Boolean checkNameAndCode(DevopsAppTemplateDTO appTemplateDTO, String type) {
         Long appTemplateId = appTemplateDTO.getId();
         appTemplateDTO.setId(null);
+        if (type.equals("name")) {
+            appTemplateDTO.setCode(null);
+        } else {
+            appTemplateDTO.setName(null);
+        }
         DevopsAppTemplateDTO resultDTO = devopsAppTemplateMapper.selectOne(appTemplateDTO);
         if (resultDTO == null) {
             return true;
@@ -181,6 +265,51 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
             } else {
                 return appTemplateId.equals(resultDTO.getId());
             }
+        }
+    }
+
+    @Override
+    public void modifyName(Long appTemplateId, String name, Long sourceId, String sourceType) {
+        DevopsAppTemplateDTO devopsAppTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, sourceId, sourceType);
+        devopsAppTemplateDTO.setName(name);
+        if (!checkNameAndCode(devopsAppTemplateDTO, "name")) {
+            throw new CommonException("app.template.name.already.exists");
+        }
+        DevopsAppTemplateDTO resultDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
+        resultDTO.setName(name);
+        devopsAppTemplateMapper.updateByPrimaryKeySelective(resultDTO);
+    }
+
+    @Override
+    public void addPermission(Long appTemplateId) {
+        DevopsAppTemplatePermissionDTO permissionDTO = new DevopsAppTemplatePermissionDTO(appTemplateId, DetailsHelper.getUserDetails().getUserId());
+        if (appTemplatePermissionMapper.selectOne(permissionDTO) == null) {
+            if (appTemplatePermissionMapper.insert(permissionDTO) != 1) {
+                throw new CommonException("error.insert.app.template.permission");
+            }
+        }
+    }
+
+    @Override
+    public void enableAppTemplate(Long appTemplateId) {
+        updateStatus(appTemplateId, true);
+    }
+
+    @Override
+    public void disableAppTemplate(Long appTemplateId) {
+        updateStatus(appTemplateId, false);
+    }
+
+    @Override
+    public void deleteAppTemplate(Long appTemplateId) {
+        devopsAppTemplateMapper.deleteByPrimaryKey(appTemplateId);
+    }
+
+    private void updateStatus(Long appTemplateId, Boolean enable) {
+        DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
+        devopsAppTemplateDTO.setEnable(enable);
+        if (devopsAppTemplateMapper.updateByPrimaryKey(devopsAppTemplateDTO) != 1) {
+            throw new CommonException("error.update.app.template");
         }
     }
 }

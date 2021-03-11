@@ -10,7 +10,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.AppServiceRepVO;
 import io.choerodon.devops.api.vo.DevopsAppTemplateCreateVO;
 import io.choerodon.devops.app.service.DevopsAppTemplateService;
 import io.choerodon.devops.infra.dto.DevopsAppTemplateDTO;
@@ -46,7 +45,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> createTemplateOnSite(
             @RequestBody DevopsAppTemplateCreateVO appTemplateCreateVO) {
-        devopsAppTemplateService.createTemplateOnSite(0L, ResourceLevel.SITE.value(), appTemplateCreateVO);
+        devopsAppTemplateService.createTemplate(0L, ResourceLevel.SITE.value(), appTemplateCreateVO);
         return Results.success();
     }
 
@@ -56,10 +55,50 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Boolean> checkNameAndCodeOnSite(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "app_template_id", required = false) Long appTemplateId) {
         DevopsAppTemplateDTO appTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, 0L, ResourceLevel.SITE.value());
         appTemplateDTO.setName(name);
         appTemplateDTO.setCode(code);
-        return Results.success(devopsAppTemplateService.checkNameAndCode(appTemplateDTO));
+        return Results.success(devopsAppTemplateService.checkNameAndCode(appTemplateDTO, type));
     }
+
+    @ApiOperation("平台层分配权限给自己")
+    @GetMapping("/site/add_permission/{app_template_id}")
+    @Permission(level = ResourceLevel.SITE)
+    public ResponseEntity<Void> addPermissionOnSite(
+            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+        devopsAppTemplateService.addPermission(appTemplateId);
+        return Results.success();
+    }
+
+    @ApiOperation("平台层分配权限给自己")
+    @GetMapping("/site/enable/{app_template_id}")
+    @Permission(level = ResourceLevel.SITE)
+    public ResponseEntity<Void> enableAppTemplateOnSite(
+            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+        devopsAppTemplateService.enableAppTemplate(appTemplateId);
+        return Results.success();
+    }
+
+
+    @ApiOperation("平台层分配权限给自己")
+    @GetMapping("/site/disable/{app_template_id}")
+    @Permission(level = ResourceLevel.SITE)
+    public ResponseEntity<Void> disableAppTemplateOnSite(
+            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+        devopsAppTemplateService.disableAppTemplate(appTemplateId);
+        return Results.success();
+    }
+
+    @ApiOperation("平台层分配权限给自己")
+    @DeleteMapping("/site/enable/{app_template_id}")
+    @Permission(level = ResourceLevel.SITE)
+    public ResponseEntity<Void> deleteAppTemplateOnSite(
+            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+        devopsAppTemplateService.deleteAppTemplate(appTemplateId);
+        return Results.success();
+    }
+
+
 }
