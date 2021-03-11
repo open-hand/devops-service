@@ -25,6 +25,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -1979,7 +1980,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
-        AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(appServiceImportPayload.getVersionId());
         // 获取push代码所需的access token
         String applicationDir = APPLICATION + System.currentTimeMillis();
         String pushToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
@@ -2001,16 +2001,18 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (StringUtils.isEmpty(marketSourceCodeVO.getMarketSourceCodeUrl())) {
             throw new CommonException("source code url is null");
         }
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(marketSourceCodeVO.getDevopsAppServiceVersionId());
+
         try {
             InputStream inputStream = fileClient.downloadFile(0L, SOURCE_CODE_BUCKET_NAME, marketSourceCodeVO.getMarketSourceCodeUrl());
             //获取一个临时的工作目录
             FileUtil.createDirectory(applicationDir);
             //下载源码到这个目录
-            FileUtil.unTar(inputStream, applicationDir);
+            FileUtil.unTar(new GzipCompressorInputStream(inputStream), applicationDir);
             Git git = gitUtil.initGit(new File(applicationDir));
             //push 到远程仓库
             GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-            gitUtil.push(git, applicationDir, "The template version:" + oldAppServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
+            gitUtil.push(git, applicationDir, "The template version:" + appServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
             LOGGER.info(">>>>>>>>>>>>The address of the remote git is:{}>>>>>>>>>>>>>", repositoryUrl);
         } catch (Exception e) {
             LOGGER.error("push source code git ", e);
