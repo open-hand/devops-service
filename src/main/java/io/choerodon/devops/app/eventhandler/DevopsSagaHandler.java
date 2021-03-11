@@ -24,6 +24,8 @@ import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -36,6 +38,8 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -110,6 +114,8 @@ public class DevopsSagaHandler {
     private PipelineRecordService pipelineRecordService;
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private MarketUseRecordService marketUseRecordService;
 
     /**
      * devops创建环境
@@ -492,6 +498,10 @@ public class DevopsSagaHandler {
         AppServiceImportPayload appServiceImportPayload = gson.fromJson(data, AppServiceImportPayload.class);
         try {
             appServiceService.importMarketAppServiceGitlab(appServiceImportPayload);
+            //插入市场使用记录
+            DeploySourceVO deploySourceVO = new DeploySourceVO();
+            deploySourceVO.setDeployObjectId(appServiceImportPayload.getDeployObjectId());
+            marketUseRecordService.saveMarketUseRecord(UseRecordType.IMPORT.getValue(), appServiceImportPayload.getProjectId(), deploySourceVO, null);
         } catch (Exception e) {
             DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
             devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
