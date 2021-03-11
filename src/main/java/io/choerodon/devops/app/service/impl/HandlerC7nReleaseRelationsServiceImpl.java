@@ -94,16 +94,16 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         });
 
         // 新增instance
-        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> !AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> !AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) && !AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         // 新增市场实例
-        addMarketInstance(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource())||AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        addMarketInstance(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         // 更新instance
-        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> !AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> !AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) && !AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         // 更新市场实例
-        updateMarketInstance(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource())||AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        updateMarketInstance(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         //删除instance,和文件对象关联关系
         beforeC7nRelease.forEach(releaseName -> {
