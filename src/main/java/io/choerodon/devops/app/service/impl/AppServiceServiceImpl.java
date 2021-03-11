@@ -63,6 +63,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
@@ -1992,8 +1993,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             LOGGER.info("deploy object is null ,id is :{}", deployObjectId);
             return;
         }
+        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.get(0);
+        if (StringUtils.isEmpty(marketServiceDeployObjectVO.getMarketSourceCode())) {
+            throw new CommonException("source code vo is null:{}", JsonHelper.marshalByJackson(marketServiceDeployObjectVO));
+        }
+        MarketSourceCodeVO marketSourceCodeVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketSourceCode(), MarketSourceCodeVO.class);
+        if (StringUtils.isEmpty(marketSourceCodeVO.getMarketSourceCodeUrl())) {
+            throw new CommonException("source code url is null");
+        }
         try {
-            InputStream inputStream = fileClient.downloadFile(0L, SOURCE_CODE_BUCKET_NAME, marketServiceDeployObjectVOS.get(0).getMarketSourceCodeUrl());
+            InputStream inputStream = fileClient.downloadFile(0L, SOURCE_CODE_BUCKET_NAME, marketSourceCodeVO.getMarketSourceCodeUrl());
             //获取一个临时的工作目录
             FileUtil.createDirectory(applicationDir);
             //下载源码到这个目录

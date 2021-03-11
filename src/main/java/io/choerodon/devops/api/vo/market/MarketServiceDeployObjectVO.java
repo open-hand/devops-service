@@ -36,8 +36,8 @@ public class MarketServiceDeployObjectVO {
     @ApiModelProperty("发布jar的来源配置/可为空，如果不为空，则表示发布jar包")
     private String jarSource;
 
-    @ApiModelProperty("存在市场中的源码包的地址/可为空")
-    private String marketSourceCodeUrl;
+    @ApiModelProperty("存在市场中的源码包的json/可为空")
+    private String marketSourceCode;
 
     @ApiModelProperty("存在市场中的镜像的地址/可为空")
     private String marketDockerImageUrl;
@@ -224,12 +224,13 @@ public class MarketServiceDeployObjectVO {
         this.jarSource = jarSource;
     }
 
-    public String getMarketSourceCodeUrl() {
-        return marketSourceCodeUrl;
+
+    public String getMarketSourceCode() {
+        return marketSourceCode;
     }
 
-    public void setMarketSourceCodeUrl(String marketSourceCodeUrl) {
-        this.marketSourceCodeUrl = marketSourceCodeUrl;
+    public void setMarketSourceCode(String marketSourceCode) {
+        this.marketSourceCode = marketSourceCode;
     }
 
     public String getMarketDockerImageUrl() {
