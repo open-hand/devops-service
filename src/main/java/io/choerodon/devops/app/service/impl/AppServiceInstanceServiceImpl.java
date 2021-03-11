@@ -278,7 +278,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoVO.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoVO.getSource())) {
                         if (deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()) != null) {
                             MarketServiceDeployObjectVO deployObject = deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId());
-                            appServiceInstanceInfoVO.setCommandVersion(deployObject.getDevopsAppServiceVersion());
+                            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoVO.getSource())) {
+                                appServiceInstanceInfoVO.setCommandVersion(deployObject.getMarketServiceVersion());
+                            }else {
+                                appServiceInstanceInfoVO.setCommandVersion(deployObject.getDevopsAppServiceVersion());
+                            }
                             appServiceInstanceInfoVO.setAppServiceName(deployObject.getMarketServiceName());
                         }
                     }
