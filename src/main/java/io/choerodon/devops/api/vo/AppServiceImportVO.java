@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author zmf
@@ -18,6 +19,7 @@ public class AppServiceImportVO extends AppServiceReqVO {
     /**
      * 不是原本写死的直接从github获取的模板
      */
+    @Encrypt
     @ApiModelProperty("平台层或者组织层定义的模板Id")
     private Long devopsAppTemplateId;
 

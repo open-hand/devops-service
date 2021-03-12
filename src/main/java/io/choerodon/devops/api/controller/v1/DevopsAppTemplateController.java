@@ -109,7 +109,7 @@ public class DevopsAppTemplateController {
     }
 
     @ApiOperation("平台层查询已有应用模板")
-    @PostMapping("/site/list")
+    @GetMapping("/site/list")
     @Permission(level = ResourceLevel.SITE)
     @CustomPageRequest
     public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnSite(
@@ -201,7 +201,7 @@ public class DevopsAppTemplateController {
     }
 
     @ApiOperation("组织层查询已有应用模板")
-    @PostMapping("/organization/{organization_id}/list")
+    @GetMapping("/organization/{organization_id}/list")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @CustomPageRequest
     public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnTenante(
@@ -213,9 +213,8 @@ public class DevopsAppTemplateController {
     }
 
     @ApiOperation("项目层查询已有应用模板")
-    @PostMapping("/project/{project_id}/list")
+    @GetMapping("/project/{project_id}/list")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @CustomPageRequest
     public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnProject(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam("选择查询平台层模板/组织层模板：site/organization")
