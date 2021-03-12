@@ -465,7 +465,7 @@ public interface AppServiceService {
                        String oldGroupName,
                        Boolean isGetWorkingDirectory);
 
-    String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId);
+    String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId,String source);
 
     void deleteAppServiceSage(Long projectId, Long appServiceId);
 

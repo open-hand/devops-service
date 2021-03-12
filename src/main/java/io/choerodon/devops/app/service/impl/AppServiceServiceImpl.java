@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -2479,10 +2478,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId) {
+    public String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId, String source) {
         String type = null;
         if (appServiceProjectId == null) {
-            return AppServiceType.MARKET_SERVICE.getType();
+            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(source)) {
+                return AppServiceType.MIDDLEWARE_SERVICE.getType();
+            } else {
+                return AppServiceType.MARKET_SERVICE.getType();
+            }
         } else if (!appServiceProjectId.equals(projectId)) {
             type = AppServiceType.SHARE_SERVICE.getType();
         } else {

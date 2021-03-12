@@ -271,7 +271,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         pageInfo.getContent().forEach(appServiceInstanceInfoVO -> {
                     AppServiceDTO appServiceDTO = appServices.get(appServiceInstanceInfoVO.getAppServiceId());
-                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO == null ? null : appServiceDTO.getProjectId()));
+                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO == null ? null : appServiceDTO.getProjectId(),appServiceInstanceInfoVO.getSource()));
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
 
                     // 为应用市场实例填充版本信息
