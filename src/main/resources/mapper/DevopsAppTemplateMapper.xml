@@ -12,6 +12,22 @@
           <include refid="sqlparam"/>
     </select>
 
+    <select id="listAppTemplate" resultType="io.choerodon.devops.infra.dto.DevopsAppTemplateDTO">
+        SELECT
+            dat.id,dat.code,dat.name
+        FROM
+            devops_app_template dat
+        WHERE
+            dat.source_id = #{sourceId}
+            AND dat.source_type = #{sourceType}
+        <if test='param != null and param!=""'>
+            AND
+            (dat.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dat.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </select>
+
     <sql id="sqlparam">
         <if test='searchParam != null'>
             <if test='searchParam.code != null and searchParam.code.length > 0'>

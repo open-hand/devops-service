@@ -22,6 +22,8 @@ import com.jcraft.jsch.KeyPair;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -741,6 +743,39 @@ public class FileUtil {
             throw new CommonException("error.file.rename");
         }
     }
+
+    public static void unpack(File zipFile, File descDir) {
+        try (ZipArchiveInputStream inputStream = getZipFile(zipFile)) {
+            if (!descDir.exists()) {
+                descDir.mkdirs();
+            }
+            ZipArchiveEntry entry = null;
+            while ((entry = inputStream.getNextZipEntry()) != null) {
+                if (entry.isDirectory()) {
+                    File directory = new File(descDir, entry.getName());
+                    directory.mkdirs();
+                } else {
+                    OutputStream os = null;
+                    try {
+                        os = new BufferedOutputStream(new FileOutputStream(new File(descDir, entry.getName())));
+                        //输出文件路径信息
+                        System.out.println("解压文件的当前路径为:" + descDir + entry.getName());
+                        IOUtils.copy(inputStream, os);
+                    } finally {
+                        IOUtils.closeQuietly(os);
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static ZipArchiveInputStream getZipFile(File zipFile) throws Exception {
+        return new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(zipFile)));
+    }
+
 
     /**
      * 解压文件到指定目录

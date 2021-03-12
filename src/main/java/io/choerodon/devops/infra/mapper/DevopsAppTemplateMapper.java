@@ -19,4 +19,8 @@ public interface DevopsAppTemplateMapper extends BaseMapper<DevopsAppTemplateDTO
                                                @Param("sourceType") String sourceType,
                                                @Param("params") List<String> params,
                                                @Param("searchParam") Map<String, Object> searchParam);
+
+    List<DevopsAppTemplateDTO> listAppTemplate(@Param("sourceId") Long sourceId,
+                                               @Param("sourceType") String sourceType,
+                                               @Param("param") String param);
 }
