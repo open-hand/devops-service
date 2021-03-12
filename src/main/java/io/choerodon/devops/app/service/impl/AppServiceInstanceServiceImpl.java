@@ -1506,9 +1506,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceInstanceValidator.checkName(code);
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
-//        if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
-//            throw new CommonException("error.app.instance.name.already.exist");
-//        }
+        if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
+            throw new CommonException("error.app.instance.name.already.exist");
+        }
     }
 
 
