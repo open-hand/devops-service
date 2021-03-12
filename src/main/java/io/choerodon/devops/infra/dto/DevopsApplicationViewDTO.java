@@ -10,6 +10,7 @@ public class DevopsApplicationViewDTO {
     private String name;
     private List<AppServiceInstanceViewDTO> instances;
     private Long projectId;
+    private String source;
 
     public Long getId() {
         return id;
@@ -41,5 +42,13 @@ public class DevopsApplicationViewDTO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

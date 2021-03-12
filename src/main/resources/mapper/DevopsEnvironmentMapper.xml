@@ -12,6 +12,7 @@
             <id property="id" column="app_service_id"/>
             <result property="name" column="app_name"/>
             <result property="projectId" column="app_project_id"/>
+            <result property="source" column="source"/>
             <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceViewDTO"
                         notNullColumn="ins_id">
                 <id property="id" column="ins_id"/>
@@ -135,6 +136,7 @@
                any_value(ins.id)                                                                as ins_id,
                any_value(ins.code)                                                              as ins_code,
                any_value(ins.status)                                                            as ins_status,
+               any_value(ins.source)                                                            as source,
                any_value(env.cluster_id)                                                        as cluster_id,
                SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
                SUM(CASE
@@ -166,6 +168,7 @@
                 any_value(ins.id)                                                                as ins_id,
                 any_value(ins.code)                                                              as ins_code,
                 any_value(ins.status)                                                            as ins_status,
+                any_value(ins.source)                                                            as source,
                 any_value(env.cluster_id)                                                        as cluster_id,
                 SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
                 SUM(CASE
@@ -199,6 +202,7 @@
                        any_value(ins.id)                                                                as ins_id,
                        any_value(ins.code)                                                              as ins_code,
                        any_value(ins.status)                                                            as ins_status,
+                       any_value(ins.source)                                                            as source,
                        any_value(env.cluster_id)                                                        as cluster_id,
                        SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
                        SUM(CASE

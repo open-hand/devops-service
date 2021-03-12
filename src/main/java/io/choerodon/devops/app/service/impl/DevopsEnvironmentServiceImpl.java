@@ -540,7 +540,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 if (appVO.getName() == null) {
                     marketServiceIds.add(appVO.getId());
                 }
-                appVO.setType(appServiceService.checkAppServiceType(projectId, app.getProjectId()));
+                appVO.setType(appServiceService.checkAppServiceType(projectId, app.getProjectId(),app.getSource()));
                 appVO.setInstances(app.getInstances().stream().map(ins -> {
                     DevopsAppServiceInstanceViewVO insVO = new DevopsAppServiceInstanceViewVO();
                     BeanUtils.copyProperties(ins, insVO);
