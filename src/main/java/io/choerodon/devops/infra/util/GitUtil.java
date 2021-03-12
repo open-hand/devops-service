@@ -355,6 +355,23 @@ public class GitUtil {
         return git;
     }
 
+    public Git cloneRepository(File localPathFile, String remoteUrl, String accessToken) {
+        Git git;
+        deleteDirectory(localPathFile);
+        try {
+            Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setCloneAllBranches(true)
+                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
+                    .setDirectory(localPathFile)
+                    .call();
+            git = Git.open(new File(localPathFile + GIT_SUFFIX));
+        } catch (GitAPIException | IOException e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
+        }
+        return git;
+    }
+
     /**
      * 克隆公开仓库或者根据access token克隆代码克隆特定分支
      *

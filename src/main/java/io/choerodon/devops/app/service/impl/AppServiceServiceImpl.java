@@ -25,6 +25,7 @@ import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -39,6 +40,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -225,6 +227,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private FileClient fileClient;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private DevopsAppTemplateMapper devopsAppTemplateMapper;
+    @Autowired
+    private DevopsAppTemplateService devopsAppTemplateService;
 
     static {
         InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
@@ -901,6 +907,44 @@ public class AppServiceServiceImpl implements AppServiceService {
             releaseResources(applicationWorkDir, newGit);
             // 保存devops_branch信息
             initBranch(devOpsAppServiceImportPayload, appServiceDTO, GitOpsConstants.MASTER);
+        } else if (devOpsAppServiceImportPayload.getDevopsAppTemplateId() != null) {
+            String applicationWorkPath = gitUtil.getWorkingDirectory(applicationDir);
+            File applicationWorkDir = new File(applicationWorkPath);
+            Git git;
+            DevopsAppTemplateDTO appTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(devOpsAppServiceImportPayload.getDevopsAppTemplateId());
+            if (appTemplateDTO.getType().equals("P")) {
+                ClassPathResource cpr = new ClassPathResource(String.format("/app-template/%s", appTemplateDTO.getCode()) + ".zip");
+                File zipFile = null;
+                try {
+                    InputStream inputStream = cpr.getInputStream();
+                    zipFile = new File(applicationWorkPath + ".zip");
+                    FileUtils.copyInputStreamToFile(cpr.getInputStream(), zipFile);
+                    inputStream.close();
+                    FileUtil.unpack(zipFile, applicationWorkDir);
+                } catch (IOException e) {
+                    throw new CommonException(e.getMessage());
+                } finally {
+                    FileUtil.deleteFile(zipFile);
+                }
+                git = gitUtil.initGit(applicationWorkDir);
+            } else {
+                UserAttrDTO gitlabAdminDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(GitUserNameUtil.getAdminId()));
+                String pullToken = gitlabAdminDTO.getGitlabToken();
+                git = gitUtil.cloneRepository(applicationWorkDir, appTemplateDTO.getGitlabUrl(), pullToken);
+            }
+            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationDir, appTemplateDTO.getCode(), devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
+                    + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
+            String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
+            try {
+                gitUtil.commitAndPushForMaster(git, appServiceDTO.getRepoUrl(), "init app from template", accessToken);
+            } catch (Exception e) {
+                releaseResources(applicationWorkDir, git);
+                throw e;
+            }
+            // 保存devops_branch信息
+            initBranch(devOpsAppServiceImportPayload, appServiceDTO, GitOpsConstants.MASTER);
         } else {
             Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
             // 设置Application对应的gitlab项目的仓库地址
@@ -1186,6 +1230,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppImportServicePayload.setIamProjectId(projectId);
         devOpsAppImportServicePayload.setRepositoryUrl(appServiceImportVO.getRepositoryUrl());
         devOpsAppImportServicePayload.setAccessToken(appServiceImportVO.getAccessToken());
+        devOpsAppImportServicePayload.setDevopsAppTemplateId(appServiceImportVO.getDevopsAppTemplateId());
         devOpsAppImportServicePayload.setTemplate(isTemplate);
 
         producer.applyAndReturn(

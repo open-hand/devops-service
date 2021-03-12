@@ -11,6 +11,10 @@ public class DevOpsAppImportServicePayload extends DevOpsAppServicePayload {
     private GitPlatformType platformType;
     private Long gitlabUserId;
     private Boolean template;
+    /**
+     * 平台层或者组织层定义的模板Id
+     */
+    private Long devopsAppTemplateId;
 
     public String getRepositoryUrl() {
         return repositoryUrl;
@@ -50,5 +54,13 @@ public class DevOpsAppImportServicePayload extends DevOpsAppServicePayload {
 
     public void setTemplate(Boolean template) {
         this.template = template;
+    }
+
+    public Long getDevopsAppTemplateId() {
+        return devopsAppTemplateId;
+    }
+
+    public void setDevopsAppTemplateId(Long devopsAppTemplateId) {
+        this.devopsAppTemplateId = devopsAppTemplateId;
     }
 }

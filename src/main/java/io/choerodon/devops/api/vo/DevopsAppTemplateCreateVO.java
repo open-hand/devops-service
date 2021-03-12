@@ -23,7 +23,7 @@ public class DevopsAppTemplateCreateVO {
     private String createType;
     @ApiModelProperty("被选择的应用模板Id")
     @Encrypt
-    private String selectedTemplateId;
+    private Long selectedTemplateId;
     @ApiModelProperty("gitlab/github url")
     private String repoUrl;
     @ApiModelProperty("私有token")
@@ -54,11 +54,11 @@ public class DevopsAppTemplateCreateVO {
         this.createType = createType;
     }
 
-    public String getSelectedTemplateId() {
+    public Long getSelectedTemplateId() {
         return selectedTemplateId;
     }
 
-    public void setSelectedTemplateId(String selectedTemplateId) {
+    public void setSelectedTemplateId(Long selectedTemplateId) {
         this.selectedTemplateId = selectedTemplateId;
     }
 
