@@ -23,7 +23,7 @@ public enum AppServiceTemplate {
     private static final String GO_PATH = "choerodon-golang-template.git?version=0.22.0";
     private static final String CHOERODON_MOCHA_PATH = "choerodon-mocha-template.git?version=0.14.0";
     private static final String CHOERODON_TESTNG_TEMPLATE_PATH = "choerodon-testng-template.git?version=0.20.0";
-    private static final String CHOERODON_TESTNG_SELENIUM_TEMPLATE_PATH = "choerodon-testng-selenium-template?version=0.20.0";
+    private static final String CHOERODON_TESTNG_SELENIUM_TEMPLATE_PATH = "choerodon-testng-selenium-template.git?version=0.20.0";
 
     private String templateName;
 
