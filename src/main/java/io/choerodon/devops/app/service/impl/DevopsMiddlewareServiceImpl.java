@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.MarketInstanceCreationRequestVO;
@@ -17,10 +16,11 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 @Service
 public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
-    private static final String PVC_TEMPLATE = "# 如果是 pvc,优先级最高\n" +
-            "persistence:\n" +
-            "  existingClaim: %s";
+    private static final String STAND_ALONE_CONFIG = "cluster:\n" +
+            "  enabled: false\n";
     private static final String MIDDLEWARE_REDIS_NAME = "Redis";
+
+    private static final String STANDALONE_MODE = "standalone";
 
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
@@ -45,14 +45,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareRedisDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
 
 
-        // 构造value
-        // TODO 优化values构造逻辑
-        String values = middlewareRedisDeployVO.getValues();
-        if (!StringUtils.isEmpty(middlewareRedisDeployVO.getPvcName())) {
-            values = values + String.format(PVC_TEMPLATE, middlewareRedisDeployVO.getPvcName());
+        // 如果是单机模式，需要添加 禁用集群模式配置
+        if (STANDALONE_MODE.equals(middlewareRedisDeployVO.getMode())) {
+            middlewareRedisDeployVO.setValues(STAND_ALONE_CONFIG + middlewareRedisDeployVO.getValues());
         }
-
-        middlewareRedisDeployVO.setValues(values);
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareRedisDeployVO, MarketInstanceCreationRequestVO.class);
 
