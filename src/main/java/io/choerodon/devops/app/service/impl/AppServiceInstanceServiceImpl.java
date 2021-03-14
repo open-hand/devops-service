@@ -882,6 +882,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
 
+            // 兼容中间件
             String chartVersion;
             if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceDeployVO.getSource())) {
                 chartVersion = appServiceVersionDTO.getMarketServiceVersion();
@@ -1342,8 +1343,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())) {
             secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersion);
         }
+
+        // 兼容中间件
+        String chartVersion;
+        if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
+            chartVersion = appServiceVersion.getMarketServiceVersion();
+            appServiceVersion.setDevopsAppServiceVersion(appServiceVersion.getMarketServiceVersion());
+            appServiceVersion.setMarketChartRepository(String.format(MIDDLEWARE_CHART_REPO_TEMPLATE, gateway));
+        } else {
+            chartVersion = appServiceVersion.getDevopsAppServiceVersion();
+        }
         //插入部署记录
-        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceVersion.getDevopsAppServiceVersion());
+        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(),chartVersion);
 
 
         MarketInstanceCreationRequestVO appServiceDeployVO = new MarketInstanceCreationRequestVO();
@@ -1352,6 +1363,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceDeployVO.setValues(value);
         appServiceDeployVO.setMarketDeployObjectId(appServiceVersion.getId());
         appServiceDeployVO.setCommandType(CommandType.UPDATE.getType());
+        appServiceDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
         MarketInstanceSagaPayload instanceSagaPayload = new MarketInstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
         instanceSagaPayload.setMarketServiceDeployObjectVO(appServiceVersion);
         instanceSagaPayload.setMarketInstanceCreationRequestVO(appServiceDeployVO);
