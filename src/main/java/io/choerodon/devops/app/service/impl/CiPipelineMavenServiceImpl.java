@@ -103,8 +103,6 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             } catch (Exception e) {
                 throw new DevopsCiInvalidException("error.failed.to.read.pom.file");
             }
-            logger.info(">>>>>>>>>>0.ciPipelineMavenDTO:{}>>>>>>>>>>>>>>", JsonHelper.marshalByJackson(ciPipelineMavenDTO));
-
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
             ciPipelineMavenDTO.setNexusRepoId(Objects.requireNonNull(nexusRepoId));
             ciPipelineMavenDTO.setJobName(Objects.requireNonNull(jobName));
@@ -172,8 +170,9 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         try {
             // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
             // 另外这里不用nexus的list API是因为这个API返回的是乱序的
+            //metadata文件下载地址:io/choerodon/demo-test05/0.1.0-SNAPSHOT/maven-metadata.xml
             NexusClient nexusClient2 = RetrofitHandler.getScalarNexusClient(nexusUrl, userName, password);
-            Response<String> metadataXml = nexusClient2.componentMetadata(repositoryName, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH), ciPipelineMavenDTO.getVersion()).execute();
+            Response<String> metadataXml = nexusClient2.componentMetadata(repositoryName, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion()).execute();
             // 如果请求返回404，maven-metadata.xml不存在，说明没有多个版本
             if (metadataXml.code() == HttpStatus.NOT_FOUND.value()) {
                 return ciPipelineMavenDTO.getVersion();
