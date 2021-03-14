@@ -1338,8 +1338,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
         //获取授权secret
-        String secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersion);
-
+        String secretCode = null;
+        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())) {
+            secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersion);
+        }
         //插入部署记录
         saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), appServiceVersion.getDevopsAppServiceVersion());
 
