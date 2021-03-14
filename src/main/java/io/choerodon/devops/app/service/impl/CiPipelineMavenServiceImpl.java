@@ -103,7 +103,8 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             } catch (Exception e) {
                 throw new DevopsCiInvalidException("error.failed.to.read.pom.file");
             }
-            logger.debug(">>>>>>>>>>0.ciPipelineMavenDTO:{}>>>>>>>>>>>>>>", JsonHelper.marshalByJackson(ciPipelineMavenDTO));
+            logger.info(">>>>>>>>>>0.ciPipelineMavenDTO:{}>>>>>>>>>>>>>>", JsonHelper.marshalByJackson(ciPipelineMavenDTO));
+
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
             ciPipelineMavenDTO.setNexusRepoId(Objects.requireNonNull(nexusRepoId));
             ciPipelineMavenDTO.setJobName(Objects.requireNonNull(jobName));
