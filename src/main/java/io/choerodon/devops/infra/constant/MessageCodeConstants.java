@@ -10,20 +10,41 @@ public class MessageCodeConstants {
     private MessageCodeConstants() {
     }
 
+    /**
+     * 创建应用服务失败
+     */
     public static final String APP_SERVICE_CREATION_FAILED = "APPSERVICECREATIONFAILURE";
+    /**
+     * 启用应用服务
+     */
     public static final String APP_SERVICE_ENABLED = "ENABLEAPPSERVICE";
+    /**
+     * 应用服务停用
+     */
     public static final String APP_SERVICE_DISABLE = "DISABLEAPPSERVICE";
     public static final String AUDIT_MERGE_REQUEST = "AUDITMERGEREQUEST";
+    /**
+     * 证书创建失败
+     */
     public static final String CERTIFICATION_CREATION_FAILURE = "CERTIFICATIONFAILURE";
     public static final String GITLAB_CONTINUOUS_DELIVERY_FAILURE = "GITLABCONTINUOUSDELIVERYFAILURE";
+    /**
+     * 创建域名失败
+     */
     public static final String INGRESS_CREATION_FAILURE = "INGRESSFAILURE";
     public static final String INSTANCE_CREATION_FAILURE = "INSTANCEFAILURE";
     public static final String MERGE_REQUEST_CLOSED = "MERGEREQUESTCLOSED";
     public static final String MERGE_REQUEST_PASSED = "MERGEREQUESTPASSED";
+    /**
+     * 网络创建失败
+     */
     public static final String SERVICE_CREATION_FAILURE = "SERVICEFAILURE";
     public static final String RESOURCE_DELETE_CONFIRMATION = "RESOURCEDELETECONFIRMATION";
     public static final String GITLAB_PWD = "GITLABPASSWORD";
     public static final String INVITE_USER = "INVITEUSER";
+    /**
+     * 删除应用服务
+     */
     public static final String DELETE_APP_SERVICE = "DELETEAPPSERVICE";
     /**
      * 流水线执行失败
