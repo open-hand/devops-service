@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.PRIVATE_KEY_SAVE_PATH_TEMPLATE;
 import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.SAVE_PRIVATE_KEY_TEMPLATE;
+import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
 import org.slf4j.Logger;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
+import io.choerodon.devops.api.validator.MiddlewareConfigurationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
@@ -23,6 +27,7 @@ import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
@@ -33,18 +38,14 @@ import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
-import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.SshUtil;
+import io.choerodon.devops.infra.mapper.DevopsMiddlewareMapper;
+import io.choerodon.devops.infra.util.*;
 
 @Service
 public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String STAND_ALONE_CONFIG = "cluster:\n" +
             "  enabled: false\n";
-    private static final String MIDDLEWARE_REDIS_NAME = "Redis";
-
     private static final String STANDALONE_MODE = "standalone";
 
     private static final String SENTINEL_MODE = "sentinel";
@@ -63,6 +64,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsMiddlewareMapper devopsMiddlewareMapper;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -76,7 +79,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     public AppServiceInstanceVO envDeployForRedis(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MIDDLEWARE_REDIS_NAME, middlewareRedisEnvDeployVO.getMode(), middlewareRedisEnvDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisEnvDeployVO.getMode(), middlewareRedisEnvDeployVO.getVersion());
 
         middlewareRedisEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareRedisEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
@@ -94,6 +97,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     @Override
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
+        checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
+        MiddlewareConfigurationValidator.validateRedisConfiguration(middlewareRedisHostDeployVO.getConfiguration());
         if (SENTINEL_MODE.equals(middlewareRedisHostDeployVO.getMode())) {
             CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
         }
@@ -105,7 +110,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MIDDLEWARE_REDIS_NAME, middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion());
 
 
         LOGGER.info("========================================");
@@ -149,9 +154,17 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareRedisHostDeployVO.getVersion(),
                     null,
                     deploySourceVO);
+
+            // 保存中间件信息
+            saveMiddlewareInfo(projectId,
+                    middlewareRedisHostDeployVO.getName(),
+                    REDIS.getType(),
+                    middlewareRedisHostDeployVO.getMode(),
+                    middlewareRedisHostDeployVO.getVersion(),
+                    devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
+                    JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
             LOGGER.info("========================================");
             LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), projectId);
-
         } catch (Exception e) {
             devopsDeployRecordService.saveRecord(
                     projectId,
@@ -172,7 +185,21 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
     }
 
-    private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, Object> Configuration) {
+    @Override
+    public void saveMiddlewareInfo(Long projectId, String name, String type, String mode, String version, String hostIds, String configuration) {
+        DevopsMiddlewareDTO devopsMiddlewareDTO = new DevopsMiddlewareDTO(
+                projectId,
+                name,
+                type,
+                mode,
+                version,
+                hostIds,
+                configuration
+        );
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "error.middleware.insert");
+    }
+
+    private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, String> Configuration) {
 
     }
 
@@ -191,5 +218,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private void executeInstallRedis(SSHClient sshClient, String mode) {
 
+    }
+
+    private void checkMiddlewareName(Long projectId, String name, String type) {
+        AppServiceInstanceValidator.checkName(name);
+        devopsMiddlewareMapper.checkNameUnique(projectId, name, type);
     }
 }

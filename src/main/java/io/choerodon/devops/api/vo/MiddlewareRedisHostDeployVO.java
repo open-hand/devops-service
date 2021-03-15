@@ -8,7 +8,7 @@ public class MiddlewareRedisHostDeployVO {
     private String mode;
     private String name;
     private String version;
-    private Map<String, Object> configuration;
+    private Map<String, String> configuration;
 
     public Set<Long> getHostIds() {
         return hostIds;
@@ -42,11 +42,11 @@ public class MiddlewareRedisHostDeployVO {
         this.version = version;
     }
 
-    public Map<String, Object> getConfiguration() {
+    public Map<String, String> getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(Map<String, Object> configuration) {
+    public void setConfiguration(Map<String, String> configuration) {
         this.configuration = configuration;
     }
 }
