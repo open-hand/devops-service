@@ -1245,11 +1245,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
                         param.put("link", frontUrl + link);
                         param.put("link_web", link);
-                        param.put("startTime",simpleDateFormat.format(apiTestTaskRecordVO.getStartTime()));
-                        param.put("costTime",TimeUtil.getStageTimeInStr(apiTestTaskRecordVO.getStartTime(),apiTestTaskRecordVO.getEndTime()));
-                        param.put("successCount",String.valueOf(apiTestTaskRecordVO.getSuccessCount()));
-                        param.put("failedCount",String.valueOf(apiTestTaskRecordVO.getFailCount()));
-                        param.put("caseCount",String.valueOf(apiTestTaskRecordVO.getSuccessCount()+apiTestTaskRecordVO.getFailCount()));
+                        param.put("startTime", simpleDateFormat.format(apiTestTaskRecordVO.getStartTime()));
+                        param.put("costTime", TimeUtil.getStageTimeInStr(apiTestTaskRecordVO.getStartTime(), apiTestTaskRecordVO.getEndTime()));
+                        param.put("successCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount()));
+                        param.put("failedCount", String.valueOf(apiTestTaskRecordVO.getFailCount()));
+                        param.put("caseCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount() + apiTestTaskRecordVO.getFailCount()));
                         sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
                     } else {
                         // 高于阈值

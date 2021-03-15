@@ -76,11 +76,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String LOGIN_NAME = "loginName";
     private static final String USER_NAME = "userName";
 
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
+
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
-    @Value("${services.front.url}")
-    private String frontUrl;
 
     @Autowired
     @Lazy
@@ -805,6 +807,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
         params.put("pipelineIdRecordId", relDTO.getId().toString());
         addSpecifierList(type, projectDTO.getId(), users);
+        params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
+                projectDTO.getOrganizationId(), relDTO.getPipelineId(), relDTO.getId().toString()));
         sendNotices(type, users, constructCiParamsForPipeline(ciCdPipelineDTO.getName(), projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
