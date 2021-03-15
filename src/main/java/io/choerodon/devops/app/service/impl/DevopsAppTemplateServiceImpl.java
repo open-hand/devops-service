@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -328,6 +329,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateAppTemplateStatus(Long appTemplateId) {
         DevopsAppTemplateDTO appTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
         appTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.FAILED.getType());
