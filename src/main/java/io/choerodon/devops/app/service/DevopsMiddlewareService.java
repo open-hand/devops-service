@@ -8,4 +8,6 @@ public interface DevopsMiddlewareService {
     AppServiceInstanceVO envDeployForRedis(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO);
 
     void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO);
+
+    void saveMiddlewareInfo(Long projectId, String name, String type, String mode, String version, String hostIds, String configuration);
 }
