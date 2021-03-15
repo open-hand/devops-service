@@ -393,7 +393,7 @@ public class SagaHandler {
             devopsAppTemplateService.createTemplateSagaTask(devopsAppTemplateCreateVO);
         } catch (Exception e) {
             devopsAppTemplateService.updateAppTemplateStatus(devopsAppTemplateCreateVO.getAppTemplateId());
-            LOGGER.error(e.getMessage(), e);
+            throw e;
         }
         return payload;
     }
