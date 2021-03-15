@@ -56,14 +56,13 @@ public class DevopsAppTemplateController {
     @GetMapping("/site/check_name_or_code")
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Boolean> checkNameAndCodeOnSite(
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "value") String value,
             @RequestParam(value = "type") String type,
             @Encrypt
             @RequestParam(value = "app_template_id", required = false) Long appTemplateId) {
         DevopsAppTemplateDTO appTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, 0L, ResourceLevel.SITE.value());
-        appTemplateDTO.setName(name);
-        appTemplateDTO.setCode(code);
+        appTemplateDTO.setName(value);
+        appTemplateDTO.setCode(value);
         return Results.success(devopsAppTemplateService.checkNameAndCode(appTemplateDTO, type));
     }
 
@@ -151,15 +150,14 @@ public class DevopsAppTemplateController {
     @GetMapping("/organization/{organization_id}/check_name_or_code")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Boolean> checkNameAndCodeOnTenant(
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "value") String value,
             @RequestParam(value = "type") String type,
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
             @RequestParam(value = "app_template_id", required = false) Long appTemplateId) {
         DevopsAppTemplateDTO appTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, organizationId, ResourceLevel.ORGANIZATION.value());
-        appTemplateDTO.setName(name);
-        appTemplateDTO.setCode(code);
+        appTemplateDTO.setName(value);
+        appTemplateDTO.setCode(value);
         return Results.success(devopsAppTemplateService.checkNameAndCode(appTemplateDTO, type));
     }
 
