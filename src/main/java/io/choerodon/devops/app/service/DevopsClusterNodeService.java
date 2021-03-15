@@ -136,15 +136,6 @@ public interface DevopsClusterNodeService {
     void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) throws IOException;
 
     /**
-     * 上传docker安装shell
-     *
-     * @param ssh
-     * @param suffix
-     * @throws Exception
-     */
-    void uploadPreKubeadmnHaShell(SSHClient ssh, String suffix) throws Exception;
-
-    /**
      * 更新集群安装操作结果的方法
      */
     void update();

@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
-import io.choerodon.devops.api.vo.MiddlewareRedisDeployVO;
+import io.choerodon.devops.api.vo.MiddlewareRedisEnvDeployVO;
+import io.choerodon.devops.api.vo.MiddlewareRedisHostDeployVO;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
 import io.choerodon.devops.infra.enums.AppServiceInstanceSource;
 import io.choerodon.devops.infra.enums.CommandType;
@@ -27,10 +28,10 @@ public class DevopsMiddlewareController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/redis/deploy/env")
     public ResponseEntity<AppServiceInstanceVO> deployForEnvironment(@PathVariable("project_id") Long projectId,
-                                                                     @RequestBody MiddlewareRedisDeployVO middlewareRedisDeployVO) {
-        middlewareRedisDeployVO.setCommandType(CommandType.CREATE.getType());
-        middlewareRedisDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
-        return ResponseEntity.ok(middlewareService.deployForRedis(projectId, middlewareRedisDeployVO));
+                                                                     @RequestBody MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+        middlewareRedisEnvDeployVO.setCommandType(CommandType.CREATE.getType());
+        middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
+        return ResponseEntity.ok(middlewareService.envDeployForRedis(projectId, middlewareRedisEnvDeployVO));
     }
 
 
@@ -40,7 +41,9 @@ public class DevopsMiddlewareController {
     @ApiOperation(value = "主机部署")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/redis/deploy/host")
-    public void deployForHost() {
+    public ResponseEntity<Void> deployForHost(@PathVariable("project_id")Long projectId, @RequestBody MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
+        middlewareService.hostDeployForRedis(projectId,middlewareRedisHostDeployVO);
+        return ResponseEntity.noContent().build();
         // TODO 完成主机部署逻辑
     }
 }

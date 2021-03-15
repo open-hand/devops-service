@@ -1,7 +1,14 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.ANSIBLE_CONFIG_BASE_DIR_TEMPLATE;
+import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.PRE_KUBEADM_HA_SH;
+import static org.hzero.core.util.StringPool.SLASH;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,6 +29,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ExecResultInfoVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
+import io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
@@ -120,17 +128,17 @@ public class SshUtil {
             ssh.authPassword(hostConnectionVO.getUsername(), hostConnectionVO.getPassword());
         } else {
             String str;
-            if(HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
-                str  = StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey();
+            if (HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource())) {
+                str = StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey();
             } else {
-                str  = Base64Util.getBase64DecodedString(StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey());
+                str = Base64Util.getBase64DecodedString(StringUtils.isEmpty(hostConnectionVO.getAccountKey()) ? hostConnectionVO.getPassword() : hostConnectionVO.getAccountKey());
             }
             KeyProvider keyProvider = ssh.loadKeys(str, null, null);
             ssh.authPublickey(hostConnectionVO.getUsername(), keyProvider);
         }
     }
 
-    public void sshStopJar(SSHClient ssh, String jarName,String workingPath, StringBuilder log) throws IOException {
+    public void sshStopJar(SSHClient ssh, String jarName, String workingPath, StringBuilder log) throws IOException {
         if (StringUtils.isEmpty(workingPath)) {
             workingPath = ".";
         } else {
@@ -199,7 +207,7 @@ public class SshUtil {
             String javaJarExec = values.replace("${jar}", jarPathAndName);
 
             cmdStr.append(javaJarExec);
-            StringBuilder finalCmdStr=new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
+            StringBuilder finalCmdStr = new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
             LOGGER.info(finalCmdStr.toString());
 
             final Session.Command cmd = session.exec(finalCmdStr.toString());
@@ -445,6 +453,31 @@ public class SshUtil {
                 break;
             }
         }
+    }
+
+    public void uploadPreProcessShell(SSHClient ssh, String suffix,String type) throws IOException {
+        InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/pre-process.sh");
+        Map<String,String> map=new HashMap<>();
+        switch(type){
+            case "kube":
+                map.put("{{ git-clone }}","if [ -d \"/tmp/kubeadm-ha\" ]; then\n" +
+                        "    rm -rf /tmp/kubeadm-ha\n" +
+                        "fi\n" +
+                        "git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha");
+                break;
+            case "middleware":
+                map.put("{{ git-clone }}","if [ -d \"/tmp/middleware\" ]; then\n" +
+                        "    rm -rf /tmp/middleware\n" +
+                        "fi\n" +
+                        "git clone -b choerodon https://gitee.com/open-hand/middleware.git /tmp/middleware");
+                break;
+            default:
+                throw new CommonException("error.unsupported.preprocess.type",type);
+        }
+        String preProcessShell=   FileUtil.replaceReturnString(shellInputStream, map);
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "pre-process.sh";
+        FileUtil.saveDataToFile(filePath, preProcessShell);
+        this.uploadFile(ssh, filePath, PRE_KUBEADM_HA_SH);
     }
 
     /**

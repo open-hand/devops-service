@@ -157,7 +157,7 @@ public class DevopsClusterCommandConstants {
     /**
      * pre-kubeadm-ha.sh文件路径
      */
-    public static final String PRE_KUBEADM_HA_SH = BASE_DIR + StringPool.SLASH + "pre-kubeadm-ha.sh";
+    public static final String PRE_KUBEADM_HA_SH = BASE_DIR + StringPool.SLASH + "pre-process.sh";
 
     /**
      * 安装k8s的shell文件
