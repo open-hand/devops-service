@@ -173,5 +173,15 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceDTO> listAppServiceByIdsWithParam(@Param("appServiceIds") List<Long> appServiceIds, @Param("param") String param);
 
     AppServiceDTO selectWithEmptyRepositoryByPrimaryKey(Long appServiceId);
+
+    /**
+     * 查询在这个项目下且有指定的这个版本的，且code符合的应用服务列表
+     *
+     * @param projectIds     项目id列表
+     * @param appServiceCode 应用服务code
+     * @param version        应用服务版本
+     * @return 应用服务列表
+     */
+    List<AppServiceDTO> inProjectsAndHavingVersion(@Param("projectIds") Set<Long> projectIds, @Param("appServiceCode") String appServiceCode, @Param("version") String version);
 }
 

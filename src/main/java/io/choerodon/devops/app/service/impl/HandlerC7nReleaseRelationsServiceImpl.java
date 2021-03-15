@@ -1,10 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import io.kubernetes.client.models.V1Endpoints;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
@@ -31,6 +30,7 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -63,6 +63,10 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private AppServiceService appServiceService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private AppServiceMapper appServiceMapper;
+    @Autowired
+    private AppServiceShareRuleService appServiceShareRuleService;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
@@ -324,80 +328,13 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         boolean isClusterComponent = GitOpsUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
 
-        AppServiceVersionDTO appServiceVersionDTO = null;
+        AppServiceVersionDTO appServiceVersionDTO;
         String versionValue;
         // 根据不同的release情况处理release所属应用服务及其版本
         if (!isClusterComponent) {
-
-            List<AppServiceDTO> appServices = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getTenantId());
-
-            if (appServices.isEmpty()) {
-                throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());
-            }
-
-            // TODO 待优化查找逻辑
-            // 先尝试从项目下取
-            AppServiceDTO tempApp = appServiceService
-                    .baseQueryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
-            if (tempApp != null) {
-                appServiceVersionDTO = appServiceVersionService
-                        .baseQueryByAppServiceIdAndVersion(tempApp.getId(), c7nHelmRelease.getSpec().getChartVersion());
-                if (appServiceVersionDTO != null) {
-                    LOGGER.debug("Found chart {} and version {} in project", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
-                }
-            }
-
-            List<Long> candidateAppServiceIds = appServices.stream().map(AppServiceDTO::getId).collect(Collectors.toList());
-            // 如果在项目下没有找到应用服务，或者找到的应用服务版本不吻合yaml中指定的应用服务id
-            if (appServiceVersionDTO == null || (!tempApp.getId().equals(c7nHelmRelease.getSpec().getAppServiceId()))) {
-                // 还要这个指定的服务id要是候选的应用服务id
-                if (candidateAppServiceIds.contains(c7nHelmRelease.getSpec().getAppServiceId())) {
-                    // 配置库中这个实例的文件中指定的服务id
-                    Long gitOpsAppServiceId = c7nHelmRelease.getSpec().getAppServiceId();
-                    if (gitOpsAppServiceId != null
-                            && candidateAppServiceIds.contains(gitOpsAppServiceId)) {
-                        // 尝试从配置库指定的服务取
-                        appServiceVersionDTO = appServiceVersionService
-                                .baseQueryByAppServiceIdAndVersion(gitOpsAppServiceId, c7nHelmRelease.getSpec().getChartVersion());
-                        if (appServiceVersionDTO != null) {
-                            LOGGER.info("Found chart {} and version {} via app service in release spec", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion());
-                        }
-                    }
-                }
-            }
-
-            // 如果还是找不到，就遍历
-            if (appServiceVersionDTO == null) {
-                LOGGER.info("Try to find app service version for chart {} and version {} in app service list {}", c7nHelmRelease.getSpec().getChartName(), c7nHelmRelease.getSpec().getChartVersion(), candidateAppServiceIds);
-                for (AppServiceDTO appServiceDTO : appServices) {
-                    appServiceVersionDTO = appServiceVersionService
-                            .baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
-                    if (appServiceVersionDTO != null) {
-                        break;
-                    }
-                }
-            }
-
-            // 如果本身是使用共享规则共享的版本部署的实例，后续共享规则删除后，也允许实例修改values更新实例时,继续使用这个版本
-            if (appServiceVersionDTO == null && "update".equals(type)) {
-                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
-                        .baseQueryByCodeAndEnv(c7nHelmRelease.getMetadata().getName(), envId);
-                // 查出上次部署的版本
-                AppServiceVersionDTO lastVersion = appServiceInstanceService.queryVersion(appServiceInstanceDTO.getId());
-                // 如果上次版本和这次版本一致, 允许这次部署, 用的是上次部署的版本
-                if (Objects.equals(lastVersion.getVersion(), c7nHelmRelease.getSpec().getChartVersion())) {
-                    appServiceVersionDTO = lastVersion;
-                }
-            }
-
-            validateVersion(appServiceVersionDTO, filePath, c7nHelmRelease);
+            // 尝试找到部署的版本
+            appServiceVersionDTO = findVersion(c7nHelmRelease, projectId, organization.getTenantId(), filePath, type, envId);
             versionValue = appServiceVersionService.baseQueryValue(appServiceVersionDTO.getId());
-
-            // 校验应用服务id是实例的实际应用服务id
-            if (c7nHelmRelease.getSpec().getAppServiceId() != null
-                    && !Objects.equals(appServiceVersionDTO.getAppServiceId(), c7nHelmRelease.getSpec().getAppServiceId())) {
-                throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_MISMATCH.getError(), filePath);
-            }
         } else {
             appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(c7nHelmRelease.getSpec().getChartName());
             validateVersion(appServiceVersionDTO, filePath, c7nHelmRelease);
@@ -500,5 +437,159 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         if (values == null) {
             throw new GitOpsExplainException(GitOpsObjectError.MARKET_APP_SERVICE_VERSION_VALUES_NULL.getError(), filePath);
         }
+    }
+
+    /**
+     * 根据配置文件，尝试找到要使用的应用服务的版本
+     *
+     * @param c7nHelmRelease 配置文件内容
+     * @param projectId      环境所属的项目id
+     * @param tenantId       环境所属的组织id
+     * @param filePath       配置文件所在的文件路径
+     * @param commandType    操作类型
+     * @param envId          环境id
+     * @return 找到的版本
+     * @throws GitOpsExplainException 如果找不到版本或者配置文件中指定的应用服务id不正确
+     */
+    private AppServiceVersionDTO findVersion(C7nHelmRelease c7nHelmRelease, Long projectId, Long tenantId, String filePath, String commandType, Long envId) {
+        AppServiceVersionDTO result;
+        String chartName = c7nHelmRelease.getSpec().getChartName();
+        String chartVersion = c7nHelmRelease.getSpec().getChartVersion();
+        Long appServiceId = c7nHelmRelease.getSpec().getAppServiceId();
+
+        if (appServiceId != null) {
+            // 如果配置库传入了应用服务id，首先尝试使用这个id去查是否有符合条件的版本
+            result = tryFindVersionWithAppServiceId(appServiceId, chartVersion, projectId, tenantId, filePath);
+        } else {
+            result = tryFindVersionWithoutAppServiceId(chartName, chartVersion, projectId, tenantId);
+        }
+
+        // 如果本身是使用共享规则共享的版本部署的实例，后续共享规则删除后，也允许实例修改values更新实例时,继续使用这个版本
+        if (result == null && CommandType.UPDATE.getType().equals(commandType)) {
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
+                    .baseQueryByCodeAndEnv(c7nHelmRelease.getMetadata().getName(), envId);
+            // 查出上次部署的版本
+            AppServiceVersionDTO lastVersion = appServiceInstanceService.queryVersion(appServiceInstanceDTO.getId());
+            // 如果上次版本和这次版本一致, 允许这次部署, 用的是上次部署的版本
+            if (Objects.equals(lastVersion.getVersion(), c7nHelmRelease.getSpec().getChartVersion())) {
+                result = lastVersion;
+            }
+        }
+
+        // 校验版本不为空
+        validateVersion(result, filePath, c7nHelmRelease);
+
+        // 校验应用服务id是实例的实际应用服务id
+        if (c7nHelmRelease.getSpec().getAppServiceId() != null
+                && !Objects.equals(result.getAppServiceId(), c7nHelmRelease.getSpec().getAppServiceId())) {
+            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_MISMATCH.getError(), filePath);
+        }
+        return result;
+    }
+
+    /**
+     * 尝试通过配置文件指定的应用服务id找到要部署的版本
+     *
+     * @param appServiceId 配置文件中指定的应用服务id
+     * @param version      配置文件中指定的版本
+     * @param projectId    这个环境所属的项目id
+     * @param tenantId     环境所属的组织id
+     * @param filePath     配置文件路径
+     * @return 可能找到的版本
+     */
+    @Nullable
+    private AppServiceVersionDTO tryFindVersionWithAppServiceId(Long appServiceId, String version, Long projectId, Long tenantId, String filePath) {
+        LOGGER.debug("Try to find version with app service id specified. appServiceId: {}, chartVersion: {}, projectId: {}, tenantId: {}", appServiceId, version, projectId, tenantId);
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        // 应用服务不存在时报错
+        if (appServiceDTO == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_NOT_EXIST.getError(), filePath);
+        }
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        // if 找到的应用服务所属的组织id equals 要使用版本的项目的组织id，才进一步寻找，否则返回null
+        if (tenantId.equals(projectDTO.getOrganizationId())) {
+            return tryFindVersionByAppService(appServiceDTO, version, projectId);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 从指定的应用服务下找到可以使用的版本
+     *
+     * @param appServiceDTO 应用服务信息
+     * @param version       指定的版本
+     * @param projectId     环境所属的项目id
+     * @return 可能找到的版本
+     */
+    @Nullable
+    private AppServiceVersionDTO tryFindVersionByAppService(AppServiceDTO appServiceDTO, String version, Long projectId) {
+        LOGGER.debug("try find version by app service... appServiceId {} version {}", appServiceDTO.getId(), version);
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
+        if (appServiceVersionDTO != null) {
+            LOGGER.debug("Found version by app service id {} and version version {}", appServiceDTO.getId(), version);
+            // 如果不等于空，校验下是否有这个版本的权限
+            if (projectId.equals(appServiceDTO.getProjectId())) {
+                LOGGER.debug("The version is in this project, so return");
+                return appServiceVersionDTO;
+                // 查询有没有共享规则，有权限的话，就返回这个版本
+            } else {
+                if (appServiceShareRuleService.hasAccessByShareRule(appServiceVersionDTO, projectId)) {
+                    LOGGER.debug("The version is shared by other project, so return");
+                    return appServiceVersionDTO;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 在没有在配置文件中指定应用服务id的前提下，尝试找到要使用的版本
+     *
+     * @param chartName    配置文件中指定的chartName
+     * @param chartVersion 配置文件中指定的chartVersion
+     * @param projectId    环境所属的项目id
+     * @param tenantId     环境所属的组织id
+     * @return 可能找到的版本
+     */
+    @Nullable
+    private AppServiceVersionDTO tryFindVersionWithoutAppServiceId(String chartName, String chartVersion, Long projectId, Long tenantId) {
+        LOGGER.debug("Try to find version without app service id specified. chartName: {}, chartVersion: {}, projectId: {}, tenantId: {}", chartName, chartVersion, projectId, tenantId);
+        // 尝试从项目下找
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(chartName, projectId);
+        AppServiceVersionDTO result = null;
+        // 如果项目下有这个服务
+        if (appServiceDTO != null) {
+            result = tryFindVersionByAppService(appServiceDTO, chartVersion, projectId);
+        }
+
+        // 如果项目下没有这个服务或者，项目下的服务没有这个版本
+        if (result == null){
+            // 如果项目下没有这个服务
+            // 查询组织下的所有项目中有这个版本名的应用服务
+            // 先查询所有的项目id
+            List<ProjectDTO> projects = baseServiceClientOperator.listIamProjectByOrgId(tenantId);
+            if (!CollectionUtils.isEmpty(projects)) {
+                Set<Long> projectIds = projects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
+                // 查询出有这个版本的这个组织下的名为chartName的应用服务
+                List<AppServiceDTO> appServices = appServiceMapper.inProjectsAndHavingVersion(projectIds, chartName, chartVersion);
+                if (!CollectionUtils.isEmpty(appServices)) {
+                    // 尝试从中找出一个具有权限的版本
+                    for (AppServiceDTO app : appServices) {
+                        result = tryFindVersionByAppService(app, chartVersion, projectId);
+                        if (result != null) {
+                            return result;
+                        }
+                    }
+                } else {
+                    LOGGER.info("There isn't an app service that has matched version");
+                }
+            } else {
+                LOGGER.warn("The projects is empty in org with id {}, which is impossible", tenantId);
+            }
+        }
+        LOGGER.info("Without app service id specified. version found or not: {}, chartName: {}, chartVersion: {}, projectId: {}, tenantId: {}", result != null, chartName, chartVersion, projectId, tenantId);
+        return result;
     }
 }
