@@ -34,7 +34,7 @@
                 AND dat.code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.type != null'>
-                AND dat.type =  #{searchParam.code, jdbcType=VARCHAR}
+                AND dat.type =  #{searchParam.type, jdbcType=VARCHAR}
             </if>
             <if test='searchParam.gitlabUrl != null'>
                 AND dat.gitlab_url LIKE CONCAT(CONCAT('%', #{searchParam.gitlabUrl, jdbcType=VARCHAR}),'%')
@@ -48,15 +48,15 @@
                     AND dat.status = 'F'
                 </if>
                 <if test="searchParam.enable == 0">
-                    AND da.enable = 0
+                    AND dat.enable = 0
                 </if>
                 <if test="searchParam.enable == 1">
-                    AND da.enable = 1
-                    AND da.status = 'S'
+                    AND dat.enable = 1
+                    AND dat.status = 'S'
                 </if>
                 <if test="searchParam.enable == 2">
-                    AND da.enable = 1
-                    AND da.status = 'C'
+                    AND dat.enable = 1
+                    AND dat.status = 'C'
                 </if>
             </if>
         </if>
