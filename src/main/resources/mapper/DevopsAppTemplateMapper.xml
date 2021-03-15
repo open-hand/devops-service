@@ -26,6 +26,7 @@
             OR dat.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
         </if>
+        order by dat.id
     </select>
 
     <sql id="sqlparam">

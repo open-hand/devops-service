@@ -16,7 +16,9 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsAppTemplateCreateVO;
 import io.choerodon.devops.app.service.DevopsAppTemplateService;
 import io.choerodon.devops.infra.dto.DevopsAppTemplateDTO;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -37,8 +39,8 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     @CustomPageRequest
     public ResponseEntity<Page<DevopsAppTemplateDTO>> queryAppTemplateOnSite(
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestBody(required = false) String params) {
         return Results.success(devopsAppTemplateService.pageAppTemplate(0L, ResourceLevel.SITE.value(), params, pageRequest));
     }
