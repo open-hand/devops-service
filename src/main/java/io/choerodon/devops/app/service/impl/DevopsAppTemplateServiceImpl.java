@@ -326,4 +326,12 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     public DevopsAppTemplateDTO queryAppTemplateById(Long appTemplateId) {
         return devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
     }
+
+    @Override
+    public void updateAppTemplateStatus(Long appTemplateId) {
+        DevopsAppTemplateDTO appTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
+        appTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.FAILED.getType());
+        devopsAppTemplateMapper.updateByPrimaryKeySelective(appTemplateDTO);
+    }
+
 }
