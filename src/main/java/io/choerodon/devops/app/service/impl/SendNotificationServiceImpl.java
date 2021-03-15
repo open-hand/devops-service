@@ -75,6 +75,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String BASE_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
     private static final String LOGIN_NAME = "loginName";
     private static final String USER_NAME = "userName";
+    private static final String DEPLOY_RESOURCES_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&viewType=resource&itemType=%s";
+    private static final String APP_SERVICE_URL = "%s/#/devops/app-service?type=project&id=%s&name=%s&organizationId=%s";
+
 
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
@@ -152,8 +155,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
         List<Receiver> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
-
-        sendNotices(sendSettingCode, targetUsers, makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO), projectDTO.getId());
+        Map<String, String> makeAppServiceParams = makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO);
+        makeAppServiceParams.put(LINK, String.format(APP_SERVICE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId()));
+        sendNotices(sendSettingCode, targetUsers, makeAppServiceParams, projectDTO.getId());
     }
 
     /**
@@ -181,8 +185,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
         List<Receiver> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
-
-        sendNotices(sendSettingCode, targetUsers, makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO), projectDTO.getId());
+        Map<String, String> stringStringMap = makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO);
+        stringStringMap.put(LINK, String.format(APP_SERVICE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId()));
+        sendNotices(sendSettingCode, targetUsers, stringStringMap, projectDTO.getId());
     }
 
     /**
@@ -610,6 +615,16 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     .put("resourceName", Objects.requireNonNull(finalResourceName))
                     .putAll(webHookParams)
                     .build();
+
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sendSettingCode, MessageCodeConstants.INGRESS_CREATION_FAILURE)) {
+                params.put(LINK, String.format(DEPLOY_RESOURCES_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getId(), "ingresses"));
+            }
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sendSettingCode, MessageCodeConstants.CERTIFICATION_CREATION_FAILURE)) {
+                params.put(LINK, String.format(DEPLOY_RESOURCES_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getId(), "certifications"));
+            }
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(sendSettingCode, MessageCodeConstants.SERVICE_CREATION_FAILURE)) {
+                params.put(LINK, String.format(DEPLOY_RESOURCES_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getId(), "services"));
+            }
 
 
             sendNotices(sendSettingCode, ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(creatorId))), params, projectDTO.getId());
