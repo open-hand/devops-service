@@ -40,7 +40,6 @@ do_install() {
 }
 
 do_install
-if [ -d "/tmp/kubeadm-ha" ]; then
-    rm -rf /tmp/kubeadm-ha
-fi
-git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha
+
+# 拉取ansible脚本库
+{{ git-clone }}

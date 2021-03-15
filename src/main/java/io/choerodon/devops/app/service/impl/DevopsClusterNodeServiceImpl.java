@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.TransportException;
-import org.apache.commons.io.IOUtils;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -408,7 +407,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(CAT_FILE, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode())));
         if (resultInfoVO.getExitCode() != 0) {
             if (resultInfoVO.getStdErr().contains("No such file or directory")) {
-                LOGGER.info(">>>>>>>>> [install k8s] installation of cluster 【{}】 is not completed <<<<<<<<<",devopsClusterDTO.getName());
+                LOGGER.info(">>>>>>>>> [install k8s] installation of cluster 【{}】 is not completed <<<<<<<<<", devopsClusterDTO.getName());
             }
             return false;
         } else {
@@ -540,7 +539,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 安装基础环境、git、ansible
             try {
                 LOGGER.info(">>>>>>>>> [check node] key {} :initialize the environment <<<<<<<<<", redisKey);
-                uploadPreKubeadmnHaShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode());
+                sshUtil.uploadPreProcessShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode(), "kube");
                 ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, PRE_KUBEADM_HA_SH));
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
                     throw new Exception(String.format(">>>>>>>>> [check node] failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
@@ -682,15 +681,6 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         String targetFilePath = BASE_DIR + SLASH + command;
         FileUtil.saveDataToFile(filePath, configValue);
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
-    }
-
-    @Override
-    public void uploadPreKubeadmnHaShell(SSHClient ssh, String suffix) throws IOException {
-        InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/pre-kubeadm-ha.sh");
-        String installDockerShell = IOUtils.toString(shellInputStream);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "pre-kubeadm-ha.sh";
-        FileUtil.saveDataToFile(filePath, installDockerShell);
-        sshUtil.uploadFile(ssh, filePath, PRE_KUBEADM_HA_SH);
     }
 
     @Override

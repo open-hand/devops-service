@@ -11,7 +11,8 @@ public enum DeployObjectTypeEnum {
 
     APP("app"),
     JAR("jar"),
-    IMAGE("image");
+    IMAGE("image"),
+    MIDDLEWARE("middleware");
 
     private String value;
 
