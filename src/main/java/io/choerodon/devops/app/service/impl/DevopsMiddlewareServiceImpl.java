@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
+import io.choerodon.devops.api.validator.MiddlewareConfigurationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
@@ -94,6 +96,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     @Override
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
+        AppServiceInstanceValidator.checkName(middlewareRedisHostDeployVO.getName());
+        MiddlewareConfigurationValidator.validateRedisConfiguration(middlewareRedisHostDeployVO.getConfiguration());
         if (SENTINEL_MODE.equals(middlewareRedisHostDeployVO.getMode())) {
             CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
         }
@@ -172,7 +176,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
     }
 
-    private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, Object> Configuration) {
+    private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, String> Configuration) {
 
     }
 
