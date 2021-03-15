@@ -134,7 +134,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
                         .withRefType("devopsAppTemplate")
                         .withRefId(devopsAppTemplateDTO.getId().toString())
                         .withSagaCode(SagaTaskCodeConstants.DEVOPS_CREATE_APP_TEMPLATE)
-                        .withLevel(ResourceLevel.valueOf(sourceType))
+                        .withLevel(ResourceLevel.valueOf(sourceType.toUpperCase()))
                         .withSourceId(sourceId)
                         .withPayloadAndSerialize(appTemplateCreateVO),
                 builder -> {

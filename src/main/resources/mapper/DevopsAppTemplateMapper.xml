@@ -36,6 +36,9 @@
             <if test='searchParam.type != null'>
                 AND dat.type =  #{searchParam.code, jdbcType=VARCHAR}
             </if>
+            <if test='searchParam.gitlabUrl != null'>
+                AND dat.gitlab_url LIKE CONCAT(CONCAT('%', #{searchParam.gitlabUrl, jdbcType=VARCHAR}),'%')
+            </if>
             <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
                 dat.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
@@ -62,6 +65,7 @@
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 (dat.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dat.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dat.gitlab_url LIKE CONCAT(CONCAT('%', #{searchParam.gitlabUrl, jdbcType=VARCHAR}),'%')
                 )
             </foreach>
         </if>
