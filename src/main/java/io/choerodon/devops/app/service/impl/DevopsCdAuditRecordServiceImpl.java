@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.entity.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -17,14 +18,14 @@ import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 
 /**
@@ -40,6 +41,13 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     private static final String PIPELINE_ID = "pipelineId";
     private static final String ERROR_SAVE_AUDIT_RECORD = "error.save.audit.record";
     private static final String ERROR_UPDATE_AUDIT_RECORD = "error.update.audit.record";
+    public static final String RESULT_DETAIL_URL = "resultDetailUrl";
+
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
+
+    private static final String DETAILS_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
+
 
     @Autowired
     private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
@@ -52,6 +60,8 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    @Autowired
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
     @Override
     public List<DevopsCdAuditRecordDTO> queryByJobRecordId(Long jobRecordId) {
@@ -123,7 +133,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     @Override
     public void fixProjectId() {
         List<DevopsCdAuditRecordDTO> devopsCdAuditDTOS = devopsCdAuditRecordMapper.selectAll();
-        Set<Long> jobRecordIds = devopsCdAuditDTOS.stream().filter(i->i.getJobRecordId()!=null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toSet());
+        Set<Long> jobRecordIds = devopsCdAuditDTOS.stream().filter(i -> i.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toSet());
 
         List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.selectByIds(StringUtils.join(jobRecordIds, ","));
 

@@ -25,10 +25,25 @@ public class MessageCodeConstants {
     public static final String GITLAB_PWD = "GITLABPASSWORD";
     public static final String INVITE_USER = "INVITEUSER";
     public static final String DELETE_APP_SERVICE = "DELETEAPPSERVICE";
+    /**
+     * 流水线执行失败
+     */
     public static final String PIPELINE_FAILED = "PIPELINEFAILED";
+    /**
+     * 流水线执行成功
+     */
     public static final String PIPELINE_SUCCESS = "PIPELINESUCCESS";
+    /**
+     * 流水线审核通知
+     */
     public static final String PIPELINE_AUDIT = "PIPELINEAUDIT";
+    /**
+     * 流水线被终止通知
+     */
     public static final String PIPELINE_STOP = "PIPELINESTOP";
+    /**
+     * 流水线或签任务通过通知
+     */
     public static final String PIPELINE_PASS = "PIPELINEPASS";
     public static final String CREATE_INSTANCE_SUCCESS = "CREATEINSTANCESUCCESS";
     public static final String CREATE_INSTANCE_FAIL = "CREATEINSTANCEFAIL";
