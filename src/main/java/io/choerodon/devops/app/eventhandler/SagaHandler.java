@@ -389,7 +389,12 @@ public class SagaHandler {
             maxRetryCount = 5, seq = 10)
     public String createAppTemplate(String payload) {
         DevopsAppTemplateCreateVO devopsAppTemplateCreateVO = gson.fromJson(payload, DevopsAppTemplateCreateVO.class);
-        devopsAppTemplateService.createTemplateSagaTask(devopsAppTemplateCreateVO);
+        try {
+            devopsAppTemplateService.createTemplateSagaTask(devopsAppTemplateCreateVO);
+        } catch (Exception e) {
+            devopsAppTemplateService.updateAppTemplateStatus(devopsAppTemplateCreateVO.getAppTemplateId());
+            LOGGER.error(e.getMessage(), e);
+        }
         return payload;
     }
 

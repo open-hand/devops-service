@@ -38,5 +38,6 @@ public interface DevopsAppTemplateService {
 
     DevopsAppTemplateDTO queryAppTemplateById(Long appTemplateId);
 
+    void updateAppTemplateStatus(Long appTemplateId);
 
 }
