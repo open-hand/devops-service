@@ -111,10 +111,18 @@ public class DevopsAppTemplateController {
     @ApiOperation("平台层查询已有应用模板")
     @GetMapping("/site/list")
     @Permission(level = ResourceLevel.SITE)
-    @CustomPageRequest
     public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnSite(
             @RequestParam(required = false) String param) {
         return Results.success(devopsAppTemplateService.listAppTemplate(0L, ResourceLevel.SITE.value(), ResourceLevel.SITE.value(), param));
+    }
+
+    @ApiOperation("平台层查询应用模板详情")
+    @GetMapping("/site/{app_template_id}")
+    @Permission(level = ResourceLevel.SITE)
+    public ResponseEntity<DevopsAppTemplateDTO> detailsAppTemplateOnSite(
+            @Encrypt
+            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+        return Results.success(devopsAppTemplateService.queryAppTemplateById(appTemplateId));
     }
 
     @ApiOperation("组织层查询应用模板")
@@ -203,13 +211,22 @@ public class DevopsAppTemplateController {
     @ApiOperation("组织层查询已有应用模板")
     @GetMapping("/organization/{organization_id}/list")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @CustomPageRequest
-    public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnTenante(
+    public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnTenant(
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam("选择查询平台层模板/组织层模板：site/organization")
             @RequestParam(value = "selectedLevel") String selectedLevel,
             @RequestParam(required = false) String param) {
         return Results.success(devopsAppTemplateService.listAppTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), selectedLevel, param));
+    }
+
+    @ApiOperation("平台层查询应用模板详情")
+    @GetMapping("/organization/{organization_id}/{app_template_id}")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    public ResponseEntity<DevopsAppTemplateDTO> detailsAppTemplateOnTenant(
+            @PathVariable(value = "organization_id") Long organizationId,
+            @Encrypt
+            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+        return Results.success(devopsAppTemplateService.queryAppTemplateById(appTemplateId));
     }
 
     @ApiOperation("项目层查询已有应用模板")
