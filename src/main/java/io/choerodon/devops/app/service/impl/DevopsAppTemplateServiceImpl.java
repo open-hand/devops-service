@@ -321,4 +321,9 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
             throw new CommonException("error.get.resource.level");
         }
     }
+
+    @Override
+    public DevopsAppTemplateDTO queryAppTemplateById(Long appTemplateId) {
+        return devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
+    }
 }

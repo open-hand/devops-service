@@ -36,5 +36,7 @@ public interface DevopsAppTemplateService {
 
     String getTemplateGroupPath(Long appTemplateId);
 
+    DevopsAppTemplateDTO queryAppTemplateById(Long appTemplateId);
+
 
 }
