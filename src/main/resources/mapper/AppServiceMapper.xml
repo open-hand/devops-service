@@ -782,4 +782,16 @@
           AND das.is_synchro IS TRUE
           AND das.gitlab_project_id IS NOT NULL
     </select>
+
+    <select id="inProjectsAndHavingVersion" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        select das.id, das.project_id
+        from devops_app_service das
+                 inner join devops_app_service_version dasv on das.id = dasv.app_service_id
+        where dasv.version = #{version}
+          and das.code = #{appServiceCode}
+          and das.project_id in
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
+    </select>
 </mapper>
