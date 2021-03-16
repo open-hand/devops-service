@@ -930,8 +930,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
                 git = gitUtil.initGit(applicationWorkDir);
             } else {
-                UserAttrDTO gitlabAdminDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(GitUserNameUtil.getAdminId()));
-                String pullToken = gitlabAdminDTO.getGitlabToken();
+                UserAttrDTO gitlabAdminDTO = userAttrService.queryGitlabAdminByIamId();
+                String pullToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, gitlabAdminDTO);
                 git = gitUtil.cloneRepository(applicationWorkDir, appTemplateDTO.getGitlabUrl(), pullToken);
             }
             replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationDir, appTemplateDTO.getCode(), devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
