@@ -129,7 +129,16 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
             throw new CommonException("error.insert.app.template");
         }
 
+        // 更新权限
+        DevopsAppTemplatePermissionDTO permissionDTO = new DevopsAppTemplatePermissionDTO(devopsAppTemplateDTO.getId(), DetailsHelper.getUserDetails().getUserId());
+        if (appTemplatePermissionMapper.selectOne(permissionDTO) == null) {
+            if (appTemplatePermissionMapper.insert(permissionDTO) != 1) {
+                throw new CommonException("error.insert.app.template.permission");
+            }
+        }
+
         appTemplateCreateVO.setAppTemplateId(devopsAppTemplateDTO.getId());
+        appTemplateCreateVO.setCreatorId(DetailsHelper.getUserDetails().getUserId());
         transactionalProducer.apply(
                 StartSagaBuilder.newBuilder()
                         .withRefType("devopsAppTemplate")
@@ -184,7 +193,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
                     devopsAppTemplateDTO.getCode(),
                     gitlabAdminUserId, false);
         }
-        UserAttrDTO createByUser = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        UserAttrDTO createByUser = userAttrService.baseQueryById(appTemplateCreateVO.getCreatorId());
         gitlabServiceClientOperator.createProjectMember(gitlabProjectDTO.getId(), new MemberDTO(TypeUtil.objToInteger(createByUser.getGitlabUserId()), 30, ""));
         // 导入模板
         String workingDirectory = gitUtil.getWorkingDirectory("app-template-import" + File.separator + groupPath + File.separator + devopsAppTemplateDTO.getCode());
@@ -205,7 +214,9 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
                 } catch (IOException e) {
                     throw new CommonException(e.getMessage());
                 } finally {
-                    FileUtil.deleteFile(zipFile);
+                    if (zipFile != null) {
+                        FileUtil.deleteFile(zipFile);
+                    }
                 }
                 git = gitUtil.initGit(new File(workingDirectory));
             } else {
@@ -293,8 +304,8 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     @Transactional
     public void deleteAppTemplate(Long appTemplateId) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
-        if (devopsAppTemplateDTO.getEnable()) {
-            throw new CommonException("app.template.is.enabled");
+        if (devopsAppTemplateDTO.getEnable() && !devopsAppTemplateDTO.getStatus().equals(DevopsAppTemplateStatusEnum.FAILED.getType())) {
+            throw new CommonException("app.template.is.status");
         }
         devopsAppTemplateMapper.deleteByPrimaryKey(appTemplateId);
         appTemplatePermissionMapper.delete(new DevopsAppTemplatePermissionDTO(appTemplateId, null));
