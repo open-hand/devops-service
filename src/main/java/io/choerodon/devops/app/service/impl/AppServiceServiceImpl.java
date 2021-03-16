@@ -883,7 +883,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 更改默认仓库的ci文件为这个，避免导入应用时跑ci，导入完成后改回默认
         gitlabServiceClientOperator.updateProjectCiConfigPath(gitlabProjectDO.getId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), GitOpsConstants.TEMP_CI_CONFIG_PATH);
 
-        if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
+        if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()
+                && !StringUtils.isEmpty(devOpsAppServiceImportPayload.getRepositoryUrl())) {
             String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
             if (tempUrl.length < 2) {
                 throw new CommonException("error.temp.git.url");
@@ -907,7 +908,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             releaseResources(applicationWorkDir, newGit);
             // 保存devops_branch信息
             initBranch(devOpsAppServiceImportPayload, appServiceDTO, GitOpsConstants.MASTER);
-        } else if (devOpsAppServiceImportPayload.getDevopsAppTemplateId() != null) {
+        } else if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()
+                && devOpsAppServiceImportPayload.getDevopsAppTemplateId() != null) {
             String applicationWorkPath = gitUtil.getWorkingDirectory(applicationDir);
             File applicationWorkDir = new File(applicationWorkPath);
             Git git;
