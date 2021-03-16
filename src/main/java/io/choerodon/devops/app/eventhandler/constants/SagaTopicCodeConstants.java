@@ -282,6 +282,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_APP_TEMPLATE = "api-create-app-template";
 
     /**
+     * 删除应用模板
+     */
+    public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
+
+    /**
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";

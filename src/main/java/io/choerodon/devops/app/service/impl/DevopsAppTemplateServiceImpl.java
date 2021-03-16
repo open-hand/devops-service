@@ -1,11 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.*;
-import java.util.HashMap;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -39,7 +37,6 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.DevopsAppTemplateCreateTypeEnum;
 import io.choerodon.devops.infra.enums.DevopsAppTemplateStatusEnum;
@@ -48,7 +45,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsAppTemplateMapper;
 import io.choerodon.devops.infra.mapper.DevopsAppTemplatePermissionMapper;
 import io.choerodon.devops.infra.util.FileUtil;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -176,7 +172,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         group.setName(groupName);
         group.setPath(groupPath);
         UserAttrDTO adminUserAttrDTO = userAttrService.queryGitlabAdminByIamId();
-        Integer gitlabAdminUserId= TypeUtil.objToInteger(adminUserAttrDTO.getGitlabUserId());
+        Integer gitlabAdminUserId = TypeUtil.objToInteger(adminUserAttrDTO.getGitlabUserId());
         LOGGER.info("groupPath:{},adminId:{}", group.getPath(), gitlabAdminUserId);
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), gitlabAdminUserId);
         if (groupDTO == null) {
@@ -302,13 +298,30 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
 
     @Override
     @Transactional
-    public void deleteAppTemplate(Long appTemplateId) {
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APP_TEMPLATE,
+            description = "Devops删除应用模板", inputSchema = "{}")
+    public void deleteAppTemplate(Long sourceId, String sourceType, Long appTemplateId) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
         if (devopsAppTemplateDTO.getEnable() && !devopsAppTemplateDTO.getStatus().equals(DevopsAppTemplateStatusEnum.FAILED.getType())) {
             throw new CommonException("app.template.is.status");
         }
         devopsAppTemplateMapper.deleteByPrimaryKey(appTemplateId);
         appTemplatePermissionMapper.delete(new DevopsAppTemplatePermissionDTO(appTemplateId, null));
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withRefType("gitlabProjectId")
+                        .withRefId(devopsAppTemplateDTO.getGitlabProjectId().toString())
+                        .withSagaCode(SagaTaskCodeConstants.DEVOPS_DELETE_APP_TEMPLATE)
+                        .withLevel(ResourceLevel.valueOf(sourceType.toUpperCase()))
+                        .withSourceId(sourceId)
+                        .withPayloadAndSerialize(devopsAppTemplateDTO.getGitlabProjectId()),
+                builder -> {
+                });
+    }
+
+    public void deleteAppTemplateSagaTask(Long gitlabProjectId) {
+        UserAttrDTO userAttrDTO = userAttrService.queryGitlabAdminByIamId();
+        gitlabServiceClientOperator.deleteProjectById(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
     }
 
     private void updateStatus(Long appTemplateId, Boolean enable) {
