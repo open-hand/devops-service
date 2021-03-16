@@ -40,7 +40,7 @@ public class DevopsAnsibleCommandConstants {
     /**
      * ansible安装redis
      */
-    public static final String REDIS_ANSIBLE_COMMAND_TEMPLATE="cd /tmp/middleware && ansible-playbook -i /tmp/middleware-inventory.ini -e @/tmp/redis-configuration.yaml redis.yaml";
+    public static final String REDIS_ANSIBLE_COMMAND_TEMPLATE="cd /tmp/middleware && ansible-playbook -i /tmp/middleware-inventory.ini -e @/tmp/redis-configuration.yaml redis.yml";
 
     /**
      * 获取指定目录内容

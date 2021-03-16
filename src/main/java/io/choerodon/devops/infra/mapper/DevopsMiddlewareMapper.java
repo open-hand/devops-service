@@ -14,5 +14,5 @@ public interface DevopsMiddlewareMapper extends BaseMapper<DevopsMiddlewareDTO> 
      * @param type      中间件类型
      * @return
      */
-    Boolean checkNameUnique(@Param("projectId") Long projectId, @Param("name") String name, @Param("type") String type);
+    Integer checkNameUnique(@Param("projectId") Long projectId, @Param("name") String name, @Param("type") String type);
 }
