@@ -392,9 +392,9 @@ public class SagaHandler {
         return payload;
     }
 
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_DELETE_APP_TEMPLATE,
             description = "创建应用模板",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+            sagaCode = SagaTopicCodeConstants.DEVOPS_DELETE_APP_TEMPLATE,
             maxRetryCount = 5, seq = 10)
     public String deleteAppTemplate(String payload) {
         Long gitlabProjectId = gson.fromJson(payload, Long.class);
