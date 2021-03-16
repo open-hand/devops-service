@@ -54,9 +54,9 @@ public interface DevopsClusterNodeService {
      *
      * @param ssh         ssh连接对象
      * @param suffix      目录后缀
-     * @param inventoryVO 配置对应节点
+     * @param k8sInventoryVO 配置对应节点
      */
-    void generateAndUploadNodeConfiguration(SSHClient ssh, String suffix, InventoryVO inventoryVO);
+    void generateAndUploadNodeConfiguration(SSHClient ssh, String suffix, K8sInventoryVO k8sInventoryVO);
 
     /**
      * @param ssh          ssh连接对象
@@ -113,7 +113,7 @@ public interface DevopsClusterNodeService {
      */
     void deleteByClusterId(Long clusterId);
 
-    InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> innerNodes);
+    K8sInventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> innerNodes);
 
     /**
      * 保存集群信息和节点信息

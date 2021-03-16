@@ -7,7 +7,7 @@ package io.choerodon.devops.api.vo;
  * @author wanghao
  * @since 2020/10/22 15:32
  */
-public class InventoryVO {
+public class K8sInventoryVO {
     StringBuilder all = new StringBuilder();
     StringBuilder kubeMaster = new StringBuilder();
     StringBuilder kubeWorker = new StringBuilder();

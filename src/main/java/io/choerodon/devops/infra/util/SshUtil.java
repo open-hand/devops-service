@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.util;
 
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.ANSIBLE_CONFIG_BASE_DIR_TEMPLATE;
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.PRE_KUBEADM_HA_SH;
+import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.ANSIBLE_CONFIG_BASE_DIR_TEMPLATE;
+import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.PRE_KUBEADM_HA_SH;
 import static org.hzero.core.util.StringPool.SLASH;
 
 import java.io.IOException;
