@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -35,6 +32,8 @@ public class DevopsAppTemplateDTO  extends AuditDomain {
     private String type;
     private Boolean enable;
     private String status;
+    @Transient
+    private Boolean permission;
 
     public DevopsAppTemplateDTO() {
     }
@@ -129,5 +128,13 @@ public class DevopsAppTemplateDTO  extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 }

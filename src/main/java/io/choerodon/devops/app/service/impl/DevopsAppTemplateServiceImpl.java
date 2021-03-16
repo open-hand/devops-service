@@ -166,29 +166,30 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         }
         group.setName(groupName);
         group.setPath(groupPath);
-        LOGGER.info("groupPath:{},adminId:{}", group.getPath(), GitUserNameUtil.getAdminId());
-        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), GitUserNameUtil.getAdminId());
+        UserAttrDTO adminUserAttrDTO = userAttrService.queryGitlabAdminByIamId();
+        Integer gitlabAdminUserId= TypeUtil.objToInteger(adminUserAttrDTO.getGitlabUserId());
+        LOGGER.info("groupPath:{},adminId:{}", group.getPath(), gitlabAdminUserId);
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), gitlabAdminUserId);
         if (groupDTO == null) {
-            groupDTO = gitlabServiceClientOperator.createGroup(group, GitUserNameUtil.getAdminId());
+            groupDTO = gitlabServiceClientOperator.createGroup(group, gitlabAdminUserId);
         }
         //创建gitlab 应用 为创建分配developer角色
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 groupPath,
                 devopsAppTemplateDTO.getCode(),
-                GitUserNameUtil.getAdminId());
+                gitlabAdminUserId);
         if (gitlabProjectDTO.getId() == null) {
             gitlabProjectDTO = gitlabServiceClientOperator.createProject(
                     groupDTO.getId(),
                     devopsAppTemplateDTO.getCode(),
-                    GitUserNameUtil.getAdminId(), false);
+                    gitlabAdminUserId, false);
         }
         UserAttrDTO createByUser = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         gitlabServiceClientOperator.createProjectMember(gitlabProjectDTO.getId(), new MemberDTO(TypeUtil.objToInteger(createByUser.getGitlabUserId()), 30, ""));
         // 导入模板
         String workingDirectory = gitUtil.getWorkingDirectory("app-template-import" + File.separator + groupPath + File.separator + devopsAppTemplateDTO.getCode());
         File localPathFile = new File(workingDirectory);
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(GitUserNameUtil.getAdminId()));
-        String pushToken = appServiceService.getToken(gitlabProjectDTO.getId(), workingDirectory, userAttrDTO);
+        String pushToken = appServiceService.getToken(gitlabProjectDTO.getId(), workingDirectory, adminUserAttrDTO);
         Git git;
         if (appTemplateCreateVO.getCreateType().equals(DevopsAppTemplateCreateTypeEnum.TEMPLATE.getType())) {
             DevopsAppTemplateDTO templateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateCreateVO.getSelectedTemplateId());

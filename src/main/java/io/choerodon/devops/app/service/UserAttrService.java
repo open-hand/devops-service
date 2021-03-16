@@ -89,4 +89,12 @@ public interface UserAttrService {
      * @return id
      */
     Set<Long> allUserIds();
+
+
+    /**
+     * 根据用户Id查询gitlab用户Id
+     *
+     * @return UserAttrDTO
+     */
+    UserAttrDTO queryGitlabAdminByIamId();
 }
