@@ -40,4 +40,6 @@ public interface DevopsAppTemplateService {
 
     void updateAppTemplateStatus(Long appTemplateId);
 
+    void updateAppTemplate(Long appTemplate, String name);
+
 }

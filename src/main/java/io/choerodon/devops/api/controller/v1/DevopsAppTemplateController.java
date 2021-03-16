@@ -73,7 +73,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> addPermissionOnSite(
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.addPermission(appTemplateId);
         return Results.success();
     }
@@ -83,7 +83,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> enableAppTemplateOnSite(
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.enableAppTemplate(appTemplateId);
         return Results.success();
     }
@@ -94,7 +94,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> disableAppTemplateOnSite(
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.disableAppTemplate(appTemplateId);
         return Results.success();
     }
@@ -104,7 +104,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> deleteAppTemplateOnSite(
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.deleteAppTemplate(appTemplateId);
         return Results.success();
     }
@@ -122,8 +122,19 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<DevopsAppTemplateDTO> detailsAppTemplateOnSite(
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         return Results.success(devopsAppTemplateService.queryAppTemplateById(appTemplateId));
+    }
+
+    @ApiOperation("平台层修改应用模板名称")
+    @PutMapping("/site/{app_template_id}")
+    @Permission(level = ResourceLevel.SITE)
+    public ResponseEntity<Void> updateAppTemplateOnSite(
+            @Encrypt
+            @PathVariable(value = "app_template_id") Long appTemplateId,
+            @RequestParam(value = "name") String name) {
+        devopsAppTemplateService.updateAppTemplate(appTemplateId, name);
+        return Results.success();
     }
 
     @ApiOperation("组织层查询应用模板")
@@ -169,7 +180,7 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Void> addPermissionOnTenant(
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.addPermission(appTemplateId);
         return Results.success();
     }
@@ -180,7 +191,7 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Void> enableAppTemplateOnTenant(
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.enableAppTemplate(appTemplateId);
         return Results.success();
     }
@@ -192,7 +203,7 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Void> disableAppTemplateOnTenant(
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.disableAppTemplate(appTemplateId);
         return Results.success();
     }
@@ -203,7 +214,7 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Void> deleteAppTemplateOnTenant(
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.deleteAppTemplate(appTemplateId);
         return Results.success();
     }
@@ -219,14 +230,25 @@ public class DevopsAppTemplateController {
         return Results.success(devopsAppTemplateService.listAppTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), selectedLevel, param));
     }
 
-    @ApiOperation("平台层查询应用模板详情")
+    @ApiOperation("组织层查询应用模板详情")
     @GetMapping("/organization/{organization_id}/{app_template_id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<DevopsAppTemplateDTO> detailsAppTemplateOnTenant(
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
-            @PathVariable(value = "app_template_id", required = false) Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         return Results.success(devopsAppTemplateService.queryAppTemplateById(appTemplateId));
+    }
+
+    @ApiOperation("组织层修改应用模板名称")
+    @PutMapping("/site/{app_template_id}")
+    @Permission(level = ResourceLevel.SITE)
+    public ResponseEntity<Void> updateAppTemplateOnTenant(
+            @Encrypt
+            @PathVariable(value = "app_template_id") Long appTemplateId,
+            @RequestParam(value = "name") String name) {
+        devopsAppTemplateService.updateAppTemplate(appTemplateId, name);
+        return Results.success();
     }
 
     @ApiOperation("项目层查询已有应用模板")
