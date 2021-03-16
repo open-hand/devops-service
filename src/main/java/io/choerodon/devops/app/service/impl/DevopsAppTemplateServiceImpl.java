@@ -114,6 +114,8 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     public void createTemplate(Long sourceId, String sourceType, DevopsAppTemplateCreateVO appTemplateCreateVO) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = new DevopsAppTemplateDTO();
         BeanUtils.copyProperties(appTemplateCreateVO, devopsAppTemplateDTO);
+        devopsAppTemplateDTO.setSourceId(sourceId);
+        devopsAppTemplateDTO.setSourceType(sourceType);
         if (!checkNameAndCode(devopsAppTemplateDTO, "name")) {
             throw new CommonException("app.template.name.already.exists");
         }
@@ -121,8 +123,6 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
             throw new CommonException("app.template.code.already.exists");
         }
         // 创建模板 状态为创建中
-        devopsAppTemplateDTO.setSourceId(sourceId);
-        devopsAppTemplateDTO.setSourceType(sourceType);
         devopsAppTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.CREATING.getType());
         devopsAppTemplateDTO.setType("C");
         if (devopsAppTemplateMapper.insertSelective(devopsAppTemplateDTO) != 1) {
