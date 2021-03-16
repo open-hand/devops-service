@@ -336,4 +336,15 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         devopsAppTemplateMapper.updateByPrimaryKeySelective(appTemplateDTO);
     }
 
+    @Override
+    public void updateAppTemplate(Long appTemplateId, String name) {
+        DevopsAppTemplateDTO appTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
+        appTemplateDTO.setName(name);
+        if (!checkNameAndCode(appTemplateDTO, "name")) {
+            throw new CommonException("app.template.name.already.exists");
+        }
+        if (devopsAppTemplateMapper.updateByPrimaryKeySelective(appTemplateDTO) != 1) {
+            throw new CommonException("error.update.app.template");
+        }
+    }
 }
