@@ -123,7 +123,7 @@ public class DevopsHostController {
     public ResponseEntity<Set<Long>> multiTestConnection(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
-            @RequestBody @Valid Set<Long> hostIds) {
+            @RequestBody @Encrypt Set<Long> hostIds) {
         return Results.success(devopsHostService.multiTestConnection(projectId, hostIds));
     }
 
