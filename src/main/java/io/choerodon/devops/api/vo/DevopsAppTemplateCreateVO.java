@@ -29,6 +29,7 @@ public class DevopsAppTemplateCreateVO {
     @ApiModelProperty("私有token")
     private String token;
     private Long appTemplateId;
+    private Long creatorId;
 
     public String getName() {
         return name;
@@ -84,5 +85,13 @@ public class DevopsAppTemplateCreateVO {
 
     public void setAppTemplateId(Long appTemplateId) {
         this.appTemplateId = appTemplateId;
+    }
+
+    public Long getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(Long creatorId) {
+        this.creatorId = creatorId;
     }
 }
