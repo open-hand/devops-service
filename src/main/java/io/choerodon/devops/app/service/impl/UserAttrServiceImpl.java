@@ -11,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -186,5 +187,17 @@ public class UserAttrServiceImpl implements UserAttrService {
     @Override
     public Set<Long> allUserIds() {
         return userAttrMapper.selectAllUserIds();
+    }
+
+    @Override
+    public UserAttrDTO queryGitlabAdminByIamId() {
+        Optional<IamUserDTO> optional = baseServiceClientOperator.queryRoot().stream().filter(t -> t.getLoginName().equals("admin")).findFirst();
+        if (optional.isPresent()) {
+            UserAttrDTO attrDTO = new UserAttrDTO();
+            attrDTO.setIamUserId(optional.get().getId());
+            return userAttrMapper.selectOne(attrDTO);
+        } else {
+            throw new CommonException("error.get.iam.admin");
+        }
     }
 }

@@ -241,7 +241,7 @@ public class DevopsAppTemplateController {
     }
 
     @ApiOperation("组织层修改应用模板名称")
-    @PutMapping("/site/{app_template_id}")
+    @PutMapping("/organization/{organization_id}/{app_template_id}")
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> updateAppTemplateOnTenant(
             @Encrypt
