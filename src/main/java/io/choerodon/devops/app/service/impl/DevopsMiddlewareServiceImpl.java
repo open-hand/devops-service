@@ -1,11 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.PRIVATE_KEY_SAVE_PATH_TEMPLATE;
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.SAVE_PRIVATE_KEY_TEMPLATE;
+import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
+import static org.hzero.core.util.StringPool.SLASH;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
@@ -29,10 +32,7 @@ import io.choerodon.devops.app.service.DevopsMiddlewareService;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.AppSourceType;
-import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.HostAuthType;
-import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -135,11 +135,16 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             // 创建节点密钥文件
             generateAndUploadPrivateKey(sshClient, devopsHostDTOList);
 
+            MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, REDIS);
+
+            // 上传节点配置文件
+            generateAndUploadRedisHostConfiguration(sshClient, devopsHostDTOList, middlewareInventoryVO);
+
             // 生成并上传redis配置文件
             generateAndUploadRedisConfiguration(ssh, middlewareRedisHostDeployVO.getConfiguration());
 
             // 安装redis
-            executeInstallRedis(sshClient, middlewareRedisHostDeployVO.getMode());
+            executeInstallRedis(sshClient);
 
             devopsDeployRecordService.saveRecord(
                     projectId,
@@ -199,8 +204,45 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "error.middleware.insert");
     }
 
-    private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, String> Configuration) {
+    private MiddlewareInventoryVO calculateGeneralInventoryValue(List<DevopsHostDTO> devopsHostDTOList, DevopsMiddlewareTypeEnum middlewareTypeEnum) {
+        MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO();
+        for (DevopsHostDTO hostDTO : devopsHostDTOList) {
+            if (HostAuthType.ACCOUNTPASSWORD.value().equals(hostDTO.getAuthType())) {
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), hostDTO.getHostIp(), hostDTO.getSshPort(), hostDTO.getUsername(), hostDTO.getPassword()))
+                        .append(System.lineSeparator());
+            } else {
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), hostDTO.getHostIp(), hostDTO.getSshPort(), hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
+                        .append(System.lineSeparator());
+            }
+            // 设置chrony节点
+            middlewareInventoryVO.getChrony().append(hostDTO.getName())
+                    .append(System.lineSeparator());
 
+            switch (middlewareTypeEnum) {
+                case REDIS:
+                    middlewareInventoryVO.getRedis().append(hostDTO.getName())
+                            .append(System.lineSeparator());
+                    break;
+                default:
+                    throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
+            }
+        }
+        return middlewareInventoryVO;
+    }
+
+
+    private void generateAndUploadRedisHostConfiguration(SSHClient sshClient, List<DevopsHostDTO> devopsHostDTOList, MiddlewareInventoryVO middlewareInventoryVO) {
+        String inventory = generateRedisInventoryInI(middlewareInventoryVO);
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, REDIS.getType()) + SLASH + "k8s-inventory.ini";
+        String targetFilePath = BASE_DIR + SLASH + "k8s-inventory.ini";
+        FileUtil.saveDataToFile(filePath, inventory);
+        sshUtil.uploadFile(sshClient, filePath, targetFilePath);
+    }
+
+    private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, String> configuration) throws IOException {
+        Yaml yaml = new Yaml();
+        String configurationInYaml = yaml.dump(configuration);
+        sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, configurationInYaml));
     }
 
     private void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsHostDTO> devopsHostDTOList) throws IOException {
@@ -216,12 +258,22 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         sshUtil.execCommands(ssh, commands);
     }
 
-    private void executeInstallRedis(SSHClient sshClient, String mode) {
+    private String generateRedisInventoryInI(MiddlewareInventoryVO middlewareInventoryVO) {
+        Map<String, String> map = new HashMap<>();
+        map.put("{{all}}", middlewareInventoryVO.getAll().toString());
+        map.put("{{chrony}}", middlewareInventoryVO.getChrony().toString());
+        map.put("{{redis}}", middlewareInventoryVO.getRedis().toString());
+        InputStream inventoryIniInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware-inventory.ini");
 
+        return FileUtil.replaceReturnString(inventoryIniInputStream, map);
     }
 
-    private void checkMiddlewareName(Long projectId, String name, String type) {
+    private void executeInstallRedis(SSHClient sshClient) throws IOException {
+        sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
+    }
+
+    public void checkMiddlewareName(Long projectId, String name, String type) {
         AppServiceInstanceValidator.checkName(name);
-        devopsMiddlewareMapper.checkNameUnique(projectId, name, type);
+        CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkNameUnique(projectId, name, type),"error.middleware.name.exists");
     }
 }

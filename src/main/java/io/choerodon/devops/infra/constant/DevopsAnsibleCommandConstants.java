@@ -8,7 +8,7 @@ import org.hzero.core.util.StringPool;
  * @author lihao
  * 集群相关操作命令
  */
-public class DevopsClusterCommandConstants {
+public class DevopsAnsibleCommandConstants {
     /**
      * 密码模式 节点名称 主机 端口 用户 登录密码
      */
@@ -24,19 +24,23 @@ public class DevopsClusterCommandConstants {
      */
     public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo \"%s\" > %s";
 
-
     /**
-     * docker安装命令模板
+     * 保存redis配置
      */
-    public static final String INSTALL_DOCKER_COMMAND = "curl -fsSL https://get.docker.com/ | bash -s docker --mirror Aliyun >> /tmp/install-docker.log 2>&1 \n" +
-            "sudo systemctl restart docker >> /tmp/install-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/install-docker.log 2>&1 ";
+    public static final String SAVE_REDIS_CONFIGURATION="echo \"%s\" > /tmp/redis-configuration.yaml";
+
 
     public static final String RESTART_DOCKER_PROGRESS = "sudo systemctl restart docker >> /tmp/restart-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/restart-docker.log 2>&1 ";
 
     /**
-     * ansible命令模板，需要指定执行的yml
+     * ansible安装k8s命令模板，需要指定执行的yml
      */
-    public static final String ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/kubeadm-ha && ansible-playbook -i /tmp/inventory.ini %s";
+    public static final String K8S_ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/kubeadm-ha && ansible-playbook -i /tmp/k8s-inventory.ini %s";
+
+    /**
+     * ansible安装redis
+     */
+    public static final String REDIS_ANSIBLE_COMMAND_TEMPLATE="cd /tmp/middleware && ansible-playbook -i /tmp/middleware-inventory.ini -e @/tmp/redis-configuration.yaml redis.yaml";
 
     /**
      * 获取指定目录内容

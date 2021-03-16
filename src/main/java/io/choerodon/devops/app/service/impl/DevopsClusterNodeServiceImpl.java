@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.DevopsClusterCommandConstants.*;
+import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
 import static org.hzero.core.util.StringPool.SLASH;
 
 import java.io.IOException;
@@ -208,35 +208,35 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public InventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> devopsClusterNodeDTOS) {
-        InventoryVO inventoryVO = new InventoryVO();
+    public K8sInventoryVO calculateGeneralInventoryValue(List<DevopsClusterNodeDTO> devopsClusterNodeDTOS) {
+        K8sInventoryVO k8sInventoryVO = new K8sInventoryVO();
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.INNER.getType())) {// 设置所有节点
                 if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
-                    inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
+                    k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                             .append(System.lineSeparator());
                 } else {
-                    inventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())))
+                    k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())))
                             .append(System.lineSeparator());
                 }
                 // 设置master节点
                 if (ClusterNodeRoleEnum.listMasterRoleSet().contains(node.getRole())) {
-                    inventoryVO.getKubeMaster().append(node.getName())
+                    k8sInventoryVO.getKubeMaster().append(node.getName())
                             .append(System.lineSeparator());
                 }
                 // 设置etcd节点
                 if (ClusterNodeRoleEnum.listEtcdRoleSet().contains(node.getRole())) {
-                    inventoryVO.getEtcd().append(node.getName())
+                    k8sInventoryVO.getEtcd().append(node.getName())
                             .append(System.lineSeparator());
                 }
                 // 设置worker节点
                 if (ClusterNodeRoleEnum.listWorkerRoleSet().contains(node.getRole())) {
-                    inventoryVO.getKubeWorker().append(node.getName())
+                    k8sInventoryVO.getKubeWorker().append(node.getName())
                             .append(System.lineSeparator());
                 }
             }
         }
-        return inventoryVO;
+        return k8sInventoryVO;
     }
 
     @Override
@@ -371,8 +371,8 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 return;
             }
             // 生成并上传配置
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
-            generateAndUploadNodeConfiguration(ssh, devopsClusterDTO.getCode(), inventoryVO);
+            K8sInventoryVO k8sInventoryVO = calculateGeneralInventoryValue(devopsClusterNodeDTOList);
+            generateAndUploadNodeConfiguration(ssh, devopsClusterDTO.getCode(), k8sInventoryVO);
             // 生成并上传k8s安装命令
             generateAndUploadAnsibleShellScript(ssh, devopsClusterDTO.getCode(), INSTALL_K8S, INSTALL_K8S_LOG, String.format(EXIT_CODE_FILE_TEMPLATE, devopsClusterDTO.getCode()));
             // 上传privateKey信息到节点
@@ -548,9 +548,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                 throw new Exception(String.format(">>>>>>>>> [check node] failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), e.getMessage()));
             }
             // 生成相关配置节点
-            InventoryVO inventoryVO = calculateGeneralInventoryValue(devopsClusterInstallInfoVO.getDevopsClusterNodeToSaveDTOList());
+            K8sInventoryVO k8sInventoryVO = calculateGeneralInventoryValue(devopsClusterInstallInfoVO.getDevopsClusterNodeToSaveDTOList());
             // 上传配置文件
-            generateAndUploadNodeConfiguration(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode(), inventoryVO);
+            generateAndUploadNodeConfiguration(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode(), k8sInventoryVO);
             // 保存privateKey到节点
             generateAndUploadPrivateKey(ssh, devopsClusterInstallInfoVO.getDevopsClusterNodeToSaveDTOList());
             // 执行检测命令
@@ -583,7 +583,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 配置检查
             devopsNodeCheckResultVO.getConfiguration().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
+            ExecResultInfoVO resultInfoVOForVariable = sshUtil.execCommand(ssh, String.format(K8S_ANSIBLE_COMMAND_TEMPLATE, VARIABLE));
             if (resultInfoVOForVariable.getExitCode() != 0) {
                 errorMsg = resultInfoVOForVariable.getStdOut() + "\n" + resultInfoVOForVariable.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -599,7 +599,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 节点系统检查
             devopsNodeCheckResultVO.getSystem().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, SYSTEM));
+            ExecResultInfoVO resultInfoVOForSystem = sshUtil.execCommand(ssh, String.format(K8S_ANSIBLE_COMMAND_TEMPLATE, SYSTEM));
             if (resultInfoVOForSystem.getExitCode() != 0) {
                 errorMsg = resultInfoVOForSystem.getStdOut() + "\n" + resultInfoVOForSystem.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -615,7 +615,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 内存检查
             devopsNodeCheckResultVO.getMemory().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, MEMORY));
+            ExecResultInfoVO resultInfoVOForMemory = sshUtil.execCommand(ssh, String.format(K8S_ANSIBLE_COMMAND_TEMPLATE, MEMORY));
             if (resultInfoVOForMemory.getExitCode() != 0) {
                 errorMsg = resultInfoVOForMemory.getStdOut() + "\n" + resultInfoVOForMemory.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -631,7 +631,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // CPU检查
             devopsNodeCheckResultVO.getCpu().setStatus(ClusterOperationStatusEnum.OPERATING.value());
             stringRedisTemplate.opsForValue().getAndSet(redisKey, JsonHelper.marshalByJackson(devopsNodeCheckResultVO));
-            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(ANSIBLE_COMMAND_TEMPLATE, CPU));
+            ExecResultInfoVO resultInfoVOForCPU = sshUtil.execCommand(ssh, String.format(K8S_ANSIBLE_COMMAND_TEMPLATE, CPU));
             if (resultInfoVOForCPU.getExitCode() != 0) {
                 errorMsg = resultInfoVOForCPU.getStdOut() + "\n" + resultInfoVOForCPU.getStdErr();
                 devopsNodeCheckResultVO.setStatus(CommandStatus.FAILED.getStatus());
@@ -666,10 +666,10 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    public void generateAndUploadNodeConfiguration(SSHClient ssh, String suffix, InventoryVO inventoryVO) {
-        String configValue = generateInventoryInI(inventoryVO);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "inventory.ini";
-        String targetFilePath = BASE_DIR + SLASH + "inventory.ini";
+    public void generateAndUploadNodeConfiguration(SSHClient ssh, String suffix, K8sInventoryVO k8sInventoryVO) {
+        String configValue = generateInventoryInI(k8sInventoryVO);
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "k8s-inventory.ini";
+        String targetFilePath = BASE_DIR + SLASH + "k8s-inventory.ini";
         FileUtil.saveDataToFile(filePath, configValue);
         sshUtil.uploadFile(ssh, filePath, targetFilePath);
     }
@@ -781,20 +781,20 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         return devopsClusterNodeMapper.listByClusterId(clusterId);
     }
 
-    private String generateInventoryInI(InventoryVO inventoryVO) {
+    private String generateInventoryInI(K8sInventoryVO k8sInventoryVO) {
         Map<String, String> map = new HashMap<>();
-        map.put("{{all}}", inventoryVO.getAll().toString());
-        map.put("{{etcd}}", inventoryVO.getEtcd().toString());
-        map.put("{{kube-master}}", inventoryVO.getKubeMaster().toString());
-        map.put("{{kube-worker}}", inventoryVO.getKubeWorker().toString());
-        map.put("{{new-master}}", inventoryVO.getNewMaster().toString());
-        map.put("{{new-worker}}", inventoryVO.getNewWorker().toString());
-        map.put("{{new-etcd}}", inventoryVO.getNewEtcd().toString());
-        map.put("{{del-worker}}", inventoryVO.getDelWorker().toString());
-        map.put("{{del-master}}", inventoryVO.getDelMaster().toString());
-        map.put("{{del-etcd}}", inventoryVO.getDelEtcd().toString());
-        map.put("{{del-node}}", inventoryVO.getDelNode().toString());
-        InputStream inventoryIniInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/template/inventory.ini");
+        map.put("{{all}}", k8sInventoryVO.getAll().toString());
+        map.put("{{etcd}}", k8sInventoryVO.getEtcd().toString());
+        map.put("{{kube-master}}", k8sInventoryVO.getKubeMaster().toString());
+        map.put("{{kube-worker}}", k8sInventoryVO.getKubeWorker().toString());
+        map.put("{{new-master}}", k8sInventoryVO.getNewMaster().toString());
+        map.put("{{new-worker}}", k8sInventoryVO.getNewWorker().toString());
+        map.put("{{new-etcd}}", k8sInventoryVO.getNewEtcd().toString());
+        map.put("{{del-worker}}", k8sInventoryVO.getDelWorker().toString());
+        map.put("{{del-master}}", k8sInventoryVO.getDelMaster().toString());
+        map.put("{{del-etcd}}", k8sInventoryVO.getDelEtcd().toString());
+        map.put("{{del-node}}", k8sInventoryVO.getDelNode().toString());
+        InputStream inventoryIniInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/template/k8s-inventory.ini");
 
         return FileUtil.replaceReturnString(inventoryIniInputStream, map);
     }
