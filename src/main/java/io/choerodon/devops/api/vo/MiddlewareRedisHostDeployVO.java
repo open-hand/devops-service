@@ -3,11 +3,20 @@ package io.choerodon.devops.api.vo;
 import java.util.Map;
 import java.util.Set;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 public class MiddlewareRedisHostDeployVO {
+    @ApiModelProperty("主机id")
+    @Encrypt
     private Set<Long> hostIds;
+    @ApiModelProperty("部署模式")
     private String mode;
+    @ApiModelProperty("名称")
     private String name;
+    @ApiModelProperty("部署版本")
     private String version;
+    @ApiModelProperty("配置内容")
     private Map<String, String> configuration;
 
     public Set<Long> getHostIds() {
