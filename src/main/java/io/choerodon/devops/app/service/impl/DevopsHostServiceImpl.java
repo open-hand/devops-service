@@ -473,6 +473,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
+    public Set<Long> multiTestConnection(Long projectId, Set<Long> hostIds) {
+        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
+        Set<Long> connectionFailedHostIds = new HashSet<>();
+        devopsHostDTOList.forEach(d -> {
+            DevopsHostConnectionTestResultVO devopsHostConnectionTestResultVO = testConnection(projectId, ConvertUtils.convertObject(d, DevopsHostConnectionTestVO.class));
+            if (!DevopsHostStatus.SUCCESS.getValue().equals(devopsHostConnectionTestResultVO.getHostStatus())) {
+                connectionFailedHostIds.add(d.getId());
+            }
+        });
+        return connectionFailedHostIds;
+    }
+
     @Override
     public Boolean testConnectionByIdForDeployHost(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
