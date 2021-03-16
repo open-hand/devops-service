@@ -77,7 +77,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String USER_NAME = "userName";
     private static final String DEPLOY_RESOURCES_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&viewType=resource&itemType=%s";
     private static final String APP_SERVICE_URL = "%s/#/devops/app-service?type=project&id=%s&name=%s&organizationId=%s";
+    private static final String MERGE_REQUEST_URL = "%s/#/devops/code-management?type=project&id=%s&name=%s&organizationId=%s&appServiceId=%s";
 
+    private static final String INSTANCE_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&viewType=resource&itemType=instances";
 
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
@@ -481,7 +483,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     }
 
                     Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
-
+                    params.put(LINK, String.format(MERGE_REQUEST_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), appServiceDTO.getId()));
                     sendNotices(MessageCodeConstants.AUDIT_MERGE_REQUEST, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message about merge-request-audit. The exception is: ", ex));
@@ -548,7 +550,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     }
 
                     Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
-
+                    params.put(LINK, String.format(MERGE_REQUEST_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), appServiceDTO.getId()));
                     sendNotices(sendSettingCode, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Error occurred when sending message about {}. The exception is {}.", sendSettingCode, ex));
@@ -1239,6 +1241,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             //失败
                             if (InstanceStatus.FAILED == InstanceStatus.valueOf(currentStatus.toUpperCase())) {
                                 code = MessageCodeConstants.CREATE_INSTANCE_FAIL;
+                                //
+                                webHookParams.put(LINK, String.format(INSTANCE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getId()));
                                 //实例部署失败还有站内信和邮件
                                 receivers = ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(appServiceInstanceDTO.getCreatedBy())));
 

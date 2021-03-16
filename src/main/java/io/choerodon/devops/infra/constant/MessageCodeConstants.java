@@ -22,6 +22,9 @@ public class MessageCodeConstants {
      * 应用服务停用
      */
     public static final String APP_SERVICE_DISABLE = "DISABLEAPPSERVICE";
+    /**
+     * 合并请求审核通知
+     */
     public static final String AUDIT_MERGE_REQUEST = "AUDITMERGEREQUEST";
     /**
      * 证书创建失败
@@ -33,7 +36,13 @@ public class MessageCodeConstants {
      */
     public static final String INGRESS_CREATION_FAILURE = "INGRESSFAILURE";
     public static final String INSTANCE_CREATION_FAILURE = "INSTANCEFAILURE";
+    /**
+     * 合并请求被关闭
+     */
     public static final String MERGE_REQUEST_CLOSED = "MERGEREQUESTCLOSED";
+    /**
+     * 合格请求通过
+     */
     public static final String MERGE_REQUEST_PASSED = "MERGEREQUESTPASSED";
     /**
      * 网络创建失败
@@ -67,6 +76,9 @@ public class MessageCodeConstants {
      */
     public static final String PIPELINE_PASS = "PIPELINEPASS";
     public static final String CREATE_INSTANCE_SUCCESS = "CREATEINSTANCESUCCESS";
+    /**
+     *  新建实例失败
+     */
     public static final String CREATE_INSTANCE_FAIL = "CREATEINSTANCEFAIL";
     public static final String UPDATE_INSTANCE_SUCCESS = "UPDATEINSTANCESUCCESS";
     public static final String UPDATE_INSTANCE_FAIL = "UPDATEINSTANCEFAIL";
