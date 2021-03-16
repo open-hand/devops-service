@@ -17,6 +17,9 @@ public class MarketServiceVO {
     @ApiModelProperty("应用的名称")
     private String marketAppName;
 
+    @ApiModelProperty("应用类型")
+    private String marketAppType;
+
     @Encrypt
     @ApiModelProperty("marketAppId")
     private Long marketAppId;
@@ -96,5 +99,13 @@ public class MarketServiceVO {
 
     public void setMarketDeployObjectId(Long marketDeployObjectId) {
         this.marketDeployObjectId = marketDeployObjectId;
+    }
+
+    public String getMarketAppType() {
+        return marketAppType;
+    }
+
+    public void setMarketAppType(String marketAppType) {
+        this.marketAppType = marketAppType;
     }
 }

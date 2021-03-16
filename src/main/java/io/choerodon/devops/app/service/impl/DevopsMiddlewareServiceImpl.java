@@ -51,8 +51,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String SENTINEL_MODE = "sentinel";
 
-    private static final String REDIS_MARKET_SERVICE_NAME_TEMPLATE = "redis-%s";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMiddlewareServiceImpl.class);
 
     @Autowired
@@ -82,7 +80,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     public AppServiceInstanceVO envDeployForRedis(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), String.format(REDIS_MARKET_SERVICE_NAME_TEMPLATE, middlewareRedisEnvDeployVO.getMode()), middlewareRedisEnvDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisEnvDeployVO.getMode(), middlewareRedisEnvDeployVO.getVersion());
 
         middlewareRedisEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareRedisEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
@@ -113,7 +111,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), String.format(REDIS_MARKET_SERVICE_NAME_TEMPLATE, middlewareRedisHostDeployVO.getMode()), middlewareRedisHostDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion());
 
         LOGGER.info("========================================");
         LOGGER.info("start to deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), projectId);
@@ -152,7 +150,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             // 安装redis
             resultInfoVO = executeInstallRedis(sshClient);
 
-            if (resultInfoVO.getExitCode()!=0){
+            if (resultInfoVO.getExitCode() != 0) {
                 throw new CommonException(resultInfoVO.getStdErr());
             }
 
@@ -194,7 +192,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareRedisHostDeployVO.getVersion(),
                     null,
                     deploySourceVO);
-            throw new CommonException("error.middleware.deploy", REDIS.getType(),e.getMessage());
+            throw new CommonException("error.middleware.deploy", REDIS.getType(), e.getMessage());
         } finally {
             sshUtil.closeSsh(sshClient, null);
         }
@@ -282,7 +280,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     private ExecResultInfoVO executeInstallRedis(SSHClient sshClient) throws IOException {
-      return   sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
+        return sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
     }
 
     public void checkMiddlewareName(Long projectId, String name, String type) {
