@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.devops.infra.enums.market.ApplicationTypeEnums;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -573,7 +575,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 if (app.getName() == null) {
                     MarketServiceVO marketServiceVO = marketServices.get(app.getId());
                     if (marketServiceVO != null) {
-                        app.setName(marketServiceVO.getMarketServiceName());
+                        if (ApplicationTypeEnums.MIDDLEWARE.getValue().equals(marketServiceVO.getMarketAppType())){
+                            app.setName(marketServiceVO.getMarketAppName()+"-"+marketServiceVO.getMarketServiceName());
+                        }else {
+                            app.setName(marketServiceVO.getMarketServiceName());
+                        }
                     } else {
                         app.setName(MiscConstants.UNKNOWN_SERVICE);
                     }
