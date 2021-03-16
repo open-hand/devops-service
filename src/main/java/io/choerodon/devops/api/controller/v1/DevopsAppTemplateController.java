@@ -105,7 +105,7 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Void> deleteAppTemplateOnSite(
             @Encrypt
             @PathVariable(value = "app_template_id") Long appTemplateId) {
-        devopsAppTemplateService.deleteAppTemplate(appTemplateId);
+        devopsAppTemplateService.deleteAppTemplate(0L, ResourceLevel.SITE.value(), appTemplateId);
         return Results.success();
     }
 
@@ -143,7 +143,7 @@ public class DevopsAppTemplateController {
     @CustomPageRequest
     public ResponseEntity<Page<DevopsAppTemplateDTO>> queryAppTemplateOnTenant(
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @PathVariable(value = "organization_id") Long organizationId,
             @RequestBody(required = false) String params) {
         return Results.success(devopsAppTemplateService.pageAppTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), params, pageRequest));
@@ -215,7 +215,7 @@ public class DevopsAppTemplateController {
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
             @PathVariable(value = "app_template_id") Long appTemplateId) {
-        devopsAppTemplateService.deleteAppTemplate(appTemplateId);
+        devopsAppTemplateService.deleteAppTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), appTemplateId);
         return Results.success();
     }
 

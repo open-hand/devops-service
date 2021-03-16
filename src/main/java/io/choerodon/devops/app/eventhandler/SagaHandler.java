@@ -377,12 +377,6 @@ public class SagaHandler {
         return payload;
     }
 
-    /**
-     * 处理删除chart version
-     *
-     * @param payload
-     * @return
-     */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
             description = "创建应用模板",
             sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
@@ -395,6 +389,16 @@ public class SagaHandler {
             devopsAppTemplateService.updateAppTemplateStatus(devopsAppTemplateCreateVO.getAppTemplateId());
             throw e;
         }
+        return payload;
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+            description = "创建应用模板",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+            maxRetryCount = 5, seq = 10)
+    public String deleteAppTemplate(String payload) {
+        Long gitlabProjectId = gson.fromJson(payload, Long.class);
+        devopsAppTemplateService.deleteAppTemplateSagaTask(gitlabProjectId);
         return payload;
     }
 

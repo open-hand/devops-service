@@ -32,7 +32,9 @@ public interface DevopsAppTemplateService {
 
     void disableAppTemplate(Long appTemplateId);
 
-    void deleteAppTemplate(Long appTemplateId);
+    void deleteAppTemplate(Long sourceId, String sourceType, Long appTemplateId);
+
+    void deleteAppTemplateSagaTask(Long gitlabProjectId);
 
     String getTemplateGroupPath(Long appTemplateId);
 

@@ -307,6 +307,11 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_CREATE_APP_TEMPLATE = "api-create-app-template";
 
+    /**
+     * 删除应用模板
+     */
+    public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
+
     private SagaTaskCodeConstants() {
     }
 }
