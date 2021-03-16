@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
@@ -50,6 +51,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String SENTINEL_MODE = "sentinel";
 
+    private static final String REDIS_MARKET_SERVICE_NAME_TEMPLATE = "redis-%s";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMiddlewareServiceImpl.class);
 
     @Autowired
@@ -79,7 +82,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     public AppServiceInstanceVO envDeployForRedis(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisEnvDeployVO.getMode(), middlewareRedisEnvDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), String.format(REDIS_MARKET_SERVICE_NAME_TEMPLATE, middlewareRedisEnvDeployVO.getMode()), middlewareRedisEnvDeployVO.getVersion());
 
         middlewareRedisEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareRedisEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
@@ -110,12 +113,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion());
-
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), String.format(REDIS_MARKET_SERVICE_NAME_TEMPLATE, middlewareRedisHostDeployVO.getMode()), middlewareRedisHostDeployVO.getVersion());
 
         LOGGER.info("========================================");
         LOGGER.info("start to deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), projectId);
-        SSHClient ssh = new SSHClient();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
@@ -124,13 +125,18 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
 
         HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsHostDTOForConnection, HostConnectionVO.class);
+        hostConnectionVO.setHostPort(devopsHostDTOForConnection.getSshPort());
         SSHClient sshClient = new SSHClient();
 
         try {
             sshUtil.sshConnect(hostConnectionVO, sshClient);
-
+            ExecResultInfoVO resultInfoVO;
             // 安装ansible、git初始化文件
             sshUtil.uploadPreProcessShell(sshClient, DeployObjectTypeEnum.MIDDLEWARE.value(), DeployObjectTypeEnum.MIDDLEWARE.value());
+            resultInfoVO = sshUtil.execCommand(sshClient, String.format(BASH_COMMAND_TEMPLATE, PRE_KUBEADM_HA_SH));
+            if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
+                throw new Exception(String.format("failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", sshClient.getRemoteHostname(), resultInfoVO.getStdErr()));
+            }
 
             // 创建节点密钥文件
             generateAndUploadPrivateKey(sshClient, devopsHostDTOList);
@@ -138,13 +144,17 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, REDIS);
 
             // 上传节点配置文件
-            generateAndUploadRedisHostConfiguration(sshClient, devopsHostDTOList, middlewareInventoryVO);
+            generateAndUploadRedisHostConfiguration(sshClient, middlewareInventoryVO);
 
             // 生成并上传redis配置文件
-            generateAndUploadRedisConfiguration(ssh, middlewareRedisHostDeployVO.getConfiguration());
+            generateAndUploadRedisConfiguration(sshClient, middlewareRedisHostDeployVO.getConfiguration());
 
             // 安装redis
-            executeInstallRedis(sshClient);
+            resultInfoVO = executeInstallRedis(sshClient);
+
+            if (resultInfoVO.getExitCode()!=0){
+                throw new CommonException(resultInfoVO.getStdErr());
+            }
 
             devopsDeployRecordService.saveRecord(
                     projectId,
@@ -184,9 +194,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareRedisHostDeployVO.getVersion(),
                     null,
                     deploySourceVO);
-            throw new CommonException("error.deploy.hostImage.failed.", e);
+            throw new CommonException("error.middleware.deploy", REDIS.getType(),e.getMessage());
         } finally {
-            sshUtil.closeSsh(ssh, null);
+            sshUtil.closeSsh(sshClient, null);
         }
     }
 
@@ -201,7 +211,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 hostIds,
                 configuration
         );
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "error.middleware.insert");
+        MapperUtil.resultJudgedInsertSelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "error.middleware.insert");
     }
 
     private MiddlewareInventoryVO calculateGeneralInventoryValue(List<DevopsHostDTO> devopsHostDTOList, DevopsMiddlewareTypeEnum middlewareTypeEnum) {
@@ -231,16 +241,19 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
 
-    private void generateAndUploadRedisHostConfiguration(SSHClient sshClient, List<DevopsHostDTO> devopsHostDTOList, MiddlewareInventoryVO middlewareInventoryVO) {
+    private void generateAndUploadRedisHostConfiguration(SSHClient sshClient, MiddlewareInventoryVO middlewareInventoryVO) {
         String inventory = generateRedisInventoryInI(middlewareInventoryVO);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, REDIS.getType()) + SLASH + "k8s-inventory.ini";
-        String targetFilePath = BASE_DIR + SLASH + "k8s-inventory.ini";
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, REDIS.getType()) + SLASH + "middleware-inventory.ini";
+        String targetFilePath = BASE_DIR + SLASH + "middleware-inventory.ini";
         FileUtil.saveDataToFile(filePath, inventory);
         sshUtil.uploadFile(sshClient, filePath, targetFilePath);
     }
 
     private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, String> configuration) throws IOException {
-        Yaml yaml = new Yaml();
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        Yaml yaml = new Yaml(options);
         String configurationInYaml = yaml.dump(configuration);
         sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, configurationInYaml));
     }
@@ -268,12 +281,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         return FileUtil.replaceReturnString(inventoryIniInputStream, map);
     }
 
-    private void executeInstallRedis(SSHClient sshClient) throws IOException {
-        sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
+    private ExecResultInfoVO executeInstallRedis(SSHClient sshClient) throws IOException {
+      return   sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
     }
 
     public void checkMiddlewareName(Long projectId, String name, String type) {
         AppServiceInstanceValidator.checkName(name);
-        CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkNameUnique(projectId, name, type),"error.middleware.name.exists");
+        CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkNameUnique(projectId, name, type) < 1, "error.middleware.name.exists");
     }
 }
