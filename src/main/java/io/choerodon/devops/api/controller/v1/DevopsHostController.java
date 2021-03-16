@@ -117,6 +117,16 @@ public class DevopsHostController {
         return Results.success(devopsHostService.testConnection(projectId, devopsHostConnectionTestVO));
     }
 
+    @ApiOperation("测试多个主机连接状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/multi/connection_test")
+    public ResponseEntity<Set<Long>> multiTestConnection(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @RequestBody @Valid Set<Long> hostIds) {
+        return Results.success(devopsHostService.multiTestConnection(projectId, hostIds));
+    }
+
     @ApiOperation("通过id测试部署类型主机的连接状态/阻塞形式")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/connection_test_by_id")
