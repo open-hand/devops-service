@@ -64,7 +64,10 @@
         WHERE de.project_id = #{projectId}
         AND de.type = 'user'
         <if test='appServiceId != null'>
-            AND ((dai.source = 'normal' AND da.id= #{appServiceId}) OR (dai.source = 'market' AND dai.app_service_id = #{appServiceId}))
+            AND ((dai.source = 'normal' AND da.id= #{appServiceId})
+            OR (dai.source = 'market' AND dai.app_service_id = #{appServiceId})
+            OR (dai.source = 'middleware' AND dai.app_service_id = #{appServiceId})
+            )
         </if>
         <if test='instanceId != null'>
             AND dai.id= #{instanceId}
