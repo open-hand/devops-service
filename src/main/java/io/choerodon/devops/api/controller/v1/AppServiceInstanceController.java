@@ -22,6 +22,7 @@ import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.AppServiceInstanceSource;
@@ -52,6 +53,8 @@ public class AppServiceInstanceController {
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppServiceInstanceValidator appServiceInstanceValidator;
 
@@ -957,5 +960,17 @@ public class AppServiceInstanceController {
         // 校验参数正确性
         appServiceInstanceValidator.validateBatchDeployment(appServiceDeployVOs);
         return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
+    }
+
+    @ApiOperation("查询引用了实例作为替换对象的流水线信息")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{instance_id}/pipeline_reference")
+    public ResponseEntity<PipelineInstanceReferenceVO> queryPipelineReference(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "instance_id") Long instanceId) {
+        return ResponseEntity.ok().body(devopsCdPipelineService.queryPipelineReference(projectId, instanceId));
     }
 }

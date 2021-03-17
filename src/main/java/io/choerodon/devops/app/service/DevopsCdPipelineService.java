@@ -1,9 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.AduitStatusChangeVO;
-import io.choerodon.devops.api.vo.AuditCheckVO;
-import io.choerodon.devops.api.vo.AuditResultVO;
-import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import javax.annotation.Nullable;
+
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 
@@ -78,6 +77,7 @@ public interface DevopsCdPipelineService {
 
     /**
      * 查询部署任务的部署结果
+     *
      * @param pipelineRecordId
      * @param deployJobName
      * @return
@@ -86,6 +86,7 @@ public interface DevopsCdPipelineService {
 
     /**
      * 执行外部卡点任务
+     *
      * @param pipelineRecordId
      * @param stageRecordId
      * @param jobRecordId
@@ -94,23 +95,36 @@ public interface DevopsCdPipelineService {
 
     /**
      * 外部卡点任务回调接口，用于接收审批结果
+     *
      * @param pipelineRecordId
      * @param stageRecordId
      * @param jobRecordId
-     * @param callbackToken 回调时用于认证的token
-     * @param status 审批结果 true,false
+     * @param callbackToken    回调时用于认证的token
+     * @param status           审批结果 true,false
      */
     void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status);
 
     /**
      * 查询外部卡点任务回调接口地址
+     *
      * @return
      */
     String queryCallbackUrl();
 
     /**
      * 处理api测试任务执行完成事件
+     *
      * @param apiTestCompleteEventVO
      */
     void handleApiTestTaskCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO);
+
+    /**
+     * 查询引用了实例作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
+     *
+     * @param projectId  项目id
+     * @param instanceId 实例id
+     * @return 一个或者无
+     */
+    @Nullable
+    PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long instanceId);
 }

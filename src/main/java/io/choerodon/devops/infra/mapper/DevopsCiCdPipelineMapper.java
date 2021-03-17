@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -50,4 +51,12 @@ public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
     CiCdPipelineDTO queryByToken(@Param("token") String token);
 
     List<CiCdPipelineDTO> selectPipelineByProjectId(@Param("project_id") Long projectId);
+
+    /**
+     * 查询引用了实例作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
+     *
+     * @param instanceId 实例id
+     * @return 一个或无
+     */
+    PipelineInstanceReferenceVO queryPipelineReference(@Param("instanceId") Long instanceId);
 }
