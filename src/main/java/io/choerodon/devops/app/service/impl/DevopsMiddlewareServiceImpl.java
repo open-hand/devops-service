@@ -227,7 +227,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareRedisDeployPayload.getProjectId());
         } catch (Exception e) {
             devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), PipelineStatus.FAILED.toValue());
-            LOGGER.info("redis deploy error:{}",e.getMessage());
+            throw new CommonException(e.getMessage());
         } finally {
             sshUtil.closeSsh(sshClient, null);
         }
