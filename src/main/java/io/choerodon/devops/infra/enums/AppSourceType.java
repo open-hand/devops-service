@@ -21,7 +21,12 @@ public enum AppSourceType {
     /**
      * 应用服务来自本项目
      */
-    CURRENT_PROJECT("currentProject");
+    CURRENT_PROJECT("currentProject"),
+
+    /**
+     * 平台预置
+     */
+    PLATFORM_PRESET("platformPreset");
 
     private String value;
 
