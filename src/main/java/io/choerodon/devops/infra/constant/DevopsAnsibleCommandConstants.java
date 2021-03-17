@@ -27,7 +27,9 @@ public class DevopsAnsibleCommandConstants {
     /**
      * 保存redis配置
      */
-    public static final String SAVE_REDIS_CONFIGURATION="echo \"%s\" > /tmp/redis-configuration.yaml";
+    public static final String SAVE_REDIS_CONFIGURATION="cat <<EOF >/tmp/redis-configuration.yml\n" +
+            "%s\n"+
+            "EOF";
 
 
     public static final String RESTART_DOCKER_PROGRESS = "sudo systemctl restart docker >> /tmp/restart-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/restart-docker.log 2>&1 ";
@@ -40,7 +42,7 @@ public class DevopsAnsibleCommandConstants {
     /**
      * ansible安装redis
      */
-    public static final String REDIS_ANSIBLE_COMMAND_TEMPLATE="cd /tmp/middleware && ansible-playbook -i /tmp/middleware-inventory.ini -e @/tmp/redis-configuration.yaml redis.yml";
+    public static final String REDIS_ANSIBLE_COMMAND_TEMPLATE="cd /tmp/middleware && ansible-playbook -i /tmp/middleware-inventory.ini -e @/tmp/redis-configuration.yml redis-install.yml";
 
     /**
      * 获取指定目录内容
@@ -136,7 +138,7 @@ public class DevopsAnsibleCommandConstants {
     /**
      * devops中ansible文件保存目录模板
      */
-    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/Users/lihao/ansible/%s";
+    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
 
     /**
      * 基准目录

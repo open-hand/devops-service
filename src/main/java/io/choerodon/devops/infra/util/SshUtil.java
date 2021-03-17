@@ -469,7 +469,7 @@ public class SshUtil {
                 map.put("{{ git-clone }}","if [ -d \"/tmp/middleware\" ]; then\n" +
                         "    rm -rf /tmp/middleware\n" +
                         "fi\n" +
-                        "git clone -b choerodon https://gitee.com/open-hand/middleware.git /tmp/middleware");
+                        "git clone https://gitee.com/open-hand/middleware.git /tmp/middleware");
                 break;
             default:
                 throw new CommonException("error.unsupported.preprocess.type",type);
