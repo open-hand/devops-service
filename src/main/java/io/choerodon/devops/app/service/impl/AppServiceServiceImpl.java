@@ -928,15 +928,13 @@ public class AppServiceServiceImpl implements AppServiceService {
                 } finally {
                     FileUtil.deleteFile(zipFile);
                 }
-                File gitInitAppFile = new File(applicationWorkPath + File.separator + appTemplateDTO.getCode());
-                git = gitUtil.initGit(gitInitAppFile);
-                applicationDir = applicationWorkPath + File.separator + appTemplateDTO.getCode();
+                git = gitUtil.initGit(applicationWorkDir);
             } else {
                 UserAttrDTO gitlabAdminDTO = userAttrService.queryGitlabAdminByIamId();
                 String pullToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, gitlabAdminDTO);
                 git = gitUtil.cloneRepository(applicationWorkDir, appTemplateDTO.getGitlabUrl(), pullToken);
             }
-            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationDir, appTemplateDTO.getCode(), devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
+            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationWorkPath, appTemplateDTO.getCode(), devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
                     + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
@@ -944,8 +942,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             try {
                 gitUtil.commitAndPushForMaster(git, appServiceDTO.getRepoUrl(), "init app from template", accessToken);
             } catch (Exception e) {
-                releaseResources(applicationWorkDir, git);
                 throw e;
+            } finally {
+                releaseResources(applicationWorkDir, git);
             }
             // 保存devops_branch信息
             initBranch(devOpsAppServiceImportPayload, appServiceDTO, GitOpsConstants.MASTER);
