@@ -212,8 +212,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
         if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
-            appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
-            appServiceInstanceInfoVO.setCurrentVersionAvailable(true);
+            // 如果是中间件，直接以应用版本作为生效版本
+            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
+                appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketServiceVersion());
+            }else {
+                appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
+                appServiceInstanceInfoVO.setCurrentVersionAvailable(true);
+            }
         } else {
             appServiceInstanceInfoVO.setCommandVersion("版本已被删除");
             appServiceInstanceInfoVO.setCurrentVersionAvailable(false);
