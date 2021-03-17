@@ -43,7 +43,7 @@ public class DevopsMiddlewareController {
      */
     @ApiOperation(value = "环境部署更新实例")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/redis/{instance_id}")
+    @PutMapping("/redis/{instance_id}")
     public ResponseEntity<AppServiceInstanceVO> updateRedisInstance(@PathVariable("project_id") Long projectId,
                                                                      @Encrypt
                                                                      @ApiParam(value = "实例id",required = true)
