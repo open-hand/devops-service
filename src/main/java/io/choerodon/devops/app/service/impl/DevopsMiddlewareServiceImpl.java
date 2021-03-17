@@ -206,17 +206,21 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             // 创建节点密钥文件
             generateAndUploadPrivateKey(sshClient, devopsHostDTOList);
+            LOGGER.info("rsa file upload completed");
 
             MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, REDIS);
 
             // 上传节点配置文件
             generateAndUploadRedisHostConfiguration(sshClient, middlewareInventoryVO);
+            LOGGER.info("node configuration file upload completed");
 
             // 生成并上传redis配置文件
             generateAndUploadRedisConfiguration(sshClient, middlewareRedisHostDeployVO.getConfiguration());
+            LOGGER.info("redis configuration file upload completed");
 
             // 安装redis
             resultInfoVO = executeInstallRedis(sshClient);
+            LOGGER.info("the Redis installation command has finished");
 
             if (resultInfoVO.getExitCode() != 0) {
                 throw new CommonException(resultInfoVO.getStdErr());
