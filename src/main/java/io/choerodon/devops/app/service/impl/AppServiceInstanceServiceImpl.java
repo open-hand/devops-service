@@ -215,7 +215,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             // 如果是中间件，直接以应用版本作为生效版本
             if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
                 appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketServiceVersion());
-            }else {
+            } else {
                 appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
             }
             appServiceInstanceInfoVO.setCurrentVersionAvailable(true);
@@ -225,9 +225,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         if (versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()) != null) {
             // 如果是中间件，直接以应用版本作为生效版本
-            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())){
+            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
                 appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getMarketServiceVersion());
-            }else {
+            } else {
                 appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
             }
         }
@@ -276,7 +276,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         pageInfo.getContent().forEach(appServiceInstanceInfoVO -> {
                     AppServiceDTO appServiceDTO = appServices.get(appServiceInstanceInfoVO.getAppServiceId());
-                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO == null ? null : appServiceDTO.getProjectId(),appServiceInstanceInfoVO.getSource()));
+                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO == null ? null : appServiceDTO.getProjectId(), appServiceInstanceInfoVO.getSource()));
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
 
                     // 为应用市场实例填充版本信息
@@ -285,7 +285,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             MarketServiceDeployObjectVO deployObject = deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId());
                             if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoVO.getSource())) {
                                 appServiceInstanceInfoVO.setCommandVersion(deployObject.getMarketServiceVersion());
-                            }else {
+                            } else {
                                 appServiceInstanceInfoVO.setCommandVersion(deployObject.getDevopsAppServiceVersion());
                             }
                             appServiceInstanceInfoVO.setAppServiceName(deployObject.getMarketServiceName());
@@ -934,14 +934,24 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     private void saveDeployRecord(MarketServiceVO marketServiceVO, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, Long commandId, String chartVersion) {
+        String deploySourceType;
+        DeployType deployType;
+        if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
+            deploySourceType = AppSourceType.PLATFORM_PRESET.getValue();
+            deployType = DeployType.BASE_COMPONENT;
+        } else {
+            deploySourceType=AppSourceType.MARKET.getValue();
+            deployType=DeployType.MANUAL;
+        }
+
         DeploySourceVO deploySourceVO = new DeploySourceVO();
-        deploySourceVO.setType(AppSourceType.MARKET.getValue());
+        deploySourceVO.setType(deploySourceType);
         deploySourceVO.setMarketAppName(marketServiceVO.getMarketAppName());
         deploySourceVO.setMarketServiceName(marketServiceVO.getMarketServiceName());
         deploySourceVO.setDeployObjectId(marketServiceVO.getMarketDeployObjectId());
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
-                DeployType.MANUAL,
+                deployType,
                 commandId,
                 DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
@@ -1359,7 +1369,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             chartVersion = appServiceVersion.getDevopsAppServiceVersion();
         }
         //插入部署记录
-        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(),chartVersion);
+        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
 
 
         MarketInstanceCreationRequestVO appServiceDeployVO = new MarketInstanceCreationRequestVO();

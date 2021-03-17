@@ -135,12 +135,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
-        deploySourceVO.setType(AppSourceType.MARKET.getValue());
+        deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
         deploySourceVO.setProjectName(projectDTO.getName());
 
         Long deployRecordId = devopsDeployRecordService.saveRecord(
                 projectId,
-                DeployType.MANUAL,
+                DeployType.BASE_COMPONENT,
                 null,
                 DeployModeEnum.HOST,
                 devopsHostDTOForConnection.getId(),

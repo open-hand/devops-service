@@ -18,7 +18,11 @@ public enum DeployType {
     /**
      * 批量部署的类型
      */
-    BATCH("batch");
+    BATCH("batch"),
+    /**
+     * 基础组件
+     */
+    BASE_COMPONENT("baseComponent");
 
 
     private String type;
