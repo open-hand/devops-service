@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,23 @@ public class DevopsMiddlewareController {
         middlewareRedisEnvDeployVO.setCommandType(CommandType.CREATE.getType());
         middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.envDeployForRedis(projectId, middlewareRedisEnvDeployVO));
+    }
+
+    /**
+     * 更新redis中间件实例
+     */
+    @ApiOperation(value = "环境部署")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/redis/{instance_id}")
+    public ResponseEntity<AppServiceInstanceVO> updateRedisInstance(@PathVariable("project_id") Long projectId,
+                                                                     @Encrypt
+                                                                     @ApiParam(value = "实例id",required = true)
+                                                                     @PathVariable("instance_id")Long instanceId,
+                                                                     @RequestBody MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+        middlewareRedisEnvDeployVO.setCommandType(CommandType.UPDATE.getType());
+        middlewareRedisEnvDeployVO.setInstanceId(instanceId);
+        middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
+        return ResponseEntity.ok(middlewareService.updateRedisInstance(projectId, middlewareRedisEnvDeployVO));
     }
 
 
