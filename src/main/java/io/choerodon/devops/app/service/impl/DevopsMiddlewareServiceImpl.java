@@ -223,7 +223,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             LOGGER.info("the Redis installation command has finished");
 
             if (resultInfoVO.getExitCode() != 0) {
-                throw new CommonException(resultInfoVO.getStdErr());
+                throw new CommonException("failed to install redis");
             }
 
             devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), PipelineStatus.SUCCESS.toValue());
