@@ -928,7 +928,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                 } finally {
                     FileUtil.deleteFile(zipFile);
                 }
-                git = gitUtil.initGit(applicationWorkDir);
+                File gitInitAppFile = new File(applicationWorkPath + File.separator + appTemplateDTO.getCode());
+                git = gitUtil.initGit(gitInitAppFile);
+                applicationDir = applicationWorkPath + File.separator + appTemplateDTO.getCode();
             } else {
                 UserAttrDTO gitlabAdminDTO = userAttrService.queryGitlabAdminByIamId();
                 String pullToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, gitlabAdminDTO);
