@@ -217,8 +217,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketServiceVersion());
             }else {
                 appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
-                appServiceInstanceInfoVO.setCurrentVersionAvailable(true);
             }
+            appServiceInstanceInfoVO.setCurrentVersionAvailable(true);
         } else {
             appServiceInstanceInfoVO.setCommandVersion("版本已被删除");
             appServiceInstanceInfoVO.setCurrentVersionAvailable(false);
