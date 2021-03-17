@@ -63,6 +63,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -157,6 +158,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
+    @Autowired
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
     @Autowired
     @Qualifier("restTemplateForIp")
@@ -1313,5 +1316,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
     }
 
-
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long instanceId) {
+        return devopsCiCdPipelineMapper.queryPipelineReference(instanceId);
+    }
 }
