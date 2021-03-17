@@ -305,25 +305,29 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         if (devopsAppTemplateDTO.getEnable() && !devopsAppTemplateDTO.getStatus().equals(DevopsAppTemplateStatusEnum.FAILED.getType())) {
             throw new CommonException("app.template.is.status");
         }
-        devopsAppTemplateMapper.deleteByPrimaryKey(appTemplateId);
-        appTemplatePermissionMapper.delete(new DevopsAppTemplatePermissionDTO(appTemplateId, null));
-        if (devopsAppTemplateDTO.getGitlabProjectId() != null) {
-            transactionalProducer.apply(
-                    StartSagaBuilder.newBuilder()
-                            .withRefType("gitlabProjectId")
-                            .withRefId(devopsAppTemplateDTO.getGitlabProjectId().toString())
-                            .withSagaCode(SagaTaskCodeConstants.DEVOPS_DELETE_APP_TEMPLATE)
-                            .withLevel(ResourceLevel.valueOf(sourceType.toUpperCase()))
-                            .withSourceId(sourceId)
-                            .withPayloadAndSerialize(devopsAppTemplateDTO.getGitlabProjectId()),
-                    builder -> {
-                    });
-        }
+        devopsAppTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.CREATING.getType());
+        devopsAppTemplateMapper.updateByPrimaryKeySelective(devopsAppTemplateDTO);
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withRefType("devops-app-template")
+                        .withRefId(appTemplateId.toString())
+                        .withSagaCode(SagaTaskCodeConstants.DEVOPS_DELETE_APP_TEMPLATE)
+                        .withLevel(ResourceLevel.valueOf(sourceType.toUpperCase()))
+                        .withSourceId(sourceId)
+                        .withPayloadAndSerialize(appTemplateId),
+                builder -> {
+                });
     }
 
-    public void deleteAppTemplateSagaTask(Long gitlabProjectId) {
+    @Transactional
+    public void deleteAppTemplateSagaTask(Long appTemplateId) {
+        DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
+        devopsAppTemplateMapper.deleteByPrimaryKey(appTemplateId);
+        appTemplatePermissionMapper.delete(new DevopsAppTemplatePermissionDTO(appTemplateId, null));
         UserAttrDTO userAttrDTO = userAttrService.queryGitlabAdminByIamId();
-        gitlabServiceClientOperator.deleteProjectById(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        if (devopsAppTemplateDTO != null && devopsAppTemplateDTO.getGitlabProjectId() != null) {
+            gitlabServiceClientOperator.deleteProjectById(TypeUtil.objToInteger(devopsAppTemplateDTO.getGitlabProjectId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
     }
 
     private void updateStatus(Long appTemplateId, Boolean enable) {
