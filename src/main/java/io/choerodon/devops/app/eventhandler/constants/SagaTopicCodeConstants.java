@@ -287,6 +287,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
 
     /**
+     * 部署redis
+     */
+    public static final String DEVOPS_DEPLOY_REDIS="deploy_redis";
+
+    /**
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";

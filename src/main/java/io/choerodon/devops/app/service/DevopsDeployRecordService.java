@@ -8,10 +8,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
-import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsDeployRecordInstanceDTO;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
@@ -24,9 +22,11 @@ public interface DevopsDeployRecordService {
 
     void saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName);
 
-    void saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName, DeploySourceVO deploySourceVO);
+    Long saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName, DeploySourceVO deploySourceVO);
 
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
+
+    void updateRecord(Long recordId, String status);
 
     void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
@@ -64,6 +64,7 @@ public interface DevopsDeployRecordService {
 
     /**
      * 分页查询部署记录
+     *
      * @param projectId
      * @param pageRequest
      * @param deployType

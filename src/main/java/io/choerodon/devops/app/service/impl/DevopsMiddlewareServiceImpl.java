@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_DEPLOY_REDIS;
 import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
 import static org.hzero.core.util.StringPool.SLASH;
@@ -21,12 +22,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.validator.MiddlewareConfigurationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareRedisDeployPayload;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
@@ -67,6 +74,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsMiddlewareMapper devopsMiddlewareMapper;
+    @Autowired
+    private TransactionalProducer producer;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -96,13 +105,15 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
     }
 
-
     @Override
     public AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
-        return appServiceInstanceService.createOrUpdateMarketInstance(projectId,ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class));
+        return appServiceInstanceService.createOrUpdateMarketInstance(projectId, ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class));
     }
 
     @Override
+    @Saga(code = DEVOPS_DEPLOY_REDIS,
+            description = "主机部署redis中间件", inputSchemaClass = MiddlewareRedisHostDeployVO.class)
+    @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
         MiddlewareConfigurationValidator.validateRedisConfiguration(middlewareRedisHostDeployVO.getConfiguration());
@@ -119,14 +130,65 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
         MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion());
 
-        LOGGER.info("========================================");
-        LOGGER.info("start to deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), projectId);
+        DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
+
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
         deploySourceVO.setType(AppSourceType.MARKET.getValue());
         deploySourceVO.setProjectName(projectDTO.getName());
+
+        // 保存中间件信息
+        saveMiddlewareInfo(projectId,
+                middlewareRedisHostDeployVO.getName(),
+                REDIS.getType(),
+                middlewareRedisHostDeployVO.getMode(),
+                middlewareRedisHostDeployVO.getVersion(),
+                devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
+                JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
+
+        Long deployRecordId = devopsDeployRecordService.saveRecord(
+                projectId,
+                DeployType.MANUAL,
+                null,
+                DeployModeEnum.HOST,
+                devopsHostDTOForConnection.getId(),
+                devopsHostDTOForConnection.getName(),
+                PipelineStatus.FAILED.toValue(),
+                DeployObjectTypeEnum.MIDDLEWARE,
+                middlewareRedisHostDeployVO.getName(),
+                middlewareRedisHostDeployVO.getVersion(),
+                null,
+                deploySourceVO);
+
+        DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload = new DevopsMiddlewareRedisDeployPayload();
+        devopsMiddlewareRedisDeployPayload.setProjectId(projectId);
+        devopsMiddlewareRedisDeployPayload.setMiddlewareRedisHostDeployVO(middlewareRedisHostDeployVO);
+        devopsMiddlewareRedisDeployPayload.setDeploySourceVO(deploySourceVO);
+        devopsMiddlewareRedisDeployPayload.setDeployRecordId(deployRecordId);
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType("host")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DEPLOY_REDIS),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsMiddlewareRedisDeployPayload)
+                        .withRefId(deployRecordId.toString()));
+    }
+
+    @Override
+    public void hostDeployForRedis(DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload) {
+        MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO = devopsMiddlewareRedisDeployPayload.getMiddlewareRedisHostDeployVO();
+
+        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(devopsMiddlewareRedisDeployPayload.getProjectId(), middlewareRedisHostDeployVO.getHostIds());
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
+
+
+        LOGGER.info("========================================");
+        LOGGER.info("start to deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareRedisDeployPayload.getProjectId());
 
         HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsHostDTOForConnection, HostConnectionVO.class);
         hostConnectionVO.setHostPort(devopsHostDTOForConnection.getSshPort());
@@ -160,45 +222,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 throw new CommonException(resultInfoVO.getStdErr());
             }
 
-            devopsDeployRecordService.saveRecord(
-                    projectId,
-                    DeployType.MANUAL,
-                    null,
-                    DeployModeEnum.HOST,
-                    devopsHostDTOForConnection.getId(),
-                    devopsHostDTOForConnection.getName(),
-                    PipelineStatus.SUCCESS.toValue(),
-                    DeployObjectTypeEnum.MIDDLEWARE,
-                    middlewareRedisHostDeployVO.getName(),
-                    middlewareRedisHostDeployVO.getVersion(),
-                    null,
-                    deploySourceVO);
-
-            // 保存中间件信息
-            saveMiddlewareInfo(projectId,
-                    middlewareRedisHostDeployVO.getName(),
-                    REDIS.getType(),
-                    middlewareRedisHostDeployVO.getMode(),
-                    middlewareRedisHostDeployVO.getVersion(),
-                    devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
-                    JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
+            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), PipelineStatus.SUCCESS.toValue());
             LOGGER.info("========================================");
-            LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), projectId);
+            LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareRedisDeployPayload.getProjectId());
         } catch (Exception e) {
-            devopsDeployRecordService.saveRecord(
-                    projectId,
-                    DeployType.MANUAL,
-                    null,
-                    DeployModeEnum.HOST,
-                    devopsHostDTOForConnection.getId(),
-                    devopsHostDTOForConnection.getName(),
-                    PipelineStatus.FAILED.toValue(),
-                    DeployObjectTypeEnum.MIDDLEWARE,
-                    middlewareRedisHostDeployVO.getName(),
-                    middlewareRedisHostDeployVO.getVersion(),
-                    null,
-                    deploySourceVO);
-            throw new CommonException("error.middleware.deploy", REDIS.getType(), e.getMessage());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), PipelineStatus.FAILED.toValue());
+            LOGGER.info("redis deploy error:{}",e.getMessage());
         } finally {
             sshUtil.closeSsh(sshClient, null);
         }

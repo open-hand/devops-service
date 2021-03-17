@@ -45,6 +45,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -108,7 +109,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     }
 
     @Override
-    public void saveRecord(Long projectId,
+    public Long saveRecord(Long projectId,
                            DeployType type,
                            Long deployId,
                            DeployModeEnum deployMode,
@@ -142,6 +143,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}, errorMsg: {}", devopsDeployRecordDTO, e.getMessage());
         }
+        return devopsDeployRecordDTO.getId();
     }
 
     @Override
@@ -150,6 +152,19 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         if (devopsDeployRecordMapper.insert(devopsDeployRecordDTO) != 1) {
             throw new CommonException("error.deploy.record.insert");
         }
+    }
+
+    /**
+     * 这里使用REQUIRES_NEW 是为了在catch中不会被回滚
+     * @param recordId
+     * @param status
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void updateRecord(Long recordId, String status) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
+        devopsDeployRecordDTO.setDeployResult(status);
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper,devopsDeployRecordDTO,"error.deploy.record.insert");
     }
 
 

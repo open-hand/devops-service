@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -30,7 +32,7 @@ public class DevopsMiddlewareController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/redis/deploy/env")
     public ResponseEntity<AppServiceInstanceVO> deployForEnvironment(@PathVariable("project_id") Long projectId,
-                                                                     @RequestBody MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+                                                                     @RequestBody @Valid MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
         middlewareRedisEnvDeployVO.setCommandType(CommandType.CREATE.getType());
         middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.envDeployForRedis(projectId, middlewareRedisEnvDeployVO));
@@ -39,14 +41,14 @@ public class DevopsMiddlewareController {
     /**
      * 更新redis中间件实例
      */
-    @ApiOperation(value = "环境部署")
+    @ApiOperation(value = "环境部署更新实例")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/redis/{instance_id}")
     public ResponseEntity<AppServiceInstanceVO> updateRedisInstance(@PathVariable("project_id") Long projectId,
                                                                      @Encrypt
                                                                      @ApiParam(value = "实例id",required = true)
                                                                      @PathVariable("instance_id")Long instanceId,
-                                                                     @RequestBody MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+                                                                     @RequestBody @Valid MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
         middlewareRedisEnvDeployVO.setCommandType(CommandType.UPDATE.getType());
         middlewareRedisEnvDeployVO.setInstanceId(instanceId);
         middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
@@ -60,9 +62,9 @@ public class DevopsMiddlewareController {
     @ApiOperation(value = "主机部署")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/redis/deploy/host")
-    public ResponseEntity<Void> deployForHost(@PathVariable("project_id")Long projectId, @RequestBody MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
+    public ResponseEntity<Void> deployForHost(@PathVariable("project_id")Long projectId,
+                                              @RequestBody @Valid MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         middlewareService.hostDeployForRedis(projectId,middlewareRedisHostDeployVO);
         return ResponseEntity.noContent().build();
-        // TODO 完成主机部署逻辑
     }
 }
