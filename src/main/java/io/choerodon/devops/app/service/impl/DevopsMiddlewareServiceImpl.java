@@ -145,7 +145,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 DeployModeEnum.HOST,
                 devopsHostDTOForConnection.getId(),
                 devopsHostDTOForConnection.getName(),
-                PipelineStatus.FAILED.toValue(),
+                PipelineStatus.RUNNING.toValue(),
                 DeployObjectTypeEnum.MIDDLEWARE,
                 middlewareRedisHostDeployVO.getName(),
                 middlewareRedisHostDeployVO.getVersion(),
