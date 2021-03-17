@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import io.choerodon.devops.infra.enums.market.ApplicationTypeEnums;
+import static io.choerodon.devops.infra.constant.MiddlewareAppServiceName.MIDDLE_APP_SERVICE_NAME_MAP;
 
 import java.util.*;
 import java.util.function.Function;
@@ -51,6 +51,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.market.ApplicationTypeEnums;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -576,7 +577,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     MarketServiceVO marketServiceVO = marketServices.get(app.getId());
                     if (marketServiceVO != null) {
                         if (ApplicationTypeEnums.MIDDLEWARE.getValue().equals(marketServiceVO.getMarketAppType())){
-                            app.setName(marketServiceVO.getMarketAppName()+"-"+marketServiceVO.getMarketServiceName());
+                            app.setName(MIDDLE_APP_SERVICE_NAME_MAP.get(marketServiceVO.getMarketAppName()+"-"+marketServiceVO.getMarketServiceName()));
                         }else {
                             app.setName(marketServiceVO.getMarketServiceName());
                         }
