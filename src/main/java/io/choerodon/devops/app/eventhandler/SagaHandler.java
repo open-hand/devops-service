@@ -24,10 +24,7 @@ import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
-import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
-import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
-import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -35,6 +32,7 @@ import io.choerodon.devops.infra.enums.HostDeployType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -75,6 +73,8 @@ public class SagaHandler {
     private GitlabHandleService gitlabHandleService;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
+    @Autowired
+    private DevopsMiddlewareService devopsMiddlewareService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -400,6 +400,15 @@ public class SagaHandler {
         Long gitlabProjectId = gson.fromJson(payload, Long.class);
         devopsAppTemplateService.deleteAppTemplateSagaTask(gitlabProjectId);
         return payload;
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_DEPLOY_REDIS,
+            description = "主机部署redis中间件",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_DEPLOY_REDIS,
+            maxRetryCount = 0, seq = 10)
+    public void deployRedis(String payload) {
+        DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload = JsonHelper.unmarshalByJackson(payload, DevopsMiddlewareRedisDeployPayload.class);
+        devopsMiddlewareService.hostDeployForRedis(devopsMiddlewareRedisDeployPayload);
     }
 
     /**

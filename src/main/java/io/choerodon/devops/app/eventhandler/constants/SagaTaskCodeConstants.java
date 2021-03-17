@@ -312,6 +312,12 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
 
+    /**
+     * 部署redis
+     */
+    public static final String DEVOPS_DEPLOY_REDIS="deploy-redis";
+
+
     private SagaTaskCodeConstants() {
     }
 }
