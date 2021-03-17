@@ -48,7 +48,7 @@ public class DevopsMiddlewareController {
                                                                      @Encrypt
                                                                      @ApiParam(value = "实例id",required = true)
                                                                      @PathVariable("instance_id")Long instanceId,
-                                                                     @RequestBody @Valid MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+                                                                     @RequestBody MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
         middlewareRedisEnvDeployVO.setCommandType(CommandType.UPDATE.getType());
         middlewareRedisEnvDeployVO.setInstanceId(instanceId);
         middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());

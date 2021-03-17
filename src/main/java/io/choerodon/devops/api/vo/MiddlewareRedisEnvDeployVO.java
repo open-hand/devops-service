@@ -3,22 +3,11 @@ package io.choerodon.devops.api.vo;
 import io.swagger.annotations.ApiModelProperty;
 
 public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO {
-    @ApiModelProperty("pvc名称")
-    private String pvcName;
-
     @ApiModelProperty("部署模式")
     private String mode;
 
     @ApiModelProperty("中间件版本")
     private String version;
-
-    public String getPvcName() {
-        return pvcName;
-    }
-
-    public void setPvcName(String pvcName) {
-        this.pvcName = pvcName;
-    }
 
     public String getMode() {
         return mode;
