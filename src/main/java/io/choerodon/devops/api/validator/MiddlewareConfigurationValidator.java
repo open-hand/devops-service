@@ -61,13 +61,12 @@ public class MiddlewareConfigurationValidator {
     }
 
     public static void validateRedisConfiguration(Map<String, String> configuration) {
-        configuration.forEach((k, v) ->{
+        configuration.forEach((k, v) -> {
             Validator validator = redisValueValidatorMap.get(k);
-            if (validator!=null){
+            if (validator != null) {
                 validator.validate(v);
-            }else{
-                throw new CommonException("error.unsupported.redis.configuration");
-            }});
+            }
+        });
     }
 
     private static void appendfsyncValidator(String value) {
