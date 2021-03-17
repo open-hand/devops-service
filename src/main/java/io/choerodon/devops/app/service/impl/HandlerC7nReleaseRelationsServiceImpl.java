@@ -407,6 +407,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getDevopsAppServiceVersion());
         marketInstanceCreationRequestVO.setMarketAppServiceId(appServiceVersion.getMarketServiceId());
         marketInstanceCreationRequestVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
+        marketInstanceCreationRequestVO.setSource(c7nHelmRelease.getSpec().getSource());
         if (type.equals(CommandType.UPDATE.getType())) {
             DevopsEnvCommandDTO devopsEnvCommandDTO;
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
