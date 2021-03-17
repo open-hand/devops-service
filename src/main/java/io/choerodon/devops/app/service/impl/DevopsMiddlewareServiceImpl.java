@@ -138,15 +138,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         deploySourceVO.setType(AppSourceType.MARKET.getValue());
         deploySourceVO.setProjectName(projectDTO.getName());
 
-        // 保存中间件信息
-        saveMiddlewareInfo(projectId,
-                middlewareRedisHostDeployVO.getName(),
-                REDIS.getType(),
-                middlewareRedisHostDeployVO.getMode(),
-                middlewareRedisHostDeployVO.getVersion(),
-                devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
-                JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
-
         Long deployRecordId = devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
@@ -160,6 +151,15 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareRedisHostDeployVO.getVersion(),
                 null,
                 deploySourceVO);
+
+        // 保存中间件信息
+        saveMiddlewareInfo(projectId,
+                middlewareRedisHostDeployVO.getName(),
+                REDIS.getType(),
+                middlewareRedisHostDeployVO.getMode(),
+                middlewareRedisHostDeployVO.getVersion(),
+                devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
+                JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
 
         DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload = new DevopsMiddlewareRedisDeployPayload();
         devopsMiddlewareRedisDeployPayload.setProjectId(projectId);
@@ -283,12 +283,31 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, String> configuration) throws IOException {
+        Map<String, Map<String, String>> baseConfig = new HashMap<>();
+        configuration.putIfAbsent("port", "6379");
+        configuration.putIfAbsent("bind", "0.0.0.0");
+        configuration.putIfAbsent("databases", "128");
+        configuration.putIfAbsent("dir", "/var/lib/redis/data");
+        configuration.putIfAbsent("logfile", "/var/log/redis/redis.log");
+        configuration.putIfAbsent("requirepass", "changeit");
+        configuration.putIfAbsent("masterauth", "changeit");
+        configuration.putIfAbsent("appendonly", "yes");
+        configuration.putIfAbsent("appendfsync", "everysec");
+        configuration.putIfAbsent("no-appendfsync-on-rewrite", "yes");
+        configuration.putIfAbsent("auto-aof-rewrite-percentage", "100");
+        configuration.putIfAbsent("auto-aof-rewrite-min-size", "64mb");
+
+        baseConfig.put("redis_base_config", configuration);
+
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setAllowReadOnlyProperties(true);
         Yaml yaml = new Yaml(options);
-        String configurationInYaml = yaml.dump(configuration);
-        sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, configurationInYaml));
+        String baseConfigInYaml = yaml.dump(baseConfig);
+        Map<String, String> params = new HashMap<>();
+        params.put("{{base-config}}", baseConfigInYaml);
+        String redisConfiguration = FileUtil.replaceReturnString(DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-configuration.yml"), params);
+        sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, redisConfiguration));
     }
 
     private void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsHostDTO> devopsHostDTOList) throws IOException {
