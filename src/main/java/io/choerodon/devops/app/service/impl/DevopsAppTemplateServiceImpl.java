@@ -307,16 +307,18 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         }
         devopsAppTemplateMapper.deleteByPrimaryKey(appTemplateId);
         appTemplatePermissionMapper.delete(new DevopsAppTemplatePermissionDTO(appTemplateId, null));
-        transactionalProducer.apply(
-                StartSagaBuilder.newBuilder()
-                        .withRefType("gitlabProjectId")
-                        .withRefId(devopsAppTemplateDTO.getGitlabProjectId().toString())
-                        .withSagaCode(SagaTaskCodeConstants.DEVOPS_DELETE_APP_TEMPLATE)
-                        .withLevel(ResourceLevel.valueOf(sourceType.toUpperCase()))
-                        .withSourceId(sourceId)
-                        .withPayloadAndSerialize(devopsAppTemplateDTO.getGitlabProjectId()),
-                builder -> {
-                });
+        if (devopsAppTemplateDTO.getGitlabProjectId() != null) {
+            transactionalProducer.apply(
+                    StartSagaBuilder.newBuilder()
+                            .withRefType("gitlabProjectId")
+                            .withRefId(devopsAppTemplateDTO.getGitlabProjectId().toString())
+                            .withSagaCode(SagaTaskCodeConstants.DEVOPS_DELETE_APP_TEMPLATE)
+                            .withLevel(ResourceLevel.valueOf(sourceType.toUpperCase()))
+                            .withSourceId(sourceId)
+                            .withPayloadAndSerialize(devopsAppTemplateDTO.getGitlabProjectId()),
+                    builder -> {
+                    });
+        }
     }
 
     public void deleteAppTemplateSagaTask(Long gitlabProjectId) {
