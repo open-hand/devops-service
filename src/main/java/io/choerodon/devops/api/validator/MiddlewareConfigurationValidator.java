@@ -17,6 +17,8 @@ public class MiddlewareConfigurationValidator {
 
     private static Map<String, Validator> redisValueValidatorMap;
 
+    private static List<String> keyToIgnoreList;
+
     static {
         appendfsyncValueList = new ArrayList<>();
         appendfsyncValueList.add("no");
@@ -34,14 +36,15 @@ public class MiddlewareConfigurationValidator {
         memoryPolicyValueList.add("allkeys-random");
         memoryPolicyValueList.add("volatile-ttl");
         memoryPolicyValueList.add("noeviction");
+        keyToIgnoreList=new ArrayList<>();
+        keyToIgnoreList.add("master-read-only");
+        keyToIgnoreList.add("client-output-buffer-limit-slave-soft-seconds");
+        keyToIgnoreList.add("client-output-buffer-slave-hard-limit");
+        keyToIgnoreList.add("client-output-buffer-slave-soft-limit");
 
         redisValueValidatorMap = new HashMap<>();
         redisValueValidatorMap.put("appendfsync", MiddlewareConfigurationValidator::appendfsyncValidator);
         redisValueValidatorMap.put("appendonly", MiddlewareConfigurationValidator::appendonlyValidator);
-        redisValueValidatorMap.put("master-read-only", MiddlewareConfigurationValidator::masterReadOnlyValidator);
-        redisValueValidatorMap.put("client-output-buffer-limit-slave-soft-seconds", MiddlewareConfigurationValidator::clientOutputBufferLimitSlaveSoftSecondsValidator);
-        redisValueValidatorMap.put("client-output-buffer-slave-hard-limit", MiddlewareConfigurationValidator::clientOutputBufferSlaveHardLimitValidator);
-        redisValueValidatorMap.put("client-output-buffer-slave-soft-limit", MiddlewareConfigurationValidator::clientOutputBufferSlaveSoftLimitValidator);
         redisValueValidatorMap.put("hash-max-ziplist-entries", MiddlewareConfigurationValidator::hashMaxZiplistEntriesValidator);
         redisValueValidatorMap.put("hash-max-ziplist-value", MiddlewareConfigurationValidator::hashMaxZiplistValueValidator);
         redisValueValidatorMap.put("latency-monitor-threshold", MiddlewareConfigurationValidator::latencyMonitorThresholdValidator);
@@ -61,6 +64,8 @@ public class MiddlewareConfigurationValidator {
     }
 
     public static void validateRedisConfiguration(Map<String, String> configuration) {
+        keyToIgnoreList.forEach(key-> configuration.remove(key));
+
         configuration.forEach((k, v) -> {
             Validator validator = redisValueValidatorMap.get(k);
             if (validator != null) {
@@ -167,10 +172,10 @@ public class MiddlewareConfigurationValidator {
 
 
     private static void checkRedisValueInRange(Long value, Long min, Long max, String key) {
-        checkValueInRange(value,min,max,key,"error.redis.configuration.illegal");
+        checkValueInRange(value, min, max, key, "error.redis.configuration.illegal");
     }
 
-    private static void checkValueInRange(Long value,Long min,Long max,String key,String exceptionCode){
+    private static void checkValueInRange(Long value, Long min, Long max, String key, String exceptionCode) {
         if (value < min || value > max) {
             throw new CommonException(exceptionCode, key);
         }
