@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.app.service.DevopsDeployService;
 import io.choerodon.swagger.annotation.Permission;

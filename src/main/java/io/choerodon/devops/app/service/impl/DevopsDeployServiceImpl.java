@@ -10,6 +10,7 @@ import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -85,16 +86,23 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             AppServiceDeployVO appServiceDeployVO = deployConfigVO.getAppServiceDeployVO();
             appServiceDeployVO.setType("create");
             appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false);
-        } else if (DeployModeEnum.HOST.value().equals(deployConfigVO.getDeployType())) {
+        } else {
+            jarAndImageDeploy(projectId, deployConfigVO, DetailsHelper.getUserDetails().getUserId());
+        }
+    }
+
+    @Async
+    public void jarAndImageDeploy(Long projectId, DeployConfigVO deployConfigVO, Long userId) {
+        if (DeployModeEnum.HOST.value().equals(deployConfigVO.getDeployType())) {
             if (HostDeployType.IMAGED_DEPLOY.getValue().equals(deployConfigVO.getDeployObjectType())) {
-                hostImagedeploy(projectId, deployConfigVO);
+                hostImagedeploy(projectId, deployConfigVO, userId);
             } else if (HostDeployType.JAR_DEPLOY.getValue().equals(deployConfigVO.getDeployObjectType())) {
-                hostJarDeploy(projectId, deployConfigVO);
+                hostJarDeploy(projectId, deployConfigVO, userId);
             }
         }
     }
 
-    private void hostJarDeploy(Long projectId, DeployConfigVO deployConfigVO) {
+    private void hostJarDeploy(Long projectId, DeployConfigVO deployConfigVO, Long userId) {
         LOGGER.info("========================================");
         LOGGER.info("start jar deploy cd host job,projectId:{}", projectId);
         SSHClient ssh = new SSHClient();
@@ -156,7 +164,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
 
                 //如果是市场部署将部署人员添加为应用的订阅人员
-                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
+                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), userId);
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
                 mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
@@ -231,7 +239,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         return arr[arr.length - 1];
     }
 
-    private void hostImagedeploy(Long projectId, DeployConfigVO deployConfigVO) {
+    private void hostImagedeploy(Long projectId, DeployConfigVO deployConfigVO, Long userId) {
         LOGGER.info("========================================");
         LOGGER.info("start image deploy cd host job,projectId:{}", projectId);
         SSHClient ssh = new SSHClient();
@@ -275,7 +283,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
                 deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
                 //如果是市场部署将部署人员添加为应用的订阅人员
-                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
+                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), userId);
 
             } else {
                 imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
