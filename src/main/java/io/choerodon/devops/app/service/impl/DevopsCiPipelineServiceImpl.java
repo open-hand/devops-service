@@ -892,7 +892,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Map<String, List<DevopsPipelineRecordRelDTO>> stringListMap = devopsPipelineRecordRelDTOS.stream()
                 .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getCreationDate().getTime()).toString()));
         //将创建时间排序
-        List<String> creationDates = devopsPipelineRecordRelDTOS.stream().map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString()).collect(Collectors.toList());
+        List<String> creationDates = new ArrayList<>(devopsPipelineRecordRelDTOS.stream().map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString()).collect(Collectors.toSet()));
         List<Long> pipelineFrequencies = new ArrayList<>();
         List<Long> pipelineSuccessFrequency = new ArrayList<>();
         List<Long> pipelineFailFrequency = new ArrayList<>();
