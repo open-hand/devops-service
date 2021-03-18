@@ -123,7 +123,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     int updateIsActiveNullToTrue();
 
-    List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
+    List<AppServiceDTO> listAll(@Param("projectId") Long projectId, @Param("appServiceName") String appServiceName);
 
     List<AppServiceDTO> queryAppServicesHavingVersions(@Param("projectId") Long projectId);
 

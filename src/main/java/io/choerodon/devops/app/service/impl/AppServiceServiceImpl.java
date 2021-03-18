@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -743,8 +744,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceRepVO> listAll(Long projectId) {
-        List<AppServiceRepVO> appServiceRepVOList = ConvertUtils.convertList(baseListAll(projectId), AppServiceRepVO.class);
+    public List<AppServiceRepVO> listAll(Long projectId, String appServiceName) {
+        List<AppServiceRepVO> appServiceRepVOList = ConvertUtils.convertList(baseListAll(projectId, appServiceName), AppServiceRepVO.class);
         appServiceRepVOList.forEach(appServiceRepVO -> {
             if (appServiceRepVO.getProjectId() != null && appServiceRepVO.getProjectId().equals(projectId)) {
                 appServiceRepVO.setServiceType(NORMAL_SERVICE);
@@ -2453,7 +2454,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
-        return appServiceMapper.listAll(projectId);
+        return appServiceMapper.listAll(projectId, null);
+    }
+
+    private List<AppServiceDTO> baseListAll(Long projectId, String appServiceName) {
+        return appServiceMapper.listAll(projectId, appServiceName);
     }
 
     private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {

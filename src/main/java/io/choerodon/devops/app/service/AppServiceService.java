@@ -171,7 +171,7 @@ public interface AppServiceService {
      * @param projectId 项目id
      * @return baseList of ApplicationRepDTO
      */
-    List<AppServiceRepVO> listAll(Long projectId);
+    List<AppServiceRepVO> listAll(Long projectId, String appServiceName);
 
     /**
      * 创建服务校验名称是否存在
@@ -465,7 +465,7 @@ public interface AppServiceService {
                        String oldGroupName,
                        Boolean isGetWorkingDirectory);
 
-    String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId,String source);
+    String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId, String source);
 
     void deleteAppServiceSage(Long projectId, Long appServiceId);
 
