@@ -87,7 +87,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
-        return PageHelper.doPageAndSort(pageRequest, () -> devopsAppTemplateMapper.pageAppTemplate(sourceId, sourceType, DetailsHelper.getUserDetails().getUserId(), paramList, searchParamMap));
+        return PageHelper.doPage(pageRequest, () -> devopsAppTemplateMapper.pageAppTemplate(sourceId, sourceType, DetailsHelper.getUserDetails().getUserId(), paramList, searchParamMap));
     }
 
     @Override

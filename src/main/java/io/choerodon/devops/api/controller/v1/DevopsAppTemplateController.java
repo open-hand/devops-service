@@ -39,8 +39,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     @CustomPageRequest
     public ResponseEntity<Page<DevopsAppTemplateDTO>> queryAppTemplateOnSite(
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @RequestBody(required = false) String params) {
         return Results.success(devopsAppTemplateService.pageAppTemplate(0L, ResourceLevel.SITE.value(), params, pageRequest));
     }

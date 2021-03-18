@@ -4,8 +4,10 @@
     <select id="pageAppTemplate" resultType="io.choerodon.devops.infra.dto.DevopsAppTemplateDTO">
         SELECT
             dat.*,
-        IF
-        ( datp.id IS NULL, 0, 1 ) AS permission
+        CASE
+        WHEN ( datp.id IS NULL ) THEN 0
+        ELSE 1
+        END AS permission
         FROM
         devops_app_template dat
         LEFT JOIN devops_app_template_permission datp ON datp.user_id = #{userId}
@@ -14,6 +16,10 @@
             dat.source_id = #{sourceId}
           AND dat.source_type = #{sourceType}
           <include refid="sqlparam"/>
+        ORDER BY
+        dat.`enable` DESC,
+        dat.type,
+        dat.id
     </select>
 
     <select id="listAppTemplate" resultType="io.choerodon.devops.infra.dto.DevopsAppTemplateDTO">
@@ -24,6 +30,7 @@
         WHERE
             dat.source_id = #{sourceId}
             AND dat.source_type = #{sourceType}
+            AND dat.enable =1 and dat.status='S'
         <if test='param != null and param!=""'>
             AND
             (dat.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
