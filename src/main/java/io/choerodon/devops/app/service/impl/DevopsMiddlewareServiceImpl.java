@@ -54,6 +54,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String STAND_ALONE_CONFIG = "cluster:\n" +
             "  enabled: false\n";
+
+    private static final String SENTINEL_CONFIG="sentinel:\n" +
+            "  enabled: true\n";
     private static final String STANDALONE_MODE = "standalone";
 
     private static final String SENTINEL_MODE = "sentinel";
@@ -98,6 +101,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         // 如果是单机模式，需要添加 禁用集群模式配置
         if (STANDALONE_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
             middlewareRedisEnvDeployVO.setValues(STAND_ALONE_CONFIG + middlewareRedisEnvDeployVO.getValues());
+        }
+        // 如果是哨兵模式，需要添加 启用哨兵模式配置
+        if (SENTINEL_MODE.equals(middlewareRedisEnvDeployVO.getMode())){
+            middlewareRedisEnvDeployVO.setValues(SENTINEL_CONFIG+middlewareRedisEnvDeployVO.getValues());
         }
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class);
