@@ -31,6 +31,7 @@
             )
         </if>
         order by dat.id
+        limit 20
     </select>
 
     <sql id="sqlparam">
