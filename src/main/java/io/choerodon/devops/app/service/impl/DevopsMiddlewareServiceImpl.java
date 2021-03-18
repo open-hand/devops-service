@@ -145,7 +145,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 DeployModeEnum.HOST,
                 devopsHostDTOForConnection.getId(),
                 devopsHostDTOForConnection.getName(),
-                PipelineStatus.RUNNING.toValue(),
+                CommandStatus.OPERATING.getStatus(),
                 DeployObjectTypeEnum.MIDDLEWARE,
                 middlewareRedisHostDeployVO.getName(),
                 middlewareRedisHostDeployVO.getVersion(),
@@ -226,11 +226,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 throw new CommonException("failed to install redis");
             }
 
-            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), PipelineStatus.SUCCESS.toValue());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus());
             LOGGER.info("========================================");
             LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareRedisDeployPayload.getProjectId());
         } catch (Exception e) {
-            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), PipelineStatus.FAILED.toValue());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus());
             throw new CommonException(e.getMessage());
         } finally {
             sshUtil.closeSsh(sshClient, null);
