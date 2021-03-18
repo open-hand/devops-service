@@ -17,6 +17,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsAppTemplateMapper extends BaseMapper<DevopsAppTemplateDTO> {
     List<DevopsAppTemplateDTO> pageAppTemplate(@Param("sourceId") Long sourceId,
                                                @Param("sourceType") String sourceType,
+                                               @Param("userId") Long userId,
                                                @Param("params") List<String> params,
                                                @Param("searchParam") Map<String, Object> searchParam);
 

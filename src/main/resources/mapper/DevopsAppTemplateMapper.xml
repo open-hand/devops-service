@@ -8,7 +8,7 @@
         ( datp.id IS NULL, 0, 1 ) AS permission
         FROM
         devops_app_template dat
-        LEFT JOIN devops_app_template_permission datp ON datp.user_id = 1
+        LEFT JOIN devops_app_template_permission datp ON datp.user_id = #{userId}
         AND datp.app_template_id = dat.id
         WHERE
             dat.source_id = #{sourceId}
