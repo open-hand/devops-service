@@ -17,7 +17,7 @@ public interface NexusClient {
      * @param version               版本号
      * @return xml文件
      */
-    @GET("repository/{repositoryName}/{slashSeparatedGroupId}/springboot/{version}/maven-metadata.xml")
+    @GET("repository/{repositoryName}/{slashSeparatedGroupId}/{version}/maven-metadata.xml")
     Call<String> componentMetadata(@Path("repositoryName") String repositoryName,
                                    @Path("slashSeparatedGroupId") String slashSeparatedGroupId,
                                    @Path("version") String version);

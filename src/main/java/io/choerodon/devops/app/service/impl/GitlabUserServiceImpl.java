@@ -226,7 +226,12 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             gitlabUserReqDTO.setExternUid(user.getId().toString());
             gitlabUserReqDTO.setSkipConfirmation(true);
             gitlabUserReqDTO.setUsername(user.getLoginName());
-            gitlabUserReqDTO.setEmail(Objects.requireNonNull(user.getEmail()));
+            // 用户的邮箱不能为空
+            if (user.getEmail() == null) {
+                addErrorUser(userSyncErrorBuilder, user, "The email for user can't be null", devopsUserSyncRecordDTO);
+                continue;
+            }
+            gitlabUserReqDTO.setEmail(user.getEmail());
             gitlabUserReqDTO.setName(user.getRealName());
             gitlabUserReqDTO.setCanCreateGroup(true);
             gitlabUserReqDTO.setProjectsLimit(100);
@@ -255,10 +260,14 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 LOGGER.info("Finished to sync user {} with id {}", user.getLoginName(), user.getId());
             } catch (Exception ex) {
                 String errorMessage = handleExWhenSyncingUser(consecutiveFailedCount, ex, user);
-                userSyncErrorBuilder.addErrorUser(user.getId(), user.getRealName(), user.getLoginName(), errorMessage);
-                devopsUserSyncRecordDTO.setFailCount(devopsUserSyncRecordDTO.getFailCount() + 1);
+                addErrorUser(userSyncErrorBuilder, user, errorMessage, devopsUserSyncRecordDTO);
             }
         }
+    }
+
+    private void addErrorUser(UserSyncErrorBuilder userSyncErrorBuilder, IamUserDTO user, String errorMessage, DevopsUserSyncRecordDTO devopsUserSyncRecordDTO) {
+        userSyncErrorBuilder.addErrorUser(user.getId(), user.getRealName(), user.getLoginName(), errorMessage);
+        devopsUserSyncRecordDTO.setFailCount(devopsUserSyncRecordDTO.getFailCount() + 1);
     }
 
     private String handleExWhenSyncingUser(IntegerHolder consecutiveFailedCount, Exception ex, IamUserDTO user) {
