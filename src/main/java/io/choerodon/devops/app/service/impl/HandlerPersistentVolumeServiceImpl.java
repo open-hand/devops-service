@@ -181,7 +181,7 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
         devopsPvReqVO.setEnvId(envId);
         devopsPvReqVO.setName(pv.getMetadata().getName());
         devopsPvReqVO.setCommandType(type);
-        devopsPvReqVO.setAnnotations(JsonHelper.marshalByJackson(pv.getMetadata().getAnnotations()));
+        devopsPvReqVO.setLabels(JsonHelper.marshalByJackson(pv.getMetadata().getLabels()));
         // 暂时只设计为支持一种模式
         devopsPvReqVO.setAccessModes(pv.getSpec().getAccessModes().get(0));
         devopsPvReqVO.setRequestResource(pv.getSpec().getCapacity().get(KubernetesConstants.STORAGE).toSuffixedString());
