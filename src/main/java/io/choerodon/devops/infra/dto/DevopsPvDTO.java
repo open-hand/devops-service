@@ -32,6 +32,9 @@ public class DevopsPvDTO extends AuditDomain {
     @ApiModelProperty("pv描述")
     private String description;
 
+    @ApiModelProperty("pv对象的Annotations字段的JSON格式字符串")
+    private String annotations;
+
     @ApiModelProperty("pv状态")
     private String status;
 
@@ -194,6 +197,14 @@ public class DevopsPvDTO extends AuditDomain {
         this.clusterConnect = clusterConnect;
     }
 
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
+    }
+
     @Override
     public String toString() {
         return "DevopsPvDTO{" +
@@ -202,6 +213,7 @@ public class DevopsPvDTO extends AuditDomain {
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", description='" + description + '\'' +
+                ", annotations='" + annotations + '\'' +
                 ", status='" + status + '\'' +
                 ", pvcName='" + pvcName + '\'' +
                 ", clusterName='" + clusterName + '\'' +

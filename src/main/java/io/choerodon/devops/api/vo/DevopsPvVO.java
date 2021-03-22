@@ -49,6 +49,9 @@ public class DevopsPvVO {
     @ApiModelProperty("集群连接状态")
     private Boolean clusterConnect;
 
+    @ApiModelProperty("pv对象的Annotations字段的JSON格式字符串")
+    private String annotations;
+
     public Boolean getClusterConnect() {
         return clusterConnect;
     }
@@ -161,6 +164,14 @@ public class DevopsPvVO {
         ObjectVersionNumber = objectVersionNumber;
     }
 
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
+    }
+
     @Override
     public String toString() {
         return "DevopsPvVO{" +
@@ -177,6 +188,8 @@ public class DevopsPvVO {
                 ", requestResource='" + requestResource + '\'' +
                 ", skipCheckProjectPermission=" + skipCheckProjectPermission +
                 ", ObjectVersionNumber=" + ObjectVersionNumber +
+                ", clusterConnect=" + clusterConnect +
+                ", annotations='" + annotations + '\'' +
                 '}';
     }
 }
