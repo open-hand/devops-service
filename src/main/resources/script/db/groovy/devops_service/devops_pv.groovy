@@ -62,4 +62,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
     changeSet(id: '2020-1-6-update-column', author: 'lihao') {
         sql("ALTER TABLE devops_pv MODIFY pvc_name varchar(128) null comment '绑定的PVC名称'")
     }
+
+    changeSet(id: '2021-03-22-add-column',author: 'lihao'){
+        addColumn(tableName: 'devops_pv'){
+            column(name: 'annotations', type: 'VARCHAR(2000)', remarks: 'pv对象的Annotations字段的JSON格式字符串', afterColumn: 'name')
+        }
+    }
 }

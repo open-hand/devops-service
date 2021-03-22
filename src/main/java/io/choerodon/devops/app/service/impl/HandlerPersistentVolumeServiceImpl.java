@@ -1,5 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.models.V1PersistentVolume;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.kubernetes.LocalPvResource;
@@ -20,19 +34,6 @@ import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1PersistentVolume;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -180,6 +181,7 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
         devopsPvReqVO.setEnvId(envId);
         devopsPvReqVO.setName(pv.getMetadata().getName());
         devopsPvReqVO.setCommandType(type);
+        devopsPvReqVO.setAnnotations(JsonHelper.marshalByJackson(pv.getMetadata().getAnnotations()));
         // 暂时只设计为支持一种模式
         devopsPvReqVO.setAccessModes(pv.getSpec().getAccessModes().get(0));
         devopsPvReqVO.setRequestResource(pv.getSpec().getCapacity().get(KubernetesConstants.STORAGE).toSuffixedString());
