@@ -61,8 +61,8 @@ public class DevopsPvReqVO {
     @ApiModelProperty("更新了skipCheckProjectPermission字段")
     private Long objectVersionNumber;
 
-    @ApiModelProperty("pv对象的Annotations字段的JSON格式字符串")
-    private String annotations;
+    @ApiModelProperty("pv对象的labels字段的JSON格式字符串")
+    private String labels;
 
     public List<Long> getProjectIds() {
         return projectIds;
@@ -168,11 +168,11 @@ public class DevopsPvReqVO {
         this.valueConfig = valueConfig;
     }
 
-    public String getAnnotations() {
-        return annotations;
+    public String getLabels() {
+        return labels;
     }
 
-    public void setAnnotations(String annotations) {
-        this.annotations = annotations;
+    public void setLabels(String labels) {
+        this.labels = labels;
     }
 }

@@ -568,9 +568,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
         v1ObjectMeta.setName(devopsPvDTO.getName());
 
-        // 如果annotations不为空，设置annotations
-        if (!StringUtils.isEmpty(devopsPvDTO.getAnnotations())){
-            v1ObjectMeta.setAnnotations(JsonHelper.unmarshalByJackson(devopsPvDTO.getAnnotations(), new TypeReference<Map<String, String>>() {
+        // 如果label不为空，设置label
+        if (!StringUtils.isEmpty(devopsPvDTO.getLabels())){
+            v1ObjectMeta.setLabels(JsonHelper.unmarshalByJackson(devopsPvDTO.getLabels(), new TypeReference<Map<String, String>>() {
             }));
         }
         v1PersistentVolume.setMetadata(v1ObjectMeta);

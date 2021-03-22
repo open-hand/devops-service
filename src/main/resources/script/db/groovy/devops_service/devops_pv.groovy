@@ -65,7 +65,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
 
     changeSet(id: '2021-03-22-add-column',author: 'lihao'){
         addColumn(tableName: 'devops_pv'){
-            column(name: 'annotations', type: 'VARCHAR(2000)', remarks: 'pv对象的Annotations字段的JSON格式字符串', afterColumn: 'name')
+            column(name: 'labels', type: 'VARCHAR(2000)', remarks: 'pv对象的labels字段的JSON格式字符串', afterColumn: 'name')
         }
     }
 }
