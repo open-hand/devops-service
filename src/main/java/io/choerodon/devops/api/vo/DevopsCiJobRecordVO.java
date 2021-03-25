@@ -72,6 +72,19 @@ public class DevopsCiJobRecordVO {
      */
     private DownloadMavenJarVO downloadMavenJarVO;
 
+    /**
+     * 是否有镜像扫描
+     */
+    private Boolean imageScan;
+
+    public Boolean getImageScan() {
+        return imageScan;
+    }
+
+    public void setImageScan(Boolean imageScan) {
+        this.imageScan = imageScan;
+    }
+
     public DownloadMavenJarVO getDownloadMavenJarVO() {
         return downloadMavenJarVO;
     }
