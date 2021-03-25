@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
 import java.util.Optional;
 import javax.validation.Valid;
 
@@ -7,6 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.CiPipelineImageService;
-import io.choerodon.devops.app.service.CiPipelineMavenService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -45,6 +44,9 @@ public class CiController {
     private final AppServiceVersionService appServiceVersionService;
     private final CiPipelineImageService ciPipelineImageService;
     private final CiPipelineMavenService ciPipelineMavenService;
+
+    @Autowired
+    private DevopsImageScanResultService devopsImageScanResultService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -159,4 +161,24 @@ public class CiController {
     public ResponseEntity<SonarInfoVO> getSonarDefault() {
         return ResponseEntity.ok(new SonarInfoVO(userName, password, sonarqubeUrl));
     }
+
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "解析ci阶段镜像扫描产生的json文件")
+    @PostMapping("/resolve_image_scan_json")
+    public ResponseEntity<Void> resolveImageScanJson(
+            @ApiParam(value = "job_id", required = true)
+            @RequestParam(value = "job_id") Long jobId,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "start_date")
+            @RequestParam(value = "start_date") Date startDate,
+            @ApiParam(value = "end_date")
+            @RequestParam(value = "end_date") Date endDate,
+            @ApiParam(value = "json文件", required = true)
+            @RequestParam MultipartFile file) {
+        devopsImageScanResultService.resolveImageScanJson(jobId, gitlabPipelineId, startDate, endDate,file);
+        return ResponseEntity.ok().build();
+    }
+
 }

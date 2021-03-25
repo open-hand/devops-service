@@ -58,6 +58,9 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("是否跳过harbor的证书校验 / true表示跳过")
     private Boolean skipDockerTlsVerify;
 
+    @ApiModelProperty("是否开启镜像扫描/true表示开启")
+    private Boolean imageScan;
+
     @ApiModelProperty("是否自定义镜像名")
     private Boolean customDockerTagName;
 
@@ -76,6 +79,14 @@ public class CiConfigTemplateVO {
     @Encrypt
     @ApiModelProperty("chart关联docker任务 Id")
     private Long dockerJobId;
+
+    public Boolean getImageScan() {
+        return imageScan;
+    }
+
+    public void setImageScan(Boolean imageScan) {
+        this.imageScan = imageScan;
+    }
 
     public Boolean getCustomChartVersionName() {
         return customChartVersionName;
@@ -196,7 +207,7 @@ public class CiConfigTemplateVO {
     public void setSkipDockerTlsVerify(Boolean skipDockerTlsVerify) {
         this.skipDockerTlsVerify = skipDockerTlsVerify;
     }
-    
+
     public MavenDeployRepoSettings getMavenDeployRepoSettings() {
         return mavenDeployRepoSettings;
     }
