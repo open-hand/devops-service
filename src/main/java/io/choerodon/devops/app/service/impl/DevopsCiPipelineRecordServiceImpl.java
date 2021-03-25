@@ -584,6 +584,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
                             fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
                         }
+                        // docker构建开启了镜像扫描的
+                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+                            Set<Boolean> collect = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getImageScan).collect(Collectors.toSet());
+                            if (collect.contains(Boolean.TRUE)){
+                                devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
+                            }else {
+                                devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
+                            }
+                        }
                     }
                 }
             });
