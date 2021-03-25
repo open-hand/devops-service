@@ -81,8 +81,17 @@ choerodon:
 agent:
   version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
-  certManagerUrl: "agent.example.com" # 存放CertManager的地址，用于安装
   repoUrl: "helm.example.com" # 存放agent的地址，用于安装
+  # CertManager相关的配置
+  cert-manager:
+    # 存放CertManager的chart的仓库地址，用于安装
+    repoUrl: ${AGENT_CERTMANAGERURL:agent.example.com}
+    # 安装的CertManager的实例名称（之所以要写成cert-manager是因为 CertManager 本身的一个bug，将其自己的部分k8s资源写死了名称）
+    releaseName: cert-manager
+    # 安装的CertManager的chart版本
+    chartVersion: 1.1.1
+    # 安装的CertManager的namespace
+    namespace: cert-manager
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:

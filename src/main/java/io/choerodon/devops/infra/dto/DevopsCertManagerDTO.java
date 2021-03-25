@@ -5,6 +5,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -20,6 +22,8 @@ public class DevopsCertManagerDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ApiModelProperty("CertManager的实例名称")
+    private String releaseName;
     private String email;
     private String chartVersion;
     private String namespace;
@@ -54,5 +58,13 @@ public class DevopsCertManagerDTO extends AuditDomain {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getReleaseName() {
+        return releaseName;
+    }
+
+    public void setReleaseName(String releaseName) {
+        this.releaseName = releaseName;
     }
 }

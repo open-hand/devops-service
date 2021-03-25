@@ -177,6 +177,13 @@
             <artifactId>spring-data-commons</artifactId>
         </dependency>
 
+        <!-- 用于在打包时生成关于配置的metadata文件，方便依赖这个jar包的代码配置属性时有提示 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>

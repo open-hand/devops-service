@@ -7,4 +7,12 @@
         where cluster_id = #{clusterId}
           AND type = #{type}
     </select>
+
+    <select id="queryCertManagerVersion" resultType="java.lang.String">
+        select dcm.chart_version
+        from devops_cluster_resource dcr
+                 inner join devops_cert_manager dcm on dcr.config_id = dcm.id
+        where dcr.cluster_id = #{clusterId}
+          and type = 'cert-manager'
+    </select>
 </mapper>

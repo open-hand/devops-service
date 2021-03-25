@@ -13,8 +13,8 @@ import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.config.CertManagerProperties;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.TimeZoneConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -68,11 +68,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private DevopsPvcService devopsPvcService;
-    @Autowired
     private DevopsPvService devopsPvService;
     @Autowired
     private DevopsEnvFileErrorService devopsEnvFileErrorService;
+    @Autowired
+    private CertManagerProperties certManagerProperties;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
@@ -109,8 +109,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         MapperUtil.resultJudgedInsertSelective(devopsCertManagerRecordMapper, devopsCertManagerRecordDTO, "error.insert.cert.manager.record");
         //记录chart信息
         DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
-        devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N);
-        devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
+        devopsCertManagerDTO.setReleaseName(certManagerProperties.getReleaseName());
+        devopsCertManagerDTO.setNamespace(certManagerProperties.getNamespace());
+        devopsCertManagerDTO.setChartVersion(certManagerProperties.getChartVersion());
         MapperUtil.resultJudgedInsertSelective(devopsCertManagerMapper, devopsCertManagerDTO, "error.insert.cert.manager");
         // 插入数据
         devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
@@ -118,8 +119,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
         devopsClusterResourceDTO.setConfigId(devopsCertManagerDTO.getId());
         baseCreate(devopsClusterResourceDTO);
-        // 让agent创建cert-mannager
-        agentCommandService.createCertManager(clusterId);
+        // 让agent创建cert-manager
+        agentCommandService.installCertManager(certManagerProperties.getRepoUrl(), clusterId, devopsCertManagerDTO.getReleaseName(), devopsCertManagerDTO.getNamespace(), devopsCertManagerDTO.getChartVersion());
     }
 
     @Override
@@ -138,6 +139,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
+    public String queryCertManagerVersion(Long clusterId) {
+        return devopsClusterResourceMapper.queryCertManagerVersion(clusterId);
+    }
+
+    @Override
     public Boolean deleteCertManager(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
@@ -151,7 +157,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.UNINSTALL.getType());
         devopsCertManagerRecordMapper.updateByPrimaryKey(devopsCertManagerRecordDTO);
         baseUpdate(devopsClusterResourceDTO);
-        agentCommandService.unloadCertManager(clusterId);
+
+        // 查询 CertManager 信息
+        DevopsCertManagerDTO devopsCertManagerDTO = devopsCertManagerMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+        agentCommandService.unloadCertManager(clusterId, devopsCertManagerDTO.getReleaseName(), devopsCertManagerDTO.getNamespace());
         return true;
     }
 
@@ -222,10 +231,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void unloadCertManager(Long clusterId) {
-        List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
-        if (!CollectionUtils.isEmpty(certificationDTOS)) {
-            certificationDTOS.forEach(v -> devopsCertificationMapper.deleteByPrimaryKey(v.getId()));
-        }
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         devopsCertManagerRecordMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getObjectId());
         devopsCertManagerMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getConfigId());

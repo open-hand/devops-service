@@ -340,7 +340,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             // 市场实例通过effect Command查，因为同一个市场服务的多个发布对象之间，
             // chartVersion不一定发生了变化，所以需要这个来确定具体是部署哪个发布对象，
             // TODO 普通实例也应该可以通过生效的command来查版本id
-            if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())||AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
+            if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
                 if (effectCommandId != null) {
                     DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(effectCommandId);
                     appServiceInstanceDTO.setAppServiceVersionId(devopsEnvCommandDTO.getObjectVersionId());
@@ -1737,17 +1737,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void getCertManagerInfo(AgentMsgVO agentMsgVO, Long clusterId) {
-        if (ObjectUtils.isEmpty(agentMsgVO)) {
-            return;
-        }
-        if (!CertManagerConstants.CERT_MANAGER_STATUS.equals(agentMsgVO.getType())) {
-            return;
-        }
+    public void handleCertManagerInfo(AgentMsgVO agentMsgVO, Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
-        AgentMsgStatusVO agentMsgStatusVO = json.deserialize(agentMsgVO.getPayload(), AgentMsgStatusVO.class);
-        //如果集群安装了cert_manager而数据库没有数据就插入数据库
-        if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNNING.equalsIgnoreCase(agentMsgStatusVO.getStatus())) {
+        CertManagerReleaseInfo certManagerReleaseInfo = json.deserialize(agentMsgVO.getPayload(), CertManagerReleaseInfo.class);
+        //如果集群安装了 cert_manager 而数据库没有数据就插入数据库
+        if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNNING.equalsIgnoreCase(certManagerReleaseInfo.getStatus())) {
             DevopsClusterResourceDTO clusterResourceDTO = new DevopsClusterResourceDTO();
             clusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
             clusterResourceDTO.setClusterId(clusterId);
@@ -1755,10 +1749,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
             devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus().toLowerCase());
             devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
-            //记录chart信息
+            //记录CertManager的信息
             DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
-            devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N);
-            devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
+            devopsCertManagerDTO.setNamespace(certManagerReleaseInfo.getNamespace());
+            devopsCertManagerDTO.setChartVersion(certManagerReleaseInfo.getChartVersion());
+            devopsCertManagerDTO.setReleaseName(certManagerReleaseInfo.getReleaseName());
             devopsCertManagerMapper.insertSelective(devopsCertManagerDTO);
             // 插入数据
             clusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
@@ -1766,12 +1761,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             clusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
             clusterResourceDTO.setConfigId(devopsCertManagerDTO.getId());
             devopsClusterResourceService.baseCreate(clusterResourceDTO);
-        }
-
-        if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
+        } else if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
             //安装返回,如果不是running状态就是不可用
             if (ClusterResourceOperateType.INSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-                if (CertManagerConstants.RUNNING.equalsIgnoreCase(agentMsgStatusVO.getStatus())) {
+                if (CertManagerConstants.RUNNING.equalsIgnoreCase(certManagerReleaseInfo.getStatus())) {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.AVAILABLE.getStatus().toLowerCase(), null);
                 } else {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus().toLowerCase(), agentMsgVO.getPayload());
@@ -1781,14 +1774,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             }
             //卸载返回
             if (ClusterResourceOperateType.UNINSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-                if (CertManagerConstants.DELETED.equalsIgnoreCase(agentMsgStatusVO.getStatus())) {
+                if (CertManagerConstants.DELETED.equalsIgnoreCase(certManagerReleaseInfo.getStatus())) {
                     devopsClusterResourceService.unloadCertManager(clusterId);
                 } else {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus().toLowerCase(), agentMsgVO.getPayload());
                 }
             }
         }
-
     }
 
 
