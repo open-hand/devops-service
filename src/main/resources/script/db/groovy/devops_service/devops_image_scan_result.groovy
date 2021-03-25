@@ -27,7 +27,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_image_scan_result.groovy') {
             }
             column(name: "FIXED_VERSION", type: 'VARCHAR(64)', remarks: '修复版本')
             column(name: "DESCRIPTION", type: 'VARCHAR(64)', remarks: '简介')
-            column(name: "Target", type: 'VARCHAR(120)', remarks: '镜像名称')
+            column(name: "TARGET", type: 'VARCHAR(120)', remarks: '镜像名称')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

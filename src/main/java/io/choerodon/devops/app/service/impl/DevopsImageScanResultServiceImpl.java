@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -11,10 +12,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DevopsImageScanResultVO;
+import io.choerodon.devops.api.vo.ImageScanResultVO;
+import io.choerodon.devops.api.vo.VulnerabilitieVO;
 import io.choerodon.devops.app.service.DevopsImageScanResultService;
 import io.choerodon.devops.infra.dto.DevopsImageScanResultDTO;
 import io.choerodon.devops.infra.mapper.DevopsImageScanResultMapper;
@@ -45,16 +49,24 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         }
 
         LOGGER.debug("trivy scan result:{}", content);
-        List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<DevopsImageScanResultDTO>>() {
+        List<ImageScanResultVO> imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
         });
-        devopsImageScanResultDTOS.forEach(devopsImageScanResultDTO -> {
+        if (CollectionUtils.isEmpty(imageScanResultVOS)) {
+            return;
+        }
+        ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
+        List<VulnerabilitieVO> vulnerabilities = imageScanResultVO.getVulnerabilities();
+        vulnerabilities.forEach(vulnerabilitieVO -> {
+            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+            devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
+            BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
             devopsImageScanResultDTO.setStartDate(startDate);
             devopsImageScanResultDTO.setEndDate(endDate);
             devopsImageScanResultDTO.setJobId(jobId);
-            devopsImageScanResultDTO.setGitlabProjectId(gitlabPipelineId);
+            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
             DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
             scanResultDTO.setJobId(jobId);
-            scanResultDTO.setGitlabProjectId(gitlabPipelineId);
+            scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
             DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
             if (Objects.isNull(resultDTO)) {
                 devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
@@ -65,4 +77,5 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         });
 
     }
+
 }

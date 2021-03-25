@@ -265,9 +265,9 @@ public class GitlabCiUtil {
         if (imageScan) {
             String resolveCommond = "resolveImageScanJsonFile %s ";
             commands.add(String.format(resolveCommond, jodId));
-            commands.add("startDate=$(date +\"%Y-%m-%d %H-%M-%S\")");
+            commands.add("startDate=$(date +\"%Y-%m-%d %H:%M:%S\")");
             commands.add("trivy image --light --skip-update -f json -o results-${CI_COMMIT_TAG}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}");
-            commands.add("endDate=$(date +\"%Y-%m-%d %H-%M-%S\")");
+            commands.add("endDate=$(date +\"%Y-%m-%d %H:%M:%S\")");
         }
         return commands;
     }
