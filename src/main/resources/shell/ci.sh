@@ -268,3 +268,26 @@ function saveJarMetadata() {
     exit 1
   fi
 }
+
+############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ################################
+# $1 ciJobId    猪齿鱼的CI的JOB纪录的id
+function resolveImageScanJsonFile() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "job_id=$1" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "start_date=${startDate}" \
+    -F "end_date=${endDate}" \
+    -F "file=@results-${CI_COMMIT_TAG}.json" \
+    "${CHOERODON_URL}/devops/ci/resolve_image_scan_json" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}

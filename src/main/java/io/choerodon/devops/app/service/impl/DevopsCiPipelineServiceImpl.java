@@ -1492,10 +1492,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                 // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
                                 // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
                                 Boolean doTlsVerify = config.getSkipDockerTlsVerify();
+                                //是否开启镜像扫描 默认是关闭镜像扫描的
+                                Boolean imageScan = config.getImageScan();
                                 result.addAll(GitlabCiUtil.generateDockerScripts(
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
-                                        doTlsVerify == null || !doTlsVerify));
+                                        doTlsVerify == null || !doTlsVerify,
+                                        !(imageScan == null) || imageScan, jobVO.getId()));
                                 break;
                             // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
                             case UPLOAD_JAR:
