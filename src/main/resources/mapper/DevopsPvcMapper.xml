@@ -38,7 +38,7 @@
                 AND
                 dpvc.request_resource LIKE CONCAT(CONCAT('%', #{searchParam.requestResource, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.Status !=null and searchParam.status.length>0'>
+            <if test='searchParam.status !=null and searchParam.status.length>0'>
                 AND
                 dpvc.status=#{searchParam.requestResource, jdbcType=VARCHAR}
             </if>
