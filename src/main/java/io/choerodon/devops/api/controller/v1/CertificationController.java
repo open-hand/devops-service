@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -17,7 +18,10 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.C7nCertificationCreateVO;
+import io.choerodon.devops.api.vo.CertificationRespVO;
+import io.choerodon.devops.api.vo.CertificationVO;
+import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -26,11 +30,13 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
+ * 创建环境中的证书对象的controller
  * Created by n!Ck
  * Date: 2018/8/20
  * Time: 16:59
  * Description:
  */
+@Api("环境中的证书对象")
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/certifications")
 public class CertificationController {
@@ -58,7 +64,7 @@ public class CertificationController {
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        certificationService.createCertification(projectId, certification, key, cert, false);
+        certificationService.createCertification(projectId, certification, key, cert);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

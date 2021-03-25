@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
+import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -63,6 +64,8 @@ public class GitUtil {
     private DevopsClusterMapper devopsClusterMapper;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     private String classPath;
@@ -778,6 +781,7 @@ public class GitUtil {
         });
         gitConfigVO.setEnvs(gitEnvConfigDTOS);
         gitConfigVO.setGitHost(gitlabSshUrl);
+        gitConfigVO.setCertManagerVersion(devopsClusterResourceService.queryCertManagerVersion(clusterId));
         return gitConfigVO;
     }
 

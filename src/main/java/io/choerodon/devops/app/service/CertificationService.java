@@ -19,13 +19,13 @@ import java.util.List;
 public interface CertificationService {
 
     /**
-     * 创建c7n证书
+     * 创建证书资源
      *
      * @param projectId        项目id
      * @param certificationDTO 证书
      */
     void createCertification(Long projectId, C7nCertificationCreateVO certificationDTO,
-                             MultipartFile key, MultipartFile cert, Boolean isGitOps);
+                             MultipartFile key, MultipartFile cert);
 
     C7nCertification getC7nCertification(String name, String type, List<String> domains,
                                          String keyContent, String certContent, String envCode);
