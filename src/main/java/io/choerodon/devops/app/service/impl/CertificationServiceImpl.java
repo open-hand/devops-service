@@ -113,14 +113,11 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createCertification(Long projectId, C7nCertificationCreateVO c7nCertificationCreateVO,
-                                    MultipartFile key, MultipartFile cert, Boolean isGitOps) {
+                                    MultipartFile key, MultipartFile cert) {
         C7nCertificationVO certificationDTO = processEncryptCertification(c7nCertificationCreateVO);
         Long envId = certificationDTO.getEnvId();
-
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
-
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
@@ -179,30 +176,24 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationDTO newCertificationDTO = new CertificationDTO(null,
                 certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationDTO.getCertId());
 
-        if (!isGitOps) {
-            String envCode = devopsEnvironmentDTO.getCode();
+        String envCode = devopsEnvironmentDTO.getCode();
 
-            String keyContent;
-            String certContent;
-            if (certificationFileDTO == null) {
-                keyContent = certificationDTO.getKeyValue();
-                certContent = certificationDTO.getCertValue();
-            } else {
-                keyContent = certificationFileDTO.getKeyFile();
-                certContent = certificationFileDTO.getCertFile();
-            }
-
-            C7nCertification c7nCertification = getC7nCertification(certName, type, domains, keyContent, certContent, envCode);
-
-            createAndStore(newCertificationDTO, c7nCertification);
-
-            // sent certification to agent
-            operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
-
+        String keyContent;
+        String certContent;
+        if (certificationFileDTO == null) {
+            keyContent = certificationDTO.getKeyValue();
+            certContent = certificationDTO.getCertValue();
         } else {
-            createAndStore(newCertificationDTO, null);
+            keyContent = certificationFileDTO.getKeyFile();
+            certContent = certificationFileDTO.getCertFile();
         }
 
+        C7nCertification c7nCertification = getC7nCertification(certName, type, domains, keyContent, certContent, envCode);
+
+        createAndStore(newCertificationDTO, c7nCertification);
+
+        // sent certification to agent
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
     }
 
     /**
