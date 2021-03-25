@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
@@ -36,8 +37,28 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
         if (c7nCertification.getApiVersion() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.CERT_API_VERSION_NOT_FOUND.getError(), filePath);
         }
+
+        // 不同的API版本，不同的校验方式
+        if (C7nCertification.API_VERSION_V1ALPHA1.equals(c7nCertification.getApiVersion())) {
+            checkV1alpha1(c7nCertification, objectPath);
+        } else if (C7nCertification.API_VERSION_V1.equals(c7nCertification.getApiVersion())) {
+            checkV1(c7nCertification, objectPath);
+        } else {
+            // 不支持其它版本
+            throw new GitOpsExplainException(GitOpsObjectError.CERT_API_VERSION_NOT_SUPPORTED.getError(), filePath);
+        }
+    }
+
+    private void checkV1alpha1(C7nCertification c7nCertification, Map<String, String> objectPath) {
+        String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
         checkMetadata(filePath, c7nCertification.getMetadata());
-        checkSpec(c7nCertification.getSpec(), filePath);
+        checkV1alpha1Spec(c7nCertification.getSpec(), filePath);
+    }
+
+    private void checkV1(C7nCertification c7nCertification, Map<String, String> objectPath) {
+        String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
+        checkMetadata(filePath, c7nCertification.getMetadata());
+        checkV1Spec(c7nCertification.getSpec(), filePath, c7nCertification.getMetadata().getName());
     }
 
     @Override
@@ -77,7 +98,7 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
         return ResourceType.CERTIFICATE;
     }
 
-    private void checkSpec(CertificationSpec spec, String filePath) {
+    private void checkV1alpha1Spec(CertificationSpec spec, String filePath) {
         if (spec == null) {
             throw new GitOpsExplainException(GitOpsObjectError.CERT_SPEC_NOT_FOUND.getError(), filePath);
         } else {
@@ -155,4 +176,20 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
         }
     }
 
+    private void checkV1Spec(CertificationSpec spec, String filePath, String certName) {
+        if (spec == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.CERT_SPEC_NOT_FOUND.getError(), filePath);
+        } else {
+            if (CollectionUtils.isEmpty(spec.getDnsNames())) {
+                throw new GitOpsExplainException(GitOpsObjectError.CERT_DOMAINS_ILLEGAL.getError(), filePath);
+            }
+            if (!certName.equals(spec.getSecretName())) {
+                throw new GitOpsExplainException(GitOpsObjectError.CERT_SECRET_NAME_SHOULD_EQUAL_TO_NAME.getError(), filePath);
+
+            }
+            if (CollectionUtils.isEmpty(spec.getIssuerRef())) {
+                throw new GitOpsExplainException(GitOpsObjectError.CERT_ISSUER_REF_EMPTY.getError(), filePath);
+            }
+        }
+    }
 }

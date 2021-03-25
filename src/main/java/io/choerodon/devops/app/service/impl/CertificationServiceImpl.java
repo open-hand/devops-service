@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -19,6 +20,7 @@ import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -79,6 +81,8 @@ public class CertificationServiceImpl implements CertificationService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -98,7 +102,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
 
     private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
@@ -120,6 +124,11 @@ public class CertificationServiceImpl implements CertificationService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
+        // 校验CertManager已经安装
+        // TODO 也许有必要进一步校验 CertManager 的状态是否为可用的
+        CommonExAssertUtil.assertNotNull(certManagerVersion, "error.cert.manager.not.installed");
 
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -176,8 +185,6 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationDTO newCertificationDTO = new CertificationDTO(null,
                 certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationDTO.getCertId());
 
-        String envCode = devopsEnvironmentDTO.getCode();
-
         String keyContent;
         String certContent;
         if (certificationFileDTO == null) {
@@ -188,21 +195,46 @@ public class CertificationServiceImpl implements CertificationService {
             certContent = certificationFileDTO.getCertFile();
         }
 
-        C7nCertification c7nCertification = getC7nCertification(certName, type, domains, keyContent, certContent, envCode);
+        String apiVersion = CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion) ? C7nCertification.API_VERSION_V1ALPHA1 : C7nCertification.API_VERSION_V1;
+        newCertificationDTO.setApiVersion(apiVersion);
 
-        createAndStore(newCertificationDTO, c7nCertification);
+        // 存入数据库
+        createAndStore(newCertificationDTO, keyContent, certContent);
 
+        // 将资源对象生成yaml提交到gitlab
+        handleCertificationToGitlab(certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO);
+    }
+
+    private void handleCertificationToGitlab(String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        if (CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
+            handleAlpha1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
+        } else {
+            handleV1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
+        }
+    }
+
+    private void handleAlpha1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        C7nCertification c7nCertification = getV1Alpha1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
         // sent certification to agent
         operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
+    }
+
+    private void handleV1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        if (UPLOAD.equals(createType)) {
+            // TODO 以 secret 的形式创建上传类型的证书
+            throw new CommonException("error.create.upload.certification");
+        } else {
+            C7nCertification c7nCertification = getV1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
+            operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
+        }
     }
 
     /**
      * create certification, command and store cert file
      *
      * @param certificationDTO the information of certification
-     * @param c7nCertification the certification (null_able)
      */
-    private void createAndStore(CertificationDTO certificationDTO, C7nCertification c7nCertification) {
+    private void createAndStore(CertificationDTO certificationDTO, @Nullable String keyContent, @Nullable String certContent) {
         // create
         certificationDTO = baseCreate(certificationDTO);
         Long certId = certificationDTO.getId();
@@ -213,27 +245,24 @@ public class CertificationServiceImpl implements CertificationService {
         // cert command
         baseUpdateCommandId(updateCertificationDTO);
         // store crt & key if type is upload
-        storeCertFile(c7nCertification, certId);
+        storeCertFile(keyContent, certContent, certId);
     }
 
 
-    private void storeCertFile(C7nCertification c7nCertification, Long certId) {
-        if (c7nCertification != null) {
-            CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
-            if (existCert != null) {
-                CertificationDTO certificationDTO = new CertificationDTO();
-                certificationDTO.setCertificationFileId(baseStoreCertFile(
-                        new CertificationFileDTO(existCert.getCert(), existCert.getKey())));
-                certificationDTO.setId(certId);
-                baseUpdateCertFileId(certificationDTO);
-            }
+    private void storeCertFile(String keyContent, String certContent, Long certId) {
+        if (keyContent != null && certContent != null) {
+            CertificationDTO certificationDTO = new CertificationDTO();
+            certificationDTO.setCertificationFileId(baseStoreCertFile(
+                    new CertificationFileDTO(certContent, keyContent)));
+            certificationDTO.setId(certId);
+            baseUpdateCertFileId(certificationDTO);
         }
     }
 
     @Override
-    public C7nCertification getC7nCertification(String name, String type, List<String> domains,
-                                                String keyContent, String certContent, String envCode) {
-        C7nCertification c7nCertification = new C7nCertification();
+    public C7nCertification getV1Alpha1C7nCertification(String name, String type, List<String> domains,
+                                                        String keyContent, String certContent, String envCode) {
+        C7nCertification c7nCertification = new C7nCertification(C7nCertification.API_VERSION_V1ALPHA1);
 
         c7nCertification.setMetadata(new CertificationMetadata(name,
                 envCode));
@@ -248,6 +277,17 @@ public class CertificationServiceImpl implements CertificationService {
         }
         spec.setCommonName(domains.get(0));
         spec.setDnsNames(domains.size() > 1 ? domains.stream().skip(1).collect(Collectors.toList()) : null);
+        c7nCertification.setSpec(spec);
+        return c7nCertification;
+    }
+
+    @Override
+    public C7nCertification getV1C7nCertification(String name, String type, List<String> domains, String keyContent, String certContent, String envCode) {
+        C7nCertification c7nCertification = new C7nCertification(C7nCertification.API_VERSION_V1);
+        c7nCertification.setMetadata(new CertificationMetadata(name, envCode));
+        CertificationSpec spec = new CertificationSpec(type);
+        spec.setDnsNames(domains.size() > 1 ? domains.stream().skip(1).collect(Collectors.toList()) : null);
+        spec.setSecretName(name);
         c7nCertification.setSpec(spec);
         return c7nCertification;
     }
@@ -326,7 +366,8 @@ public class CertificationServiceImpl implements CertificationService {
             }
         } else {
             ResourceConvertToYamlHandler<C7nCertification> certificationOperation = new ResourceConvertToYamlHandler<>();
-            C7nCertification c7nCertification = new C7nCertification();
+            // 这里的apiVersion没有作用，可以任意填
+            C7nCertification c7nCertification = new C7nCertification(C7nCertification.API_VERSION_V1ALPHA1);
             CertificationMetadata certificationMetadata = new CertificationMetadata();
             certificationMetadata.setName(certName);
             c7nCertification.setMetadata(certificationMetadata);
@@ -434,13 +475,6 @@ public class CertificationServiceImpl implements CertificationService {
         return devopsIngressMapper.select(devopsIngressDTO).stream().map(DevopsIngressDTO::getName).collect(Collectors.toList());
     }
 
-
-    public CertificationDTO voToDTO(CertificationVO certificationVO) {
-        CertificationDTO certificationDTO = new CertificationDTO();
-        BeanUtils.copyProperties(certificationVO, certificationDTO);
-        certificationDTO.setDomains(gson.toJson(certificationVO.getDomains()));
-        return certificationDTO;
-    }
 
     private CertificationVO dtoToVo(CertificationDTO certificationDTO) {
         if (certificationDTO == null) {
