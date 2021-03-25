@@ -43,6 +43,9 @@ public class MarketInstanceCreationRequestVO {
     @ApiModelProperty("环境id")
     private Long environmentId;
 
+    /**
+     * 中间件不支持这两个字段 需设置为null
+     */
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 
