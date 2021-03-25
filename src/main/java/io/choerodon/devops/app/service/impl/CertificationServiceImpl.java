@@ -286,7 +286,7 @@ public class CertificationServiceImpl implements CertificationService {
         C7nCertification c7nCertification = new C7nCertification(C7nCertification.API_VERSION_V1);
         c7nCertification.setMetadata(new CertificationMetadata(name, envCode));
         CertificationSpec spec = new CertificationSpec(type);
-        spec.setDnsNames(domains.size() > 1 ? domains.stream().skip(1).collect(Collectors.toList()) : null);
+        spec.setDnsNames(new ArrayList<>(domains));
         spec.setSecretName(name);
         c7nCertification.setSpec(spec);
         return c7nCertification;
