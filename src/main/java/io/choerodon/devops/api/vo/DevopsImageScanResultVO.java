@@ -44,6 +44,7 @@ public class DevopsImageScanResultVO {
     @ApiModelProperty("镜像名称")
     private String target;
 
+
     public String getTarget() {
         return target;
     }
