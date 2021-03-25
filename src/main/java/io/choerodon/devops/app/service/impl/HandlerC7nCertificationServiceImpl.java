@@ -8,10 +8,12 @@ import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationExistCert;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationSpec;
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
@@ -37,7 +39,10 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
-    private Gson gson = new Gson();
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
+
+    private final Gson gson = new Gson();
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
@@ -70,8 +75,22 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             }
         });
 
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
+
+        // 校验 cert manager 安装了
+        if (certManagerVersion == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.CERT_MANAGER_NOT_INSTALLED.getError(), "README.md");
+        }
+
+        // 校验 api version
+        checkApiVersionByCertManagerVersion(updateC7nCertification, addC7nCertification, certManagerVersion, objectPath);
+
+        // 证书的内容不能更新，只能更新文件路径
         updateC7nCertification.forEach(c7nCertification1 ->
                 updateC7nCertificationPath(c7nCertification1, envId, objectPath, path));
+
+        // 挑剩下的就是要刪除的
         beforeC7nCertification
                 .forEach(certName -> {
                     CertificationDTO certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
@@ -83,7 +102,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
                 });
 
-
+        // 要添加的
         addC7nCertification.forEach(c7nCertification -> {
             String filePath = "";
             try {
@@ -144,9 +163,17 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
 
         String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
-        C7nCertification oldC7nCertification = certificationService.getC7nCertification(
-                certName, type, gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
-                }.getType()), keyContent, certContent, devopsEnvironmentDTO.getCode());
+        C7nCertification oldC7nCertification;
+        if (C7nCertification.API_VERSION_V1ALPHA1.equals(certificationDTO.getApiVersion())) {
+            oldC7nCertification = certificationService.getV1Alpha1C7nCertification(
+                    certName, type, gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
+                    }.getType()), keyContent, certContent, devopsEnvironmentDTO.getCode());
+        } else {
+            oldC7nCertification = certificationService.getV1C7nCertification(
+                    certName, type, gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
+                    }.getType()), keyContent, certContent, devopsEnvironmentDTO.getCode());
+        }
+
         if (!c7nCertification.equals(oldC7nCertification)) {
             throw new GitOpsExplainException(GitOpsObjectError.CERT_CHANGED.getError(), filePath);
         }
@@ -163,16 +190,19 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
             CertificationSpec certificationSpec = c7nCertification.getSpec();
             String domain = certificationSpec.getCommonName();
-            List<String> dnsDomain = certificationSpec.getDnsNames();
+            List<String> dnsDomains = certificationSpec.getDnsNames();
             List<String> domains = new ArrayList<>();
-            domains.add(domain);
-            if (dnsDomain != null && !dnsDomain.isEmpty()) {
-                domains.addAll(dnsDomain);
+            if (domain != null) {
+                domains.add(domain);
+            }
+            if (!CollectionUtils.isEmpty(dnsDomains)) {
+                domains.addAll(dnsDomains);
             }
             certificationDTO.setDomains(gson.toJson(domains));
             certificationDTO.setEnvId(envId);
             certificationDTO.setName(certName);
             certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
+            certificationDTO.setApiVersion(c7nCertification.getApiVersion());
             certificationDTO = certificationService.baseCreate(certificationDTO);
             CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
             if (existCert != null) {
@@ -192,5 +222,28 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+    }
+
+    private void checkApiVersionByCertManagerVersion(List<C7nCertification> toUpdate, List<C7nCertification> toAdd, String certManagerVersion, Map<String, String> objectPath) {
+        String validApiVersion;
+        String errorMessage;
+        if (CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
+            validApiVersion = C7nCertification.API_VERSION_V1ALPHA1;
+            errorMessage = GitOpsObjectError.CERT_API_VERSION_NOT_FOUND.getError();
+        } else {
+            validApiVersion = C7nCertification.API_VERSION_V1;
+            errorMessage = GitOpsObjectError.CERT_API_VERSION_TOO_OLD.getError();
+        }
+        // 校验证书的api version合规
+        for (C7nCertification c7nCertification: toAdd) {
+            if (!validApiVersion.equals(c7nCertification.getApiVersion())) {
+                throw new GitOpsExplainException(errorMessage, objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())));
+            }
+        }
+        for (C7nCertification c7nCertification: toUpdate) {
+            if (!validApiVersion.equals(c7nCertification.getApiVersion())) {
+                throw new GitOpsExplainException(errorMessage, objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())));
+            }
+        }
     }
 }

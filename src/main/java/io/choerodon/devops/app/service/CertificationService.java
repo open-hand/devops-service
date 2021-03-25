@@ -27,8 +27,11 @@ public interface CertificationService {
     void createCertification(Long projectId, C7nCertificationCreateVO certificationDTO,
                              MultipartFile key, MultipartFile cert);
 
-    C7nCertification getC7nCertification(String name, String type, List<String> domains,
-                                         String keyContent, String certContent, String envCode);
+    C7nCertification getV1Alpha1C7nCertification(String name, String type, List<String> domains,
+                                                 String keyContent, String certContent, String envCode);
+
+    C7nCertification getV1C7nCertification(String name, String type, List<String> domains,
+                                                 String keyContent, String certContent, String envCode);
 
     void deleteById(Long projectId, Long certId);
 

@@ -63,4 +63,11 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
     changeSet(author: 'lihao', id: '2020-07-31-modify-column-org_cert_id') {
         modifyDataType(tableName: 'devops_certification', columnName: 'org_cert_id', newDataType: 'BIGINT UNSIGNED')
     }
+
+    changeSet(author: 'zmf', id: '2021-03-25-add-api-version') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: "api_version", type: "VARCHAR(128)", afterColumn: 'status', remarks: '证书资源的API版本')
+        }
+        sql("update devops_certification set api_version = 'certmanager.k8s.io/v1alpha1' where env_id is not null")
+    }
 }

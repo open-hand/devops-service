@@ -14,6 +14,9 @@ import java.util.Objects;
  * Description:
  */
 public class C7nCertification {
+    public static final String API_VERSION_V1ALPHA1 = "certmanager.k8s.io/v1alpha1";
+    public static final String API_VERSION_V1 = "cert-manager.io/v1";
+
     @ApiModelProperty("api版本")
     private String apiVersion;
     @ApiModelProperty("类型")
@@ -23,8 +26,8 @@ public class C7nCertification {
     @ApiModelProperty("对象配置内容")
     private CertificationSpec spec;
 
-    public C7nCertification() {
-        this.apiVersion = "certmanager.k8s.io/v1alpha1";
+    public C7nCertification(String apiVersion) {
+        this.apiVersion = apiVersion;
         this.kind = "Certificate";
     }
 

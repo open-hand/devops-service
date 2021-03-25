@@ -27,6 +27,8 @@ public class CertificationSpec {
     private CertificationAcme acme;
     @ApiModelProperty("证书")
     private CertificationExistCert existCert;
+    @ApiModelProperty("证书生成的secret名称")
+    private String secretName;
     @ApiModelProperty("证书颁发者")
     private Map<String, String> issuerRef;
 
@@ -90,8 +92,19 @@ public class CertificationSpec {
         this.existCert = existCert;
     }
 
+    public String getSecretName() {
+        return secretName;
+    }
+
+    public void setSecretName(String secretName) {
+        this.secretName = secretName;
+    }
+
     @Override
     public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
         if (this == o) {
             return true;
         }
@@ -100,6 +113,7 @@ public class CertificationSpec {
         }
         CertificationSpec that = (CertificationSpec) o;
         return Objects.equals(getCommonName(), that.getCommonName())
+                && Objects.equals(getSecretName(), that.getSecretName())
                 && Objects.equals(getDnsNames(), that.getDnsNames())
                 && Objects.equals(getAcme(), that.getAcme())
                 && Objects.equals(getExistCert(), that.getExistCert())
@@ -108,6 +122,6 @@ public class CertificationSpec {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCommonName(), getDnsNames(), getAcme(), getExistCert(), getIssuerRef());
+        return Objects.hash(getCommonName(), getSecretName(), getDnsNames(), getAcme(), getExistCert(), getIssuerRef());
     }
 }

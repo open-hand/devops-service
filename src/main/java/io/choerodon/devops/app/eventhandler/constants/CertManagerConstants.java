@@ -11,9 +11,8 @@ public class CertManagerConstants {
     }
 
     /**
-     * 创建chart的版本
+     * 旧的CertManager的chart的版本, 不再安装这个版本
      */
-    @Deprecated
     public static final String V1_CERT_MANAGER_CHART_VERSION = "0.1.0";
     /**
      * 第一个版本的 cert-manager 的名称

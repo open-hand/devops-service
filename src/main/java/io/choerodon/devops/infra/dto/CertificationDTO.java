@@ -5,6 +5,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -32,6 +33,8 @@ public class CertificationDTO extends AuditDomain {
     private String domains;
     private Long commandId;
     private String status;
+    @ApiModelProperty("证书资源的API版本/环境中的证书资源需要这个字段")
+    private String apiVersion;
     private Date validFrom;
     private Date validUntil;
     private Boolean skipCheckProjectPermission;
@@ -132,6 +135,14 @@ public class CertificationDTO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getApiVersion() {
+        return apiVersion;
+    }
+
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
     }
 
     public Long getCommandId() {
