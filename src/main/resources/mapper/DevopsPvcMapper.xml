@@ -40,7 +40,7 @@
             </if>
             <if test='searchParam.status !=null and searchParam.status.length>0'>
                 AND
-                dpvc.status=#{searchParam.requestResource, jdbcType=VARCHAR}
+                dpvc.status=#{searchParam.status, jdbcType=VARCHAR}
             </if>
         </if>
         <if test='params != null and params.size > 0'>
