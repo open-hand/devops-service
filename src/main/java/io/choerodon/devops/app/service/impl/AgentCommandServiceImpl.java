@@ -91,8 +91,6 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
-    @Value("${agent.certManagerUrl}")
-    private String certManagerUrl;
 
 
     @Override
@@ -204,17 +202,15 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void createCertManager(Long clusterId) {
+    public void installCertManager(String certManagerRepoUrl, Long clusterId, String certManagerReleaseName, String namespace, String chartVersion) {
         AgentMsgVO msg = new AgentMsgVO();
         Payload payload = new Payload(
-                CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N,
-                certManagerUrl,
+                namespace,
+                certManagerRepoUrl,
                 "cert-manager",
-                CertManagerConstants.CERT_MANAGER_CHART_VERSION,
-                null, CertManagerConstants.CERT_MANAGER_REALASE_NAME, null);
-        msg.setKey(String.format(KEY_FORMAT,
-                clusterId,
-                CertManagerConstants.CERT_MANAGER_REALASE_NAME));
+                chartVersion,
+                null, certManagerReleaseName, null);
+        msg.setKey(String.format(KEY_FORMAT, clusterId, certManagerReleaseName));
         msg.setType(HelmType.CERT_MANAGER_INSTALL.toValue());
         msg.setPayload(JsonHelper.marshalByJackson(payload));
         sendToWebSocket(clusterId, msg);
@@ -411,15 +407,13 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void unloadCertManager(Long clusterId) {
+    public void unloadCertManager(Long clusterId, String certManagerReleaseName, String namespace) {
         AgentMsgVO msg = new AgentMsgVO();
-        msg.setKey(String.format(KEY_FORMAT,
-                clusterId,
-                CertManagerConstants.CERT_MANAGER_REALASE_NAME));
+        msg.setKey(String.format(KEY_FORMAT, clusterId, certManagerReleaseName));
         msg.setType(HelmType.CERT_MANAGER_UNINSTALL.toValue());
         HashMap<String, String> payLoad = new HashMap<>();
-        payLoad.put(CertManagerConstants.RELEASE_NAME, CertManagerConstants.CERT_MANAGER_REALASE_NAME);
-        payLoad.put(CertManagerConstants.NAMESPACE, CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N);
+        payLoad.put(CertManagerConstants.RELEASE_NAME, certManagerReleaseName);
+        payLoad.put(CertManagerConstants.NAMESPACE, namespace);
         msg.setPayload(gson.toJson(payLoad));
         sendToWebSocket(clusterId, msg);
     }

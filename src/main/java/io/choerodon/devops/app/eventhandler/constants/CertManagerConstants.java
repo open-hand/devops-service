@@ -13,15 +13,15 @@ public class CertManagerConstants {
     /**
      * 创建chart的版本
      */
-    public static final String CERT_MANAGER_CHART_VERSION = "0.1.0";
-
+    @Deprecated
+    public static final String V1_CERT_MANAGER_CHART_VERSION = "0.1.0";
     /**
-     * 使用的命名空间
+     * 第一个版本的 cert-manager 的名称
      */
-    public static final String CERT_MANAGER_NAME_SPACE = "kube-system";
-
-    public static final String CERT_MANAGER_REALASE_NAME = "choerodon-cert-manager";
-    public static final String CERT_MANAGER_REALASE_NAME_C7N = "choerodon";
+    @Deprecated
+    public static final String V1_CERT_MANAGER_RELEASE_NAME = "choerodon-cert-manager";
+    @Deprecated
+    public static final String V1_CERT_MANAGER_NAMESPACE = "choerodon";
     /**
      * 证书管理的标志
      */

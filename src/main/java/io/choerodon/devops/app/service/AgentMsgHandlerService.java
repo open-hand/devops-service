@@ -72,7 +72,7 @@ public interface AgentMsgHandlerService {
 
     void getTestAppStatus(String key, String msg, Long clusterId);
 
-    void getCertManagerInfo(AgentMsgVO msg, Long clusterId);
+    void handleCertManagerInfo(AgentMsgVO msg, Long clusterId);
 
     void handleNodeSync(String msg, Long clusterId);
 

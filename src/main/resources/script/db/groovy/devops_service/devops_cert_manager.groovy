@@ -20,4 +20,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cert_manager.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'zmf', id: "2021-03-25-add-cert-manager-name") {
+        addColumn(tableName: "devops_cert_manager") {
+            column(name: 'release_name', type: 'VARCHAR(128)', remarks: 'CertManager的实例名称', defaultValue: 'choerodon-cert-manager', afterColumn: 'id')
+        }
+    }
 }

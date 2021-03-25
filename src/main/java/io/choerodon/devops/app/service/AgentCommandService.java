@@ -40,7 +40,16 @@ public interface AgentCommandService {
 
     void newUpgradeCluster(DevopsClusterDTO devopsClusterDTO, WebSocketSession webSocketSession);
 
-    void createCertManager(Long clusterId);
+    /**
+     * 安装CertManager
+     *
+     * @param certManagerRepoUrl     CertManager的chart仓库的地址
+     * @param clusterId              集群id
+     * @param certManagerReleaseName CertManager的实例名称
+     * @param namespace              CertManager安装的namespace
+     * @param chartVersion           CertManager要安装的版本
+     */
+    void installCertManager(String certManagerRepoUrl, Long clusterId, String certManagerReleaseName, String namespace, String chartVersion);
 
     void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
 
@@ -74,7 +83,14 @@ public interface AgentCommandService {
 
     void deletePod(String podName, String namespace, Long clusterId);
 
-    void unloadCertManager(Long clusterId);
+    /**
+     * 卸载 CertManager
+     *
+     * @param clusterId              集群id
+     * @param certManagerReleaseName CertManager的实例名称
+     * @param namespace              CertManager所在的namespace
+     */
+    void unloadCertManager(Long clusterId, String certManagerReleaseName, String namespace);
 
     /**
      * polaris扫描集群或集群某个namespace
