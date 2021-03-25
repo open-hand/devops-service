@@ -31,8 +31,8 @@ public class  DevopsImageScanResultDTO extends AuditDomain {
     @ApiModelProperty("漏洞码")
     private String vulnerabilityCode;
 
-    @ApiModelProperty("gitlabProjectId")
-    private Long gitlabProjectId;
+    @ApiModelProperty("GITLAB_PIPELINE_ID")
+    private Long gitlabPipelineId;
 
     @ApiModelProperty("开始时间")
     private Date startDate;
@@ -90,12 +90,12 @@ public class  DevopsImageScanResultDTO extends AuditDomain {
         this.vulnerabilityCode = vulnerabilityCode;
     }
 
-    public Long getGitlabProjectId() {
-        return gitlabProjectId;
+    public Long getGitlabPipelineId() {
+        return gitlabPipelineId;
     }
 
-    public void setGitlabProjectId(Long gitlabProjectId) {
-        this.gitlabProjectId = gitlabProjectId;
+    public void setGitlabPipelineId(Long gitlabPipelineId) {
+        this.gitlabPipelineId = gitlabPipelineId;
     }
 
     public Date getStartDate() {

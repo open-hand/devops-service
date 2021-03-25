@@ -1,31 +1,16 @@
 package io.choerodon.devops.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Date;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by wangxiang on 2021/3/25
  */
-public class DevopsImageScanResultVO {
-    @Encrypt
-    private Long id;
-
-    @ApiModelProperty("jobId")
-    @Encrypt
-    private Long jobId;
-
+public class VulnerabilitieVO {
     @ApiModelProperty("漏洞码")
+    @JsonProperty("VulnerabilityID")
     private String vulnerabilityCode;
 
-    @ApiModelProperty("GITLAB_PIPELINE_ID")
-    private Long gitlabPipelineId;
-
-    @ApiModelProperty("开始时间")
-    private Date startDate;
-
-    @ApiModelProperty("结束时间")
-    private Date endDate;
 
     @ApiModelProperty("漏洞等级")
     private String severity;
@@ -41,32 +26,7 @@ public class DevopsImageScanResultVO {
 
     @ApiModelProperty("简介")
     private String description;
-    @ApiModelProperty("镜像名称")
-    private String target;
 
-    public String getTarget() {
-        return target;
-    }
-
-    public void setTarget(String target) {
-        this.target = target;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getJobId() {
-        return jobId;
-    }
-
-    public void setJobId(Long jobId) {
-        this.jobId = jobId;
-    }
 
     public String getVulnerabilityCode() {
         return vulnerabilityCode;
@@ -74,30 +34,6 @@ public class DevopsImageScanResultVO {
 
     public void setVulnerabilityCode(String vulnerabilityCode) {
         this.vulnerabilityCode = vulnerabilityCode;
-    }
-
-    public Long getGitlabPipelineId() {
-        return gitlabPipelineId;
-    }
-
-    public void setGitlabPipelineId(Long gitlabPipelineId) {
-        this.gitlabPipelineId = gitlabPipelineId;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
     }
 
     public String getSeverity() {

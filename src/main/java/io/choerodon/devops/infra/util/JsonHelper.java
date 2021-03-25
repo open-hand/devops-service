@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.util;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
@@ -29,6 +30,8 @@ public final class JsonHelper {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         OBJECT_MAPPER.setDateFormat(new SimpleDateFormat(BaseConstants.Pattern.DATETIME));
+        // 不区分属性的大小写 
+        OBJECT_MAPPER.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES,true);
     }
 
     /**
