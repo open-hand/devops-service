@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @since 2021/3/25
  */
 @Component
-@ConfigurationProperties(prefix = "agent.cert-manger")
+@ConfigurationProperties(prefix = "agent.cert-manager")
 public class CertManagerProperties {
     @ApiModelProperty("实例名称")
     private String releaseName;
