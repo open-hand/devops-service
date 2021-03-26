@@ -71,6 +71,8 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
             scanResultDTO.setJobId(jobId);
             scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+            scanResultDTO.setVulnerabilityCode(vulnerabilitieVO.getVulnerabilityCode());
+            scanResultDTO.setTarget(imageScanResultVO.getTarget());
             DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
             if (Objects.isNull(resultDTO)) {
                 devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
