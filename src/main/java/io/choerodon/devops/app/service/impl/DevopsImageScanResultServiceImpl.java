@@ -109,13 +109,17 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
         if (imageScanResultVO.getUnknownCount() > 0) {
             imageScanResultVO.setLevel(ImageSecurityEnum.UNKNOWN.getValue());
-        } else if (imageScanResultVO.getLowCount() > 0) {
+        }
+        if (imageScanResultVO.getLowCount() > 0) {
             imageScanResultVO.setLevel(ImageSecurityEnum.LOW.getValue());
-        } else if (imageScanResultVO.getMediumCount() > 0) {
+        }
+        if (imageScanResultVO.getMediumCount() > 0) {
             imageScanResultVO.setLevel(ImageSecurityEnum.MEDIUM.getValue());
-        } else if (imageScanResultVO.getHighCount() > 0) {
+        }
+        if (imageScanResultVO.getHighCount() > 0) {
             imageScanResultVO.setLevel(ImageSecurityEnum.HIGH.getValue());
-        } else if (imageScanResultVO.getCriticalCount() > 0) {
+        }
+        if (imageScanResultVO.getCriticalCount() > 0) {
             imageScanResultVO.setLevel(ImageSecurityEnum.CRITICAL.getValue());
         }
         DevopsImageScanResultDTO scanResultDTO = devopsImageScanResultDTOS.get(0);
