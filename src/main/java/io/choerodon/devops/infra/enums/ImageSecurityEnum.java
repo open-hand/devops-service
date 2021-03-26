@@ -8,7 +8,7 @@ public enum ImageSecurityEnum {
     LOW("LOW"),
     MEDIUM("MEDIUM"),
     HIGH("HIGH"),
-    CRITICAL("HIGH");
+    CRITICAL("CRITICAL");
 
 
     private String value;
