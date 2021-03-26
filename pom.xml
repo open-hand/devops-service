@@ -101,14 +101,6 @@
         <dependency>
             <groupId>org.hzero.starter</groupId>
             <artifactId>hzero-starter-websocket</artifactId>
-            <!-- 这里exclude hzero-starter-core的依赖是因为单独升级了websocket的版本，避免引入依赖冲突 -->
-            <!-- 如果websocket的版本和 hzero-starter-core 的版本一致，不需要 exclude-->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hzero.starter</groupId>
-                    <artifactId>hzero-starter-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
