@@ -220,13 +220,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     private void handleV1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        if (UPLOAD.equals(createType)) {
-            // TODO 以 secret 的形式创建上传类型的证书
-            throw new CommonException("error.create.upload.certification");
-        } else {
-            C7nCertification c7nCertification = getV1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
-            operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
-        }
+        C7nCertification c7nCertification = getV1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
     }
 
     /**
@@ -286,6 +281,11 @@ public class CertificationServiceImpl implements CertificationService {
         C7nCertification c7nCertification = new C7nCertification(C7nCertification.API_VERSION_V1);
         c7nCertification.setMetadata(new CertificationMetadata(name, envCode));
         CertificationSpec spec = new CertificationSpec(type);
+        // 如果是上传类型的，将证书放进去
+        if (type.equals(CertificationType.UPLOAD.getType())) {
+            CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
+            spec.setExistCert(existCert);
+        }
         spec.setDnsNames(new ArrayList<>(domains));
         spec.setSecretName(name);
         c7nCertification.setSpec(spec);
