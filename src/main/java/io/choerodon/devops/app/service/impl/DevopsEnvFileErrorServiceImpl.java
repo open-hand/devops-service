@@ -45,7 +45,7 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
                 throw new CommonException("error.env.error.file.create");
             }
         }
-        return devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDTO);
+        return devopsEnvFileErrorMapper.selectByPrimaryKey(devopsEnvFileErrorDTO.getId());
     }
 
     @Override
