@@ -87,11 +87,11 @@ agent:
     # 存放CertManager的chart的仓库地址，用于安装
     repoUrl: ${AGENT_CERTMANAGERURL:agent.example.com}
     # 安装的CertManager的实例名称（之所以要写成cert-manager是因为 CertManager 本身的一个bug，将其自己的部分k8s资源写死了名称）
-    releaseName: cert-manager
+    releaseName: ${CERT_MANAGER_RELEASE_NAME:cert-manager}
     # 安装的CertManager的chart版本
-    chartVersion: 1.1.1
+    chartVersion: ${CERT_MANAGER_CHART_VERSION:1.1.1}
     # 安装的CertManager的namespace
-    namespace: cert-manager
+    namespace: ${CERT_MANAGER_NAMESPACE:cert-manager}
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:
