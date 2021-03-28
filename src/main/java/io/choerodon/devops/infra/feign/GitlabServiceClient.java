@@ -669,4 +669,12 @@ public interface GitlabServiceClient {
             @RequestParam Integer userId,
             @ApiParam(value = "项目信息", required = true)
             @RequestBody Project project);
+
+    @ApiOperation(value = "查询MR下的note列表")
+    @GetMapping("/v1/notes/on_merge_request")
+    ResponseEntity<List<Note>> listByMergeRequestIid(
+            @ApiParam(value = "项目Id", required = true)
+            @RequestParam Integer projectId,
+            @ApiParam(value = "MR Iid", required = true)
+            @RequestParam Integer iid);
 }

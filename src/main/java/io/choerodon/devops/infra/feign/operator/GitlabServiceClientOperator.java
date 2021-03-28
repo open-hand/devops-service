@@ -1141,4 +1141,13 @@ public class GitlabServiceClientOperator {
         project.setCiConfigPath(ciConfigPath);
         ResponseUtils.getResponse(gitlabServiceClient.updateProject(userId, project), Project.class);
     }
+
+    /**
+     * 查询mr下的评论
+     *
+     */
+    public List<Note> listByMergeRequestIid(Integer gitlabProjectId, Integer mrIiD) {
+
+        return gitlabServiceClient.listByMergeRequestIid(gitlabProjectId, mrIiD).getBody();
+    }
 }
