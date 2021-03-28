@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto.gitlab;
 
+import java.util.List;
+
 /**
  * User: Mr.Wang
  * Date: 2020/2/13
@@ -91,7 +93,102 @@ public class GitlabTransferDTO {
      * @return
      */
     private GitlabUserReqDTO gitlabUserReqDTO;
+
+    /**
+     * MR相关参数
+     */
     private String password;
+    private Integer assigneeId;
+    private List<Integer> assigneeIds;
+    private Integer milestoneId;
+    private List<String> labels;
+    private Integer targetProjectId;
+    private Boolean removeSourceBranch;
+    private Boolean squash;
+    private Boolean discussionLocked;
+    private Boolean allowCollaboration;
+    private Integer approvalsBeforeMerge;
+
+
+    public Integer getAssigneeId() {
+        return assigneeId;
+    }
+
+    public void setAssigneeId(Integer assigneeId) {
+        this.assigneeId = assigneeId;
+    }
+
+    public List<Integer> getAssigneeIds() {
+        return assigneeIds;
+    }
+
+    public void setAssigneeIds(List<Integer> assigneeIds) {
+        this.assigneeIds = assigneeIds;
+    }
+
+    public Integer getMilestoneId() {
+        return milestoneId;
+    }
+
+    public void setMilestoneId(Integer milestoneId) {
+        this.milestoneId = milestoneId;
+    }
+
+    public List<String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(List<String> labels) {
+        this.labels = labels;
+    }
+
+    public Integer getTargetProjectId() {
+        return targetProjectId;
+    }
+
+    public void setTargetProjectId(Integer targetProjectId) {
+        this.targetProjectId = targetProjectId;
+    }
+
+    public Boolean getSquash() {
+        return squash;
+    }
+
+    public void setSquash(Boolean squash) {
+        this.squash = squash;
+    }
+
+    public Boolean getDiscussionLocked() {
+        return discussionLocked;
+    }
+
+    public void setDiscussionLocked(Boolean discussionLocked) {
+        this.discussionLocked = discussionLocked;
+    }
+
+    public Boolean getAllowCollaboration() {
+        return allowCollaboration;
+    }
+
+    public void setAllowCollaboration(Boolean allowCollaboration) {
+        this.allowCollaboration = allowCollaboration;
+    }
+
+    public Integer getApprovalsBeforeMerge() {
+        return approvalsBeforeMerge;
+    }
+
+    public void setApprovalsBeforeMerge(Integer approvalsBeforeMerge) {
+        this.approvalsBeforeMerge = approvalsBeforeMerge;
+    }
+
+    public Boolean getRemoveSourceBranch() {
+        return removeSourceBranch;
+    }
+
+    public void setRemoveSourceBranch(Boolean removeSourceBranch) {
+        this.removeSourceBranch = removeSourceBranch;
+    }
 
     public GitlabUserReqDTO getGitlabUserReqDTO() {
         return gitlabUserReqDTO;
