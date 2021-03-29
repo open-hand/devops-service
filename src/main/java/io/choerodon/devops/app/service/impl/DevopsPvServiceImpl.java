@@ -23,10 +23,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsPvValidator;
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVO;
-import io.choerodon.devops.api.vo.DevopsPvVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.LocalPvResource;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
@@ -569,7 +566,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         v1ObjectMeta.setName(devopsPvDTO.getName());
 
         // 如果label不为空，设置label
-        if (!StringUtils.isEmpty(devopsPvDTO.getLabels())){
+        if (!StringUtils.isEmpty(devopsPvDTO.getLabels())) {
             v1ObjectMeta.setLabels(JsonHelper.unmarshalByJackson(devopsPvDTO.getLabels(), new TypeReference<Map<String, String>>() {
             }));
         }
@@ -758,6 +755,28 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
             }
         }
+    }
+
+    @Override
+    public List<DevopsPvLabelVO> listLabels(Long projectId, Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        List<String> labelsInString = devopsPvMapper.listLabelsByClusterId(clusterId);
+        List<DevopsPvLabelVO> labels = new ArrayList<>();
+        labelsInString.stream()
+                .filter(s -> !StringUtils.isEmpty(s))
+                .map(s -> JsonHelper.unmarshalByJackson(s, new TypeReference<Map<String, String>>() {
+                }))
+                .forEach(l -> l.forEach((k, v)->{
+                    DevopsPvLabelVO devopsPvLabelVO = new DevopsPvLabelVO();
+                    devopsPvLabelVO.setKey(k);
+                    devopsPvLabelVO.setValue(v);
+                  if (!labels.contains(devopsPvLabelVO)){
+                      labels.add(devopsPvLabelVO);
+                  }
+                }));
+        return labels;
     }
 
     @Override

@@ -1,16 +1,13 @@
 package io.choerodon.devops.app.service;
 
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVO;
-import io.choerodon.devops.api.vo.DevopsPvVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 
 public interface DevopsPvService {
@@ -162,4 +159,13 @@ public interface DevopsPvService {
     List<DevopsPvDTO> queryByClusterId(Long clusterId);
 
     void operatePvBySaga(PersistentVolumePayload persistentVolumePayload);
+
+    /**
+     * 列举出指定集群下的所有pv label
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @return
+     */
+    List<DevopsPvLabelVO> listLabels(Long projectId, Long clusterId);
 }

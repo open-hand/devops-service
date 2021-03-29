@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
@@ -181,7 +182,10 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
         devopsPvReqVO.setEnvId(envId);
         devopsPvReqVO.setName(pv.getMetadata().getName());
         devopsPvReqVO.setCommandType(type);
-        devopsPvReqVO.setLabels(JsonHelper.marshalByJackson(pv.getMetadata().getLabels()));
+        Map<String,String> labels=pv.getMetadata().getLabels();
+        if (!CollectionUtils.isEmpty(labels)) {
+            devopsPvReqVO.setLabels(JsonHelper.marshalByJackson(pv.getMetadata().getLabels()));
+        }
         // 暂时只设计为支持一种模式
         devopsPvReqVO.setAccessModes(pv.getSpec().getAccessModes().get(0));
         devopsPvReqVO.setRequestResource(pv.getSpec().getCapacity().get(KubernetesConstants.STORAGE).toSuffixedString());

@@ -67,4 +67,6 @@ public interface DevopsPvMapper extends BaseMapper<DevopsPvDTO> {
     void updateStatusById(@Param("id") Long id, @Param("status") String status);
 
     List<DevopsPvDTO> listByPvIds(@Param("pvIds") List<Long> pvIds);
+
+    List<String> listLabelsByClusterId(Long clusterId);
 }
