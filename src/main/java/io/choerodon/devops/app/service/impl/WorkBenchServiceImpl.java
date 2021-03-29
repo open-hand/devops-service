@@ -60,6 +60,8 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
+    @Autowired
+    private CiCdPipelineMapper ciCdPipelineMapper;
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
@@ -204,6 +206,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(jobRecordIds)) {
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
+            //筛选一下删除了流水线的
+            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> {
+                return !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()));
+            }).collect(Collectors.toList());
             devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
                         .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
