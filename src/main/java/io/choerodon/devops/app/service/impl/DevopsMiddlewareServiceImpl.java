@@ -7,18 +7,19 @@ import static org.hzero.core.util.StringPool.SLASH;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -31,6 +32,7 @@ import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.validator.MiddlewareConfigurationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareRedisDeployPayload;
@@ -52,16 +54,36 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
-    private static final String STAND_ALONE_CONFIG = "cluster:\n" +
-            "  enabled: false\n";
+    private static final String STANDALONE_PERSISTENCE_TEMPLATE = "persistence:\n" +
+            "  existingClaim: %s";
+    private static final String SENTINEL_MATCHLABELS_TEMPLATE = "matchLabels:\n%s";
 
-    private static final String SENTINEL_CONFIG = "sentinel:\n" +
-            "  enabled: true\n";
+    private static final String CONFIGMAP_TEMPLATE = "configmap: |-\n%s";
+
+    private static final String MATCHLABELS_TEMPLATE = "    %s: %s\n";
+
+    private static final String CONFIGMAP_VALUE_TEMPLATE = "  %s %s\n";
+
     private static final String STANDALONE_MODE = "standalone";
 
     private static final String SENTINEL_MODE = "sentinel";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMiddlewareServiceImpl.class);
+
+    private static final String REDIS_SENTINEL_VALUE_TEMPLATE;
+
+    private static final String REDIS_STANDALONE_VALUE_TEMPLATE;
+
+    static {
+        InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-sentinel-value-template.yaml");
+        InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-standalone-value-template.yaml");
+        try {
+            REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
+            REDIS_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(redisStandaloneInputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.ci.sh");
+        }
+    }
 
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
@@ -88,7 +110,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public AppServiceInstanceVO envDeployForRedis(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
@@ -97,16 +118,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareRedisEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareRedisEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
 
-        // TODO: 2021/3/24  配置转为values  存入配置数据库
-
-
-        // 如果是单机模式，需要添加 禁用集群模式配置
         if (STANDALONE_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
-            middlewareRedisEnvDeployVO.setValues(STAND_ALONE_CONFIG + middlewareRedisEnvDeployVO.getValues());
+            middlewareRedisEnvDeployVO.setValues(generateRedisStandaloneValues(middlewareRedisEnvDeployVO));
         }
-        // 如果是哨兵模式，需要添加 启用哨兵模式配置
+
         if (SENTINEL_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
-            middlewareRedisEnvDeployVO.setValues(SENTINEL_CONFIG + middlewareRedisEnvDeployVO.getValues());
+            middlewareRedisEnvDeployVO.setValues(generateRedisSentinelValues(middlewareRedisEnvDeployVO));
         }
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class);
@@ -116,7 +133,43 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     @Override
     public AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+        if (STANDALONE_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
+            middlewareRedisEnvDeployVO.setValues(generateRedisStandaloneValues(middlewareRedisEnvDeployVO));
+        }
+
+        if (SENTINEL_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
+            middlewareRedisEnvDeployVO.setValues(generateRedisSentinelValues(middlewareRedisEnvDeployVO));
+        }
+
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class));
+    }
+
+    @Override
+    public MiddlewareRedisEnvDeployVO queryRedisConfig(Long projectId, Long appServiceInstanceId, Long marketDeployObjectId) {
+        MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO = new MiddlewareRedisEnvDeployVO();
+        InstanceValueVO instanceValueVO = appServiceInstanceService.queryUpgradeValueForMarketInstance(projectId, appServiceInstanceId, marketDeployObjectId);
+        Yaml yaml = new Yaml();
+        Map<String, Object> values = yaml.loadAs(instanceValueVO.getYaml(), Map.class);
+
+        middlewareRedisEnvDeployVO.setPassword((String) values.get("password"));
+
+        middlewareRedisEnvDeployVO.setSysctlImage((Boolean) ((Map) values.get("sysctlImage")).get("enabled"));
+
+        Map sentinelConfig = (Map) values.get("sentinel");
+        if (sentinelConfig != null) {
+            middlewareRedisEnvDeployVO.setMode(SENTINEL_MODE);
+            middlewareRedisEnvDeployVO.setSlaveCount((Integer) ((Map) values.get("cluster")).get("slaveCount"));
+            middlewareRedisEnvDeployVO.setPvLabels((Map<String, String>) ((Map) values.get("slave")).get("matchLabels"));
+            middlewareRedisEnvDeployVO.setConfigmap(getConfigMap((String) values.get("configmap")));
+        } else {
+            middlewareRedisEnvDeployVO.setMode(STANDALONE_MODE);
+            if (values.get("persistence")!=null){
+                middlewareRedisEnvDeployVO.setPvcName((String) ((Map) values.get("persistence")).get("existingClaim"));
+            }
+            middlewareRedisEnvDeployVO.setConfigmap(getConfigMap((String) values.get("configmap")));
+        }
+
+        return middlewareRedisEnvDeployVO;
     }
 
     @Override
@@ -286,7 +339,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         return middlewareInventoryVO;
     }
 
-
     private void generateAndUploadRedisHostConfiguration(SSHClient sshClient, MiddlewareInventoryVO middlewareInventoryVO) {
         String inventory = generateRedisInventoryInI(middlewareInventoryVO);
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, REDIS.getType()) + SLASH + "middleware-inventory.ini";
@@ -348,6 +400,77 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private ExecResultInfoVO executeInstallRedis(SSHClient sshClient) throws IOException {
         return sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
+    }
+
+    private String generateRedisStandaloneValues(MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("{{ password }}", middlewareRedisEnvDeployVO.getPassword());
+        configuration.put("{{ usePassword }}", "true");
+
+        if (!StringUtils.isEmpty(middlewareRedisEnvDeployVO.getPvcName())) {
+            configuration.put("{{ persistence-enabled }}", "true");
+            configuration.put("{{ persistence-info }}", String.format(STANDALONE_PERSISTENCE_TEMPLATE, middlewareRedisEnvDeployVO.getPvcName()));
+        } else {
+            configuration.put("{{ persistence-enabled }}", "false");
+            configuration.put("{{ persistence-info }}", "");
+        }
+
+        configuration.put("{{ sysctlImage-enabled }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
+        configuration.put("{{ sysctlImage-mountHostSys }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
+
+        if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfigmap())) {
+            StringBuilder configMapSb = new StringBuilder();
+            middlewareRedisEnvDeployVO.getConfigmap().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
+            configuration.put("{{ configmap }}", String.format(CONFIGMAP_TEMPLATE, configMapSb.toString()));
+        }
+
+        return FileUtil.replaceReturnString(REDIS_STANDALONE_VALUE_TEMPLATE, configuration);
+    }
+
+    private String generateRedisSentinelValues(MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("{{ password }}", middlewareRedisEnvDeployVO.getPassword());
+        configuration.put("{{ usePassword }}", "true");
+
+        configuration.put("{{ slaveCount }}", middlewareRedisEnvDeployVO.getSlaveCount().toString());
+
+        if (!StringUtils.isEmpty(middlewareRedisEnvDeployVO.getPvLabels())) {
+            configuration.put("{{ persistence-enabled }}", "true");
+            StringBuilder stringBuilder = new StringBuilder();
+            middlewareRedisEnvDeployVO.getPvLabels().forEach((k, v) -> stringBuilder.append(String.format(MATCHLABELS_TEMPLATE, k, v)));
+            configuration.put("{{ matchLabels }}", String.format(SENTINEL_MATCHLABELS_TEMPLATE, stringBuilder.toString()));
+        } else {
+            configuration.put("{{ persistence-enabled }}", "false");
+            configuration.put("{{ matchLabels }}", "");
+        }
+
+        configuration.put("{{ sysctlImage-enabled }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
+        configuration.put("{{ sysctlImage-mountHostSys }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
+
+        if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfigmap())) {
+            StringBuilder configMapSb = new StringBuilder();
+            middlewareRedisEnvDeployVO.getConfigmap().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
+            configuration.put("{{ configmap }}", String.format(CONFIGMAP_TEMPLATE, configMapSb.toString()));
+        }
+
+        return FileUtil.replaceReturnString(REDIS_SENTINEL_VALUE_TEMPLATE, configuration);
+    }
+
+    private static Map<String, String> getConfigMap(String config) {
+        Map<String, String> configMap = new HashMap<>();
+        String[] splitConfig = config.split("\n");
+        Arrays.stream(splitConfig).filter(s -> {
+            if (!s.trim().startsWith("#")) {
+                return true;
+            }
+            return false;
+        }).forEach(s -> {
+            String[] keyValue = s.trim().split(" ");
+            if (keyValue.length == 2) {
+                configMap.put(keyValue[0], keyValue[1]);
+            }
+        });
+        return configMap;
     }
 
     public void checkMiddlewareName(Long projectId, String name, String type) {

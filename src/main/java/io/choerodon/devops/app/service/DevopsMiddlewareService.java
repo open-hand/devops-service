@@ -15,4 +15,6 @@ public interface DevopsMiddlewareService {
     void saveMiddlewareInfo(Long projectId, String name, String type, String mode, String version, String hostIds, String configuration);
 
     AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO);
+
+    MiddlewareRedisEnvDeployVO queryRedisConfig(Long projectId, Long appServiceInstanceId, Long marketDeployObjectId);
 }

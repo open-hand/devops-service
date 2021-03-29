@@ -1,0 +1,17 @@
+cluster:
+  enabled: false
+
+usePassword: {{ usePassword }}
+password: {{ password }}
+
+{{ configmap }}
+
+sysctlImage:
+  enabled: {{ sysctlImage-enabled }}
+  mountHostSys: {{ sysctlImage-mountHostSys }}
+
+master:
+  persistence:
+    enabled: {{ persistence-enabled }}
+
+{{ persistence-info }}
