@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 
@@ -17,10 +18,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVO;
-import io.choerodon.devops.api.vo.DevopsPvVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsPvService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -222,5 +220,16 @@ public class DevopsPvController {
         return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(projectId, envId, clusterId, params, mode))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询集群下所有pv的label")
+    @GetMapping("/labels")
+    public ResponseEntity<List<DevopsPvLabelVO>> listLabels(@ApiParam(value = "项目ID", required = true)
+                                                          @PathVariable(value = "project_id") Long projectId,
+                                                            @ApiParam(value = "集群id", required = true)
+                                                          @RequestParam("cluster_id") Long clusterId
+    ) {
+        return ResponseEntity.ok(devopsPvService.listLabels(projectId, clusterId));
     }
 }

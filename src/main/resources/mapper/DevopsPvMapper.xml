@@ -148,4 +148,9 @@
             #{pvId}
         </foreach>
     </select>
+
+    <select id="listLabelsByClusterId" resultType="java.lang.String">
+        SELECT dp.labels FROM devops_pv dp
+        WHERE dp.cluster_id=#{clusterId}
+    </select>
 </mapper>
