@@ -1,0 +1,18 @@
+sentinel:
+  enabled: true
+cluster:
+  slaveCount: {{ slaveCount }}
+
+usePassword: {{ usePassword }}
+password: {{ password }}
+
+{{ configmap }}
+
+sysctlImage:
+  enabled: {{ sysctlImage-enabled }}
+  mountHostSys: {{ sysctlImage-mountHostSys }}
+
+slave:
+  persistence:
+    enabled: {{ persistence-enabled }}
+  {{ matchLabels }}
