@@ -17,4 +17,6 @@ public interface DevopsMiddlewareService {
     AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO);
 
     MiddlewareRedisEnvDeployVO queryRedisConfig(Long projectId, Long appServiceInstanceId, Long marketDeployObjectId);
+
+    void updateMiddlewareStatus();
 }
