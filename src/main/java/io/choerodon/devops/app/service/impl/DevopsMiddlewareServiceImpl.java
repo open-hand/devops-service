@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
@@ -16,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -39,6 +41,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareRedisDeployP
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -74,6 +77,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String REDIS_STANDALONE_VALUE_TEMPLATE;
 
+    private static final String MIDDLEWARE_STATUS_SYNC_LOCK = "middleware-status-sync-lock";
+
     static {
         InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-sentinel-value-template.yaml");
         InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-standalone-value-template.yaml");
@@ -101,6 +106,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private DevopsMiddlewareMapper devopsMiddlewareMapper;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -163,7 +170,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareRedisEnvDeployVO.setConfigmap(getConfigMap((String) values.get("configmap")));
         } else {
             middlewareRedisEnvDeployVO.setMode(STANDALONE_MODE);
-            if (values.get("persistence")!=null){
+            if (values.get("persistence") != null) {
                 middlewareRedisEnvDeployVO.setPvcName((String) ((Map) values.get("persistence")).get("existingClaim"));
             }
             middlewareRedisEnvDeployVO.setConfigmap(getConfigMap((String) values.get("configmap")));
@@ -311,6 +318,32 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 configuration
         );
         MapperUtil.resultJudgedInsertSelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "error.middleware.insert");
+    }
+
+    @Override
+    public void updateMiddlewareStatus() {
+        // 添加redis锁，防止多个pod并发更新状态
+        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(MIDDLEWARE_STATUS_SYNC_LOCK, "lock", 1, TimeUnit.MINUTES))) {
+            return;
+        }
+        try {
+            // 查处所有处于操作中的中间件
+            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO();
+            devopsDeployRecordDTO.setDeployResult(CommandStatus.OPERATING.getStatus());
+            devopsDeployRecordDTO.setDeployObjectType(DeployObjectTypeEnum.MIDDLEWARE.value());
+            List<DevopsDeployRecordDTO> devopsDeployRecordDTOList = devopsDeployRecordService.baseList(devopsDeployRecordDTO);
+            // 过滤出时间已经超过30分钟的中间件
+            long currentTimeMillis = System.currentTimeMillis();
+            List<DevopsDeployRecordDTO> timeoutRecords = devopsDeployRecordDTOList
+                    .stream()
+                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 3600000)
+                    .peek(d -> d.setDeployResult(CommandStatus.FAILED.getStatus()))
+                    .collect(Collectors.toList());
+            // 将中间件状态设置为超时
+            timeoutRecords.forEach(d -> devopsDeployRecordService.updateRecord(d));
+        } finally {
+            stringRedisTemplate.delete(MIDDLEWARE_STATUS_SYNC_LOCK);
+        }
     }
 
     private MiddlewareInventoryVO calculateGeneralInventoryValue(List<DevopsHostDTO> devopsHostDTOList, DevopsMiddlewareTypeEnum middlewareTypeEnum) {

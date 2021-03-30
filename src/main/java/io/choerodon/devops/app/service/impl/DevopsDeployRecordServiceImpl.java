@@ -156,6 +156,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     /**
      * 这里使用REQUIRES_NEW 是为了在catch中不会被回滚
+     *
      * @param recordId
      * @param status
      */
@@ -164,7 +165,21 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public void updateRecord(Long recordId, String status) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
         devopsDeployRecordDTO.setDeployResult(status);
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper,devopsDeployRecordDTO,"error.deploy.record.insert");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, "error.deploy.record.insert");
+    }
+
+    /**
+     * 不关注更新结果
+     * @param devopsDeployRecordDTO
+     */
+    @Override
+    public void updateRecord(DevopsDeployRecordDTO devopsDeployRecordDTO){
+        devopsDeployRecordMapper.updateByPrimaryKey(devopsDeployRecordDTO);
+    }
+
+    @Override
+    public List<DevopsDeployRecordDTO> baseList(DevopsDeployRecordDTO devopsDeployRecordDTO) {
+        return devopsDeployRecordMapper.select(devopsDeployRecordDTO);
     }
 
 
