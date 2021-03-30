@@ -167,13 +167,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareRedisEnvDeployVO.setMode(SENTINEL_MODE);
             middlewareRedisEnvDeployVO.setSlaveCount((Integer) ((Map) values.get("cluster")).get("slaveCount"));
             middlewareRedisEnvDeployVO.setPvLabels((Map<String, String>) ((Map) values.get("slave")).get("matchLabels"));
-            middlewareRedisEnvDeployVO.setConfigmap(getConfigMap((String) values.get("configmap")));
+            middlewareRedisEnvDeployVO.setConfiguration(getConfigMap((String) values.get("configmap")));
         } else {
             middlewareRedisEnvDeployVO.setMode(STANDALONE_MODE);
             if (values.get("persistence") != null) {
                 middlewareRedisEnvDeployVO.setPvcName((String) ((Map) values.get("persistence")).get("existingClaim"));
             }
-            middlewareRedisEnvDeployVO.setConfigmap(getConfigMap((String) values.get("configmap")));
+            middlewareRedisEnvDeployVO.setConfiguration(getConfigMap((String) values.get("configmap")));
         }
 
         return middlewareRedisEnvDeployVO;
@@ -451,9 +451,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         configuration.put("{{ sysctlImage-enabled }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
         configuration.put("{{ sysctlImage-mountHostSys }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
 
-        if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfigmap())) {
+        if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfiguration())) {
             StringBuilder configMapSb = new StringBuilder();
-            middlewareRedisEnvDeployVO.getConfigmap().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
+            middlewareRedisEnvDeployVO.getConfiguration().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
             configuration.put("{{ configmap }}", String.format(CONFIGMAP_TEMPLATE, configMapSb.toString()));
         }
 
@@ -480,9 +480,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         configuration.put("{{ sysctlImage-enabled }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
         configuration.put("{{ sysctlImage-mountHostSys }}", middlewareRedisEnvDeployVO.getSysctlImage().toString());
 
-        if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfigmap())) {
+        if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfiguration())) {
             StringBuilder configMapSb = new StringBuilder();
-            middlewareRedisEnvDeployVO.getConfigmap().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
+            middlewareRedisEnvDeployVO.getConfiguration().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
             configuration.put("{{ configmap }}", String.format(CONFIGMAP_TEMPLATE, configMapSb.toString()));
         }
 
