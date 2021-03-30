@@ -1178,8 +1178,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public CiCdPipelineDTO update(Long projectId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_UPDATE);
-        permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
+//        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_UPDATE);
+//        permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineVO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 校验自定义任务格式
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
@@ -1498,7 +1498,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
                                         doTlsVerify == null || !doTlsVerify,
-                                        !(imageScan == null) || imageScan, jobVO.getId()));
+                                        Objects.isNull(imageScan) ? false : imageScan, jobVO.getId()));
                                 break;
                             // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
                             case UPLOAD_JAR:
