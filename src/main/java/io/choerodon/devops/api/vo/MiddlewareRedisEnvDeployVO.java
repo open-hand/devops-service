@@ -33,7 +33,7 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
     private Integer slaveCount;
 
     @ApiModelProperty("redis的配置参数")
-    private Map<String, String> configmap;
+    private Map<String, String> configuration;
 
     /**
      * 部署配置
@@ -104,11 +104,11 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
         this.slaveCount = slaveCount;
     }
 
-    public Map<String, String> getConfigmap() {
-        return configmap;
+    public Map<String, String> getConfiguration() {
+        return configuration;
     }
 
-    public void setConfigmap(Map<String, String> configmap) {
-        this.configmap = configmap;
+    public void setConfiguration(Map<String, String> configuration) {
+        this.configuration = configuration;
     }
 }
