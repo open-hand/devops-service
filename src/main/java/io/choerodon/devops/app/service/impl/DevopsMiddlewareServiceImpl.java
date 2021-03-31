@@ -140,14 +140,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     @Override
     public AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
-        if (STANDALONE_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
-            middlewareRedisEnvDeployVO.setValues(generateRedisStandaloneValues(middlewareRedisEnvDeployVO));
-        }
-
-        if (SENTINEL_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
-            middlewareRedisEnvDeployVO.setValues(generateRedisSentinelValues(middlewareRedisEnvDeployVO));
-        }
-
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class));
     }
 
