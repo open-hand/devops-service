@@ -18,8 +18,8 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
     private String pvcName;
 
     @ApiModelProperty("密码")
-    @Size(min = 6, max = 32, message = "error.redis.password.length")
-    @NotBlank(message = "error.redis.password.empty")
+    @Size(min = 6, max = 32, message = "error.middleware.redis.password.length")
+    @NotBlank(message = "error.middleware.redis.password.empty")
     private String password;
 
     @ApiModelProperty("是否启用内核优化")

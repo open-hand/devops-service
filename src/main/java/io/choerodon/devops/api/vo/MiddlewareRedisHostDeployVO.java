@@ -19,6 +19,12 @@ public class MiddlewareRedisHostDeployVO {
     @Size(min = 1, max = 53, message = "error.app.instance.name.length")
     @NotBlank(message = "error.app.instance.name.null")
     private String name;
+
+    @ApiModelProperty("密码")
+    @Size(min = 6, max = 32, message = "error.middleware.redis.password.length")
+    @NotBlank(message = "error.middleware.redis.password.empty")
+    private String password;
+
     @ApiModelProperty("部署版本")
     private String version;
     @ApiModelProperty("配置内容")
@@ -62,5 +68,13 @@ public class MiddlewareRedisHostDeployVO {
 
     public void setConfiguration(Map<String, String> configuration) {
         this.configuration = configuration;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
