@@ -87,4 +87,15 @@ public class DevopsTask {
         logger.info("begin to fix projectId ");
         devopsCheckLogService.checkLog("0.24.0");
     }
+
+    /**
+     * 0.25.0修复数据，增加应用服务的变量
+     */
+    @JobTask(maxRetryCount = 3, code = "upgradeVersionTo25", description = "增加应用服务的变量")
+    @TimedTask(name = "upgradeVersionTo25.3", description = "增加应用服务的变量", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixGitLabAppService(Map<String, Object> map) {
+        logger.info("begin to fix gitlab appService ");
+        devopsCheckLogService.checkLog("0.25.0");
+    }
 }
