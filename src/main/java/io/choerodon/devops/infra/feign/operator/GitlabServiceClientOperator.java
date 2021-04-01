@@ -156,6 +156,10 @@ public class GitlabServiceClientOperator {
         return memberDTO;
     }
 
+    public List<MemberDTO> listGroupMember(Integer groupId) {
+        return gitlabServiceClient.listGroupMember(groupId).getBody();
+    }
+
     public void deleteGroupMember(Integer groupId, Integer userId) {
         gitlabServiceClient.deleteMember(groupId, userId);
     }
