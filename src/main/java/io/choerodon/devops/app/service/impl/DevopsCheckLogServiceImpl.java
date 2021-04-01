@@ -10,7 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
+
 import io.choerodon.devops.app.service.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCdAuditService devopsCdAuditService;
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     public void checkLog(String version) {
@@ -83,6 +87,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("修复数据开始");
                     devopsCdAuditService.fixProjectId();
                     devopsCdAuditRecordService.fixProjectId();
+                    LOGGER.info("修复数据完成!!!!!!");
+                } else if ("0.25.0".equals(version)) {
+                    LOGGER.info("修复数据开始");
+                    appServiceService.fixGitlabAppService();
                     LOGGER.info("修复数据完成!!!!!!");
                 } else {
                     LOGGER.info("version not matched");

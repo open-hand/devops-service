@@ -2026,6 +2026,26 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceMapper.updateByIdSelectiveWithoutAudit(appServiceDTO);
     }
 
+
+    @Override
+    public void fixGitlabAppService() {
+        //查询所有的应用服务
+        List<AppServiceDTO> appServiceDTOS = appServiceMapper.selectAll();
+        if (CollectionUtils.isEmpty(appServiceDTOS)) {
+            return;
+        }
+        appServiceDTOS.forEach(appServiceDTO -> {
+            //添加跳过证书扫描的变量
+            UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(appServiceDTO.getCreatedBy());
+            if (!Objects.isNull(userAttrDTO)) {
+                gitlabServiceClientOperator.createProjectVariable(appServiceDTO.getGitlabProjectId(), "TRIVY_INSECURE", "true", false, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            }
+            else {
+                gitlabServiceClientOperator.createProjectVariable(appServiceDTO.getGitlabProjectId(), "TRIVY_INSECURE", "true", false, 0);
+            }
+        });
+    }
+
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
         // 获取push代码所需的access token
@@ -2830,6 +2850,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<CiVariableVO> variables = gitlabServiceClientOperator.listAppServiceVariable(projectId, userId);
         if (variables.isEmpty()) {
             gitlabServiceClientOperator.createProjectVariable(projectId, "Token", token, false, userId);
+            //添加跳过证书扫描的变量
+            gitlabServiceClientOperator.createProjectVariable(projectId, "TRIVY_INSECURE", "true", false, userId);
             return token;
         } else {
             return variables.get(0).getValue();

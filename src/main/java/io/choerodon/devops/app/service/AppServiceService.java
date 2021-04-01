@@ -548,4 +548,7 @@ public interface AppServiceService {
     List<AppServiceImportPayload> createAppService(Long projectId, List<ApplicationImportInternalVO> importInternalVOS);
 
     void importMarketAppServiceGitlab(AppServiceImportPayload appServiceImportPayload);
+
+    void fixGitlabAppService();
+
 }
