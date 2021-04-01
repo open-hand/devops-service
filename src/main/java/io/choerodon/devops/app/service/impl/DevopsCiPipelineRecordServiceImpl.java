@@ -593,6 +593,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                 devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
                             }
                         }
+                        //返回devopsJobId
+                        devopsCiJobRecordVO.setDevopsJobId(devopsCiJobDTO.getId());
                     }
                 }
             });
