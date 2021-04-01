@@ -2054,6 +2054,15 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return;
             }
             //添加跳过证书扫描的变量
+            //查询项目下的varible
+            List<CiVariableVO> ciVariableVOS = gitlabServiceClientOperator.listAppServiceVariable(gitlabProjectDTO.getId(), gitlabProjectDTO.getCreatorId());
+            if (CollectionUtils.isEmpty(ciVariableVOS)) {
+                return;
+            }
+            List<String> keys = ciVariableVOS.stream().map(CiVariableVO::getKey).collect(toList());
+            if (keys.contains("TRIVY_INSECURE")) {
+                return;
+            }
             gitlabServiceClientOperator.createProjectVariable(appServiceDTO.getGitlabProjectId(), "TRIVY_INSECURE", "true", false, gitlabProjectDTO.getCreatorId());
         });
     }
