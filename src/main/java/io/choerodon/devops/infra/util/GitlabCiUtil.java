@@ -261,10 +261,9 @@ public class GitlabCiUtil {
         String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
         commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
         //kaniko推镜像成功后可以执行trivy  这里是将镜像扫描的结果保存为json文件 以commmit_tag作为文件的名字 这个文件存在于runner的 /builds/orgCode-projectCode/appCode下，runner的pod停掉以后会自动删除
-        // TODO: 2021/3/25 由于测试环境不能科学上网 测试阶段先加上  --light --skip-update 这两个参数 上线的时候去掉
         if (imageScan) {
             commands.add("startDate=$(date +\"%Y-%m-%d %H:%M:%S\")");
-            commands.add("trivy image --light --skip-update -f json -o results-${CI_COMMIT_TAG}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}");
+            commands.add("trivy image  --skip-update -f json -o results-${CI_COMMIT_TAG}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}");
             commands.add("endDate=$(date +\"%Y-%m-%d %H:%M:%S\")");
             String resolveCommond = "resolveImageScanJsonFile %s";
             commands.add(String.format(resolveCommond, jodId));
