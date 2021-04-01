@@ -2030,19 +2030,31 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void fixGitlabAppService() {
         //查询所有的应用服务
-        List<AppServiceDTO> appServiceDTOS = appServiceMapper.selectAll();
+        AppServiceDTO serviceDTO = new AppServiceDTO();
+        serviceDTO.setFailed(false);
+        List<AppServiceDTO> appServiceDTOS = appServiceMapper.select(serviceDTO);
         if (CollectionUtils.isEmpty(appServiceDTOS)) {
             return;
         }
         appServiceDTOS.forEach(appServiceDTO -> {
+            //首先查询项目,同步失败的不处理
+            if (appServiceDTO.getFailed()) {
+                return;
+            }
+            if (Objects.isNull(appServiceDTO.getGitlabProjectId())) {
+                return;
+            }
+
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(appServiceDTO.getGitlabProjectId());
+            //如果 defaultBranch为null 就是空库
+            if (Objects.isNull(gitlabProjectDTO)) {
+                return;
+            }
+            if (org.apache.commons.lang3.StringUtils.isEmpty(gitlabProjectDTO.getDefaultBranch())) {
+                return;
+            }
             //添加跳过证书扫描的变量
-            UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(appServiceDTO.getCreatedBy());
-            if (!Objects.isNull(userAttrDTO)) {
-                gitlabServiceClientOperator.createProjectVariable(appServiceDTO.getGitlabProjectId(), "TRIVY_INSECURE", "true", false, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-            }
-            else {
-                gitlabServiceClientOperator.createProjectVariable(appServiceDTO.getGitlabProjectId(), "TRIVY_INSECURE", "true", false, 0);
-            }
+            gitlabServiceClientOperator.createProjectVariable(appServiceDTO.getGitlabProjectId(), "TRIVY_INSECURE", "true", false, gitlabProjectDTO.getCreatorId());
         });
     }
 
