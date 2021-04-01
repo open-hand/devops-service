@@ -31,7 +31,6 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
-import io.choerodon.devops.api.validator.MiddlewareConfigurationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
@@ -177,7 +176,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
-        MiddlewareConfigurationValidator.validateRedisConfiguration(middlewareRedisHostDeployVO.getConfiguration());
         if (SENTINEL_MODE.equals(middlewareRedisHostDeployVO.getMode())) {
             CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
         }
