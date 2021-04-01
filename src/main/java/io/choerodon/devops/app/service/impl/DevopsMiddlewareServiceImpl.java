@@ -274,7 +274,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             LOGGER.info("node configuration file upload completed");
 
             // 生成并上传redis配置文件
-            generateAndUploadRedisConfiguration(sshClient, middlewareRedisHostDeployVO.getConfiguration());
+            generateAndUploadRedisConfiguration(sshClient, middlewareRedisHostDeployVO);
             LOGGER.info("redis configuration file upload completed");
 
             // 安装redis
@@ -370,15 +370,16 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         sshUtil.uploadFile(sshClient, filePath, targetFilePath);
     }
 
-    private void generateAndUploadRedisConfiguration(SSHClient ssh, Map<String, String> configuration) throws IOException {
+    private void generateAndUploadRedisConfiguration(SSHClient ssh, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) throws IOException {
+        Map<String, String> configuration = middlewareRedisHostDeployVO.getConfiguration();
         Map<String, Map<String, String>> baseConfig = new HashMap<>();
         configuration.putIfAbsent("port", "6379");
         configuration.putIfAbsent("bind", "0.0.0.0");
-        configuration.putIfAbsent("databases", "128");
+        configuration.putIfAbsent("databases", "16");
         configuration.putIfAbsent("dir", "/var/lib/redis/data");
         configuration.putIfAbsent("logfile", "/var/log/redis/redis.log");
-        configuration.putIfAbsent("requirepass", "changeit");
-        configuration.putIfAbsent("masterauth", "changeit");
+        configuration.putIfAbsent("requirepass", middlewareRedisHostDeployVO.getPassword());
+        configuration.putIfAbsent("masterauth", middlewareRedisHostDeployVO.getPassword());
         configuration.putIfAbsent("appendonly", "yes");
         configuration.putIfAbsent("appendfsync", "everysec");
         configuration.putIfAbsent("no-appendfsync-on-rewrite", "yes");
