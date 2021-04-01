@@ -39,6 +39,10 @@ public interface GitlabServiceClient {
             @PathVariable("groupId") Integer groupId,
             @PathVariable("userId") Integer userId);
 
+    @GetMapping(value = "/v1/groups/{groupId}/members")
+    ResponseEntity<List<MemberDTO>> listGroupMember(
+            @PathVariable("groupId") Integer groupId);
+
     @DeleteMapping(value = "/v1/groups/{groupId}/members/{userId}")
     ResponseEntity deleteMember(
             @PathVariable("groupId") Integer groupId,

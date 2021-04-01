@@ -54,6 +54,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<MemberDTO>> listGroupMember(Integer groupId) {
+        throw new CommonException("error.group.member.list");
+    }
+
+    @Override
     public ResponseEntity deleteMember(Integer groupId, Integer userId) {
         throw new CommonException("error.remove.member");
     }
