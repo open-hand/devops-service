@@ -97,7 +97,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final Gson gson = new Gson();
     /**
      * 中间件chart仓库地址
-     * gateway(%s)+市场服务名(market)+下载地址(market/repo)
+     * gateway(%s)+市场应用名称(market)+下载地址(market/repo)
      */
     private static final String MIDDLEWARE_CHART_REPO_TEMPLATE = "%s/market/market/repo/";
 
