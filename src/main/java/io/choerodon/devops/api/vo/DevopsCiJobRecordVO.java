@@ -76,18 +76,7 @@ public class DevopsCiJobRecordVO {
      * 是否有镜像扫描
      */
     private Boolean imageScan;
-    /**
-     * devops 里面的jobId
-     */
-    private Long devopsJobId;
 
-    public Long getDevopsJobId() {
-        return devopsJobId;
-    }
-
-    public void setDevopsJobId(Long devopsJobId) {
-        this.devopsJobId = devopsJobId;
-    }
 
     public Boolean getImageScan() {
         return imageScan;
