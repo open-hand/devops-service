@@ -269,12 +269,10 @@ function saveJarMetadata() {
   fi
 }
 
-############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ################################
-# $1 ciJobId    猪齿鱼的CI的JOB纪录的id
+############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ###############################
 function resolveImageScanJsonFile() {
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
-    -F "job_id=$1" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "start_date=${startDate}" \
     -F "end_date=${endDate}" \

@@ -14,9 +14,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsImageScanResultService {
 
-    void resolveImageScanJson(Long jobId, Long gitlabPipelineId, Date startDate, Date endDate, MultipartFile file);
+    void resolveImageScanJson(Long gitlabPipelineId, Date startDate, Date endDate, MultipartFile file);
 
-    Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, Long jobId, PageRequest pageRequest, String options);
+    Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, PageRequest pageRequest, String options);
 
-    ImageScanResultVO queryImageInfo(Long projectId, Long gitlabPipelineId, Long jobId);
+    ImageScanResultVO queryImageInfo(Long projectId, Long gitlabPipelineId);
 }

@@ -95,7 +95,7 @@ public class DevopsTask {
     @TimedTask(name = "devopsUpgradeVersionTo25", description = "增加应用服务的变量", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixGitLabAppService(Map<String, Object> map) {
-        logger.info("begin to fix gitlab appService ");
+        logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>begin to fix gitlab appService ");
         devopsCheckLogService.checkLog("0.25.0");
     }
 }

@@ -7,7 +7,6 @@
         *
         from devops_image_scan_result disr
         where disr.GITLAB_PIPELINE_ID =#{gitlabPipelineId}
-        AND disr.JOB_ID=#{jobId}
 
     </select>
 </mapper>

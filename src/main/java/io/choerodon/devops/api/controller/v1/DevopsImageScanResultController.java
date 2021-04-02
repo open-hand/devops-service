@@ -38,9 +38,8 @@ public class DevopsImageScanResultController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
-            @PathVariable("job_id") Long jobId,
             @ApiIgnore PageRequest pageRequest) {
-        return Results.success(devopsImageScanResultService.queryImageInfo(projectId, gitlabPipelineId, jobId));
+        return Results.success(devopsImageScanResultService.queryImageInfo(projectId, gitlabPipelineId));
     }
 
 
@@ -52,13 +51,12 @@ public class DevopsImageScanResultController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
-            @PathVariable("job_id") Long jobId,
             @SortDefault.SortDefaults({
                     @SortDefault(value = "id", direction = Sort.Direction.DESC)})
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数", required = false)
             @RequestBody(required = false) String options) {
-        return Results.success(devopsImageScanResultService.pageByOptions(projectId, gitlabPipelineId, jobId, pageRequest,options));
+        return Results.success(devopsImageScanResultService.pageByOptions(projectId, gitlabPipelineId, pageRequest,options));
     }
 
 }
