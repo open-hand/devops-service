@@ -116,6 +116,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
 
+    @Autowired
+    private DevopsImageScanResultMapper devopsImageScanResultMapper;
+
 
     @Value("${services.gateway.url}")
     private String api;
@@ -778,7 +781,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Objects.requireNonNull(gitlabProjectId);
         DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         pipelineRecordDTO.setGitlabProjectId(gitlabProjectId);
+        List<DevopsCiPipelineRecordDTO> devopsCiPipelineRecordDTOS = devopsCiPipelineRecordMapper.select(pipelineRecordDTO);
+        if (CollectionUtils.isEmpty(devopsCiPipelineRecordDTOS)){
+            return;
+        }
         devopsCiPipelineRecordMapper.delete(pipelineRecordDTO);
+        List<Long> gitlabPipelineIds = devopsCiPipelineRecordDTOS.stream().map(DevopsCiPipelineRecordDTO::getGitlabPipelineId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(gitlabPipelineIds)){
+            return;
+        }
+        //删除镜像扫描记录
+        devopsImageScanResultMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
     }
 
     @Override

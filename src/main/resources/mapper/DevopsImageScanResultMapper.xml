@@ -9,4 +9,15 @@
         where disr.GITLAB_PIPELINE_ID =#{gitlabPipelineId}
 
     </select>
+
+    <delete id="deleteByGitlabPipelineIds">
+
+        delete * from
+         devops_image_scan_result disr
+        where disr.GITLAB_PIPELINE_ID IN
+        <foreach collection="gitlabPipelineIds" item="id" index="no" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>
