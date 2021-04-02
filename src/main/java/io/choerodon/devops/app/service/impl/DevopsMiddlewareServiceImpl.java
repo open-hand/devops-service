@@ -241,9 +241,14 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     public void hostDeployForRedis(DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload) {
         MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO = devopsMiddlewareRedisDeployPayload.getMiddlewareRedisHostDeployVO();
-
+        DevopsHostDTO devopsHostDTOForConnection = null;
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(devopsMiddlewareRedisDeployPayload.getProjectId(), middlewareRedisHostDeployVO.getHostIds());
-        DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
+        Optional<DevopsHostDTO> any = devopsHostDTOList.stream().filter(d -> !StringUtils.isEmpty(d.getHostIp()) && d.getSshPort() != null).findAny();
+        if (any.isPresent()) {
+            devopsHostDTOForConnection = any.get();
+        }
+
+        CommonExAssertUtil.assertTrue(devopsHostDTOForConnection != null, "error.host.ip");
 
 
         LOGGER.info("========================================");
@@ -340,10 +345,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO();
         for (DevopsHostDTO hostDTO : devopsHostDTOList) {
             if (HostAuthType.ACCOUNTPASSWORD.value().equals(hostDTO.getAuthType())) {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), hostDTO.getHostIp(), hostDTO.getSshPort(), hostDTO.getUsername(), hostDTO.getPassword()))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), hostDTO.getPrivateIp(), hostDTO.getPrivatePort(), hostDTO.getUsername(), hostDTO.getPassword()))
                         .append(System.lineSeparator());
             } else {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), hostDTO.getHostIp(), hostDTO.getSshPort(), hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), hostDTO.getPrivateIp(), hostDTO.getPrivatePort(), hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
                         .append(System.lineSeparator());
             }
             // 设置chrony节点
