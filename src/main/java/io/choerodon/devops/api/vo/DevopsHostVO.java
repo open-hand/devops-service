@@ -57,6 +57,12 @@ public class DevopsHostVO {
     @ApiModelProperty("主机ssh的端口")
     private Integer sshPort;
 
+    @ApiModelProperty("内网ip")
+    private String privateIp;
+
+    @ApiModelProperty("内网ssh端口")
+    private Integer privatePort;
+
     /**
      * {@link HostAuthType}
      */
@@ -219,5 +225,21 @@ public class DevopsHostVO {
 
     public void setSelected(Boolean selected) {
         this.selected = selected;
+    }
+
+    public String getPrivateIp() {
+        return privateIp;
+    }
+
+    public void setPrivateIp(String privateIp) {
+        this.privateIp = privateIp;
+    }
+
+    public Integer getPrivatePort() {
+        return privatePort;
+    }
+
+    public void setPrivatePort(Integer privatePort) {
+        this.privatePort = privatePort;
     }
 }

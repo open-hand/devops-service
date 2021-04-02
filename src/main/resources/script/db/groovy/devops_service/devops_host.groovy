@@ -68,4 +68,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             }
         }
     }
+
+    changeSet(author: 'lihao', id: '2021-04-02-add-column') {
+        addColumn(tableName: 'devops_host') {
+            column(name: 'private_ip', type: 'VARCHAR(15)', remarks: '内网ip', afterColumn: 'host_ip') {
+                constraints(nullable: true)
+            }
+            column(name: 'private_port', type: 'SMALLINT UNSIGNED', remarks: '内网ssh端口', afterColumn: 'ssh_port') {
+                constraints(nullable: true)
+            }
+        }
+    }
 }
