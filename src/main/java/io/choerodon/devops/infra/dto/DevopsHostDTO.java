@@ -64,6 +64,12 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("主机ssh的端口")
     private Integer sshPort;
 
+    @ApiModelProperty("内网ip")
+    private String privateIp;
+
+    @ApiModelProperty("内网ssh端口")
+    private Integer privatePort;
+
     /**
      * {@link HostAuthType}
      */
@@ -202,5 +208,21 @@ public class DevopsHostDTO extends AuditDomain {
 
     public void setJmeterCheckError(@Nullable String jmeterCheckError) {
         this.jmeterCheckError = jmeterCheckError;
+    }
+
+    public String getPrivateIp() {
+        return privateIp;
+    }
+
+    public void setPrivateIp(String privateIp) {
+        this.privateIp = privateIp;
+    }
+
+    public Integer getPrivatePort() {
+        return privatePort;
+    }
+
+    public void setPrivatePort(Integer privatePort) {
+        this.privatePort = privatePort;
     }
 }
