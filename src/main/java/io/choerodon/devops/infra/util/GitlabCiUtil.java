@@ -248,7 +248,7 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile文件路径
      * @param skipTlsVerify         是否跳过证书校验
      */
-    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify, boolean imageScan, Long jodId) {
+    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify, boolean imageScan) {
         List<String> commands = new ArrayList<>();
 
         // 在生成镜像的命令前保存镜像的元数据
@@ -265,8 +265,8 @@ public class GitlabCiUtil {
             commands.add("startDate=$(date +\"%Y-%m-%d %H:%M:%S\")");
             commands.add("trivy image  --skip-update -f json -o results-${CI_COMMIT_TAG}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}");
             commands.add("endDate=$(date +\"%Y-%m-%d %H:%M:%S\")");
-            String resolveCommond = "resolveImageScanJsonFile %s";
-            commands.add(String.format(resolveCommond, jodId));
+            String resolveCommond = "resolveImageScanJsonFile";
+            commands.add(String.format(resolveCommond));
         }
         return commands;
     }

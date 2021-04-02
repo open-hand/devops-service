@@ -5,13 +5,11 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
@@ -50,8 +48,6 @@ import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.maven.Settings;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.maven.VersionPolicyEnum;
-import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -593,8 +589,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                 devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
                             }
                         }
-                        //返回devopsJobId
-                        devopsCiJobRecordVO.setDevopsJobId(devopsCiJobDTO.getId());
                     }
                 }
             });
