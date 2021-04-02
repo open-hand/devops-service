@@ -10,5 +10,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Created by wangxiang on 2021/3/25
  */
 public interface DevopsImageScanResultMapper extends BaseMapper<DevopsImageScanResultDTO> {
-    List<DevopsImageScanResultDTO> pageByOptions(@Param("gitlabPipelineId") Long gitlabPipelineId, @Param("jobId") Long jobId, @Param("options") String options);
+    List<DevopsImageScanResultDTO> pageByOptions(@Param("gitlabPipelineId") Long gitlabPipelineId, @Param("options") String options);
 }

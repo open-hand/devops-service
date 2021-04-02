@@ -167,8 +167,6 @@ public class CiController {
     @ApiOperation(value = "解析ci阶段镜像扫描产生的json文件")
     @PostMapping("/resolve_image_scan_json")
     public ResponseEntity<Void> resolveImageScanJson(
-            @ApiParam(value = "job_id", required = true)
-            @RequestParam(value = "job_id") Long jobId,
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "start_date")
@@ -177,7 +175,7 @@ public class CiController {
             @RequestParam(value = "end_date") Date endDate,
             @ApiParam(value = "json文件", required = true)
             @RequestParam MultipartFile file) {
-        devopsImageScanResultService.resolveImageScanJson(jobId, gitlabPipelineId, startDate, endDate,file);
+        devopsImageScanResultService.resolveImageScanJson(gitlabPipelineId, startDate, endDate,file);
         return ResponseEntity.ok().build();
     }
 

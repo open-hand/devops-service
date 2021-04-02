@@ -40,7 +40,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
 
     @Override
-    public void resolveImageScanJson(Long jobId, Long gitlabPipelineId, Date startDate, Date endDate, MultipartFile file) {
+    public void resolveImageScanJson(Long gitlabPipelineId, Date startDate, Date endDate, MultipartFile file) {
         LOGGER.debug("startDate:{},endDate:{}", startDate, endDate);
         String content = null;
         try {
@@ -66,10 +66,8 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
             devopsImageScanResultDTO.setStartDate(startDate);
             devopsImageScanResultDTO.setEndDate(endDate);
-            devopsImageScanResultDTO.setJobId(jobId);
             devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
             DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
-            scanResultDTO.setJobId(jobId);
             scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
             scanResultDTO.setVulnerabilityCode(vulnerabilitieVO.getVulnerabilityCode());
             scanResultDTO.setTarget(imageScanResultVO.getTarget());
@@ -86,10 +84,9 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
 
     @Override
-    public ImageScanResultVO queryImageInfo(Long projectId, Long gitlabPipelineId, Long jobId) {
+    public ImageScanResultVO queryImageInfo(Long projectId, Long gitlabPipelineId) {
         DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
         devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-        devopsImageScanResultDTO.setJobId(jobId);
         List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = devopsImageScanResultMapper.select(devopsImageScanResultDTO);
         ImageScanResultVO imageScanResultVO = new ImageScanResultVO();
         if (CollectionUtils.isEmpty(devopsImageScanResultDTOS)) {
@@ -129,8 +126,8 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     }
 
     @Override
-    public Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, Long jobId, PageRequest pageRequest, String options) {
-        Page<DevopsImageScanResultDTO> devopsImageScanResultDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsImageScanResultMapper.pageByOptions(gitlabPipelineId, jobId, options));
+    public Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, PageRequest pageRequest, String options) {
+        Page<DevopsImageScanResultDTO> devopsImageScanResultDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsImageScanResultMapper.pageByOptions(gitlabPipelineId, options));
         Page<DevopsImageScanResultVO> devopsImageScanResultVOS = ConvertUtils.convertPage(devopsImageScanResultDTOPage, DevopsImageScanResultVO.class);
         return devopsImageScanResultVOS;
     }

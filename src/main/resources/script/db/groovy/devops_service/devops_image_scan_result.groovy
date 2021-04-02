@@ -6,10 +6,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_image_scan_result.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'JOB_ID', type: 'BIGINT UNSIGNED', remarks: 'jobId') {
-                constraints(nullable: false)
-            }
-
             column(name: 'VULNERABILITY_CODE', type: 'VARCHAR(20)', remarks: '漏洞码') {
                 constraints(nullable: false)
             }

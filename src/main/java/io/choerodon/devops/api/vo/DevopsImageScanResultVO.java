@@ -11,10 +11,6 @@ public class DevopsImageScanResultVO {
     @Encrypt
     private Long id;
 
-    @ApiModelProperty("jobId")
-    @Encrypt
-    private Long jobId;
-
     @ApiModelProperty("漏洞码")
     private String vulnerabilityCode;
 
@@ -61,13 +57,6 @@ public class DevopsImageScanResultVO {
         this.id = id;
     }
 
-    public Long getJobId() {
-        return jobId;
-    }
-
-    public void setJobId(Long jobId) {
-        this.jobId = jobId;
-    }
 
     public String getVulnerabilityCode() {
         return vulnerabilityCode;
