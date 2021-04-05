@@ -10,7 +10,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsHostVO;
 import io.choerodon.devops.api.vo.DevopsImageScanResultVO;
 import io.choerodon.devops.api.vo.ImageScanResultVO;
 import io.choerodon.devops.app.service.DevopsImageScanResultService;
@@ -31,7 +30,7 @@ public class DevopsImageScanResultController {
     private DevopsImageScanResultService devopsImageScanResultService;
 
 
-    @GetMapping("/image/info/{gitlab_pipeline_id}/{job_id}")
+    @GetMapping("/image/info/{gitlab_pipeline_id}")
     @ApiOperation("查询扫描结果的基本信息")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<ImageScanResultVO> queryImageInfo(
@@ -43,7 +42,7 @@ public class DevopsImageScanResultController {
     }
 
 
-    @GetMapping("/image/{gitlab_pipeline_id}/{job_id}")
+    @GetMapping("/image/{gitlab_pipeline_id}")
     @ApiOperation("根据gitlab流水线id,和jobId查询扫描结果")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @CustomPageRequest
