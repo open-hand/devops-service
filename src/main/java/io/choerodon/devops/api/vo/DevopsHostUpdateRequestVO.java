@@ -50,6 +50,12 @@ public class DevopsHostUpdateRequestVO {
     @ApiModelProperty("jmeter二进制文件的路径")
     private String jmeterPath;
 
+    @ApiModelProperty("内网ip")
+    private String privateIp;
+
+    @ApiModelProperty("内网ssh端口")
+    private Integer privatePort;
+
     public String getName() {
         return name;
     }
@@ -112,5 +118,21 @@ public class DevopsHostUpdateRequestVO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPrivateIp() {
+        return privateIp;
+    }
+
+    public void setPrivateIp(String privateIp) {
+        this.privateIp = privateIp;
+    }
+
+    public Integer getPrivatePort() {
+        return privatePort;
+    }
+
+    public void setPrivatePort(Integer privatePort) {
+        this.privatePort = privatePort;
     }
 }
