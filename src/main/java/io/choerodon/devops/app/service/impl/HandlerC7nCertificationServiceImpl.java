@@ -75,16 +75,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             }
         });
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
-
-        // 校验 cert manager 安装了
-        if (certManagerVersion == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.CERT_MANAGER_NOT_INSTALLED.getError(), "README.md");
-        }
-
-        // 校验 api version
-        checkApiVersionByCertManagerVersion(updateC7nCertification, addC7nCertification, certManagerVersion, objectPath);
+        validateCertManager(envId, updateC7nCertification, addC7nCertification, objectPath);
 
         // 证书的内容不能更新，只能更新文件路径
         updateC7nCertification.forEach(c7nCertification1 ->
@@ -235,15 +226,39 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             errorMessage = GitOpsObjectError.CERT_API_VERSION_TOO_OLD.getError();
         }
         // 校验证书的api version合规
-        for (C7nCertification c7nCertification: toAdd) {
+        for (C7nCertification c7nCertification : toAdd) {
             if (!validApiVersion.equals(c7nCertification.getApiVersion())) {
                 throw new GitOpsExplainException(errorMessage, objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())));
             }
         }
-        for (C7nCertification c7nCertification: toUpdate) {
+        for (C7nCertification c7nCertification : toUpdate) {
             if (!validApiVersion.equals(c7nCertification.getApiVersion())) {
                 throw new GitOpsExplainException(errorMessage, objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())));
             }
+        }
+    }
+
+    /**
+     * 校验 CertManager 状态
+     *
+     * @param envId                  环境id
+     * @param updateC7nCertification 要更新的证书
+     * @param addC7nCertification    要添加的证书
+     * @param objectPath             对象路径
+     */
+    private void validateCertManager(Long envId, List<C7nCertification> updateC7nCertification, List<C7nCertification> addC7nCertification, Map<String, String> objectPath) {
+        if (!CollectionUtils.isEmpty(addC7nCertification)
+                || !CollectionUtils.isEmpty(updateC7nCertification)) {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+            String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
+
+            // 校验 cert manager 安装了
+            if (certManagerVersion == null) {
+                throw new GitOpsExplainException(GitOpsObjectError.CERT_MANAGER_NOT_INSTALLED.getError(), "README.md");
+            }
+
+            // 校验 api version
+            checkApiVersionByCertManagerVersion(updateC7nCertification, addC7nCertification, certManagerVersion, objectPath);
         }
     }
 }
