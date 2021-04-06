@@ -220,6 +220,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         unOccupyHosts(projectId, hostIds);
     }
 
+    @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
     @Transactional
     @Override
     public void correctStatus(Long projectId, Long hostId, Long updaterId) {
