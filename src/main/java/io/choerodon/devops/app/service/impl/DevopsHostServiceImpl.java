@@ -55,7 +55,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     /**
      * 主机状态处于处理中的超时时长
      */
-    private static final long OPERATING_TIMEOUT = 60L * 1000;
+    private static final long OPERATING_TIMEOUT = 300L * 1000;
     private static final String CHECKING_HOST = "checking";
 
     /**
