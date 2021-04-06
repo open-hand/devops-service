@@ -21,12 +21,6 @@ preJob:
          username: username
          password: password
          driver: com.mysql.jdbc.Driver
-      # 多数据源初始化
-      message:
-        url: jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
-        username: username
-        password: password
-        driver: com.mysql.jdbc.Driver
 
 ## 实例运行数量
 replicaCount: 1
