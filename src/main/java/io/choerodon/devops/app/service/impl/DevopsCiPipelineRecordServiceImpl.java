@@ -583,12 +583,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
                             fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
                         }
-                        // docker构建开启了镜像扫描的
+                        // docker构建开启了镜像扫描的 如果没有扫描的结果  也不展示按钮
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
                             Set<Boolean> collect = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getImageScan).collect(Collectors.toSet());
-                            if (collect.contains(Boolean.TRUE)){
-                                devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
-                            }else {
+                            if (collect.contains(Boolean.TRUE)) {
+                                DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                                devopsImageScanResultDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+                                if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
+                                    devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
+                                }
+
+                            } else {
                                 devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
                             }
                         }
@@ -782,12 +787,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         pipelineRecordDTO.setGitlabProjectId(gitlabProjectId);
         List<DevopsCiPipelineRecordDTO> devopsCiPipelineRecordDTOS = devopsCiPipelineRecordMapper.select(pipelineRecordDTO);
-        if (CollectionUtils.isEmpty(devopsCiPipelineRecordDTOS)){
+        if (CollectionUtils.isEmpty(devopsCiPipelineRecordDTOS)) {
             return;
         }
         devopsCiPipelineRecordMapper.delete(pipelineRecordDTO);
         List<Long> gitlabPipelineIds = devopsCiPipelineRecordDTOS.stream().map(DevopsCiPipelineRecordDTO::getGitlabPipelineId).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(gitlabPipelineIds)){
+        if (CollectionUtils.isEmpty(gitlabPipelineIds)) {
             return;
         }
         //删除镜像扫描记录
