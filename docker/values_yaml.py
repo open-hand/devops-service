@@ -54,14 +54,16 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
         elif type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int' or type(
                 deploy_value_map[key]).__name__ == 'bool' or type(
             deploy_value_map[key]).__name__ == 'PreservedScalarString' or type(
-            deploy_value_map[key]).__name__ == 'FoldedScalarString':
+            deploy_value_map[key]).__name__ == 'FoldedScalarString' or type(
+            deploy_value_map[key]).__name__ == 'LiteralScalarString':
             # check if exist
             if key in version_value_map.keys():
                 if (type(deploy_value_map[key]).__name__ == 'str' or type(
                         deploy_value_map[key]).__name__ == 'int' or type(
                     deploy_value_map[key]).__name__ == 'bool' or type(
                     deploy_value_map[key]).__name__ == 'PreservedScalarString' or type(
-                    deploy_value_map[key]).__name__ == 'FoldedScalarString') and (
+                    deploy_value_map[key]).__name__ == 'FoldedScalarString' or type(
+                    deploy_value_map[key]).__name__ == 'LiteralScalarString') and (
                         version_value_map[key] != deploy_value_map[key]):
                     # not equal,replace
                     #
