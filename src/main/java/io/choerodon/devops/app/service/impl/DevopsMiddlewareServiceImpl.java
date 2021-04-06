@@ -463,7 +463,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         configuration.put("{{ slaveCount }}", middlewareRedisEnvDeployVO.getSlaveCount().toString());
 
-        if (!StringUtils.isEmpty(middlewareRedisEnvDeployVO.getPvLabels())) {
+        if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getPvLabels())) {
             configuration.put("{{ persistence-enabled }}", "true");
             StringBuilder stringBuilder = new StringBuilder();
             middlewareRedisEnvDeployVO.getPvLabels().forEach((k, v) -> stringBuilder.append(String.format(MATCHLABELS_TEMPLATE, k, v)));
