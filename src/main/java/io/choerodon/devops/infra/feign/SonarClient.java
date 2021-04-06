@@ -62,4 +62,7 @@ public interface SonarClient {
 
     @GET("api/user_tokens/search")
     Call<ResponseBody> listToken();
+
+    @GET("api/measures/search")
+    Call<ResponseBody> batchQueryMeasures(@QueryMap Map<String, String> maps);
 }
