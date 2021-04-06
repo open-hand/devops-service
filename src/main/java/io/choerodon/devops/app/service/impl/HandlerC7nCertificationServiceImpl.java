@@ -247,18 +247,24 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
      * @param objectPath             对象路径
      */
     private void validateCertManager(Long envId, List<C7nCertification> updateC7nCertification, List<C7nCertification> addC7nCertification, Map<String, String> objectPath) {
-        if (!CollectionUtils.isEmpty(addC7nCertification)
-                || !CollectionUtils.isEmpty(updateC7nCertification)) {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-            String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
-
-            // 校验 cert manager 安装了
-            if (certManagerVersion == null) {
-                throw new GitOpsExplainException(GitOpsObjectError.CERT_MANAGER_NOT_INSTALLED.getError(), "README.md");
-            }
-
-            // 校验 api version
-            checkApiVersionByCertManagerVersion(updateC7nCertification, addC7nCertification, certManagerVersion, objectPath);
+        C7nCertification c7nCertification = null;
+        if (!CollectionUtils.isEmpty(addC7nCertification)) {
+            c7nCertification = addC7nCertification.get(0);
+        } else if (!CollectionUtils.isEmpty(updateC7nCertification)) {
+            c7nCertification = updateC7nCertification.get(0);
+        } else {
+            return;
         }
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
+
+        // 校验 cert manager 安装了
+        if (certManagerVersion == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.CERT_MANAGER_NOT_INSTALLED.getError(), objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())));
+        }
+
+        // 校验 api version
+        checkApiVersionByCertManagerVersion(updateC7nCertification, addC7nCertification, certManagerVersion, objectPath);
     }
 }
