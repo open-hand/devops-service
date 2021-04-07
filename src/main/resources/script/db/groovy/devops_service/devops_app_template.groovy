@@ -27,5 +27,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
         addUniqueConstraint(tableName: 'devops_app_template',
                 constraintName: 'uk_source_id_code', columnNames: 'source_id,source_type,code')
     }
-
+    changeSet(author: 'scp', id: '2021-04-07-add-gitlab-project-unique-index') {
+        addUniqueConstraint(tableName: "devops_app_template", constraintName: 'uk_app_gitlab_project_id', columnNames: "gitlab_project_id")
+    }
 }
