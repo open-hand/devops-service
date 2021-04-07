@@ -388,20 +388,26 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
         }
 
-        DevopsHostDTO toUpdate = ConvertUtils.convertObject(devopsHostUpdateRequestVO, DevopsHostDTO.class);
         if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType())) {
             devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostUpdateRequestVO.getJmeterPort());
             if (ipChanged || !devopsHostDTO.getJmeterPort().equals(devopsHostUpdateRequestVO.getJmeterPort())) {
                 devopsHostAdditionalCheckValidator.validIpAndJmeterPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getJmeterPort());
             }
             devopsHostAdditionalCheckValidator.validJmeterPath(devopsHostUpdateRequestVO.getJmeterPath());
-            toUpdate.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
+            devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
         }
 
-        toUpdate.setHostStatus(DevopsHostStatus.OPERATING.getValue());
-        toUpdate.setId(devopsHostDTO.getId());
-        toUpdate.setObjectVersionNumber(devopsHostDTO.getObjectVersionNumber());
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostMapper, toUpdate, "error.update.host");
+        devopsHostDTO.setName(devopsHostUpdateRequestVO.getName());
+        devopsHostDTO.setUsername(devopsHostUpdateRequestVO.getUsername());
+        devopsHostDTO.setPassword(devopsHostUpdateRequestVO.getPassword());
+        devopsHostDTO.setAuthType(devopsHostUpdateRequestVO.getAuthType());
+        devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
+        devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
+        devopsHostDTO.setPrivateIp(devopsHostUpdateRequestVO.getPrivateIp());
+        devopsHostDTO.setPrivatePort(devopsHostUpdateRequestVO.getPrivatePort());
+
+        devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
         return queryHost(projectId, hostId);
     }
 
