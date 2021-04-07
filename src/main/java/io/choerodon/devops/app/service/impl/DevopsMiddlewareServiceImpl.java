@@ -331,7 +331,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             long currentTimeMillis = System.currentTimeMillis();
             List<DevopsDeployRecordDTO> timeoutRecords = devopsDeployRecordDTOList
                     .stream()
-                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 3600000)
+                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 1800000)
                     .peek(d -> d.setDeployResult(CommandStatus.FAILED.getStatus()))
                     .collect(Collectors.toList());
             // 将中间件状态设置为超时
