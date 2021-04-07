@@ -472,6 +472,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
                     Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
                     gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
+                    LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectId, appServiceDTO.getId());
                 }
             } else {
                 LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectId);
@@ -487,6 +488,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 // 一般情况下，这个关于count的if条件是true，不正常的数据才会false
                 if (selectCountByGitlabProjectId(gitlabProjectDO.getId()) == 0) {
                     gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+                    LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectDO.getId(), appServiceDTO.getId());
                 } else {
                     LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectDO.getId());
                 }

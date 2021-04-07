@@ -1485,9 +1485,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 删除polaris扫描相关的数据
         polarisScanningService.deleteAllByScopeAndScopeId(PolarisScopeType.ENV, envId);
 
-        // 删除环境
-        baseDeleteById(envId);
-
         // 删除gitlab库, 删除之前查询是否存在
         if (devopsEnvironmentDTO.getGitlabEnvProjectId() != null) {
             Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentDTO.getGitlabEnvProjectId());
@@ -1501,11 +1498,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
                     Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
                     gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
+                    LOGGER.info("Successfully delete gitlab project {} for env with id {}", gitlabProjectId, devopsEnvironmentDTO.getId());
                 }
             } else {
                 LOGGER.warn("The gitlab project id {} is associated with other environment, so skip...", gitlabProjectId);
             }
         }
+
+        // 删除环境
+        baseDeleteById(envId);
 
         //更新集群关联的namespaces数据
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
@@ -1670,6 +1671,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 // 确保只有gitlab项目没有关联到某个环境（这种情况一般不会出现）
                 if (devopsEnvironmentMapper.selectCount(condition) == 0) {
                     gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+                    LOGGER.info("Successfully delete gitlab project {} for system env with cluster id {}", gitlabProjectDO.getId(), clusterId);
                 }
             }
         }
