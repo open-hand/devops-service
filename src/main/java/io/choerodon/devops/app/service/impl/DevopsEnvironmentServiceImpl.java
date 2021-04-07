@@ -886,6 +886,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
+    private void checkGitlabProjectIdNotUsedBefore(Long gitlabProjectId) {
+        DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
+        condition.setGitlabEnvProjectId(gitlabProjectId);
+        CommonExAssertUtil.assertTrue(devopsEnvironmentMapper.selectCount(condition) == 0, "error.gitlab.project.associated.with.other.env");
+    }
+
     @Override
     public void handleCreateEnvSaga(EnvGitlabProjectPayload gitlabProjectPayload) {
         DevopsProjectDTO gitlabGroupE = devopsProjectService.baseQueryByGitlabEnvGroupId(
@@ -909,6 +915,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     gitlabProjectPayload.getPath(),
                     gitlabProjectPayload.getUserId(),
                     false);
+        } else {
+            checkGitlabProjectIdNotUsedBefore(TypeUtil.objToLong(gitlabProjectDO.getId()));
         }
         devopsEnvironmentDTO.setGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
         if (gitlabServiceClientOperator.listDeployKey(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId()).isEmpty()) {
@@ -1483,11 +1491,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 删除gitlab库, 删除之前查询是否存在
         if (devopsEnvironmentDTO.getGitlabEnvProjectId() != null) {
             Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
-            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
-                gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
+
+            DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
+            condition.setGitlabEnvProjectId(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            // 断言这个gitlab仓库只有这个环境关联（大多数情况下，这个判断是多余的，排除可能的脏数据）
+            if (devopsEnvironmentMapper.selectCount(condition) == 1) {
+                GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
+                if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                    Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
+                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
+                }
+            } else {
+                LOGGER.warn("The gitlab project id {} is associated with other environment, so skip...", gitlabProjectId);
             }
         }
 
@@ -1590,6 +1606,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     envCode,
                     gitlabUserId,
                     false);
+        } else {
+            checkGitlabProjectIdNotUsedBefore(TypeUtil.objToLong(gitlabProjectDO.getId()));
         }
         devopsEnvironmentDTO.setGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
         if (gitlabServiceClientOperator.listDeployKey(gitlabProjectDO.getId(), gitlabUserId).isEmpty()) {
@@ -1647,7 +1665,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                     GitOpsUtil.renderGroupPath(organizationDTO.getTenantNum(), projectDTO.getCode(), GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
             if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+                DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
+                condition.setGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
+                // 确保只有gitlab项目没有关联到某个环境（这种情况一般不会出现）
+                if (devopsEnvironmentMapper.selectCount(condition) == 0) {
+                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+                }
             }
         }
     }
