@@ -1,4 +1,5 @@
-FROM registry.cn-shanghai.aliyuncs.com/c7n/devops-base:0.7.11 as base
+# dockerfile: https://github.com/open-hand/dockerfile/tree/master/ruamel-yaml
+FROM registry.cn-shanghai.aliyuncs.com/c7n/ruamel-yaml:0.7.11 as base
 FROM registry.cn-shanghai.aliyuncs.com/c7n/javabase:0.10.1
 COPY --from=base --chown=www-data:www-data /usr/lib/yaml /usr/lib/yaml
 RUN mkdir /choerodon && chown -R www-data:www-data /choerodon
