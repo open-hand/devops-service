@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'source_id', type: 'BIGINT UNSIGNED', remarks: '组织ID/projectId/平台层Id=0')
-            column(name: 'source_type', type: 'VARCHAR(10)', remarks: 'tenant/project/site')
+            column(name: 'source_type', type: 'VARCHAR(20)', remarks: 'tenant/project/site')
             column(name: 'gitlab_project_id', type: 'BIGINT UNSIGNED', remarks: 'GitLab 项目 ID')
             column(name: 'gitlab_url', type: 'VARCHAR(256)', remarks: '模板gitlab地址')
             column(name: 'name', type: 'VARCHAR(40)', remarks: '模板名称')
