@@ -2140,7 +2140,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             //获取一个临时的工作目录
             FileUtil.createDirectory(applicationDir);
             //解压源码到applicationDir这个目录，源码的文件名字
-            FileUtil.unTar(new GzipCompressorInputStream(inputStream), applicationDir);
+            FileUtil.unTar(inputStream, applicationDir);
             //处理文件路径 applicationDir=application1615476300950
             //源码目录  application1615476300950\eureka-demo-4221c90325bb438179c43c3886d6cc5a57250e43-4221c90325bb438179c43c3886d6cc5a57250e43  =》application1615476300950\newcode
             //目前这个git目录应该是application1615476300950\new-code
@@ -2154,7 +2154,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         } catch (Exception e) {
             LOGGER.error("push source code git ", e);
         } finally {
-            FileUtil.deleteFile(applicationDir);
+            FileUtil.deleteDirectory(new File(applicationDir));
         }
     }
 
