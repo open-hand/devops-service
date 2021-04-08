@@ -216,11 +216,11 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
                 }
                 git = gitUtil.initGit(new File(workingDirectory));
             } else {
-                git = gitUtil.cloneRepositoryForTemplate(localPathFile, templateDTO.getGitlabUrl(), pushToken);
+                git = gitUtil.cloneRepository(localPathFile, templateDTO.getGitlabUrl(), pushToken);
             }
             appServiceService.replaceParams(appTemplateCreateVO.getCode(), groupPath, workingDirectory, templateDTO.getCode(), getTemplateGroupPath(appTemplateCreateVO.getSelectedTemplateId()), false);
         } else {
-            git = gitUtil.cloneRepositoryForTemplate(localPathFile, appTemplateCreateVO.getRepoUrl(), appTemplateCreateVO.getToken());
+            git = gitUtil.cloneRepository(localPathFile, appTemplateCreateVO.getRepoUrl(), appTemplateCreateVO.getToken());
         }
         //push 到远程仓库
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
