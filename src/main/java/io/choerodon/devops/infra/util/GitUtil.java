@@ -520,10 +520,14 @@ public class GitUtil {
         return commit;
     }
 
+    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken) {
+        push(git, name, commit, repoUrl, userName, accessToken, true);
+    }
+
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken) {
+    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken,Boolean deleteFile) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
@@ -543,7 +547,9 @@ public class GitUtil {
             throw new CommonException(ERROR_GIT_PUSH, e);
         } finally {
             //删除模板
-            deleteWorkingDirectory(name);
+            if (deleteFile != null && deleteFile) {
+                deleteWorkingDirectory(name);
+            }
             if (git != null) {
                 git.close();
             }

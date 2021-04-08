@@ -225,7 +225,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         //push 到远程仓库
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String repositoryUrl = repoUrl + groupPath + "/" + appTemplateCreateVO.getCode() + GIT;
-        gitUtil.push(git, workingDirectory, "init the template", repositoryUrl, "admin", pushToken);
+        gitUtil.push(git, workingDirectory, "init the template", repositoryUrl, "admin", pushToken,false);
 
         FileUtil.deleteDirectory(localPathFile);
         // 回写模板状态
