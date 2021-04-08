@@ -583,19 +583,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
                             fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
                         }
-                        // docker构建开启了镜像扫描的 如果没有扫描的结果  也不展示按钮
-                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
-                            Set<Boolean> collect = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getImageScan).collect(Collectors.toSet());
-                            if (collect.contains(Boolean.TRUE)) {
-                                DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                                devopsImageScanResultDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
-                                if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
-                                    devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
-                                }
-
-                            } else {
-                                devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
-                            }
+                        // 是否有镜像的扫描结果 有则展示
+                        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                        devopsImageScanResultDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+                        if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
+                            devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
+                        } else {
+                            devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
                         }
                     }
                 }
