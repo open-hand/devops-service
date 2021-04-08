@@ -364,9 +364,8 @@ public class GitUtil {
         try {
             Git.cloneRepository()
                     .setURI(remoteUrl)
-                    .setCloneAllBranches(true)
-                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
                     .setDirectory(localPathFile)
+                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
             git = Git.open(new File(localPathFile + GIT_SUFFIX));
         } catch (GitAPIException | IOException e) {
