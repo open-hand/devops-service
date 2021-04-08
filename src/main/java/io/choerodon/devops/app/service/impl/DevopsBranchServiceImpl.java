@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -133,9 +134,18 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     @Override
     public void baseDelete(Long appServiceId, String branchName) {
+        Objects.requireNonNull(appServiceId);
+        Objects.requireNonNull(branchName);
         DevopsBranchDTO devopsBranchDTO = devopsBranchMapper.queryByAppAndBranchName(appServiceId, branchName);
         if (devopsBranchDTO != null) {
-            devopsBranchMapper.delete(devopsBranchDTO);
+            // 构建删除条件
+            DevopsBranchDTO deleteCondition = new DevopsBranchDTO();
+            deleteCondition.setAppServiceId(appServiceId);
+            deleteCondition.setBranchName(branchName);
+            int resultCount;
+            if ((resultCount = devopsBranchMapper.delete(deleteCondition)) != 1) {
+                throw new CommonException("Failed to delete branch due to result count " + resultCount);
+            }
         } else {
             LOGGER.info("Branch {} is not found in app service with id {}", branchName, appServiceId);
         }
