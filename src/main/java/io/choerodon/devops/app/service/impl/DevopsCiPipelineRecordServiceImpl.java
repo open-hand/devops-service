@@ -676,28 +676,32 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
                     C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
-                    Server server = null;
-                    if (!Objects.isNull(settings) && !Objects.isNull(c7nNexusRepoDTO) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
-                        server = getServer(settings, c7nNexusRepoDTO);
-                    }
-                    //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-                    //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-                    //区分RELEASE 和 SNAPSHOT
-                    String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
-                    if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
-                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
-                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
-                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
-                    } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
-                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                    if (!Objects.isNull(c7nNexusRepoDTO)) {
+                        Server server = null;
+                        if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
+                            server = getServer(settings, c7nNexusRepoDTO);
+                        }
+                        //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                        //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                        //区分RELEASE 和 SNAPSHOT
+                        String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+                        if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
+                            downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+                                    pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+                                    BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
+                        } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
+                            downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                        } else {
+                            // 通过update version函数后还有这种version:2021.3.3-143906-master ，
+                            downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                        }
+                        DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
+                        downloadMavenJarVO.setDownloaJar(downloadUrl);
+                        downloadMavenJarVO.setServer(server);
+                        devopsCiJobRecordVO.setDownloadMavenJarVO(downloadMavenJarVO);
                     } else {
-                        // 通过update version函数后还有这种version:2021.3.3-143906-master ，
-                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                        LOGGER.error("error.query.repo.nexus.is.null");
                     }
-                    DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
-                    downloadMavenJarVO.setDownloaJar(downloadUrl);
-                    downloadMavenJarVO.setServer(server);
-                    devopsCiJobRecordVO.setDownloadMavenJarVO(downloadMavenJarVO);
                 }
             }
         }
