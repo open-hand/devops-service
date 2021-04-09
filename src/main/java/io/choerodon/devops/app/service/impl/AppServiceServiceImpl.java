@@ -210,9 +210,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private HarborService harborService;
     @Autowired
-    @Lazy
-    private DevopsTask devopsTask;
-    @Autowired
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
@@ -3032,12 +3029,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         BeanUtils.copyProperties(rdmMemberViewDTO.getUser(), devopsUserPermissionVO);
         devopsUserPermissionVO.setIamUserId(rdmMemberViewDTO.getUser().getUserId());
         return devopsUserPermissionVO;
-    }
-
-
-    @Override
-    public void fixAppServiceVersion() {
-        devopsTask.fixAppServiceVersion(null);
     }
 
     @Override
