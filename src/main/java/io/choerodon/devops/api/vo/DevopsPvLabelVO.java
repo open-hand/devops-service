@@ -33,4 +33,9 @@ public class DevopsPvLabelVO {
         DevopsPvLabelVO that = (DevopsPvLabelVO) o;
         return Objects.equals(key, that.key) && Objects.equals(value, that.value);
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
