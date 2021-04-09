@@ -3,6 +3,8 @@ All notable changes to devops-service will be documented in this file.
 
 ## [0.25.0] 2020-04-09
 #### New
+- The platform layer adds support for the maintenance and management of application templates, and supports all projects in the platform to be used when creating application services
+- The organization layer adds support for the maintenance and management of application templates, and supports all projects under the organization to use when creating application services
 - In the application pipeline-CI phase, support for mirroring security scanning tasks is newly added
 - The result of pipeline construction supports local download
 - Pipeline build log supports local download
