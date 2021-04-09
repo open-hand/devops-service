@@ -31,6 +31,8 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDTO> 
 
     void updateStatus(@Param("certId") Long certId, @Param("status") String status);
 
+    int updateStatusIfOperating(@Param("certId") Long certId, @Param("status") String status);
+
     CertificationDTO queryById(@Param("certId") Long certId);
 
     /**

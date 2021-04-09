@@ -561,6 +561,11 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    public int updateStatusIfOperating(Long certId, CertificationStatus certificationStatus) {
+        return devopsCertificationMapper.updateStatusIfOperating(Objects.requireNonNull(certId), certificationStatus.getStatus());
+    }
+
+    @Override
     public void baseUpdateCommandId(CertificationDTO certificationDTO) {
         CertificationDTO certificationDTOInDb = devopsCertificationMapper.selectByPrimaryKey(certificationDTO.getId());
         certificationDTOInDb.setCommandId(certificationDTO.getCommandId());

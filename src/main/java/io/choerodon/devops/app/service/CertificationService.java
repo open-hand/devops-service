@@ -1,14 +1,19 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.C7nCertificationCreateVO;
+import io.choerodon.devops.api.vo.CertificationRespVO;
+import io.choerodon.devops.api.vo.CertificationVO;
+import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
+import io.choerodon.devops.infra.enums.CertificationStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 /**
  * Created by n!Ck
@@ -102,4 +107,6 @@ public interface CertificationService {
     List<CertificationDTO> baseListByProject(Long projectId, Long organizationId);
 
     void updateStatus(CertificationDTO certificationDTO);
+
+    int updateStatusIfOperating(Long certId, CertificationStatus certificationStatus);
 }
