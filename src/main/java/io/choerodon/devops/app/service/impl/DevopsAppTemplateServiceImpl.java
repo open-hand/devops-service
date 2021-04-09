@@ -60,8 +60,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsAppTemplateServiceImpl.class);
 
-    private static final String GITLAB_GROUP_CODE = "choerodon-%s-app-template";
-    private static final String GITLAB_GROUP_NAME = "choerodon-%s应用模板库";
+    private static final String GITLAB_GROUP_CODE = "choerodon_%s-app-template";
+    private static final String GITLAB_GROUP_NAME = "choerodon_%s应用模板库";
     private static final String GIT = ".git";
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
