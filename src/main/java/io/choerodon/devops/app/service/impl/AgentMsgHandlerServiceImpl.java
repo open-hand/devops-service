@@ -1167,16 +1167,19 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(
                         envId, certificationDTO.getId(), "Certificate");
+        CertificationStatus updateStatus;
         if (updateEnvCommandStatus(resourceCommitVO, certificationDTO.getCommandId(),
                 devopsEnvFileResourceDTO, CERTIFICATE_KIND, certificationDTO.getName(),
                 null, errorDevopsFiles)) {
-            certificationDTO.setStatus(CertificationStatus.FAILED.getStatus());
             // 发送资源创建失败通知
             sendNotificationService.sendWhenCertificationCreationFailure(certificationDTO, certificationDTO.getCreatedBy(), certificationDTO.getCommandId());
+            updateStatus = CertificationStatus.FAILED;
         } else {
-            certificationDTO.setStatus(CertificationStatus.APPLYING.getStatus());
+            // 如果此时证书的状态不是 active, 就更新为 applying
+            updateStatus = CertificationStatus.APPLYING;
         }
-        certificationService.updateStatus(certificationDTO);
+        int updated = certificationService.updateStatusIfOperating(certificationDTO.getId(), updateStatus);
+        logger.info("GitOps sync event: update certification with id {} to status {}, result {}", certificationDTO.getId(), updateStatus.getStatus(), updated);
     }
 
     private void syncService(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-cd /tmp/kubeadm-ha && ansible-playbook -i /tmp/inventory.ini {{command}} >{{log-path}} 2>&1
+cd /tmp/kubeadm-ha && ansible-playbook -i /tmp/k8s-inventory.ini {{command}} >{{log-path}} 2>&1
 exitCode=$?
 echo $exitCode >{{exit-code-path}}
 if [ $exitCode != 0 ]; then

@@ -114,6 +114,13 @@
         WHERE dc.id = #{certId}
     </update>
 
+    <update id="updateStatusIfOperating">
+        UPDATE devops_certification dc
+        SET dc.status= #{status}
+        WHERE dc.id = #{certId}
+        AND dc.status = 'operating'
+    </update>
+
     <select id="listAllOrgCertificationToMigrate" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT dc.*
         FROM devops_certification dc

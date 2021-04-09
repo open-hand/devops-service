@@ -35,6 +35,7 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
@@ -168,6 +169,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     private AgentMsgVO buildAgentUpgradeMessage(DevopsClusterDTO devopsClusterDTO) {
+        // 查询用户相关的邮箱（这里可以考虑多个集群同时连接造成的并发请求iam，可以考虑别的机制减少请求次数）
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsClusterDTO.getCreatedBy());
         AgentMsgVO msg = new AgentMsgVO();
         Map<String, Object> configs = new HashMap<>();
         Map<String, String> configValues = new HashMap<>();
@@ -175,6 +178,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         configValues.put("token", devopsClusterDTO.getToken());
         configValues.put("clusterId", devopsClusterDTO.getId().toString());
         configValues.put("choerodonId", devopsClusterDTO.getChoerodonId());
+        configValues.put("email", iamUserDTO.getEmail());
         Map<String, String> rbacValues = new HashMap<>();
         rbacValues.put("create", "true");
         configs.put("config", configValues);

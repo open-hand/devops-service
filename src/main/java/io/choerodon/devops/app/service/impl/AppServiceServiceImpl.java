@@ -210,9 +210,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private HarborService harborService;
     @Autowired
-    @Lazy
-    private DevopsTask devopsTask;
-    @Autowired
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
@@ -465,11 +462,33 @@ public class AppServiceServiceImpl implements AppServiceService {
         //删除gitlab project
         if (appServiceDTO.getGitlabProjectId() != null) {
             Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
-            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
-            if (gitlabProjectDTO != null && gitlabProjectDTO.getId() != null) {
-                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
-                gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
+            // 确保只有这个应用服务关联了仓库（大多数情况是这样，可能有一些特殊的脏数据）
+            if (selectCountByGitlabProjectId(gitlabProjectId) == 1) {
+                GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
+                if (gitlabProjectDTO != null && gitlabProjectDTO.getId() != null) {
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                    Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
+                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
+                    LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectId, appServiceDTO.getId());
+                }
+            } else {
+                LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectId);
+            }
+        } else {
+            // 可能应用服务创建完成后被回滚了数据库没有存下仓库id
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
+            GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(tenant.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(), gitlabUserId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                // 一般情况下，这个关于count的if条件是true，不正常的数据才会false
+                if (selectCountByGitlabProjectId(gitlabProjectDO.getId()) == 0) {
+                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+                    LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectDO.getId(), appServiceDTO.getId());
+                } else {
+                    LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectDO.getId());
+                }
             }
         }
         //删除应用服务与自定义harbor仓库的关联关系
@@ -807,6 +826,21 @@ public class AppServiceServiceImpl implements AppServiceService {
         return batchCheckVO;
     }
 
+    /**
+     * 保证创建应用服务前，这个 gitlabProjectId 没有人用
+     *
+     * @param gitlabProjectId gitlab项目id
+     */
+    private void checkGitlabProjectIdNotUsedBefore(Integer gitlabProjectId) {
+        CommonExAssertUtil.assertTrue(selectCountByGitlabProjectId(gitlabProjectId) == 0, "error.gitlab.project.id.associated.with.other.app.service");
+    }
+
+    private int selectCountByGitlabProjectId(Integer gitlabProjectId) {
+        AppServiceDTO condition = new AppServiceDTO();
+        condition.setGitlabProjectId(gitlabProjectId);
+        return appServiceMapper.selectCount(condition);
+    }
+
     @Override
     public void operationApplication(DevOpsAppServicePayload devOpsAppServicePayload) {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabAppGroupId(
@@ -826,6 +860,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(devOpsAppServicePayload.getGroupId(),
                     devOpsAppServicePayload.getPath(),
                     devOpsAppServicePayload.getUserId(), false);
+        } else {
+            checkGitlabProjectIdNotUsedBefore(gitlabProjectId);
         }
         devOpsAppServicePayload.setGitlabProjectId(gitlabProjectDO.getId());
 
@@ -869,6 +905,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(devOpsAppServiceImportPayload.getGroupId(),
                     devOpsAppServiceImportPayload.getPath(),
                     devOpsAppServiceImportPayload.getUserId(), false);
+        } else {
+            checkGitlabProjectIdNotUsedBefore(gitlabProjectDO.getId());
         }
         devOpsAppServiceImportPayload.setGitlabProjectId(gitlabProjectDO.getId());
 
@@ -2011,6 +2049,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                     appServiceImportPayload.getGitlabGroupId(),
                     appServiceDTO.getCode(),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), false);
+        } else {
+            checkGitlabProjectIdNotUsedBefore(gitlabProjectDTO.getId());
         }
 
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
@@ -2097,7 +2137,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             //获取一个临时的工作目录
             FileUtil.createDirectory(applicationDir);
             //解压源码到applicationDir这个目录，源码的文件名字
-            FileUtil.unTar(new GzipCompressorInputStream(inputStream), applicationDir);
+            FileUtil.unTar(inputStream, applicationDir);
             //处理文件路径 applicationDir=application1615476300950
             //源码目录  application1615476300950\eureka-demo-4221c90325bb438179c43c3886d6cc5a57250e43-4221c90325bb438179c43c3886d6cc5a57250e43  =》application1615476300950\newcode
             //目前这个git目录应该是application1615476300950\new-code
@@ -2111,7 +2151,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         } catch (Exception e) {
             LOGGER.error("push source code git ", e);
         } finally {
-            FileUtil.deleteFile(applicationDir);
+            FileUtil.deleteDirectory(new File(applicationDir));
         }
     }
 
@@ -2147,6 +2187,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                     appServiceImportPayload.getGitlabGroupId(),
                     appServiceDTO.getCode(),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), false);
+        } else {
+            checkGitlabProjectIdNotUsedBefore(gitlabProjectDTO.getId());
         }
 
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
@@ -2987,12 +3029,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         BeanUtils.copyProperties(rdmMemberViewDTO.getUser(), devopsUserPermissionVO);
         devopsUserPermissionVO.setIamUserId(rdmMemberViewDTO.getUser().getUserId());
         return devopsUserPermissionVO;
-    }
-
-
-    @Override
-    public void fixAppServiceVersion() {
-        devopsTask.fixAppServiceVersion(null);
     }
 
     @Override

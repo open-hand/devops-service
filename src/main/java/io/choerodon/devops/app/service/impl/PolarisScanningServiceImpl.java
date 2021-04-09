@@ -516,6 +516,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void handleAgentPolarisMessageFromHttp(String token, Long clusterId, PolarisResponsePayloadVO message) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);

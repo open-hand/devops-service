@@ -331,7 +331,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             long currentTimeMillis = System.currentTimeMillis();
             List<DevopsDeployRecordDTO> timeoutRecords = devopsDeployRecordDTOList
                     .stream()
-                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 3600000)
+                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 1800000)
                     .peek(d -> d.setDeployResult(CommandStatus.FAILED.getStatus()))
                     .collect(Collectors.toList());
             // 将中间件状态设置为超时
@@ -344,11 +344,15 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private MiddlewareInventoryVO calculateGeneralInventoryValue(List<DevopsHostDTO> devopsHostDTOList, DevopsMiddlewareTypeEnum middlewareTypeEnum) {
         MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO();
         for (DevopsHostDTO hostDTO : devopsHostDTOList) {
+            // 如果内网ip不存在，使用公网ip
+            String ip=StringUtils.isEmpty(hostDTO.getPrivateIp())?hostDTO.getHostIp():hostDTO.getPrivateIp();
+            // 如果内网端口不存在，使用公网端口
+            Integer port=hostDTO.getPrivatePort()==null?hostDTO.getSshPort():hostDTO.getPrivatePort();
             if (HostAuthType.ACCOUNTPASSWORD.value().equals(hostDTO.getAuthType())) {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), hostDTO.getPrivateIp(), hostDTO.getPrivatePort(), hostDTO.getUsername(), hostDTO.getPassword()))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), ip, port, hostDTO.getUsername(), hostDTO.getPassword()))
                         .append(System.lineSeparator());
             } else {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), hostDTO.getPrivateIp(), hostDTO.getPrivatePort(), hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), ip, port, hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
                         .append(System.lineSeparator());
             }
             // 设置chrony节点

@@ -821,12 +821,5 @@ public class AppServiceController {
             @RequestBody(required = false) String params) {
         return ResponseEntity.ok(applicationServiceService.pageAppServiceToCreateCiPipeline(projectId, pageRequest, params));
     }
-
-    @GetMapping("/fix/data")
-    @ApiOperation(value = "手动调用接口进行数据修复")
-    @Permission(level = ResourceLevel.SITE)
-    public void fixData() {
-        applicationServiceService.fixAppServiceVersion();
-    }
 }
 

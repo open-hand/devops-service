@@ -511,7 +511,7 @@ public class FileUtil {
     }
 
     private static InstanceValueVO loadResult(String yml) {
-        String[] strings = yml.split("------love----you------choerodon----");
+        String[] strings = yml.split("------love------you------choerodon------");
         if (strings.length < 2) {
             throw new CommonException("error.value.illegal");
         }

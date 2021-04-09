@@ -3,7 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE;
 
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -71,7 +72,7 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private static final String AUTH_HEADER = "c7n-pipeline-token";
     private static final String STATUS_CODE = "statusCode";
@@ -1248,7 +1249,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
                         param.put("link", frontUrl + link);
                         param.put("link_web", link);
-                        param.put("startTime", simpleDateFormat.format(apiTestTaskRecordVO.getStartTime()));
+                        ZoneId zoneId = ZoneId.systemDefault();
+                        param.put("startTime", apiTestTaskRecordVO.getStartTime().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
                         param.put("costTime", TimeUtil.getStageTimeInStr(apiTestTaskRecordVO.getStartTime(), apiTestTaskRecordVO.getEndTime()));
                         param.put("successCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount()));
                         param.put("failedCount", String.valueOf(apiTestTaskRecordVO.getFailCount()));

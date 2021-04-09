@@ -95,5 +95,10 @@ public class SonarClientFallback implements SonarClient {
         return null;
     }
 
+    @Override
+    public Call<ResponseBody> batchQueryMeasures(Map<String, String> maps) {
+        return null;
+    }
+
 
 }

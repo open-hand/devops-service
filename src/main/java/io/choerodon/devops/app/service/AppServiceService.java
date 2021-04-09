@@ -515,8 +515,6 @@ public interface AppServiceService {
      */
     String calculateGitlabProjectUrlWithSuffix(Long appServiceId);
 
-    void fixAppServiceVersion();
-
     /**
      * 查询其他项目应用服务信息
      *

@@ -1,6 +1,28 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+## [0.25.0] 2020-04-09
+#### New
+- The platform layer adds support for the maintenance and management of application templates, and supports all projects in the platform to be used when creating application services
+- The organization layer adds support for the maintenance and management of application templates, and supports all projects under the organization to use when creating application services
+- Import application services, adding support for importing services containing source code from the application market
+- Project layer-application deployment, adding support for deployment of market applications that have released deployment packages or Jar packages
+- In the application pipeline-CI phase, support for mirroring security scanning tasks is newly added
+- The result of pipeline construction supports local download
+- Pipeline build log supports local download
+- Added a graph of the number of pipeline triggers and a graph of the execution time of the pipeline in the DevOps report
+- Added support for adding Label when creating PV in PV management
+- Product library-Added the function of image security scanning in Docker warehouse, which supports displaying the details of the scanning results
+
+#### Optimization
+- When the deployer changes the instance, the number of Pods in it is no longer adjusted by default, and the number can only be adjusted through the Pod controller in the resource-run details interface
+
+#### Repair
+- Fixed the timeout problem of uploading large jar package interface on the product interface
+- Fixed the problem of unsuccessful startup after upgrading the jdk version of the product library
+- Fixed the issue where the mvn release task in the modified pipeline was displayed as a number after entering the product library
+- Fixed the issue that deployment configurations were not sorted in reverse chronological order by default
+
 ## [0.24.0] 2020-12-24
 
 #### Add
