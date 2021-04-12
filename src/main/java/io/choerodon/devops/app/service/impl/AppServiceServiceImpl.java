@@ -2067,46 +2067,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-    @Override
-    public void fixGitlabAppService() {
-        //查询所有的应用服务
-        AppServiceDTO serviceDTO = new AppServiceDTO();
-        serviceDTO.setFailed(false);
-        List<AppServiceDTO> appServiceDTOS = appServiceMapper.select(serviceDTO);
-        if (CollectionUtils.isEmpty(appServiceDTOS)) {
-            return;
-        }
-        appServiceDTOS.forEach(appServiceDTO -> {
-            //首先查询项目,同步失败的不处理
-            if (appServiceDTO.getFailed()) {
-                return;
-            }
-            if (Objects.isNull(appServiceDTO.getGitlabProjectId())) {
-                return;
-            }
-
-            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(appServiceDTO.getGitlabProjectId());
-            //如果 defaultBranch为null 就是空库
-            if (Objects.isNull(gitlabProjectDTO)) {
-                return;
-            }
-            if (org.apache.commons.lang3.StringUtils.isEmpty(gitlabProjectDTO.getDefaultBranch())) {
-                return;
-            }
-            //添加跳过证书扫描的变量
-            //查询项目下的varible
-            List<CiVariableVO> ciVariableVOS = gitlabServiceClientOperator.listAppServiceVariable(gitlabProjectDTO.getId(), gitlabProjectDTO.getCreatorId());
-            if (CollectionUtils.isEmpty(ciVariableVOS)) {
-                return;
-            }
-            List<String> keys = ciVariableVOS.stream().map(CiVariableVO::getKey).collect(toList());
-            if (keys.contains("TRIVY_INSECURE")) {
-                return;
-            }
-            gitlabServiceClientOperator.createProjectVariable(appServiceDTO.getGitlabProjectId(), "TRIVY_INSECURE", "true", false, gitlabProjectDTO.getCreatorId());
-        });
-    }
-
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
         // 获取push代码所需的access token
