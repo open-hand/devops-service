@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_DEPLOY_MYSQL;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_DEPLOY_REDIS;
 import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
+import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MYSQL;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
 import static org.hzero.core.util.StringPool.SLASH;
 
@@ -36,7 +38,7 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareRedisDeployPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareDeployPayload;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
@@ -56,15 +58,19 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
-    private static final String STANDALONE_PERSISTENCE_TEMPLATE = "persistence:\n" +
+    private static final String REDIS_STANDALONE_PERSISTENCE_TEMPLATE = "persistence:\n" +
             "  existingClaim: %s";
-    private static final String SENTINEL_MATCHLABELS_TEMPLATE = "matchLabels:\n%s";
+    private static final String REDIS_SENTINEL_MATCHLABELS_TEMPLATE = "matchLabels:\n%s";
 
-    private static final String CONFIGMAP_TEMPLATE = "configmap: |-\n%s";
+    private static final String REDIS_CONFIGMAP_TEMPLATE = "configmap: |-\n%s";
 
-    private static final String MATCHLABELS_TEMPLATE = "    %s: %s\n";
+    private static final String REDIS_MATCHLABELS_TEMPLATE = "    %s: %s\n";
 
-    private static final String CONFIGMAP_VALUE_TEMPLATE = "  %s %s\n";
+    private static final String REDIS_CONFIGMAP_VALUE_TEMPLATE = "  %s %s\n";
+
+    private static final String MYSQL_STANDALONE_PERSISTENCE_TEMPLATE = "  existingClaim: %s";
+
+    private static final String MYSQL_CONFIGMAP_VALUE_TEMPLATE = "    %s=%s\n";
 
     private static final String STANDALONE_MODE = "standalone";
 
@@ -76,14 +82,22 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String REDIS_STANDALONE_VALUE_TEMPLATE;
 
+    private static final String REDIS_INVENTORY_INI_TEMPALTE;
+
+    private static final String MYSQL_STANDALONE_VALUE_TEMPLATE;
+
     private static final String MIDDLEWARE_STATUS_SYNC_LOCK = "middleware-status-sync-lock";
 
     static {
-        InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-sentinel-value-template.yaml");
-        InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-standalone-value-template.yaml");
+        InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml");
+        InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-standalone-value-template.yaml");
+        InputStream redisInventoryIniTemplateStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-inventory.ini");
+        InputStream mysqlStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/mysql/mysql-standalone-value-template.yaml");
         try {
             REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
             REDIS_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(redisStandaloneInputStream, StandardCharsets.UTF_8);
+            REDIS_INVENTORY_INI_TEMPALTE = IOUtils.toString(redisInventoryIniTemplateStream, StandardCharsets.UTF_8);
+            MYSQL_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(mysqlStandaloneInputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new CommonException("error.load.ci.sh");
         }
@@ -138,6 +152,20 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     @Override
+    public AppServiceInstanceVO envDeployForMySql(Long projectId, MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO) {
+        // 根据部署模式以及版本查询部署部署对象id和市场服务id
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), STANDALONE_MODE, middlewareMySqlEnvDeployVO.getVersion());
+
+        middlewareMySqlEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
+        middlewareMySqlEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
+
+        middlewareMySqlEnvDeployVO.setValues(generateMysqlStandaloneValues(middlewareMySqlEnvDeployVO));
+
+        MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareMySqlEnvDeployVO, MarketInstanceCreationRequestVO.class);
+        return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+    }
+
+    @Override
     public AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class));
     }
@@ -172,7 +200,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     @Override
     @Saga(code = DEVOPS_DEPLOY_REDIS,
-            description = "主机部署redis中间件", inputSchemaClass = MiddlewareRedisHostDeployVO.class)
+            description = "主机部署redis中间件", inputSchemaClass = DevopsMiddlewareDeployPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
@@ -220,11 +248,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
                 JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
 
-        DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload = new DevopsMiddlewareRedisDeployPayload();
-        devopsMiddlewareRedisDeployPayload.setProjectId(projectId);
-        devopsMiddlewareRedisDeployPayload.setMiddlewareRedisHostDeployVO(middlewareRedisHostDeployVO);
-        devopsMiddlewareRedisDeployPayload.setDeploySourceVO(deploySourceVO);
-        devopsMiddlewareRedisDeployPayload.setDeployRecordId(deployRecordId);
+        DevopsMiddlewareDeployPayload devopsMiddlewareDeployPayload = new DevopsMiddlewareDeployPayload();
+        devopsMiddlewareDeployPayload.setProjectId(projectId);
+        devopsMiddlewareDeployPayload.setMiddlewareRedisHostDeployVO(middlewareRedisHostDeployVO);
+        devopsMiddlewareDeployPayload.setDeploySourceVO(deploySourceVO);
+        devopsMiddlewareDeployPayload.setDeployRecordId(deployRecordId);
 
         producer.apply(
                 StartSagaBuilder
@@ -234,15 +262,78 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                         .withRefType("host")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_DEPLOY_REDIS),
                 builder -> builder
-                        .withPayloadAndSerialize(devopsMiddlewareRedisDeployPayload)
+                        .withPayloadAndSerialize(devopsMiddlewareDeployPayload)
+                        .withRefId(deployRecordId.toString()));
+    }
+
+
+    @Override
+    @Saga(code = DEVOPS_DEPLOY_MYSQL,
+            description = "主机部署mysql中间件", inputSchemaClass = DevopsMiddlewareDeployPayload.class)
+    @Transactional(rollbackFor = Exception.class)
+    public void hostDeployForMySql(Long projectId, MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
+        checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getName(), MYSQL.getType());
+
+        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareMySqlHostDeployVO.getHostIds());
+
+        // 根据部署模式以及版本查询部署部署对象id和市场服务id
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion());
+
+        DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
+        deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
+        deploySourceVO.setProjectName(projectDTO.getName());
+
+        Long deployRecordId = devopsDeployRecordService.saveRecord(
+                projectId,
+                DeployType.BASE_COMPONENT,
+                null,
+                DeployModeEnum.HOST,
+                devopsHostDTOForConnection.getId(),
+                devopsHostDTOForConnection.getName(),
+                CommandStatus.OPERATING.getStatus(),
+                DeployObjectTypeEnum.MIDDLEWARE,
+                middlewareMySqlHostDeployVO.getName(),
+                middlewareMySqlHostDeployVO.getVersion(),
+                null,
+                deploySourceVO);
+
+        // 保存中间件信息
+        saveMiddlewareInfo(projectId,
+                middlewareMySqlHostDeployVO.getName(),
+                MYSQL.getType(),
+                middlewareMySqlHostDeployVO.getMode(),
+                middlewareMySqlHostDeployVO.getVersion(),
+                devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
+                JsonHelper.marshalByJackson(middlewareMySqlHostDeployVO.getConfiguration()));
+
+        DevopsMiddlewareDeployPayload devopsMiddlewareDeployPayload = new DevopsMiddlewareDeployPayload();
+        devopsMiddlewareDeployPayload.setProjectId(projectId);
+        devopsMiddlewareDeployPayload.setMiddlewareMySqlHostDeployVO(middlewareMySqlHostDeployVO);
+        devopsMiddlewareDeployPayload.setDeploySourceVO(deploySourceVO);
+        devopsMiddlewareDeployPayload.setDeployRecordId(deployRecordId);
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType("host")
+                        .withSagaCode(DEVOPS_DEPLOY_MYSQL),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsMiddlewareDeployPayload)
                         .withRefId(deployRecordId.toString()));
     }
 
     @Override
-    public void hostDeployForRedis(DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload) {
-        MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO = devopsMiddlewareRedisDeployPayload.getMiddlewareRedisHostDeployVO();
+    public void hostDeployForRedis(DevopsMiddlewareDeployPayload devopsMiddlewareDeployPayload) {
+        MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO = devopsMiddlewareDeployPayload.getMiddlewareRedisHostDeployVO();
+
         DevopsHostDTO devopsHostDTOForConnection = null;
-        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(devopsMiddlewareRedisDeployPayload.getProjectId(), middlewareRedisHostDeployVO.getHostIds());
+        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(devopsMiddlewareDeployPayload.getProjectId(), middlewareRedisHostDeployVO.getHostIds());
         Optional<DevopsHostDTO> any = devopsHostDTOList.stream().filter(d -> !StringUtils.isEmpty(d.getHostIp()) && d.getSshPort() != null).findAny();
         if (any.isPresent()) {
             devopsHostDTOForConnection = any.get();
@@ -252,7 +343,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
 
         LOGGER.info("========================================");
-        LOGGER.info("start to deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareRedisDeployPayload.getProjectId());
+        LOGGER.info("start to deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
 
         HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsHostDTOForConnection, HostConnectionVO.class);
         hostConnectionVO.setHostPort(devopsHostDTOForConnection.getSshPort());
@@ -290,15 +381,20 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 throw new CommonException("failed to install redis");
             }
 
-            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus());
             LOGGER.info("========================================");
-            LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareRedisDeployPayload.getProjectId());
+            LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
         } catch (Exception e) {
-            devopsDeployRecordService.updateRecord(devopsMiddlewareRedisDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus());
             throw new CommonException(e.getMessage());
         } finally {
             sshUtil.closeSsh(sshClient, null);
         }
+    }
+
+    @Override
+    public void hostDeployForMySql(DevopsMiddlewareDeployPayload devopsMiddlewareDeployPayload) {
+        // todo 实现主机部署
     }
 
     @Override
@@ -331,7 +427,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             long currentTimeMillis = System.currentTimeMillis();
             List<DevopsDeployRecordDTO> timeoutRecords = devopsDeployRecordDTOList
                     .stream()
-                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 3600000)
+                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 1800000)
                     .peek(d -> d.setDeployResult(CommandStatus.FAILED.getStatus()))
                     .collect(Collectors.toList());
             // 将中间件状态设置为超时
@@ -344,11 +440,15 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private MiddlewareInventoryVO calculateGeneralInventoryValue(List<DevopsHostDTO> devopsHostDTOList, DevopsMiddlewareTypeEnum middlewareTypeEnum) {
         MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO();
         for (DevopsHostDTO hostDTO : devopsHostDTOList) {
+            // 如果内网ip不存在，使用公网ip
+            String ip = StringUtils.isEmpty(hostDTO.getPrivateIp()) ? hostDTO.getHostIp() : hostDTO.getPrivateIp();
+            // 如果内网端口不存在，使用公网端口
+            Integer port = hostDTO.getPrivatePort() == null ? hostDTO.getSshPort() : hostDTO.getPrivatePort();
             if (HostAuthType.ACCOUNTPASSWORD.value().equals(hostDTO.getAuthType())) {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), hostDTO.getPrivateIp(), hostDTO.getPrivatePort(), hostDTO.getUsername(), hostDTO.getPassword()))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), ip, port, hostDTO.getUsername(), hostDTO.getPassword()))
                         .append(System.lineSeparator());
             } else {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), hostDTO.getPrivateIp(), hostDTO.getPrivatePort(), hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), ip, port, hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
                         .append(System.lineSeparator());
             }
             // 设置chrony节点
@@ -369,8 +469,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private void generateAndUploadRedisHostConfiguration(SSHClient sshClient, MiddlewareInventoryVO middlewareInventoryVO) {
         String inventory = generateRedisInventoryInI(middlewareInventoryVO);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, REDIS.getType()) + SLASH + "middleware-inventory.ini";
-        String targetFilePath = BASE_DIR + SLASH + "middleware-inventory.ini";
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, REDIS.getType()) + SLASH + "redis-inventory.ini";
+        String targetFilePath = BASE_DIR + SLASH + "redis-inventory.ini";
         FileUtil.saveDataToFile(filePath, inventory);
         sshUtil.uploadFile(sshClient, filePath, targetFilePath);
     }
@@ -400,7 +500,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         String baseConfigInYaml = yaml.dump(baseConfig);
         Map<String, String> params = new HashMap<>();
         params.put("{{base-config}}", baseConfigInYaml);
-        String redisConfiguration = FileUtil.replaceReturnString(DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/redis-configuration.yml"), params);
+        String redisConfiguration = FileUtil.replaceReturnString(DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-configuration.yml"), params);
         sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, redisConfiguration));
     }
 
@@ -422,9 +522,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         map.put("{{all}}", middlewareInventoryVO.getAll().toString());
         map.put("{{chrony}}", middlewareInventoryVO.getChrony().toString());
         map.put("{{redis}}", middlewareInventoryVO.getRedis().toString());
-        InputStream inventoryIniInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware-inventory.ini");
 
-        return FileUtil.replaceReturnString(inventoryIniInputStream, map);
+        return FileUtil.replaceReturnString(REDIS_INVENTORY_INI_TEMPALTE, map);
     }
 
     private ExecResultInfoVO executeInstallRedis(SSHClient sshClient) throws IOException {
@@ -438,7 +537,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         if (!StringUtils.isEmpty(middlewareRedisEnvDeployVO.getPvcName())) {
             configuration.put("{{ persistence-enabled }}", "true");
-            configuration.put("{{ persistence-info }}", String.format(STANDALONE_PERSISTENCE_TEMPLATE, middlewareRedisEnvDeployVO.getPvcName()));
+            configuration.put("{{ persistence-info }}", String.format(REDIS_STANDALONE_PERSISTENCE_TEMPLATE, middlewareRedisEnvDeployVO.getPvcName()));
         } else {
             configuration.put("{{ persistence-enabled }}", "false");
             configuration.put("{{ persistence-info }}", "");
@@ -449,8 +548,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfiguration())) {
             StringBuilder configMapSb = new StringBuilder();
-            middlewareRedisEnvDeployVO.getConfiguration().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
-            configuration.put("{{ configmap }}", String.format(CONFIGMAP_TEMPLATE, configMapSb.toString()));
+            middlewareRedisEnvDeployVO.getConfiguration().forEach((k, v) -> configMapSb.append(String.format(REDIS_CONFIGMAP_VALUE_TEMPLATE, k, v)));
+            configuration.put("{{ configmap }}", String.format(REDIS_CONFIGMAP_TEMPLATE, configMapSb.toString()));
         }
 
         return FileUtil.replaceReturnString(REDIS_STANDALONE_VALUE_TEMPLATE, configuration);
@@ -466,8 +565,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getPvLabels())) {
             configuration.put("{{ persistence-enabled }}", "true");
             StringBuilder stringBuilder = new StringBuilder();
-            middlewareRedisEnvDeployVO.getPvLabels().forEach((k, v) -> stringBuilder.append(String.format(MATCHLABELS_TEMPLATE, k, v)));
-            configuration.put("{{ matchLabels }}", String.format(SENTINEL_MATCHLABELS_TEMPLATE, stringBuilder.toString()));
+            middlewareRedisEnvDeployVO.getPvLabels().forEach((k, v) -> stringBuilder.append(String.format(REDIS_MATCHLABELS_TEMPLATE, k, v)));
+            configuration.put("{{ matchLabels }}", String.format(REDIS_SENTINEL_MATCHLABELS_TEMPLATE, stringBuilder.toString()));
         } else {
             configuration.put("{{ persistence-enabled }}", "false");
             configuration.put("{{ matchLabels }}", "");
@@ -478,11 +577,32 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         if (!CollectionUtils.isEmpty(middlewareRedisEnvDeployVO.getConfiguration())) {
             StringBuilder configMapSb = new StringBuilder();
-            middlewareRedisEnvDeployVO.getConfiguration().forEach((k, v) -> configMapSb.append(String.format(CONFIGMAP_VALUE_TEMPLATE, k, v)));
-            configuration.put("{{ configmap }}", String.format(CONFIGMAP_TEMPLATE, configMapSb.toString()));
+            middlewareRedisEnvDeployVO.getConfiguration().forEach((k, v) -> configMapSb.append(String.format(REDIS_CONFIGMAP_VALUE_TEMPLATE, k, v)));
+            configuration.put("{{ configmap }}", String.format(REDIS_CONFIGMAP_TEMPLATE, configMapSb.toString()));
         }
 
         return FileUtil.replaceReturnString(REDIS_SENTINEL_VALUE_TEMPLATE, configuration);
+    }
+
+    private String generateMysqlStandaloneValues(MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO) {
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("{{ password }}", middlewareMySqlEnvDeployVO.getPassword());
+
+        if (!StringUtils.isEmpty(middlewareMySqlEnvDeployVO.getPvcName())) {
+            configuration.put("{{ persistence-enabled }}", "true");
+            configuration.put("{{ persistence-info }}", String.format(MYSQL_STANDALONE_PERSISTENCE_TEMPLATE, middlewareMySqlEnvDeployVO.getPvcName()));
+        } else {
+            configuration.put("{{ persistence-enabled }}", "false");
+            configuration.put("{{ persistence-info }}", "");
+        }
+
+        if (!CollectionUtils.isEmpty(middlewareMySqlEnvDeployVO.getConfiguration())) {
+            StringBuilder configMapSb = new StringBuilder();
+            middlewareMySqlEnvDeployVO.getConfiguration().forEach((k, v) -> configMapSb.append(String.format(MYSQL_CONFIGMAP_VALUE_TEMPLATE, k, v)));
+            configuration.put("{{ configmap }}", configMapSb.toString());
+        }
+
+        return FileUtil.replaceReturnString(MYSQL_STANDALONE_VALUE_TEMPLATE, configuration);
     }
 
     private static Map<String, String> getConfigMap(String config) {

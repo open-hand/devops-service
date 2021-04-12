@@ -167,7 +167,7 @@ devops:
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     default:
-      image: ${CI_DFAULT_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.10.1}
+      image: ${CI_DFAULT_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.3}
     pipeline:
       sync:
         executor:

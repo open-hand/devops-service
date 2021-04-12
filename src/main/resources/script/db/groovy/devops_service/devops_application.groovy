@@ -126,4 +126,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             column(name: 'gitlab_project_id')
         }
     }
+
+    changeSet(author: 'zmf', id: '2021-04-06-add-gitlab-project-unique-index') {
+        preConditions(onFail: "MARK_RAN") {
+            tableExists(tableName: "devops_app_service")
+            indexExists(tableName: "devops_app_service", indexName: "idx_gitlab_project_id")
+            sqlCheck(expectedResult: "0", sql: """
+                SELECT COUNT(1)
+                FROM (SELECT COUNT(1)
+                FROM devops_app_service das
+                GROUP BY gitlab_project_id
+                HAVING COUNT(gitlab_project_id) > 1) tmp""")
+        }
+        dropIndex(tableName: "devops_app_service", indexName: "idx_gitlab_project_id")
+        addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_app_gitlab_project_id', columnNames: "gitlab_project_id")
+    }
 }

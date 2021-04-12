@@ -5,6 +5,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -19,6 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.jwt.JwtHelper;
+import org.springframework.security.jwt.crypto.sign.MacSigner;
+import org.springframework.security.jwt.crypto.sign.Signer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -26,6 +31,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
@@ -388,20 +394,26 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
         }
 
-        DevopsHostDTO toUpdate = ConvertUtils.convertObject(devopsHostUpdateRequestVO, DevopsHostDTO.class);
         if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType())) {
             devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostUpdateRequestVO.getJmeterPort());
             if (ipChanged || !devopsHostDTO.getJmeterPort().equals(devopsHostUpdateRequestVO.getJmeterPort())) {
                 devopsHostAdditionalCheckValidator.validIpAndJmeterPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getJmeterPort());
             }
             devopsHostAdditionalCheckValidator.validJmeterPath(devopsHostUpdateRequestVO.getJmeterPath());
-            toUpdate.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
+            devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
         }
 
-        toUpdate.setHostStatus(DevopsHostStatus.OPERATING.getValue());
-        toUpdate.setId(devopsHostDTO.getId());
-        toUpdate.setObjectVersionNumber(devopsHostDTO.getObjectVersionNumber());
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostMapper, toUpdate, "error.update.host");
+        devopsHostDTO.setName(devopsHostUpdateRequestVO.getName());
+        devopsHostDTO.setUsername(devopsHostUpdateRequestVO.getUsername());
+        devopsHostDTO.setPassword(devopsHostUpdateRequestVO.getPassword());
+        devopsHostDTO.setAuthType(devopsHostUpdateRequestVO.getAuthType());
+        devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
+        devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
+        devopsHostDTO.setPrivateIp(devopsHostUpdateRequestVO.getPrivateIp());
+        devopsHostDTO.setPrivatePort(devopsHostUpdateRequestVO.getPrivatePort());
+
+        devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
         return queryHost(projectId, hostId);
     }
 

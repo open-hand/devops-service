@@ -1055,7 +1055,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
             devopsBranchService.baseDelete(appServiceId, branchName);
         } catch (Exception e) {
-            LOGGER.info("error.devops.branch.delete");
+            LOGGER.info("error.devops.branch.delete", e);
         }
     }
 

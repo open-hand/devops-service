@@ -1,0 +1,47 @@
+# 对于密码，只有在部署的时候才会生效，部署完成后不能通过修改values的方式修改密码(需连接到MySQL修改密码)
+# 所以以下内容不能进行修改
+auth:
+  # root用户密码
+  rootPassword: {{ password }}
+  # 初始创建数据库名
+  database: ""
+  # 创建一个mysql用户（选填）
+  username: ""
+  password: ""
+
+primary:
+  configuration: |-
+    [client]
+    port=3306
+    socket=/opt/bitnami/mysql/tmp/mysql.sock
+    default-character-set=utf8mb4
+    plugin_dir=/opt/bitnami/mysql/plugin
+
+    [manager]
+    port=3306
+    socket=/opt/bitnami/mysql/tmp/mysql.sock
+    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+
+    [mysqld]
+    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    log-error=/opt/bitnami/mysql/logs/mysqld.log
+    basedir=/opt/bitnami/mysql
+    plugin_dir=/opt/bitnami/mysql/plugin
+    port=3306
+    socket=/opt/bitnami/mysql/tmp/mysql.sock
+    datadir=/bitnami/mysql/data
+    tmpdir=/opt/bitnami/mysql/tmp
+    bind-address=0.0.0.0
+    # 以上参数不可进行任何修改
+
+    # 以下参数可配置
+{{ configmap }}
+
+  ## 如果要使用存储，指定PVC名称
+  ## 指定PVC名称
+  ## persistence:
+  ##  enabled: true
+  ##  existingClaim: [pvc-name]
+persistence:
+  enabled: {{ persistence-enabled }}
+{{ persistence-info }}

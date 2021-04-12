@@ -16,6 +16,7 @@ public class MiddlewareAppServiceName {
         Map<String,String> map=new HashMap<>();
         map.put("Redis-standalone","Redis单机版");
         map.put("Redis-sentinel","Redis哨兵版");
+        map.put("MySQL-standalone","MySQL单机版");
         MIDDLE_APP_SERVICE_NAME_MAP= Collections.unmodifiableMap(map);
     }
 }

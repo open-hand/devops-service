@@ -19,7 +19,7 @@
         ORDER BY
         dat.`enable` DESC,
         dat.type,
-        dat.id
+        dat.id DESC
     </select>
 
     <select id="listAppTemplate" resultType="io.choerodon.devops.infra.dto.DevopsAppTemplateDTO">

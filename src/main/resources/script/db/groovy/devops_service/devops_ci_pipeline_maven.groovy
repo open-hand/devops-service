@@ -22,4 +22,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_maven.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_pipeline_maven',
                 constraintName: 'uk_gitlab_pipeline_id', columnNames: 'gitlab_pipeline_id,job_name')
     }
+
+
+    changeSet(author: 'wx', id: '2021-04-7-modify-column') {
+        sql("""
+               alter table devops_ci_pipeline_maven modify column version varchar(120)
+            """)
+    }
 }
