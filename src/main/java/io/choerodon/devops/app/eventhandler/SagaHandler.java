@@ -407,8 +407,17 @@ public class SagaHandler {
             sagaCode = SagaTopicCodeConstants.DEVOPS_DEPLOY_REDIS,
             maxRetryCount = 0, seq = 10)
     public void deployRedis(String payload) {
-        DevopsMiddlewareRedisDeployPayload devopsMiddlewareRedisDeployPayload = JsonHelper.unmarshalByJackson(payload, DevopsMiddlewareRedisDeployPayload.class);
-        devopsMiddlewareService.hostDeployForRedis(devopsMiddlewareRedisDeployPayload);
+        DevopsMiddlewareDeployPayload devopsMiddlewareDeployPayload = JsonHelper.unmarshalByJackson(payload, DevopsMiddlewareDeployPayload.class);
+        devopsMiddlewareService.hostDeployForRedis(devopsMiddlewareDeployPayload);
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_DEPLOY_MYSQL,
+            description = "主机部署mysql中间件",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_DEPLOY_MYSQL,
+            maxRetryCount = 0, seq = 10)
+    public void deployMysql(String payload) {
+        DevopsMiddlewareDeployPayload devopsMiddlewareDeployPayload = JsonHelper.unmarshalByJackson(payload, DevopsMiddlewareDeployPayload.class);
+        devopsMiddlewareService.hostDeployForMySql(devopsMiddlewareDeployPayload);
     }
 
     /**

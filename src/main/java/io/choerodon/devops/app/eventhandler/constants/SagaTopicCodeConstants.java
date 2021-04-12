@@ -292,6 +292,12 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_DEPLOY_REDIS="deploy_redis";
 
     /**
+     * 部署mysql
+     */
+    public static final String DEVOPS_DEPLOY_MYSQL="deploy_mysql";
+
+
+    /**
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";

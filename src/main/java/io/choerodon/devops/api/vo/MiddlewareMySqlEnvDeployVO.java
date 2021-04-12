@@ -7,7 +7,7 @@ import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO {
+public class MiddlewareMySqlEnvDeployVO extends MarketInstanceCreationRequestVO {
     @ApiModelProperty("部署模式")
     private String mode;
 
@@ -18,15 +18,12 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
     private String pvcName;
 
     @ApiModelProperty("密码")
-    @Size(min = 6, max = 32, message = "error.middleware.redis.password.length")
-    @NotBlank(message = "error.middleware.redis.password.empty")
+    @Size(min = 6, max = 32, message = "error.redis.password.length")
+    @NotBlank(message = "error.redis.password.empty")
     private String password;
 
     @ApiModelProperty("是否启用内核优化")
     private Boolean sysctlImage;
-
-    @ApiModelProperty("pv的labels")
-    private Map<String, String> pvLabels;
 
     @ApiModelProperty("哨兵模式节点数量")
     @Min(value = 3, message = "error.redis.sentinel.slave.count")
@@ -73,14 +70,6 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
 
     public void setSysctlImage(Boolean sysctlImage) {
         this.sysctlImage = sysctlImage;
-    }
-
-    public Map<String, String> getPvLabels() {
-        return pvLabels;
-    }
-
-    public void setPvLabels(Map<String, String> pvLabels) {
-        this.pvLabels = pvLabels;
     }
 
     public Integer getSlaveCount() {
