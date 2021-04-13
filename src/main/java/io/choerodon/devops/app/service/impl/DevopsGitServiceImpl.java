@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
@@ -14,6 +15,7 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -365,13 +367,27 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
 
         Map<Long, IssueDTO> finalIssues = issues;
+        Map<Long, ProjectDTO> projectDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(issues)) {
+            Set<Long> projectIds = issues.keySet();
+            projectDTOMap = baseServiceClientOperator.queryProjectsByIds(projectIds).stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+        }
+
         List<String> refIds = devopsBranchDTOPageInfo.getContent().stream().map(devopsBranchDTO -> String.valueOf(devopsBranchDTO.getId())).collect(Collectors.toList());
         Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH));
+        Map<Long, ProjectDTO> finalProjectDTOMap = projectDTOMap;
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
+            String projectName = null;
             if (!CollectionUtils.isEmpty(finalIssues)) {
                 if (t.getIssueId() != null) {
                     issueDTO = finalIssues.get(t.getIssueId());
+                    ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
+                    if (dto.getId().longValue() == currentProjectId.longValue()) {
+                        projectName = dto.getName() + "(本项目)";
+                    } else {
+                        projectName = dto.getName();
+                    }
                 }
             }
 
@@ -381,7 +397,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Long lastCommitUserId = lastCommitIamUserIdAndGitlabUserIdMap.get(t.getLastCommitUser());
             IamUserDTO commitUserDTO = lastCommitUserId == null ? null : lastCommitUserDTOMap.get(lastCommitUserId);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())));
+            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())),projectName);
         }).collect(Collectors.toList()));
         return devopsBranchVOPageInfo;
     }
@@ -1024,7 +1040,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO
-            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId) {
+            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId,String projectName) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
@@ -1047,7 +1063,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 createUserRealName,
                 devopsBranchDTO.getStatus(),
                 devopsBranchDTO.getErrorMessage(),
-                sagaInstanceId);
+                sagaInstanceId,
+                projectName);
     }
 
     private void deleteBranchSync(PushWebHookVO pushWebHookVO, Long appServiceId) {
