@@ -289,19 +289,23 @@ public class SagaTopicCodeConstants {
     /**
      * 部署redis
      */
-    public static final String DEVOPS_DEPLOY_REDIS="deploy_redis";
+    public static final String DEVOPS_DEPLOY_REDIS = "deploy_redis";
 
     /**
      * 部署mysql
      */
-    public static final String DEVOPS_DEPLOY_MYSQL="deploy_mysql";
+    public static final String DEVOPS_DEPLOY_MYSQL = "deploy_mysql";
+
+    /**
+     * 删除tag
+     */
+    public static final String DEVOPS_GIT_TAG_DELETE = "devops-git-tag-delete";
 
 
     /**
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
-
     private SagaTopicCodeConstants() {
     }
 }

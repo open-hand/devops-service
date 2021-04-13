@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GIT_TAG_DELETE;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -10,13 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.CommitFormUserVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
@@ -53,6 +60,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private DevopsBranchService devopsBranchService;
+
+    @Autowired
+    private TransactionalProducer producer;
+
 
     @Override
     public void create(PushWebHookVO pushWebHookVO, String token) {
@@ -110,6 +121,22 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             }
         }
 
+    }
+
+    @Override
+    @Saga(code = DEVOPS_GIT_TAG_DELETE, description = "删除tag", inputSchemaClass = PushWebHookVO.class)
+    public void deleteTag(PushWebHookVO pushWebHookVO, String token) {
+        AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(applicationDTO.getProjectId())
+                        .withRefType("gitlab")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_GIT_TAG_DELETE),
+                builder -> builder
+                        .withPayloadAndSerialize(pushWebHookVO)
+                        .withRefId(applicationDTO.getId().toString()));
     }
 
     @Override

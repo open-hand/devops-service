@@ -22,6 +22,8 @@ import io.choerodon.devops.infra.util.FastjsonParserConfigProvider;
 @Service
 public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
+    private static final String DELETE_COMMIT = "0000000000000000000000000000000000000000";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabWebHookServiceImpl.class);
 
     private DevopsMergeRequestService devopsMergeRequestService;
@@ -86,9 +88,15 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 devopsCiJobRecordService.update(jobWebHookVO);
                 break;
             case "tag_push":
-                PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
-                setUserContext(tagPushWebHookVO.getUserUserName());
-                devopsGitlabCommitService.create(tagPushWebHookVO, token);
+                String afterCommitSha = returnData.get("after").getAsString();
+                //表示删除tag
+                if (DELETE_COMMIT.equals(afterCommitSha)) {
+                    devopsGitlabCommitService.deleteTag(pushWebHookVO,token);
+                } else {
+                    PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
+                    setUserContext(tagPushWebHookVO.getUserUserName());
+                    devopsGitlabCommitService.create(tagPushWebHookVO, token);
+                }
                 break;
             default:
                 break;

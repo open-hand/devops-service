@@ -18,6 +18,8 @@ public interface DevopsGitlabCommitService {
 
     void create(PushWebHookVO pushWebHookVO, String token);
 
+    void deleteTag(PushWebHookVO pushWebHookVO,String token);
+
     DevopsGitlabCommitVO queryCommits(Long projectId, String appServiceIds, Date startDate, Date endDate);
 
     Page<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, PageRequest pageable,
