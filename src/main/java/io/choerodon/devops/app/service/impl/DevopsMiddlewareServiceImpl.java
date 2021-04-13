@@ -366,7 +366,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, REDIS);
 
             // 上传节点配置文件
-            generateAndUploadRedisHostConfiguration(sshClient, middlewareInventoryVO);
+            generateAndUploadHostConfiguration(sshClient, middlewareInventoryVO, REDIS);
             LOGGER.info("node configuration file upload completed");
 
             // 生成并上传redis配置文件
@@ -394,7 +394,66 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     @Override
     public void hostDeployForMySql(DevopsMiddlewareDeployPayload devopsMiddlewareDeployPayload) {
-        // todo 实现主机部署
+        MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO = devopsMiddlewareDeployPayload.getMiddlewareMySqlHostDeployVO();
+
+        DevopsHostDTO devopsHostDTOForConnection = null;
+        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(devopsMiddlewareDeployPayload.getProjectId(), middlewareMySqlHostDeployVO.getHostIds());
+        Optional<DevopsHostDTO> any = devopsHostDTOList.stream().filter(d -> !StringUtils.isEmpty(d.getHostIp()) && d.getSshPort() != null).findAny();
+        if (any.isPresent()) {
+            devopsHostDTOForConnection = any.get();
+        }
+
+        CommonExAssertUtil.assertTrue(devopsHostDTOForConnection != null, "error.host.ip");
+
+
+        LOGGER.info("========================================");
+        LOGGER.info("start to deploy Middleware MySQL,mode:{} version:{} projectId:{}", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
+
+        HostConnectionVO hostConnectionVO = ConvertUtils.convertObject(devopsHostDTOForConnection, HostConnectionVO.class);
+        hostConnectionVO.setHostPort(devopsHostDTOForConnection.getSshPort());
+        SSHClient sshClient = new SSHClient();
+
+        try {
+            sshUtil.sshConnect(hostConnectionVO, sshClient);
+            ExecResultInfoVO resultInfoVO;
+            // 安装ansible、git初始化文件
+            sshUtil.uploadPreProcessShell(sshClient, DeployObjectTypeEnum.MIDDLEWARE.value(), DeployObjectTypeEnum.MIDDLEWARE.value());
+            resultInfoVO = sshUtil.execCommand(sshClient, String.format(BASH_COMMAND_TEMPLATE, PRE_KUBEADM_HA_SH));
+            if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
+                throw new Exception(String.format("failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", sshClient.getRemoteHostname(), resultInfoVO.getStdErr()));
+            }
+
+            // 创建节点密钥文件
+            generateAndUploadPrivateKey(sshClient, devopsHostDTOList);
+            LOGGER.info("rsa file upload completed");
+
+            MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, MYSQL);
+
+            // 上传节点配置文件
+            generateAndUploadHostConfiguration(sshClient, middlewareInventoryVO, MYSQL);
+            LOGGER.info("node configuration file upload completed");
+
+            // 生成并上传MySQL配置文件
+            generateAndUploadMySQLConfiguration(sshClient, middlewareMySqlHostDeployVO);
+            LOGGER.info("MySQL configuration file upload completed");
+
+            // 安装redis
+            resultInfoVO = executeInstallMySQL(sshClient);
+            LOGGER.info("the MySQL installation command has finished");
+
+            if (resultInfoVO.getExitCode() != 0) {
+                throw new CommonException("failed to install MySQL");
+            }
+
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus());
+            LOGGER.info("========================================");
+            LOGGER.info("deploy Middleware MySQL,mode:{} version:{} projectId:{}", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
+        } catch (Exception e) {
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus());
+            throw new CommonException(e.getMessage());
+        } finally {
+            sshUtil.closeSsh(sshClient, null);
+        }
     }
 
     @Override
@@ -438,7 +497,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     private MiddlewareInventoryVO calculateGeneralInventoryValue(List<DevopsHostDTO> devopsHostDTOList, DevopsMiddlewareTypeEnum middlewareTypeEnum) {
-        MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO();
+        MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO(middlewareTypeEnum);
         for (DevopsHostDTO hostDTO : devopsHostDTOList) {
             // 如果内网ip不存在，使用公网ip
             String ip = StringUtils.isEmpty(hostDTO.getPrivateIp()) ? hostDTO.getHostIp() : hostDTO.getPrivateIp();
@@ -460,6 +519,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareInventoryVO.getRedis().append(hostDTO.getName())
                             .append(System.lineSeparator());
                     break;
+                case MYSQL:
+                    middlewareInventoryVO.getMysql().append(hostDTO.getName())
+                            .append(System.lineSeparator());
+                    break;
                 default:
                     throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
             }
@@ -467,10 +530,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         return middlewareInventoryVO;
     }
 
-    private void generateAndUploadRedisHostConfiguration(SSHClient sshClient, MiddlewareInventoryVO middlewareInventoryVO) {
-        String inventory = generateRedisInventoryInI(middlewareInventoryVO);
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, REDIS.getType()) + SLASH + "redis-inventory.ini";
-        String targetFilePath = BASE_DIR + SLASH + "redis-inventory.ini";
+    private void generateAndUploadHostConfiguration(SSHClient sshClient, MiddlewareInventoryVO middlewareInventoryVO, DevopsMiddlewareTypeEnum middlewareTypeEnum) {
+        String inventoryFileName = middlewareTypeEnum.getType() + "-inventory.ini";
+        String inventory = middlewareInventoryVO.getInventoryConfiguration();
+        // 比如/choerodon/ansible/redis/redis-inventory.ini
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, middlewareTypeEnum.getType()) + SLASH + inventoryFileName;
+        // 比如 /tmp/redis-inventory.ini
+        String targetFilePath = BASE_DIR + SLASH + inventoryFileName;
         FileUtil.saveDataToFile(filePath, inventory);
         sshUtil.uploadFile(sshClient, filePath, targetFilePath);
     }
@@ -504,6 +570,33 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, redisConfiguration));
     }
 
+    private void generateAndUploadMySQLConfiguration(SSHClient ssh, MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) throws IOException {
+        Map<String, Map<String, String>> configurations = middlewareMySqlHostDeployVO.getConfiguration();
+        sshUtil.execCommand(ssh, MKDIR_FOR_MULTI_NODE_CONFIGURATION);
+        for (Map.Entry<String, Map<String, String>> entry : configurations.entrySet()) {
+            String nodeName = entry.getKey();
+            Map<String, String> mysqldConfiguration = entry.getValue();
+            Map<String, Map<String, String>> configuration = new HashMap<>();
+
+            Map<String, String> authConfiguration = new HashMap<>();
+            authConfiguration.putIfAbsent("rootPassword", middlewareMySqlHostDeployVO.getPassword());
+
+            mysqldConfiguration.putIfAbsent("datadir", "/var/lib/mysql");
+            mysqldConfiguration.putIfAbsent("port", "3306");
+            mysqldConfiguration.putIfAbsent("bind_address", "0.0.0.0");
+
+            configuration.put("auth", authConfiguration);
+            configuration.put("mysqld", mysqldConfiguration);
+
+            DumperOptions options = new DumperOptions();
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            options.setAllowReadOnlyProperties(true);
+            Yaml yaml = new Yaml(options);
+            String baseConfigInYaml = yaml.dump(configuration);
+            sshUtil.execCommand(ssh, String.format(SAVE_MYSQL_NODE_CONFIGURATION, nodeName, baseConfigInYaml));
+        }
+    }
+
     private void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsHostDTO> devopsHostDTOList) throws IOException {
         // 创建目录
         sshUtil.execCommand(ssh, "mkdir -p /tmp/ansible/ssh-key");
@@ -517,17 +610,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         sshUtil.execCommands(ssh, commands);
     }
 
-    private String generateRedisInventoryInI(MiddlewareInventoryVO middlewareInventoryVO) {
-        Map<String, String> map = new HashMap<>();
-        map.put("{{all}}", middlewareInventoryVO.getAll().toString());
-        map.put("{{chrony}}", middlewareInventoryVO.getChrony().toString());
-        map.put("{{redis}}", middlewareInventoryVO.getRedis().toString());
-
-        return FileUtil.replaceReturnString(REDIS_INVENTORY_INI_TEMPALTE, map);
-    }
-
     private ExecResultInfoVO executeInstallRedis(SSHClient sshClient) throws IOException {
         return sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
+    }
+
+    private ExecResultInfoVO executeInstallMySQL(SSHClient sshClient) throws IOException {
+        return sshUtil.execCommand(sshClient, MYSQL_ANSIBLE_COMMAND_TEMPLATE);
     }
 
     private String generateRedisStandaloneValues(MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
