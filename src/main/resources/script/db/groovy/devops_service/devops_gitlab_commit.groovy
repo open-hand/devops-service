@@ -63,4 +63,10 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
             column(name: "commit_date")
         }
     }
+
+    changeSet(author: 'zmf', id: '2021-04-13-add-column-issue-id') {
+        addColumn(tableName: 'devops_gitlab_commit') {
+            column(name: 'issue_id', type: 'BIGINT UNSIGNED', remarks: '敏捷的issueId', afterColumn: 'user_id')
+        }
+    }
 }

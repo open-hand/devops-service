@@ -18,8 +18,10 @@ import io.choerodon.devops.api.vo.CommitFormUserVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -49,12 +51,15 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsBranchService devopsBranchService;
 
     @Override
     public void create(PushWebHookVO pushWebHookVO, String token) {
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         String ref = pushWebHookVO.getRef().split("/")[2];
         if (!pushWebHookVO.getCommits().isEmpty()) {
+            DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(applicationDTO.getId(), ref);
             pushWebHookVO.getCommits().forEach(commitDTO -> {
                 DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(commitDTO.getId(), ref);
 
@@ -65,6 +70,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     devopsGitlabCommitDTO.setCommitSha(commitDTO.getId());
                     devopsGitlabCommitDTO.setRef(ref);
                     devopsGitlabCommitDTO.setUrl(commitDTO.getUrl());
+                    // 如果分支和issue关联了，添加issueId到commit中
+                    devopsGitlabCommitDTO.setIssueId(devopsBranchDTO.getIssueId());
                     if ("root".equals(commitDTO.getAuthor().getName())) {
                         devopsGitlabCommitDTO.setUserId(1L);
                     } else {
@@ -79,7 +86,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 }
             });
         } else {
-            //直接从一个分支切出来另外一个分支，没有commits记录
+            //直接从一个分支切出来另外一个分支，没有commits记录（所以下面插入的commit不需要关联issueId）
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(pushWebHookVO.getCheckoutSha(), ref);
             if (devopsGitlabCommitDTO == null) {
                 CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(TypeUtil.objToInteger(applicationDTO.getGitlabProjectId()), pushWebHookVO.getCheckoutSha(), ADMIN);
