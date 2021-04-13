@@ -319,6 +319,11 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return devopsGitlabCommitMapper.queryByAppIdAndBranch(appServiceIds, branch, startDate == null ? null : new java.sql.Date(startDate.getTime()));
     }
 
+    @Override
+    public Set<Long> listIssueIdsByCommitSha(Set<String> commitSha) {
+        return devopsGitlabCommitMapper.listIssueIdsByCommitSha(commitSha).stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
     private boolean checkExist(DevopsGitlabCommitDTO devopsGitlabCommitDTO) {
         devopsGitlabCommitDTO.setCommitSha(devopsGitlabCommitDTO.getCommitSha());
         devopsGitlabCommitDTO.setRef(devopsGitlabCommitDTO.getRef());

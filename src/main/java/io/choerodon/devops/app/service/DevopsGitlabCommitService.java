@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
@@ -38,4 +39,5 @@ public interface DevopsGitlabCommitService {
 
     List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appServiceId, String branch, Date startDate);
 
+    Set<Long> listIssueIdsByCommitSha(Set<String> commitSha);
 }

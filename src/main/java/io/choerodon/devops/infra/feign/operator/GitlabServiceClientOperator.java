@@ -21,6 +21,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -1148,10 +1149,15 @@ public class GitlabServiceClientOperator {
 
     /**
      * 查询mr下的评论
-     *
      */
     public List<Note> listByMergeRequestIid(Integer gitlabProjectId, Integer mrIiD) {
-
         return gitlabServiceClient.listByMergeRequestIid(gitlabProjectId, mrIiD).getBody();
+    }
+
+    public CompareResultDTO getDiffs(Integer gitlabProjectId, String from, String to) {
+        GitlabTransferVO gitlabTransferVO = new GitlabTransferVO();
+        gitlabTransferVO.setFrom(from);
+        gitlabTransferVO.setTo(to);
+        return ResponseUtils.getResponse(gitlabServiceClient.getDiffs(gitlabProjectId, gitlabTransferVO), CompareResultDTO.class);
     }
 }

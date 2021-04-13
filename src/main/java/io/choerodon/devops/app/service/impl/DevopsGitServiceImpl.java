@@ -1166,4 +1166,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         CommonExAssertUtil.assertTrue(issueId.equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
         devopsBranchService.removeIssueAssociation(devopsBranchDTO);
     }
+
+    @Override
+    public Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+
+        CompareResultDTO diffs = gitlabServiceClientOperator.getDiffs(appServiceDTO.getGitlabProjectId(), from, to);
+
+        Set<String> commitSha = diffs.getCommits().stream().map(CommitDTO::getId).collect(Collectors.toSet());
+
+        return devopsGitlabCommitService.listIssueIdsByCommitSha(commitSha);
+    }
 }
