@@ -18,8 +18,8 @@ public class MiddlewareMySqlEnvDeployVO extends MarketInstanceCreationRequestVO 
     private String pvcName;
 
     @ApiModelProperty("密码")
-    @Size(min = 6, max = 32, message = "error.redis.password.length")
-    @NotBlank(message = "error.redis.password.empty")
+    @Size(min = 6, max = 32, message = "error.middleware.mysql.password.length")
+    @NotBlank(message = "error.middleware.mysql.password.empty")
     private String password;
 
     @ApiModelProperty("MySQL的配置参数")

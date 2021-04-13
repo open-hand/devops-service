@@ -29,7 +29,7 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
     private Map<String, String> pvLabels;
 
     @ApiModelProperty("哨兵模式节点数量")
-    @Min(value = 3, message = "error.redis.sentinel.slave.count")
+    @Min(value = 3, message = "error.middleware.redis.sentinel.slave.count")
     private Integer slaveCount;
 
     @ApiModelProperty("redis的配置参数")
