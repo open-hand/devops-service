@@ -5,8 +5,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -21,9 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.jwt.JwtHelper;
-import org.springframework.security.jwt.crypto.sign.MacSigner;
-import org.springframework.security.jwt.crypto.sign.Signer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -31,12 +26,12 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.app.service.EncryptService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
@@ -89,7 +84,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
-    private SshUtil sshUtil;
+    EncryptService encryptService;
 
     private final Gson gson = new Gson();
 
@@ -486,7 +481,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    public Set<Long> multiTestConnection(Long projectId, Set<Long> hostIds) {
+    public Set<Object> multiTestConnection(Long projectId, Set<Long> hostIds) {
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
         Set<Long> connectionFailedHostIds = new HashSet<>();
         devopsHostDTOList.forEach(d -> {
@@ -495,7 +490,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 connectionFailedHostIds.add(d.getId());
             }
         });
-        return connectionFailedHostIds;
+        return encryptService.encryptIds(connectionFailedHostIds);
     }
 
     @Override
