@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
 
-@ConditionalOnProperty(value = "local.test",havingValue = "false",matchIfMissing = true)
+//@ConditionalOnProperty(value = "local.test",havingValue = "false",matchIfMissing = true)
 @Component
 public class DeployTask {
     @Autowired
