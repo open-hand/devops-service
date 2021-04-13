@@ -98,7 +98,7 @@ public class DevopsMiddlewareController {
 
     @ApiOperation(value = "MySQL主机部署部署")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/mysql/deploy/env")
+    @PostMapping("/mysql/deploy/host")
     public ResponseEntity<Void> hostDeployForMySql(@PathVariable("project_id") Long projectId,
                                                    @RequestBody @Valid MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
         middlewareService.hostDeployForMySql(projectId, middlewareMySqlHostDeployVO);

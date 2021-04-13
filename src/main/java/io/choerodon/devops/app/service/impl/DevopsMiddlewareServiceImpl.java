@@ -82,8 +82,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String REDIS_STANDALONE_VALUE_TEMPLATE;
 
-    private static final String REDIS_INVENTORY_INI_TEMPALTE;
-
     private static final String MYSQL_STANDALONE_VALUE_TEMPLATE;
 
     private static final String MIDDLEWARE_STATUS_SYNC_LOCK = "middleware-status-sync-lock";
@@ -91,12 +89,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     static {
         InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml");
         InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-standalone-value-template.yaml");
-        InputStream redisInventoryIniTemplateStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-inventory.ini");
         InputStream mysqlStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/mysql/mysql-standalone-value-template.yaml");
         try {
             REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
             REDIS_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(redisStandaloneInputStream, StandardCharsets.UTF_8);
-            REDIS_INVENTORY_INI_TEMPALTE = IOUtils.toString(redisInventoryIniTemplateStream, StandardCharsets.UTF_8);
             MYSQL_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(mysqlStandaloneInputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new CommonException("error.load.ci.sh");
