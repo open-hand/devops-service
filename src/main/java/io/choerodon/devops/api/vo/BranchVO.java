@@ -39,7 +39,18 @@ public class BranchVO {
     private Long objectVersionNumber;
     @Encrypt
     private Long sagaInstanceId;
+    /**
+     * 问题来源
+     */
+    private String projectName;
 
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
 
     public BranchVO() {
     }
@@ -50,7 +61,7 @@ public class BranchVO {
     public BranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl,
                     String createUserUrl,
                     IssueDTO issue,
-                    IamUserDTO commitUserE, String createUserName, String realName, String status, String errorMessage, Long sagaInstanceId) {
+                    IamUserDTO commitUserE, String createUserName, String realName, String status, String errorMessage, Long sagaInstanceId, String projectName) {
         this.branchName = devopsBranchDTO.getBranchName();
         this.sha = devopsBranchDTO.getLastCommit();
         this.commitContent = devopsBranchDTO.getLastCommitMsg();
@@ -71,7 +82,9 @@ public class BranchVO {
         this.errorMessage = errorMessage;
         this.objectVersionNumber = devopsBranchDTO.getObjectVersionNumber();
         this.sagaInstanceId = sagaInstanceId;
+        this.projectName = projectName;
     }
+
 
     public String getBranchName() {
         return branchName;
