@@ -30,7 +30,7 @@ public class DevopsMiddlewareController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/redis/deploy/env")
     public ResponseEntity<AppServiceInstanceVO> envDeployForRedis(@PathVariable("project_id") Long projectId,
-                                                                          @RequestBody @Valid MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
+                                                                  @RequestBody @Valid MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
         middlewareRedisEnvDeployVO.setCommandType(CommandType.CREATE.getType());
         middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.envDeployForRedis(projectId, middlewareRedisEnvDeployVO));
@@ -73,7 +73,7 @@ public class DevopsMiddlewareController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/redis/deploy/host")
     public ResponseEntity<Void> hostDeployForRedis(@PathVariable("project_id") Long projectId,
-                                              @RequestBody @Valid MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
+                                                   @RequestBody @Valid MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         middlewareService.hostDeployForRedis(projectId, middlewareRedisHostDeployVO);
         return ResponseEntity.noContent().build();
     }
@@ -82,13 +82,26 @@ public class DevopsMiddlewareController {
      * MySQL环境部署
      */
 
-    @ApiOperation(value = "环境部署")
+    @ApiOperation(value = "MySQL环境部署")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/mysql/deploy/env")
     public ResponseEntity<AppServiceInstanceVO> envDeployForMySql(@PathVariable("project_id") Long projectId,
-                                                                          @RequestBody @Valid MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO){
+                                                                  @RequestBody @Valid MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO) {
         middlewareMySqlEnvDeployVO.setCommandType(CommandType.CREATE.getType());
         middlewareMySqlEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.envDeployForMySql(projectId, middlewareMySqlEnvDeployVO));
+    }
+
+    /**
+     * MySQL主机部署部署
+     */
+
+    @ApiOperation(value = "MySQL主机部署部署")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/mysql/deploy/env")
+    public ResponseEntity<Void> hostDeployForMySql(@PathVariable("project_id") Long projectId,
+                                                   @RequestBody @Valid MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
+        middlewareService.hostDeployForMySql(projectId, middlewareMySqlHostDeployVO);
+        return ResponseEntity.noContent().build();
     }
 }
