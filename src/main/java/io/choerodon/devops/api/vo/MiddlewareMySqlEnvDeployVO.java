@@ -22,14 +22,7 @@ public class MiddlewareMySqlEnvDeployVO extends MarketInstanceCreationRequestVO 
     @NotBlank(message = "error.redis.password.empty")
     private String password;
 
-    @ApiModelProperty("是否启用内核优化")
-    private Boolean sysctlImage;
-
-    @ApiModelProperty("哨兵模式节点数量")
-    @Min(value = 3, message = "error.redis.sentinel.slave.count")
-    private Integer slaveCount;
-
-    @ApiModelProperty("redis的配置参数")
+    @ApiModelProperty("MySQL的配置参数")
     private Map<String, String> configuration;
 
     public String getMode() {
@@ -62,22 +55,6 @@ public class MiddlewareMySqlEnvDeployVO extends MarketInstanceCreationRequestVO 
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Boolean getSysctlImage() {
-        return sysctlImage;
-    }
-
-    public void setSysctlImage(Boolean sysctlImage) {
-        this.sysctlImage = sysctlImage;
-    }
-
-    public Integer getSlaveCount() {
-        return slaveCount;
-    }
-
-    public void setSlaveCount(Integer slaveCount) {
-        this.slaveCount = slaveCount;
     }
 
     public Map<String, String> getConfiguration() {
