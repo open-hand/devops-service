@@ -58,7 +58,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
 
     changeSet(author: 'wx', id: '2021-04-14-add-column') {
         addColumn(tableName: 'devops_ci_job_record') {
-            column(name: "maven_setting_id",  type: 'BIGINT UNSIGNED', afterColumn: 'duration_seconds')
+            column(name: "maven_setting_id", type: 'BIGINT UNSIGNED', afterColumn: 'duration_seconds', defaultValue: "0")
         }
     }
 
