@@ -21,9 +21,11 @@ import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMergeRequestPayload;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.enums.MergeRequestState;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
@@ -45,6 +47,8 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     private SendNotificationService sendNotificationService;
     @Autowired
     private AppServiceService applicationService;
+    @Autowired
+    private DevopsBranchService devopsBranchService;
     @Autowired
     private TransactionalProducer producer;
 
@@ -130,19 +134,25 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
             sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
         } else if (MergeRequestState.MERGED.getValue().equals(devopsMergeRequestDTO.getState())) {
             AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
-            DevopsMergeRequestPayload devopsMergeRequestPayload = new DevopsMergeRequestPayload();
-            devopsMergeRequestPayload.setAppServiceDTO(appServiceDTO);
-            devopsMergeRequestPayload.setDevopsMergeRequestVO(devopsMergeRequestVO);
+            DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appServiceDTO.getId(), devopsMergeRequestVO.getObjectAttributes().getSourceBranch());
+            // 如果该分支绑定了某个issue，那么发送saga
+            if (devopsBranchDTO.getIssueId() != null) {
+                DevopsMergeRequestPayload devopsMergeRequestPayload = new DevopsMergeRequestPayload();
+                devopsMergeRequestPayload.setIssueId(devopsBranchDTO.getIssueId());
+                devopsMergeRequestPayload.setServiceCode(appServiceDTO.getCode());
+                devopsMergeRequestPayload.setSourceBranchName(devopsMergeRequestVO.getObjectAttributes().getSourceBranch());
+                devopsMergeRequestPayload.setTargetBranchName(devopsMergeRequestVO.getObjectAttributes().getTargetBranch());
 
-            producer.apply(StartSagaBuilder
-                            .newBuilder()
-                            .withLevel(ResourceLevel.PROJECT)
-                            .withSourceId(appServiceDTO.getProjectId())
-                            .withRefType("tag")
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS),
-                    builder -> builder
-                            .withPayloadAndSerialize(devopsMergeRequestPayload)
-                            .withRefId(appServiceDTO.getId().toString()));
+                producer.apply(StartSagaBuilder
+                                .newBuilder()
+                                .withLevel(ResourceLevel.PROJECT)
+                                .withSourceId(appServiceDTO.getProjectId())
+                                .withRefType("tag")
+                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS),
+                        builder -> builder
+                                .withPayloadAndSerialize(devopsMergeRequestPayload)
+                                .withRefId(appServiceDTO.getId().toString()));
+            }
 
             sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
         }

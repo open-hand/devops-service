@@ -127,11 +127,13 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Override
     @Saga(code = DEVOPS_GIT_TAG_DELETE, description = "删除tag", inputSchemaClass = DevopsGitlabTagPayload.class)
     public void deleteTag(PushWebHookVO pushWebHookVO, String token) {
+        String ref = pushWebHookVO.getRef().split("/")[2];
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
 
         DevopsGitlabTagPayload devopsGitlabTagPayload = new DevopsGitlabTagPayload();
-        devopsGitlabTagPayload.setAppServiceDTO(appServiceDTO);
-        devopsGitlabTagPayload.setPushWebHookVO(pushWebHookVO);
+        devopsGitlabTagPayload.setProjectId(appServiceDTO.getProjectId());
+        devopsGitlabTagPayload.setServiceCode(appServiceDTO.getCode());
+        devopsGitlabTagPayload.setTag(ref);
 
         producer.apply(
                 StartSagaBuilder
