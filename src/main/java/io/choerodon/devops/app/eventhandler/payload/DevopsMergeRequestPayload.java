@@ -1,25 +1,40 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-
 public class DevopsMergeRequestPayload {
-    private AppServiceDTO appServiceDTO;
-    private DevopsMergeRequestVO devopsMergeRequestVO;
+    private String serviceCode;
+    private String sourceBranchName;
+    private String targetBranchName;
+    private Long issueId;
 
-    public AppServiceDTO getAppServiceDTO() {
-        return appServiceDTO;
+    public String getSourceBranchName() {
+        return sourceBranchName;
     }
 
-    public void setAppServiceDTO(AppServiceDTO appServiceDTO) {
-        this.appServiceDTO = appServiceDTO;
+    public void setSourceBranchName(String sourceBranchName) {
+        this.sourceBranchName = sourceBranchName;
     }
 
-    public DevopsMergeRequestVO getDevopsMergeRequestVO() {
-        return devopsMergeRequestVO;
+    public String getTargetBranchName() {
+        return targetBranchName;
     }
 
-    public void setDevopsMergeRequestVO(DevopsMergeRequestVO devopsMergeRequestVO) {
-        this.devopsMergeRequestVO = devopsMergeRequestVO;
+    public void setTargetBranchName(String targetBranchName) {
+        this.targetBranchName = targetBranchName;
+    }
+
+    public Long getIssueId() {
+        return issueId;
+    }
+
+    public void setIssueId(Long issueId) {
+        this.issueId = issueId;
+    }
+
+    public String getServiceCode() {
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
     }
 }

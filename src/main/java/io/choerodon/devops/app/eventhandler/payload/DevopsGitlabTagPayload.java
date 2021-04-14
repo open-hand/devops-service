@@ -1,25 +1,31 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import io.choerodon.devops.api.vo.PushWebHookVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-
 public class DevopsGitlabTagPayload {
-    private AppServiceDTO appServiceDTO;
-    private PushWebHookVO pushWebHookVO;
+    private String tag;
+    private Long projectId;
+    private String serviceCode;
 
-    public AppServiceDTO getAppServiceDTO() {
-        return appServiceDTO;
+    public String getTag() {
+        return tag;
     }
 
-    public void setAppServiceDTO(AppServiceDTO appServiceDTO) {
-        this.appServiceDTO = appServiceDTO;
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
-    public PushWebHookVO getPushWebHookVO() {
-        return pushWebHookVO;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setPushWebHookVO(PushWebHookVO pushWebHookVO) {
-        this.pushWebHookVO = pushWebHookVO;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getServiceCode() {
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
     }
 }
