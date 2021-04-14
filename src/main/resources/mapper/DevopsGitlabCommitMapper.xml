@@ -102,4 +102,12 @@
         </foreach>
         ORDER BY dgc.commit_date DESC
     </select>
+
+    <select id="listIssueIdsByCommitSha" resultType="java.lang.Long">
+        SELECT issue_id FROM devops_gitlab_commit
+        WHERE commit_sha IN
+        <foreach collection="commitSha" item="sha" open="(" close=")" separator=",">
+            #{sha}
+        </foreach>
+    </select>
 </mapper>

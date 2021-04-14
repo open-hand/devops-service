@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -681,4 +682,18 @@ public interface GitlabServiceClient {
             @RequestParam Integer projectId,
             @ApiParam(value = "MR Iid", required = true)
             @RequestParam Integer iid);
+
+    /**
+     * 项目下获取diffs
+     *
+     * @param projectId        项目id
+     * @param gitlabTransferVO 分支信息
+     * @return CompareResults
+     */
+    @ApiOperation(value = "项目下获取diffs")
+    @PostMapping(value = "/v1/projects/{projectId}/repository/file/diffs")
+    ResponseEntity<String> getDiffs(
+            @ApiParam(value = "项目id", required = true) @PathVariable Integer projectId,
+            @ApiParam(value = "分支信息", required = true)
+            @RequestBody GitlabTransferVO gitlabTransferVO);
 }

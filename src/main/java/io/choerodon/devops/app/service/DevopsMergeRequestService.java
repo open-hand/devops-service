@@ -22,9 +22,9 @@ public interface DevopsMergeRequestService {
 
     Integer baseUpdate(DevopsMergeRequestDTO devopsMergeRequestDTO);
 
-    void create(DevopsMergeRequestVO devopsMergeRequestVO);
+    void create(DevopsMergeRequestVO devopsMergeRequestVO, String token);
 
-    void baseCreate(DevopsMergeRequestVO devopsMergeRequestVO);
+    void baseCreate(DevopsMergeRequestVO devopsMergeRequestVO, String token);
 
     DevopsMergeRequestDTO baseCountMergeRequest(Integer gitlabProjectId);
 }

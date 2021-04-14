@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GIT_TAG_DELETE;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -10,16 +12,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.CommitFormUserVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsGitlabTagPayload;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -49,12 +59,19 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsBranchService devopsBranchService;
+
+    @Autowired
+    private TransactionalProducer producer;
+
 
     @Override
     public void create(PushWebHookVO pushWebHookVO, String token) {
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         String ref = pushWebHookVO.getRef().split("/")[2];
         if (!pushWebHookVO.getCommits().isEmpty()) {
+            DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(applicationDTO.getId(), ref);
             pushWebHookVO.getCommits().forEach(commitDTO -> {
                 DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(commitDTO.getId(), ref);
 
@@ -65,6 +82,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     devopsGitlabCommitDTO.setCommitSha(commitDTO.getId());
                     devopsGitlabCommitDTO.setRef(ref);
                     devopsGitlabCommitDTO.setUrl(commitDTO.getUrl());
+                    // 如果分支和issue关联了，添加issueId到commit中
+                    devopsGitlabCommitDTO.setIssueId(devopsBranchDTO.getIssueId());
                     if ("root".equals(commitDTO.getAuthor().getName())) {
                         devopsGitlabCommitDTO.setUserId(1L);
                     } else {
@@ -79,7 +98,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 }
             });
         } else {
-            //直接从一个分支切出来另外一个分支，没有commits记录
+            //直接从一个分支切出来另外一个分支，没有commits记录（所以下面插入的commit不需要关联issueId）
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(pushWebHookVO.getCheckoutSha(), ref);
             if (devopsGitlabCommitDTO == null) {
                 CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(TypeUtil.objToInteger(applicationDTO.getGitlabProjectId()), pushWebHookVO.getCheckoutSha(), ADMIN);
@@ -103,6 +122,27 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             }
         }
 
+    }
+
+    @Override
+    @Saga(code = DEVOPS_GIT_TAG_DELETE, description = "删除tag", inputSchemaClass = DevopsGitlabTagPayload.class)
+    public void deleteTag(PushWebHookVO pushWebHookVO, String token) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
+
+        DevopsGitlabTagPayload devopsGitlabTagPayload = new DevopsGitlabTagPayload();
+        devopsGitlabTagPayload.setAppServiceDTO(appServiceDTO);
+        devopsGitlabTagPayload.setPushWebHookVO(pushWebHookVO);
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(appServiceDTO.getProjectId())
+                        .withRefType("tag")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_GIT_TAG_DELETE),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsGitlabTagPayload)
+                        .withRefId(appServiceDTO.getId().toString()));
     }
 
     @Override
@@ -310,6 +350,11 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     public List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appServiceIds, String branch, Date
             startDate) {
         return devopsGitlabCommitMapper.queryByAppIdAndBranch(appServiceIds, branch, startDate == null ? null : new java.sql.Date(startDate.getTime()));
+    }
+
+    @Override
+    public Set<Long> listIssueIdsByCommitSha(Set<String> commitSha) {
+        return devopsGitlabCommitMapper.listIssueIdsByCommitSha(commitSha).stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     private boolean checkExist(DevopsGitlabCommitDTO devopsGitlabCommitDTO) {

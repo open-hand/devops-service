@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 import java.util.Date;
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -20,6 +22,8 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
     private Long id;
     private Long appServiceId;
     private Long userId;
+    @ApiModelProperty("敏捷的issueId")
+    private Long issueId;
     private String commitSha;
     private String commitContent;
     private String ref;
@@ -53,6 +57,14 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Long getIssueId() {
+        return issueId;
+    }
+
+    public void setIssueId(Long issueId) {
+        this.issueId = issueId;
     }
 
     public String getCommitSha() {

@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -35,4 +36,6 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
     List<DevopsGitlabCommitDTO> listUserRecentCommits(@Param("projectIds") List<Long> projectIds,
                                                       @Param("userId") Long userId,
                                                       @Param("date") Date date);
+
+    Set<Long> listIssueIdsByCommitSha(@Param("commitSha") Set<String> commitSha);
 }

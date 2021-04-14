@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
@@ -16,6 +17,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsGitlabCommitService {
 
     void create(PushWebHookVO pushWebHookVO, String token);
+
+    void deleteTag(PushWebHookVO pushWebHookVO,String token);
 
     DevopsGitlabCommitVO queryCommits(Long projectId, String appServiceIds, Date startDate, Date endDate);
 
@@ -38,4 +41,5 @@ public interface DevopsGitlabCommitService {
 
     List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appServiceId, String branch, Date startDate);
 
+    Set<Long> listIssueIdsByCommitSha(Set<String> commitSha);
 }

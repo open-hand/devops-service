@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -214,6 +215,29 @@ public class DevopsGitController {
             @RequestParam String tag) {
         devopsGitService.deleteTag(projectId, appServiceId, tag);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 获取服务两个tag之间的issueId列表
+     * @param projectId 项目id
+     * @param appServiceId 应用服务id
+     * @param from 前一个tag
+     * @param to 后一个tag
+     * @return 所有的issueId
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("获取服务两个tag之间的issueId列表")
+    @GetMapping("/tags/issue_ids")
+    public ResponseEntity<Set<Object>> getIssueIdsBetweenTags(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务id", required = true)
+            @Encrypt @RequestParam(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "前一个tag")
+            @RequestParam(value = "from") String from,
+            @ApiParam(value = "后一个tag")
+            @RequestParam(value = "to") String to) {
+       return ResponseEntity.ok(devopsGitService.getIssueIdsBetweenTags(projectId, appServiceId, from, to));
     }
 
     /**

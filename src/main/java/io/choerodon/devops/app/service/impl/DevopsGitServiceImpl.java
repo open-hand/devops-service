@@ -15,7 +15,6 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
-import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,6 +135,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private List<ConvertK8sObjectService> convertK8sObjectServices;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private EncryptService encryptService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -397,7 +398,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Long lastCommitUserId = lastCommitIamUserIdAndGitlabUserIdMap.get(t.getLastCommitUser());
             IamUserDTO commitUserDTO = lastCommitUserId == null ? null : lastCommitUserDTOMap.get(lastCommitUserId);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())),projectName);
+            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())), projectName);
         }).collect(Collectors.toList()));
         return devopsBranchVOPageInfo;
     }
@@ -1040,7 +1041,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO
-            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId,String projectName) {
+            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId, String projectName) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
@@ -1165,5 +1166,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         CommonExAssertUtil.assertTrue(issueId.equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
         devopsBranchService.removeIssueAssociation(devopsBranchDTO);
+    }
+
+    @Override
+    public Set<Object> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+
+        CompareResultDTO diffs = gitlabServiceClientOperator.getDiffs(appServiceDTO.getGitlabProjectId(), from, to);
+
+        Set<String> commitSha = diffs.getCommits().stream().map(CommitDTO::getId).collect(Collectors.toSet());
+
+        return encryptService.encryptIds(devopsGitlabCommitService.listIssueIdsByCommitSha(commitSha));
     }
 }

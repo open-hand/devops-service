@@ -37,6 +37,7 @@ public class EncryptServiceImpl implements EncryptService {
         return map;
     }
 
+
     @Override
     public Set<Object> encryptIds(Set<Long> ids) {
         boolean isEncrypt = EncryptContext.isEncrypt();
