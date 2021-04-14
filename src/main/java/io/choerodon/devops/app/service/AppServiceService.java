@@ -547,6 +547,4 @@ public interface AppServiceService {
 
     void importMarketAppServiceGitlab(AppServiceImportPayload appServiceImportPayload);
 
-    void fixGitlabAppService();
-
 }

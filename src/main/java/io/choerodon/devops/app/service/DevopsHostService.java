@@ -123,7 +123,7 @@ public interface DevopsHostService {
      * @param hostIds   主机ids
      * @return 所有连接失败的主机id
      */
-    Set<Long> multiTestConnection(Long projectId, Set<Long> hostIds);
+    Set<Object> multiTestConnection(Long projectId, Set<Long> hostIds);
 
     /**
      * 通过id测试部署主机连接情况
