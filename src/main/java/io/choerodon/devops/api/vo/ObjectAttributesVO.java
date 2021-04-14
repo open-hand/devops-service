@@ -22,6 +22,8 @@ public class ObjectAttributesVO {
 
     private Date updatedAt;
 
+    private String action;
+
     public Long getIid() {
         return iid;
     }
@@ -92,5 +94,13 @@ public class ObjectAttributesVO {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
     }
 }

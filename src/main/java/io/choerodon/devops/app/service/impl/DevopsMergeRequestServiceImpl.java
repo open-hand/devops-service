@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -8,12 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsMergeRequestPayload;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.app.service.SendNotificationService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.enums.MergeRequestState;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
@@ -33,6 +43,10 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private AppServiceService applicationService;
+    @Autowired
+    private TransactionalProducer producer;
 
     @Override
     public List<DevopsMergeRequestDTO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
@@ -78,12 +92,16 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     }
 
     @Override
-    public void create(DevopsMergeRequestVO devopsMergeRequestVO) {
-        baseCreate(devopsMergeRequestVO);
+    public void create(DevopsMergeRequestVO devopsMergeRequestVO, String token) {
+        baseCreate(devopsMergeRequestVO, token);
     }
 
+    @Saga(code = DEVOPS_MERGE_REQUEST_PASS,
+            description = "合并请求通过的saga事件",
+            inputSchemaClass = DevopsMergeRequestPayload.class
+    )
     @Override
-    public void baseCreate(DevopsMergeRequestVO devopsMergeRequestVO) {
+    public void baseCreate(DevopsMergeRequestVO devopsMergeRequestVO, String token) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = voToDto(devopsMergeRequestVO);
         Long gitlabProjectId = devopsMergeRequestDTO.getGitlabProjectId();
         Long gitlabMergeRequestId = devopsMergeRequestDTO.getGitlabMergeRequestId();
@@ -103,7 +121,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
             }
         }
 
-        // 发送关于Merge Request的相关通知
+        // 发送关于Merge Request的相关通知以及saga
         String operatorUserLoginName = devopsMergeRequestVO.getUser() == null ? null : devopsMergeRequestVO.getUser().getUsername();
         Integer gitProjectId = TypeUtil.objToInteger(gitlabProjectId);
         if (MergeRequestState.OPENED.getValue().equals(devopsMergeRequestDTO.getState())) {
@@ -111,6 +129,21 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         } else if (MergeRequestState.CLOSED.getValue().equals(devopsMergeRequestDTO.getState())) {
             sendNotificationService.sendWhenMergeRequestClosed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
         } else if (MergeRequestState.MERGED.getValue().equals(devopsMergeRequestDTO.getState())) {
+            AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
+            DevopsMergeRequestPayload devopsMergeRequestPayload = new DevopsMergeRequestPayload();
+            devopsMergeRequestPayload.setAppServiceDTO(appServiceDTO);
+            devopsMergeRequestPayload.setDevopsMergeRequestVO(devopsMergeRequestVO);
+
+            producer.apply(StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(appServiceDTO.getProjectId())
+                            .withRefType("tag")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS),
+                    builder -> builder
+                            .withPayloadAndSerialize(devopsMergeRequestPayload)
+                            .withRefId(appServiceDTO.getId().toString()));
+
             sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
         }
     }

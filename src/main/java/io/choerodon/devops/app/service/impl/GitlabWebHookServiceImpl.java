@@ -61,7 +61,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
             case "merge_request":
                 DevopsMergeRequestVO devopsMergeRequestVO = JSONArray.parseObject(body, DevopsMergeRequestVO.class, FastjsonParserConfigProvider.getParserConfig());
                 setUserContext(devopsMergeRequestVO.getUser().getUsername());
-                devopsMergeRequestService.create(devopsMergeRequestVO);
+                devopsMergeRequestService.create(devopsMergeRequestVO, token);
                 break;
             case "push":
                 PushWebHookVO pushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
@@ -88,11 +88,11 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 devopsCiJobRecordService.update(jobWebHookVO);
                 break;
             case "tag_push":
-                String afterCommitSha = returnData.get("after").getAsString();
                 PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
+                String afterCommitSha = tagPushWebHookVO.getAfter();
                 //表示删除tag
                 if (DELETE_COMMIT.equals(afterCommitSha)) {
-                    devopsGitlabCommitService.deleteTag(tagPushWebHookVO,token);
+                    devopsGitlabCommitService.deleteTag(tagPushWebHookVO, token);
                 } else {
                     setUserContext(tagPushWebHookVO.getUserUserName());
                     devopsGitlabCommitService.create(tagPushWebHookVO, token);
