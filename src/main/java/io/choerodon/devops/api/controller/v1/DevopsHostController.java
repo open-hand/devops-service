@@ -120,7 +120,7 @@ public class DevopsHostController {
     @ApiOperation("测试多个主机连接状态/返回结果是所有连接不通过的主机id")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/multi/connection_test")
-    public ResponseEntity<Set<Long>> multiTestConnection(
+    public ResponseEntity<Set<Object>> multiTestConnection(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @RequestBody @Encrypt Set<Long> hostIds) {
@@ -277,13 +277,13 @@ public class DevopsHostController {
     }
 
     @ApiOperation("查询所有的测试主机信息,数据迁移使用")
-    @Permission(level = ResourceLevel.ORGANIZATION,permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @GetMapping("/list_distribute_host")
     public ResponseEntity<Page<DevopsHostDTO>> listDistributeHosts(
-        @ApiParam(value = "项目id", required = true)
-        @PathVariable("project_id") Long projectId,
-        @ApiIgnore PageRequest pageRequest
-        ){
-            return Results.success(devopsHostService.listDistributionTestHosts(pageRequest));
-        }
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiIgnore PageRequest pageRequest
+    ) {
+        return Results.success(devopsHostService.listDistributionTestHosts(pageRequest));
+    }
 }

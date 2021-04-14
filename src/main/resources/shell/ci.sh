@@ -272,6 +272,7 @@ function saveJarMetadata() {
 ############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ###############################
 function trivyScanImage() {
   which trivy > /dev/null || echo "cibase不包含trivy指令，请升级"
+  export TRIVY_INSECURE='true'
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
   trivy image  --skip-update -f json -o results-${CI_COMMIT_TAG}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
