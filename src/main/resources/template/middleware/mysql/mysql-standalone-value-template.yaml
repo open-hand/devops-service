@@ -3,11 +3,6 @@
 auth:
   # root用户密码
   rootPassword: {{ password }}
-  # 初始创建数据库名
-  database: ""
-  # 创建一个mysql用户（选填）
-  username: ""
-  password: ""
 
 primary:
   configuration: |-
