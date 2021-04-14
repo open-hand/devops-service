@@ -1172,7 +1172,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public Set<Object> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
 
-        CompareResultDTO diffs = gitlabServiceClientOperator.getDiffs(appServiceDTO.getGitlabProjectId(), from, to);
+        CompareResultDTO diffs = gitlabServiceClientOperator.queryCompareResult(appServiceDTO.getGitlabProjectId(), from, to);
 
         Set<String> commitSha = diffs.getCommits().stream().map(CommitDTO::getId).collect(Collectors.toSet());
 

@@ -682,18 +682,4 @@ public interface GitlabServiceClient {
             @RequestParam Integer projectId,
             @ApiParam(value = "MR Iid", required = true)
             @RequestParam Integer iid);
-
-    /**
-     * 项目下获取diffs
-     *
-     * @param projectId        项目id
-     * @param gitlabTransferVO 分支信息
-     * @return CompareResults
-     */
-    @ApiOperation(value = "项目下获取diffs")
-    @PostMapping(value = "/v1/projects/{projectId}/repository/file/diffs")
-    ResponseEntity<String> getDiffs(
-            @ApiParam(value = "项目id", required = true) @PathVariable Integer projectId,
-            @ApiParam(value = "分支信息", required = true)
-            @RequestBody GitlabTransferVO gitlabTransferVO);
 }
