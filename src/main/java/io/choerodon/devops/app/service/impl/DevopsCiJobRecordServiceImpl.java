@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +18,11 @@ import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -39,6 +42,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private DevopsCiJobService devopsCiJobService;
+    @Autowired
+    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
 
     public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
                                         @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
@@ -125,6 +130,10 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
             recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
+            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
+            devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());
+            DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
+            recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
         }
 
         devopsCiJobRecordMapper.insertSelective(recordDTO);
