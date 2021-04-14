@@ -556,7 +556,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 }
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
                 if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())) {
-                    if (!StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
                         CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
                         List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
                         if (!CollectionUtils.isEmpty(ciConfigVOConfig)) {
