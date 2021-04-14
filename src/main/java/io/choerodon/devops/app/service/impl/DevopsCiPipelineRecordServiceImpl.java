@@ -250,7 +250,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordMapper.insertSelective(devopsCiPipelineRecordDTO);
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
-            saveJobRecords(pipelineWebHookVO, pipelineRecordId);
+            saveJobRecords(pipelineWebHookVO, pipelineRecordId, devopsCiPipelineDTO.getId());
 
             // 保存流水线记录关系
             DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
@@ -272,7 +272,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 更新job状态
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
-            saveJobRecords(pipelineWebHookVO, pipelineRecordId);
+            saveJobRecords(pipelineWebHookVO, pipelineRecordId, devopsCiPipelineDTO.getId());
         }
         if (pipelineWebHookVO.getObjectAttributes().getStatus().equals(JobStatusEnum.FAILED.value())) {
             sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(),
@@ -280,7 +280,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId) {
+    private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId, Long cipipelineId) {
         pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
             DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
             if (devopsCiJobRecordDTO == null) {
@@ -297,6 +297,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 devopsCiJobRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
                 devopsCiJobRecordDTO.setMetadata(ciJobWebHookVO.getMetadata());
+                fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, cipipelineId);
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
@@ -315,6 +316,36 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 }
             }
         });
+    }
+
+    private void fillMavenSettingId(DevopsCiJobRecordDTO devopsCiJobRecordDTO, CiJobWebHookVO ciJobWebHookVO, Long cipipelineId) {
+        //一条流水线下stage的名字不能相同
+        DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
+        devopsCiStageDTO.setName(ciJobWebHookVO.getStage());
+        devopsCiStageDTO.setCiPipelineId(cipipelineId);
+        DevopsCiStageDTO ciStageDTO = devopsCiStageMapper.selectOne(devopsCiStageDTO);
+        if (!Objects.isNull(ciStageDTO)) {
+            //找到stageId 和job name 查询唯一的job
+            DevopsCiJobDTO jobDTO = new DevopsCiJobDTO();
+            jobDTO.setName(ciJobWebHookVO.getName());
+            jobDTO.setCiStageId(ciStageDTO.getId());
+            //流水线中阶段名字唯一，阶段内的job名字唯一
+            DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectOne(jobDTO);
+            if (!Objects.isNull(devopsCiJobDTO)) {
+                DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
+                devopsCiMavenSettingsDTO.setCiJobId(devopsCiJobDTO.getId());
+                DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
+
+                if (!Objects.isNull(ciMavenSettingsDTO)) {
+                    devopsCiJobRecordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
+                } else {
+                    LOGGER.debug("ciMavenSettingsDTO is null , jobId {}", devopsCiJobDTO.getId());
+                }
+            } else {
+                LOGGER.debug("job is null,name {}, stageId {}", ciJobWebHookVO.getName(), ciStageDTO.getId());
+            }
+
+        }
     }
 
     @Override
