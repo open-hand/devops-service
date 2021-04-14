@@ -228,7 +228,7 @@ public class DevopsGitController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("获取服务两个tag之间的issueId列表")
     @GetMapping("/tags/issue_ids")
-    public ResponseEntity<Set<Long>> getIssueIdsBetweenTags(
+    public ResponseEntity<Set<Object>> getIssueIdsBetweenTags(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务id", required = true)

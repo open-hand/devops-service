@@ -219,11 +219,12 @@ public interface DevopsGitService {
 
     /**
      * 获取服务两个tag之间的issueId列表
-     * @param projectId 项目id
+     *
+     * @param projectId    项目id
      * @param appServiceId 应用服务id
-     * @param from 前一个tag
-     * @param to 后一个tag
+     * @param from         前一个tag
+     * @param to           后一个tag
      * @return 所有的issueId
      */
-    Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
+    Set<Object> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
 }
