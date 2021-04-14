@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -487,5 +488,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<List<Note>> listByMergeRequestIid(Integer projectId, Integer iid) {
         throw new CommonException("error.query.mr.notes");
+    }
+
+    @Override
+    public ResponseEntity<String> getDiffs(Integer projectId, GitlabTransferVO gitlabTransferVO) {
+        throw new CommonException("error.query.diff");
     }
 }

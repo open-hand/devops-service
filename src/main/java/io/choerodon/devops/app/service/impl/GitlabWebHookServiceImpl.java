@@ -89,11 +89,11 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 break;
             case "tag_push":
                 String afterCommitSha = returnData.get("after").getAsString();
+                PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
                 //表示删除tag
                 if (DELETE_COMMIT.equals(afterCommitSha)) {
-                    devopsGitlabCommitService.deleteTag(pushWebHookVO,token);
+                    devopsGitlabCommitService.deleteTag(tagPushWebHookVO,token);
                 } else {
-                    PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
                     setUserContext(tagPushWebHookVO.getUserUserName());
                     devopsGitlabCommitService.create(tagPushWebHookVO, token);
                 }

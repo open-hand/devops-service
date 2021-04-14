@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.CommitFormUserVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsGitlabTagPayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
@@ -124,19 +125,24 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    @Saga(code = DEVOPS_GIT_TAG_DELETE, description = "删除tag", inputSchemaClass = PushWebHookVO.class)
+    @Saga(code = DEVOPS_GIT_TAG_DELETE, description = "删除tag", inputSchemaClass = DevopsGitlabTagPayload.class)
     public void deleteTag(PushWebHookVO pushWebHookVO, String token) {
-        AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
+
+        DevopsGitlabTagPayload devopsGitlabTagPayload = new DevopsGitlabTagPayload();
+        devopsGitlabTagPayload.setAppServiceDTO(appServiceDTO);
+        devopsGitlabTagPayload.setPushWebHookVO(pushWebHookVO);
+
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(applicationDTO.getProjectId())
-                        .withRefType("gitlab")
+                        .withSourceId(appServiceDTO.getProjectId())
+                        .withRefType("tag")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_GIT_TAG_DELETE),
                 builder -> builder
-                        .withPayloadAndSerialize(pushWebHookVO)
-                        .withRefId(applicationDTO.getId().toString()));
+                        .withPayloadAndSerialize(devopsGitlabTagPayload)
+                        .withRefId(appServiceDTO.getId().toString()));
     }
 
     @Override

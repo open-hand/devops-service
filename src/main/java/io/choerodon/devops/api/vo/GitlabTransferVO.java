@@ -132,21 +132,7 @@ public class GitlabTransferVO {
     }
 
 
-    /**
-     * 创建user
-     *
-     * @return
-     */
-    private GitlabUserReqDTO gitlabUserReqDTO;
     private String password;
-
-    public GitlabUserReqDTO getGitlabUserReqDTO() {
-        return gitlabUserReqDTO;
-    }
-
-    public void setGitlabUserReqDTO(GitlabUserReqDTO gitlabUserReqDTO) {
-        this.gitlabUserReqDTO = gitlabUserReqDTO;
-    }
 
     public String getPassword() {
         return password;
