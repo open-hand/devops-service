@@ -583,14 +583,18 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
                             fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
                         }
-                        // 是否有镜像的扫描结果 有则展示
-                        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                        devopsImageScanResultDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
-                        if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
-                            devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
-                        } else {
-                            devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
+                        // 是否包含docker构建步骤
+                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+                            //是否本次流水线有镜像的扫描结果 有则展示
+                            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                            devopsImageScanResultDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+                            if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
+                                devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
+                            } else {
+                                devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
+                            }
                         }
+
                     }
                 }
             });
