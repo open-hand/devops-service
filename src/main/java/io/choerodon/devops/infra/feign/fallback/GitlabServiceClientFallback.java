@@ -489,9 +489,4 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<Note>> listByMergeRequestIid(Integer projectId, Integer iid) {
         throw new CommonException("error.query.mr.notes");
     }
-
-    @Override
-    public ResponseEntity<String> getDiffs(Integer projectId, GitlabTransferVO gitlabTransferVO) {
-        throw new CommonException("error.query.diff");
-    }
 }

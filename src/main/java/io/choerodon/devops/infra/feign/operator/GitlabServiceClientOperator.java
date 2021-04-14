@@ -1153,11 +1153,4 @@ public class GitlabServiceClientOperator {
     public List<Note> listByMergeRequestIid(Integer gitlabProjectId, Integer mrIiD) {
         return gitlabServiceClient.listByMergeRequestIid(gitlabProjectId, mrIiD).getBody();
     }
-
-    public CompareResultDTO getDiffs(Integer gitlabProjectId, String from, String to) {
-        GitlabTransferVO gitlabTransferVO = new GitlabTransferVO();
-        gitlabTransferVO.setFrom(from);
-        gitlabTransferVO.setTo(to);
-        return ResponseUtils.getResponse(gitlabServiceClient.getDiffs(gitlabProjectId, gitlabTransferVO), CompareResultDTO.class);
-    }
 }
