@@ -68,7 +68,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String REDIS_CONFIGMAP_VALUE_TEMPLATE = "  %s %s\n";
 
-    private static final String MYSQL_STANDALONE_PERSISTENCE_TEMPLATE = "  existingClaim: %s";
+    private static final String MYSQL_STANDALONE_PERSISTENCE_TEMPLATE = "    existingClaim: %s";
 
     private static final String MYSQL_CONFIGMAP_VALUE_TEMPLATE = "    %s=%s\n";
 

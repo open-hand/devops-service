@@ -42,6 +42,6 @@ primary:
   ## persistence:
   ##  enabled: true
   ##  existingClaim: [pvc-name]
-persistence:
-  enabled: {{ persistence-enabled }}
+  persistence:
+    enabled: {{ persistence-enabled }}
 {{ persistence-info }}
