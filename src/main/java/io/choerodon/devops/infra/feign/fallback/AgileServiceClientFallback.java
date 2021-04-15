@@ -25,4 +25,9 @@ public class AgileServiceClientFallback implements AgileServiceClient {
     public ResponseEntity<String> getActiveSprint(Long projectId, Long organizationId) {
         throw new CommonException("error.active.sprint.get");
     }
+
+    @Override
+    public ResponseEntity<String> queryIssuesByIds(List<Long> issueIds) {
+        throw new CommonException("error.issue.get.by.ids");
+    }
 }
