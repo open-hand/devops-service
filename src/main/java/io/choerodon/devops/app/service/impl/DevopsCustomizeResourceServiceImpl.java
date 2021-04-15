@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResourceService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCustomizeResourceServiceImpl.class);
 
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
@@ -72,6 +75,8 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -436,10 +441,15 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     @Override
     public void checkExist(Long envId, String kind, String name) {
-        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO(envId, kind, name);
-        if (devopsCustomizeResourceMapper.selectOne(devopsCustomizeResourceDTO) != null) {
+        if (selectCount(envId, kind, name) > 0) {
             throw new CommonException("error.kind.name.exist");
         }
+    }
+
+    @Override
+    public int selectCount(Long envId, String kind, String name) {
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO(envId, kind, name);
+        return devopsCustomizeResourceMapper.selectCount(devopsCustomizeResourceDTO);
     }
 
     @Override
@@ -459,5 +469,37 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         if (!resourceContentIds.isEmpty()) {
             devopsCustomizeResourceContentService.baseDeleteByContentIds(resourceContentIds);
         }
+    }
+
+    @Override
+    public boolean checkDescribePermission(Long projectId, Long clusterId, String envCode, Long userId, String kind, String resourceName) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, envCode);
+        if (devopsEnvironmentDTO == null) {
+            LOGGER.info("The env with clusterId {} and envCode {} doesn't exist", clusterId, envCode);
+            return false;
+        }
+
+        if (!devopsEnvironmentDTO.getProjectId().equals(projectId)) {
+            LOGGER.info("The provided project id {} doesn't equal to env's {}", projectId, devopsEnvironmentDTO.getProjectId());
+            return false;
+        }
+
+        Long envId = devopsEnvironmentDTO.getId();
+
+        // 校验用户有环境的权限
+        try {
+            devopsEnvUserPermissionService.checkEnvDeployPermission(userId, devopsEnvironmentDTO);
+        } catch (Exception ex) {
+            LOGGER.info("User {} is not permitted to the env with id {}", userId, envId);
+            return false;
+        }
+
+        // 校验资源存在
+        if (selectCount(envId, kind, resourceName) == 0) {
+            LOGGER.info("Custom resource with name {} and kind {} doesn't exist in env with id {}", resourceName, kind, envId);
+            return false;
+        }
+
+        return true;
     }
 }

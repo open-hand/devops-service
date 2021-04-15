@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsEnvUserVO;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -24,6 +25,8 @@ public interface DevopsEnvUserPermissionService {
     List<DevopsEnvUserPermissionDTO> listByUserId(Long userId);
 
     void checkEnvDeployPermission(Long userId, Long envId);
+
+    void checkEnvDeployPermission(Long userId, DevopsEnvironmentDTO devopsEnvironmentDTO);
 
     void baseCreate(DevopsEnvUserPermissionDTO devopsEnvUserPermissionE);
 
