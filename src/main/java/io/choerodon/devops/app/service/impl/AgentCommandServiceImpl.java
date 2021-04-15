@@ -92,6 +92,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
+    @Value("${agent.repoConcurrencySyncSize:1}")
+    private Integer repoConcurrencySyncSize;
 
 
     @Override
@@ -295,6 +297,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     @Override
     public void initCluster(Long clusterId, WebSocketSession webSocketSession) {
         GitConfigVO gitConfigVO = gitUtil.getGitConfig(clusterId);
+        gitConfigVO.setRepoConcurrencySyncSize(repoConcurrencySyncSize);
         AgentMsgVO msg = new AgentMsgVO();
         msg.setPayload(JsonHelper.marshalByJackson(gitConfigVO));
         msg.setType(AGENT_INIT);
