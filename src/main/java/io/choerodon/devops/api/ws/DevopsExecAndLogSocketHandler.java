@@ -3,10 +3,10 @@ package io.choerodon.devops.api.ws;
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
 
 import java.util.Map;
+import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -15,6 +15,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.app.service.AgentCommandService;
+import io.choerodon.devops.app.service.DevopsEnvPodService;
 
 /**
  * Created by Sheep on 2019/7/25.
@@ -23,7 +24,9 @@ import io.choerodon.devops.app.service.AgentCommandService;
 public class DevopsExecAndLogSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(DevopsExecAndLogSocketHandler.class);
 
-    @Autowired
+    @Resource
+    private DevopsEnvPodService devopsEnvPodService;
+    @Resource
     private AgentCommandService agentCommandService;
 
 
@@ -36,8 +39,20 @@ public class DevopsExecAndLogSocketHandler {
         WebSocketTool.checkContainerName(attributes);
         WebSocketTool.checkLogId(attributes);
         WebSocketTool.checkClusterId(attributes);
+        WebSocketTool.checkProjectId(attributes);
 
-        return true;
+        return checkUserPermission(attributes);
+    }
+
+    private boolean checkUserPermission(Map<String, Object> attributes) {
+        // 校验用户的权限
+        Long projectId = Long.parseLong(String.valueOf(attributes.get(PROJECT_ID)));
+        Long clusterId = Long.parseLong(String.valueOf(attributes.get(CLUSTER_ID)));
+        Long userId = Long.parseLong(String.valueOf(attributes.get(USER_ID)));
+        String envCode = String.valueOf(attributes.get(ENV));
+        String podName = String.valueOf(attributes.get(POD_NAME));
+
+        return devopsEnvPodService.checkLogAndExecPermission(projectId, clusterId, envCode, userId, podName);
     }
 
     public void afterConnectionEstablished(WebSocketSession webSocketSession) {

@@ -83,6 +83,12 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Override
     public void checkEnvDeployPermission(Long userId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        checkEnvDeployPermission(userId, devopsEnvironmentDTO);
+    }
+
+    @Override
+    public void checkEnvDeployPermission(Long userId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        Long envId = devopsEnvironmentDTO.getId();
         // 判断环境是否跳过权限校验
         if (Boolean.TRUE.equals(devopsEnvironmentDTO.getSkipCheckPermission())) {
             return;

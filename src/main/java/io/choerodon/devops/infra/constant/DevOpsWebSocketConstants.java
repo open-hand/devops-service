@@ -16,6 +16,8 @@ public final class DevOpsWebSocketConstants {
     public static final String AGENT_DESCRIBE = "agent_describe";
     public static final String AGENT_POLARIS = "agent_polaris";
     public static final String CLUSTER_ID = "clusterId";
+    public static final String PROJECT_ID = "projectId";
+    public static final String USER_ID = "userId";
     public static final String COLON = ":";
     public static final String POD_NAME = "podName";
     public static final String CONTAINER_NAME = "containerName";
@@ -47,6 +49,11 @@ public final class DevOpsWebSocketConstants {
     public static final String KUBERNETES_GET_LOGS = "kubernetes_get_logs";
 
     public static final String EXEC_COMMAND = "kubernetes_exec";
+
+    /**
+     * 前端传入的token
+     */
+    public static final String OAUTH_TOKEN = "oauthToken";
 
     private DevOpsWebSocketConstants() {
     }

@@ -57,4 +57,16 @@ public interface DevopsEnvPodService {
     void deleteEnvPodById(Long projectId, Long envId, Long podId);
 
     List<PodResourceDetailsDTO> queryResourceDetailsByInstanceId(Long instanceId);
+
+    /**
+     * 校验通过websocket对pod进行log或者exec指令有没有权限
+     *
+     * @param projectId 项目id
+     * @param clusterId 集群id
+     * @param envCode   环境code
+     * @param userId    用户id
+     * @param podName   pod名称
+     * @return true表示有权限
+     */
+    boolean checkLogAndExecPermission(Long projectId, Long clusterId, String envCode, Long userId, String podName);
 }
