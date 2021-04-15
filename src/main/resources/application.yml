@@ -67,7 +67,7 @@ choerodon:
     service: choerodon-asgard
     consumer:
       core-thread-num: 20
-      max-thread-num:  20 # 消费线程数
+      max-thread-num: 20 # 消费线程数
       poll-interval: 3 # 拉取消息的间隔(秒)，默认1秒
       enabled: true # 是否启用消费端
   schedule:
@@ -82,6 +82,7 @@ agent:
   version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
   repoUrl: "helm.example.com" # 存放agent的地址，用于安装
+  repoConcurrencySyncSize: 1 # Agent初始化repo时并发数
   # CertManager相关的配置
   cert-manager:
     # 存放CertManager的chart的仓库地址，用于安装
@@ -149,10 +150,10 @@ asgard-servie:
 
 logging:
   level:
-#    io.choerodon.event.consumer: debug
-#    com.zaxxer: debug
+    #    io.choerodon.event.consumer: debug
+    #    com.zaxxer: debug
     io.choerodon.feign: warn
-#    io.choerodon.devops.app.service: debug
+  #    io.choerodon.devops.app.service: debug
   config: classpath:logback-spring.xml
 
 

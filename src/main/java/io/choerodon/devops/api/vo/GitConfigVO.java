@@ -11,6 +11,8 @@ public class GitConfigVO {
     private String agentName;
     @ApiModelProperty("集群已经安装的CertManager的版本/未安装的情况下就是空")
     private String certManagerVersion;
+    @ApiModelProperty("Agent初始化repo时并发数")
+    private Integer repoConcurrencySyncSize;
 
     public String getGitHost() {
         return gitHost;
@@ -42,5 +44,13 @@ public class GitConfigVO {
 
     public void setCertManagerVersion(String certManagerVersion) {
         this.certManagerVersion = certManagerVersion;
+    }
+
+    public Integer getRepoConcurrencySyncSize() {
+        return repoConcurrencySyncSize;
+    }
+
+    public void setRepoConcurrencySyncSize(Integer repoConcurrencySyncSize) {
+        this.repoConcurrencySyncSize = repoConcurrencySyncSize;
     }
 }

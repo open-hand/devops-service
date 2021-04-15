@@ -112,6 +112,8 @@ env:
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     # cert-manager 的 helm chart 仓库地址
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/c7n/
+    # agent初始化repo时并发数
+    AGENT_REPOCONCURRENCYSYNCSIZE: 1
 
     # 忽略校验的接口路径
     CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
