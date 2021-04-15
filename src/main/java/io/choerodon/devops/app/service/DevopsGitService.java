@@ -226,5 +226,5 @@ public interface DevopsGitService {
      * @param to           后一个tag
      * @return 所有的issueId
      */
-    Set<Object> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
+    Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
 }

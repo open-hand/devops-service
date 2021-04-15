@@ -385,7 +385,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 if (t.getIssueId() != null) {
                     issueDTO = finalIssues.get(t.getIssueId());
                     ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
-                    if (!Objects.isNull(dto)){
+                    if (!Objects.isNull(dto)) {
                         if (dto.getId().longValue() == currentProjectId.longValue()) {
                             projectName = dto.getName() + "(本项目)";
                         } else {
@@ -1172,13 +1172,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Set<Object> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
+    public Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
 
         CompareResultDTO diffs = gitlabServiceClientOperator.queryCompareResult(appServiceDTO.getGitlabProjectId(), from, to);
 
         Set<String> commitSha = diffs.getCommits().stream().map(CommitDTO::getId).collect(Collectors.toSet());
 
-        return encryptService.encryptIds(devopsGitlabCommitService.listIssueIdsByCommitSha(commitSha));
+        if (!CollectionUtils.isEmpty(commitSha)) {
+            return devopsGitlabCommitService.listIssueIdsByCommitSha(commitSha);
+        } else {
+            return new HashSet<>();
+        }
     }
 }
