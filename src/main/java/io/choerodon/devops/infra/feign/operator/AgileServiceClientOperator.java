@@ -39,6 +39,12 @@ public class AgileServiceClientOperator {
         }, "error.issues.list.by.id");
     }
 
+    public List<IssueDTO> listIssueByIdsWithProjectId(List<Long> ids) {
+        return FeignClientUtils.doRequest(() -> agileServiceClient.queryIssuesByIds(ids), new TypeReference<List<IssueDTO>>() {
+        }, "error.issues.list.by.ids");
+    }
+
+
     public SprintDTO getActiveSprint(Long projectId, Long organizationId) {
         try {
             return FeignClientUtils.doRequest(() -> agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class, "error.active.sprint.get");

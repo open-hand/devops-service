@@ -309,7 +309,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId) {
         try {
-            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
+//            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
         } catch (GitlabAccessInvalidException e) {
             return null;
         }
@@ -324,12 +324,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
-        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
-            MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-            if (memberDTO == null) {
-                throw new CommonException("error.user.not.in.gitlab.project");
-            }
-        }
+//        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
+//            MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+//            if (memberDTO == null) {
+//                throw new CommonException("error.user.not.in.gitlab.project");
+//            }
+//        }
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
@@ -361,7 +361,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         // 读取敏捷问题列表可能会失败，但是不希望影响查询分支逻辑，所以捕获异常
         try {
             if (!CollectionUtils.isEmpty(issuedIds)) {
-                issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+                // 敏捷需要提供接口 根据ids查询Issue  返回 内容要带projectId
+                issues = agileServiceClientOperator.listIssueByIdsWithProjectId(issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
             }
         } catch (Exception e) {
             LOGGER.error("query agile issue failed:{}", e.getMessage());
@@ -370,7 +371,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<Long, IssueDTO> finalIssues = issues;
         Map<Long, ProjectDTO> projectDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(issues)) {
-            Set<Long> projectIds = issues.keySet();
+            Set<Long> projectIds = issues.values().stream().map(IssueDTO::getProjectId).collect(Collectors.toSet());
             projectDTOMap = baseServiceClientOperator.queryProjectsByIds(projectIds).stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
         }
 
