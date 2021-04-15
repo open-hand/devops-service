@@ -309,7 +309,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId) {
         try {
-//            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
         } catch (GitlabAccessInvalidException e) {
             return null;
         }
@@ -324,12 +324,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
-//        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
-//            MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-//            if (memberDTO == null) {
-//                throw new CommonException("error.user.not.in.gitlab.project");
-//            }
-//        }
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
+            MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null) {
+                throw new CommonException("error.user.not.in.gitlab.project");
+            }
+        }
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
@@ -380,16 +380,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<Long, ProjectDTO> finalProjectDTOMap = projectDTOMap;
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
-            String projectName = null;
             if (!CollectionUtils.isEmpty(finalIssues)) {
                 if (t.getIssueId() != null) {
                     issueDTO = finalIssues.get(t.getIssueId());
                     ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
-                    if (!Objects.isNull(dto)){
+                    if (!Objects.isNull(dto)) {
                         if (dto.getId().longValue() == projectId.longValue()) {
-                            projectName = dto.getName() + "(本项目)";
+                            issueDTO.setProjectName(dto.getName() + "(本项目)");
+                            issueDTO.setProjectId(dto.getId());
                         } else {
-                            projectName = dto.getName();
+                            issueDTO.setProjectName(dto.getName());
+                            issueDTO.setProjectId(dto.getId());
                         }
                     }
                 }
@@ -401,7 +402,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Long lastCommitUserId = lastCommitIamUserIdAndGitlabUserIdMap.get(t.getLastCommitUser());
             IamUserDTO commitUserDTO = lastCommitUserId == null ? null : lastCommitUserDTOMap.get(lastCommitUserId);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())), projectName);
+            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())));
         }).collect(Collectors.toList()));
         return devopsBranchVOPageInfo;
     }
@@ -1044,7 +1045,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO
-            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId, String projectName) {
+            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
@@ -1067,8 +1068,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 createUserRealName,
                 devopsBranchDTO.getStatus(),
                 devopsBranchDTO.getErrorMessage(),
-                sagaInstanceId,
-                projectName);
+                sagaInstanceId);
     }
 
     private void deleteBranchSync(PushWebHookVO pushWebHookVO, Long appServiceId) {

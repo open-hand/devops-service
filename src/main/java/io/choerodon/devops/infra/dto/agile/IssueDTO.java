@@ -43,6 +43,16 @@ public class IssueDTO {
 
     private String epicName;
 
+    private String projectName;
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
     public Long getIssueId() {
         return issueId;
     }
