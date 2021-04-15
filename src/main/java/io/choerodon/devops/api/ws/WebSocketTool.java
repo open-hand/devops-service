@@ -240,17 +240,23 @@ public class WebSocketTool {
         }
         // 获取配置
         WebSocketConfig config = ApplicationContextHelper.getContext().getBean(WebSocketConfig.class);
-        // 请求 oauth 服务获取用户信息
-        CustomUserDetails customUserDetails = DefaultSocketHandler.getAuthentication(token, config.getOauthUrl());
-        if (customUserDetails == null || customUserDetails.getUserId() == null) {
-            LOGGER.info("Ws: user authentication failed, token is invalid");
+
+        try {
+            // 请求 oauth 服务获取用户信息
+            CustomUserDetails customUserDetails = DefaultSocketHandler.getAuthentication(token, config.getOauthUrl());
+            if (customUserDetails == null || customUserDetails.getUserId() == null) {
+                LOGGER.info("Ws: user authentication failed, token is invalid");
+                return false;
+            }
+
+            // 将解析的用户id放入到attributes中
+            LOGGER.info("User with name {} and id {} connect from websocket", customUserDetails.getRealName(), customUserDetails.getUserId());
+            attributes.put(USER_ID, customUserDetails.getUserId());
+            return true;
+        } catch (Exception ex) {
+            LOGGER.debug("Failed to get user info due to ex", ex);
             return false;
         }
-
-        // 将解析的用户id放入到attributes中
-        LOGGER.info("User with name {} and id {} connect from websocket", customUserDetails.getRealName(), customUserDetails.getUserId());
-        attributes.put(USER_ID, customUserDetails.getUserId());
-        return true;
     }
 
     public static void preProcessAttributeAboutKeyEncryption(Map<String, Object> attributes) {
