@@ -74,6 +74,8 @@ public interface DevopsPvcService {
 
     void baseUpdate(DevopsPvcDTO devopsPvcDTO);
 
+    void setUsed(Long envId, String pvcName);
+
     DevopsPvcDTO queryById(Long pvcId);
 
     /**

@@ -40,6 +40,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareRedisDeployP
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
+import io.choerodon.devops.app.service.DevopsPvcService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
@@ -107,6 +108,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private TransactionalProducer producer;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private DevopsPvcService devopsPvcService;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -345,9 +348,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO();
         for (DevopsHostDTO hostDTO : devopsHostDTOList) {
             // 如果内网ip不存在，使用公网ip
-            String ip=StringUtils.isEmpty(hostDTO.getPrivateIp())?hostDTO.getHostIp():hostDTO.getPrivateIp();
+            String ip = StringUtils.isEmpty(hostDTO.getPrivateIp()) ? hostDTO.getHostIp() : hostDTO.getPrivateIp();
             // 如果内网端口不存在，使用公网端口
-            Integer port=hostDTO.getPrivatePort()==null?hostDTO.getSshPort():hostDTO.getPrivatePort();
+            Integer port = hostDTO.getPrivatePort() == null ? hostDTO.getSshPort() : hostDTO.getPrivatePort();
             if (HostAuthType.ACCOUNTPASSWORD.value().equals(hostDTO.getAuthType())) {
                 middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), ip, port, hostDTO.getUsername(), hostDTO.getPassword()))
                         .append(System.lineSeparator());
@@ -441,6 +444,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         configuration.put("{{ usePassword }}", "true");
 
         if (!StringUtils.isEmpty(middlewareRedisEnvDeployVO.getPvcName())) {
+            // 将对应pvc设为已使用状态
+            devopsPvcService.setUsed(middlewareRedisEnvDeployVO.getEnvironmentId(), middlewareRedisEnvDeployVO.getPvcName());
             configuration.put("{{ persistence-enabled }}", "true");
             configuration.put("{{ persistence-info }}", String.format(STANDALONE_PERSISTENCE_TEMPLATE, middlewareRedisEnvDeployVO.getPvcName()));
         } else {

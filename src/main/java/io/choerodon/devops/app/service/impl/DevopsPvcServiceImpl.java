@@ -1,6 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.math.BigDecimal;
+import java.util.*;
+
 import com.google.gson.Gson;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.models.V1ResourceRequirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -27,22 +44,6 @@ import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
-import io.kubernetes.client.models.V1ResourceRequirements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
@@ -289,6 +290,16 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         if (devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO) != 1) {
             throw new CommonException("error.pvc.update.error");
         }
+    }
+
+    @Override
+    public void setUsed(Long envId, String pvcName) {
+        DevopsPvcDTO searchDTO = new DevopsPvcDTO();
+        searchDTO.setEnvId(envId);
+        searchDTO.setName(pvcName);
+        DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectOne(searchDTO);
+        devopsPvcDTO.setUsed(1);
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsPvcMapper, devopsPvcDTO, "error.update.pvc.used");
     }
 
     @Override
