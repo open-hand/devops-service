@@ -28,6 +28,15 @@ public interface DevopsEnvUserPermissionService {
 
     void checkEnvDeployPermission(Long userId, DevopsEnvironmentDTO devopsEnvironmentDTO);
 
+    /**
+     * 对于websocket的用户进行权限校验，有必要的话，要对用户校验是否有项目的权限
+     *
+     * @param userId               用户id
+     * @param devopsEnvironmentDTO 环境信息
+     * @return true 表示有权限
+     */
+    boolean userFromWebsocketHasPermission(Long userId, DevopsEnvironmentDTO devopsEnvironmentDTO);
+
     void baseCreate(DevopsEnvUserPermissionDTO devopsEnvUserPermissionE);
 
     List<DevopsEnvUserPermissionDTO> baseListByEnvId(Long envId);
