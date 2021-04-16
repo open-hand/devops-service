@@ -804,6 +804,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
+        LOGGER.info(">>>>>>>>>>>>>>>1.0当前触发流水线用户id{}>>>>>>>>>>>>>>>>>>", DetailsHelper.getUserDetails().getUserId());
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);

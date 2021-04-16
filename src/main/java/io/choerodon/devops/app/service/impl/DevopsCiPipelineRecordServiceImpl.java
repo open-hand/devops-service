@@ -834,6 +834,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineRecordDTO.setFinishedDate(pipeline.getFinished_at());
         pipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(pipeline.getDuration()));
         pipelineRecordDTO.setStatus(pipeline.getStatus().toValue());
+        LOGGER.info(">>>>>>>>>>>>>>>1.0当前触发流水线用户id{}>>>>>>>>>>>>>>>>>>", DetailsHelper.getUserDetails().getUserId());
         pipelineRecordDTO.setTriggerUserId(DetailsHelper.getUserDetails().getUserId());
         pipelineRecordDTO.setGitlabTriggerRef(pipeline.getRef());
         pipelineRecordDTO.setCommitSha(pipeline.getSha());
