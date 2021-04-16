@@ -240,6 +240,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         if (CommandType.CREATE.getType().equals(devopsPvcReqVO.getCommandType())) {
             devopsEnvCommandDTO.setCreatedBy(userId);
+            devopsPvcDTO.setUsed(0);
             Long pvcId = createPvcRecord(devopsPvcDTO).getId();
             devopsEnvCommandDTO.setObjectId(pvcId);
             devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
@@ -346,6 +347,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
         devopsPvcDTO.setAccessModes(devopsPvDTO.getAccessModes());
+        // 未使用状态
+        devopsPvcDTO.setUsed(0);
         return devopsPvcDTO;
     }
 
