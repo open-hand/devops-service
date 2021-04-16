@@ -315,9 +315,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         Long envId = devopsEnvironmentDTO.getId();
         // 校验用户有环境的权限
-        try {
-            devopsEnvUserPermissionService.checkEnvDeployPermission(userId, devopsEnvironmentDTO);
-        } catch (Exception ex) {
+        if (!devopsEnvUserPermissionService.userFromWebsocketHasPermission(userId, devopsEnvironmentDTO)) {
             logger.info("User {} is not permitted to the env with id {}", userId, envId);
             return false;
         }

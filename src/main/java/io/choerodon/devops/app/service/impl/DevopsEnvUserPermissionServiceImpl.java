@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -17,8 +18,10 @@ import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.UserProjectLabelVO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
+import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -101,6 +104,23 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
                 throw new CommonException("error.env.user.permission.get");
             }
         }
+    }
+
+    @Override
+    public boolean userFromWebsocketHasPermission(Long userId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        Long envId = devopsEnvironmentDTO.getId();
+        // 判断当前用户是否是项目所有者或者root，如果是，直接跳过校验，如果不是，校验环境权限
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(devopsEnvironmentDTO.getProjectId(), userId)) {
+            // 判断环境是否跳过权限校验
+            if (Boolean.TRUE.equals(devopsEnvironmentDTO.getSkipCheckPermission())) {
+                // 如果跳过校验，还要校验用户是否在项目下有角色
+                List<UserProjectLabelVO> roleLabels = baseServiceClientOperator.listRoleLabelsForUserInTheProject(userId, ArrayUtil.singleAsSet(devopsEnvironmentDTO.getProjectId()));
+                return !CollectionUtils.isEmpty(roleLabels) && !CollectionUtils.isEmpty(roleLabels.get(0).getRoleLabels());
+            }
+            DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO(envId, userId);
+            return devopsEnvUserPermissionMapper.selectCount(devopsEnvUserPermissionDO) > 0;
+        }
+        return true;
     }
 
     @Override
