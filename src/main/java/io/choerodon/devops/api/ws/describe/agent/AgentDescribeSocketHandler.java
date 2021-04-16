@@ -38,6 +38,9 @@ public class AgentDescribeSocketHandler extends AbstractSocketHandler {
         String frontSessionGroup = WebSocketTool.buildFrontGroup(key);
 
         keySocketSendHelper.sendByGroup(frontSessionGroup, "Describe", message.getPayload());
+        // 发送完一次消息后，断开与agent的连接
         WebSocketTool.closeSessionQuietly(session);
+        // 发送完一次消息后，断开与前端的连接
+        keySocketSendHelper.closeSessionByGroup(frontSessionGroup);
     }
 }
