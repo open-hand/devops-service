@@ -513,8 +513,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
-        devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
-        devopsCiPipelineRecordVO.setUsername(iamUserDTO.getRealName());
+        if (!Objects.isNull(iamUserDTO)){
+            devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
+            devopsCiPipelineRecordVO.setUsername(iamUserDTO.getRealName());
+        }
         devopsCiPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordDTO.getCreationDate());
 
         // 添加提交信息
@@ -834,7 +836,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineRecordDTO.setFinishedDate(pipeline.getFinished_at());
         pipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(pipeline.getDuration()));
         pipelineRecordDTO.setStatus(pipeline.getStatus().toValue());
-        LOGGER.info(">>>>>>>>>>>>>>>1.0当前触发流水线用户id{}>>>>>>>>>>>>>>>>>>", DetailsHelper.getUserDetails().getUserId());
         pipelineRecordDTO.setTriggerUserId(DetailsHelper.getUserDetails().getUserId());
         pipelineRecordDTO.setGitlabTriggerRef(pipeline.getRef());
         pipelineRecordDTO.setCommitSha(pipeline.getSha());
