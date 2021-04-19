@@ -692,7 +692,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<Long> distinctIds = userIds.stream().distinct().collect(toList());
 
             Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
-            List<String> refIds = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> String.valueOf(appServiceDTO.getId())).collect(toList());
+            // 收集失败的应用服务的id
+            List<String> refIds = applicationServiceDTOS.getContent().stream().filter(app -> Boolean.TRUE.equals(app.getFailed())).map(appServiceDTO -> String.valueOf(appServiceDTO.getId())).collect(toList());
             List<AppServiceRepVO> appServiceRepVOS = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
             if (!CollectionUtils.isEmpty(refIds)) {
                 Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APPSERVICE, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE));
