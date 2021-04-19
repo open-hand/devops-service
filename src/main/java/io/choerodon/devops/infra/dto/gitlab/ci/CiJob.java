@@ -1,8 +1,11 @@
 package io.choerodon.devops.infra.dto.gitlab.ci;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.infra.annotation.YamlProperty;
 
 /**
  * @author zmf
@@ -13,6 +16,10 @@ public class CiJob {
     private String image;
     @ApiModelProperty("所属stage")
     private String stage;
+    @YamlProperty(value = "after_script")
+    @JsonProperty("after_script")
+    @ApiModelProperty("after_script")
+    private List<String> afterScript;
     @ApiModelProperty("包含的脚本")
     private List<String> script;
     @ApiModelProperty("匹配条件")
@@ -21,6 +28,23 @@ public class CiJob {
     private OnlyExceptPolicy except;
     @ApiModelProperty("缓存配置")
     private Cache cache;
+    private Services services;
+
+    public List<String> getAfterScript() {
+        return afterScript;
+    }
+
+    public void setAfterScript(List<String> afterScript) {
+        this.afterScript = afterScript;
+    }
+
+    public Services getServices() {
+        return services;
+    }
+
+    public void setServices(Services services) {
+        this.services = services;
+    }
 
     public String getStage() {
         return stage;

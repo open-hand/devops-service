@@ -1360,6 +1360,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setImage(job.getImage());
                     }
                     ciJob.setStage(stageVO.getName());
+                    //增加afterScript
+                    ciJob.setAfterScript(buildAfterScript(job));
+                    //增加services
+                    ciJob.setServices(buildServices(job));
                     ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
@@ -1369,6 +1373,44 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
         buildBeforeScript(gitlabCi, ciCdPipelineVO.getVersionName());
         return gitlabCi;
+    }
+
+    private List<String> buildAfterScript(DevopsCiJobVO jobVO) {
+        List<String> afterScript = new ArrayList<>();
+        if (isContainDokcerBuild(jobVO)) {
+            afterScript.add("rm -rf /${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/${PROJECT_NAME}.tar");
+            return afterScript;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+
+
+    private Services buildServices(DevopsCiJobVO jobVO) {
+        Services services = new Services();
+        if (isContainDokcerBuild(jobVO)) {
+            services.setName(defaultCiImage);
+            services.setAlias("kaniko");
+            return services;
+        } else {
+            return null;
+        }
+    }
+
+    private boolean isContainDokcerBuild(DevopsCiJobVO jobVO) {
+        if (Objects.isNull(jobVO)) {
+            return false;
+        }
+        if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
+            CiConfigVO ciConfigVO = jobVO.getConfigVO();
+            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+                return false;
+            }
+            if (CollectionUtils.isEmpty(ciConfigVO.getConfig().stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType().trim(), CiJobScriptTypeEnum.DOCKER.getType())).collect(Collectors.toList()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
