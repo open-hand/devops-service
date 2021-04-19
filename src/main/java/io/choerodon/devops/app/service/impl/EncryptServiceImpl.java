@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -52,5 +56,13 @@ public class EncryptServiceImpl implements EncryptService {
             });
         }
         return result;
+    }
+
+    @Override
+    public String decrypt(String str) {
+        if (EncryptContext.isEncrypt()) {
+            str = encryptionService.decrypt(str, BLANK_KEY);
+        }
+        return str;
     }
 }

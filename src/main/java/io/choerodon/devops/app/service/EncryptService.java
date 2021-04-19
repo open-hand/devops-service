@@ -15,4 +15,6 @@ public interface EncryptService {
     Map<String, String> encryptIds(List<String> ids);
 
     Set<Object> encryptIds(Set<Long> ids);
+
+    String decrypt(String str);
 }

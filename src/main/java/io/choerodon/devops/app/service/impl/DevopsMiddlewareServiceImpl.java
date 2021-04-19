@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import net.schmizz.sshj.SSHClient;
@@ -42,6 +43,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareDeployPayloa
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
+import io.choerodon.devops.app.service.EncryptService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
@@ -117,6 +119,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private TransactionalProducer producer;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private EncryptService encryptService;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -271,6 +275,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getName(), MYSQL.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareMySqlHostDeployVO.getHostIds());
+
+        convertMySQLConfiguration(middlewareMySqlHostDeployVO, devopsHostDTOList.stream().collect(Collectors.toMap(DevopsHostDTO::getId, Function.identity())));
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
         MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion());
@@ -704,6 +710,15 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             }
         });
         return configMap;
+    }
+
+    private void convertMySQLConfiguration(MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO, Map<Long, DevopsHostDTO> devopsHostDTOMap) {
+        Map<String, Map<String, String>> convertedConfiguration = new HashMap<>();
+        middlewareMySqlHostDeployVO.getConfiguration().forEach((k, v) -> {
+            String key = encryptService.decrypt(k);
+            convertedConfiguration.put(devopsHostDTOMap.get(Long.parseLong(key)).getName(), v);
+        });
+        middlewareMySqlHostDeployVO.setConfiguration(convertedConfiguration);
     }
 
     public void checkMiddlewareName(Long projectId, String name, String type) {
