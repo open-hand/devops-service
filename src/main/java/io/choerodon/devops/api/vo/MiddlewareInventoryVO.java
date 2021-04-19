@@ -18,9 +18,11 @@ public class MiddlewareInventoryVO {
             case REDIS:
                 this.redis = new StringBuilder();
                 this.redis.append("[redis]\n");
+                break;
             case MYSQL:
                 this.mysql = new StringBuilder();
                 this.mysql.append("[mysql]\n");
+                break;
             default:
                 throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
         }

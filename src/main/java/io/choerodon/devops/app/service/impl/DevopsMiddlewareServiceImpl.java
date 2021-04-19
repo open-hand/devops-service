@@ -439,7 +439,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             generateAndUploadMySQLConfiguration(sshClient, middlewareMySqlHostDeployVO);
             LOGGER.info("MySQL configuration file upload completed");
 
-            // 安装redis
+            // 安装mysql
             resultInfoVO = executeInstallMySQL(sshClient);
             LOGGER.info("the MySQL installation command has finished");
 
@@ -449,7 +449,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus());
             LOGGER.info("========================================");
-            LOGGER.info("deploy Middleware MySQL,mode:{} version:{} projectId:{}", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
+            LOGGER.info("deploy Middleware MySQL,mode:{} version:{} projectId:{} completed", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
         } catch (Exception e) {
             devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus());
             throw new CommonException(e.getMessage());
@@ -533,10 +533,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     private void generateAndUploadHostConfiguration(SSHClient sshClient, MiddlewareInventoryVO middlewareInventoryVO, DevopsMiddlewareTypeEnum middlewareTypeEnum) {
-        String inventoryFileName = middlewareTypeEnum.getType() + "-inventory.ini";
+        String inventoryFileName = middlewareTypeEnum.getType().toLowerCase() + "-inventory.ini";
         String inventory = middlewareInventoryVO.getInventoryConfiguration();
         // 比如/choerodon/ansible/redis/redis-inventory.ini
-        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, middlewareTypeEnum.getType()) + SLASH + inventoryFileName;
+        String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, middlewareTypeEnum.getType().toLowerCase()) + SLASH + inventoryFileName;
         // 比如 /tmp/redis-inventory.ini
         String targetFilePath = BASE_DIR + SLASH + inventoryFileName;
         FileUtil.saveDataToFile(filePath, inventory);
