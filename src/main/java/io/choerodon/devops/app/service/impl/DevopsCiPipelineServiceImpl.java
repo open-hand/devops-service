@@ -284,8 +284,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO) {
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
-        permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
+//        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
+//        permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         ciCdPipelineVO.setProjectId(projectId);
         checkNonCiPipelineBefore(ciCdPipelineVO.getAppServiceId());
 
@@ -1346,7 +1346,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
         gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineVO.getImage()) ? defaultCiImage : ciCdPipelineVO.getImage());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         gitlabCi.setStages(stages);
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
@@ -1364,7 +1364,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciJob.setAfterScript(buildAfterScript(job));
                     //增加services
                     ciJob.setServices(buildServices(job));
-                    ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
+//                    ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
                     gitlabCi.addJob(job.getName(), ciJob);
@@ -1406,7 +1406,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
                 return false;
             }
-            if (CollectionUtils.isEmpty(ciConfigVO.getConfig().stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType().trim(), CiJobScriptTypeEnum.DOCKER.getType())).collect(Collectors.toList()))) {
+            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig().stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType().trim(), CiJobScriptTypeEnum.DOCKER.getType())).collect(Collectors.toList()))) {
                 return true;
             }
         }
