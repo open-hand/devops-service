@@ -386,11 +386,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
                     if (!Objects.isNull(dto)) {
                         if (dto.getId().longValue() == projectId.longValue()) {
-                            issueDTO.setProjectName(dto.getName() + "(本项目)");
+                            issueDTO.setProjectName("(本项目)" + dto.getName());
                             issueDTO.setProjectId(dto.getId());
+                            issueDTO.setIssueNum(dto.getCode() + "-" + issueDTO.getIssueNum());
                         } else {
                             issueDTO.setProjectName(dto.getName());
                             issueDTO.setProjectId(dto.getId());
+                            issueDTO.setIssueNum(dto.getCode() + "-" + issueDTO.getIssueNum());
                         }
                     }
                 }

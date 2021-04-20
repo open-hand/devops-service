@@ -270,6 +270,7 @@ function saveJarMetadata() {
 }
 
 ############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ###############################
+# $2 ciJobId    猪齿鱼的CI的JOB的id
 function trivyScanImage() {
   which trivy > /dev/null || echo "cibase不包含trivy指令，请升级"
   export TRIVY_INSECURE='true'
@@ -279,6 +280,7 @@ function trivyScanImage() {
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_id=$1" \
     -F "start_date=${startDate}" \
     -F "end_date=${endDate}" \
     -F "file=@results-${CI_COMMIT_TAG}.json" \

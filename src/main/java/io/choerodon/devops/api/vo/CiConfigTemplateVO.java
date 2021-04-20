@@ -61,6 +61,14 @@ public class CiConfigTemplateVO {
     @ApiModelProperty("是否开启镜像扫描/true表示开启")
     private Boolean imageScan;
 
+    @ApiModelProperty("是否开启安全门禁")
+    private Boolean securityControl;
+
+
+    @ApiModelProperty("门禁条件")
+    private SecurityConditionConfigVO securityConditionConfigVO;
+
+
     @ApiModelProperty("是否自定义镜像名")
     private Boolean customDockerTagName;
 
@@ -79,6 +87,22 @@ public class CiConfigTemplateVO {
     @Encrypt
     @ApiModelProperty("chart关联docker任务 Id")
     private Long dockerJobId;
+
+    public Boolean getSecurityControl() {
+        return securityControl;
+    }
+
+    public void setSecurityControl(Boolean securityControl) {
+        this.securityControl = securityControl;
+    }
+
+    public SecurityConditionConfigVO getSecurityConditionConfigVO() {
+        return securityConditionConfigVO;
+    }
+
+    public void setSecurityConditionConfigVO(SecurityConditionConfigVO securityConditionConfigVO) {
+        this.securityConditionConfigVO = securityConditionConfigVO;
+    }
 
     public Boolean getImageScan() {
         return imageScan;
