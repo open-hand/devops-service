@@ -16,6 +16,8 @@ public class CiJob {
     private String image;
     @ApiModelProperty("所属stage")
     private String stage;
+    @ApiModelProperty("ci里面的services")
+    private List<CiJobServices> services;
     @YamlProperty(value = "after_script")
     @JsonProperty("after_script")
     @ApiModelProperty("after_script")
@@ -28,7 +30,6 @@ public class CiJob {
     private OnlyExceptPolicy except;
     @ApiModelProperty("缓存配置")
     private Cache cache;
-    private Services services;
 
     public List<String> getAfterScript() {
         return afterScript;
@@ -38,11 +39,11 @@ public class CiJob {
         this.afterScript = afterScript;
     }
 
-    public Services getServices() {
+    public List<CiJobServices> getServices() {
         return services;
     }
 
-    public void setServices(Services services) {
+    public void setServices(List<CiJobServices> services) {
         this.services = services;
     }
 
