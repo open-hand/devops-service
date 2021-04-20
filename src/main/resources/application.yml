@@ -122,11 +122,11 @@ hystrix:
   threadpool:
     default:
       # 最大排队数量
-      maxQueueSize: ${HYSTRIX_MAX_QUEUE_SIZE:30}
+      maxQueueSize: ${HYSTRIX_MAX_QUEUE_SIZE:300}
       # 排队数量阈值, 超过会被拒绝, 只在maxQueueSize不等于-1时生效
-      queueSizeRejectionThreshold: ${HYSTRIX_QUEUE_SIZE_REJECTION_THRESHOLD:15}
+      queueSizeRejectionThreshold: ${HYSTRIX_QUEUE_SIZE_REJECTION_THRESHOLD:200}
       # 线程池最大线程数
-      maximumSize: 20
+      maximumSize: 30
       # 核心线程数, 10是默认值
       coreSize: 10
   command:

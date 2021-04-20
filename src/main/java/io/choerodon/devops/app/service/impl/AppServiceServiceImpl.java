@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -15,6 +14,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,7 +26,6 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -63,6 +63,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
@@ -73,7 +74,6 @@ import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.task.DevopsTask;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
@@ -677,11 +677,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                String type, Boolean doPage,
                                                PageRequest pageable, String params, Boolean checkMember) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getContent(), urlSlash);
+        initApplicationParams(projectId, applicationServiceDTOS.getContent(), urlSlash);
 
         Page<AppServiceRepVO> destination = new Page<>();
         BeanUtils.copyProperties(applicationServiceDTOS, destination, "content");
@@ -691,7 +689,15 @@ public class AppServiceServiceImpl implements AppServiceService {
             userIds.addAll(appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
             List<Long> distinctIds = userIds.stream().distinct().collect(toList());
 
-            Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
+            Future<List<IamUserDTO>> userFuture = baseServiceClientOperator.listUsersByIdsCollapse(new ArrayList<>(distinctIds));
+            List<IamUserDTO> userResult;
+            try {
+                userResult = userFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new CommonException("Failed to get user", e);
+            }
+
+            Map<Long, IamUserDTO> users = userResult.stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
             // 收集失败的应用服务的id
             List<String> refIds = applicationServiceDTOS.getContent().stream().filter(app -> Boolean.TRUE.equals(app.getFailed())).map(appServiceDTO -> String.valueOf(appServiceDTO.getId())).collect(toList());
             List<AppServiceRepVO> appServiceRepVOS = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
@@ -731,7 +737,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
         }
 
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         List<Long> userIds = applicationDTOServiceList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
         userIds.addAll(applicationDTOServiceList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
@@ -739,7 +744,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<Long> distinctIds = userIds.stream().distinct().collect(toList());
         Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(toMap(IamUserDTO::getId, u -> u));
 
-        initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
+        initApplicationParams(projectId, applicationDTOServiceList, urlSlash);
 
         return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
     }
@@ -2229,8 +2234,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 是否需要进行项目成员gitlab角色校验
             Set<Long> appServiceIds;
             if (checkMember) {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+                Long tenantId = baseServiceClientOperator.queryImmutableProjectInfoFromCache(projectId).getTenantId();
+                appServiceIds = getMemberAppServiceIds(tenantId, projectId, userId);
                 if (CollectionUtils.isEmpty(appServiceIds)) {
                     return new Page<>();
                 }
@@ -2926,18 +2931,21 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
-    private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
+    private void initApplicationParams(Long projectId, List<AppServiceDTO> applicationDTOS, String urlSlash) {
+        ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfoFromCache(projectId);
         for (AppServiceDTO t : applicationDTOS) {
-            initApplicationParams(projectDTO, organizationDTO, t, urlSlash);
+            initApplicationParams(info, t, urlSlash);
         }
     }
 
-    private void initApplicationParams(ProjectDTO projectDTO, Tenant organizationDTO, AppServiceDTO applicationDTOS, String urlSlash) {
-        if (applicationDTOS.getGitlabProjectId() != null) {
-            applicationDTOS.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTOS.getCode()));
-            applicationDTOS.setRepoUrl(
-                    gitlabUrl + urlSlash + organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "/"
-                            + applicationDTOS.getCode() + ".git");
+    private void initApplicationParams(ImmutableProjectInfoVO info, AppServiceDTO appService, String urlSlash) {
+        if (appService.getGitlabProjectId() != null) {
+            String projectCode = info.getProjCode();
+            String tenantCode = info.getTenantNum();
+            appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
+            appService.setRepoUrl(
+                    gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
+                            + appService.getCode() + ".git");
         }
     }
 
@@ -2997,10 +3005,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         AppServiceDTO appServiceDTO = appServiceMapper.selectWithEmptyRepositoryByPrimaryKey(appServiceId);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        initApplicationParams(projectDTO, organizationDTO, appServiceDTO, urlSlash);
+        initApplicationParams(baseServiceClientOperator.queryImmutableProjectInfoFromCache(projectId), appServiceDTO, urlSlash);
 
         AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
