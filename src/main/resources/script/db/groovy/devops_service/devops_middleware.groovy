@@ -6,9 +6,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_middleware.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'project_id',type: 'BIGINT UNSIGNED',remarks: '中间件所属项目')
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '中间件所属项目')
             column(name: 'name', type: 'VARCHAR(64)', remarks: '中间件名称')
-            column(name: 'type',type: 'VARCHAR(32)',remarks: '中间件类型，比如Redis、MySQL')
+            column(name: 'type', type: 'VARCHAR(32)', remarks: '中间件类型，比如Redis、MySQL')
             column(name: 'version', type: 'VARCHAR(64)', remarks: '部署的版本')
             column(name: 'mode', type: 'VARCHAR(10)', remarks: '中间件部署模式')
             column(name: 'host_ids', type: 'VARCHAR(320)', remarks: '选择的主机，逗号分隔的id')
@@ -22,5 +22,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_middleware.groovy') {
         }
 
         addUniqueConstraint(tableName: 'devops_middleware', constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
+    }
+
+    changeSet(author: 'lihao', id: '2021-04-20-update-column') {
+        modifyDataType(tableName: 'devops_middleware', columnName: 'mode', newDataType: 'VARCHAR(32)')
     }
 }
