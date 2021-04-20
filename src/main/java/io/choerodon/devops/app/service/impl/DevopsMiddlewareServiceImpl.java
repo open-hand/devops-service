@@ -588,6 +588,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             Map<String, Map<String, String>> configuration = new HashMap<>();
 
             Map<String, String> authConfiguration = new HashMap<>();
+            authConfiguration.put("replicationUser", "replicator");
+            authConfiguration.put("replicationPassword", "changeit");
             authConfiguration.putIfAbsent("rootPassword", middlewareMySqlHostDeployVO.getPassword());
 
             mysqldConfiguration.putIfAbsent("datadir", "/var/lib/mysql");
