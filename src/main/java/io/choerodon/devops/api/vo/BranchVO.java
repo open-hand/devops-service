@@ -78,7 +78,7 @@ public class BranchVO {
         this.creationDate = devopsBranchDTO.getCreationDate();
         this.commitUrl = lastCommitUrl;
         this.issueId = devopsBranchDTO.getIssueId();
-        this.issueCode = issue == null ? null : issue.getIssueNum();
+        this.issueCode = issue == null ? null : issue.getProjectCode() + "-" + issue.getIssueNum();
         this.issueName = issue == null ? null : issue.getSummary();
         this.commitDate = devopsBranchDTO.getLastCommitDate();
         this.createUserUrl = createUserUrl;
