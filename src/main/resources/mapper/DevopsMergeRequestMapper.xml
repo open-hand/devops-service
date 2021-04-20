@@ -88,6 +88,15 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="countMergedBranchesByName" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM devops_merge_request dmr
+        WHERE dmr.source_branch IN
+        <foreach collection="branchNames" item="branchName" open="(" close=")" separator=",">
+            #{branchName}
+        </foreach>
+    </select>
 </mapper>
 
 
