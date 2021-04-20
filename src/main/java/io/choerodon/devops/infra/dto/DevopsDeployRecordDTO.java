@@ -1,7 +1,10 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -49,6 +52,8 @@ public class DevopsDeployRecordDTO extends AuditDomain {
      * 部署来源
      */
     private String deploySource;
+
+    private String errorMsg;
 
     public DevopsDeployRecordDTO() {
     }
@@ -197,6 +202,14 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deploySource = deploySource;
     }
 
+    public String getErrorMsg() {n
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
     @Override
     public String toString() {
         return "DevopsDeployRecordDTO{" +
@@ -213,7 +226,8 @@ public class DevopsDeployRecordDTO extends AuditDomain {
                 ", deployObjectName='" + deployObjectName + '\'' +
                 ", deployObjectVersion='" + deployObjectVersion + '\'' +
                 ", instanceName='" + instanceName + '\'' +
-                ", deploySource=" + deploySource + '\'' +
+                ", deploySource='" + deploySource + '\'' +
+                ", errorMsg='" + errorMsg + '\'' +
                 '}';
     }
 }
