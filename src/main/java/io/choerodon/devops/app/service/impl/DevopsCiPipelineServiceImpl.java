@@ -5,8 +5,6 @@ import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAM
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -284,8 +282,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO) {
-//        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
-//        permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
+        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
+        permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         ciCdPipelineVO.setProjectId(projectId);
         checkNonCiPipelineBefore(ciCdPipelineVO.getAppServiceId());
 
@@ -1346,7 +1344,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
         gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineVO.getImage()) ? defaultCiImage : ciCdPipelineVO.getImage());
-//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         gitlabCi.setStages(stages);
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
@@ -1363,8 +1361,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     //增加afterScript
                     ciJob.setAfterScript(buildAfterScript(job));
                     //增加services
-                    ciJob.setServices(buildServices(job));
-//                    ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
+                    ciJob.setServices(ArrayUtil.singleAsList(buildServices(job)));
+                    ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
                     gitlabCi.addJob(job.getName(), ciJob);
@@ -1381,17 +1379,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             afterScript.add("rm -rf /${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/${PROJECT_NAME}.tar");
             return afterScript;
         } else {
-            return Collections.EMPTY_LIST;
+            return null;
         }
     }
 
 
-    private Services buildServices(DevopsCiJobVO jobVO) {
-        Services services = new Services();
+    private CiJobServices buildServices(DevopsCiJobVO jobVO) {
+        CiJobServices ciJobServices = new CiJobServices();
         if (isContainDokcerBuild(jobVO)) {
-            services.setName(defaultCiImage);
-            services.setAlias("kaniko");
-            return services;
+            ciJobServices.setName(defaultCiImage);
+            ciJobServices.setAlias("kaniko");
+            return ciJobServices;
         } else {
             return null;
         }
