@@ -45,6 +45,16 @@ public class IssueDTO {
 
     private String projectName;
 
+    private String projectCode;
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
+    }
+
     public String getProjectName() {
         return projectName;
     }
