@@ -157,23 +157,26 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     /**
      * 这里使用REQUIRES_NEW 是为了在catch中不会被回滚
      *
-     * @param recordId
-     * @param status
+     * @param recordId 记录id
+     * @param status   状态
+     * @param errorMsg 错误消息
      */
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public void updateRecord(Long recordId, String status) {
+    public void updateRecord(Long recordId, String status, String errorMsg) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
         devopsDeployRecordDTO.setDeployResult(status);
+        devopsDeployRecordDTO.setErrorMsg(errorMsg);
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, "error.deploy.record.insert");
     }
 
     /**
      * 不关注更新结果
+     *
      * @param devopsDeployRecordDTO
      */
     @Override
-    public void updateRecord(DevopsDeployRecordDTO devopsDeployRecordDTO){
+    public void updateRecord(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         devopsDeployRecordMapper.updateByPrimaryKey(devopsDeployRecordDTO);
     }
 

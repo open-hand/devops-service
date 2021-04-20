@@ -70,9 +70,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String REDIS_CONFIGMAP_VALUE_TEMPLATE = "  %s %s\n";
 
+    private static final String REDIS_INSTALL_LOG_PATH = "/tmp/redis-install.log";
+
     private static final String MYSQL_STANDALONE_PERSISTENCE_TEMPLATE = "    existingClaim: %s";
 
     private static final String MYSQL_CONFIGMAP_VALUE_TEMPLATE = "    %s=%s\n";
+
+    private static final String MYSQL_INSTALL_LOG_PATH = "/tmp/mysql-install.log";
 
     private static final String STANDALONE_MODE = "standalone";
 
@@ -380,14 +384,14 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             LOGGER.info("the Redis installation command has finished");
 
             if (resultInfoVO.getExitCode() != 0) {
-                throw new CommonException("failed to install redis");
+                throw new CommonException(sshUtil.catFile(sshClient, REDIS_INSTALL_LOG_PATH));
             }
 
-            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus(), null);
             LOGGER.info("========================================");
             LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
         } catch (Exception e) {
-            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus(), e.getMessage());
             throw new CommonException(e.getMessage());
         } finally {
             sshUtil.closeSsh(sshClient, null);
@@ -447,11 +451,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 throw new CommonException("failed to install MySQL");
             }
 
-            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus(), null);
             LOGGER.info("========================================");
             LOGGER.info("deploy Middleware MySQL,mode:{} version:{} projectId:{} completed", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), devopsMiddlewareDeployPayload.getProjectId());
         } catch (Exception e) {
-            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus());
+            devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.FAILED.getStatus(), e.getMessage());
             throw new CommonException(e.getMessage());
         } finally {
             sshUtil.closeSsh(sshClient, null);
@@ -569,7 +573,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         Map<String, String> params = new HashMap<>();
         params.put("{{base-config}}", baseConfigInYaml);
         String redisConfiguration = FileUtil.replaceReturnString(DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-configuration.yml"), params);
-        sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, redisConfiguration));
+        ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(ssh, String.format(SAVE_REDIS_CONFIGURATION, redisConfiguration));
+        if (execResultInfoVO.getExitCode() != 0) {
+            throw new CommonException(String.format("failed to upload configuration, the error is %s", execResultInfoVO.getStdErr()));
+        }
     }
 
     private void generateAndUploadMySQLConfiguration(SSHClient ssh, MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) throws IOException {
@@ -601,7 +608,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private void generateAndUploadPrivateKey(SSHClient ssh, List<DevopsHostDTO> devopsHostDTOList) throws IOException {
         // 创建目录
-        sshUtil.execCommand(ssh, "mkdir -p /tmp/ansible/ssh-key");
+        ExecResultInfoVO mkdirResultInfoVO = sshUtil.execCommand(ssh, "mkdir -p /tmp/ansible/ssh-key");
+        if (mkdirResultInfoVO.getExitCode() != 0) {
+            throw new CommonException(String.format("failed to mkdir ssh-key dir ,the error is : %s", mkdirResultInfoVO.getStdErr()));
+        }
 
         List<String> commands = new ArrayList<>();
         for (DevopsHostDTO devopsHostDTO : devopsHostDTOList) {
@@ -613,11 +623,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     private ExecResultInfoVO executeInstallRedis(SSHClient sshClient) throws IOException {
-        return sshUtil.execCommand(sshClient, REDIS_ANSIBLE_COMMAND_TEMPLATE);
+        return sshUtil.execCommand(sshClient, String.format(REDIS_ANSIBLE_COMMAND_TEMPLATE, REDIS_INSTALL_LOG_PATH));
     }
 
     private ExecResultInfoVO executeInstallMySQL(SSHClient sshClient) throws IOException {
-        return sshUtil.execCommand(sshClient, MYSQL_ANSIBLE_COMMAND_TEMPLATE);
+        return sshUtil.execCommand(sshClient, String.format(MYSQL_ANSIBLE_COMMAND_TEMPLATE, MYSQL_INSTALL_LOG_PATH));
     }
 
     private String generateRedisStandaloneValues(MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
