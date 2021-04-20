@@ -142,6 +142,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
                 devopsMergeRequestPayload.setServiceCode(appServiceDTO.getCode());
                 devopsMergeRequestPayload.setSourceBranchName(devopsMergeRequestVO.getObjectAttributes().getSourceBranch());
                 devopsMergeRequestPayload.setTargetBranchName(devopsMergeRequestVO.getObjectAttributes().getTargetBranch());
+                devopsMergeRequestPayload.setProjectId(appServiceDTO.getProjectId());
 
                 producer.apply(StartSagaBuilder
                                 .newBuilder()

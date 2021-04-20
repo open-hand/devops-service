@@ -5,6 +5,7 @@ public class DevopsMergeRequestPayload {
     private String sourceBranchName;
     private String targetBranchName;
     private Long issueId;
+    private Long projectId;
 
     public String getSourceBranchName() {
         return sourceBranchName;
@@ -36,5 +37,14 @@ public class DevopsMergeRequestPayload {
 
     public void setServiceCode(String serviceCode) {
         this.serviceCode = serviceCode;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public DevopsMergeRequestPayload setProjectId(Long projectId) {
+        this.projectId = projectId;
+        return this;
     }
 }
