@@ -57,11 +57,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
             column(name: 'instance_name', type: 'varchar(255)', remarks: '实例code', afterColumn: 'deploy_object_version')
         }
     }
-    changeSet(author: 'wx' ,id: '2020-12-16-add-column'){
+    changeSet(author: 'wx', id: '2020-12-16-add-column') {
         addColumn(tableName: 'devops_deploy_record') {
             column(name: 'deploy_source', type: 'varchar(500)', defaultValue: "unknown", remarks: '部署来源， 本项目，共享 市场', afterColumn: 'deploy_type') {
                 constraints(nullable: false)
             }
+        }
+    }
+
+    changeSet(author: 'lihao', id: '2021-04-20-add-column') {
+        addColumn(tableName: 'devops_deploy_record') {
+            column(name: 'error_msg', type: 'text', remarks: '错误信息', afterColumn: 'deploy_time')
         }
     }
 
