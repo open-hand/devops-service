@@ -66,7 +66,7 @@ public class CiConfigTemplateVO {
 
 
     @ApiModelProperty("门禁条件")
-    private SecurityConditionConfigVO securityConditionConfigVO;
+    private SecurityConditionConfigVO securityCondition;
 
 
     @ApiModelProperty("是否自定义镜像名")
@@ -96,12 +96,12 @@ public class CiConfigTemplateVO {
         this.securityControl = securityControl;
     }
 
-    public SecurityConditionConfigVO getSecurityConditionConfigVO() {
-        return securityConditionConfigVO;
+    public SecurityConditionConfigVO getSecurityCondition() {
+        return securityCondition;
     }
 
-    public void setSecurityConditionConfigVO(SecurityConditionConfigVO securityConditionConfigVO) {
-        this.securityConditionConfigVO = securityConditionConfigVO;
+    public void setSecurityCondition(SecurityConditionConfigVO securityCondition) {
+        this.securityCondition = securityCondition;
     }
 
     public Boolean getImageScan() {

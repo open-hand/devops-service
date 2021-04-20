@@ -101,7 +101,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             CiConfigTemplateVO configTemplateVO = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(CiJobScriptTypeEnum.DOCKER.getType(), ciConfigTemplateVO.getType().trim())).collect(Collectors.toList()).get(0);
 
             if (!Objects.isNull(configTemplateVO.getSecurityControl()) && configTemplateVO.getSecurityControl()) {
-                SecurityConditionConfigVO securityConditionConfigVO = configTemplateVO.getSecurityConditionConfigVO();
+                SecurityConditionConfigVO securityConditionConfigVO = configTemplateVO.getSecurityCondition();
 
                 DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
                 devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
