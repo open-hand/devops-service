@@ -448,7 +448,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             LOGGER.info("the MySQL installation command has finished");
 
             if (resultInfoVO.getExitCode() != 0) {
-                throw new CommonException("failed to install MySQL");
+                throw new CommonException(sshUtil.catFile(sshClient, MYSQL_INSTALL_LOG_PATH));
             }
 
             devopsDeployRecordService.updateRecord(devopsMiddlewareDeployPayload.getDeployRecordId(), CommandStatus.SUCCESS.getStatus(), null);
