@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,24 +137,21 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         } else if (MergeRequestState.MERGED.getValue().equals(devopsMergeRequestDTO.getState())) {
             AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
             DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appServiceDTO.getId(), devopsMergeRequestVO.getObjectAttributes().getSourceBranch());
-            // 如果该分支绑定了某个issue，那么发送saga
-            if (devopsBranchDTO.getIssueId() != null) {
-                DevopsMergeRequestPayload devopsMergeRequestPayload = new DevopsMergeRequestPayload();
-                devopsMergeRequestPayload.setIssueId(devopsBranchDTO.getIssueId());
-                devopsMergeRequestPayload.setServiceCode(appServiceDTO.getCode());
-                devopsMergeRequestPayload.setSourceBranchName(devopsMergeRequestVO.getObjectAttributes().getSourceBranch());
-                devopsMergeRequestPayload.setTargetBranchName(devopsMergeRequestVO.getObjectAttributes().getTargetBranch());
-                devopsMergeRequestPayload.setProjectId(appServiceDTO.getProjectId());
-
-                producer.apply(StartSagaBuilder
-                                .newBuilder()
-                                .withLevel(ResourceLevel.PROJECT)
-                                .withSourceId(appServiceDTO.getProjectId())
-                                .withRefType("tag")
-                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS),
-                        builder -> builder
-                                .withPayloadAndSerialize(devopsMergeRequestPayload)
-                                .withRefId(appServiceDTO.getId().toString()));
+            // 如果该分支绑定了某个issue，先判断绑定的issue关联的所有分支是否已合并，都合并的话发送saga
+            Long issueId = devopsBranchDTO.getIssueId();
+            if (issueId != null) {
+                List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
+                Set<String> branchNames = devopsBranchDTOS.stream().map(DevopsBranchDTO::getBranchName).collect(Collectors.toSet());
+                // 如果tag关联了2个及以上分支，那么已合并分支数量等于tag关联分支数量才发送saga
+                if (branchNames.size() >= 2) {
+                    Integer count = devopsMergeRequestMapper.countMergedBranchesByName(branchNames);
+                    if (count == branchNames.size()) {
+                        applyMergeRequestSaga(issueId, appServiceDTO);
+                    }
+                } else if (branchNames.size() == 1) {
+                    // 如果tag只关联一个分支，发送saga
+                    applyMergeRequestSaga(issueId, appServiceDTO);
+                }
             }
 
             sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
@@ -177,5 +176,22 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         devopsMergeRequestDTO.setCreatedAt(devopsMergeRequestVO.getObjectAttributes().getCreatedAt());
         devopsMergeRequestDTO.setUpdatedAt(devopsMergeRequestVO.getObjectAttributes().getUpdatedAt());
         return devopsMergeRequestDTO;
+    }
+
+    private void applyMergeRequestSaga(Long issueId, AppServiceDTO appServiceDTO) {
+        DevopsMergeRequestPayload devopsMergeRequestPayload = new DevopsMergeRequestPayload();
+        devopsMergeRequestPayload.setIssueId(issueId);
+        devopsMergeRequestPayload.setServiceCode(appServiceDTO.getCode());
+        devopsMergeRequestPayload.setProjectId(appServiceDTO.getProjectId());
+
+        producer.apply(StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(appServiceDTO.getProjectId())
+                        .withRefType("tag")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS),
+                builder -> builder
+                        .withPayloadAndSerialize(devopsMergeRequestPayload)
+                        .withRefId(appServiceDTO.getId().toString()));
     }
 }

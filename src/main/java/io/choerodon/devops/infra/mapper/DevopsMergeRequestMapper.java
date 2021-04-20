@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -39,9 +40,18 @@ public interface DevopsMergeRequestMapper extends BaseMapper<DevopsMergeRequestD
 
     /**
      * 删除请求id不在列表中的合并请求
+     *
      * @param gitlabProjectId
      * @param mergeRequestIds
      */
     void deleteByGitlabProjectIdAndMergeRequestIdNotInIds(@Param("gitlabProjectId") Integer gitlabProjectId,
-                                                  @Param("ids") List<Long> mergeRequestIds);
+                                                          @Param("ids") List<Long> mergeRequestIds);
+
+    /**
+     * 查询指定分支中，已合并的分支数量
+     *
+     * @param branchNames 所有的分支名称
+     * @return
+     */
+    Integer countMergedBranchesByName(@Param("branchNames") Set<String> branchNames);
 }
