@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 
@@ -226,9 +225,9 @@ public class DevopsPvController {
     @ApiOperation(value = "查询集群下所有pv的label")
     @GetMapping("/labels")
     public ResponseEntity<List<DevopsPvLabelVO>> listLabels(@ApiParam(value = "项目ID", required = true)
-                                                          @PathVariable(value = "project_id") Long projectId,
+                                                            @PathVariable(value = "project_id") Long projectId,
                                                             @ApiParam(value = "集群id", required = true)
-                                                          @RequestParam("cluster_id") Long clusterId
+                                                            @Encrypt @RequestParam("cluster_id") Long clusterId
     ) {
         return ResponseEntity.ok(devopsPvService.listLabels(projectId, clusterId));
     }
