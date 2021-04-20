@@ -276,7 +276,7 @@
 			ddr.deploy_object_version,
 		    ddr.deploy_time,
 			ddr.created_by,
-			ddr.errorr_msg
+			ddr.error_msg
 		FROM devops_deploy_record ddr
 		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
 		<where>
