@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -12,16 +13,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.DevopsImageScanResultVO;
-import io.choerodon.devops.api.vo.ImageScanResultVO;
-import io.choerodon.devops.api.vo.VulnerabilitieVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsImageScanResultService;
+import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsImageScanResultDTO;
+import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
 import io.choerodon.devops.infra.enums.ImageSecurityEnum;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
+import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsImageScanResultMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -38,9 +42,13 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     @Autowired
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
 
+    @Autowired
+    private DevopsCiJobMapper devopsCiJobMapper;
+
 
     @Override
-    public void resolveImageScanJson(Long gitlabPipelineId, Date startDate, Date endDate, MultipartFile file) {
+    @Transactional(rollbackFor = Exception.class)
+    public void resolveImageScanJson(Long gitlabPipelineId, Long jobId, Date startDate, Date endDate, MultipartFile file) {
         LOGGER.debug("startDate:{},endDate:{}", startDate, endDate);
         String content = null;
         try {
@@ -80,6 +88,85 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             }
         });
 
+        //检查门禁条件
+        if (!Objects.isNull(jobId) && jobId > 0) {
+            DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(jobId);
+            if (Objects.isNull(devopsCiJobDTO)) {
+                return;
+            }
+            LOGGER.debug("jobId:{},metadata:{}", jobId, devopsCiJobDTO.getMetadata());
+            CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
+            List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+            //一个job一个docker构建
+            CiConfigTemplateVO configTemplateVO = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(CiJobScriptTypeEnum.DOCKER.getType(), ciConfigTemplateVO.getType().trim())).collect(Collectors.toList()).get(0);
+
+            if (!Objects.isNull(configTemplateVO.getSecurityControl()) && configTemplateVO.getSecurityControl()) {
+                SecurityConditionConfigVO securityConditionConfigVO = configTemplateVO.getSecurityCondition();
+
+                DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+                List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = devopsImageScanResultMapper.select(devopsImageScanResultDTO);
+                if (CollectionUtils.isEmpty(devopsImageScanResultDTOS)) {
+                    return;
+                }
+                switch (ImageSecurityEnum.valueOf(securityConditionConfigVO.getLevel())) {
+                    case HIGH:
+                        Integer highCount = getHighCount(devopsImageScanResultDTOS);
+                        securityMonitor(highCount, securityConditionConfigVO);
+                        break;
+                    case CRITICAL:
+                        Integer criticalCount = getCriticalCount(devopsImageScanResultDTOS);
+                        securityMonitor(criticalCount, securityConditionConfigVO);
+                        break;
+                    case MEDIUM:
+                        Integer mediumCount = getMediumCount(devopsImageScanResultDTOS);
+                        securityMonitor(mediumCount, securityConditionConfigVO);
+                        break;
+                    case LOW:
+                        Integer lowCount = getLowCount(devopsImageScanResultDTOS);
+                        securityMonitor(lowCount, securityConditionConfigVO);
+                        break;
+                    default:
+                        throw new DevopsCiInvalidException("security level not exist: {}", securityConditionConfigVO.getLevel());
+                }
+            }
+
+        }
+
+
+    }
+
+    private void securityMonitor(Integer integer, SecurityConditionConfigVO securityConditionConfigVO) {
+        if (StringUtils.equalsIgnoreCase("<=", securityConditionConfigVO.getSymbol())) {
+            if (!(integer.intValue() <= securityConditionConfigVO.getCondition().intValue())) {
+                throw new DevopsCiInvalidException("Does not meet the security control conditions：{}", integer);
+            }
+        }
+    }
+
+    private Integer getLowCount(List<DevopsImageScanResultDTO> devopsImageScanResultDTOS) {
+        ImageScanResultVO imageScanResultVO = new ImageScanResultVO();
+        handLoophole(devopsImageScanResultDTOS, imageScanResultVO);
+        return imageScanResultVO.getHighCount() + imageScanResultVO.getCriticalCount() + imageScanResultVO.getMediumCount() + imageScanResultVO.getLowCount();
+    }
+
+    private Integer getMediumCount(List<DevopsImageScanResultDTO> devopsImageScanResultDTOS) {
+        ImageScanResultVO imageScanResultVO = new ImageScanResultVO();
+        handLoophole(devopsImageScanResultDTOS, imageScanResultVO);
+        return imageScanResultVO.getHighCount() + imageScanResultVO.getCriticalCount() + imageScanResultVO.getMediumCount();
+    }
+
+
+    private Integer getHighCount(List<DevopsImageScanResultDTO> devopsImageScanResultDTOS) {
+        ImageScanResultVO imageScanResultVO = new ImageScanResultVO();
+        handLoophole(devopsImageScanResultDTOS, imageScanResultVO);
+        return imageScanResultVO.getHighCount() + imageScanResultVO.getCriticalCount();
+    }
+
+    private Integer getCriticalCount(List<DevopsImageScanResultDTO> devopsImageScanResultDTOS) {
+        ImageScanResultVO imageScanResultVO = new ImageScanResultVO();
+        handLoophole(devopsImageScanResultDTOS, imageScanResultVO);
+        return imageScanResultVO.getCriticalCount();
     }
 
 
@@ -93,16 +180,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             return imageScanResultVO;
         }
         //筛选各个级别的漏洞
-        List<DevopsImageScanResultDTO> imageScanUnknown = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.UNKNOWN.getValue())).collect(Collectors.toList());
-        imageScanResultVO.setUnknownCount(CollectionUtils.isEmpty(imageScanUnknown) ? 0 : imageScanUnknown.size());
-        List<DevopsImageScanResultDTO> imageScanLow = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.LOW.getValue())).collect(Collectors.toList());
-        imageScanResultVO.setLowCount(CollectionUtils.isEmpty(imageScanLow) ? 0 : imageScanLow.size());
-        List<DevopsImageScanResultDTO> imageScanMedium = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.MEDIUM.getValue())).collect(Collectors.toList());
-        imageScanResultVO.setMediumCount(CollectionUtils.isEmpty(imageScanMedium) ? 0 : imageScanMedium.size());
-        List<DevopsImageScanResultDTO> imageScanHigh = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.HIGH.getValue())).collect(Collectors.toList());
-        imageScanResultVO.setHighCount(CollectionUtils.isEmpty(imageScanHigh) ? 0 : imageScanHigh.size());
-        List<DevopsImageScanResultDTO> imageScanCritical = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.CRITICAL.getValue())).collect(Collectors.toList());
-        imageScanResultVO.setCriticalCount(CollectionUtils.isEmpty(imageScanCritical) ? 0 : imageScanCritical.size());
+        handLoophole(devopsImageScanResultDTOS, imageScanResultVO);
 
         if (imageScanResultVO.getUnknownCount() > 0) {
             imageScanResultVO.setLevel(ImageSecurityEnum.UNKNOWN.getValue());
@@ -123,6 +201,19 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         imageScanResultVO.setSpendTime(scanResultDTO.getEndDate().getTime() - scanResultDTO.getStartDate().getTime());
         imageScanResultVO.setStartDate(scanResultDTO.getStartDate());
         return imageScanResultVO;
+    }
+
+    private void handLoophole(List<DevopsImageScanResultDTO> devopsImageScanResultDTOS, ImageScanResultVO imageScanResultVO) {
+        List<DevopsImageScanResultDTO> imageScanUnknown = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.UNKNOWN.getValue())).collect(Collectors.toList());
+        imageScanResultVO.setUnknownCount(CollectionUtils.isEmpty(imageScanUnknown) ? 0 : imageScanUnknown.size());
+        List<DevopsImageScanResultDTO> imageScanLow = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.LOW.getValue())).collect(Collectors.toList());
+        imageScanResultVO.setLowCount(CollectionUtils.isEmpty(imageScanLow) ? 0 : imageScanLow.size());
+        List<DevopsImageScanResultDTO> imageScanMedium = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.MEDIUM.getValue())).collect(Collectors.toList());
+        imageScanResultVO.setMediumCount(CollectionUtils.isEmpty(imageScanMedium) ? 0 : imageScanMedium.size());
+        List<DevopsImageScanResultDTO> imageScanHigh = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.HIGH.getValue())).collect(Collectors.toList());
+        imageScanResultVO.setHighCount(CollectionUtils.isEmpty(imageScanHigh) ? 0 : imageScanHigh.size());
+        List<DevopsImageScanResultDTO> imageScanCritical = devopsImageScanResultDTOS.stream().filter(devopsImageScanResultDTO1 -> StringUtils.equalsIgnoreCase(devopsImageScanResultDTO1.getSeverity(), ImageSecurityEnum.CRITICAL.getValue())).collect(Collectors.toList());
+        imageScanResultVO.setCriticalCount(CollectionUtils.isEmpty(imageScanCritical) ? 0 : imageScanCritical.size());
     }
 
     @Override

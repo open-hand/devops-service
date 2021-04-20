@@ -30,4 +30,9 @@ public interface AgileServiceClient {
             @PathVariable(name = "project_id") Long projectId,
             @ApiParam(value = "组织id", required = true)
             @PathVariable(value = "organization_id") Long organizationId);
+
+    @PostMapping(value = "/v1/inner/issues/by_ids")
+    ResponseEntity<String> queryIssuesByIds(
+            @ApiParam(value = "组织id", required = true)
+            @RequestBody List<Long> issueIds);
 }

@@ -27,9 +27,21 @@ public class DevopsAnsibleCommandConstants {
     /**
      * 保存redis配置
      */
-    public static final String SAVE_REDIS_CONFIGURATION="cat <<EOF >/tmp/redis-configuration.yml\n" +
-            "%s\n"+
+    public static final String SAVE_REDIS_CONFIGURATION = "cat <<EOF >/tmp/redis-configuration.yml\n" +
+            "%s\n" +
             "EOF";
+
+    /**
+     * 保存MySQL配置
+     */
+    public static final String SAVE_MYSQL_NODE_CONFIGURATION = "cat <<EOF >/tmp/middleware/host_vars/%s.yml\n" +
+            "%s\n" +
+            "EOF";
+
+    /**
+     * 创建多节点配置目录
+     */
+    public static final String MKDIR_FOR_MULTI_NODE_CONFIGURATION = "mkdir -p /tmp/middleware/host_vars";
 
 
     public static final String RESTART_DOCKER_PROGRESS = "sudo systemctl restart docker >> /tmp/restart-docker.log 2>&1 && sudo systemctl enable docker >> /tmp/restart-docker.log 2>&1 ";
@@ -42,7 +54,12 @@ public class DevopsAnsibleCommandConstants {
     /**
      * ansible安装redis
      */
-    public static final String REDIS_ANSIBLE_COMMAND_TEMPLATE="cd /tmp/middleware && ansible-playbook -i /tmp/redis-inventory.ini -e @/tmp/redis-configuration.yml redis-install.yml 1>/tmp/redis-install.log 2>&1";
+    public static final String REDIS_ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/middleware && ansible-playbook -i /tmp/redis-inventory.ini -e @/tmp/redis-configuration.yml redis-install.yml 1>%s 2>&1";
+
+    /**
+     * ansible安装mysql
+     */
+    public static final String MYSQL_ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/middleware && ansible-playbook -i /tmp/mysql-inventory.ini mysql-install.yml 1>%s 2>&1";
 
     /**
      * 获取指定目录内容

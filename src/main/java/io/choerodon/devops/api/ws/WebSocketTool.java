@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.hzero.core.util.StringPool;
+import org.hzero.websocket.config.WebSocketConfig;
+import org.hzero.websocket.handler.DefaultSocketHandler;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -184,6 +188,10 @@ public class WebSocketTool {
         checkParameter(attributes, CLUSTER_ID);
     }
 
+    public static void checkProjectId(Map<String, Object> attributes) {
+        checkParameter(attributes, PROJECT_ID);
+    }
+
     private static void checkParameter(Map<String, Object> attributes, String parameter) {
         Object value = attributes.get(parameter);
         if (value == null || isEmptyOrTrimmedEmpty(String.valueOf(attributes.get(parameter)))) {
@@ -216,6 +224,39 @@ public class WebSocketTool {
             }
         }
         return a.toString();
+    }
+
+    /**
+     * 校验连接参数中的 oauth token 是否正确
+     *
+     * @param attributes 连接的属性
+     * @return true表示token正常，校验通过
+     */
+    public static boolean preCheckOAuthToken(Map<String, Object> attributes) {
+        String token = (String) attributes.get(OAUTH_TOKEN);
+        if (StringUtils.isEmpty(token)) {
+            LOGGER.debug("OAuth token is absent");
+            return false;
+        }
+        // 获取配置
+        WebSocketConfig config = ApplicationContextHelper.getContext().getBean(WebSocketConfig.class);
+
+        try {
+            // 请求 oauth 服务获取用户信息
+            CustomUserDetails customUserDetails = DefaultSocketHandler.getAuthentication(token, config.getOauthUrl());
+            if (customUserDetails == null || customUserDetails.getUserId() == null) {
+                LOGGER.info("Ws: user authentication failed, token is invalid");
+                return false;
+            }
+
+            // 将解析的用户id放入到attributes中
+            LOGGER.info("User with name {} and id {} connect from websocket", customUserDetails.getRealName(), customUserDetails.getUserId());
+            attributes.put(USER_ID, customUserDetails.getUserId());
+            return true;
+        } catch (Exception ex) {
+            LOGGER.debug("Failed to get user info due to ex", ex);
+            return false;
+        }
     }
 
     public static void preProcessAttributeAboutKeyEncryption(Map<String, Object> attributes) {

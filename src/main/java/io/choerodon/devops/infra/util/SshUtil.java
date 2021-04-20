@@ -53,6 +53,7 @@ public class SshUtil {
     private static final String ERROR_DOCKER_PULL = "error.docker.pull";
     private static final String ERROR_DOCKER_RUN = "error.docker.run";
     private static final String ERROR_DOWNLOAD_JAY = "error.download.jar";
+    private static final String CAT_FILE_TEMPLATE = "cat %s";
 
 
     @Autowired
@@ -455,26 +456,26 @@ public class SshUtil {
         }
     }
 
-    public void uploadPreProcessShell(SSHClient ssh, String suffix,String type) throws IOException {
+    public void uploadPreProcessShell(SSHClient ssh, String suffix, String type) throws IOException {
         InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/pre-process.sh");
-        Map<String,String> map=new HashMap<>();
-        switch(type){
+        Map<String, String> map = new HashMap<>();
+        switch (type) {
             case "kube":
-                map.put("{{ git-clone }}","if [ -d \"/tmp/kubeadm-ha\" ]; then\n" +
+                map.put("{{ git-clone }}", "if [ -d \"/tmp/kubeadm-ha\" ]; then\n" +
                         "    rm -rf /tmp/kubeadm-ha\n" +
                         "fi\n" +
                         "git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha");
                 break;
             case "middleware":
-                map.put("{{ git-clone }}","if [ -d \"/tmp/middleware\" ]; then\n" +
+                map.put("{{ git-clone }}", "if [ -d \"/tmp/middleware\" ]; then\n" +
                         "    rm -rf /tmp/middleware\n" +
                         "fi\n" +
                         "git clone https://gitee.com/open-hand/middleware.git /tmp/middleware");
                 break;
             default:
-                throw new CommonException("error.unsupported.preprocess.type",type);
+                throw new CommonException("error.unsupported.preprocess.type", type);
         }
-        String preProcessShell=   FileUtil.replaceReturnString(shellInputStream, map);
+        String preProcessShell = FileUtil.replaceReturnString(shellInputStream, map);
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "pre-process.sh";
         FileUtil.saveDataToFile(filePath, preProcessShell);
         this.uploadFile(ssh, filePath, PRE_KUBEADM_HA_SH);
@@ -523,5 +524,21 @@ public class SshUtil {
      */
     public static boolean isExitStatusOk(Integer exitStatus) {
         return null != exitStatus && 0 == exitStatus;
+    }
+
+    /**
+     * 获取节点上指定路径文件的内容
+     */
+    public String catFile(SSHClient sshClient, String filePath) throws IOException {
+        String command = String.format(CAT_FILE_TEMPLATE, filePath);
+        try (Session session = sshClient.startSession()) {
+            Session.Command cmd = session.exec(command);
+            cmd.join(1, TimeUnit.MINUTES);
+            if (cmd.getExitStatus() == 0) {
+                return IOUtils.readFully(cmd.getInputStream()).toString();
+            } else {
+                return String.format("failed to read file %s. the error is %s .please login in server for more detail", filePath, IOUtils.readFully(cmd.getInputStream()));
+            }
+        }
     }
 }

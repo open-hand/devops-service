@@ -24,8 +24,8 @@ public class MiddlewareMySqlHostDeployVO {
     private String password;
     @ApiModelProperty("部署版本")
     private String version;
-    @ApiModelProperty("配置内容")
-    private Map<String, String> configuration;
+    @ApiModelProperty("配置内容,一个节点一个配置 节点名称=>配置")
+    private Map<String, Map<String, String>> configuration;
 
     public Set<Long> getHostIds() {
         return hostIds;
@@ -59,11 +59,11 @@ public class MiddlewareMySqlHostDeployVO {
         this.version = version;
     }
 
-    public Map<String, String> getConfiguration() {
+    public Map<String, Map<String, String>> getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(Map<String, String> configuration) {
+    public void setConfiguration(Map<String, Map<String, String>> configuration) {
         this.configuration = configuration;
     }
 
@@ -74,4 +74,6 @@ public class MiddlewareMySqlHostDeployVO {
     public void setPassword(String password) {
         this.password = password;
     }
+
+
 }

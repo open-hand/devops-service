@@ -56,6 +56,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private UserAttrService userAttrService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
     @Override
     public Page<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam) {
@@ -296,5 +298,41 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     @Override
     public List<PodResourceDetailsDTO> queryResourceDetailsByInstanceId(Long instanceId) {
         return devopsEnvPodMapper.queryResourceDetailsByInstanceId(instanceId);
+    }
+
+    @Override
+    public boolean checkLogAndExecPermission(Long projectId, Long clusterId, String envCode, Long userId, String podName) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, envCode);
+        if (devopsEnvironmentDTO == null) {
+            logger.info("The env with clusterId {} and envCode {} doesn't exist", clusterId, envCode);
+            return false;
+        }
+
+        if (!devopsEnvironmentDTO.getProjectId().equals(projectId)) {
+            logger.info("The provided project id {} doesn't equal to env's {}", projectId, devopsEnvironmentDTO.getProjectId());
+            return false;
+        }
+
+        Long envId = devopsEnvironmentDTO.getId();
+        // 校验用户有环境的权限
+        if (!devopsEnvUserPermissionService.userFromWebsocketHasPermission(userId, devopsEnvironmentDTO)) {
+            logger.info("User {} is not permitted to the env with id {}", userId, envId);
+            return false;
+        }
+
+        // 校验pod存在
+        if (!podExists(envId, podName)) {
+            logger.info("The pod with name {} doesn't exist in the env with id {}", podName, envId);
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean podExists(Long envId, String podName) {
+        DevopsEnvPodDTO condition = new DevopsEnvPodDTO();
+        condition.setEnvId(envId);
+        condition.setName(podName);
+        return devopsEnvPodMapper.selectCount(condition) > 0;
     }
 }

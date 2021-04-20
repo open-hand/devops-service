@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
@@ -134,6 +135,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private List<ConvertK8sObjectService> convertK8sObjectServices;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private EncryptService encryptService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -358,20 +361,40 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         // 读取敏捷问题列表可能会失败，但是不希望影响查询分支逻辑，所以捕获异常
         try {
             if (!CollectionUtils.isEmpty(issuedIds)) {
-                issues = agileServiceClientOperator.listIssueByIds(currentProjectId != null ? currentProjectId : projectId, issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+                // 敏捷需要提供接口 根据ids查询Issue  返回 内容要带projectId
+                issues = agileServiceClientOperator.listIssueByIdsWithProjectId(issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
             }
         } catch (Exception e) {
             LOGGER.error("query agile issue failed:{}", e.getMessage());
         }
 
         Map<Long, IssueDTO> finalIssues = issues;
+        Map<Long, ProjectDTO> projectDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(issues)) {
+            Set<Long> projectIds = issues.values().stream().map(IssueDTO::getProjectId).collect(Collectors.toSet());
+            projectDTOMap = baseServiceClientOperator.queryProjectsByIds(projectIds).stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+        }
+
         List<String> refIds = devopsBranchDTOPageInfo.getContent().stream().map(devopsBranchDTO -> String.valueOf(devopsBranchDTO.getId())).collect(Collectors.toList());
         Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH));
+        Map<Long, ProjectDTO> finalProjectDTOMap = projectDTOMap;
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             IssueDTO issueDTO = null;
             if (!CollectionUtils.isEmpty(finalIssues)) {
                 if (t.getIssueId() != null) {
                     issueDTO = finalIssues.get(t.getIssueId());
+                    ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
+                    if (!Objects.isNull(dto)) {
+                        if (dto.getId().longValue() == projectId.longValue()) {
+                            issueDTO.setProjectName("(本项目)" + dto.getName());
+                            issueDTO.setProjectId(dto.getId());
+                            issueDTO.setProjectCode(dto.getCode());
+                        } else {
+                            issueDTO.setProjectName(dto.getName());
+                            issueDTO.setProjectId(dto.getId());
+                            issueDTO.setProjectCode(dto.getCode());
+                        }
+                    }
                 }
             }
 
@@ -1148,5 +1171,20 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         CommonExAssertUtil.assertTrue(issueId.equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
         devopsBranchService.removeIssueAssociation(devopsBranchDTO);
+    }
+
+    @Override
+    public Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+
+        CompareResultDTO diffs = gitlabServiceClientOperator.queryCompareResult(appServiceDTO.getGitlabProjectId(), from, to);
+
+        Set<String> commitSha = diffs.getCommits().stream().map(CommitDTO::getId).collect(Collectors.toSet());
+
+        if (!CollectionUtils.isEmpty(commitSha)) {
+            return devopsGitlabCommitService.listIssueIdsByCommitSha(commitSha);
+        } else {
+            return new HashSet<>();
+        }
     }
 }

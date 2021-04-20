@@ -363,18 +363,19 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         if (devopsEnvironmentDTO.getGitlabEnvProjectId() == null) {
             throw new CommonException("error.env.project.not.exist");
         }
-        MemberDTO memberDTO = gitlabServiceClientOperator
-                .queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-
         // 跳过Root用户
         if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
             return;
         }
 
+        MemberDTO memberDTO = gitlabServiceClientOperator
+                .queryGroupMember(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+
         if (memberDTO != null && memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
             return;
         }
+
         MemberDTO newGroupMemberDTO = gitlabServiceClientOperator.getProjectMember(
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));

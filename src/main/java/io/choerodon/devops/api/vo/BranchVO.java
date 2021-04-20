@@ -39,7 +39,27 @@ public class BranchVO {
     private Long objectVersionNumber;
     @Encrypt
     private Long sagaInstanceId;
+    /**
+     * 问题来源
+     */
+    private String projectName;
+    private Long issueProjectId;
 
+    public Long getIssueProjectId() {
+        return issueProjectId;
+    }
+
+    public void setIssueProjectId(Long issueProjectId) {
+        this.issueProjectId = issueProjectId;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
 
     public BranchVO() {
     }
@@ -58,7 +78,7 @@ public class BranchVO {
         this.creationDate = devopsBranchDTO.getCreationDate();
         this.commitUrl = lastCommitUrl;
         this.issueId = devopsBranchDTO.getIssueId();
-        this.issueCode = issue == null ? null : issue.getIssueNum();
+        this.issueCode = issue == null ? null : issue.getProjectCode() + "-" + issue.getIssueNum();
         this.issueName = issue == null ? null : issue.getSummary();
         this.commitDate = devopsBranchDTO.getLastCommitDate();
         this.createUserUrl = createUserUrl;
@@ -71,7 +91,10 @@ public class BranchVO {
         this.errorMessage = errorMessage;
         this.objectVersionNumber = devopsBranchDTO.getObjectVersionNumber();
         this.sagaInstanceId = sagaInstanceId;
+        this.projectName = issue == null ? null : issue.getProjectName();
+        this.issueProjectId = issue == null ? null : issue.getProjectId();
     }
+
 
     public String getBranchName() {
         return branchName;

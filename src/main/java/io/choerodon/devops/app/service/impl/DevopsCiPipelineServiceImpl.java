@@ -5,8 +5,6 @@ import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAM
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -1360,6 +1358,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setImage(job.getImage());
                     }
                     ciJob.setStage(stageVO.getName());
+                    //增加afterScript
+                    ciJob.setAfterScript(buildAfterScript(job));
+                    //增加services
+                    ciJob.setServices(ArrayUtil.singleAsList(buildServices(job)));
                     ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
@@ -1369,6 +1371,44 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
         buildBeforeScript(gitlabCi, ciCdPipelineVO.getVersionName());
         return gitlabCi;
+    }
+
+    private List<String> buildAfterScript(DevopsCiJobVO jobVO) {
+        List<String> afterScript = new ArrayList<>();
+        if (isContainDokcerBuild(jobVO)) {
+            afterScript.add("rm -rf /${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/${PROJECT_NAME}.tar");
+            return afterScript;
+        } else {
+            return null;
+        }
+    }
+
+
+    private CiJobServices buildServices(DevopsCiJobVO jobVO) {
+        CiJobServices ciJobServices = new CiJobServices();
+        if (isContainDokcerBuild(jobVO)) {
+            ciJobServices.setName(defaultCiImage);
+            ciJobServices.setAlias("kaniko");
+            return ciJobServices;
+        } else {
+            return null;
+        }
+    }
+
+    private boolean isContainDokcerBuild(DevopsCiJobVO jobVO) {
+        if (Objects.isNull(jobVO)) {
+            return false;
+        }
+        if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
+            CiConfigVO ciConfigVO = jobVO.getConfigVO();
+            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+                return false;
+            }
+            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig().stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType().trim(), CiJobScriptTypeEnum.DOCKER.getType())).collect(Collectors.toList()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1498,7 +1538,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
                                         doTlsVerify == null || !doTlsVerify,
-                                        Objects.isNull(imageScan) ? false : imageScan));
+                                        Objects.isNull(imageScan) ? false : imageScan,jobVO));
                                 break;
                             // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
                             case UPLOAD_JAR:

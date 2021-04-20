@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -214,4 +215,16 @@ public interface DevopsGitService {
      * @param issueId      关联问题id
      */
     void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId);
+
+
+    /**
+     * 获取服务两个tag之间的issueId列表
+     *
+     * @param projectId    项目id
+     * @param appServiceId 应用服务id
+     * @param from         前一个tag
+     * @param to           后一个tag
+     * @return 所有的issueId
+     */
+    Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
 }

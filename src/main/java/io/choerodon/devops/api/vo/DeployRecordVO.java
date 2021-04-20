@@ -63,6 +63,8 @@ public class DeployRecordVO {
     private DeploySourceVO deploySourceVO;
     private String deploySource;
 
+    private String errorMsg;
+
     public String getDeploySource() {
         return deploySource;
     }
@@ -237,5 +239,13 @@ public class DeployRecordVO {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
     }
 }

@@ -70,7 +70,22 @@ public interface DevopsCustomizeResourceService {
 
     void checkExist(Long envId, String kind, String name);
 
+    int selectCount(Long envId, String kind, String name);
+
     List<DevopsCustomizeResourceDTO> baseListByEnvId(Long envId);
 
     void baseDeleteCustomizeResourceByEnvId(Long envId);
+
+    /**
+     * 校验通过websocket对自定义资源进行describe是否有权限
+     *
+     * @param projectId    项目id
+     * @param clusterId    集群id
+     * @param envCode      环境code
+     * @param userId       用户id
+     * @param kind         资源类型
+     * @param resourceName 资源名称
+     * @return true表示有权限
+     */
+    boolean checkDescribePermission(Long projectId, Long clusterId, String envCode, Long userId, String kind, String resourceName);
 }

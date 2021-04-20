@@ -3,6 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import java.util.*;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.hzero.starter.keyencrypt.core.EncryptContext;
 import org.hzero.starter.keyencrypt.core.EncryptProperties;
@@ -36,5 +39,30 @@ public class EncryptServiceImpl implements EncryptService {
             });
         }
         return map;
+    }
+
+
+    @Override
+    public Set<Object> encryptIds(Set<Long> ids) {
+        boolean isEncrypt = EncryptContext.isEncrypt();
+        Set<Object> result = new HashSet<>();
+        if (!CollectionUtils.isEmpty(ids)) {
+            ids.forEach(i -> {
+                if (!isEncrypt) {
+                    result.add(i);
+                } else {
+                    result.add(encryptionService.encrypt(i.toString(), BLANK_KEY));
+                }
+            });
+        }
+        return result;
+    }
+
+    @Override
+    public String decrypt(String str) {
+        if (EncryptContext.isEncrypt()) {
+            str = encryptionService.decrypt(str, BLANK_KEY);
+        }
+        return str;
     }
 }
