@@ -585,7 +585,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         for (Map.Entry<String, Map<String, String>> entry : configurations.entrySet()) {
             String nodeName = entry.getKey();
             Map<String, String> mysqldConfiguration = entry.getValue();
-            Map<String, Map<String, String>> configuration = new HashMap<>();
+            Map<String, Object> configuration = new HashMap<>();
 
             Map<String, String> authConfiguration = new HashMap<>();
             authConfiguration.put("replicationUser", "replicator");
@@ -598,6 +598,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             configuration.put("auth", authConfiguration);
             configuration.put("mysqld", mysqldConfiguration);
+            configuration.put("lb_keepalived_virtual_ipaddress", middlewareMySqlHostDeployVO.getVirtualIp());
 
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
