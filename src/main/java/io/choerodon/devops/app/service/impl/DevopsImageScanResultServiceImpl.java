@@ -50,6 +50,24 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     @Transactional(rollbackFor = Exception.class)
     public void resolveImageScanJson(Long gitlabPipelineId, Long jobId, Date startDate, Date endDate, MultipartFile file) {
         LOGGER.info(">>>>>>>>>>>>>>>>>>startDate:{},endDate:{}", startDate, endDate);
+        //file 有可能为null,如果镜像没有漏洞这个报告文件就是空的
+        if (Objects.isNull(file)) {
+            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+            devopsImageScanResultDTO.setStartDate(startDate);
+            devopsImageScanResultDTO.setEndDate(endDate);
+
+            DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
+            scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+            DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
+            if (Objects.isNull(resultDTO)) {
+                devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
+            } else {
+                BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
+                devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
+            }
+            return;
+        }
         String content = null;
         try {
             content = new String(file.getBytes(), "UTF-8");
