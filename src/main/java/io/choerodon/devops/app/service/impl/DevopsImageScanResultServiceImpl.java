@@ -55,6 +55,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         try {
             content = new String(file.getBytes(), "UTF-8");
             LOGGER.info(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
+            LOGGER.info("StringUtils.isEmpty(content):{}", StringUtils.isEmpty(content));
             if (StringUtils.isEmpty(content)) {
                 LOGGER.info(">>>>>>>>>1.>>>>>>>>>>>");
                 DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
