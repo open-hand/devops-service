@@ -27,7 +27,6 @@ public class MiddlewareMySqlHostDeployVO {
     private String password;
     @ApiModelProperty("部署版本")
     private String version;
-    @Pattern(regexp = GitOpsConstants.IP_PATTERN, message = "error.host.ip.invalid")
     @ApiModelProperty("虚拟ip地址")
     private String virtualIp;
     @ApiModelProperty("配置内容,一个节点一个配置 节点名称=>配置")
