@@ -51,27 +51,27 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     public void resolveImageScanJson(Long gitlabPipelineId, Long jobId, Date startDate, Date endDate, MultipartFile file) {
         LOGGER.info(">>>>>>>>>>>>>>>>>>startDate:{},endDate:{}", startDate, endDate);
         //file 有可能为null,如果镜像没有漏洞这个报告文件就是空的
-        if (Objects.isNull(file)) {
-            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-            devopsImageScanResultDTO.setStartDate(startDate);
-            devopsImageScanResultDTO.setEndDate(endDate);
-
-            DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
-            scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-            DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
-            if (Objects.isNull(resultDTO)) {
-                devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
-            } else {
-                BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
-                devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
-            }
-            return;
-        }
         String content = null;
         try {
             content = new String(file.getBytes(), "UTF-8");
             LOGGER.info(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
+            if (StringUtils.isEmpty(content)) {
+                DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+                devopsImageScanResultDTO.setStartDate(startDate);
+                devopsImageScanResultDTO.setEndDate(endDate);
+
+                DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
+                scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+                DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
+                if (Objects.isNull(resultDTO)) {
+                    devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
+                } else {
+                    BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
+                    devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
+                }
+                return;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -240,6 +240,10 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     public Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, PageRequest pageRequest, String options) {
         Page<DevopsImageScanResultDTO> devopsImageScanResultDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsImageScanResultMapper.pageByOptions(gitlabPipelineId, options));
         Page<DevopsImageScanResultVO> devopsImageScanResultVOS = ConvertUtils.convertPage(devopsImageScanResultDTOPage, DevopsImageScanResultVO.class);
+        List<DevopsImageScanResultVO> imageScanResultVOS = devopsImageScanResultVOS.getContent().stream().filter(devopsImageScanResultVO -> StringUtils.isEmpty(devopsImageScanResultVO.getVulnerabilityCode())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(imageScanResultVOS)) {
+            new Page();
+        }
         return devopsImageScanResultVOS;
     }
 
