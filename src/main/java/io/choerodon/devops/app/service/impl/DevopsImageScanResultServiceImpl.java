@@ -49,10 +49,11 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void resolveImageScanJson(Long gitlabPipelineId, Long jobId, Date startDate, Date endDate, MultipartFile file) {
-        LOGGER.debug(">>>>>>>>>>>>>>>>>>startDate:{},endDate:{}", startDate, endDate);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>startDate:{},endDate:{}", startDate, endDate);
         String content = null;
         try {
             content = new String(file.getBytes(), "UTF-8");
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,7 +61,6 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             return;
         }
 
-        LOGGER.debug(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
         List<ImageScanResultVO> imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
         });
         if (CollectionUtils.isEmpty(imageScanResultVOS)) {
