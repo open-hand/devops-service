@@ -41,6 +41,7 @@ import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareDeployPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
@@ -124,6 +125,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private EncryptService encryptService;
     @Autowired
     private DevopsPvcService devopsPvcService;
+
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
      *
@@ -274,6 +276,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             description = "主机部署mysql中间件", inputSchemaClass = DevopsMiddlewareDeployPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForMySql(Long projectId, MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
+        // 节点数量大于1时，需要设置virtualIp
+        if (middlewareMySqlHostDeployVO.getHostIds().size() > 1) {
+            if (!GitOpsConstants.IP_REG_PATTERN.matcher(middlewareMySqlHostDeployVO.getVirtualIp()).matches()) {
+                throw new CommonException("error.virtual.ip.invalid");
+            }
+        }
+
         checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getName(), MYSQL.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareMySqlHostDeployVO.getHostIds());
