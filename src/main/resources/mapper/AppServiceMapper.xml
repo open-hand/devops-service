@@ -797,4 +797,39 @@
             #{projectId}
         </foreach>
     </select>
+
+    <select id="listShareAppServiceHavingVersion" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT da.id, da.`code`, da.`name`, da.project_id, da.chart_config_id, da.harbor_config_id
+        FROM (SELECT distinct dasv.app_service_id
+              FROM devops_app_service_version dasv
+                       INNER JOIN (SELECT dasr.id, dasr.app_service_id, dasr.version_type, dasr.version
+                                   FROM devops_app_service_share_rule dasr
+                                            INNER JOIN (SELECT das.id
+                                                        FROM devops_app_service das
+                                                        WHERE das.project_id
+                                                            IN (
+                                                                <foreach collection="projectIds" separator="," item="projectId">
+                                                                    #{projectId}
+                                                                </foreach>
+                                                                  )
+                                                          AND das.is_active = true) dastmp ON dasr.app_service_id = dastmp.id
+                                   WHERE dasr.share_level = 'organization'
+                                      OR (dasr.share_level = 'project' AND dasr.project_id = #{currentProjectId})) rule
+                                  ON dasv.app_service_id = rule.app_service_id
+              WHERE dasv.version = rule.version
+                 OR (rule.version_type is not null AND dasv.version like CONCAT('%', CONCAT(rule.version_type, '%')))) ids
+                 INNER JOIN devops_app_service da ON ids.app_service_id = da.id
+        <where>
+            <if test="type != null">
+                AND da.type = #{type}
+            </if>
+            <if test='params != null and params.size > 0'>
+                AND
+                <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                    (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                    OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -259,4 +259,8 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询平台中所有用户的id")
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/list_project_category")
     ResponseEntity<List<String>> listProjectCategoryById(@PathVariable(name = "project_id") Long projectId);
+
+    @GetMapping("/choerodon/v1/projects/list/ids_in_org")
+    @ApiOperation("根据组织id查询项目的id集合")
+    ResponseEntity<String> listProjectIdsInOrg(@RequestParam("tenant_id") Long tenantId);
 }

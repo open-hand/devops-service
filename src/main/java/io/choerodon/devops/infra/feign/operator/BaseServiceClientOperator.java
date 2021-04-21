@@ -355,6 +355,7 @@ public class BaseServiceClientOperator {
         }
         return isGitLabOrgOwner;
     }
+
     public Boolean checkIsOrgOrProjectGitlabOwner(Long userId, Long projectId) {
         Boolean isGitLabOrgOwner;
         try {
@@ -554,7 +555,18 @@ public class BaseServiceClientOperator {
      * @param projectId 项目id
      * @return 不可变信息
      */
-    public ImmutableProjectInfoVO queryImmutableProjectInfoFromCache(Long projectId) {
+    public ImmutableProjectInfoVO queryImmutableProjectInfo(Long projectId) {
         return FeignClientUtils.doRequest(() -> baseServiceClient.immutableProjectInfoById(projectId), ImmutableProjectInfoVO.class);
+    }
+
+    /**
+     * 查询组织下的项目id集合
+     *
+     * @param tenantId 组织id
+     * @return id集合
+     */
+    public Set<Long> listProjectIdsInOrg(Long tenantId) {
+        return FeignClientUtils.doRequest(() -> baseServiceClient.listProjectIdsInOrg(tenantId), new TypeReference<Set<Long>>() {
+        });
     }
 }

@@ -2234,7 +2234,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 是否需要进行项目成员gitlab角色校验
             Set<Long> appServiceIds;
             if (checkMember) {
-                Long tenantId = baseServiceClientOperator.queryImmutableProjectInfoFromCache(projectId).getTenantId();
+                Long tenantId = baseServiceClientOperator.queryImmutableProjectInfo(projectId).getTenantId();
                 appServiceIds = getMemberAppServiceIds(tenantId, projectId, userId);
                 if (CollectionUtils.isEmpty(appServiceIds)) {
                     return new Page<>();
@@ -2454,50 +2454,53 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType) {
-        List<AppServiceDTO> list = new ArrayList<>();
         List<String> params = new ArrayList<>();
-        List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
-        if (param != null && !param.isEmpty()) {
+        if (!StringUtils.isEmpty(param)) {
             params.add(param);
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                list.addAll(appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, ""));
+                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "");
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
-                appServiceGroupList.add(appServiceGroupVO);
-                break;
+                return ArrayUtil.singleAsList(appServiceGroupVO);
             }
             case SHARE_SERVICE: {
-                Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
-                List<Long> appServiceIds = new ArrayList<>();
-                baseServiceClientOperator.listIamProjectByOrgId(organizationId)
-                        .forEach(pro -> {
-                                    if (!pro.getId().equals(projectId)) {
-                                        baseListByProjectId(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()));
-                                    }
-                                }
-                        );
-                list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
-                Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
-                        .map(this::dtoToGroupInfoVO)
-                        .filter(v -> !projectId.equals(v.getId()))
-                        .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
-
-                for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(entry.getKey());
-                    AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
-                    appServiceGroupVO.setName(projectDTO.getName());
-                    appServiceGroupVO.setCode(projectDTO.getCode());
-                    appServiceGroupVO.setId(projectDTO.getId());
-                    appServiceGroupVO.setAppServiceList(entry.getValue());
-                    appServiceGroupList.add(appServiceGroupVO);
-                }
-                break;
+                return listAllAppServicesHavingVersion(projectId, params, serviceType);
             }
             default: {
                 throw new CommonException("error.list.deploy.app.service.type");
             }
+        }
+    }
+
+    private List<AppServiceGroupVO> listAllAppServicesHavingVersion(Long projectId, List<String> params, String serviceType) {
+        List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
+        Long organizationId = baseServiceClientOperator.queryImmutableProjectInfo(projectId).getTenantId();
+
+        // 查询当前组织下的所有项目id
+        Set<Long> ids = baseServiceClientOperator.listProjectIdsInOrg(organizationId);
+        // 移除当前项目
+        ids.remove(projectId);
+        List<AppServiceDTO> list = appServiceMapper.listShareAppServiceHavingVersion(ids, projectId, serviceType, params);
+
+        // 将应用服务按照项目分组
+        Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
+                .map(this::dtoToGroupInfoVO)
+                .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
+
+        // 批量查询项目信息
+        Map<Long, ProjectDTO> projectMap = baseServiceClientOperator.queryProjectsByIds(map.keySet()).stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+
+        // 填充项目的信息
+        for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
+            ProjectDTO projectDTO = projectMap.get(entry.getKey());
+            AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+            appServiceGroupVO.setName(projectDTO.getName());
+            appServiceGroupVO.setCode(projectDTO.getCode());
+            appServiceGroupVO.setId(projectDTO.getId());
+            appServiceGroupVO.setAppServiceList(entry.getValue());
+            appServiceGroupList.add(appServiceGroupVO);
         }
         return appServiceGroupList;
     }
@@ -2932,7 +2935,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void initApplicationParams(Long projectId, List<AppServiceDTO> applicationDTOS, String urlSlash) {
-        ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfoFromCache(projectId);
+        ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         for (AppServiceDTO t : applicationDTOS) {
             initApplicationParams(info, t, urlSlash);
         }
@@ -3006,7 +3009,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = appServiceMapper.selectWithEmptyRepositoryByPrimaryKey(appServiceId);
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        initApplicationParams(baseServiceClientOperator.queryImmutableProjectInfoFromCache(projectId), appServiceDTO, urlSlash);
+        initApplicationParams(baseServiceClientOperator.queryImmutableProjectInfo(projectId), appServiceDTO, urlSlash);
 
         AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
