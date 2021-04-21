@@ -77,6 +77,15 @@ public class DevopsCiJobRecordVO {
      */
     private Boolean imageScan;
 
+    private Long mavenSettingId;
+
+    public Long getMavenSettingId() {
+        return mavenSettingId;
+    }
+
+    public void setMavenSettingId(Long mavenSettingId) {
+        this.mavenSettingId = mavenSettingId;
+    }
 
     public Boolean getImageScan() {
         return imageScan;

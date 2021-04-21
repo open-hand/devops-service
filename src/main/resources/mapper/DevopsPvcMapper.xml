@@ -42,6 +42,10 @@
                 AND
                 dpvc.status=#{searchParam.status, jdbcType=VARCHAR}
             </if>
+            <if test='searchParam.used != null'>
+                AND
+                dpvc.used=#{searchParam.used,jdbcType=TINYINT}
+            </if>
         </if>
         <if test='params != null and params.size > 0'>
             AND

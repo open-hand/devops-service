@@ -96,6 +96,7 @@
         da.is_active = 1
         AND dgc.user_id=#{userId}
         AND dgc.commit_date <![CDATA[>=]]> #{date}
+        AND dgc.url IS NOT NULL
         AND da.project_id IN
         <foreach collection="projectIds" item="projectId" separator="," open="(" close=")">
             #{projectId}

@@ -1,6 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.math.BigDecimal;
+import java.util.*;
+
 import com.google.gson.Gson;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.models.V1ResourceRequirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -27,22 +44,6 @@ import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
-import io.kubernetes.client.models.V1ResourceRequirements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
@@ -239,6 +240,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         if (CommandType.CREATE.getType().equals(devopsPvcReqVO.getCommandType())) {
             devopsEnvCommandDTO.setCreatedBy(userId);
+            devopsPvcDTO.setUsed(0);
             Long pvcId = createPvcRecord(devopsPvcDTO).getId();
             devopsEnvCommandDTO.setObjectId(pvcId);
             devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
@@ -292,6 +294,16 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     }
 
     @Override
+    public void setUsed(Long envId, String pvcName) {
+        DevopsPvcDTO searchDTO = new DevopsPvcDTO();
+        searchDTO.setEnvId(envId);
+        searchDTO.setName(pvcName);
+        DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectOne(searchDTO);
+        devopsPvcDTO.setUsed(1);
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsPvcMapper, devopsPvcDTO, "error.update.pvc.used");
+    }
+
+    @Override
     public DevopsPvcDTO queryById(Long pvcId) {
         return devopsPvcMapper.selectByPrimaryKey(pvcId);
     }
@@ -335,6 +347,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
         devopsPvcDTO.setAccessModes(devopsPvDTO.getAccessModes());
+        // 未使用状态
+        devopsPvcDTO.setUsed(0);
         return devopsPvcDTO;
     }
 

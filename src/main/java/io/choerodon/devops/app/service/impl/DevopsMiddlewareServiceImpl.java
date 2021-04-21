@@ -40,10 +40,7 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareDeployPayload;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsMiddlewareService;
-import io.choerodon.devops.app.service.EncryptService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
@@ -125,7 +122,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private EncryptService encryptService;
-
+    @Autowired
+    private DevopsPvcService devopsPvcService;
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
      *
@@ -642,6 +640,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         configuration.put("{{ usePassword }}", "true");
 
         if (!StringUtils.isEmpty(middlewareRedisEnvDeployVO.getPvcName())) {
+            // 将对应pvc设为已使用状态
+            devopsPvcService.setUsed(middlewareRedisEnvDeployVO.getEnvironmentId(), middlewareRedisEnvDeployVO.getPvcName());
             configuration.put("{{ persistence-enabled }}", "true");
             configuration.put("{{ persistence-info }}", String.format(REDIS_STANDALONE_PERSISTENCE_TEMPLATE, middlewareRedisEnvDeployVO.getPvcName()));
         } else {
