@@ -139,7 +139,8 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     private void securityMonitor(Integer integer, SecurityConditionConfigVO securityConditionConfigVO) {
         if (StringUtils.equalsIgnoreCase("<=", securityConditionConfigVO.getSymbol())) {
             if (!(integer.intValue() <= securityConditionConfigVO.getCondition().intValue())) {
-                throw new DevopsCiInvalidException("Does not meet the security control conditions：{}", integer);
+                LOGGER.info("loophole count:{},security control:{}", integer.intValue(), securityConditionConfigVO.getCondition().intValue());
+                throw new DevopsCiInvalidException("Does not meet the security control conditions");
             }
         }
     }
