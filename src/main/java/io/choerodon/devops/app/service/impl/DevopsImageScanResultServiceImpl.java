@@ -56,6 +56,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             content = new String(file.getBytes(), "UTF-8");
             LOGGER.info(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
             if (StringUtils.isEmpty(content)) {
+                LOGGER.info(">>>>>>>>>1.>>>>>>>>>>>");
                 DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
                 devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
                 devopsImageScanResultDTO.setStartDate(startDate);
@@ -65,10 +66,12 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
                 scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
                 DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
                 if (Objects.isNull(resultDTO)) {
-                    devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
+                    int insert = devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
+                    LOGGER.info(">>>>>>>>>>>>>>>>2.{}>>>>>>>>>>>", insert);
                 } else {
                     BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
-                    devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
+                    int insert = devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
+                    LOGGER.info(">>>>>>>>>>>>>>>>3.{}>>>>>>>>>>>", insert);
                 }
                 return;
             }
