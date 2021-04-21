@@ -14,7 +14,6 @@ import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 
@@ -25,6 +24,11 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
 public class BaseServiceClientFallback implements BaseServiceClient {
     private static final String ERROR_PROJECT_GET = "error.project.get";
     private static final String ERROR_PROJECT_QUERY_BY_ID = "error.project.query.by.id";
+
+    @Override
+    public ResponseEntity<String> immutableProjectInfoById(Long id) {
+        throw new CommonException(ERROR_PROJECT_QUERY_BY_ID, id);
+    }
 
     @Override
     public ResponseEntity<ProjectDTO> queryIamProject(Long projectId, Boolean withCategoryInfo, Boolean withUserInfo, Boolean withAgileInfo) {
@@ -118,6 +122,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<Boolean> checkIsGitlabOrgOwner(Long userId, Long projectId) {
         throw new CommonException("error.check.org.permission");
+    }
+
+    @Override
+    public ResponseEntity<Boolean> checkIsOrgOrProjectGitlabOwner(Long id, Long projectId) {
+        throw new CommonException("error.check.org.project.owner");
     }
 
     @Override

@@ -39,8 +39,8 @@
         dpv.description,
         dpv.created_by,
         dpv.last_update_date,
-        de.`name` AS envName,
-        da.`name` AS appServiceName,
+        de.`name` AS env_name,
+        da.`name` AS app_service_name,
         dpv.env_id,
         dpv.app_service_id
         FROM
@@ -67,8 +67,8 @@
         dpv.description,
         dpv.created_by,
         dpv.last_update_date,
-        de.`name` AS envName,
-        da.`name` AS appServiceName,
+        de.`name` AS env_name,
+        da.`name` AS app_service_name,
         dpv.env_id,
         dpv.app_service_id
         FROM

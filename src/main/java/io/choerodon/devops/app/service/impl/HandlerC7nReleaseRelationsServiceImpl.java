@@ -404,10 +404,14 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         // 设置values为配置库的values和版本的values合并值
         marketInstanceCreationRequestVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
         marketInstanceCreationRequestVO.setMarketDeployObjectId(appServiceVersion.getId());
-        marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getDevopsAppServiceVersion());
         marketInstanceCreationRequestVO.setMarketAppServiceId(appServiceVersion.getMarketServiceId());
         marketInstanceCreationRequestVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         marketInstanceCreationRequestVO.setSource(c7nHelmRelease.getSpec().getSource());
+        if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(c7nHelmRelease.getSpec().getSource())) {
+            marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getMarketServiceVersion());
+        } else {
+            marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getDevopsAppServiceVersion());
+        }
         if (type.equals(CommandType.UPDATE.getType())) {
             DevopsEnvCommandDTO devopsEnvCommandDTO;
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
@@ -566,7 +570,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         }
 
         // 如果项目下没有这个服务或者，项目下的服务没有这个版本
-        if (result == null){
+        if (result == null) {
             // 如果项目下没有这个服务
             // 查询组织下的所有项目中有这个版本名的应用服务
             // 先查询所有的项目id

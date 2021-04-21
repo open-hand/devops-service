@@ -54,6 +54,8 @@ public class DevopsPvcDTO extends AuditDomain {
     @Transient
     private String type;
 
+    private Integer used;
+
     public String getType() {
         return type;
     }
@@ -148,5 +150,13 @@ public class DevopsPvcDTO extends AuditDomain {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public Integer getUsed() {
+        return used;
+    }
+
+    public void setUsed(Integer used) {
+        this.used = used;
     }
 }

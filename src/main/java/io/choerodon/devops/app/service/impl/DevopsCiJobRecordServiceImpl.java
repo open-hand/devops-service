@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +20,13 @@ import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -35,10 +41,13 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private DevopsCiJobService devopsCiJobService;
+    @Autowired
+    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
 
     public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
                                         @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
@@ -122,9 +131,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         recordDTO.setName(jobDTO.getName());
         recordDTO.setTriggerUserId(iamUserId);
         DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
+        logger.debug(">>>>>>>>>>>>>{}>>>>>>>>>>>>>>>", JsonHelper.marshalByJackson(existDevopsCiJobDTO));
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
             recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
+            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
+            devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());
+            DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
+            recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
         }
 
         devopsCiJobRecordMapper.insertSelective(recordDTO);
