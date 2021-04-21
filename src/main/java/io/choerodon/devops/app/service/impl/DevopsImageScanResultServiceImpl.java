@@ -245,7 +245,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         Page<DevopsImageScanResultVO> devopsImageScanResultVOS = ConvertUtils.convertPage(devopsImageScanResultDTOPage, DevopsImageScanResultVO.class);
         List<DevopsImageScanResultVO> imageScanResultVOS = devopsImageScanResultVOS.getContent().stream().filter(devopsImageScanResultVO -> !StringUtils.isEmpty(devopsImageScanResultVO.getVulnerabilityCode())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(imageScanResultVOS)) {
-            new Page();
+            return new Page<>();
         }
         return devopsImageScanResultVOS;
     }
