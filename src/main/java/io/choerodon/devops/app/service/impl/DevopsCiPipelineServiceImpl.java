@@ -1361,7 +1361,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     //增加afterScript
                     ciJob.setAfterScript(buildAfterScript(job));
                     //增加services
-                    ciJob.setServices(ArrayUtil.singleAsList(buildServices(job)));
+                    CiJobServices ciJobServices = buildServices(job);
+                    ciJob.setServices(Objects.isNull(ciJobServices) ? null : ArrayUtil.singleAsList(ciJobServices));
                     ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
@@ -1538,7 +1539,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                         config.getDockerContextDir(),
                                         config.getDockerFilePath(),
                                         doTlsVerify == null || !doTlsVerify,
-                                        Objects.isNull(imageScan) ? false : imageScan,jobVO));
+                                        Objects.isNull(imageScan) ? false : imageScan, jobVO));
                                 break;
                             // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
                             case UPLOAD_JAR:
