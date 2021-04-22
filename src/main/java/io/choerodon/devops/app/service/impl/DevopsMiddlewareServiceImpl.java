@@ -5,6 +5,7 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MYSQL;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
+import static io.choerodon.devops.infra.enums.deploy.MiddlewareDeployModeEnum.*;
 import static org.hzero.core.util.StringPool.SLASH;
 
 import java.io.IOException;
@@ -76,10 +77,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String MYSQL_INSTALL_LOG_PATH = "/tmp/mysql-install.log";
 
-    private static final String STANDALONE_MODE = "standalone";
-
-    private static final String SENTINEL_MODE = "sentinel";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMiddlewareServiceImpl.class);
 
     private static final String REDIS_SENTINEL_VALUE_TEMPLATE;
@@ -142,11 +139,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareRedisEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareRedisEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
 
-        if (STANDALONE_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
+        if (STANDALONE.getValue().equals(middlewareRedisEnvDeployVO.getMode())) {
             middlewareRedisEnvDeployVO.setValues(generateRedisStandaloneValues(middlewareRedisEnvDeployVO));
         }
 
-        if (SENTINEL_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
+        if (SENTINEL.getValue().equals(middlewareRedisEnvDeployVO.getMode())) {
             middlewareRedisEnvDeployVO.setValues(generateRedisSentinelValues(middlewareRedisEnvDeployVO));
         }
 
@@ -158,7 +155,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     public AppServiceInstanceVO envDeployForMySql(Long projectId, MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO) {
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), STANDALONE_MODE, middlewareMySqlEnvDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), STANDALONE.getValue(), middlewareMySqlEnvDeployVO.getVersion());
 
         middlewareMySqlEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareMySqlEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
@@ -187,12 +184,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         Map sentinelConfig = (Map) values.get("sentinel");
         if (sentinelConfig != null) {
-            middlewareRedisEnvDeployVO.setMode(SENTINEL_MODE);
+            middlewareRedisEnvDeployVO.setMode(SENTINEL.getValue());
             middlewareRedisEnvDeployVO.setSlaveCount((Integer) ((Map) values.get("cluster")).get("slaveCount"));
             middlewareRedisEnvDeployVO.setPvLabels((Map<String, String>) ((Map) values.get("slave")).get("matchLabels"));
             middlewareRedisEnvDeployVO.setConfiguration(getConfigMap((String) values.get("configmap")));
         } else {
-            middlewareRedisEnvDeployVO.setMode(STANDALONE_MODE);
+            middlewareRedisEnvDeployVO.setMode(STANDALONE.getValue());
             if (values.get("persistence") != null) {
                 middlewareRedisEnvDeployVO.setPvcName((String) ((Map) values.get("persistence")).get("existingClaim"));
             }
@@ -208,13 +205,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
-        if (SENTINEL_MODE.equals(middlewareRedisHostDeployVO.getMode())) {
+        if (SENTINEL.getValue().equals(middlewareRedisHostDeployVO.getMode())) {
             CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
         }
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareRedisHostDeployVO.getHostIds());
 
-        if (SENTINEL_MODE.equals(middlewareRedisHostDeployVO.getMode())) {
+        if (SENTINEL.getValue().equals(middlewareRedisHostDeployVO.getMode())) {
             CommonExAssertUtil.assertTrue(devopsHostDTOList.size() >= 3, "error.host.size.less.than.3");
         }
 
@@ -276,8 +273,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             description = "主机部署mysql中间件", inputSchemaClass = DevopsMiddlewareDeployPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForMySql(Long projectId, MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
-        // 节点数量大于1时，需要设置virtualIp
-        if (middlewareMySqlHostDeployVO.getHostIds().size() > 1) {
+        // master-slave模式，节点数量必须为2，且需要设置virtualIp
+        if (MASTER_SLAVE.getValue().equals(middlewareMySqlHostDeployVO.getMode()) && middlewareMySqlHostDeployVO.getHostIds().size() != 2) {
+            if (middlewareMySqlHostDeployVO.getHostIds().size() != 2) {
+                throw new CommonException("error.mysql.master-slave.host.count");
+            }
             if (!GitOpsConstants.IP_REG_PATTERN.matcher(middlewareMySqlHostDeployVO.getVirtualIp()).matches()) {
                 throw new CommonException("error.virtual.ip.invalid");
             }

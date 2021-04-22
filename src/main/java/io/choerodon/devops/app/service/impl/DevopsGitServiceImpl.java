@@ -1177,7 +1177,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-        Set<String> commitSha = new HashSet<>();
+        Set<String> commitSha;
 
         if (StringUtils.isEmpty(to)) {
             return new HashSet<>();
