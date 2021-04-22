@@ -88,15 +88,20 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private static final String MIDDLEWARE_STATUS_SYNC_LOCK = "middleware-status-sync-lock";
 
     static {
-        InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml");
-        InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-standalone-value-template.yaml");
-        InputStream mysqlStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/mysql/mysql-standalone-value-template.yaml");
-        try {
+        try (InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml")) {
             REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new CommonException("error.middleware.value.template");
+        }
+        try (InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-standalone-value-template.yaml")) {
             REDIS_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(redisStandaloneInputStream, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new CommonException("error.middleware.value.template");
+        }
+        try (InputStream mysqlStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/mysql/mysql-standalone-value-template.yaml")) {
             MYSQL_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(mysqlStandaloneInputStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new CommonException("error.load.ci.sh");
+        } catch (Exception e) {
+            throw new CommonException("error.middleware.value.template");
         }
     }
 
