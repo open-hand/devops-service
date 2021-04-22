@@ -704,6 +704,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         configuration.put("{{ password }}", middlewareMySqlEnvDeployVO.getPassword());
 
         if (!StringUtils.isEmpty(middlewareMySqlEnvDeployVO.getPvcName())) {
+            // 将对应pvc设为已使用状态
+            devopsPvcService.setUsed(middlewareMySqlEnvDeployVO.getEnvironmentId(), middlewareMySqlEnvDeployVO.getPvcName());
             configuration.put("{{ persistence-enabled }}", "true");
             configuration.put("{{ persistence-info }}", String.format(MYSQL_STANDALONE_PERSISTENCE_TEMPLATE, middlewareMySqlEnvDeployVO.getPvcName()));
         } else {
