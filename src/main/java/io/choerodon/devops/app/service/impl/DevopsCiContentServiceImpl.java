@@ -39,8 +39,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
 
 
     static {
-        InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_PATH);
-        try {
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_PATH)) {
             DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new CommonException("error.load.default.empty.gitlab.ci.file");

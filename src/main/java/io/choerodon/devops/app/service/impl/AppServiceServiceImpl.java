@@ -63,9 +63,9 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
 import io.choerodon.devops.api.vo.sonar.*;
@@ -231,8 +231,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsAppTemplateService devopsAppTemplateService;
 
     static {
-        InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh");
-        try {
+        try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
             CI_FILE_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new CommonException("error.load.ci.sh");
