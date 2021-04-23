@@ -53,5 +53,5 @@ public interface DevopsMergeRequestMapper extends BaseMapper<DevopsMergeRequestD
      * @param branchNames 所有的分支名称
      * @return
      */
-    Integer countMergedBranchesByName(@Param("branchNames") Set<String> branchNames);
+    Integer countMergedBranchesByName(@Param("branchNames") Set<String> branchNames, @Param("gitlabProjectId") Long gitlabProjectId);
 }
