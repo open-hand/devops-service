@@ -144,7 +144,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
                 Set<String> branchNames = devopsBranchDTOS.stream().map(DevopsBranchDTO::getBranchName).collect(Collectors.toSet());
                 // 如果tag关联了2个及以上分支，那么已合并分支数量等于tag关联分支数量才发送saga
                 if (branchNames.size() >= 2) {
-                    Integer count = devopsMergeRequestMapper.countMergedBranchesByName(branchNames);
+                    Integer count = devopsMergeRequestMapper.countMergedBranchesByName(branchNames,gitlabProjectId);
                     if (count == branchNames.size()) {
                         applyMergeRequestSaga(issueId, appServiceDTO);
                     }
