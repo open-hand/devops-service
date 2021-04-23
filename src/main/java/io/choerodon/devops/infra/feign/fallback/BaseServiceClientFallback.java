@@ -41,7 +41,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ResourceLimitVO> queryResourceLimit() {
+    public ResponseEntity<ResourceLimitVO> queryResourceLimit(Long organizationId) {
         throw new CommonException("error.query.resource.limit");
     }
 

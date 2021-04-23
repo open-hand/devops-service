@@ -203,8 +203,8 @@ public interface BaseServiceClient {
     /**
      * 查询资源限制
      */
-    @GetMapping("/choerodon/v1/organizations/resource_limit")
-    ResponseEntity<ResourceLimitVO> queryResourceLimit();
+    @GetMapping("/choerodon/v1/organizations/{organization_id}/resource_limit")
+    ResponseEntity<ResourceLimitVO> queryResourceLimit(@PathVariable("organization_id") Long organizationId);
 
     /**
      * 根据名称查询客户端

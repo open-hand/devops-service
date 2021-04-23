@@ -512,8 +512,8 @@ public class BaseServiceClientOperator {
         return pageInfoResponseEntity.getBody();
     }
 
-    public ResourceLimitVO queryResourceLimit() {
-        ResponseEntity<ResourceLimitVO> resourceLimitVOResponseEntity = baseServiceClient.queryResourceLimit();
+    public ResourceLimitVO queryResourceLimit(Long organizationId) {
+        ResponseEntity<ResourceLimitVO> resourceLimitVOResponseEntity = baseServiceClient.queryResourceLimit(organizationId);
         return resourceLimitVOResponseEntity.getBody();
     }
 

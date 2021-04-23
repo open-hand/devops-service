@@ -76,8 +76,8 @@ public class AppServiceUtils {
 
     public Boolean checkEnableCreateAppSvcWithSize(Long projectId, int appSize) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
-        if (baseServiceClientOperator.checkOrganizationIsRegistered(projectDTO.getOrganizationId())) {
-            ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
+        ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(projectDTO.getOrganizationId());
+        if (resourceLimitVO != null) {
             AppServiceDTO example = new AppServiceDTO();
             example.setProjectId(projectId);
             int num = appServiceMapper.selectCount(example);
