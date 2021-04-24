@@ -3,10 +3,13 @@ package io.choerodon.devops.api.vo;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 
 public class MiddlewareMySqlHostDeployVO {
     @ApiModelProperty("主机id")
@@ -24,6 +27,8 @@ public class MiddlewareMySqlHostDeployVO {
     private String password;
     @ApiModelProperty("部署版本")
     private String version;
+    @ApiModelProperty("虚拟ip地址")
+    private String virtualIp;
     @ApiModelProperty("配置内容,一个节点一个配置 节点名称=>配置")
     private Map<String, Map<String, String>> configuration;
 
@@ -75,5 +80,11 @@ public class MiddlewareMySqlHostDeployVO {
         this.password = password;
     }
 
+    public String getVirtualIp() {
+        return virtualIp;
+    }
 
+    public void setVirtualIp(String virtualIp) {
+        this.virtualIp = virtualIp;
+    }
 }

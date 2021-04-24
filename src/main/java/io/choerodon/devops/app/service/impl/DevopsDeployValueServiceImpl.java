@@ -42,13 +42,12 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private AppServiceService appServiceService;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-    @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
-    private static final Map<String, String> orderByFieldMap;
+    private static final Map<String, String> ORDER_BY_FIELD_MAP_FOR_OWNER;
+    private static final Map<String, String> ORDER_BY_FIELD_MAP_FOR_MEMBER;
 
     static {
         Map<String, String> map = new HashMap<>();
@@ -56,7 +55,14 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         map.put("appServiceName", "da.name");
         map.put("name", "dpv.name");
         map.put("lastUpdateDate", "dpv.last_update_date");
-        orderByFieldMap = Collections.unmodifiableMap(map);
+        ORDER_BY_FIELD_MAP_FOR_OWNER = Collections.unmodifiableMap(map);
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("envName", "c.env_name");
+        map2.put("appServiceName", "c.app_service_name");
+        map2.put("name", "c.name");
+        map2.put("lastUpdateDate", "c.last_update_date");
+        ORDER_BY_FIELD_MAP_FOR_MEMBER = Collections.unmodifiableMap(map2);
     }
 
     @Override
@@ -151,7 +157,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, ORDER_BY_FIELD_MAP_FOR_OWNER), () -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
     @Override
@@ -159,7 +165,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+        return PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, ORDER_BY_FIELD_MAP_FOR_MEMBER), () -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
     @Override

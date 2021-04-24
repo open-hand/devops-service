@@ -6,15 +6,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pvc.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，PVC id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(40)', remarks: 'PVC名称'){
+            column(name: 'name', type: 'VARCHAR(40)', remarks: 'PVC名称') {
                 constraints(nullable: false)
             }
-            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id'){
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id') {
                 constraints(nullable: false)
             }
             column(name: 'pv_id', type: 'BIGINT UNSIGNED', remarks: '绑定PV id')
             column(name: 'pv_name', type: 'VARCHAR(32)', remarks: '绑定PV 名称')
-            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id'){
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
                 constraints(nullable: false)
             }
             column(name: 'access_modes', type: 'VARCHAR(32)', remarks: '访问模式')
@@ -32,6 +32,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pvc.groovy') {
 
         createIndex(indexName: "idx_devops_pvc_name", tableName: "devops_pvc") {
             column(name: "name")
+        }
+    }
+
+    changeSet(id: '2021-04-16-add-column', author: 'lihao') {
+        addColumn(tableName: 'devops_pvc') {
+            column(name: 'used', type: 'tinyint(1)', defaultValue: 0, remarks: '表示PVC是否被使用 0:未使用 1:已使用', afterColumn: 'status')
         }
     }
 }

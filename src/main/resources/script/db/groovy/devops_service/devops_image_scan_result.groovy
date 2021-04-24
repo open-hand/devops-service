@@ -33,4 +33,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_image_scan_result.groovy') {
         }
 
     }
+
+    changeSet(author: 'wx', id: '2021-04-21-devops_image_scan_result') {
+        sql("""
+           alter table devops_image_scan_result modify VULNERABILITY_CODE varchar(20) null;
+           alter table devops_image_scan_result modify PKG_NAME varchar(64) null;
+           alter table devops_image_scan_result modify INSTALLED_VERSION varchar(64) null;
+        """)
+
+    }
 }

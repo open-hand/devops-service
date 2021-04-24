@@ -320,11 +320,11 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             return false;
         }
 
-        // 校验pod存在
-        if (!podExists(envId, podName)) {
-            logger.info("The pod with name {} doesn't exist in the env with id {}", podName, envId);
-            return false;
-        }
+        // 校验pod存在 自动化测试的查看日志没有pod，但是也要查看日志
+//        if (!podExists(envId, podName)) {
+//            logger.info("The pod with name {} doesn't exist in the env with id {}", podName, envId);
+//            return false;
+//        }
 
         return true;
     }

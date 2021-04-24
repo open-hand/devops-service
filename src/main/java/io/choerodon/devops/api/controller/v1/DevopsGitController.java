@@ -235,7 +235,7 @@ public class DevopsGitController {
             @ApiParam(value = "应用服务id", required = true)
             @Encrypt @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "前一个tag")
-            @RequestParam(value = "from") String from,
+            @RequestParam(value = "from", required = false) String from,
             @ApiParam(value = "后一个tag")
             @RequestParam(value = "to") String to) {
         return ResponseEntity.ok(devopsGitService.getIssueIdsBetweenTags(projectId, appServiceId, from, to));

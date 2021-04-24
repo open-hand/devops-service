@@ -2,10 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -49,44 +46,51 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void resolveImageScanJson(Long gitlabPipelineId, Long jobId, Date startDate, Date endDate, MultipartFile file) {
-        LOGGER.debug("startDate:{},endDate:{}", startDate, endDate);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>startDate:{},endDate:{}", startDate, endDate);
+        //file 有可能为null,如果镜像没有漏洞这个报告文件就是空的
         String content = null;
+        List<ImageScanResultVO> imageScanResultVOS = new ArrayList<>();
         try {
             content = new String(file.getBytes(), "UTF-8");
+            LOGGER.debug(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
+            if (StringUtils.isEmpty(content)) {
+                handEmptyScanResult(gitlabPipelineId, startDate, endDate);
+                return;
+            } else {
+                imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
+                });
+                if (CollectionUtils.isEmpty(imageScanResultVOS)) {
+                    handEmptyScanResult(gitlabPipelineId, startDate, endDate);
+                    return;
+                } else {
+                    ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
+                    List<VulnerabilitieVO> vulnerabilities = imageScanResultVO.getVulnerabilities();
+                    vulnerabilities.forEach(vulnerabilitieVO -> {
+                        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                        devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
+                        BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
+                        devopsImageScanResultDTO.setStartDate(startDate);
+                        devopsImageScanResultDTO.setEndDate(endDate);
+                        devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+                        DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
+                        scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+                        scanResultDTO.setVulnerabilityCode(vulnerabilitieVO.getVulnerabilityCode());
+                        scanResultDTO.setTarget(imageScanResultVO.getTarget());
+                        DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
+                        if (Objects.isNull(resultDTO)) {
+                            devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
+                        } else {
+                            BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
+                            devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
+                        }
+                    });
+                }
+
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (StringUtils.isEmpty(content)) {
-            return;
-        }
 
-        LOGGER.debug("trivy scan result:{}", content);
-        List<ImageScanResultVO> imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
-        });
-        if (CollectionUtils.isEmpty(imageScanResultVOS)) {
-            return;
-        }
-        ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
-        List<VulnerabilitieVO> vulnerabilities = imageScanResultVO.getVulnerabilities();
-        vulnerabilities.forEach(vulnerabilitieVO -> {
-            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-            devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
-            BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
-            devopsImageScanResultDTO.setStartDate(startDate);
-            devopsImageScanResultDTO.setEndDate(endDate);
-            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-            DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
-            scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-            scanResultDTO.setVulnerabilityCode(vulnerabilitieVO.getVulnerabilityCode());
-            scanResultDTO.setTarget(imageScanResultVO.getTarget());
-            DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
-            if (Objects.isNull(resultDTO)) {
-                devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
-            } else {
-                BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
-                devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
-            }
-        });
 
         //检查门禁条件
         if (!Objects.isNull(jobId) && jobId > 0) {
@@ -136,10 +140,29 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
     }
 
+    private void handEmptyScanResult(Long gitlabPipelineId, Date startDate, Date endDate) {
+        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+        devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+        devopsImageScanResultDTO.setStartDate(startDate);
+        devopsImageScanResultDTO.setEndDate(endDate);
+
+        DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
+        scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+        DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
+        if (Objects.isNull(resultDTO)) {
+            devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
+        } else {
+            BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
+            devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
+        }
+    }
+
     private void securityMonitor(Integer integer, SecurityConditionConfigVO securityConditionConfigVO) {
         if (StringUtils.equalsIgnoreCase("<=", securityConditionConfigVO.getSymbol())) {
             if (!(integer.intValue() <= securityConditionConfigVO.getCondition().intValue())) {
-                throw new DevopsCiInvalidException("Does not meet the security control conditions：{}", integer);
+                LOGGER.info("loophole count:{},security control:{}", integer.intValue(), securityConditionConfigVO.getCondition().intValue());
+                throw new DevopsCiInvalidException("Does not meet the security control conditions," + securityConditionConfigVO.getLevel()
+                        + " loophole count:" + integer.intValue());
             }
         }
     }
@@ -220,6 +243,10 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     public Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, PageRequest pageRequest, String options) {
         Page<DevopsImageScanResultDTO> devopsImageScanResultDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsImageScanResultMapper.pageByOptions(gitlabPipelineId, options));
         Page<DevopsImageScanResultVO> devopsImageScanResultVOS = ConvertUtils.convertPage(devopsImageScanResultDTOPage, DevopsImageScanResultVO.class);
+        List<DevopsImageScanResultVO> imageScanResultVOS = devopsImageScanResultVOS.getContent().stream().filter(devopsImageScanResultVO -> !StringUtils.isEmpty(devopsImageScanResultVO.getVulnerabilityCode())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(imageScanResultVOS)) {
+            return new Page<>();
+        }
         return devopsImageScanResultVOS;
     }
 

@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -1176,10 +1177,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        Set<String> commitSha;
 
-        CompareResultDTO diffs = gitlabServiceClientOperator.queryCompareResult(appServiceDTO.getGitlabProjectId(), from, to);
+        if (StringUtils.isEmpty(to)) {
+            return new HashSet<>();
+        }
 
-        Set<String> commitSha = diffs.getCommits().stream().map(CommitDTO::getId).collect(Collectors.toSet());
+        if (!StringUtils.isEmpty(from)) {
+            CompareResultDTO diffs = gitlabServiceClientOperator.queryCompareResult(appServiceDTO.getGitlabProjectId(), from, to);
+            commitSha = diffs.getCommits().stream().map(CommitDTO::getId).collect(Collectors.toSet());
+        } else {
+            List<CommitDTO> commits = gitlabServiceClientOperator.getCommits(appServiceDTO.getGitlabProjectId(), to, "2000-01-01 00:00:00 CST");
+            commitSha = commits.stream().map(CommitDTO::getId).collect(Collectors.toSet());
+        }
 
         if (!CollectionUtils.isEmpty(commitSha)) {
             return devopsGitlabCommitService.listIssueIdsByCommitSha(commitSha);

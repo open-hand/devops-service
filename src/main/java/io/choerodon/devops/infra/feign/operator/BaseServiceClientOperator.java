@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.feign.operator;
 
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -8,10 +10,14 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCollapser;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -19,9 +25,11 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.utils.FeignClientUtils;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
@@ -46,6 +54,8 @@ public class BaseServiceClientOperator {
 
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * @param organizationId 组织id
@@ -149,6 +159,68 @@ public class BaseServiceClientOperator {
             }
         }
         return userDTOS;
+    }
+
+    /**
+     * 以合并请求的方式，请求用户的信息
+     *
+     * @param ids 用户id
+     * @return 异步结果引用
+     */
+    @HystrixCollapser(
+            batchMethod = "batchListUsersByIds"
+            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
+            , collapserProperties = {
+            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
+            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
+    })
+    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
+        return null;
+    }
+
+    @HystrixCommand
+    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
+        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
+        Set<Long> all = new HashSet<>();
+        // 收集所有的id，一次性请求
+        ids.forEach(i -> {
+            if (!CollectionUtils.isEmpty(i)) {
+                all.addAll(i);
+            }
+        });
+
+        Map<Long, IamUserDTO> resultMap;
+        if (!all.isEmpty()) {
+            Long[] newIds = new Long[all.size()];
+            try {
+                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
+                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
+                });
+                if (userDTOS == null) {
+                    resultMap = Collections.emptyMap();
+                } else {
+                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+                }
+            } catch (Exception e) {
+                throw new CommonException("error.users.get", e);
+            }
+        } else {
+            resultMap = Collections.emptyMap();
+        }
+
+        // 拆分给响应
+        return ids.stream()
+                .map(i -> {
+                    List<IamUserDTO> result = new ArrayList<>(i.size());
+                    for (Long id : i) {
+                        IamUserDTO temp = resultMap.get(id);
+                        if (temp != null) {
+                            result.add(temp);
+                        }
+                    }
+                    return result;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
@@ -278,6 +350,16 @@ public class BaseServiceClientOperator {
         Boolean isGitLabOrgOwner;
         try {
             isGitLabOrgOwner = baseServiceClient.checkIsGitlabOrgOwner(userId, projectId).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+        return isGitLabOrgOwner;
+    }
+
+    public Boolean checkIsOrgOrProjectGitlabOwner(Long userId, Long projectId) {
+        Boolean isGitLabOrgOwner;
+        try {
+            isGitLabOrgOwner = baseServiceClient.checkIsOrgOrProjectGitlabOwner(userId, projectId).getBody();
         } catch (Exception e) {
             throw new CommonException(e);
         }
@@ -430,8 +512,8 @@ public class BaseServiceClientOperator {
         return pageInfoResponseEntity.getBody();
     }
 
-    public ResourceLimitVO queryResourceLimit() {
-        ResponseEntity<ResourceLimitVO> resourceLimitVOResponseEntity = baseServiceClient.queryResourceLimit();
+    public ResourceLimitVO queryResourceLimit(Long organizationId) {
+        ResponseEntity<ResourceLimitVO> resourceLimitVOResponseEntity = baseServiceClient.queryResourceLimit(organizationId);
         return resourceLimitVOResponseEntity.getBody();
     }
 
@@ -465,5 +547,26 @@ public class BaseServiceClientOperator {
     public List<String> listProjectCategoryById(Long projectId) {
         ResponseEntity<List<String>> categoryList = baseServiceClient.listProjectCategoryById(projectId);
         return categoryList.getBody();
+    }
+
+    /**
+     * 根据项目id查询不可变的项目信息
+     *
+     * @param projectId 项目id
+     * @return 不可变信息
+     */
+    public ImmutableProjectInfoVO queryImmutableProjectInfo(Long projectId) {
+        return FeignClientUtils.doRequest(() -> baseServiceClient.immutableProjectInfoById(projectId), ImmutableProjectInfoVO.class);
+    }
+
+    /**
+     * 查询组织下的项目id集合
+     *
+     * @param tenantId 组织id
+     * @return id集合
+     */
+    public Set<Long> listProjectIdsInOrg(Long tenantId) {
+        return FeignClientUtils.doRequest(() -> baseServiceClient.listProjectIdsInOrg(tenantId), new TypeReference<Set<Long>>() {
+        });
     }
 }

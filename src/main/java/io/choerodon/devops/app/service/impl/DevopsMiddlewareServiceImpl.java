@@ -5,6 +5,7 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MYSQL;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
+import static io.choerodon.devops.infra.enums.deploy.MiddlewareDeployModeEnum.*;
 import static org.hzero.core.util.StringPool.SLASH;
 
 import java.io.IOException;
@@ -40,10 +41,8 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareDeployPayload;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsMiddlewareService;
-import io.choerodon.devops.app.service.EncryptService;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
@@ -78,10 +77,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String MYSQL_INSTALL_LOG_PATH = "/tmp/mysql-install.log";
 
-    private static final String STANDALONE_MODE = "standalone";
-
-    private static final String SENTINEL_MODE = "sentinel";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMiddlewareServiceImpl.class);
 
     private static final String REDIS_SENTINEL_VALUE_TEMPLATE;
@@ -93,15 +88,20 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private static final String MIDDLEWARE_STATUS_SYNC_LOCK = "middleware-status-sync-lock";
 
     static {
-        InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml");
-        InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-standalone-value-template.yaml");
-        InputStream mysqlStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/mysql/mysql-standalone-value-template.yaml");
-        try {
+        try (InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml")) {
             REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new CommonException("error.middleware.value.template");
+        }
+        try (InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-standalone-value-template.yaml")) {
             REDIS_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(redisStandaloneInputStream, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new CommonException("error.middleware.value.template");
+        }
+        try (InputStream mysqlStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/mysql/mysql-standalone-value-template.yaml")) {
             MYSQL_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(mysqlStandaloneInputStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new CommonException("error.load.ci.sh");
+        } catch (Exception e) {
+            throw new CommonException("error.middleware.value.template");
         }
     }
 
@@ -125,6 +125,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private EncryptService encryptService;
+    @Autowired
+    private DevopsPvcService devopsPvcService;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -142,11 +144,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareRedisEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareRedisEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
 
-        if (STANDALONE_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
+        if (STANDALONE.getValue().equals(middlewareRedisEnvDeployVO.getMode())) {
             middlewareRedisEnvDeployVO.setValues(generateRedisStandaloneValues(middlewareRedisEnvDeployVO));
         }
 
-        if (SENTINEL_MODE.equals(middlewareRedisEnvDeployVO.getMode())) {
+        if (SENTINEL.getValue().equals(middlewareRedisEnvDeployVO.getMode())) {
             middlewareRedisEnvDeployVO.setValues(generateRedisSentinelValues(middlewareRedisEnvDeployVO));
         }
 
@@ -158,7 +160,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     public AppServiceInstanceVO envDeployForMySql(Long projectId, MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO) {
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), STANDALONE_MODE, middlewareMySqlEnvDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), STANDALONE.getValue(), middlewareMySqlEnvDeployVO.getVersion());
 
         middlewareMySqlEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareMySqlEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
@@ -187,12 +189,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         Map sentinelConfig = (Map) values.get("sentinel");
         if (sentinelConfig != null) {
-            middlewareRedisEnvDeployVO.setMode(SENTINEL_MODE);
+            middlewareRedisEnvDeployVO.setMode(SENTINEL.getValue());
             middlewareRedisEnvDeployVO.setSlaveCount((Integer) ((Map) values.get("cluster")).get("slaveCount"));
             middlewareRedisEnvDeployVO.setPvLabels((Map<String, String>) ((Map) values.get("slave")).get("matchLabels"));
             middlewareRedisEnvDeployVO.setConfiguration(getConfigMap((String) values.get("configmap")));
         } else {
-            middlewareRedisEnvDeployVO.setMode(STANDALONE_MODE);
+            middlewareRedisEnvDeployVO.setMode(STANDALONE.getValue());
             if (values.get("persistence") != null) {
                 middlewareRedisEnvDeployVO.setPvcName((String) ((Map) values.get("persistence")).get("existingClaim"));
             }
@@ -208,13 +210,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
-        if (SENTINEL_MODE.equals(middlewareRedisHostDeployVO.getMode())) {
+        if (SENTINEL.getValue().equals(middlewareRedisHostDeployVO.getMode())) {
             CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
         }
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareRedisHostDeployVO.getHostIds());
 
-        if (SENTINEL_MODE.equals(middlewareRedisHostDeployVO.getMode())) {
+        if (SENTINEL.getValue().equals(middlewareRedisHostDeployVO.getMode())) {
             CommonExAssertUtil.assertTrue(devopsHostDTOList.size() >= 3, "error.host.size.less.than.3");
         }
 
@@ -276,6 +278,16 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             description = "主机部署mysql中间件", inputSchemaClass = DevopsMiddlewareDeployPayload.class)
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForMySql(Long projectId, MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
+        // master-slave模式，节点数量必须为2，且需要设置virtualIp
+        if (MASTER_SLAVE.getValue().equals(middlewareMySqlHostDeployVO.getMode()) && middlewareMySqlHostDeployVO.getHostIds().size() != 2) {
+            if (middlewareMySqlHostDeployVO.getHostIds().size() != 2) {
+                throw new CommonException("error.mysql.master-slave.host.count");
+            }
+            if (!GitOpsConstants.IP_REG_PATTERN.matcher(middlewareMySqlHostDeployVO.getVirtualIp()).matches()) {
+                throw new CommonException("error.virtual.ip.invalid");
+            }
+        }
+
         checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getName(), MYSQL.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareMySqlHostDeployVO.getHostIds());
@@ -493,7 +505,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             List<DevopsDeployRecordDTO> timeoutRecords = devopsDeployRecordDTOList
                     .stream()
                     .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 1800000)
-                    .peek(d -> d.setDeployResult(CommandStatus.FAILED.getStatus()))
+                    .peek(d -> {
+                        d.setDeployResult(CommandStatus.FAILED.getStatus());
+                        d.setErrorMsg("time out");
+                    })
                     .collect(Collectors.toList());
             // 将中间件状态设置为超时
             timeoutRecords.forEach(d -> devopsDeployRecordService.updateRecord(d));
@@ -585,11 +600,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         for (Map.Entry<String, Map<String, String>> entry : configurations.entrySet()) {
             String nodeName = entry.getKey();
             Map<String, String> mysqldConfiguration = entry.getValue();
-            Map<String, Map<String, String>> configuration = new HashMap<>();
+            Map<String, Object> configuration = new HashMap<>();
 
             Map<String, String> authConfiguration = new HashMap<>();
             authConfiguration.put("replicationUser", "replicator");
-            authConfiguration.put("replicationPassword", "changeit");
+            authConfiguration.put("replicationPassword", "Changeit!123");
             authConfiguration.putIfAbsent("rootPassword", middlewareMySqlHostDeployVO.getPassword());
 
             mysqldConfiguration.putIfAbsent("datadir", "/var/lib/mysql");
@@ -598,6 +613,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             configuration.put("auth", authConfiguration);
             configuration.put("mysqld", mysqldConfiguration);
+            configuration.put("lb_keepalived_virtual_ipaddress", middlewareMySqlHostDeployVO.getVirtualIp());
 
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -638,6 +654,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         configuration.put("{{ usePassword }}", "true");
 
         if (!StringUtils.isEmpty(middlewareRedisEnvDeployVO.getPvcName())) {
+            // 将对应pvc设为已使用状态
+            devopsPvcService.setUsed(middlewareRedisEnvDeployVO.getEnvironmentId(), middlewareRedisEnvDeployVO.getPvcName());
             configuration.put("{{ persistence-enabled }}", "true");
             configuration.put("{{ persistence-info }}", String.format(REDIS_STANDALONE_PERSISTENCE_TEMPLATE, middlewareRedisEnvDeployVO.getPvcName()));
         } else {
@@ -691,6 +709,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         configuration.put("{{ password }}", middlewareMySqlEnvDeployVO.getPassword());
 
         if (!StringUtils.isEmpty(middlewareMySqlEnvDeployVO.getPvcName())) {
+            // 将对应pvc设为已使用状态
+            devopsPvcService.setUsed(middlewareMySqlEnvDeployVO.getEnvironmentId(), middlewareMySqlEnvDeployVO.getPvcName());
             configuration.put("{{ persistence-enabled }}", "true");
             configuration.put("{{ persistence-info }}", String.format(MYSQL_STANDALONE_PERSISTENCE_TEMPLATE, middlewareMySqlEnvDeployVO.getPvcName()));
         } else {

@@ -14,7 +14,6 @@ import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
-import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 
@@ -27,6 +26,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     private static final String ERROR_PROJECT_QUERY_BY_ID = "error.project.query.by.id";
 
     @Override
+    public ResponseEntity<String> immutableProjectInfoById(Long id) {
+        throw new CommonException(ERROR_PROJECT_QUERY_BY_ID, id);
+    }
+
+    @Override
     public ResponseEntity<ProjectDTO> queryIamProject(Long projectId, Boolean withCategoryInfo, Boolean withUserInfo, Boolean withAgileInfo) {
         throw new CommonException(ERROR_PROJECT_QUERY_BY_ID, projectId);
     }
@@ -37,7 +41,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ResourceLimitVO> queryResourceLimit() {
+    public ResponseEntity<ResourceLimitVO> queryResourceLimit(Long organizationId) {
         throw new CommonException("error.query.resource.limit");
     }
 
@@ -121,6 +125,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<Boolean> checkIsOrgOrProjectGitlabOwner(Long id, Long projectId) {
+        throw new CommonException("error.check.org.project.owner");
+    }
+
+    @Override
     public ResponseEntity<Boolean> checkIsRoot(Long id) {
         throw new CommonException("error.check.is.root");
     }
@@ -188,5 +197,10 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<List<String>> listProjectCategoryById(Long projectId) {
         throw new CommonException("error.list.project.category");
+    }
+
+    @Override
+    public ResponseEntity<String> listProjectIdsInOrg(Long tenantId) {
+        throw new CommonException("error.list.projectIds.in.org", tenantId);
     }
 }

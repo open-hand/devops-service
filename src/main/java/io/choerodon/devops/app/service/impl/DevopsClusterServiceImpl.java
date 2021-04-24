@@ -44,7 +44,6 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
@@ -111,13 +110,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     private TransactionalProducer producer;
     @Autowired
-    private AsgardServiceClientOperator asgardServiceClientOperator;
-    @Autowired
     private DevopsClusterOperationRecordService devopsClusterOperationRecordService;
 
     static {
-        InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh");
-        try {
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh")) {
             CLUSTER_ACTIVATE_COMMAND_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new CommonException("error.load.cluster.sh");
@@ -327,8 +323,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Boolean checkEnableCreateCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long organizationId = projectDTO.getOrganizationId();
-        if (baseServiceClientOperator.checkOrganizationIsRegistered(organizationId)) {
-            ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit();
+        ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(organizationId);
+        if (resourceLimitVO != null) {
             DevopsClusterDTO example = new DevopsClusterDTO();
             example.setOrganizationId(organizationId);
             int num = devopsClusterMapper.selectCount(example);

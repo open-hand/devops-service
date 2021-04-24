@@ -1,22 +1,21 @@
 package io.choerodon.devops.infra.feign;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
-import io.choerodon.devops.api.vo.ResourceLimitVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.infra.dto.iam.*;
-import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
+import io.choerodon.devops.api.vo.ResourceLimitVO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.infra.dto.iam.*;
+import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
 
 /**
  * Created by younger on 2018/3/29.
@@ -24,6 +23,9 @@ import java.util.Set;
 
 @FeignClient(value = "choerodon-iam", fallback = BaseServiceClientFallback.class)
 public interface BaseServiceClient {
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/immutable")
+    @ApiOperation(value = "按照项目Id查询项目的不可变信息")
+    ResponseEntity<String> immutableProjectInfoById(@PathVariable(name = "project_id") Long id);
 
     @GetMapping(value = "/choerodon/v1/projects/{projectId}")
     ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId,
@@ -133,6 +135,12 @@ public interface BaseServiceClient {
                                                   @PathVariable("project_id") Long projectId);
 
 
+    @ApiOperation("校验用户是否是gitlab组织层owner或者项目层的owner")
+    @GetMapping("/choerodon/v1/users/{id}/projects/{project_id}/check_is_org_or_proj_gitlab_owner")
+    ResponseEntity<Boolean> checkIsOrgOrProjectGitlabOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId);
+
     /**
      * 判断用户是否是平台root用户
      *
@@ -195,8 +203,8 @@ public interface BaseServiceClient {
     /**
      * 查询资源限制
      */
-    @GetMapping("/choerodon/v1/organizations/resource_limit")
-    ResponseEntity<ResourceLimitVO> queryResourceLimit();
+    @GetMapping("/choerodon/v1/organizations/{organization_id}/resource_limit")
+    ResponseEntity<ResourceLimitVO> queryResourceLimit(@PathVariable("organization_id") Long organizationId);
 
     /**
      * 根据名称查询客户端
@@ -251,4 +259,8 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询平台中所有用户的id")
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/list_project_category")
     ResponseEntity<List<String>> listProjectCategoryById(@PathVariable(name = "project_id") Long projectId);
+
+    @GetMapping("/choerodon/v1/projects/list/ids_in_org")
+    @ApiOperation("根据组织id查询项目的id集合")
+    ResponseEntity<String> listProjectIdsInOrg(@RequestParam("tenant_id") Long tenantId);
 }

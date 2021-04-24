@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -72,6 +69,18 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                     @Param("projectId") Long projectId,
                                                     @Param("type") String type,
                                                     @Param("params") List<String> params);
+
+    /**
+     * 查出含有版本的共享应用服务
+     *
+     * @param projectIds       本组织下的其他项目id
+     * @param currentProjectId 当前项目的id
+     * @return 应用服务列表
+     */
+    List<AppServiceDTO> listShareAppServiceHavingVersion(@Param("projectIds") Collection<Long> projectIds,
+                                                         @Param("currentProjectId") Long currentProjectId,
+                                                         @Param("type") String type,
+                                                         @Param("params") List<String> params);
 
     void updateHarborConfigNullByConfigId(@Param("harborConfigId") Long harborConfigId);
 
