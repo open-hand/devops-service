@@ -72,8 +72,11 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
             // 不相等才需要更新
             if (!ruleEquals(appServiceShareRuleDTO, oldAppServiceShareRuleDTO)) {
                 checkExist(appServiceShareRuleDTO);
-                appServiceShareRuleDTO.setObjectVersionNumber(oldAppServiceShareRuleDTO.getObjectVersionNumber());
-                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceShareRuleMapper, appServiceShareRuleDTO, "error.insert.application.share.rule.update");
+                oldAppServiceShareRuleDTO.setVersion(appServiceShareRuleDTO.getVersion());
+                oldAppServiceShareRuleDTO.setVersionType(appServiceShareRuleDTO.getVersionType());
+                oldAppServiceShareRuleDTO.setShareLevel(appServiceShareRuleDTO.getShareLevel());
+                oldAppServiceShareRuleDTO.setProjectId(appServiceShareRuleDTO.getProjectId());
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceShareRuleMapper, oldAppServiceShareRuleDTO, "error.insert.application.share.rule.update");
             }
         }
         return ConvertUtils.convertObject(appServiceShareRuleDTO, AppServiceShareRuleVO.class);
