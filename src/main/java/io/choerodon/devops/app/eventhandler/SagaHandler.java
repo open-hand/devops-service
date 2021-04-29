@@ -199,9 +199,11 @@ public class SagaHandler {
     public List<GitlabUserVO> handleCreateUserEvent(String payload) {
         List<GitlabUserVO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserVO>>() {
         }.getType());
+
         loggerInfo(gitlabUserDTO);
         StringBuilder failedUsers = new StringBuilder();
         List<Exception> exs = new ArrayList<>();
+
         gitlabUserDTO.forEach(t -> {
             try {
                 LOGGER.info("Start to create user {}", t);
@@ -221,13 +223,18 @@ public class SagaHandler {
                 gitlabUserService.createGitlabUserInNewTx(gitlabUserReqDTO);
                 LOGGER.info("Finished to create user {}", t);
             } catch (Exception ex) {
-                failedUsers.append("User ").append(t.getUsername()).append(" Failed, due to: ").append(ex.getMessage()).append(NEW_LINE);
+                failedUsers.append("User with loginName ")
+                        .append(t.getUsername())
+                        .append("and email ")
+                        .append(t.getEmail())
+                        .append(" Failed, due to: ")
+                        .append(ex.getMessage())
+                        .append(NEW_LINE);
                 exs.add(ex);
                 LOGGER.warn("Failed to create user {}", t);
                 LOGGER.warn("And the ex is", ex);
             }
         });
-
 
         // 如果有错误信息，抛出没有trace新的异常，用于界面上通过事务实例重试
         if (failedUsers.length() > 0) {
