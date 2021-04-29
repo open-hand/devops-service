@@ -51,10 +51,6 @@
             das.share_level = 'public'
     </update>
 
-    <delete id="deleteAll">
-        DELETE FROM devops_app_service_share_rule
-    </delete>
-
     <select id="countShareRulesByAppServiceId" resultType="int">
         SELECT COUNT(1)
         FROM devops_app_service_share_rule dassr
