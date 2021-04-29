@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -17,6 +19,7 @@ import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
  */
 @Service
 public class DevopsCommandEventServiceImpl implements DevopsCommandEventService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCommandEventServiceImpl.class);
 
     private static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
     @Autowired
@@ -37,7 +40,8 @@ public class DevopsCommandEventServiceImpl implements DevopsCommandEventService 
 
     @Override
     public void baseDeletePreInstanceCommandEvent(Long instanceId) {
-        devopsCommandEventMapper.deletePreInstanceCommandEvent(instanceId);
+        int deleted = devopsCommandEventMapper.deletePreInstanceCommandEvent(instanceId);
+        LOGGER.debug("{} command events deleted", deleted);
     }
 
     @Override
