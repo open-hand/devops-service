@@ -21,6 +21,13 @@ public interface GitlabUserService {
      */
     String resetGitlabPassword(Long userId);
 
+    /**
+     * 开启一个新的事务创建用户
+     *
+     * @param gitlabUserReqDTO 用户信息
+     */
+    void createGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO);
+
     void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);
 
     void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);

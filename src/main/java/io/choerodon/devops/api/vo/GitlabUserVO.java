@@ -41,4 +41,14 @@ public class GitlabUserVO {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return "GitlabUserVO{" +
+                "username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }
