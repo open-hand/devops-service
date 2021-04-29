@@ -64,8 +64,6 @@ public interface AgentMsgHandlerService {
 
     void namespaceInfo(String msg, Long clusterId);
 
-    void upgradeCluster(String key, String msg);
-
     void testPodUpdate(String key, String msg, Long clusterId);
 
     void testJobLog(String key, String msg, Long clusterId);
