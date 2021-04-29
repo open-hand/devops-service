@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
@@ -48,14 +47,26 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
 
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
+
         // 如果选了特定版本，那么版本类型就不生效了
         if (appServiceShareRuleDTO.getVersion() != null && appServiceShareRuleDTO.getVersionType() != null) {
             appServiceShareRuleDTO.setVersionType(null);
         }
+        if (ResourceLevel.ORGANIZATION.value().equals(appServiceShareRuleDTO.getShareLevel())) {
+            // 如果是组织层的共享规则，不需要目标项目id
+            appServiceShareRuleDTO.setProjectId(null);
+        }
+        // 如果目标项目id不为空，则共享层级为项目层
+        if (appServiceShareRuleDTO.getProjectId() != null) {
+            appServiceShareRuleDTO.setShareLevel(ResourceLevel.PROJECT.value());
+        }
+
+        // 新建
         if (appServiceShareRuleDTO.getId() == null) {
             checkExist(appServiceShareRuleDTO);
             MapperUtil.resultJudgedInsert(appServiceShareRuleMapper, appServiceShareRuleDTO, "error.insert.application.share.rule.insert");
         } else {
+            // 更新
             AppServiceShareRuleDTO oldAppServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(appServiceShareRuleDTO.getId());
             CommonExAssertUtil.assertNotNull(oldAppServiceShareRuleDTO, "error.share.rule.id.not.exist");
             // 不相等才需要更新
