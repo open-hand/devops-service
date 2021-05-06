@@ -359,7 +359,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 没有环境列表则返回空列表
         if (devopsEnvironmentList.isEmpty()) {
-            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO());
+            List<DevopsEnvGroupDTO> devopsEnvGroupES = devopsEnvGroupService.baseListByProjectId(projectId);
+            devopsEnvGroupES.forEach(g -> {
+                DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO2 = new DevopsEnvGroupEnvsVO();
+                devopsEnvGroupEnvsDTO2.setDevopsEnvGroupId(g.getId());
+                devopsEnvGroupEnvsDTO2.setDevopsEnvGroupName(g.getName());
+                devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO2);
+            });
             return devopsEnvGroupEnvsDTOS;
         }
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentList.stream()
