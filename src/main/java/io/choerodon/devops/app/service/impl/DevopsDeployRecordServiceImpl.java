@@ -105,6 +105,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             baseCreate(devopsDeployRecordDTO);
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}", devopsDeployRecordDTO);
+            LOGGER.info("And the ex is", e);
         }
     }
 
