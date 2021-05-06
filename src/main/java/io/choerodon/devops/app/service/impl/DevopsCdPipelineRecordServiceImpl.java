@@ -316,6 +316,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     return status;
                 } else {
                     String pattern = getRegexStr(imageDeploy);
+                    LOGGER.info(">>>>>>>分支匹配：{}>>>>>>", pattern);
+                    LOGGER.info(">>>>>>>>>>生成的制品：{}>>>>>>>>>>>", imageTagVo.getImageTagList().size());
                     filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
                     if (CollectionUtils.isEmpty(filterImageTagVoList)) {
                         devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
