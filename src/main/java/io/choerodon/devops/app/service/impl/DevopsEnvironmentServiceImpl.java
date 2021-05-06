@@ -366,6 +366,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvGroupEnvsDTO2.setDevopsEnvGroupName(g.getName());
                 devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO2);
             });
+            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO());
             return devopsEnvGroupEnvsDTOS;
         }
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentList.stream()
