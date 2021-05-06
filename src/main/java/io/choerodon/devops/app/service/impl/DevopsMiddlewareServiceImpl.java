@@ -30,6 +30,7 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -212,7 +213,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareRedisHostDeployVO.getName(),
                 middlewareRedisHostDeployVO.getVersion(),
                 null,
-                deploySourceVO);
+                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
 
         // 保存中间件信息
         saveMiddlewareInfo(projectId,

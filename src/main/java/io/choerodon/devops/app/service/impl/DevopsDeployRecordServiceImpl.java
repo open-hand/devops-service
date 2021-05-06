@@ -76,38 +76,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private MarketUseRecordService marketUseRecordService;
 
 
-    @Override
-    public void saveRecord(Long projectId,
-                           DeployType type,
-                           Long deployId,
-                           DeployModeEnum deployMode,
-                           Long deployPayloadId,
-                           String deployPayloadName,
-                           String deployResult,
-                           DeployObjectTypeEnum deployObjectType,
-                           String deployObjectName,
-                           String deployVersion,
-                           String instanceName) {
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
-                projectId,
-                type.getType(),
-                deployId,
-                deployMode.value(),
-                deployPayloadId,
-                deployPayloadName,
-                deployResult,
-                new Date(),
-                deployObjectType.value(),
-                deployObjectName,
-                deployVersion,
-                instanceName);
-        try {
-            baseCreate(devopsDeployRecordDTO);
-        } catch (Exception e) {
-            LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}", devopsDeployRecordDTO);
-            LOGGER.info("And the ex is", e);
-        }
-    }
 
     @Override
     public Long saveRecord(Long projectId,
@@ -121,7 +89,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                            String deployObjectName,
                            String deployVersion,
                            String instanceName,
-                           DeploySourceVO deploySource) {
+                           DeploySourceVO deploySource, Long userId) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                 projectId,
                 type.getType(),
@@ -139,7 +107,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         try {
             baseCreate(devopsDeployRecordDTO);
             if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
-                marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource, DetailsHelper.getUserDetails().getUserId());
+                marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource, userId);
             }
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}, errorMsg: {}", devopsDeployRecordDTO, e.getMessage());
@@ -171,10 +139,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     /**
      * 不关注更新结果
+     *
      * @param devopsDeployRecordDTO
      */
     @Override
-    public void updateRecord(DevopsDeployRecordDTO devopsDeployRecordDTO){
+    public void updateRecord(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         devopsDeployRecordMapper.updateByPrimaryKey(devopsDeployRecordDTO);
     }
 

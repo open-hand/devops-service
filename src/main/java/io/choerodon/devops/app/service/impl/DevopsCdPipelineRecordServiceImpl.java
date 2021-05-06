@@ -39,6 +39,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
@@ -300,6 +301,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO cdHostDeployConfigVO = new CdHostDeployConfigVO();
         DevopsCdJobRecordDTO jobRecordDTO = new DevopsCdJobRecordDTO();
         CdHostDeployConfigVO.ImageDeploy imageDeploy = new CdHostDeployConfigVO.ImageDeploy();
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
+        deploySourceVO.setProjectName(projectDTO.getName());
         try {
             // 0.1
             jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
@@ -328,7 +334,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 deployVersion = filterImageTagVoList.get(0).getTagName();
                 c7nImageDeployDTO.setPullCmd(filterImageTagVoList.get(0).getPullCmd());
             } else {
-                DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
                 if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
                     throw new CommonException("error.no.gitlab.pipeline.id");
                 }
@@ -385,7 +390,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     deployVersion,
-                    null);
+                    null, deploySourceVO, DetailsHelper.getUserDetails().getUserId());
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } catch (Exception e) {
@@ -412,7 +417,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     DeployObjectTypeEnum.IMAGE,
                     imageDeploy.getImageName(),
                     deployVersion,
-                    null);
+                    null, deploySourceVO, DetailsHelper.getUserDetails().getUserId());
         } finally {
             devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
@@ -457,6 +462,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO cdHostDeployConfigVO = new CdHostDeployConfigVO();
         CdHostDeployConfigVO.JarDeploy jarDeploy = new CdHostDeployConfigVO.JarDeploy();
         C7nNexusComponentDTO c7nNexusComponentDTO = new C7nNexusComponentDTO();
+        DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
+        deploySourceVO.setProjectName(projectDTO.getName());
         try {
             // 0.1 查询部署信息
 
@@ -468,8 +478,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             jarDeploy.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), StandardCharsets.UTF_8));
 
             C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
-            DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
 
             // 0.2 从制品库获取仓库信息
             Long nexusRepoId;
@@ -543,7 +551,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
-                    null);
+                    null, deploySourceVO, DetailsHelper.getUserDetails().getUserId());
         } catch (Exception e) {
             e.printStackTrace();
             status = false;
@@ -567,7 +575,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     DeployObjectTypeEnum.JAR,
                     c7nNexusComponentDTO.getName(),
                     c7nNexusComponentDTO.getVersion(),
-                    null);
+                    null, deploySourceVO, DetailsHelper.getUserDetails().getUserId());
         } finally {
             devopsCdJobRecordService.updateLogById(cdJobRecordId, log);
             closeSsh(ssh, null);
