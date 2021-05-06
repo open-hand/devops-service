@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
@@ -22,10 +21,7 @@ import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
-import io.choerodon.devops.infra.util.CiCdPipelineUtils;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -45,31 +41,91 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     private static final String PROJECT_NAME = "组织下所有项目";
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO) {
-
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
 
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
+
+        // 如果选了特定版本，那么版本类型就不生效了
         if (appServiceShareRuleDTO.getVersion() != null && appServiceShareRuleDTO.getVersionType() != null) {
             appServiceShareRuleDTO.setVersionType(null);
         }
+        if (ResourceLevel.ORGANIZATION.value().equals(appServiceShareRuleDTO.getShareLevel())) {
+            // 如果是组织层的共享规则，不需要目标项目id
+            appServiceShareRuleDTO.setProjectId(null);
+        }
+        // 如果目标项目id不为空，则共享层级为项目层
+        if (appServiceShareRuleDTO.getProjectId() != null) {
+            appServiceShareRuleDTO.setShareLevel(ResourceLevel.PROJECT.value());
+        }
+
+        // 新建
         if (appServiceShareRuleDTO.getId() == null) {
-            int count = appServiceShareRuleMapper.selectCount(appServiceShareRuleDTO);
-            if (count > 0) {
-                throw new CommonException("error.share.rule.already.exist");
-            }
-            if (appServiceShareRuleMapper.insert(appServiceShareRuleDTO) != 1) {
-                throw new CommonException("error.insert.application.share.rule.insert");
-            }
+            checkExist(appServiceShareRuleDTO);
+            MapperUtil.resultJudgedInsert(appServiceShareRuleMapper, appServiceShareRuleDTO, "error.insert.application.share.rule.insert");
         } else {
-            AppServiceShareRuleDTO oldappServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(appServiceShareRuleDTO.getId());
-            appServiceShareRuleDTO.setObjectVersionNumber(oldappServiceShareRuleDTO.getObjectVersionNumber());
-            if (appServiceShareRuleMapper.updateByPrimaryKey(appServiceShareRuleDTO) != 1) {
-                throw new CommonException("error.insert.application.share.rule.update");
+            // 更新
+            AppServiceShareRuleDTO oldAppServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(appServiceShareRuleDTO.getId());
+            CommonExAssertUtil.assertNotNull(oldAppServiceShareRuleDTO, "error.share.rule.id.not.exist");
+            // 不相等才需要更新
+            if (!ruleEquals(appServiceShareRuleDTO, oldAppServiceShareRuleDTO)) {
+                updateRule(appServiceShareRuleDTO, oldAppServiceShareRuleDTO);
             }
         }
         return ConvertUtils.convertObject(appServiceShareRuleDTO, AppServiceShareRuleVO.class);
+    }
+
+    private void updateRule(AppServiceShareRuleDTO newRule, AppServiceShareRuleDTO oldRule) {
+        // 构造用于更新的对象，先不设置审计字段，用于校验唯一性
+        AppServiceShareRuleDTO toUpdate = new AppServiceShareRuleDTO();
+        toUpdate.setAppServiceId(oldRule.getAppServiceId());
+        toUpdate.setVersion(newRule.getVersion());
+        toUpdate.setVersionType(newRule.getVersionType());
+        toUpdate.setShareLevel(newRule.getShareLevel());
+        toUpdate.setProjectId(newRule.getProjectId());
+
+        // 校验唯一性
+        checkExist(toUpdate);
+
+        // 设置审计字段
+        toUpdate.setId(oldRule.getId());
+        toUpdate.setObjectVersionNumber(oldRule.getObjectVersionNumber());
+        toUpdate.setCreatedBy(oldRule.getCreatedBy());
+        toUpdate.setCreationDate(oldRule.getCreationDate());
+
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceShareRuleMapper, toUpdate, "error.insert.application.share.rule.update");
+    }
+
+    /**
+     * 如果存在，抛异常
+     *
+     * @param appServiceShareRuleDTO 数据
+     */
+    private void checkExist(AppServiceShareRuleDTO appServiceShareRuleDTO) {
+        CommonExAssertUtil.assertTrue(appServiceShareRuleMapper.selectCount(appServiceShareRuleDTO) == 0, "error.share.rule.already.exist");
+    }
+
+    /**
+     * 对比两个共享规则是否一样
+     *
+     * @param one      一个
+     * @param theOther 另一个
+     * @return true 表示相等
+     */
+    private boolean ruleEquals(AppServiceShareRuleDTO one, AppServiceShareRuleDTO theOther) {
+        if (one == null || theOther == null) {
+            return false;
+        }
+        if (one == theOther) {
+            return true;
+        }
+        return Objects.equals(one.getId(), theOther.getId())
+                && Objects.equals(one.getAppServiceId(), theOther.getAppServiceId())
+                && Objects.equals(one.getShareLevel(), theOther.getShareLevel())
+                && Objects.equals(one.getProjectId(), theOther.getProjectId())
+                && Objects.equals(one.getVersion(), theOther.getVersion())
+                && Objects.equals(one.getVersionType(), theOther.getVersionType());
     }
 
     @Override

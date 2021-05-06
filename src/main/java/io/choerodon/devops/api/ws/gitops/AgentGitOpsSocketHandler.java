@@ -129,13 +129,10 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
             return;
         }
 
-        LOGGER.debug("AgentGitOps: helm type: {}, message: {}", helmType.value, message.getPayload());
+        LOGGER.debug("AgentGitOps: helm type: {}, msg: {}", helmType.value, msg);
 
         //设置集群id
         msg.setClusterId(TypeUtil.objToString(getClusterIdFromRegisterKey(TypeUtil.objToString(session.getAttributes().get(GROUP)))));
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(msg.toString());
-        }
         switch (helmType) {
             // JOB的相关信息
             case HELM_INSTALL_JOB_INFO:
@@ -306,6 +303,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                 agentMsgHandlerService.handleClusterInfo(msg);
                 break;
             default:
+                LOGGER.warn("UnExpected message type {}", msg.getType());
                 break;
         }
     }

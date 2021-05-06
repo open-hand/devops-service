@@ -20,7 +20,5 @@ public interface AppServiceShareRuleMapper extends BaseMapper<AppServiceShareRul
 
     void updatePublishLevel();
 
-    void deleteAll();
-
     int countShareRulesByAppServiceId(@Param("appServiceId") Long appServiceId);
 }

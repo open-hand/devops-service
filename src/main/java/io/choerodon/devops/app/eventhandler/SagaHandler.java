@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.NEW_LINE;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,10 +31,12 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.HostDeployType;
+import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -195,25 +199,53 @@ public class SagaHandler {
     public List<GitlabUserVO> handleCreateUserEvent(String payload) {
         List<GitlabUserVO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserVO>>() {
         }.getType());
-        LOGGER.info("create user start");
-        loggerInfo(gitlabUserDTO);
-        gitlabUserDTO.forEach(t -> {
-            GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
-            gitlabUserReqDTO.setProvider("oauth2_generic");
-            gitlabUserReqDTO.setExternUid(t.getId());
-            gitlabUserReqDTO.setSkipConfirmation(true);
-            gitlabUserReqDTO.setUsername(t.getUsername());
-            gitlabUserReqDTO.setEmail(t.getEmail());
-            gitlabUserReqDTO.setName(t.getName());
-            if (t.getName() == null) {
-                gitlabUserReqDTO.setName(t.getUsername());
-            }
-            gitlabUserReqDTO.setCanCreateGroup(true);
-            gitlabUserReqDTO.setProjectsLimit(100);
 
-            gitlabUserService.createGitlabUser(gitlabUserReqDTO);
-            LOGGER.info("create user end");
+        loggerInfo(gitlabUserDTO);
+        StringBuilder failedUsers = new StringBuilder();
+        List<Exception> exs = new ArrayList<>();
+
+        gitlabUserDTO.forEach(t -> {
+            try {
+                LOGGER.info("Start to create user {}", t);
+                GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
+                gitlabUserReqDTO.setProvider("oauth2_generic");
+                gitlabUserReqDTO.setExternUid(t.getId());
+                gitlabUserReqDTO.setSkipConfirmation(true);
+                gitlabUserReqDTO.setUsername(t.getUsername());
+                gitlabUserReqDTO.setEmail(t.getEmail());
+                gitlabUserReqDTO.setName(t.getName());
+                if (t.getName() == null) {
+                    gitlabUserReqDTO.setName(t.getUsername());
+                }
+                gitlabUserReqDTO.setCanCreateGroup(true);
+                gitlabUserReqDTO.setProjectsLimit(100);
+
+                gitlabUserService.createGitlabUserInNewTx(gitlabUserReqDTO);
+                LOGGER.info("Finished to create user {}", t);
+            } catch (Exception ex) {
+                failedUsers.append("User with loginName ")
+                        .append(t.getUsername())
+                        .append("and email ")
+                        .append(t.getEmail())
+                        .append(" Failed, due to: ")
+                        .append(ex.getMessage())
+                        .append(NEW_LINE);
+                exs.add(ex);
+                LOGGER.warn("Failed to create user {}", t);
+                LOGGER.warn("And the ex is", ex);
+            }
         });
+
+        // 如果有错误信息，抛出没有trace新的异常，用于界面上通过事务实例重试
+        if (failedUsers.length() > 0) {
+            // 拼接所有的异常的trace信息
+            for (int i = 0; i < exs.size(); i++) {
+                failedUsers.append("Ex ").append(i).append(" trace:").append(NEW_LINE);
+                failedUsers.append(LogUtil.readContentOfRootCause(exs.get(i)));
+            }
+
+            throw new NoTraceException(failedUsers.toString());
+        }
         return gitlabUserDTO;
     }
 

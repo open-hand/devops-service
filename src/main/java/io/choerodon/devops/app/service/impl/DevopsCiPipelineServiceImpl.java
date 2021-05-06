@@ -1359,7 +1359,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     }
                     ciJob.setStage(stageVO.getName());
                     //增加afterScript
-                    ciJob.setAfterScript(buildAfterScript(job));
+//                    ciJob.setAfterScript(buildAfterScript(job));
                     //增加services
                     CiJobServices ciJobServices = buildServices(job);
                     ciJob.setServices(Objects.isNull(ciJobServices) ? null : ArrayUtil.singleAsList(ciJobServices));

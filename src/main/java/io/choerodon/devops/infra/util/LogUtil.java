@@ -44,7 +44,22 @@ public class LogUtil {
         PrintStream ps = new PrintStream(byteArrayOutputStream);
         throwable.printStackTrace(ps);
         ps.flush();
-        return new String(byteArrayOutputStream.toByteArray());
+        return byteArrayOutputStream.toString();
+    }
+
+    /**
+     * read the root cause content of the throwable to string
+     *
+     * @param throwable the throwable to be read
+     * @return the content
+     */
+    public static String readContentOfRootCause(Throwable throwable) {
+        throwable = getRootCause(throwable);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(byteArrayOutputStream);
+        throwable.printStackTrace(ps);
+        ps.flush();
+        return byteArrayOutputStream.toString();
     }
 
     /**
@@ -71,5 +86,23 @@ public class LogUtil {
 
     public static String deleteNewLine(String value) {
         return value.replace("\n", "");
+    }
+
+    /**
+     * 获取异常的最底层的cause
+     *
+     * @param throwable 异常
+     * @return 返回最底层的 cause
+     */
+    private static Throwable getRootCause(final Throwable throwable) {
+        if (throwable == null || throwable.getCause() == null) {
+            return throwable;
+        }
+
+        Throwable rootCause = throwable;
+        while (rootCause.getCause() != null) {
+            rootCause = rootCause.getCause();
+        }
+        return rootCause;
     }
 }

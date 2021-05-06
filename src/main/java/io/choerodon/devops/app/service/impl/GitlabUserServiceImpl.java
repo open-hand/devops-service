@@ -120,6 +120,12 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public void createGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO) {
+        createGitlabUser(gitlabUserReqDTO);
+    }
+
     @Override
     public void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
 

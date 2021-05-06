@@ -75,11 +75,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     DevopsCommandEventService devopsCommandEventService;
-    private Gson gson = new Gson();
-    @Value("${services.helm.url}")
-    private String helmUrl;
-    @Value("${agent.repoUrl}")
-    private String agentRepoUrl;
+    private final Gson gson = new Gson();
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
@@ -155,8 +151,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
-    @Autowired
-    private MarketServiceClientOperator marketServiceClientOperator;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -271,6 +265,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmInstallResourceInfo(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -370,6 +365,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmInstallJobInfo(String key, String msg, Long clusterId) {
         if ("null".equals(msg)) {
@@ -415,6 +411,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void resourceUpdate(String key, String msg, Long clusterId) {
         try {
@@ -706,6 +703,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmJobLog(String key, String msg, Long clusterId) {
         byte[] bytes = msg.getBytes();
@@ -740,6 +738,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String msg) {
         Long envId = getEnvId(key, clusterId);
@@ -778,6 +777,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void handlerDomainCreateMessage(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -815,17 +815,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsIngressService.baseUpdateStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmUpgradeJobInfo(String key, String msg, Long clusterId) {
         helmInstallJobInfo(key, msg, clusterId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmUpgradeResourceInfo(String key, String msg, Long clusterId) {
         helmInstallResourceInfo(key, msg, clusterId);
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmReleaseDeleteFail(String key, String msg, Long clusterId) {
 
@@ -836,6 +839,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 msg);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmReleaseStartFail(String key, String msg, Long clusterId) {
         updateInstanceStatus(
@@ -852,6 +856,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         logger.info("Helm release rollback failed. The key is {}, and the msg is {}", key, msg);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmReleaseInstallFail(String key, String msg, Long clusterId) {
         updateInstanceStatus(
@@ -862,6 +867,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 msg);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmReleaseUpgradeFail(String key, String msg, Long clusterId) {
 
@@ -872,6 +878,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 msg);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmReleaseStopFail(String key, String msg, Long clusterId) {
         updateInstanceStatus(key, KeyParseUtil.getReleaseName(key),
@@ -883,6 +890,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void commandNotSend(Long commandId, String msg) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
@@ -973,6 +981,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmJobEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
@@ -985,12 +994,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmPodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         insertDevopsCommandEvent(event, ResourceType.POD.getType());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void gitOpsSyncEvent(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -1493,6 +1504,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         return devopsEnvCommandService.listCommandsToSync(envId, dateString);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void resourceStatusSync(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -1563,6 +1575,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 });
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void handlerServiceCreateMessage(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -1611,6 +1624,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void namespaceInfo(String msg, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
@@ -1619,42 +1633,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     }
 
-    @Override
-    public void upgradeCluster(String key, String msg) {
-        //0.10.0-0.11.0  初始化集群信息
-        logger.info("upgradeCluster message: {}", msg);
-        UpgradeClusterVO upgradeClusterVO = json.deserialize(msg, UpgradeClusterVO.class);
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQueryByToken(upgradeClusterVO.getToken());
-        if (devopsClusterDTO == null) {
-            logger.info("the cluster is not exist: {}", upgradeClusterVO.getToken());
-            return;
-        }
-        if (devopsClusterDTO.getInit() != null) {
-            logger.info("the cluster has bean init: {}", devopsClusterDTO.getName());
-            return;
-        }
-        if (upgradeClusterVO.getEnvs() != null) {
-            upgradeClusterVO.getEnvs().forEach(clusterEnv -> {
-                DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(clusterEnv.getEnvId());
-                if (devopsEnvironmentDTO != null && devopsEnvironmentDTO.getCode().equals(clusterEnv.getNamespace())) {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-                    if (projectDTO.getOrganizationId().equals(devopsClusterDTO.getOrganizationId())) {
-                        DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
-                        devopsClusterProPermissionDTO.setProjectId(projectDTO.getId());
-                        devopsClusterProPermissionDTO.setClusterId(devopsClusterDTO.getId());
-                        devopsClusterProPermissionService.baseInsertPermission(devopsClusterProPermissionDTO);
-                        devopsEnvironmentDTO.setClusterId(devopsClusterDTO.getId());
-                        devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
-                    }
-                }
-            });
-            devopsClusterDTO.setSkipCheckProjectPermission(false);
-        }
-        devopsClusterDTO.setInit(true);
-        devopsClusterService.baseUpdate(null, devopsClusterDTO);
-    }
-
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     @Saga(code = SagaTopicCodeConstants.TEST_POD_UPDATE_SAGA,
             description = "测试应用Pod升级(test pod update saga)", inputSchema = "{}")
@@ -1739,6 +1718,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         .withRefId(""));
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void handleCertManagerInfo(AgentMsgVO agentMsgVO, Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
@@ -1896,6 +1876,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void certIssued(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -1945,6 +1926,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void certFailed(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -2068,7 +2050,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsClusterService.saveClusterSummaryInfo(clusterId, clusterSummaryInfoVO);
     }
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void handleConfigUpdate(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -2099,7 +2081,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class)
     @Override
     public void operateDockerRegistrySecretResp(String key, String result, Long clusterId) {
         String namespace = KeyParseUtil.getNamespace(key);

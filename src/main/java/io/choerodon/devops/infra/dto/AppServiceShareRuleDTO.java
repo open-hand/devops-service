@@ -5,6 +5,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -20,10 +22,15 @@ public class AppServiceShareRuleDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ApiModelProperty("共享规则所属的应用服务id")
     private Long appServiceId;
+    @ApiModelProperty("共享的层次，组织层 或者 项目层特定项目")
     private String shareLevel;
+    @ApiModelProperty("版本类型")
     private String versionType;
+    @ApiModelProperty("特定版本")
     private String version;
+    @ApiModelProperty("shareLevel为project时，目标项目的id")
     private Long projectId;
 
     public Long getId() {
