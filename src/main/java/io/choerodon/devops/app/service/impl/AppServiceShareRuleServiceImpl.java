@@ -41,9 +41,8 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     private static final String PROJECT_NAME = "组织下所有项目";
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO) {
-
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceShareRuleVO.getAppServiceId());
 
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
@@ -71,15 +70,31 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
             CommonExAssertUtil.assertNotNull(oldAppServiceShareRuleDTO, "error.share.rule.id.not.exist");
             // 不相等才需要更新
             if (!ruleEquals(appServiceShareRuleDTO, oldAppServiceShareRuleDTO)) {
-                checkExist(appServiceShareRuleDTO);
-                oldAppServiceShareRuleDTO.setVersion(appServiceShareRuleDTO.getVersion());
-                oldAppServiceShareRuleDTO.setVersionType(appServiceShareRuleDTO.getVersionType());
-                oldAppServiceShareRuleDTO.setShareLevel(appServiceShareRuleDTO.getShareLevel());
-                oldAppServiceShareRuleDTO.setProjectId(appServiceShareRuleDTO.getProjectId());
-                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appServiceShareRuleMapper, oldAppServiceShareRuleDTO, "error.insert.application.share.rule.update");
+                updateRule(appServiceShareRuleDTO, oldAppServiceShareRuleDTO);
             }
         }
         return ConvertUtils.convertObject(appServiceShareRuleDTO, AppServiceShareRuleVO.class);
+    }
+
+    private void updateRule(AppServiceShareRuleDTO newRule, AppServiceShareRuleDTO oldRule) {
+        // 构造用于更新的对象，先不设置审计字段，用于校验唯一性
+        AppServiceShareRuleDTO toUpdate = new AppServiceShareRuleDTO();
+        toUpdate.setAppServiceId(oldRule.getAppServiceId());
+        toUpdate.setVersion(newRule.getVersion());
+        toUpdate.setVersionType(newRule.getVersionType());
+        toUpdate.setShareLevel(newRule.getShareLevel());
+        toUpdate.setProjectId(newRule.getProjectId());
+
+        // 校验唯一性
+        checkExist(toUpdate);
+
+        // 设置审计字段
+        toUpdate.setId(oldRule.getId());
+        toUpdate.setObjectVersionNumber(oldRule.getObjectVersionNumber());
+        toUpdate.setCreatedBy(oldRule.getCreatedBy());
+        toUpdate.setCreationDate(oldRule.getCreationDate());
+
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceShareRuleMapper, toUpdate, "error.insert.application.share.rule.update");
     }
 
     /**
