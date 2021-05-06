@@ -17,6 +17,7 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import org.apache.commons.lang.BooleanUtils;
+import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -316,8 +317,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     return status;
                 } else {
                     String pattern = getRegexStr(imageDeploy);
-                    LOGGER.info(">>>>>>>分支匹配：{}>>>>>>", pattern);
-                    LOGGER.info(">>>>>>>>>>生成的制品：{}>>>>>>>>>>>", imageTagVo.getImageTagList().size());
                     filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
                     if (CollectionUtils.isEmpty(filterImageTagVoList)) {
                         devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
@@ -492,7 +491,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
                 groupId = ciPipelineMavenDTO.getGroupId();
                 artifactId = ciPipelineMavenDTO.getArtifactId();
-                versionRegular = "^" + ciPipelineMavenDTO.getVersion() + "$";
+                //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
+                versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
             }
 
             // 0.3 获取并记录信息
@@ -573,6 +573,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             closeSsh(ssh, null);
         }
         return status;
+    }
+
+    private String getMavenVersion(String version) {
+        if (version.contains(BaseConstants.Symbol.SLASH)) {
+            return version.split(BaseConstants.Symbol.SLASH)[0];
+        } else {
+            return version;
+        }
     }
 
     @Override
