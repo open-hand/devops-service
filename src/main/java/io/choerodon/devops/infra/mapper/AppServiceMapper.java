@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
+import io.choerodon.devops.api.vo.iam.ResourceVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -192,5 +193,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
      * @return 应用服务列表
      */
     List<AppServiceDTO> inProjectsAndHavingVersion(@Param("projectIds") Set<Long> projectIds, @Param("appServiceCode") String appServiceCode, @Param("version") String version);
+
+    List<ResourceVO> listResourceByIds(@Param("projectIds") List<Long> projectIds);
 }
 

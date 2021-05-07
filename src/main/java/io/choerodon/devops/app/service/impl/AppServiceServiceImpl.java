@@ -66,6 +66,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
+import io.choerodon.devops.api.vo.iam.ResourceVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
 import io.choerodon.devops.api.vo.sonar.*;
@@ -2071,6 +2072,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceMapper.updateByIdSelectiveWithoutAudit(appServiceDTO);
     }
 
+    @Override
+    public List<ResourceVO> listResourceByIds(List<Long> projectIds) {
+        return CollectionUtils.isEmpty(projectIds) ? null : appServiceMapper.listResourceByIds(projectIds);
+    }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
