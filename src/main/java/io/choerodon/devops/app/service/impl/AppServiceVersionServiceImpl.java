@@ -315,6 +315,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
         }
         Page<AppServiceVersionVO> appServiceVersionVOS = ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
+        // 计算应用服务版本是否可以被删除
         if (!CollectionUtils.isEmpty(appServiceVersionVOS.getContent())) {
             caculateDelteFlag(appServiceId, appServiceVersionVOS.getContent());
         }
@@ -322,6 +323,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionVOS;
     }
 
+    /**
+     * 计算应用服务版本是否可以被删除
+     * 1. 有实例的版本不能删除
+     * 2. 有共享规则的版本不能删除
+     * @param appServiceId
+     * @param content
+     */
     private void caculateDelteFlag(Long appServiceId, List<AppServiceVersionVO> content) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceInstanceMapper.queryVersionByAppId(appServiceId);
         List<AppServiceVersionDTO> effectAppServiceVersionDTOS = appServiceInstanceMapper.queryEffectVersionByAppId(appServiceId);
