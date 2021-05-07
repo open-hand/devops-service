@@ -798,6 +798,23 @@
         </foreach>
     </select>
 
+    <select id="listResourceByIds" resultType="io.choerodon.devops.api.vo.iam.ResourceVO">
+        SELECT
+            das.project_id as projectId,
+            count( * ) as appServiceNum,
+            ( SELECT count( * ) FROM devops_cluster dc WHERE dc.project_id = das.project_id ) as clusterNum,
+            ( SELECT count( * ) FROM devops_env de WHERE de.project_id = das.project_id ) as envNum
+        FROM
+            devops_app_service das
+        WHERE
+            das.project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId}
+        </foreach>
+        GROUP BY
+            das.project_id
+    </select>
+
     <select id="listShareAppServiceHavingVersion" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT da.id, da.`code`, da.`name`, da.project_id, da.chart_config_id, da.harbor_config_id
         FROM (SELECT distinct dasv.app_service_id

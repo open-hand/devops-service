@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.ResourceVO;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
@@ -546,5 +547,12 @@ public interface AppServiceService {
     List<AppServiceImportPayload> createAppService(Long projectId, List<ApplicationImportInternalVO> importInternalVOS);
 
     void importMarketAppServiceGitlab(AppServiceImportPayload appServiceImportPayload);
+
+    /**
+     * 查询项目下资源使用情况
+     * @param projectIds
+     * @return
+     */
+    List<ResourceVO> listResourceByIds(List<Long> projectIds);
 
 }
