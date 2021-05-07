@@ -194,6 +194,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
      */
     List<AppServiceDTO> inProjectsAndHavingVersion(@Param("projectIds") Set<Long> projectIds, @Param("appServiceCode") String appServiceCode, @Param("version") String version);
 
-    List<ResourceVO> listResourceByIds(@Param("projectIds") List<Long> projectIds);
+    ResourceVO queryResourceById(@Param("projectId") Long projectId);
 }
 

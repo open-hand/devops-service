@@ -798,7 +798,7 @@
         </foreach>
     </select>
 
-    <select id="listResourceByIds" resultType="io.choerodon.devops.api.vo.iam.ResourceVO">
+    <select id="queryResourceById" resultType="io.choerodon.devops.api.vo.iam.ResourceVO">
         SELECT
             das.project_id as projectId,
             count( * ) as currentAppService,
@@ -807,10 +807,7 @@
         FROM
             devops_app_service das
         WHERE
-            das.project_id IN
-        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
-            #{projectId}
-        </foreach>
+            das.project_id = #{projectId}
         GROUP BY
             das.project_id
     </select>
