@@ -2074,7 +2074,24 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ResourceVO> listResourceByIds(List<Long> projectIds) {
-        return CollectionUtils.isEmpty(projectIds) ? null : appServiceMapper.listResourceByIds(projectIds);
+        List<ResourceVO> resourceVOList;
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return null;
+        } else {
+            resourceVOList = new ArrayList<>();
+            projectIds.forEach(t -> {
+                ResourceVO resourceVO = appServiceMapper.queryResourceById(t);
+                if (resourceVO == null) {
+                    resourceVO = new ResourceVO();
+                    resourceVO.setCurrentAppService(0L);
+                    resourceVO.setCurrentEnv(0L);
+                    resourceVO.setCurrentCluster(0L);
+                    resourceVO.setProjectId(t);
+                }
+                resourceVOList.add(resourceVO);
+            });
+            return resourceVOList;
+        }
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
