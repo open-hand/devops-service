@@ -801,9 +801,9 @@
     <select id="listResourceByIds" resultType="io.choerodon.devops.api.vo.iam.ResourceVO">
         SELECT
             das.project_id as projectId,
-            count( * ) as appServiceNum,
-            ( SELECT count( * ) FROM devops_cluster dc WHERE dc.project_id = das.project_id ) as clusterNum,
-            ( SELECT count( * ) FROM devops_env de WHERE de.project_id = das.project_id ) as envNum
+            count( * ) as currentAppService,
+            ( SELECT count( * ) FROM devops_cluster dc WHERE dc.project_id = das.project_id ) as currentCluster,
+            ( SELECT count( * ) FROM devops_env de WHERE de.project_id = das.project_id ) as currentEnv
         FROM
             devops_app_service das
         WHERE

@@ -8,9 +8,9 @@ package io.choerodon.devops.api.vo.iam;
  */
 public class ResourceVO {
     private Long projectId;
-    private Long clusterNum;
-    private Long envNum;
-    private Long appServiceNum;
+    private Long currentAppService;
+    private Long currentCluster;
+    private Long currentEnv;
 
     public Long getProjectId() {
         return projectId;
@@ -20,27 +20,27 @@ public class ResourceVO {
         this.projectId = projectId;
     }
 
-    public Long getClusterNum() {
-        return clusterNum;
+    public Long getCurrentAppService() {
+        return currentAppService;
     }
 
-    public void setClusterNum(Long clusterNum) {
-        this.clusterNum = clusterNum;
+    public void setCurrentAppService(Long currentAppService) {
+        this.currentAppService = currentAppService;
     }
 
-    public Long getEnvNum() {
-        return envNum;
+    public Long getCurrentCluster() {
+        return currentCluster;
     }
 
-    public void setEnvNum(Long envNum) {
-        this.envNum = envNum;
+    public void setCurrentCluster(Long currentCluster) {
+        this.currentCluster = currentCluster;
     }
 
-    public Long getAppServiceNum() {
-        return appServiceNum;
+    public Long getCurrentEnv() {
+        return currentEnv;
     }
 
-    public void setAppServiceNum(Long appServiceNum) {
-        this.appServiceNum = appServiceNum;
+    public void setCurrentEnv(Long currentEnv) {
+        this.currentEnv = currentEnv;
     }
 }
