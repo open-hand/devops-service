@@ -136,6 +136,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(msg.toString());
         }
+        // TODO 可以用策略模式改造
         switch (helmType) {
             // JOB的相关信息
             case HELM_INSTALL_JOB_INFO:
