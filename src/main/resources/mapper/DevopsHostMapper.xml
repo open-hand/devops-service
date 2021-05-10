@@ -46,8 +46,9 @@
     <select id="listByProjectIdAndIds" resultType="io.choerodon.devops.infra.dto.DevopsHostDTO">
         SELECT dh.*
         FROM devops_host dh
-        WHERE project_id = #{projectId,jdbcType=BIGINT}
-        AND id IN
+                WHERE project_id = #{projectId,jdbcType=BIGINT}
+                  AND host_ip IS NOT NULL
+                  AND id IN
         <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
             #{hostId,jdbcType=BIGINT}
         </foreach>

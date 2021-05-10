@@ -117,7 +117,7 @@ public class DevopsHostController {
         return Results.success(devopsHostService.testConnection(projectId, devopsHostConnectionTestVO));
     }
 
-    @ApiOperation("测试多个主机连接状态/返回结果是所有连接不通过的主机id")
+    @ApiOperation("测试多个主机连接状态/返回结果是所有连接不通过的主机id（仅供中间件部署的主机连通测试使用）")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/multi/connection_test")
     public ResponseEntity<Set<Object>> multiTestConnection(
