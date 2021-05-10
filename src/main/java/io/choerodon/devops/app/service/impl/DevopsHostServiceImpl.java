@@ -483,6 +483,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     public Set<Object> multiTestConnection(Long projectId, Set<Long> hostIds) {
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
+        CommonExAssertUtil.assertTrue(devopsHostDTOList.size() > 0, "error.component.host.size");
         Set<Long> connectionFailedHostIds = new HashSet<>();
         devopsHostDTOList.forEach(d -> {
             DevopsHostConnectionTestResultVO devopsHostConnectionTestResultVO = testConnection(projectId, ConvertUtils.convertObject(d, DevopsHostConnectionTestVO.class));
