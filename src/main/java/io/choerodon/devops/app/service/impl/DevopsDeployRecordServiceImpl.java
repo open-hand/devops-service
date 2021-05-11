@@ -104,6 +104,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 deployVersion,
                 instanceName,
                 JsonHelper.marshalByJackson(deploySource));
+        devopsDeployRecordDTO.setCreatedBy(userId);
+        devopsDeployRecordDTO.setLastUpdatedBy(userId);
         try {
             baseCreate(devopsDeployRecordDTO);
             if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
