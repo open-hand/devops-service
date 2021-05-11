@@ -39,7 +39,6 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      */
     void batchSetStatusOperating(@Param("projectId") Long projectId,
                                  @Param("hostIds") Set<Long> hostIds,
-                                 @Param("isTestType") Boolean isTestType,
                                  @Param("date") Date date,
                                  @Param("updatedBy") Long updatedBy);
 
@@ -60,29 +59,4 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
     List<DevopsHostVO> pagingWithCheckingStatus(@Param("projectId") Long projectId,
                                                 @Param("finalHostIds") Set<Long> finalHostIds,
                                                 @Param("searchParam") String searchParam);
-
-    /**
-     * 根据id集合查询测试主机
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id
-     * @return 主机信息
-     */
-    List<DevopsHostDTO> listDistributionTestHostsByIds(@Param("projectId") Long projectId, @Param("hostIds") Set<Long> hostIds);
-
-    /**
-     * 查询测试主机
-     *
-     * @return 主机信息
-     */
-    List<DevopsHostDTO> listDistributionTestHosts();
-
-
-    /**
-     * 批量更新主机jmeter状态
-     *
-     * @param hostIds 主机id
-     * @param status  主机状态
-     */
-    void updateJmeterStatus(@Param("hostIds") Set<Long> hostIds, @Param("status") String status);
 }

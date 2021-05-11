@@ -28,16 +28,4 @@ public class DevopsHostAdditionalCheckValidator {
     public void validIpAndSshPortProjectUnique(Long projectId, String ip, Integer sshPort) {
         CommonExAssertUtil.assertTrue(devopsHostService.isSshIpPortUnique(projectId, ip, sshPort), "error.host.ip.ssh.port.not.unique");
     }
-
-    public void validIpAndJmeterPortProjectUnique(Long projectId, String ip, Integer jmeterPort) {
-        CommonExAssertUtil.assertTrue(devopsHostService.isIpJmeterPortUnique(projectId, ip, jmeterPort), "error.host.ip.jmeter.port.not.unique");
-    }
-
-    public void validJmeterPort(Integer jmeterPort) {
-        CommonExAssertUtil.assertTrue(jmeterPort != null && jmeterPort > 0 && jmeterPort <= 65535, "error.jmeter.port.invalid");
-    }
-
-    public void validJmeterPath(String jmeterPath) {
-        CommonExAssertUtil.assertTrue(jmeterPath != null && JMETER_PATH_PATTERN.matcher(jmeterPath).matches(), "error.jmeter.path.invalid");
-    }
 }

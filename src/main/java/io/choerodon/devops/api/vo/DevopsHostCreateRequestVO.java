@@ -9,8 +9,8 @@ import org.hibernate.validator.constraints.Range;
 
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.devops.infra.enums.DevopsHostType;
+import io.choerodon.devops.infra.enums.HostAuthType;
 
 /**
  * @author zmf
@@ -52,9 +52,11 @@ public class DevopsHostCreateRequestVO {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
+    @Deprecated
     @ApiModelProperty("jmeter进程的端口号")
     private Integer jmeterPort;
 
+    @Deprecated
     @ApiModelProperty("jmeter二进制文件的路径")
     private String jmeterPath;
 
@@ -121,18 +123,22 @@ public class DevopsHostCreateRequestVO {
         this.password = password;
     }
 
+    @Deprecated
     public Integer getJmeterPort() {
         return jmeterPort;
     }
 
+    @Deprecated
     public void setJmeterPort(Integer jmeterPort) {
         this.jmeterPort = jmeterPort;
     }
 
+    @Deprecated
     public String getJmeterPath() {
         return jmeterPath;
     }
 
+    @Deprecated
     public void setJmeterPath(String jmeterPath) {
         this.jmeterPath = jmeterPath;
     }
