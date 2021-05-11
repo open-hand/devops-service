@@ -39,7 +39,6 @@ import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
@@ -60,11 +59,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String CHECKING_HOST = "checking";
 
     /**
-     * 主机占用的锁的redis key, 变量是主机id
-     */
-    public static final String HOST_OCCUPY_REDIS_KEY_TEMPLATE = "devops-service:hosts:host-occupy-%s";
-
-    /**
      * 占用主机的过期时间, 超过这个时间, 主机会被释放
      */
     @Value("${devops.host.occupy.timeout-hours:24}")
@@ -79,8 +73,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsCdJobMapper devopsCdJobMapper;
-    @Autowired
-    private TestServiceClientOperator testServiceClientOperator;
     @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
@@ -98,13 +90,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
-
-        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostCreateRequestVO.getType())) {
-            devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostCreateRequestVO.getJmeterPort());
-            devopsHostAdditionalCheckValidator.validIpAndJmeterPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getJmeterPort());
-            devopsHostAdditionalCheckValidator.validJmeterPath(devopsHostCreateRequestVO.getJmeterPath());
-            devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
-        }
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
         return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
@@ -124,25 +109,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return Collections.emptySet();
         }
 
-        // 分类测试主机和部署的主机
-        List<DevopsHostDTO> deployHosts = new ArrayList<>();
-        List<DevopsHostDTO> testHosts = new ArrayList<>();
-        hosts.forEach(host -> {
-            if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(host.getType())) {
-                deployHosts.add(host);
-            } else {
-                testHosts.add(host);
-            }
-        });
-
         // 设置状态为处理中
         Date current = new Date();
         Long updateUserId = DetailsHelper.getUserDetails().getUserId();
-        if (!CollectionUtils.isEmpty(deployHosts)) {
-            devopsHostMapper.batchSetStatusOperating(projectId, deployHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), false, current, updateUserId);
-        }
-        if (!CollectionUtils.isEmpty(testHosts)) {
-            devopsHostMapper.batchSetStatusOperating(projectId, testHosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), true, current, updateUserId);
+        if (!CollectionUtils.isEmpty(hosts)) {
+            devopsHostMapper.batchSetStatusOperating(projectId, hosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet()), current, updateUserId);
         }
 
         return hosts.stream().map(DevopsHostDTO::getId).collect(Collectors.toSet());
@@ -203,24 +174,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
-    @Override
-    public void asyncBatchUnOccupyHosts(Long projectId, Set<Long> hostIds) {
-        LOGGER.debug("asyncBatchUnOccupyHosts: projectId: {}, hostIds: {}", projectId, hostIds);
-        if (CollectionUtils.isEmpty(hostIds)) {
-            return;
-        }
-
-        List<DevopsHostDTO> hosts = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
-        if (CollectionUtils.isEmpty(hosts)) {
-            return;
-        }
-
-        // 释放主机
-        unOccupyHosts(projectId, hostIds);
-    }
-
     @Async(GitOpsConstants.HOST_STATUS_EXECUTOR)
     @Transactional
     @Override
@@ -240,8 +193,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
             hostDTO.setHostStatus(result.getHostStatus());
             hostDTO.setHostCheckError(result.getHostCheckError());
-            hostDTO.setJmeterStatus(result.getJmeterStatus());
-            hostDTO.setJmeterCheckError(result.getJmeterCheckError());
             // 不对更新涉及的纪录结果进行判断
             devopsHostMapper.updateByPrimaryKeySelective(hostDTO);
             LOGGER.debug("connection result for host with id {} is {}", hostId, result);
@@ -273,8 +224,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             DevopsHostConnectionTestResultVO result = testConnection(projectId, devopsHostConnectionTestVO);
             hostDTO.setHostStatus(result.getHostStatus());
             hostDTO.setHostCheckError(result.getHostCheckError());
-            hostDTO.setJmeterStatus(result.getJmeterStatus());
-            hostDTO.setJmeterCheckError(result.getJmeterCheckError());
             // 不对更新涉及的纪录结果进行判断
             devopsHostMapper.updateByPrimaryKeySelective(hostDTO);
             String status = DevopsHostStatus.FAILED.getValue();
@@ -325,12 +274,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private List<DevopsHostDTO> filterHostsToCorrect(List<DevopsHostDTO> hosts) {
         return hosts.stream().filter(hostDTO -> {
-            // 跳过占用中的测试主机
-            if (DevopsHostStatus.OCCUPIED.getValue().equals(hostDTO.getJmeterStatus())) {
-                return false;
-            }
             // 过滤测试中的主机
-            if (isOperating(hostDTO.getType(), hostDTO.getHostStatus(), hostDTO.getJmeterStatus())
+            if (isOperating(hostDTO.getType(), hostDTO.getHostStatus())
                     && !isTimeout(hostDTO.getLastUpdateDate())) {
                 LOGGER.info("Skip correct for operating host with id {}", hostDTO.getId());
                 return false;
@@ -342,17 +287,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     /**
      * 主机状态是否是处理中
      *
-     * @param type         主机类型
-     * @param hostStatus   主机状态
-     * @param jmeterStatus jmeter状态
+     * @param type       主机类型
+     * @param hostStatus 主机状态
      * @return true表示是处理中
      */
-    private boolean isOperating(String type, String hostStatus, String jmeterStatus) {
+    private boolean isOperating(String type, String hostStatus) {
         if (DevopsHostType.DEPLOY.getValue().equalsIgnoreCase(type)) {
             return DevopsHostStatus.OPERATING.getValue().equals(hostStatus);
-        } else {
-            return isDistributeHostOperating(hostStatus, jmeterStatus);
         }
+        return false;
     }
 
     /**
@@ -363,14 +306,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private boolean isTimeout(Date lastUpdateDate) {
         return System.currentTimeMillis() - lastUpdateDate.getTime() >= OPERATING_TIMEOUT;
-    }
-
-    private boolean isDistributeHostOperating(String hostStatus, String jmeterStatus) {
-        // 测试主机, 任意一个状态失败则失败, 两个状态都成功则成功, jmeter状态为占用就是占用, 否则都是处理中
-        return !DevopsHostStatus.FAILED.getValue().equals(hostStatus)
-                && !DevopsHostStatus.FAILED.getValue().equals(jmeterStatus)
-                && !DevopsHostStatus.OCCUPIED.getValue().equals(jmeterStatus)
-                && !(DevopsHostStatus.SUCCESS.getValue().equals(hostStatus) && DevopsHostStatus.SUCCESS.getValue().equals(jmeterStatus));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -387,15 +322,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         boolean ipChanged = !devopsHostDTO.getHostIp().equals(devopsHostUpdateRequestVO.getHostIp());
         if (ipChanged || !devopsHostDTO.getSshPort().equals(devopsHostUpdateRequestVO.getSshPort())) {
             devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
-        }
-
-        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType())) {
-            devopsHostAdditionalCheckValidator.validJmeterPort(devopsHostUpdateRequestVO.getJmeterPort());
-            if (ipChanged || !devopsHostDTO.getJmeterPort().equals(devopsHostUpdateRequestVO.getJmeterPort())) {
-                devopsHostAdditionalCheckValidator.validIpAndJmeterPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getJmeterPort());
-            }
-            devopsHostAdditionalCheckValidator.validJmeterPath(devopsHostUpdateRequestVO.getJmeterPath());
-            devopsHostDTO.setJmeterStatus(DevopsHostStatus.OPERATING.getValue());
         }
 
         devopsHostDTO.setName(devopsHostUpdateRequestVO.getName());
@@ -452,29 +378,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             if (sshClient == null) {
                 result.setHostCheckError("failed to check ssh, please ensure network and authentication is valid");
             }
-
-            // 如果是测试类型的主机, 再测试下jmeter的状态
-            if (DevopsHostType.DISTRIBUTE_TEST.getValue().equals(devopsHostConnectionTestVO.getType())) {
-                // ssh测试成功才有必要测试jmeter状态
-                if (DevopsHostStatus.SUCCESS.getValue().equals(result.getHostStatus())) {
-                    boolean jmeterConnected = testServiceClientOperator.testJmeterConnection(devopsHostConnectionTestVO.getHostIp(), devopsHostConnectionTestVO.getJmeterPort());
-                    if (!jmeterConnected) {
-                        result.setJmeterCheckError("failed to check jmeter， please ensure network and jmeter server running");
-                        result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
-                    } else {
-                        boolean jmeterPathValid = SshUtil.execForOk(sshClient, String.format(MiscConstants.LS_JMETER_COMMAND, devopsHostConnectionTestVO.getJmeterPath()));
-                        if (jmeterPathValid) {
-                            result.setJmeterStatus(DevopsHostStatus.SUCCESS.getValue());
-                        } else {
-                            result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
-                            result.setJmeterCheckError("failed to check jmeter script. please ensure jmeter home is valid");
-                        }
-                    }
-                } else {
-                    result.setJmeterStatus(DevopsHostStatus.FAILED.getValue());
-                    result.setJmeterCheckError("failed due to ssh failed");
-                }
-            }
             return result;
         } finally {
             IOUtils.closeQuietly(sshClient);
@@ -525,15 +428,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public boolean isIpJmeterPortUnique(Long projectId, String ip, Integer jmeterPort) {
-        DevopsHostDTO condition = new DevopsHostDTO();
-        condition.setProjectId(Objects.requireNonNull(projectId));
-        condition.setHostIp(Objects.requireNonNull(ip));
-        condition.setJmeterPort(Objects.requireNonNull(jmeterPort));
-        return devopsHostMapper.selectCount(condition) == 0;
-    }
-
-    @Override
     public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options) {
         // 解析查询参数
         Map<String, Object> maps = TypeUtil.castMapParams(options);
@@ -559,29 +453,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private void checkTimeout(Long projectId, List<DevopsHostDTO> devopsHostDTOS) {
         Set<Long> ids = new HashSet<>();
-        Set<Long> occupyTimeoutHosts = new HashSet<>();
         devopsHostDTOS.forEach(host -> {
             // 收集校验超时的主机
-            if (isOperating(host.getType(), host.getHostStatus(), host.getJmeterStatus())
+            if (isOperating(host.getType(), host.getHostStatus())
                     && isTimeout(host.getLastUpdateDate())) {
                 ids.add(host.getId());
-            }
-
-            // 收集占用超时的主机
-            if (DevopsHostStatus.OCCUPIED.getValue().equals(host.getJmeterStatus())
-                    && isHostOccupiedTimeout(host.getLastUpdateDate())) {
-                occupyTimeoutHosts.add(host.getId());
             }
         });
 
         // 不为空 异步设置失败
         if (!ids.isEmpty()) {
             ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchSetTimeoutHostFailed(projectId, ids);
-        }
-
-        // 异步释放被占用的主机
-        if (!occupyTimeoutHosts.isEmpty()) {
-            ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchUnOccupyHosts(projectId, occupyTimeoutHosts);
         }
     }
 
@@ -604,14 +486,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         if (Objects.isNull(devopsHostDTO)) {
             return Boolean.TRUE;
-        }
-        //测试主机，状态占用中不能删除
-        if (DevopsHostType.DISTRIBUTE_TEST.getValue().equalsIgnoreCase(devopsHostDTO.getType().trim())) {
-            if (DevopsHostStatus.OCCUPIED.getValue().equalsIgnoreCase(devopsHostDTO.getHostStatus().trim())) {
-                return Boolean.FALSE;
-            } else {
-                return Boolean.TRUE;
-            }
         }
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setProjectId(projectId);
@@ -707,110 +581,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             });
         }
         return page;
-    }
-
-    @Override
-    public List<DevopsHostDTO> listDistributionTestHostsByIds(Long projectId, Set<Long> hostIds) {
-        if (CollectionUtils.isEmpty(hostIds)) {
-            return Collections.emptyList();
-        }
-        return devopsHostMapper.listDistributionTestHostsByIds(projectId, hostIds);
-    }
-
-    @Override
-    public Page<DevopsHostDTO> listDistributionTestHosts(PageRequest pageRequest) {
-        return PageHelper.doPage(pageRequest, () -> devopsHostMapper.listDistributionTestHosts());
-    }
-
-    @Override
-    public boolean occupyHosts(Long projectId, Long recordId, Set<Long> hostIds) {
-        if (CollectionUtils.isEmpty(hostIds)) {
-            return false;
-        }
-
-        // 锁key
-        String lockKey;
-        // 锁值
-        String value = recordId.toString();
-        // 加锁成功的key
-        List<String> locked = new ArrayList<>();
-        // 是否有某个加锁失败
-        boolean failedToLock = false;
-
-        try {
-            // 尝试给所有id加锁
-            for (Long hostId : hostIds) {
-                lockKey = hostOccupyKey(hostId);
-                Boolean result = redisTemplate.opsForValue().setIfAbsent(lockKey, value, hostOccupyTimeoutHours, TimeUnit.HOURS);
-                if (Boolean.TRUE.equals(result)) {
-                    locked.add(lockKey);
-                } else {
-                    LOGGER.debug("Failed to acquire lock for host with id {}", hostId);
-                    failedToLock = true;
-                    break;
-                }
-            }
-
-            // 如果获取锁失败, 将已经获取成功的锁释放
-            if (failedToLock) {
-                releaseLocks(locked);
-                return false;
-            }
-
-            List<DevopsHostDTO> hosts = devopsHostMapper.listDistributionTestHostsByIds(projectId, hostIds);
-            // 如果查出的主机数量不一致, 认为失败
-            if (hosts.size() != hostIds.size()) {
-                LOGGER.debug("The size doesn't equals. expect: {}, actual: {}", hostIds.size(), hosts.size());
-                releaseLocks(locked);
-                return false;
-            }
-
-            // 将所有主机更新为占用中的状态
-            devopsHostMapper.updateJmeterStatus(hostIds, DevopsHostStatus.OCCUPIED.getValue());
-        } catch (Exception ex) {
-            LOGGER.warn("Ex occurred when occupying host {}", hostIds);
-            LOGGER.warn("The ex is:", ex);
-            releaseLocks(locked);
-            return false;
-        }
-
-        return true;
-    }
-
-    private void releaseLocks(List<String> keys) {
-        keys.forEach(key -> redisTemplate.delete(key));
-    }
-
-    @Override
-    public boolean unOccupyHosts(Long projectId, Set<Long> hostIds) {
-        if (CollectionUtils.isEmpty(hostIds)) {
-            return true;
-        }
-
-        // 锁key
-        String lockKey;
-
-        try {
-            // 尝试给所有id解锁
-            for (Long hostId : hostIds) {
-                lockKey = hostOccupyKey(hostId);
-                redisTemplate.delete(lockKey);
-            }
-            LOGGER.debug("Finished to delete redis locks for hosts {}", hostIds);
-
-            // 将所有主机更新为成功中的状态
-            devopsHostMapper.updateJmeterStatus(hostIds, DevopsHostStatus.SUCCESS.getValue());
-        } catch (Exception ex) {
-            LOGGER.warn("Ex occurred when un-occupying host {}", hostIds);
-            LOGGER.warn("The ex is:", ex);
-            return false;
-        }
-
-        return true;
-    }
-
-    private String hostOccupyKey(Long hostId) {
-        return String.format(HOST_OCCUPY_REDIS_KEY_TEMPLATE, hostId);
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

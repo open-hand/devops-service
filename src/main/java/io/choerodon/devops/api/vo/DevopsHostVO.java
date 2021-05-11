@@ -40,6 +40,7 @@ public class DevopsHostVO {
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
      */
+    @Deprecated
     @ApiModelProperty("jmeter状态")
     private String jmeterStatus;
 
@@ -47,6 +48,7 @@ public class DevopsHostVO {
     @ApiModelProperty("主机连接错误信息")
     private String hostCheckError;
 
+    @Deprecated
     @Nullable
     @ApiModelProperty("jmeter连接错误信息")
     private String jmeterCheckError;
@@ -72,9 +74,11 @@ public class DevopsHostVO {
     @ApiModelProperty("用户名")
     private String username;
 
+    @Deprecated
     @ApiModelProperty("jmeter进程的端口号")
     private Integer jmeterPort;
 
+    @Deprecated
     @ApiModelProperty("jmeter二进制文件的路径")
     private String jmeterPath;
 
@@ -121,10 +125,12 @@ public class DevopsHostVO {
         this.hostStatus = hostStatus;
     }
 
+    @Deprecated
     public String getJmeterStatus() {
         return jmeterStatus;
     }
 
+    @Deprecated
     public void setJmeterStatus(String jmeterStatus) {
         this.jmeterStatus = jmeterStatus;
     }
@@ -161,18 +167,22 @@ public class DevopsHostVO {
         this.sshPort = sshPort;
     }
 
+    @Deprecated
     public Integer getJmeterPort() {
         return jmeterPort;
     }
 
+    @Deprecated
     public void setJmeterPort(Integer jmeterPort) {
         this.jmeterPort = jmeterPort;
     }
 
+    @Deprecated
     public String getJmeterPath() {
         return jmeterPath;
     }
 
+    @Deprecated
     public void setJmeterPath(String jmeterPath) {
         this.jmeterPath = jmeterPath;
     }
@@ -210,11 +220,12 @@ public class DevopsHostVO {
         this.hostCheckError = hostCheckError;
     }
 
+    @Deprecated
     @Nullable
     public String getJmeterCheckError() {
         return jmeterCheckError;
     }
-
+    @Deprecated
     public void setJmeterCheckError(@Nullable String jmeterCheckError) {
         this.jmeterCheckError = jmeterCheckError;
     }

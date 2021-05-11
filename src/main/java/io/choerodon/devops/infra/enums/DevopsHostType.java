@@ -14,6 +14,7 @@ public enum DevopsHostType {
     /**
      * 分布式测试类型
      */
+    @Deprecated
     DISTRIBUTE_TEST("distribute_test");
 
     private final String value;

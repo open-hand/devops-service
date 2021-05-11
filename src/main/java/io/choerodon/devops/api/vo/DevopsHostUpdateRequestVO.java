@@ -44,9 +44,11 @@ public class DevopsHostUpdateRequestVO {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
+    @Deprecated
     @ApiModelProperty("jmeter进程的端口号")
     private Integer jmeterPort;
 
+    @Deprecated
     @ApiModelProperty("jmeter二进制文件的路径")
     private String jmeterPath;
 
@@ -100,18 +102,22 @@ public class DevopsHostUpdateRequestVO {
         this.password = password;
     }
 
+    @Deprecated
     public Integer getJmeterPort() {
         return jmeterPort;
     }
 
+    @Deprecated
     public void setJmeterPort(Integer jmeterPort) {
         this.jmeterPort = jmeterPort;
     }
 
+    @Deprecated
     public String getJmeterPath() {
         return jmeterPath;
     }
 
+    @Deprecated
     public void setJmeterPath(String jmeterPath) {
         this.jmeterPath = jmeterPath;
     }

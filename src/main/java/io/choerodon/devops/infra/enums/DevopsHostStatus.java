@@ -18,6 +18,7 @@ public enum DevopsHostStatus {
     /**
      * 占用中 (测试类型的主机执行分布式测试时会处于这个状态)
      */
+    @Deprecated
     OCCUPIED("occupied"),
     /**
      * 测试中

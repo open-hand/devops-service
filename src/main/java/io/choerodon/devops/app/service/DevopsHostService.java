@@ -57,14 +57,6 @@ public interface DevopsHostService {
     void asyncBatchSetTimeoutHostFailed(Long projectId, Set<Long> hostIds);
 
     /**
-     * 异步释放占用中的主机
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id
-     */
-    void asyncBatchUnOccupyHosts(Long projectId, Set<Long> hostIds);
-
-    /**
      * 校正一个主机的状态
      *
      * @param projectId 项目id
@@ -154,16 +146,6 @@ public interface DevopsHostService {
     boolean isSshIpPortUnique(Long projectId, String ip, Integer sshPort);
 
     /**
-     * ip + jmeterPort 是否在项目下唯一
-     *
-     * @param projectId  项目id
-     * @param ip         主机ip
-     * @param jmeterPort jmeter端口
-     * @return true表示唯一
-     */
-    boolean isIpJmeterPortUnique(Long projectId, String ip, Integer jmeterPort);
-
-    /**
      * 分页查询主机
      *
      * @param projectId       项目id
@@ -186,39 +168,4 @@ public interface DevopsHostService {
     CheckingProgressVO getCheckingProgress(Long projectId, String correctKey);
 
     Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam);
-
-    /**
-     * 根据id查询测试主机
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id
-     * @return 主机信息
-     */
-    List<DevopsHostDTO> listDistributionTestHostsByIds(Long projectId, Set<Long> hostIds);
-
-    /**
-     * 查询所有的测试主机，数据迁移使用
-     *
-     * @param pageRequest
-     * @return 主机信息
-     */
-    Page<DevopsHostDTO> listDistributionTestHosts(PageRequest pageRequest);
-
-    /**
-     * 将主机设置为占用状态
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id
-     * @return true表示都设置成功
-     */
-    boolean occupyHosts(Long projectId, Long recordId, Set<Long> hostIds);
-
-    /**
-     * 将主机解除占用状态
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id
-     * @return true表示都解除成功
-     */
-    boolean unOccupyHosts(Long projectId, Set<Long> hostIds);
 }
