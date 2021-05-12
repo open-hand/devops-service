@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
@@ -133,8 +138,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 instanceName,
                 JsonHelper.marshalByJackson(deploySourceVO));
         devopsDeployRecordDTO.setErrorMessage(errorMessage);
-        devopsDeployRecordDTO.setCreatedBy(userId);
-        devopsDeployRecordDTO.setLastUpdatedBy(userId);
         try {
             baseCreate(devopsDeployRecordDTO);
             if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySourceVO.getType())) {

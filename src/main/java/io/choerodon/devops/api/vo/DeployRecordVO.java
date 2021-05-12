@@ -62,6 +62,15 @@ public class DeployRecordVO {
 
     private DeploySourceVO deploySourceVO;
     private String deploySource;
+    private String errorMessage;
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 
     public String getDeploySource() {
         return deploySource;

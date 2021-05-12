@@ -72,5 +72,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
         }
     }
 
+    changeSet(author: 'wx' ,id: '2021-5-12-alter-column'){
+       sql("""alter table devops_deploy_record change deploy_object_name deploy_object_name VARCHAR(255) null;
+              alter table devops_deploy_record change deploy_object_version deploy_object_version VARCHAR(255) null;""")
+    }
+
+
 
 }
