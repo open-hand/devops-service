@@ -65,4 +65,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
         }
     }
 
+    changeSet(author: 'wx' ,id: '2021-5-12-add-column'){
+        addColumn(tableName: 'devops_deploy_record') {
+            column(name: 'error_message', type: 'text',  remarks: '部署错误信息', afterColumn: 'deploy_type') {
+            }
+        }
+    }
+
+
 }

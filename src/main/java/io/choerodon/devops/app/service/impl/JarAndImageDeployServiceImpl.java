@@ -74,10 +74,10 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
     private MarketServiceClientOperator marketServiceClientOperator;
 
 
-
     @Override
     @Async
     public void jarAndImageDeploy(Long projectId, DeployConfigVO deployConfigVO, Long userId) {
+        LOGGER.info(">>>>userId:{}", userId);
         if (DeployModeEnum.HOST.value().equals(deployConfigVO.getDeployType())) {
             if (HostDeployType.IMAGED_DEPLOY.getValue().equals(deployConfigVO.getDeployObjectType())) {
                 hostImagedeploy(projectId, deployConfigVO, userId);
@@ -192,7 +192,8 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deploySourceVO, userId);
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            devopsDeployRecordService.saveRecord(
+            CommonException commonException = new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
+            devopsDeployRecordService.saveFailRecord(
                     projectId,
                     DeployType.MANUAL,
                     null,
@@ -204,8 +205,8 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, userId);
-            throw new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
+                    deploySourceVO, userId, commonException.getTrace());
+            throw commonException;
         } finally {
             sshUtil.closeSsh(ssh, null);
         }
@@ -308,7 +309,8 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
             LOGGER.info("image deploy cd host job success!!!");
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            devopsDeployRecordService.saveRecord(
+            CommonException commonException = new CommonException("error.deploy.hostImage.failed.", e);
+            devopsDeployRecordService.saveFailRecord(
                     projectId,
                     DeployType.MANUAL,
                     null,
@@ -320,8 +322,9 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, userId);
-            throw new CommonException("error.deploy.hostImage.failed.", e);
+                    deploySourceVO, userId, commonException.getTrace());
+
+            throw commonException;
         } finally {
             sshUtil.closeSsh(ssh, null);
         }

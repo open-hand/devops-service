@@ -50,6 +50,11 @@ public class DevopsDeployRecordDTO extends AuditDomain {
      */
     private String deploySource;
 
+    /**
+     * 部署的错误信息
+     */
+    private String errorMessage;
+
     public DevopsDeployRecordDTO() {
     }
 
@@ -195,6 +200,14 @@ public class DevopsDeployRecordDTO extends AuditDomain {
 
     public void setDeploySource(String deploySource) {
         this.deploySource = deploySource;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
     @Override

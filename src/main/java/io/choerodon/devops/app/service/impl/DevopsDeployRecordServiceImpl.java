@@ -76,7 +76,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private MarketUseRecordService marketUseRecordService;
 
 
-
     @Override
     public Long saveRecord(Long projectId,
                            DeployType type,
@@ -110,6 +109,36 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             baseCreate(devopsDeployRecordDTO);
             if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
                 marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource, userId);
+            }
+        } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}, errorMsg: {}", devopsDeployRecordDTO, e.getMessage());
+        }
+        return devopsDeployRecordDTO.getId();
+    }
+
+    @Override
+    public Long saveFailRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName, DeploySourceVO deploySourceVO, Long userId, String errorMessage) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+                projectId,
+                type.getType(),
+                deployId,
+                deployMode.value(),
+                deployPayloadId,
+                deployPayloadName,
+                deployResult,
+                new Date(),
+                deployObjectType.value(),
+                deployObjectName,
+                deployVersion,
+                instanceName,
+                JsonHelper.marshalByJackson(deploySourceVO));
+        devopsDeployRecordDTO.setErrorMessage(errorMessage);
+        devopsDeployRecordDTO.setCreatedBy(userId);
+        devopsDeployRecordDTO.setLastUpdatedBy(userId);
+        try {
+            baseCreate(devopsDeployRecordDTO);
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySourceVO.getType())) {
+                marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySourceVO, userId);
             }
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}, errorMsg: {}", devopsDeployRecordDTO, e.getMessage());
