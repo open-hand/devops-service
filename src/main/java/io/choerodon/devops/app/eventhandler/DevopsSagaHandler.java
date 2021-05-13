@@ -331,6 +331,7 @@ public class DevopsSagaHandler {
                 if (devopsCdJobRecordDTO.getStartedDate() != null) {
                     devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
                 }
+                devopsCdJobRecordDTO.setLog(devopsCdJobRecordDTO.getLog() + "Deploy app success." + System.lineSeparator());
                 devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
                 devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             }

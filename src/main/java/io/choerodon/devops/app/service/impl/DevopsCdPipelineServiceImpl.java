@@ -440,46 +440,72 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     @Override
+    @Transactional
     public void envAutoDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         LOGGER.info("autoDeploy:pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
-        //获取数据
+        // log 用于记录部署日志
+        StringBuilder log = new StringBuilder();
+        log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
+        // 获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
-
+        // 设置用户上下文
+        log.append("Pipeline trigger user id is :").append(devopsCdJobRecordDTO.getCreatedBy()).append(System.lineSeparator());
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
+
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+
+        // 1. 获取部署版本信息
+
+        log.append("## 1.Query Deploy version.").append(System.lineSeparator());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId);
         if (appServiceServiceE == null) {
-            LOGGER.info("App have no deploy version, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+            log.append("Not Found App Version in this branch and commit, skipped.").append(System.lineSeparator());
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+            devopsCdJobRecordService.updateLogById(jobRecordId, log);
             return;
+        } else {
+            log.append("Deploy Version is ").append(appServiceServiceE.getVersion()).append(System.lineSeparator());
         }
+        // 2. 校验用户权限
         // 判断是否需要校验环境权限
         // 1.需要： 没有权限将任务状态改为skipped，有权限往下执行
         // 2.不需要：没有权限使用管理员账户部署，有权限则使用自己账户
+        log.append("## 2.Check user env permission.").append(System.lineSeparator());
         if (Boolean.TRUE.equals(devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag())) {
+            log.append("Skip check user permission Flag is false, check user permission.").append(System.lineSeparator());
             if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
-                LOGGER.info("User have no env Permission, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+                log.append("User have no env Permission, skipped.").append(System.lineSeparator());
                 devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                devopsCdJobRecordService.updateLogById(jobRecordId, log);
                 return;
+            } else {
+                log.append("Check user permission Passed.").append(System.lineSeparator());
             }
         } else {
+            log.append("Skip check user permission Flag is true, choose deploy account.").append(System.lineSeparator());
             if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
-                LOGGER.info("User have no env Permission, user admin account to deploy.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+                log.append("User have no env Permission, use admin account to deploy.").append(System.lineSeparator());
                 CustomContextUtil.setUserContext(ADMIN_ID);
+            } else {
+                log.append("User have env Permission, use self account to deploy.").append(System.lineSeparator());
             }
         }
 
-
+        log.append("## 3.Deploy app instance.").append(System.lineSeparator());
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setDeployInfoId(devopsCdJobRecordDTO.getDeployInfoId());
         try {
             if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                log.append("Deploy type is create instance.").append(System.lineSeparator());
                 addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);
             } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                log.append("Deploy type is update instance.").append(System.lineSeparator());
                 AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
                 if (instanceE == null) {
+                    log.append("Instance ").append(devopsCdEnvDeployInfoDTO.getInstanceName()).append(" not found, create it now.").append(System.lineSeparator());
                     addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);
                 } else {
+
                     appServiceDeployVO.setAppServiceVersionId(appServiceServiceE.getId());
                     appServiceDeployVO.setEnvironmentId(devopsCdEnvDeployInfoDTO.getEnvId());
                     appServiceDeployVO.setValues(devopsDeployValueService.baseQueryById(devopsCdEnvDeployInfoDTO.getValueId()).getValue());
@@ -498,10 +524,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         if (!instanceE.getId().equals(devopsCdEnvDeployInfoDTO.getInstanceId())) {
                             devopsCdEnvDeployInfoDTO.setInstanceId(instanceE.getId());
                         }
+                        log.append("Deploy version is same to instance version, restart it.").append(System.lineSeparator());
+
+                        log.append("Deploying app instance...").append(System.lineSeparator());
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
 
                         DevopsCdJobRecordDTO CdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
                         DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId(), true);
+                        log.append("Deploy app success.").append(System.lineSeparator());
                         // 更新job状态为success
                         CdJobRecordDTO.setCommandId(devopsEnvCommandDTO.getId());
                         CdJobRecordDTO.setFinishedDate(new Date());
@@ -509,6 +539,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             CdJobRecordDTO.setDurationSeconds((new Date().getTime() - CdJobRecordDTO.getStartedDate().getTime()) / 1000);
                         }
                         CdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+                        CdJobRecordDTO.setLog(log.toString());
                         devopsCdJobRecordService.update(CdJobRecordDTO);
                         return;
                     }
@@ -524,8 +555,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
                         // 如果现在部署的版本落后于已经部署的版本则跳过
                         if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
-                            LOGGER.info("Deploy version is deprecated, skipped.pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
+                            log.append("Deploy version is behind to instance current version, skipped.").append(System.lineSeparator());
                             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                            devopsCdJobRecordService.updateLogById(jobRecordId, log);
                             return;
                         }
                     }
@@ -533,8 +565,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
 
             // 开始执行job
+            log.append("Deploying app instance...").append(System.lineSeparator());
             devopsCdJobRecordDTO.setStartedDate(new Date());
             devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+            devopsCdJobRecordDTO.setLog(log.toString());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
 
             String input = gson.toJson(appServiceDeployVO);
@@ -551,9 +585,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     });
         } catch (Exception e) {
             LOGGER.error("error.create.pipeline.auto.deploy.instance", e);
+            log.append("Deploy app instance failed").append(System.lineSeparator());
+            log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            devopsCdJobRecordService.updateLogById(jobRecordId, log);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
         }
     }
