@@ -112,6 +112,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
+    @Transactional
     public void updateLogById(Long jobRecordId, StringBuilder log) {
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
         cdJobRecordDTO.setLog(log.toString());
