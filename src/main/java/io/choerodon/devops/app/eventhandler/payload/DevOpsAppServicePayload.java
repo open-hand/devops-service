@@ -23,6 +23,7 @@ public class DevOpsAppServicePayload {
     private Long templateAppServiceId;
     private Long templateAppServiceVersionId;
     private Date date;
+    private String errorMessage;
 
     private AppServiceDTO appServiceDTO;
     private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
@@ -43,6 +44,13 @@ public class DevOpsAppServicePayload {
         this.appServiceDTO = appServiceDTO;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 
     public Integer getUserId() {
         return userId;

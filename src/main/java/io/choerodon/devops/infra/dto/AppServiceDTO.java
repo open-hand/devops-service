@@ -46,6 +46,7 @@ public class AppServiceDTO extends AuditDomain {
     private Boolean isFailed;
     private String type;
     private String imgUrl;
+    private String errorMessage;
     // TODO delete the field
     /**
      * @deprecated
@@ -78,6 +79,14 @@ public class AppServiceDTO extends AuditDomain {
      */
     @Transient
     private Boolean emptyRepository;
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 
     public String getVersion() {
         return version;

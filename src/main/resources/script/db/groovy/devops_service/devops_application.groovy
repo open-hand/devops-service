@@ -141,4 +141,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         dropIndex(tableName: "devops_app_service", indexName: "idx_gitlab_project_id")
         addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_app_gitlab_project_id', columnNames: "gitlab_project_id")
     }
+
+    changeSet(author: 'wx', id: '2021-05-14-add-column') {
+        addColumn(tableName: 'devops_app_service') {
+            column(name: 'error_message', type:  'text', remarks: '失败的错误信息')
+        }
+    }
 }

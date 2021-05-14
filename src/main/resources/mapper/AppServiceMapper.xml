@@ -15,7 +15,8 @@
         da.is_failed,
         da.creation_date,
         da.created_by,
-        da.last_updated_by
+        da.last_updated_by,
+        da.error_message
         FROM devops_app_service da
         WHERE da.project_id = #{projectId}
         <if test="isActive != null">
@@ -57,7 +58,8 @@
         da.is_failed,
         da.creation_date,
         da.created_by,
-        da.last_updated_by
+        da.last_updated_by,
+        da.error_message
         FROM devops_app_service da
         <where>
             da.project_id = #{projectId}
