@@ -11,12 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
@@ -90,7 +93,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             appServiceDeployVO.setType("create");
             appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false);
         } else {
-            jarAndImageDeployService.jarAndImageDeploy(projectId, deployConfigVO, DetailsHelper.getUserDetails().getUserId());
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            jarAndImageDeployService.jarAndImageDeploy(projectId, deployConfigVO, authentication);
         }
     }
 

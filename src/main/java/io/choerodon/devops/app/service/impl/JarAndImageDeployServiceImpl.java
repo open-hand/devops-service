@@ -11,12 +11,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -74,20 +78,24 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
     private MarketServiceClientOperator marketServiceClientOperator;
 
 
-
     @Override
     @Async
-    public void jarAndImageDeploy(Long projectId, DeployConfigVO deployConfigVO, Long userId) {
+    public void jarAndImageDeploy(Long projectId, DeployConfigVO deployConfigVO, Authentication authentication) {
+        LOGGER.info(">>>>userId:{}", authentication);
         if (DeployModeEnum.HOST.value().equals(deployConfigVO.getDeployType())) {
             if (HostDeployType.IMAGED_DEPLOY.getValue().equals(deployConfigVO.getDeployObjectType())) {
-                hostImagedeploy(projectId, deployConfigVO, userId);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                hostImagedeploy(projectId, deployConfigVO);
+                SecurityContextHolder.clearContext();
             } else if (HostDeployType.JAR_DEPLOY.getValue().equals(deployConfigVO.getDeployObjectType())) {
-                hostJarDeploy(projectId, deployConfigVO, userId);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                hostJarDeploy(projectId, deployConfigVO);
+                SecurityContextHolder.clearContext();
             }
         }
     }
 
-    private void hostJarDeploy(Long projectId, DeployConfigVO deployConfigVO, Long userId) {
+    private void hostJarDeploy(Long projectId, DeployConfigVO deployConfigVO) {
         LOGGER.info("========================================");
         LOGGER.info("start jar deploy cd host job,projectId:{}", projectId);
         SSHClient ssh = new SSHClient();
@@ -149,7 +157,7 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                 deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
 
                 //如果是市场部署将部署人员添加为应用的订阅人员
-                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), userId);
+                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
             } else {
                 nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
                 mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
@@ -189,10 +197,11 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, userId);
+                    deploySourceVO, DetailsHelper.getUserDetails().getUserId());
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            devopsDeployRecordService.saveRecord(
+            CommonException commonException = new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
+            devopsDeployRecordService.saveFailRecord(
                     projectId,
                     DeployType.MANUAL,
                     null,
@@ -204,8 +213,8 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, userId);
-            throw new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
+                    deploySourceVO, DetailsHelper.getUserDetails().getUserId(), commonException.getTrace());
+            throw commonException;
         } finally {
             sshUtil.closeSsh(ssh, null);
         }
@@ -220,7 +229,7 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
     }
 
 
-    private void hostImagedeploy(Long projectId, DeployConfigVO deployConfigVO, Long userId) {
+    private void hostImagedeploy(Long projectId, DeployConfigVO deployConfigVO) {
         LOGGER.info("========================================");
         LOGGER.info("start image deploy cd host job,projectId:{}", projectId);
         SSHClient ssh = new SSHClient();
@@ -264,7 +273,7 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                 deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
                 deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
                 //如果是市场部署将部署人员添加为应用的订阅人员
-                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), userId);
+                marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
             } else {
                 imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), imageDeploy.getTag());
@@ -303,12 +312,13 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, userId);
+                    deploySourceVO, DetailsHelper.getUserDetails().getUserId());
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!");
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            devopsDeployRecordService.saveRecord(
+            CommonException commonException = new CommonException("error.deploy.hostImage.failed.", e);
+            devopsDeployRecordService.saveFailRecord(
                     projectId,
                     DeployType.MANUAL,
                     null,
@@ -320,8 +330,9 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, userId);
-            throw new CommonException("error.deploy.hostImage.failed.", e);
+                    deploySourceVO, DetailsHelper.getUserDetails().getUserId(), commonException.getTrace());
+
+            throw commonException;
         } finally {
             sshUtil.closeSsh(ssh, null);
         }
