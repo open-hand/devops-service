@@ -221,10 +221,10 @@ public class DevopsSagaHandler {
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>errorMessage:{}>>>>>>>>>", e.getCause());
             devOpsAppImportPayload.setErrorMessage(getStackTrace(e));
-            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
+            appServiceService.setAppErrStatus(JsonHelper.marshalByJackson(devOpsAppImportPayload), devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
             throw e;
         }
-        return data;
+        return JsonHelper.marshalByJackson(devOpsAppImportPayload);
     }
 
     /**
