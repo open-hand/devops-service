@@ -219,6 +219,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>errorMessage:{}>>>>>>>>>", e.getCause());
             devOpsAppImportPayload.setErrorMessage(getStackTrace(e));
             appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
             throw e;
@@ -561,6 +562,7 @@ public class DevopsSagaHandler {
         applicationDTO.setSynchro(true);
         applicationDTO.setFailed(true);
         //存入失败的信息
+        LOGGER.info("》》》》errorMessage:{}》》》》", devOpsAppServicePayload.getErrorMessage());
         applicationDTO.setErrorMessage(devOpsAppServicePayload.getErrorMessage());
         appServiceService.baseUpdate(applicationDTO);
         sendNotificationService.sendWhenAppServiceFailure(devOpsAppServicePayload.getAppServiceId());
