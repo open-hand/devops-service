@@ -241,7 +241,7 @@ public class DevopsAppTemplateController {
 
     @ApiOperation("组织层修改应用模板名称")
     @PutMapping("/organization/{organization_id}/{app_template_id}")
-    @Permission(level = ResourceLevel.SITE)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> updateAppTemplateOnTenant(
             @Encrypt
             @PathVariable(value = "app_template_id") Long appTemplateId,
