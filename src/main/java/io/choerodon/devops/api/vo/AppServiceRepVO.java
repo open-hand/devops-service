@@ -99,6 +99,16 @@ public class AppServiceRepVO {
     @ApiModelProperty("事务实例id")
     @Encrypt
     private Long sagaInstanceId;
+    @ApiModelProperty("错误信息")
+    private String errorMessage;
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 
     public Long getSagaInstanceId() {
         return sagaInstanceId;

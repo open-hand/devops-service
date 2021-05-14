@@ -3,6 +3,9 @@ package io.choerodon.devops.app.eventhandler;
 import static io.choerodon.asgard.saga.SagaDefinition.TimeoutPolicy.ALERT_ONLY;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
@@ -216,6 +219,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
+            devOpsAppImportPayload.setErrorMessage(getStackTrace(e));
             appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
             throw e;
         }
@@ -476,13 +480,40 @@ public class DevopsSagaHandler {
         try {
             appServiceService.importAppServiceGitlab(appServiceImportPayload);
         } catch (Exception e) {
+            //通过共享规则导入应用服务，如果出现错误记录到数据库中，
             DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
             devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
+            devOpsAppServicePayload.setErrorMessage(getStackTrace(e));
             appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId(), appServiceImportPayload.getAppServiceId());
             throw e;
         }
         return data;
     }
+
+    public static String getStackTrace(Exception e) {
+        StringWriter sw = null;
+        PrintWriter pw = null;
+        try {
+            sw = new StringWriter();
+            pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.flush();
+            sw.flush();
+        } finally {
+            if (sw != null) {
+                try {
+                    sw.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            if (pw != null) {
+                pw.close();
+            }
+        }
+        return sw.toString();
+    }
+
 
     /**
      * devops导入市场应用服务
@@ -503,6 +534,7 @@ public class DevopsSagaHandler {
         } catch (Exception e) {
             DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
             devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
+            devOpsAppServicePayload.setErrorMessage(getStackTrace(e));
             appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId(), appServiceImportPayload.getAppServiceId());
             throw e;
         }
@@ -526,9 +558,10 @@ public class DevopsSagaHandler {
             LOGGER.info("Set application-service failed: app-service with id {} does not exist. It may be deleted, so skip it...", devOpsAppServicePayload.getAppServiceId());
             return data;
         }
-
         applicationDTO.setSynchro(true);
         applicationDTO.setFailed(true);
+        //存入失败的信息
+        applicationDTO.setErrorMessage(devOpsAppServicePayload.getErrorMessage());
         appServiceService.baseUpdate(applicationDTO);
         sendNotificationService.sendWhenAppServiceFailure(devOpsAppServicePayload.getAppServiceId());
         return data;
