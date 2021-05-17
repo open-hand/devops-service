@@ -318,7 +318,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareMySqlHostDeployVO.getName(),
                 middlewareMySqlHostDeployVO.getVersion(),
                 null,
-                deploySourceVO);
+                deploySourceVO,DetailsHelper.getUserDetails().getUserId());
 
         // 保存中间件信息
         saveMiddlewareInfo(projectId,
@@ -508,7 +508,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 1800000)
                     .peek(d -> {
                         d.setDeployResult(CommandStatus.FAILED.getStatus());
-                        d.setErrorMsg("time out");
+                        d.setErrorMessage("time out");
                     })
                     .collect(Collectors.toList());
             // 将中间件状态设置为超时

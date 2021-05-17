@@ -169,7 +169,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public void updateRecord(Long recordId, String status, String errorMsg) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
         devopsDeployRecordDTO.setDeployResult(status);
-        devopsDeployRecordDTO.setErrorMsg(errorMsg);
+        devopsDeployRecordDTO.setErrorMessage(errorMsg);
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, "error.deploy.record.insert");
     }
 
