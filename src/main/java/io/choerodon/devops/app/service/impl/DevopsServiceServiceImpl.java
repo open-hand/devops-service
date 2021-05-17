@@ -46,10 +46,7 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 
@@ -486,31 +483,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     .collect(Collectors.joining(","));
         }
 
-        int start = getBegin(pageable.getPage(), pageable.getSize());
-        int stop = start + pageable.getSize();
         //分页组件暂不支持级联查询，只能手写分页
-        Page<DevopsServiceQueryDTO> result = new Page<>();
-        result.setNumber(pageable.getPage());
-        result.setSize(pageable.getSize());
-        int count;
-        List<DevopsServiceQueryDTO> devopsServiceQueryDTOS;
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-        count = devopsServiceMapper.selectCountByName(
-                projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), appServiceId);
-
-        result.setTotalElements(count);
         List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
-        devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
+        return PageInfoUtil.createPageFromList(devopsServiceMapper.listDevopsServiceByPage(
                 projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                paramList, sortResult, appServiceId);
-        result.setContent(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
-        if (devopsServiceQueryDTOS.size() < pageable.getSize() * pageable.getPage()) {
-            result.setSize(TypeUtil.objToInt(devopsServiceQueryDTOS.size()) - (pageable.getSize() * (pageable.getPage() - 1)));
-        } else {
-            result.setSize(pageable.getSize());
-        }
-        return result;
+                paramList, sortResult, appServiceId), pageable);
     }
 
     @Override
@@ -608,8 +586,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     private int getBegin(int page, int size) {
-        page = page <= 1 ? 1 : page;
-        return (page - 1) * size;
+        return page * size;
     }
 
 

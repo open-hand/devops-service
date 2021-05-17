@@ -165,6 +165,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     public String queryTrace(Long gitlabProjectId, Long jobId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
+        //检查该用户是否有git库的权限
+        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_DETAIL);
         return gitlabServiceClientOperator.queryTrace(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
     }
 
