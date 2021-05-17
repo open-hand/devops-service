@@ -65,10 +65,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
         }
     }
 
-    changeSet(author: 'lihao', id: '2021-04-20-add-column') {
+    changeSet(author: 'wx' ,id: '2021-5-12-add-column'){
         addColumn(tableName: 'devops_deploy_record') {
-            column(name: 'error_msg', type: 'text', remarks: '错误信息', afterColumn: 'deploy_time')
+            column(name: 'error_message', type: 'text',  remarks: '部署错误信息', afterColumn: 'deploy_type') {
+            }
         }
     }
+
+    changeSet(author: 'wx' ,id: '2021-5-12-alter-column'){
+       sql("""alter table devops_deploy_record change deploy_object_name deploy_object_name VARCHAR(255) null;
+              alter table devops_deploy_record change deploy_object_version deploy_object_version VARCHAR(255) null;""")
+    }
+
+
 
 }

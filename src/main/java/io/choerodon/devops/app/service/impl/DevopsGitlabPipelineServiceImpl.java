@@ -144,6 +144,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
             devopsGitlabPipelineDTO.setPipelineCreationDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
             if (devopsGitlabCommitDTO != null) {
+                // TODO 这里设置的 commitId 为空的情况可能是，gitlab 推送的 [push] 事件和 [pipeline] 事件顺序反了
+                // 因为这个commit应该是由push事件产生的
                 devopsGitlabPipelineDTO.setCommitId(devopsGitlabCommitDTO.getId());
             }
             devopsGitlabPipelineDTO.setStage(JSONArray.toJSONString(stages));

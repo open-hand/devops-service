@@ -1181,7 +1181,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineVO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 校验自定义任务格式
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
-        ciCdPipelineDTO.setImage(ciCdPipelineVO.getImage());
+        // 没有指定基础镜像，则使用默认镜像
+        if (StringUtils.isEmpty(ciCdPipelineVO.getImage())) {
+            ciCdPipelineDTO.setImage(defaultCiImage);
+        } else {
+            ciCdPipelineDTO.setImage(ciCdPipelineVO.getImage());
+        }
         ciCdPipelineDTO.setName(ciCdPipelineVO.getName());
         ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
         ciCdPipelineDTO.setObjectVersionNumber(ciCdPipelineVO.getObjectVersionNumber());

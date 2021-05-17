@@ -133,6 +133,10 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
 
         //设置集群id
         msg.setClusterId(TypeUtil.objToString(getClusterIdFromRegisterKey(TypeUtil.objToString(session.getAttributes().get(GROUP)))));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(msg.toString());
+        }
+        // TODO 可以用策略模式改造
         switch (helmType) {
             // JOB的相关信息
             case HELM_INSTALL_JOB_INFO:
