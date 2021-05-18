@@ -1276,6 +1276,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvCommandDTO.setId(null);
         devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandDTO.setSha(null);
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
