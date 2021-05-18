@@ -16,6 +16,7 @@
         da.creation_date,
         da.created_by,
         da.last_updated_by,
+        da.last_update_date,
         da.error_message
         FROM devops_app_service da
         WHERE da.project_id = #{projectId}
@@ -59,6 +60,7 @@
         da.creation_date,
         da.created_by,
         da.last_updated_by,
+        da.last_update_date,
         da.error_message
         FROM devops_app_service da
         <where>
