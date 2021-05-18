@@ -1432,12 +1432,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         try {
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                    .baseQueryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceDTO.getInstanceId());
-            if (devopsEnvCommandDTO == null) {
-                logger.info("InsertCommandEvent: EnvCommand with instance type and instance id: {} is not found.", devopsEnvResourceDTO.getInstanceId());
+            if (StringUtils.isEmpty(event.getCommitSha())) {
+                logger.warn("The commit sha of event is unexpectedly empty...");
                 return;
             }
+
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.queryByInstanceIdAndCommitSha(devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
+            if (devopsEnvCommandDTO == null) {
+                logger.info("InsertCommandEvent: EnvCommand is not found. InstanceId={}, commitSha={}", devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
+                return;
+            }
+
             // 删除实例事件记录
             devopsCommandEventService.baseDeletePreInstanceCommandEvent(devopsEnvCommandDTO.getObjectId());
             DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
@@ -1448,7 +1453,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsCommandEventDTO.setType(type);
             devopsCommandEventService.baseCreate(devopsCommandEventDTO);
         } catch (Exception e) {
-            logger.info("Exception occurred when calling insertDevopsCommandEvent(), it is: {}", e);
+            logger.warn("Exception occurred when calling insertDevopsCommandEvent(), it is: ", e);
         }
     }
 
