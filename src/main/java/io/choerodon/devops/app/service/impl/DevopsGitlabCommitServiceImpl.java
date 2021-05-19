@@ -36,6 +36,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -85,7 +86,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     // 如果分支和issue关联了，添加issueId到commit中
                     devopsGitlabCommitDTO.setIssueId(devopsBranchDTO.getIssueId());
                     if ("root".equals(commitDTO.getAuthor().getName())) {
-                        devopsGitlabCommitDTO.setUserId(1L);
+                        devopsGitlabCommitDTO.setUserId(IamAdminIdHolder.getAdminId());
                     } else {
                         IamUserDTO iamUserDTO = baseServiceClientOperator.queryByEmail(applicationDTO.getProjectId(),
                                 commitDTO.getAuthor().getEmail());
@@ -109,7 +110,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 devopsGitlabCommitDTO.setRef(ref);
                 devopsGitlabCommitDTO.setUrl(commitDTO.getUrl());
                 if ("root".equals(commitDTO.getAuthorName())) {
-                    devopsGitlabCommitDTO.setUserId(1L);
+                    devopsGitlabCommitDTO.setUserId(IamAdminIdHolder.getAdminId());
                 } else {
                     IamUserDTO userE = baseServiceClientOperator.queryByEmail(applicationDTO.getProjectId(),
                             commitDTO.getAuthorEmail());

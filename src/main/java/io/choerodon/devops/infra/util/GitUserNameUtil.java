@@ -7,6 +7,7 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 
 public class GitUserNameUtil {
 
@@ -86,7 +87,7 @@ public class GitUserNameUtil {
 
     public static Long getIamUserIdByGitlabUserName(String username) {
         if ("admin1".equals(username) || "root".equals(username)) {
-            return 1L;
+            return IamAdminIdHolder.getAdminId();
         }
         UserAttrService userAttrService = ApplicationContextHelper.getContext().getBean(UserAttrService.class);
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
