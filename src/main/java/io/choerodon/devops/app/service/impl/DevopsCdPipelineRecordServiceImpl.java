@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.stream.Stream;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -348,11 +349,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     c7nImageDeployDTO.setPullPassword(harborRepoDTO.getPullRobot().getToken());
                 }
                 c7nImageDeployDTO.setPullCmd("docker pull " + ciPipelineImageDTO.getImageTag());
-                // 添加应用服务名用于部署记录
+                // 添加应用服务名用于部署记录  iamgeTag:172.23.xx.xx:30003/dev-25-test-25-4/go:2021.5.17-155211-master
                 String imageTag = ciPipelineImageDTO.getImageTag();
-                String[] split = imageTag.split(":");
-                imageDeploy.setImageName(split[0].substring(split[0].lastIndexOf("/")));
-                deployVersion = split[1];
+                int indexOf = imageTag.lastIndexOf(":");
+                String repoImageName = imageTag.substring(0, indexOf);
+                String imageVersion = imageTag.substring(indexOf, imageTag.length());
+                imageDeploy.setImageName(repoImageName.substring(repoImageName.lastIndexOf("/") + 1));
+                deployVersion = imageVersion;
             }
             // 1. 更新状态 记录镜像信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
