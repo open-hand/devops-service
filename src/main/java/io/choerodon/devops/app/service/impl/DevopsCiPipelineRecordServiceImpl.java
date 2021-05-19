@@ -51,6 +51,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -979,7 +980,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     private Long getIamUserIdByGitlabUserName(String username) {
         if ("admin1".equals(username) || "root".equals(username)) {
-            return 1L;
+            return IamAdminIdHolder.getAdminId();
         }
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(username);
         return userAttrE != null ? userAttrE.getIamUserId() : 0L;

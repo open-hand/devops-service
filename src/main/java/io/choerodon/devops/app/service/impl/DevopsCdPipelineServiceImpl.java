@@ -63,6 +63,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
@@ -84,8 +85,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String PIPELINE_LINK_URL_TEMPLATE = "/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
 
 
-    private static final Integer ADMIN = 1;
-    private static final Long ADMIN_ID = 1L;
+    private static final Integer GITLAB_ADMIN_ID = 1;
 
     private static final Gson gson = new Gson();
 
@@ -485,7 +485,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             log.append("Skip check user permission Flag is true, choose deploy account.").append(System.lineSeparator());
             if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
                 log.append("User have no env Permission, use admin account to deploy.").append(System.lineSeparator());
-                CustomContextUtil.setUserContext(ADMIN_ID);
+                CustomContextUtil.setUserContext(IamAdminIdHolder.getAdminId());
             } else {
                 log.append("User have env Permission, use self account to deploy.").append(System.lineSeparator());
             }
@@ -547,9 +547,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     AppServiceDTO appServiceDTO = appServiceService.baseQuery(devopsCdEnvDeployInfoDTO.getAppServiceId());
 
                     // 要部署版本的commit
-                    CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceServiceE.getCommit(), ADMIN);
+                    CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceServiceE.getCommit(), GITLAB_ADMIN_ID);
                     // 已经部署版本的commit
-                    CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), ADMIN);
+                    CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
                     if (deploydCommit != null && currentCommit != null) {
                         // 计算commitDate
                         // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
@@ -1319,7 +1319,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(),
                     devopsCdPipelineRecordDTO.getBusinessKey(),
                     "admin",
-                    1L,
+                    IamAdminIdHolder.getAdminId(),
                     0L);
 
             devopsCdJobRecordService.updateJobStatusSuccess(devopsCdJobRecordDTO.getId());
