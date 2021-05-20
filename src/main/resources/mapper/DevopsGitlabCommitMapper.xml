@@ -111,4 +111,12 @@
             #{sha}
         </foreach>
     </select>
+
+    <update id="removeIssueAssociation">
+        UPDATE devops_gitlab_commit dgc
+        set dgc.issue_id=NULL
+        WHERE dgc.app_service_id = #{appServiceId}
+          AND dgc.ref = #{branchName}
+          AND dgc.issue_id = #{issueId}
+    </update>
 </mapper>
