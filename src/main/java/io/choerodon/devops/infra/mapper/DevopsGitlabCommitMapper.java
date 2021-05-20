@@ -38,4 +38,6 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
                                                       @Param("date") Date date);
 
     Set<Long> listIssueIdsByCommitSha(@Param("commitSha") Set<String> commitSha);
+
+    void removeIssueAssociation(@Param("appServiceId") Long appServiceId, @Param("branchName") String branchName, @Param("issueId") Long issueId);
 }

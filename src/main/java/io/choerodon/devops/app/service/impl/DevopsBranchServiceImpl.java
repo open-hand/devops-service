@@ -19,6 +19,7 @@ import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
+import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -37,6 +38,9 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
+
+    @Autowired
+    private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
 
     @Override
     public List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId) {
@@ -58,6 +62,10 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
         if (oldDevopsBranchDTO == null) {
             throw new CommonException("error.query.branch.by.name");
+        }
+        // 这种情况表示删除分支与issue关联关系，此时应该删除分支对应commit和issue关联关系
+        if (oldDevopsBranchDTO.getIssueId() != null && devopsBranchDTO.getIssueId() == null) {
+            devopsGitlabCommitMapper.removeIssueAssociation(oldDevopsBranchDTO.getAppServiceId(), oldDevopsBranchDTO.getBranchName(), oldDevopsBranchDTO.getIssueId());
         }
         oldDevopsBranchDTO.setIssueId(devopsBranchDTO.getIssueId());
         oldDevopsBranchDTO.setObjectVersionNumber(devopsBranchDTO.getObjectVersionNumber());
@@ -159,6 +167,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void removeIssueAssociation(DevopsBranchDTO devopsBranchDTO) {
+        devopsGitlabCommitMapper.removeIssueAssociation(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName(), devopsBranchDTO.getIssueId());
         devopsBranchDTO.setIssueId(null);
         MapperUtil.resultJudgedUpdateByPrimaryKey(devopsBranchMapper, devopsBranchDTO, "error.branch.remove.issue.association");
     }
