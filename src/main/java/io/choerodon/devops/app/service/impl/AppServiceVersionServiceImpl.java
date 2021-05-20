@@ -231,8 +231,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
             newVersion.setReadmeValueId(appServiceVersionReadmeDTO.getId());
             baseCreate(newVersion);
-            // 触发CD流水线, 鉴于0.24版本时将移除这个入口(要移除CD流水线)，所以0.23版本的修改不支持更新版本时触发CD流水线
-            checkAutoDeploy(newVersion);
         }
 
 
