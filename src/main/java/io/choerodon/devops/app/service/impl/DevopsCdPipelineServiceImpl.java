@@ -348,6 +348,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
 
     @Override
+    @Transactional
     public void triggerCdPipeline(Long projectId, String token, String commitSha, String ref, Boolean tag, Long gitlabPipelineId) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
