@@ -346,12 +346,12 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
 
     @Override
+    @Transactional
     public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag) {
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
-        checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_NEW_PERFORM);
-        DevopsCiStageDTO devopsCdStageDTO = new DevopsCiStageDTO();
-        devopsCdStageDTO.setCiPipelineId(pipelineId);
-        if (devopsCiStageMapper.selectCount(devopsCdStageDTO) == 0) {
+        DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
+        devopsCiStageDTO.setCiPipelineId(pipelineId);
+        if (devopsCiStageMapper.selectCount(devopsCiStageDTO) == 0) {
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
             devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());

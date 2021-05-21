@@ -113,8 +113,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
         List<Long> jobIds = listByStageId(stageId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         if (!jobIds.isEmpty()) {
-            deleteMavenSettingsRecordByJobIds(jobIds);
-
             DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
             devopsCiJobDTO.setCiStageId(stageId);
             devopsCiJobMapper.delete(devopsCiJobDTO);
