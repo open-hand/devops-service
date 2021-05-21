@@ -10,15 +10,13 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
-
-import io.choerodon.devops.app.service.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
@@ -42,6 +40,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCdAuditService devopsCdAuditService;
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
+    @Autowired
+    private DevopsBranchService devopsBranchService;
+    @Autowired
+    private DevopsGitlabCommitService devopsGitlabCommitService;
 
     @Override
     public void checkLog(String version) {
@@ -85,6 +87,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("修复数据开始");
                     devopsCdAuditService.fixProjectId();
                     devopsCdAuditRecordService.fixProjectId();
+                    LOGGER.info("修复数据完成!!!!!!");
+                } else if ("1.0.0".equals(version)) {
+                    LOGGER.info("修复数据开始!");
+                    devopsBranchService.fixIssueId();
+                    devopsGitlabCommitService.fixIssueId();
                     LOGGER.info("修复数据完成!!!!!!");
                 } else {
                     LOGGER.info("version not matched");

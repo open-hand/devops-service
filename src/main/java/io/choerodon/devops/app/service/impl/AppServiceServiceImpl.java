@@ -453,7 +453,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return;
         }
         // 删除应用服务的分支,合并请求，pipeline,commit
-        devopsBranchService.deleteAllBaranch(appServiceId);
+        devopsBranchService.deleteAllBranch(appServiceId);
         gitlabCommitMapper.deleteByAppServiceId(appServiceId);
         mergeRequestMapper.deleteByProjectId(appServiceDTO.getGitlabProjectId());
         gitlabPipelineMapper.deleteByAppServiceId(appServiceId);

@@ -37,7 +37,12 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
                                                       @Param("userId") Long userId,
                                                       @Param("date") Date date);
 
-    Set<Long> listIssueIdsByCommitSha(@Param("commitSha") Set<String> commitSha);
+    Set<Long> listIdsByCommitSha(@Param("commitSha") Set<String> commitSha);
 
     void removeIssueAssociation(@Param("appServiceId") Long appServiceId, @Param("branchName") String branchName, @Param("issueId") Long issueId);
+
+
+    int countBranchBoundWithIssue();
+
+    List<DevopsGitlabCommitDTO> listCommitBoundWithIssue();
 }

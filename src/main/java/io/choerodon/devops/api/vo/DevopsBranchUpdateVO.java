@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -14,8 +15,10 @@ public class DevopsBranchUpdateVO {
     @Encrypt
     private Long appServiceId;
 
-    @ApiModelProperty("关联的敏捷Issue的id")
+    @ApiModelProperty("关联的敏捷Issue的ids")
     @Encrypt
+    private List<Long> issueIds;
+
     private Long issueId;
 
     @ApiModelProperty("分支名 / 必填")
@@ -34,12 +37,21 @@ public class DevopsBranchUpdateVO {
         this.appServiceId = appServiceId;
     }
 
+
     public Long getIssueId() {
         return issueId;
     }
 
     public void setIssueId(Long issueId) {
         this.issueId = issueId;
+    }
+
+    public List<Long> getIssueIds() {
+        return issueIds;
+    }
+
+    public void setIssueIds(List<Long> issueIds) {
+        this.issueIds = issueIds;
     }
 
     public String getBranchName() {

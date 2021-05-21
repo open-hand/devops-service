@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.util.List;
+import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -20,6 +20,7 @@ public class DevopsBranchDTO extends AuditDomain {
     private Long id;
     private Long appServiceId;
     private Long userId;
+    @Deprecated
     private Long issueId;
     private String originBranch;
     private String status;
@@ -32,6 +33,10 @@ public class DevopsBranchDTO extends AuditDomain {
     private String lastCommitMsg;
     private Long lastCommitUser;
     private Date lastCommitDate;
+
+    @Transient
+    @ApiModelProperty("关联的敏捷Issue的ids")
+    private List<Long> issueIds;
 
 
     public Long getId() {
@@ -80,6 +85,14 @@ public class DevopsBranchDTO extends AuditDomain {
 
     public void setIssueId(Long issueId) {
         this.issueId = issueId;
+    }
+
+    public List<Long> getIssueIds() {
+        return issueIds;
+    }
+
+    public void setIssueIds(List<Long> issueIds) {
+        this.issueIds = issueIds;
     }
 
     public Date getCheckoutDate() {

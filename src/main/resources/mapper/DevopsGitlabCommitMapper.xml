@@ -104,8 +104,8 @@
         ORDER BY dgc.commit_date DESC
     </select>
 
-    <select id="listIssueIdsByCommitSha" resultType="java.lang.Long">
-        SELECT issue_id FROM devops_gitlab_commit
+    <select id="listIdsByCommitSha" resultType="java.lang.Long">
+        SELECT ID FROM devops_gitlab_commit
         WHERE commit_sha IN
         <foreach collection="commitSha" item="sha" open="(" close=")" separator=",">
             #{sha}
@@ -119,4 +119,16 @@
           AND dgc.ref = #{branchName}
           AND dgc.issue_id = #{issueId}
     </update>
+
+    <select id="countBranchBoundWithIssue" resultType="int">
+        SELECT COUNT(*)
+        FROM devops_gitlab_commit dgc
+        WHERE dgc.issue_id IS NOT NULL
+    </select>
+
+    <select id="listCommitBoundWithIssue" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO">
+        SELECT dgc.*
+        FROM devops_gitlab_commit dgc
+        WHERE dgc.issue_id IS NOT NULL
+    </select>
 </mapper>

@@ -1,9 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
@@ -27,11 +30,7 @@ public class BranchVO {
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
-    @Encrypt
-    private Long issueId;
-    private String issueCode;
-    private String issueName;
-    private String typeCode;
+
     private String status;
     private String errorMessage;
 
@@ -39,27 +38,8 @@ public class BranchVO {
     private Long objectVersionNumber;
     @Encrypt
     private Long sagaInstanceId;
-    /**
-     * 问题来源
-     */
-    private String projectName;
-    private Long issueProjectId;
 
-    public Long getIssueProjectId() {
-        return issueProjectId;
-    }
-
-    public void setIssueProjectId(Long issueProjectId) {
-        this.issueProjectId = issueProjectId;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
+    List<IssueInfo> issueInfoList;
 
     public BranchVO() {
     }
@@ -69,7 +49,7 @@ public class BranchVO {
      */
     public BranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl,
                     String createUserUrl,
-                    IssueDTO issue,
+                    List<IssueDTO> issue,
                     IamUserDTO commitUserE, String createUserName, String realName, String status, String errorMessage, Long sagaInstanceId) {
         this.branchName = devopsBranchDTO.getBranchName();
         this.sha = devopsBranchDTO.getLastCommit();
@@ -77,12 +57,8 @@ public class BranchVO {
         this.commitUserUrl = commitUserE == null ? null : commitUserE.getImageUrl();
         this.creationDate = devopsBranchDTO.getCreationDate();
         this.commitUrl = lastCommitUrl;
-        this.issueId = devopsBranchDTO.getIssueId();
-        this.issueCode = issue == null ? null : issue.getProjectCode() + "-" + issue.getIssueNum();
-        this.issueName = issue == null ? null : issue.getSummary();
         this.commitDate = devopsBranchDTO.getLastCommitDate();
         this.createUserUrl = createUserUrl;
-        this.typeCode = issue == null ? null : issue.getTypeCode();
         this.commitUserName = commitUserE == null ? null : commitUserE.getRealName();
         this.commitUserRealName = commitUserE == null ? null : commitUserE.getLdap() ? commitUserE.getLoginName() : commitUserE.getEmail();
         this.createUserName = createUserName;
@@ -91,10 +67,20 @@ public class BranchVO {
         this.errorMessage = errorMessage;
         this.objectVersionNumber = devopsBranchDTO.getObjectVersionNumber();
         this.sagaInstanceId = sagaInstanceId;
-        this.projectName = issue == null ? null : issue.getProjectName();
-        this.issueProjectId = issue == null ? null : issue.getProjectId();
-    }
 
+        if (!CollectionUtils.isEmpty(issue)) {
+            List<IssueInfo> issueInfoList = new ArrayList<>();
+            issue.forEach(i -> {
+                IssueInfo issueInfo = new IssueInfo();
+                issueInfo.setIssueId(devopsBranchDTO.getIssueId());
+                issueInfo.setIssueCode(i.getProjectCode() + "-" + i.getIssueNum());
+                issueInfo.setIssueName(i.getSummary());
+                issueInfo.setProjectName(i.getProjectName());
+                issueInfo.setTypeCode(i.getTypeCode());
+            });
+            this.issueInfoList = issueInfoList;
+        }
+    }
 
     public String getBranchName() {
         return branchName;
@@ -128,36 +114,12 @@ public class BranchVO {
         this.creationDate = creationDate;
     }
 
-    public Long getIssueId() {
-        return issueId;
-    }
-
-    public void setIssueId(Long issueId) {
-        this.issueId = issueId;
-    }
-
     public String getCommitUrl() {
         return commitUrl;
     }
 
     public void setCommitUrl(String commitUrl) {
         this.commitUrl = commitUrl;
-    }
-
-    public String getIssueCode() {
-        return issueCode;
-    }
-
-    public void setIssueCode(String issueCode) {
-        this.issueCode = issueCode;
-    }
-
-    public String getIssueName() {
-        return issueName;
-    }
-
-    public void setIssueName(String issueName) {
-        this.issueName = issueName;
     }
 
     public String getCommitUserUrl() {
@@ -174,14 +136,6 @@ public class BranchVO {
 
     public void setCreateUserUrl(String createUserUrl) {
         this.createUserUrl = createUserUrl;
-    }
-
-    public String getTypeCode() {
-        return typeCode;
-    }
-
-    public void setTypeCode(String typeCode) {
-        this.typeCode = typeCode;
     }
 
     public String getCommitUserName() {
@@ -254,5 +208,66 @@ public class BranchVO {
 
     public void setSagaInstanceId(Long sagaInstanceId) {
         this.sagaInstanceId = sagaInstanceId;
+    }
+
+    public static class IssueInfo {
+        @Encrypt
+        private Long issueId;
+        private String issueCode;
+        private String issueName;
+        private Long issueProjectId;
+        private String typeCode;
+        /**
+         * 问题来源
+         */
+        private String projectName;
+
+        public Long getIssueId() {
+            return issueId;
+        }
+
+        public void setIssueId(Long issueId) {
+            this.issueId = issueId;
+        }
+
+        public String getIssueCode() {
+            return issueCode;
+        }
+
+        public void setIssueCode(String issueCode) {
+            this.issueCode = issueCode;
+        }
+
+        public String getIssueName() {
+            return issueName;
+        }
+
+        public void setIssueName(String issueName) {
+            this.issueName = issueName;
+        }
+
+        public Long getIssueProjectId() {
+            return issueProjectId;
+        }
+
+        public void setIssueProjectId(Long issueProjectId) {
+            this.issueProjectId = issueProjectId;
+        }
+
+        public String getProjectName() {
+            return projectName;
+        }
+
+        public void setProjectName(String projectName) {
+            this.projectName = projectName;
+        }
+
+        public String getTypeCode() {
+            return typeCode;
+        }
+
+        public void setTypeCode(String typeCode) {
+            this.typeCode = typeCode;
+        }
     }
 }
