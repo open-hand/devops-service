@@ -32,6 +32,8 @@ public class DevopsAppTemplateDTO  extends AuditDomain {
     private String type;
     private Boolean enable;
     private String status;
+    private String remark;
+
     @Transient
     private Boolean permission;
 
@@ -48,6 +50,14 @@ public class DevopsAppTemplateDTO  extends AuditDomain {
         this.sourceId = sourceId;
         this.sourceType = sourceType;
         this.code = code;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     public Long getId() {
