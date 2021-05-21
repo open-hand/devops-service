@@ -24,7 +24,7 @@
 
     <select id="listAppTemplate" resultType="io.choerodon.devops.infra.dto.DevopsAppTemplateDTO">
         SELECT
-            dat.id,dat.code,dat.name
+            dat.id,dat.code,dat.name,dat.remark
         FROM
             devops_app_template dat
         WHERE
