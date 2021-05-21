@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -22,6 +23,7 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
     private Long id;
     private Long appServiceId;
     private Long userId;
+    @Deprecated
     @ApiModelProperty("敏捷的issueId")
     private Long issueId;
     private String commitSha;
@@ -34,6 +36,10 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
     @Transient
     private String appServiceCode;
     private String url;
+
+    @ApiModelProperty("敏捷的issueId")
+    @Transient
+    private List<Long> issueIds;
 
     public Long getId() {
         return id;

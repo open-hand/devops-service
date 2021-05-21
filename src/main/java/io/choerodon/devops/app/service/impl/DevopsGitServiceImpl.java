@@ -137,7 +137,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
-    private EncryptService encryptService;
+    private DevopsIssueRelService devopsIssueRelService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -246,6 +246,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchDTO.setAppServiceId(appServiceId);
         devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
+        devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchVO.getIssueId(), devopsBranchVO.getIssueId());
         Long devopsBranchId = devopsBranchDTO.getId();
 
         BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
@@ -354,7 +355,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<Long> lastCommitIamUserIds = lastCommitUser.stream().map(UserAttrVO::getIamUserId).collect(Collectors.toList());
         Map<Long, Long> lastCommitIamUserIdAndGitlabUserIdMap = lastCommitUser.stream().filter(userAttrVO -> userAttrVO.getIamUserId() != null && userAttrVO.getGitlabUserId() != null).collect(Collectors.toMap(UserAttrVO::getGitlabUserId, UserAttrVO::getIamUserId));
 
-        List<Long> issuedIds = devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getIssueId).filter(Objects::nonNull).collect(Collectors.toList());
+        Map<Long, List<Long>> mappedIssueIds = devopsIssueRelService.listMappedIssueIdsByObjectTypeAndObjectId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTOPageInfo.getContent().stream().map(DevopsBranchDTO::getId).collect(Collectors.toSet()));
+
+        List<Long> issuedIds = new ArrayList<>();
+        mappedIssueIds.forEach((k, v) -> issuedIds.addAll(v));
 
         Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(createIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
         Map<Long, IamUserDTO> lastCommitUserDTOMap = baseServiceClientOperator.listUsersByIds(lastCommitIamUserIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
@@ -363,7 +367,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             if (!CollectionUtils.isEmpty(issuedIds)) {
                 // 敏捷需要提供接口 根据ids查询Issue  返回 内容要带projectId
-                issues = agileServiceClientOperator.listIssueByIdsWithProjectId(issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+                issues = agileServiceClientOperator.listIssueByIdsWithProjectId(issuedIds)
+                        .stream()
+                        .collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
             }
         } catch (Exception e) {
             LOGGER.error("query agile issue failed:{}", e.getMessage());
@@ -380,22 +386,25 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(PROJECT, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH));
         Map<Long, ProjectDTO> finalProjectDTOMap = projectDTOMap;
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
-            IssueDTO issueDTO = null;
+            List<IssueDTO> issueDTOList = new ArrayList<>();
             if (!CollectionUtils.isEmpty(finalIssues)) {
-                if (t.getIssueId() != null) {
-                    issueDTO = finalIssues.get(t.getIssueId());
-                    ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
-                    if (!Objects.isNull(dto)) {
-                        if (dto.getId().longValue() == projectId.longValue()) {
-                            issueDTO.setProjectName("(本项目)" + dto.getName());
-                            issueDTO.setProjectId(dto.getId());
-                            issueDTO.setProjectCode(dto.getCode());
-                        } else {
-                            issueDTO.setProjectName(dto.getName());
-                            issueDTO.setProjectId(dto.getId());
-                            issueDTO.setProjectCode(dto.getCode());
+                if (!CollectionUtils.isEmpty(mappedIssueIds.get(t.getId()))) {
+                    mappedIssueIds.get(t.getId()).forEach(i -> {
+                        IssueDTO issueDTO = finalIssues.get(i);
+                        ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
+                        if (!Objects.isNull(dto)) {
+                            if (dto.getId().longValue() == projectId.longValue()) {
+                                issueDTO.setProjectName("(本项目)" + dto.getName());
+                                issueDTO.setProjectId(dto.getId());
+                                issueDTO.setProjectCode(dto.getCode());
+                            } else {
+                                issueDTO.setProjectName(dto.getName());
+                                issueDTO.setProjectId(dto.getId());
+                                issueDTO.setProjectCode(dto.getCode());
+                            }
                         }
-                    }
+                        issueDTOList.add(issueDTO);
+                    });
                 }
             }
 
@@ -405,7 +414,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Long lastCommitUserId = lastCommitIamUserIdAndGitlabUserIdMap.get(t.getLastCommitUser());
             IamUserDTO commitUserDTO = lastCommitUserId == null ? null : lastCommitUserDTOMap.get(lastCommitUserId);
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())));
+            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTOList, SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(t.getId())));
         }).collect(Collectors.toList()));
         return devopsBranchVOPageInfo;
     }
@@ -1048,7 +1057,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO
-            commitUserDTO, IamUserDTO userDTO, IssueDTO issue, Long sagaInstanceId) {
+            commitUserDTO, IamUserDTO userDTO, List<IssueDTO> issues, Long sagaInstanceId) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
@@ -1065,7 +1074,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO,
                 lastCommitUrl,
                 createUserUrl,
-                issue,
+                issues,
                 commitUserDTO,
                 createUserName,
                 createUserRealName,
@@ -1168,10 +1177,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appServiceId, branchName);
+        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchNameWithIssueIds(appServiceId, branchName);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        CommonExAssertUtil.assertTrue(issueId.equals(devopsBranchDTO.getIssueId()), "error.branch.issue.mismatch");
-        devopsBranchService.removeIssueAssociation(devopsBranchDTO);
+        CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
+        devopsIssueRelService.deleteRelation(issueId);
     }
 
     @Override
@@ -1192,7 +1201,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
 
         if (!CollectionUtils.isEmpty(commitSha)) {
-            return devopsGitlabCommitService.listIssueIdsByCommitSha(commitSha);
+            Set<Long> commitIds = devopsGitlabCommitService.listIdsByCommitSha(commitSha);
+            Map<Long, List<Long>> mappedIssueIds = devopsIssueRelService.listMappedIssueIdsByObjectTypeAndObjectId(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), commitIds);
+            Set<Long> issueIds = new HashSet<>();
+            mappedIssueIds.forEach((k, v) -> issueIds.addAll(v));
+            return issueIds;
         } else {
             return new HashSet<>();
         }

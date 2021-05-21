@@ -14,6 +14,8 @@ public interface DevopsBranchService {
 
     DevopsBranchDTO baseQueryByAppAndBranchName(Long appServiceId, String branchName);
 
+    DevopsBranchDTO baseQueryByAppAndBranchNameWithIssueIds(Long appServiceId, String branchName);
+
     void updateBranchIssue(DevopsBranchDTO devopsBranchDTO);
 
     void baseUpdateBranchLastCommit(DevopsBranchDTO devopsBranchDTO);
@@ -28,11 +30,7 @@ public interface DevopsBranchService {
 
     void baseDelete(Long appServiceId, String branchName);
 
-    void deleteAllBaranch(Long appServiceId);
+    void deleteAllBranch(Long appServiceId);
 
-    /**
-     * 移除问题和分支关联关系
-     * @param devopsBranchDTO
-     */
-    void removeIssueAssociation(DevopsBranchDTO devopsBranchDTO);
+    void fixIssueId();
 }

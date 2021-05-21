@@ -191,7 +191,6 @@ public interface DevopsGitService {
      */
     void createBranchBySaga(BranchSagaPayLoad branchSagaDTO);
 
-
     BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName);
 
     /**

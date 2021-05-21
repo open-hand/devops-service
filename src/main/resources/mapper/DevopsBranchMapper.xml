@@ -2,6 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsBranchMapper">
+    <resultMap id="DevopsBranchDTOWithIssueIds" type="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        <id property="id" column="id"/>
+        <collection property="issueIds" ofType="java.lang.Long">
+            <result property="issue_id"/>
+        </collection>
+    </resultMap>
+
     <select id="queryByAppAndBranchName" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
         SELECT db.*
         FROM devops_branch db
@@ -15,14 +22,21 @@
         SELECT db.*
         FROM devops_branch db
                 WHERE
-                db.app_service_id = #{appServiceId}
+        <trim>
+            <if test="issueId !=null">
+        NOT EXISTS(
+                SELECT *
+                FROM devops_issue_rel dir
+                WHERE dir.object_id = db.id
+                  AND dir.issue_id = #{issueId}
+                  AND dir.object = 'branch'
+                )
+            </if>
+                  AND db.app_service_id = #{appServiceId}
         <if test='searchParam != null'>
             <if test='searchParam.branchName != null and searchParam.branchName.length > 0'>
                 AND db.branch_name LIKE CONCAT(CONCAT('%', #{searchParam.branchName, jdbcType=VARCHAR}), '%')
             </if>
-        </if>
-        <if test="issueId !=null">
-            AND (ISNULL(db.issue_id) OR db.issue_id!=#{issueId})
         </if>
         <if test='params != null and params.size > 0'>
             AND
@@ -36,6 +50,7 @@
         </if>
         db.branch_name = 'master' DESC,
         db.id DESC
+        </trim>
     </select>
 
     <delete id="deleteByIsDelete">
@@ -94,5 +109,26 @@
             JOIN devops_app_service das on db.app_service_id = das.id
         WHERE db.issue_id=#{issueId}
         ORDER BY project_id
+    </select>
+
+    <select id="listBranchBoundWithIssue" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        SELECT db.*
+        FROM devops_branch db
+        WHERE db.issue_id IS NOT NULL
+    </select>
+
+    <select id="countBranchBoundWithIssue" resultType="int">
+        SELECT COUNT(*)
+        FROM devops_branch db
+        WHERE db.issue_id IS NOT NULL
+    </select>
+
+    <select id="queryByAppAndBranchNameWithIssueIds" resultMap="DevopsBranchDTOWithIssueIds">
+        SELECT db.id,
+               dsr.issue_id AS issue_id
+        FROM devops_branch db
+                     JOIN devops_issue_rel dsr ON dsr.object_id = db.id
+        WHERE db.app_service_id = #{appServiceId}
+          AND db.branch_name = #{branchName}
     </select>
 </mapper>

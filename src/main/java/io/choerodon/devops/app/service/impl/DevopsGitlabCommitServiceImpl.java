@@ -7,9 +7,12 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.hzero.mybatis.BatchInsertHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -28,12 +31,15 @@ import io.choerodon.devops.app.eventhandler.payload.DevopsGitlabTagPayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
+import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
+import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
@@ -62,17 +68,20 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private DevopsBranchService devopsBranchService;
-
     @Autowired
     private TransactionalProducer producer;
-
+    @Autowired
+    @Qualifier("devopsIssueRelBatchInsertHelper")
+    private BatchInsertHelper<DevopsIssueRelDTO> batchInsertHelper;
+    @Autowired
+    private DevopsIssueRelService devopsIssueRelService;
 
     @Override
     public void create(PushWebHookVO pushWebHookVO, String token) {
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         String ref = pushWebHookVO.getRef().split("/")[2];
         if (!pushWebHookVO.getCommits().isEmpty()) {
-            DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(applicationDTO.getId(), ref);
+            DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchNameWithIssueIds(applicationDTO.getId(), ref);
             pushWebHookVO.getCommits().forEach(commitDTO -> {
                 DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(commitDTO.getId(), ref);
 
@@ -83,8 +92,6 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     devopsGitlabCommitDTO.setCommitSha(commitDTO.getId());
                     devopsGitlabCommitDTO.setRef(ref);
                     devopsGitlabCommitDTO.setUrl(commitDTO.getUrl());
-                    // 如果分支和issue关联了，添加issueId到commit中
-                    devopsGitlabCommitDTO.setIssueId(devopsBranchDTO.getIssueId());
                     if ("root".equals(commitDTO.getAuthor().getName())) {
                         devopsGitlabCommitDTO.setUserId(IamAdminIdHolder.getAdminId());
                     } else {
@@ -96,6 +103,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     }
                     devopsGitlabCommitDTO.setCommitDate(commitDTO.getTimestamp());
                     devopsGitlabCommitService.baseCreate(devopsGitlabCommitDTO);
+                    // 如果分支和issue关联了，添加关联关系
+                    if (!CollectionUtils.isEmpty(devopsBranchDTO.getIssueIds())) {
+                        devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), devopsGitlabCommitDTO.getId(), devopsBranchDTO.getIssueIds());
+                    }
                 }
             });
         } else {
@@ -356,13 +367,38 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public Set<Long> listIssueIdsByCommitSha(Set<String> commitSha) {
-        return devopsGitlabCommitMapper.listIssueIdsByCommitSha(commitSha).stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    public Set<Long> listIdsByCommitSha(Set<String> commitSha) {
+        return devopsGitlabCommitMapper.listIdsByCommitSha(commitSha).stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     private boolean checkExist(DevopsGitlabCommitDTO devopsGitlabCommitDTO) {
         devopsGitlabCommitDTO.setCommitSha(devopsGitlabCommitDTO.getCommitSha());
         devopsGitlabCommitDTO.setRef(devopsGitlabCommitDTO.getRef());
         return devopsGitlabCommitMapper.selectOne(devopsGitlabCommitDTO) != null;
+    }
+
+    @Override
+    public void fixIssueId() {
+        int totalCount = devopsGitlabCommitMapper.countBranchBoundWithIssue();
+        int pageNumber = 0;
+        int pageSize = 100;
+        int totalPage = (totalCount + pageSize - 1) / pageSize;
+        do {
+            PageRequest pageRequest = new PageRequest();
+            pageRequest.setPage(pageNumber);
+            pageRequest.setSize(pageSize);
+            Page<DevopsBranchDTO> result = PageHelper.doPage(pageRequest, () -> devopsGitlabCommitMapper.listCommitBoundWithIssue());
+            if (!CollectionUtils.isEmpty(result.getContent())) {
+                List<DevopsIssueRelDTO> devopsIssueRelDTOList = result.getContent().stream().map(b -> {
+                    DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
+                    devopsIssueRelDTO.setIssueId(b.getIssueId());
+                    devopsIssueRelDTO.setObject(DevopsIssueRelObjectTypeEnum.BRANCH.getValue());
+                    devopsIssueRelDTO.setObjectId(b.getId());
+                    return devopsIssueRelDTO;
+                }).collect(Collectors.toList());
+                batchInsertHelper.batchInsert(devopsIssueRelDTOList);
+            }
+            pageNumber++;
+        } while (pageNumber < totalPage);
     }
 }
