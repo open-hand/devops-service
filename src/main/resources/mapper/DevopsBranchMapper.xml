@@ -21,8 +21,7 @@
     <select id="list" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
         SELECT db.*
         FROM devops_branch db
-                WHERE
-        <trim>
+        <where>
             <if test="issueId !=null">
         NOT EXISTS(
                 SELECT *
@@ -50,7 +49,7 @@
         </if>
         db.branch_name = 'master' DESC,
         db.id DESC
-        </trim>
+        </where>
     </select>
 
     <delete id="deleteByIsDelete">

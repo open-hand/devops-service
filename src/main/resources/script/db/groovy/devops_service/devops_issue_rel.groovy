@@ -3,7 +3,7 @@ package script.db.groovy.devops_service
 databaseChangeLog(logicalFilePath: 'dba/devops_issue_rel.groovy') {
     changeSet(author: 'lihao', id: '2021-05-21-create-table') {
         createTable(tableName: "devops_issue_rel", remarks: '敏捷问题与分支或提交关联关系表') {
-            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键') {
+            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
 
@@ -18,7 +18,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_issue_rel.groovy') {
             }
         }
         createIndex(indexName: "idx_object_id_issue_id_object", tableName: "devops_issue_rel") {
-            column(name: "object_id,issue_id,object")
+            column(name: "object_id")
+            column(name: 'issue_id')
+            column(name: 'object')
         }
     }
 }

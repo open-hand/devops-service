@@ -72,11 +72,13 @@ public class BranchVO {
             List<IssueInfo> issueInfoList = new ArrayList<>();
             issue.forEach(i -> {
                 IssueInfo issueInfo = new IssueInfo();
-                issueInfo.setIssueId(devopsBranchDTO.getIssueId());
+                issueInfo.setIssueId(i.getIssueId());
                 issueInfo.setIssueCode(i.getProjectCode() + "-" + i.getIssueNum());
                 issueInfo.setIssueName(i.getSummary());
                 issueInfo.setProjectName(i.getProjectName());
                 issueInfo.setTypeCode(i.getTypeCode());
+                issueInfo.setIssueProjectId(i.getProjectId());
+                issueInfoList.add(issueInfo);
             });
             this.issueInfoList = issueInfoList;
         }
@@ -208,6 +210,14 @@ public class BranchVO {
 
     public void setSagaInstanceId(Long sagaInstanceId) {
         this.sagaInstanceId = sagaInstanceId;
+    }
+
+    public List<IssueInfo> getIssueInfoList() {
+        return issueInfoList;
+    }
+
+    public void setIssueInfoList(List<IssueInfo> issueInfoList) {
+        this.issueInfoList = issueInfoList;
     }
 
     public static class IssueInfo {
