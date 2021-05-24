@@ -153,6 +153,7 @@ public class SshUtil {
             stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, jarName));
             stopJar.append(System.lineSeparator());
             stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, jarName.replace(".jar", ".log")));
+            log.append(System.lineSeparator()).append(stopJar.toString());
             LOGGER.info(stopJar.toString());
             Session session = null;
             try {
@@ -215,6 +216,7 @@ public class SshUtil {
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
+            log.append(System.lineSeparator()).append(finalCmdStr.toString());
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
@@ -241,6 +243,8 @@ public class SshUtil {
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
+            log.append(System.lineSeparator()).append(loginExec.replace(String.format("-u %s:%s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword()), ""));
+            log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
             LOGGER.info(loggerInfo);
@@ -263,6 +267,7 @@ public class SshUtil {
             session = ssh.startSession();
             LOGGER.info(imageTagVo.getPullCmd());
             Session.Command cmd = session.exec("sudo " + imageTagVo.getPullCmd());
+            log.append(System.lineSeparator()).append("sudo ").append(imageTagVo.getPullCmd());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             execPullImage(cmd);
@@ -290,6 +295,7 @@ public class SshUtil {
             StringBuilder dockerRunExec = new StringBuilder();
             dockerRunExec.append("sudo docker stop ").append(containerName).append(" && ");
             dockerRunExec.append("sudo docker rm ").append(containerName);
+            log.append(System.lineSeparator()).append(dockerRunExec.toString());
             LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
@@ -366,6 +372,7 @@ public class SshUtil {
             LOGGER.info(loggerInfo);
             LOGGER.info(loggerError);
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
+            log.append(System.lineSeparator()).append(dockerRunExec.toString());
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
