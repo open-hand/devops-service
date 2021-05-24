@@ -28,5 +28,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_issue_rel.groovy') {
             column(name: 'issue_id')
             column(name: 'object')
         }
+        addUniqueConstraint(tableName: 'devops_issue_rel', constraintName: 'uk_object_id_issue_id_object', columnNames: 'object_id,issue_id,object')
     }
 }

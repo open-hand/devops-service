@@ -392,7 +392,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 List<DevopsIssueRelDTO> devopsIssueRelDTOList = result.getContent().stream().map(b -> {
                     DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
                     devopsIssueRelDTO.setIssueId(b.getIssueId());
-                    devopsIssueRelDTO.setObject(DevopsIssueRelObjectTypeEnum.BRANCH.getValue());
+                    devopsIssueRelDTO.setObject(DevopsIssueRelObjectTypeEnum.COMMIT.getValue());
                     devopsIssueRelDTO.setObjectId(b.getId());
                     return devopsIssueRelDTO;
                 }).collect(Collectors.toList());
