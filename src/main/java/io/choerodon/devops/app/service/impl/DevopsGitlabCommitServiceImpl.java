@@ -387,7 +387,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             PageRequest pageRequest = new PageRequest();
             pageRequest.setPage(pageNumber);
             pageRequest.setSize(pageSize);
-            Page<DevopsBranchDTO> result = PageHelper.doPage(pageRequest, () -> devopsGitlabCommitMapper.listCommitBoundWithIssue());
+            Page<DevopsGitlabCommitDTO> result = PageHelper.doPage(pageRequest, () -> devopsGitlabCommitMapper.listCommitBoundWithIssue());
             if (!CollectionUtils.isEmpty(result.getContent())) {
                 List<DevopsIssueRelDTO> devopsIssueRelDTOList = result.getContent().stream().map(b -> {
                     DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
