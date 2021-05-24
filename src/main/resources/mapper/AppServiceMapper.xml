@@ -19,7 +19,7 @@
         da.last_update_date,
         da.error_message,
         da.group_id,
-        da.artifact_id,
+        da.artifact_id
         FROM devops_app_service da
         WHERE da.project_id = #{projectId}
         <if test="isActive != null">
@@ -65,7 +65,7 @@
         da.last_update_date,
         da.error_message，
         da.group_id,
-        da.artifact_id,
+        da.artifact_id
         FROM devops_app_service da
         <where>
             da.project_id = #{projectId}
