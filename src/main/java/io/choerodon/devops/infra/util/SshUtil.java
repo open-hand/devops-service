@@ -216,7 +216,7 @@ public class SshUtil {
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            log.append(System.lineSeparator()).append(finalCmdStr.toString());
+            log.append(System.lineSeparator()).append(finalCmdStr.toString().replace(c7nNexusDeployDTO.getPullUserPassword(), "password"));
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
@@ -243,7 +243,7 @@ public class SshUtil {
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-            log.append(System.lineSeparator()).append(loginExec.replace(String.format("-u %s:%s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword()), ""));
+            log.append(System.lineSeparator()).append(loginExec.replace(imageTagVo.getPullPassword(), "password"));
             log.append(System.lineSeparator());
             log.append(loggerInfo);
             log.append(loggerError);
