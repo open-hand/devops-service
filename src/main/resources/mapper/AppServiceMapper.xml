@@ -17,7 +17,9 @@
         da.created_by,
         da.last_updated_by,
         da.last_update_date,
-        da.error_message
+        da.error_message,
+        da.group_id,
+        da.artifact_id,
         FROM devops_app_service da
         WHERE da.project_id = #{projectId}
         <if test="isActive != null">
@@ -61,7 +63,9 @@
         da.created_by,
         da.last_updated_by,
         da.last_update_date,
-        da.error_message
+        da.error_message，
+        da.group_id,
+        da.artifact_id,
         FROM devops_app_service da
         <where>
             da.project_id = #{projectId}
@@ -641,6 +645,13 @@
             </if>
         </set>
         WHERE id = #{appService.id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updatePomFields">
+        UPDATE devops_app_service
+        SET group_id = #{groupId},
+            artifact_id = #{artifactId}
+        WHERE id = #{id}
     </update>
 
 

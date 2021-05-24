@@ -42,6 +42,12 @@ public class AppServiceDTO extends AuditDomain {
     private Boolean isSynchro;
     private String uuid;
     private String token;
+
+    @ApiModelProperty("应用服务附加的pom信息：groupId（敏捷使用）")
+    private String groupId;
+    @ApiModelProperty("应用服务附加的pom信息：artifactId（敏捷使用）")
+    private String artifactId;
+
     private Long hookId;
     private Boolean isFailed;
     private String type;
@@ -199,6 +205,22 @@ public class AppServiceDTO extends AuditDomain {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
     public String getPublishLevel() {

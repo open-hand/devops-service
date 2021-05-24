@@ -511,6 +511,9 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         CommonExAssertUtil.assertTrue(projectId.equals(oldAppServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
+        // 更新跟pom相关的两个字段
+        appServiceMapper.updatePomFields(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getGroupId(), appServiceUpdateDTO.getArtifactId());
+
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
         DevopsConfigVO chart = new DevopsConfigVO();
