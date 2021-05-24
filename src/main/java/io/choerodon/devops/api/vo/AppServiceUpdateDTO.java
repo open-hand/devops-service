@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
@@ -24,6 +25,14 @@ public class AppServiceUpdateDTO {
     private DevopsConfigVO harbor;
     @ApiModelProperty("char配置")
     private DevopsConfigVO chart;
+
+    @Length(max = 512, min = 1)
+    @ApiModelProperty("应用服务附加的pom信息：groupId（敏捷使用）")
+    private String groupId;
+
+    @Length(max = 512, min = 1)
+    @ApiModelProperty("应用服务附加的pom信息：artifactId（敏捷使用）")
+    private String artifactId;
 
     @ApiModelProperty("制品库docker仓库配置")
     private HarborRepoConfigDTO harborRepoConfigDTO;
@@ -53,6 +62,22 @@ public class AppServiceUpdateDTO {
 
     public void setChart(DevopsConfigVO chart) {
         this.chart = chart;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
     public Long getId() {

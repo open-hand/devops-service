@@ -147,4 +147,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             column(name: 'error_message', type:  'text', remarks: '失败的错误信息')
         }
     }
+
+    changeSet(author: 'zmf', id: '2021-05-24-add-columns') {
+        addColumn(tableName: 'devops_app_service') {
+            column(name: 'group_id', type:  'varchar(512)', remarks: '应用服务附加的pom信息：groupId（敏捷使用）', afterColumn: 'token')
+            column(name: 'artifact_id', type:  'varchar(512)', remarks: '应用服务附加的pom信息：artifactId（敏捷使用）', afterColumn: 'group_id')
+        }
+    }
 }
