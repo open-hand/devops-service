@@ -64,6 +64,16 @@ public class DeployRecordVO {
     private String deploySource;
     private String errorMessage;
 
+    private String log;
+
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log;
+    }
+
     public String getErrorMessage() {
         return errorMessage;
     }

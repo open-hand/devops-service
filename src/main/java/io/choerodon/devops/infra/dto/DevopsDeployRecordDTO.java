@@ -55,6 +55,11 @@ public class DevopsDeployRecordDTO extends AuditDomain {
      */
     private String errorMessage;
 
+    /**
+     * 主机部署时执行的指令
+     */
+    private String log;
+
     public DevopsDeployRecordDTO() {
     }
 
@@ -89,6 +94,13 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.instanceName = instanceName;
     }
 
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log;
+    }
 
     public Long getId() {
         return id;

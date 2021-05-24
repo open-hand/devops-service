@@ -77,6 +77,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
               alter table devops_deploy_record change deploy_object_version deploy_object_version VARCHAR(255) null;""")
     }
 
-
+    changeSet(author: 'scp', id: '2021-05-24-add-column') {
+        addColumn(tableName: 'devops_deploy_record') {
+            column(name: 'log', type: 'text', afterColumn: 'deploy_type')
+        }
+    }
 
 }
