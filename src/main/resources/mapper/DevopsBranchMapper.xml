@@ -5,7 +5,7 @@
     <resultMap id="DevopsBranchDTOWithIssueIds" type="io.choerodon.devops.infra.dto.DevopsBranchDTO">
         <id property="id" column="id"/>
         <collection property="issueIds" ofType="java.lang.Long">
-            <result property="issue_id"/>
+            <result column="issue_id"/>
         </collection>
     </resultMap>
 

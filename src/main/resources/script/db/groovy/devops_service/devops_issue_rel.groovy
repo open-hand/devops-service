@@ -3,6 +3,10 @@ package script.db.groovy.devops_service
 databaseChangeLog(logicalFilePath: 'dba/devops_issue_rel.groovy') {
     changeSet(author: 'lihao', id: '2021-05-21-create-table') {
         createTable(tableName: "devops_issue_rel", remarks: '敏捷问题与分支或提交关联关系表') {
+            column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键') {
+                constraints(primaryKey: true)
+            }
+
             column(name: 'object', type: 'VARCHAR(32)', remarks: '关联对象 分支或提交') {
                 constraints(nullable: false)
             }
