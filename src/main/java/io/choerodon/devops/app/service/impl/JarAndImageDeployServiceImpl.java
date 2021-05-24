@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 import net.schmizz.sshj.SSHClient;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
@@ -19,16 +19,15 @@ import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.*;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.JarAndImageDeployService;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
@@ -44,6 +43,7 @@ import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.SshUtil;
@@ -73,6 +73,8 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
     private DevopsHostMapper devopsHostMapper;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private DevopsDeployRecordMapper devopsDeployRecordMapper;
 
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
@@ -185,7 +187,7 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
             sshUtil.sshStopJar(ssh, c7nNexusDeployDTO.getJarName(), jarDeploy.getWorkingPath(), log);
             sshUtil.sshExec(ssh, c7nNexusDeployDTO, jarDeploy.getValue(), jarDeploy.getWorkingPath(), log);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            devopsDeployRecordService.saveRecord(
+            Long deployRecordId = devopsDeployRecordService.saveRecord(
                     projectId,
                     DeployType.MANUAL,
                     null,
@@ -198,6 +200,9 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployVersion,
                     null,
                     deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
+            devopsDeployRecordDTO.setLog(log.toString());
+            devopsDeployRecordService.updateRecord(devopsDeployRecordDTO);
         } catch (Exception e) {
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
             CommonException commonException = new CommonException(ERROR_DEPLOY_JAR_FAILED, e);
@@ -300,7 +305,7 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
             // 3.3
             sshUtil.dockerRun(ssh, imageDeploy.getValue(), imageDeploy.getContainerName(), c7nImageDeployDTO, log);
             DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(deployConfigVO.getHostConnectionVO().getHostId());
-            devopsDeployRecordService.saveRecord(
+            Long deployRecordId = devopsDeployRecordService.saveRecord(
                     projectId,
                     DeployType.MANUAL,
                     null,
@@ -313,6 +318,9 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployVersion,
                     null,
                     deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
+            devopsDeployRecordDTO.setLog(log.toString());
+            devopsDeployRecordService.updateRecord(devopsDeployRecordDTO);
             LOGGER.info("========================================");
             LOGGER.info("image deploy cd host job success!!!");
         } catch (Exception e) {
