@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -12,6 +15,9 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_issue_rel")
 public class DevopsIssueRelDTO extends AuditDomain {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private String id;
 
     @ApiModelProperty("关联对象 分支或提交")
     private String object;
@@ -21,6 +27,14 @@ public class DevopsIssueRelDTO extends AuditDomain {
 
     @ApiModelProperty("敏捷的issueId")
     private Long issueId;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getObject() {
         return object;

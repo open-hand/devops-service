@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.hzero.mybatis.BatchInsertHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -16,6 +17,7 @@ import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.devops.infra.mapper.DevopsIssueRelMapper;
 
+@Service
 public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     @Autowired
     private DevopsIssueRelMapper devopsIssueRelMapper;
