@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -86,7 +87,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
         Long branchId = oldDevopsBranchDTO.getId();
 
-        List<Long> oldIssueIds = oldDevopsBranchDTO.getIssueIds();
+        List<Long> oldIssueIds = oldDevopsBranchDTO.getIssueIds() == null ? new ArrayList<>() : oldDevopsBranchDTO.getIssueIds();
         List<Long> newIssueIds = devopsBranchDTO.getIssueIds();
 
         // 对比获得新增的issue关联关系

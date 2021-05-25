@@ -47,7 +47,7 @@ public class BranchVO {
     /**
      * construct
      */
-    public BranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl,
+    public  BranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl,
                     String createUserUrl,
                     List<IssueDTO> issue,
                     IamUserDTO commitUserE, String createUserName, String realName, String status, String errorMessage, Long sagaInstanceId) {
@@ -59,8 +59,8 @@ public class BranchVO {
         this.commitUrl = lastCommitUrl;
         this.commitDate = devopsBranchDTO.getLastCommitDate();
         this.createUserUrl = createUserUrl;
-        this.commitUserName = commitUserE == null ? null : commitUserE.getRealName();
-        this.commitUserRealName = commitUserE == null ? null : commitUserE.getLdap() ? commitUserE.getLoginName() : commitUserE.getEmail();
+        this.commitUserName = commitUserE == null ? null : commitUserE.getLdap() ? commitUserE.getLoginName() : commitUserE.getEmail();
+        this.commitUserRealName = commitUserE == null ? null : commitUserE.getRealName();
         this.createUserName = createUserName;
         this.createUserRealName = realName;
         this.status = status;
