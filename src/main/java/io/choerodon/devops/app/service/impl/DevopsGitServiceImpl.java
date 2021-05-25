@@ -232,6 +232,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH,
             description = "devops创建分支", inputSchema = "{}")
+    @Transactional(rollbackFor = Exception.class)
     public void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_CREATE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
@@ -246,8 +247,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchDTO.setAppServiceId(appServiceId);
         devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
-        devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchVO.getIssueId(), devopsBranchVO.getIssueId());
         Long devopsBranchId = devopsBranchDTO.getId();
+        devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchId, devopsBranchVO.getIssueId());
+
 
         BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
         producer.apply(
