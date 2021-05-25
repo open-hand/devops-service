@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
@@ -27,10 +28,12 @@ public class AppServiceUpdateDTO {
     private DevopsConfigVO chart;
 
     @Length(max = 512, min = 1)
+    @Pattern(regexp = "[A-Za-z0-9_\\-.]+")
     @ApiModelProperty("应用服务附加的pom信息：groupId（敏捷使用）")
     private String groupId;
 
     @Length(max = 512, min = 1)
+    @Pattern(regexp = "[A-Za-z0-9_\\-.]+")
     @ApiModelProperty("应用服务附加的pom信息：artifactId（敏捷使用）")
     private String artifactId;
 
