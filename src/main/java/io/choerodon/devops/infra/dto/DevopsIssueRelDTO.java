@@ -17,7 +17,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsIssueRelDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private String id;
+    private Long id;
 
     @ApiModelProperty("关联对象 分支或提交")
     private String object;
@@ -28,11 +28,11 @@ public class DevopsIssueRelDTO extends AuditDomain {
     @ApiModelProperty("敏捷的issueId")
     private Long issueId;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
