@@ -63,7 +63,7 @@
         da.created_by,
         da.last_updated_by,
         da.last_update_date,
-        da.error_message，
+        da.error_message,
         da.group_id,
         da.artifact_id
         FROM devops_app_service da
