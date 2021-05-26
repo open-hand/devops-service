@@ -2097,6 +2097,27 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
+    @Override
+    public List<AppServiceSimpleVO> listByProjectIdAndCode(List<AppServiceSimpleVO> appServiceList) {
+        // 1. 第一次过滤
+        List<AppServiceSimpleVO> appServiceSimpleVOList = appServiceMapper.listByProjectIdAndCode(appServiceList);
+        Map<Long, List<String>> collectMap = appServiceList.stream()
+                .collect(groupingBy(AppServiceSimpleVO::getProjectId, mapping(AppServiceSimpleVO::getAppServiceCode, toList())));
+
+        // 2.第二次筛选
+        if (!CollectionUtils.isEmpty(appServiceSimpleVOList)) {
+            return appServiceSimpleVOList.stream().filter(v -> {
+                List<String> codes = collectMap.get(v.getProjectId());
+                if (CollectionUtils.isEmpty(codes) || !codes.contains(v.getAppServiceCode())) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }).collect(toList());
+        }
+        return new ArrayList<>();
+    }
+
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
         // 获取push代码所需的access token
