@@ -82,6 +82,7 @@ public class DevopsOrganizationController {
     @ApiOperation(value = "根据id和code查询应用服务信息，敏捷用")
     @PostMapping("/list_by_project_id_and_code")
     public ResponseEntity<List<AppServiceSimpleVO>> listByProjectIdAndCode(
+            @PathVariable(name = "organization_id") Long organizationId,
             @RequestBody(required = false) List<AppServiceSimpleVO> appServiceList) {
         return ResponseEntity.ok(applicationServiceService.listByProjectIdAndCode(appServiceList));
     }

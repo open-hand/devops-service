@@ -2100,7 +2100,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceSimpleVO> listByProjectIdAndCode(List<AppServiceSimpleVO> appServiceList) {
         // 1. 第一次过滤
-        List<AppServiceSimpleVO> appServiceSimpleVOList = appServiceMapper.listByProjectIdAndCode(appServiceList);
+        List<Long> projectIds = appServiceList.stream().map(AppServiceSimpleVO::getProjectId).collect(toList());
+        List<String> appCodes = appServiceList.stream().map(AppServiceSimpleVO::getAppServiceCode).collect(toList());
+
+        List<AppServiceSimpleVO> appServiceSimpleVOList = appServiceMapper.listByProjectIdsAndCodes(projectIds, appCodes);
         Map<Long, List<String>> collectMap = appServiceList.stream()
                 .collect(groupingBy(AppServiceSimpleVO::getProjectId, mapping(AppServiceSimpleVO::getAppServiceCode, toList())));
 

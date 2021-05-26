@@ -201,6 +201,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                          @Param("groupId") String groupId,
                          @Param("artifactId") String artifactId);
 
-    List<AppServiceSimpleVO> listByProjectIdAndCode(@Param("appServiceList") List<AppServiceSimpleVO> appServiceList);
+    List<AppServiceSimpleVO> listByProjectIdsAndCodes(@Param("projectIds") List<Long> projectIds, @Param("codes") List<String> codes);
 }
 
