@@ -11,6 +11,8 @@ public class AppServiceSimpleVO {
     @Encrypt
     @ApiModelProperty("应用服务id")
     private Long appServiceId;
+    @ApiModelProperty("项目id")
+    private Long projectId;
     @ApiModelProperty("应用服务名称")
     private String appServiceName;
     @ApiModelProperty("应用服务code")
@@ -18,7 +20,12 @@ public class AppServiceSimpleVO {
     @ApiModelProperty("应用服务类型")
     private String type;
 
-    public AppServiceSimpleVO() {
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public AppServiceSimpleVO(Long appServiceId, String appServiceName, String appServiceCode) {

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.AppServiceSimpleVO;
 import io.choerodon.devops.api.vo.AppServiceVO;
 import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.app.service.AppServiceService;
@@ -74,6 +76,14 @@ public class DevopsOrganizationController {
         return Optional.ofNullable(devopsClusterService.getOrganizationClusterOverview(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.cluster.org.id"));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据id和code查询应用服务信息，敏捷用")
+    @PostMapping("/list_by_project_id_and_code")
+    public ResponseEntity<List<AppServiceSimpleVO>> listByProjectIdAndCode(
+            @RequestBody(required = false) List<AppServiceSimpleVO> appServiceList) {
+        return ResponseEntity.ok(applicationServiceService.listByProjectIdAndCode(appServiceList));
     }
 
 }

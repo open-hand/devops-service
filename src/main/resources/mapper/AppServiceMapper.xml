@@ -861,4 +861,19 @@
             </if>
         </where>
     </select>
+    <select id="listByProjectIdAndCode" resultType="io.choerodon.devops.api.vo.AppServiceSimpleVO">
+        select
+        das.project_id, das.code as app_service_code, das.name as app_service_name
+        from devops_app_service das
+        <where>
+            das.project_id in
+            <foreach collection="appServiceList" item="appservice" open="(" close=")" index="i" separator=",">
+                appservice.projectId
+            </foreach>
+            and das.code in
+            <foreach collection="appServiceList" item="appservice" open="(" close=")" index="i" separator=",">
+                appservice.appServiceCode
+            </foreach>
+        </where>
+    </select>
 </mapper>
