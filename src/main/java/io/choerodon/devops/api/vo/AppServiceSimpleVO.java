@@ -24,6 +24,9 @@ public class AppServiceSimpleVO {
         return projectId;
     }
 
+    public AppServiceSimpleVO() {
+    }
+
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
     }
