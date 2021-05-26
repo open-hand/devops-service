@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.SonarInfoVO;
@@ -141,21 +142,25 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         if (Objects.isNull(sonarQubeConfigVO)) {
             return false;
         }
-        if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
-            return false;
-        }
         if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(
-                    sonarQubeConfigVO.getSonarUrl(),
-                    SONAR,
-                    sonarQubeConfigVO.getUsername(),
-                    sonarQubeConfigVO.getPassword());
             try {
-                sonarClient.getUser().execute();
-            } catch (IOException e) {
+                SonarClient sonarClient = RetrofitHandler.getSonarClient(
+                        sonarQubeConfigVO.getSonarUrl(),
+                        SONAR,
+                        sonarQubeConfigVO.getUsername(),
+                        sonarQubeConfigVO.getPassword());
+
+                Response<Void> execute = sonarClient.getUser().execute();
+                if (!Objects.isNull(execute.errorBody())) {
+                    LOGGER.error("test connect response code :{},error messsage:{}", execute.code(), execute.errorBody().toString());
+                    return false;
+                } else {
+                    return true;
+                }
+            } catch (Exception e) {
+                LOGGER.error("error connect :", e);
                 return false;
             }
-            return true;
         }
         return true;
     }
