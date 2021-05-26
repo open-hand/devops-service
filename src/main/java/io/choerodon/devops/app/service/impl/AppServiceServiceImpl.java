@@ -3035,10 +3035,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (createUser != null) {
             appServiceRepVO.setCreateUserName(createUser.getRealName());
             appServiceRepVO.setCreateLoginName(createUser.getLoginName());
+            appServiceRepVO.setCreateUserImage(createUser.getImageUrl());
         }
         if (updateUser != null) {
             appServiceRepVO.setUpdateUserName(updateUser.getRealName());
             appServiceRepVO.setUpdateLoginName(updateUser.getLoginName());
+            appServiceRepVO.setUpdateUserImage(updateUser.getImageUrl());
         }
         appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
         return appServiceRepVO;

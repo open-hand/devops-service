@@ -87,11 +87,17 @@ public class AppServiceRepVO {
     @ApiModelProperty("创建者登录名")
     private String createLoginName;
 
+    @ApiModelProperty("创建者头像")
+    private String createUserImage;
+
     @ApiModelProperty("最近更新者用户名")
     private String updateUserName;
 
     @ApiModelProperty("最近更新者登录名")
     private String updateLoginName;
+
+    @ApiModelProperty("更新者头像")
+    private String updateUserImage;
 
     @ApiModelProperty("是否是空仓库(是否没有分支)")
     private Boolean emptyRepository;
@@ -364,5 +370,20 @@ public class AppServiceRepVO {
         this.serviceType = serviceType;
     }
 
+    public String getCreateUserImage() {
+        return createUserImage;
+    }
+
+    public void setCreateUserImage(String createUserImage) {
+        this.createUserImage = createUserImage;
+    }
+
+    public String getUpdateUserImage() {
+        return updateUserImage;
+    }
+
+    public void setUpdateUserImage(String updateUserImage) {
+        this.updateUserImage = updateUserImage;
+    }
 }
 
