@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -16,6 +17,9 @@ public class AppServiceVersionVO {
     private Date creationDate;
     private String repoType;
     private Boolean deleteFlag = true;
+
+    @ApiModelProperty("docker镜像版本")
+    private String image;
 
     public Long getId() {
         return id;
@@ -63,5 +67,13 @@ public class AppServiceVersionVO {
 
     public void setDeleteFlag(Boolean deleteFlag) {
         this.deleteFlag = deleteFlag;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
