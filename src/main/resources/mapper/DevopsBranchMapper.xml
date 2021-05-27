@@ -106,8 +106,10 @@
         SELECT db.*,das.project_id FROM
             devops_branch db
             JOIN devops_app_service das on db.app_service_id = das.id
-        WHERE db.issue_id=#{issueId}
-        ORDER BY project_id
+            JOIN devops_issue_rel dir ON dir.object_id=db.id
+        WHERE dir.object='branch'
+        AND dir.issue_id=#{issueId}
+        ORDER BY das.project_id
     </select>
 
     <select id="listBranchBoundWithIssue" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">

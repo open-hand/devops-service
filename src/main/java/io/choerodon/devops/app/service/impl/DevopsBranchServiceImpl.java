@@ -59,8 +59,6 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     @Override
     public List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId) {
-        DevopsBranchDTO queryDevopsBranchDTO = new DevopsBranchDTO();
-        queryDevopsBranchDTO.setIssueId(issueId);
         return devopsBranchMapper.listByIssueIdAndOrderByProjectId(issueId);
     }
 
@@ -88,7 +86,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         Long branchId = oldDevopsBranchDTO.getId();
 
         List<Long> oldIssueIds = oldDevopsBranchDTO.getIssueIds() == null ? new ArrayList<>() : oldDevopsBranchDTO.getIssueIds();
-        List<Long> newIssueIds = devopsBranchDTO.getIssueIds();
+        List<Long> newIssueIds = devopsBranchDTO.getIssueIds() == null ? new ArrayList<>() : devopsBranchDTO.getIssueIds();
 
         // 对比获得新增的issue关联关系
         List<Long> issueIdsToAdd = newIssueIds
