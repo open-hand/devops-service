@@ -139,18 +139,6 @@ public class DevopsAnsibleCommandConstants {
      * 内存检查
      */
     public static final String MEMORY = "01.4-memory.yml";
-    /**
-     * 添加节点
-     */
-    public static final String ADD_NODE = "add_node";
-    /**
-     * 删除节点
-     */
-    public static final String DELETE_NODE = "delete_node";
-    /**
-     * 删除节点角色
-     */
-    public static final String DELETE_NODE_ROLE = "delete_node_role";
 
     /**
      * devops中ansible相关执行脚本保存目录模板
