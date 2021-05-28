@@ -238,8 +238,8 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
             devopsClusterNodeService.generateAndUploadNodeConfiguration(sshClient, String.valueOf(devopsClusterNodeDTO.getClusterId()), k8sInventoryVO);
             // 执行删除节点操作
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, String.format(DevopsAnsibleCommandConstants.K8S_ANSIBLE_COMMAND_TEMPLATE, command));
-            LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
             if (execResultInfoVO.getExitCode() != 0) {
+                LOGGER.info("operating cluster failed. node id {} result is, {}", devopsClusterNodeDTO.getId(), execResultInfoVO);
                 errorMsg = execResultInfoVO.getStdOut() + System.lineSeparator() + execResultInfoVO.getStdErr();
                 throw new CommonException(ERROR_DELETE_NODE_FAILED);
             }
