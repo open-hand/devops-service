@@ -295,6 +295,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CiCdPipelineDTO ciCdPipelineDTO = ConvertUtils.convertObject(ciCdPipelineVO, CiCdPipelineDTO.class);
         ciCdPipelineDTO.setId(null);
         ciCdPipelineDTO.setToken(GenerateUUID.generateUUID());
+        ciCdPipelineDTO.setEnabled(true);
         if (ciCdPipelineMapper.insertSelective(ciCdPipelineDTO) != 1) {
             throw new CommonException(CREATE_PIPELINE_FAILED);
         }
