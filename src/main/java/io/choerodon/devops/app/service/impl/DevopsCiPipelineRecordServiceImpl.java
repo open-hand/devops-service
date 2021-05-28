@@ -574,19 +574,23 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 }
                 //release阶段，添加版本的信息
                 if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())) {
-                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiPipelineRecordDTO.getCiPipelineId());
-                    if (!Objects.isNull(ciCdPipelineDTO)) {
-                        String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
-                        String ref = devopsCiPipelineRecordVO.getCommit().getRef();
-                        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-                        appServiceVersionDTO.setCommit(commitSha);
-                        appServiceVersionDTO.setRef(ref);
-                        appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
-                        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
-                            devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
+                    // 只有构建成功的才展示版本信息
+                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+                        CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiPipelineRecordDTO.getCiPipelineId());
+                        if (!Objects.isNull(ciCdPipelineDTO)) {
+                            String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
+                            String ref = devopsCiPipelineRecordVO.getCommit().getRef();
+                            AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+                            appServiceVersionDTO.setCommit(commitSha);
+                            appServiceVersionDTO.setRef(ref);
+                            appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
+                            List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+                            if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                                devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
+                            }
                         }
                     }
+
                 }
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
                 if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())) {
