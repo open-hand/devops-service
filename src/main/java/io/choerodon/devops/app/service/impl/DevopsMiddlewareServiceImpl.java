@@ -242,7 +242,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 CommandStatus.OPERATING.getStatus(),
                 DeployObjectTypeEnum.MIDDLEWARE,
                 middlewareRedisHostDeployVO.getName(),
-                middlewareRedisHostDeployVO.getVersion(),
+                middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
 
@@ -251,7 +251,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareRedisHostDeployVO.getName(),
                 REDIS.getType(),
                 middlewareRedisHostDeployVO.getMode(),
-                middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
+                middlewareRedisHostDeployVO.getVersion(),
                 devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
                 JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
 
@@ -316,7 +316,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 CommandStatus.OPERATING.getStatus(),
                 DeployObjectTypeEnum.MIDDLEWARE,
                 middlewareMySqlHostDeployVO.getName(),
-                middlewareMySqlHostDeployVO.getVersion(),
+                middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
 
@@ -325,7 +325,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareMySqlHostDeployVO.getName(),
                 MYSQL.getType(),
                 middlewareMySqlHostDeployVO.getMode(),
-                middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
+                middlewareMySqlHostDeployVO.getVersion(),
                 devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
                 JsonHelper.marshalByJackson(middlewareMySqlHostDeployVO.getConfiguration()));
 
