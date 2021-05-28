@@ -251,7 +251,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareRedisHostDeployVO.getName(),
                 REDIS.getType(),
                 middlewareRedisHostDeployVO.getMode(),
-                middlewareRedisHostDeployVO.getVersion(),
+                middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
                 devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
                 JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
 
@@ -318,14 +318,14 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareMySqlHostDeployVO.getName(),
                 middlewareMySqlHostDeployVO.getVersion(),
                 null,
-                deploySourceVO,DetailsHelper.getUserDetails().getUserId());
+                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
 
         // 保存中间件信息
         saveMiddlewareInfo(projectId,
                 middlewareMySqlHostDeployVO.getName(),
                 MYSQL.getType(),
                 middlewareMySqlHostDeployVO.getMode(),
-                middlewareMySqlHostDeployVO.getVersion(),
+                middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
                 devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
                 JsonHelper.marshalByJackson(middlewareMySqlHostDeployVO.getConfiguration()));
 
