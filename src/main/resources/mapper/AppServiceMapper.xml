@@ -870,10 +870,12 @@
             <foreach collection="projectIds" item="projectId" open="(" close=")" index="i" separator=",">
                 #{projectId}
             </foreach>
-            and das.code in
-            <foreach collection="codes" item="code" open="(" close=")" index="i" separator=",">
-                #{code}
-            </foreach>
+            <if test="codes != null and codes.size() > 0">
+                and das.code in
+                <foreach collection="codes" item="code" open="(" close=")" index="i" separator=",">
+                    #{code}
+                </foreach>
+            </if>
         </where>
     </select>
 </mapper>
