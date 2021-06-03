@@ -2101,7 +2101,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<AppServiceSimpleVO> listByProjectIdAndCode(List<AppServiceSimpleVO> appServiceList) {
         // 1. 第一次过滤
         List<Long> projectIds = appServiceList.stream().map(AppServiceSimpleVO::getProjectId).collect(toList());
-        List<String> appCodes = appServiceList.stream().map(AppServiceSimpleVO::getAppServiceCode).collect(toList());
+        List<String> appCodes = appServiceList.stream().map(AppServiceSimpleVO::getAppServiceCode).filter(Objects::nonNull).collect(toList());
 
         List<AppServiceSimpleVO> appServiceSimpleVOList = appServiceMapper.listByProjectIdsAndCodes(projectIds, appCodes);
         if (CollectionUtils.isEmpty(appCodes)) {
