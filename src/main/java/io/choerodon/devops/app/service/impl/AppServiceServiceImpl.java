@@ -2104,10 +2104,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<String> appCodes = appServiceList.stream().map(AppServiceSimpleVO::getAppServiceCode).collect(toList());
 
         List<AppServiceSimpleVO> appServiceSimpleVOList = appServiceMapper.listByProjectIdsAndCodes(projectIds, appCodes);
+        if (CollectionUtils.isEmpty(appCodes)) {
+            return appServiceSimpleVOList;
+        }
+        // 2.第二次筛选
         Map<Long, List<String>> collectMap = appServiceList.stream()
                 .collect(groupingBy(AppServiceSimpleVO::getProjectId, mapping(AppServiceSimpleVO::getAppServiceCode, toList())));
-
-        // 2.第二次筛选
         if (!CollectionUtils.isEmpty(appServiceSimpleVOList)) {
             return appServiceSimpleVOList.stream().filter(v -> {
                 List<String> codes = collectMap.get(v.getProjectId());
