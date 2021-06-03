@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsIssueRelMapper">
-    <delete id="batchDeleteByIssueIds">
+    <delete id="batchDeleteByBranchIdAndIssueIds">
         DELETE
-        FROM DEVOPS_issue_rel
-                WHERE issue_id IN
+        FROM devops_issue_rel
+                WHERE object = 'branch'
+                  AND object_id = #{branchId}
+                  AND issue_id IN
         <foreach collection="issueIds" item="issueId" open="(" close=")" separator=",">
             #{issueId}
         </foreach>

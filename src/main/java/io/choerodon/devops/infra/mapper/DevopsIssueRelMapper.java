@@ -9,7 +9,7 @@ import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
-    void batchDeleteByIssueIds(@Param("issueIds") List<Long> issueIds);
+    void batchDeleteByBranchIdAndIssueIds(@Param("branchId") Long branchId, @Param("issueIds") List<Long> issueIds);
 
     Set<Long> listIssueIdsByObjectTypeAndObjectId(@Param("objectIds") Set<Long> objectIds, @Param("object") String object);
 
