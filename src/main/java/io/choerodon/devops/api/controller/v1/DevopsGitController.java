@@ -365,8 +365,10 @@ public class DevopsGitController {
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支更新信息", required = true)
-            @RequestBody @Valid DevopsBranchUpdateVO devopsBranchUpdateVO) {
-        devopsGitService.updateBranchIssue(projectId, appServiceId, devopsBranchUpdateVO);
+            @RequestBody @Valid DevopsBranchUpdateVO devopsBranchUpdateVO,
+            @ApiParam(value = "表示此次操作是否为插入")
+            @RequestParam(value = "onlyInsert", required = false) boolean onlyInsert) {
+        devopsGitService.updateBranchIssue(projectId, appServiceId, devopsBranchUpdateVO, onlyInsert);
         return ResponseEntity.ok().build();
     }
 

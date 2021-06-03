@@ -438,9 +438,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO) {
+    public void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO, boolean onyInsert) {
         permissionHelper.checkAppServiceBelongToProject(projectId, devopsBranchUpdateVO.getAppServiceId());
-        devopsBranchService.updateBranchIssue(ConvertUtils.convertObject(devopsBranchUpdateVO, DevopsBranchDTO.class));
+        devopsBranchService.updateBranchIssue(ConvertUtils.convertObject(devopsBranchUpdateVO, DevopsBranchDTO.class), onyInsert);
     }
 
     @Override

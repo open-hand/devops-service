@@ -96,8 +96,9 @@ public interface DevopsGitService {
      * @param projectId            项目ID
      * @param appServiceId         应用服务ID
      * @param devopsBranchUpdateVO 分支更新信息
+     * @param onlyInsert           表示此次操作是否为插入
      */
-    void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO);
+    void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO, boolean onlyInsert);
 
     /**
      * 删除分支
