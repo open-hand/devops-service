@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -75,6 +76,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateBranchIssue(DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchDTO oldDevopsBranchDTO = devopsBranchMapper
                 .queryByAppAndBranchNameWithIssueIds(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName());
@@ -101,7 +103,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 .collect(Collectors.toList());
 
         if (!CollectionUtils.isEmpty(issueIdsToDelete)) {
-            devopsIssueRelMapper.batchDeleteByIssueIds(issueIdsToDelete);
+            devopsIssueRelMapper.batchDeleteByBranchIdAndIssueIds(branchId, issueIdsToDelete);
         }
 
         if (!CollectionUtils.isEmpty(issueIdsToAdd)) {
