@@ -77,7 +77,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateBranchIssue(DevopsBranchDTO devopsBranchDTO) {
+    public void updateBranchIssue(DevopsBranchDTO devopsBranchDTO, boolean onlyInsert) {
         DevopsBranchDTO oldDevopsBranchDTO = devopsBranchMapper
                 .queryByAppAndBranchNameWithIssueIds(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName());
 
@@ -95,19 +95,21 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 .stream()
                 .filter(i -> !oldIssueIds.contains(i))
                 .collect(Collectors.toList());
-
-        // 对比获得需要删除的issueId
-        List<Long> issueIdsToDelete = oldIssueIds
-                .stream()
-                .filter(i -> !newIssueIds.contains(i))
-                .collect(Collectors.toList());
-
-        if (!CollectionUtils.isEmpty(issueIdsToDelete)) {
-            devopsIssueRelMapper.batchDeleteByBranchIdAndIssueIds(branchId, issueIdsToDelete);
-        }
-
         if (!CollectionUtils.isEmpty(issueIdsToAdd)) {
             devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueIdsToAdd);
+        }
+
+        // 如果不仅是插入操作，那么还需要更新被删除的关联关系
+        if (!onlyInsert) {
+            // 对比获得需要删除的issueId
+            List<Long> issueIdsToDelete = oldIssueIds
+                    .stream()
+                    .filter(i -> !newIssueIds.contains(i))
+                    .collect(Collectors.toList());
+
+            if (!CollectionUtils.isEmpty(issueIdsToDelete)) {
+                devopsIssueRelMapper.batchDeleteByBranchIdAndIssueIds(branchId, issueIdsToDelete);
+            }
         }
     }
 

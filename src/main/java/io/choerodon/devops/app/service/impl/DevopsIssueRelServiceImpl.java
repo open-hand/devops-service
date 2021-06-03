@@ -27,6 +27,7 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     private BatchInsertHelper<DevopsIssueRelDTO> batchInsertHelper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addRelation(String object, Long objectId, List<Long> issueIds) {
         List<DevopsIssueRelDTO> devopsIssueRelDTOList = issueIds
                 .stream()
@@ -37,9 +38,12 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
                     devopsIssueRelDTO.setObjectId(objectId);
                     return devopsIssueRelDTO;
                 }).collect(Collectors.toList());
-        batchInsertHelper.batchInsert(devopsIssueRelDTOList);
+        if (!CollectionUtils.isEmpty(devopsIssueRelDTOList)) {
+            batchInsertHelper.batchInsert(devopsIssueRelDTOList);
+        }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addRelation(String object, Long objectId, Long issueIds) {
         DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
