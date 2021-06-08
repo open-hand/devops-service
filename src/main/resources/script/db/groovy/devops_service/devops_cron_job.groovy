@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_cronjob.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_cron_job.groovy') {
     changeSet(author: 'lihao', id: '2021-06-08-create-table') {
-        createTable(tableName: "devops_cronjob", remarks: 'cronjob资源表') {
+        createTable(tableName: "devops_cron_job", remarks: 'cronjob资源表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -19,10 +19,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cronjob.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        addUniqueConstraint(tableName: 'devops_cronjob',
+        addUniqueConstraint(tableName: 'devops_cron_job',
                 constraintName: 'uk_env_id_name', columnNames: 'env_id,name')
 
-        createIndex(indexName: "idx_env_id", tableName: "devops_cronjob") {
+        createIndex(indexName: "idx_env_id", tableName: "devops_cron_job") {
             column(name: "env_id")
         }
     }
