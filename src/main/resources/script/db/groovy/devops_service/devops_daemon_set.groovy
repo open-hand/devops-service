@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_statefulset.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_daemon_set.groovy') {
     changeSet(author: 'lihao', id: '2021-06-08-create-table') {
-        createTable(tableName: "devops_statefulset", remarks: 'statefulset资源表') {
+        createTable(tableName: "devops_daemon_set", remarks: 'daemonset资源表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -19,10 +19,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_statefulset.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        addUniqueConstraint(tableName: 'devops_statefulset',
+        addUniqueConstraint(tableName: 'devops_daemon_set',
                 constraintName: 'uk_env_id_name', columnNames: 'env_id,name')
 
-        createIndex(indexName: "idx_env_id", tableName: "devops_statefulset") {
+        createIndex(indexName: "idx_env_id", tableName: "devops_daemon_set") {
             column(name: "env_id")
         }
     }
