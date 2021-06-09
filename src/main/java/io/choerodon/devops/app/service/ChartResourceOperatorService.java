@@ -10,9 +10,11 @@ import io.choerodon.devops.infra.enums.ResourceType;
  * @author wanghao
  * @since 2021/6/9 14:03
  */
-public interface SaveChartResourceService {
+public interface ChartResourceOperatorService {
 
     void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO);
+
+    void deleteByEnvIdAndName(Long envId, String name);
 
     ResourceType getType();
 }
