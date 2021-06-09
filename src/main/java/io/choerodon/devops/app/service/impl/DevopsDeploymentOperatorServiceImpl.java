@@ -11,6 +11,7 @@ import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -19,18 +20,11 @@ import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DeploymentVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.app.service.ChartResourceOperatorService;
-import io.choerodon.devops.app.service.DevopsDeploymentService;
-import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
@@ -231,6 +225,8 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     @Override
     @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_INSTANCE_NAME_IS_NULL);
         DevopsDeploymentDTO record = new DevopsDeploymentDTO();
         record.setName(name);
         record.setEnvId(envId);

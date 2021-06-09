@@ -26,6 +26,10 @@ public class ResourceCheckConstant {
 
     // env
     public static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
+    public static final String ERROR_ENV_ID_IS_NULL = "error.env.id.is.null";
+
+    // instance
+    public static final String ERROR_INSTANCE_NAME_IS_NULL = "error.instance.name.is.null";
 
 
 }
