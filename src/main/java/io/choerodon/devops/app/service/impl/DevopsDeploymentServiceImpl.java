@@ -4,12 +4,12 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -18,8 +18,13 @@ import io.choerodon.devops.api.vo.DeploymentVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
 import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
+import io.choerodon.devops.app.service.SaveChartResourceService;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -32,10 +37,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 2021/6/8 11:17
  */
 @Service
-public class DevopsDeploymentServiceImpl implements DevopsDeploymentService {
+public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, SaveChartResourceService {
     @Autowired
     private DevopsDeploymentMapper devopsDeploymentMapper;
-    private static JSON json = new JSON();
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
 
@@ -57,7 +61,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService {
             deploymentVO.setName(v.getName());
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
-                V1beta2Deployment v1beta2Deployment = json.deserialize(
+                V1beta2Deployment v1beta2Deployment = JsonHelper.unmarshalByJackson(
                         detailDTOMap.get(v.getResourceDetailId()).getMessage(),
                         V1beta2Deployment.class);
                 deploymentVO.setDesired(TypeUtil.objToLong(v1beta2Deployment.getSpec().getReplicas()));
@@ -88,4 +92,40 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService {
         });
         return deploymentVOPage;
     }
+
+    @Override
+    public DevopsDeploymentDTO queryByEnvIdAndName(Long envId, String name) {
+        DevopsDeploymentDTO record = new DevopsDeploymentDTO();
+        record.setName(name);
+        record.setEnvId(envId);
+        return devopsDeploymentMapper.selectOne(record);
+    }
+
+    @Override
+    @Transactional
+    public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
+        V1beta2Deployment v1beta2Deployment = JsonHelper.unmarshalByJackson(detailsJson, V1beta2Deployment.class);
+
+        DevopsDeploymentDTO oldDevopsDeploymentDTO = queryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
+        if (oldDevopsDeploymentDTO != null) {
+            oldDevopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            devopsDeploymentMapper.updateByPrimaryKeySelective(oldDevopsDeploymentDTO);
+        } else {
+            DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
+            devopsDeploymentDTO.setEnvId(appServiceInstanceDTO.getEnvId());
+            devopsDeploymentDTO.setInstanceId(appServiceInstanceDTO.getId());
+            devopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getId());
+            devopsDeploymentDTO.setProjectId(appServiceInstanceDTO.getProjectId());
+            devopsDeploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
+            devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
+        }
+
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.DEPLOYMENT;
+    }
+
+
 }
