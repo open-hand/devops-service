@@ -19,10 +19,12 @@ import io.choerodon.devops.api.vo.DeploymentVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
 import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.SaveChartResourceService;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -42,6 +44,8 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
     private DevopsDeploymentMapper devopsDeploymentMapper;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     private static JSON json = new JSON();
 
@@ -113,11 +117,15 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
             oldDevopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             devopsDeploymentMapper.updateByPrimaryKeySelective(oldDevopsDeploymentDTO);
         } else {
+
+            // todo devopsEnvironmentDTO是否需要判空处理，抛出异常还是打印日志？
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+
             DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
             devopsDeploymentDTO.setEnvId(appServiceInstanceDTO.getEnvId());
             devopsDeploymentDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getId());
-            devopsDeploymentDTO.setProjectId(appServiceInstanceDTO.getProjectId());
+            devopsDeploymentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsDeploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
             devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
         }
