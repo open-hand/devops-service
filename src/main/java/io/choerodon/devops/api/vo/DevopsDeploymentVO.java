@@ -32,6 +32,9 @@ public class DevopsDeploymentVO extends AuditDomain {
 
     private Long resourceDetailId;
 
+    @ApiModelProperty("操作类型，创建/更新/删除")
+    private String operateType;
+
     public Long getResourceDetailId() {
         return resourceDetailId;
     }
@@ -94,5 +97,13 @@ public class DevopsDeploymentVO extends AuditDomain {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getOperateType() {
+        return operateType;
+    }
+
+    public void setOperateType(String operateType) {
+        this.operateType = operateType;
     }
 }

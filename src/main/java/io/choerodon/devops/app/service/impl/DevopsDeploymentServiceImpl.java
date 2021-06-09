@@ -14,20 +14,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DeploymentVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
-import io.choerodon.devops.app.service.DevopsDeploymentService;
-import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.SaveChartResourceService;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.domain.AuditDomain;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -40,6 +41,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, SaveChartResourceService {
+    private static final String CREATE_TYPE = "create";
+    private static final String UPDATE_TYPE = "update";
     @Autowired
     private DevopsDeploymentMapper devopsDeploymentMapper;
     @Autowired
@@ -48,6 +51,99 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
     private DevopsEnvironmentService devopsEnvironmentService;
 
     private static JSON json = new JSON();
+
+
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
+
+    @Override
+    public AuditDomain selectByPrimaryKey(Long id) {
+        return devopsDeploymentMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public void checkExist(Long envId, String name) {
+        if (devopsDeploymentMapper.selectCountByEnvIdAndName(envId, name) != 0) {
+            throw new CommonException("error.workload.exist", "Deployment", name);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long baseCreate(AuditDomain auditDomain) {
+        devopsDeploymentMapper.insert((DevopsDeploymentDTO) auditDomain);
+        return ((DevopsDeploymentDTO) auditDomain).getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(AuditDomain auditDomain) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, (DevopsDeploymentDTO) auditDomain, "error.deployment.update");
+    }
+
+    @Override
+    public DevopsDeploymentDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
+        devopsDeploymentDTO.setEnvId(envId);
+        devopsDeploymentDTO.setName(name);
+        return devopsDeploymentMapper.selectOne(devopsDeploymentDTO);
+    }
+
+    @Override
+    public DevopsDeploymentDTO baseQuery(Long resourceId) {
+        return devopsDeploymentMapper.queryById(resourceId);
+    }
+
+    @Override
+    public void deleteByGitOps(Long id) {
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(id);
+        //校验环境是否链接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsEnvCommandService.baseListByObject(ObjectType.CONFIGMAP.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
+        devopsDeploymentMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId) {
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentVO.getEnvId());
+        //校验环境是否连接
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsDeploymentVO.getOperateType());
+        devopsEnvCommandDTO.setCreatedBy(userId);
+
+        DevopsDeploymentDTO devopsDeploymentDTO = ConvertUtils.convertObject(devopsDeploymentVO, DevopsDeploymentDTO.class);
+
+        if (devopsDeploymentVO.getOperateType().equals(CREATE_TYPE)) {
+            Long deployId = baseCreate(devopsDeploymentDTO);
+            devopsEnvCommandDTO.setObjectId(deployId);
+            devopsDeploymentDTO.setId(deployId);
+        } else {
+            devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
+        }
+
+        devopsDeploymentDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(devopsDeploymentDTO);
+        return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsDeploymentDTO, DevopsDeploymentVO.class);
+    }
+
+    private DevopsEnvCommandDTO initDevopsEnvCommandDTO(String type) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+        if (type.equals(CREATE_TYPE)) {
+            devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
+        } else if (type.equals(UPDATE_TYPE)) {
+            devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
+        } else {
+            devopsEnvCommandDTO.setCommandType(CommandType.DELETE.getType());
+        }
+        devopsEnvCommandDTO.setObject(ObjectType.CONFIGMAP.getType());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        return devopsEnvCommandDTO;
+    }
 
     @Override
     public Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name) {
@@ -100,19 +196,11 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
     }
 
     @Override
-    public DevopsDeploymentDTO queryByEnvIdAndName(Long envId, String name) {
-        DevopsDeploymentDTO record = new DevopsDeploymentDTO();
-        record.setName(name);
-        record.setEnvId(envId);
-        return devopsDeploymentMapper.selectOne(record);
-    }
-
-    @Override
     @Transactional
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1beta2Deployment v1beta2Deployment = json.deserialize(detailsJson, V1beta2Deployment.class);
 
-        DevopsDeploymentDTO oldDevopsDeploymentDTO = queryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
+        DevopsDeploymentDTO oldDevopsDeploymentDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
         if (oldDevopsDeploymentDTO != null) {
             oldDevopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             devopsDeploymentMapper.updateByPrimaryKeySelective(oldDevopsDeploymentDTO);
@@ -136,6 +224,4 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
     public ResourceType getType() {
         return ResourceType.DEPLOYMENT;
     }
-
-
 }

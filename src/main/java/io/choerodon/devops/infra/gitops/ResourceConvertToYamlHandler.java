@@ -40,6 +40,7 @@ public class ResourceConvertToYamlHandler<T> {
     private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
     private static final String PERSISTENT_VOLUME = "!!io.kubernetes.client.models.V1PersistentVolume";
     private static final String PERSISTENT_VOLUME_CLAIM = "!!io.kubernetes.client.models.V1PersistentVolumeClaim";
+    private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1beta2Deployment";
 
     private T type;
 
@@ -68,7 +69,7 @@ public class ResourceConvertToYamlHandler<T> {
      * @return 返回修改后的文件的sha值
      */
     public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
-                                         Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
+                                       Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
         GitlabServiceClientOperator gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag, true);
@@ -173,6 +174,17 @@ public class ResourceConvertToYamlHandler<T> {
                     case "Endpoints":
                         // 忽视掉Endpoints
                         break;
+                    case "Deployment":
+                        handleDeployment(t, objectType, operationType, resultBuilder, jsonObject);
+                        break;
+                    case "StatefulSet":
+                        break;
+                    case "Job":
+                        break;
+                    case "CronJob":
+                        break;
+                    case "DaemonSet":
+                        break;
                     default:
                         handleCustom(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
@@ -182,6 +194,23 @@ public class ResourceConvertToYamlHandler<T> {
         } catch (FileNotFoundException e) {
             throw new CommonException(e.getMessage(), e);
         }
+    }
+
+    private void handleDeployment(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+        Yaml yaml = new Yaml();
+        V1beta2Deployment v1beta2Deployment = yaml.loadAs(jsonObject.toJSONString(), V1beta2Deployment.class);
+        V1beta2Deployment newV1beta2Deployment;
+        if (objectType.equals(ResourceType.DEPLOYMENT.getType()) && v1beta2Deployment.getMetadata().getName().equals(((V1beta2Deployment) t).getMetadata().getName())) {
+            if (operationType.equals(UPDATE)) {
+                newV1beta2Deployment = (V1beta2Deployment) t;
+            } else {
+                return;
+            }
+        } else {
+            newV1beta2Deployment = v1beta2Deployment;
+        }
+        Tag tag = new Tag(DEPLOYMENT);
+        resultBuilder.append("\n").append(getYamlObject(tag, true).dump(newV1beta2Deployment).replace(DEPLOYMENT, "---"));
     }
 
     private void handleService(T t, String content, String objectType, String operationType, StringBuilder

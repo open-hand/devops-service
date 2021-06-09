@@ -36,6 +36,16 @@ public class DevopsDeploymentDTO extends AuditDomain {
     @ApiModelProperty("所属实例id")
     private Long instanceId;
 
+    public DevopsDeploymentDTO() {
+    }
+
+    public DevopsDeploymentDTO(String name, Long projectId, Long envId, Long commandId) {
+        this.name = name;
+        this.projectId = projectId;
+        this.envId = envId;
+        this.commandId = commandId;
+    }
+
     public Long getId() {
         return id;
     }
