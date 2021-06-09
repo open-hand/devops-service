@@ -23,6 +23,14 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.app.service.ChartResourceOperatorService;
+import io.choerodon.devops.app.service.DevopsDeploymentService;
+import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
@@ -40,7 +48,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 2021/6/8 11:17
  */
 @Service
-public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, SaveChartResourceService {
+public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentService, ChartResourceOperatorService {
     private static final String CREATE_TYPE = "create";
     private static final String UPDATE_TYPE = "update";
     @Autowired
@@ -218,6 +226,15 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
             devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
         }
 
+    }
+
+    @Override
+    @Transactional
+    public void deleteByEnvIdAndName(Long envId, String name) {
+        DevopsDeploymentDTO record = new DevopsDeploymentDTO();
+        record.setName(name);
+        record.setEnvId(envId);
+        devopsDeploymentMapper.delete(record);
     }
 
     @Override

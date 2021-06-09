@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -150,15 +149,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
 
-    private final Map<String, SaveChartResourceService> saveChartResourceServiceMap = new HashMap<>();
     @Autowired
-    private List<SaveChartResourceService> saveChartResourceServices;
-
-    @PostConstruct
-    private void initialize() {
-        saveChartResourceServices.forEach(saveChartResourceService -> saveChartResourceServiceMap.put(saveChartResourceService.getType().getType(), saveChartResourceService));
-    }
-
+    private ChartResourceOperator chartResourceOperator;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -522,6 +514,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                             KeyParseUtil.getResourceName(key));
                         }
                         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+
+                        // 保存chart内资源信息到对应资源表
+                        ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resourceType.getType());
+                        if (chartResourceOperatorService != null) {
+                            chartResourceOperatorService.saveOrUpdateChartResource(msg, appServiceInstanceDTO);
+                        }
                     }
                     break;
             }
@@ -708,6 +706,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 envId,
                 KeyParseUtil.getResourceType(key),
                 KeyParseUtil.getResourceName(key));
+
+        ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(KeyParseUtil.getResourceType(key));
+        if (chartResourceOperatorService != null) {
+            chartResourceOperatorService.deleteByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
+        }
 
     }
 
@@ -1405,9 +1408,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     syncPod(resource.getObject(), appServiceInstanceDTO);
                 }
                 // 如果需要保存对应类型的资源信息，则保存。
-                SaveChartResourceService saveChartResourceService = saveChartResourceServiceMap.get(resource.getKind());
-                if (saveChartResourceService != null) {
-                    saveChartResourceService.saveOrUpdateChartResource(resource.getObject(), appServiceInstanceDTO);
+                ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resource.getKind());
+                if (chartResourceOperatorService != null) {
+                    chartResourceOperatorService.saveOrUpdateChartResource(resource.getObject(), appServiceInstanceDTO);
                 }
 
 
