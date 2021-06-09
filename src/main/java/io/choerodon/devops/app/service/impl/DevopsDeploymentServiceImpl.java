@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
@@ -24,7 +25,6 @@ import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
-import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -42,6 +42,8 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
     private DevopsDeploymentMapper devopsDeploymentMapper;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+
+    private static JSON json = new JSON();
 
     @Override
     public Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name) {
@@ -61,7 +63,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
             deploymentVO.setName(v.getName());
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
-                V1beta2Deployment v1beta2Deployment = JsonHelper.unmarshalByJackson(
+                V1beta2Deployment v1beta2Deployment = json.deserialize(
                         detailDTOMap.get(v.getResourceDetailId()).getMessage(),
                         V1beta2Deployment.class);
                 deploymentVO.setDesired(TypeUtil.objToLong(v1beta2Deployment.getSpec().getReplicas()));
@@ -104,7 +106,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Sav
     @Override
     @Transactional
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1beta2Deployment v1beta2Deployment = JsonHelper.unmarshalByJackson(detailsJson, V1beta2Deployment.class);
+        V1beta2Deployment v1beta2Deployment = json.deserialize(detailsJson, V1beta2Deployment.class);
 
         DevopsDeploymentDTO oldDevopsDeploymentDTO = queryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
         if (oldDevopsDeploymentDTO != null) {
