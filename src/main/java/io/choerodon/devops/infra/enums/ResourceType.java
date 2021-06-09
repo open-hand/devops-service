@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.enums;
 
 public enum ResourceType {
+    CRON_JOB("CronJob"),
     JOB("Job"),
     SERVICE("Service"),
     POD("Pod"),

@@ -78,20 +78,6 @@ public class ClusterConnectionHandler {
                         && agentExpectVersion.equals(t.getVersion()));
     }
 
-//
-//    /**
-//     * 已连接的集群列表, 请勿使用此方法
-//     *
-//     * @return 已连接的集群列表
-//     */
-//    @Deprecated
-//    public List<Long> getConnectedClusterList() {
-//        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
-//        return clusterSessions.entrySet().stream()
-//                .map(t -> t.value().getClusterId())
-//                .collect(Collectors.toCollection(ArrayList::new));
-//    }
-
     /**
      * 不需要进行升级的已连接的集群 up-to-date
      * 版本相等就认为不需要升级
