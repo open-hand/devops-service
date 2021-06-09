@@ -924,10 +924,10 @@ public class AppServiceInstanceController {
             @ApiParam(value = "环境id", required = true)
             @RequestParam("env_id") Long envId,
             @ApiParam(value = "实例状态, 不填是查全部", required = false)
-            @RequestParam String status,
+            @RequestParam(required = false) String status,
             @Encrypt
             @ApiParam(value = "应用服务id", required = false)
-            @RequestParam("app_service_id") Long appServiceId) {
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Optional.ofNullable(appServiceInstanceService.countByOptions(envId, status, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.query.instance.count"));
