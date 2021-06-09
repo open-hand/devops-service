@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DeploymentVO;
+import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -14,4 +15,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsDeploymentService {
 
     Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name);
+
+    DevopsDeploymentDTO queryByEnvIdAndName(Long envId, String name);
 }

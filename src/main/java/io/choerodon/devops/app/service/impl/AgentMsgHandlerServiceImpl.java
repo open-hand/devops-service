@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -20,7 +21,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,10 +41,8 @@ import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
@@ -151,6 +149,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
+
+    private final Map<String, SaveChartResourceService> saveChartResourceServiceMap = new HashMap<>();
+    @Autowired
+    private List<SaveChartResourceService> saveChartResourceServices;
+
+    @PostConstruct
+    private void initialize() {
+        saveChartResourceServices.forEach(saveChartResourceService -> saveChartResourceServiceMap.put(saveChartResourceService.getType().getType(), saveChartResourceService));
+    }
+
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -1396,6 +1404,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 if (resource.getKind().equals(ResourceType.POD.getType())) {
                     syncPod(resource.getObject(), appServiceInstanceDTO);
                 }
+                // 如果需要保存对应类型的资源信息，则保存。
+                SaveChartResourceService saveChartResourceService = saveChartResourceServiceMap.get(resource.getKind());
+                if (saveChartResourceService != null) {
+                    saveChartResourceService.saveOrUpdateChartResource(resource.getObject(), appServiceInstanceDTO);
+                }
+
+
             }
         } catch (Exception e) {
             logger.info("Exception occurred when processing installResource. It is: ", e);
