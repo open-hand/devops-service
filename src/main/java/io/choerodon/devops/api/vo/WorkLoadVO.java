@@ -4,9 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by younger on 2018/4/25.
+ * 〈功能简述〉
+ * 〈〉
+ *
+ * @author wanghao
+ * @since 2021/6/8 14:24
  */
-public class DeploymentVO {
+public class WorkLoadVO {
     private String name;
     private Long desired;
     private Long current;
@@ -15,16 +19,7 @@ public class DeploymentVO {
     private String age;
     private List<Integer> ports;
     private Map<String, String> labels;
-    private List<DevopsEnvPodVO> devopsEnvPodVOS;
     private Long instanceId;
-
-    public Long getInstanceId() {
-        return instanceId;
-    }
-
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
-    }
 
     public String getName() {
         return name;
@@ -90,11 +85,11 @@ public class DeploymentVO {
         this.labels = labels;
     }
 
-    public List<DevopsEnvPodVO> getDevopsEnvPodVOS() {
-        return devopsEnvPodVOS;
+    public Long getInstanceId() {
+        return instanceId;
     }
 
-    public void setDevopsEnvPodVOS(List<DevopsEnvPodVO> devopsEnvPodVOS) {
-        this.devopsEnvPodVOS = devopsEnvPodVOS;
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 }
