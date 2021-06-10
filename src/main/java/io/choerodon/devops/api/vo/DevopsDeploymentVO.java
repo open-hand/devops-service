@@ -32,8 +32,38 @@ public class DevopsDeploymentVO extends AuditDomain {
 
     private Long resourceDetailId;
 
+    private String commandType;
+
+    private String commandStatus;
+
+    private String error;
+
     @ApiModelProperty("操作类型，创建/更新/删除")
     private String operateType;
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
 
     public Long getResourceDetailId() {
         return resourceDetailId;

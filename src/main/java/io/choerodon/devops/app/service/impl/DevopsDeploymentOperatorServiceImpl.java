@@ -17,7 +17,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
-import io.choerodon.devops.api.vo.DeploymentVO;
+import io.choerodon.devops.api.vo.DeploymentInfoVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -156,9 +156,9 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     }
 
     @Override
-    public Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance) {
+    public Page<DeploymentInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance) {
         Page<DevopsDeploymentVO> devopsDeploymentDTOPage = PageHelper.doPage(pageable, () -> devopsDeploymentMapper.listByEnvId(envId, name, fromInstance));
-        Page<DeploymentVO> deploymentVOPage = new Page<>();
+        Page<DeploymentInfoVO> deploymentVOPage = new Page<>();
         if (CollectionUtils.isEmpty(devopsDeploymentDTOPage.getContent())) {
             return deploymentVOPage;
         }
@@ -168,10 +168,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
         Map<Long, DevopsEnvResourceDetailDTO> detailDTOMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
         deploymentVOPage = ConvertUtils.convertPage(devopsDeploymentDTOPage, v -> {
-            DeploymentVO deploymentVO = new DeploymentVO();
-            deploymentVO.setId(v.getId());
-            deploymentVO.setInstanceId(v.getInstanceId());
-            deploymentVO.setName(v.getName());
+            DeploymentInfoVO deploymentVO = ConvertUtils.convertObject(v, DeploymentInfoVO.class);
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
                 V1beta2Deployment v1beta2Deployment = json.deserialize(
