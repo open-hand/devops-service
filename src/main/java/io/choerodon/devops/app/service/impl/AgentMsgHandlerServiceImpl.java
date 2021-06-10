@@ -207,12 +207,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             handleEnvPod(v1Pod, appServiceInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);
         } else {
             DevopsEnvPodDTO devopsEnvPodDTORecord = devopsEnvPodService.baseQueryByEnvIdAndName(envId, v1Pod.getMetadata().getName());
-            if (devopsEnvPodDTORecord != null && !resourceVersion.equals(devopsEnvPodDTORecord.getResourceVersion())) {
-                devopsEnvPodDTORecord.setStatus(status);
-                devopsEnvPodDTORecord.setResourceVersion(resourceVersion);
-                devopsEnvPodDTORecord.setReady(getReadyValue(status, v1Pod));
-                devopsEnvPodDTORecord.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
-                devopsEnvPodService.baseUpdate(devopsEnvPodDTORecord);
+            if (devopsEnvPodDTORecord != null) {
+                if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
+                    devopsEnvPodService.baseDeleteById(devopsEnvPodDTORecord.getId());
+                    devopsEnvResourceService.deleteByEnvIdAndKindAndName(envId, ResourceType.POD.getType(), devopsEnvPodDTORecord.getName());
+                } else if (!resourceVersion.equals(devopsEnvPodDTORecord.getResourceVersion())) {
+                    devopsEnvPodDTORecord.setStatus(status);
+                    devopsEnvPodDTORecord.setResourceVersion(resourceVersion);
+                    devopsEnvPodDTORecord.setReady(getReadyValue(status, v1Pod));
+                    devopsEnvPodDTORecord.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+                    devopsEnvPodService.baseUpdate(devopsEnvPodDTORecord);
+                }
+
             } else {
                 devopsEnvPodService.baseCreate(devopsEnvPodDTO);
             }
