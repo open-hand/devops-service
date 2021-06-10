@@ -53,6 +53,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public static final String CREATE_TYPE = "create";
     public static final String UPDATE_TYPE = "update";
     public static final String EVICTED = "Evicted";
+    private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME = "choerodon.io/parent-workload-name";
+    private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT = "choerodon.io/parent-workload";
     private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
     private static final String PENDING = "Pending";
     private static final String METADATA = "metadata";
@@ -177,7 +179,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvResourceDTO.setName(v1Pod.getMetadata().getName());
         devopsEnvResourceDTO.setReversion(TypeUtil.objToLong(v1Pod.getMetadata().getResourceVersion()));
         List<V1OwnerReference> v1OwnerReferences = v1Pod.getMetadata().getOwnerReferences();
-        if (v1OwnerReferences == null || v1OwnerReferences.isEmpty()) {
+        Map<String, String> labels = v1Pod.getMetadata().getLabels();
+        // pod 没有属主信息，比如直接创建的pod
+        boolean isReferencesEmpty = (v1OwnerReferences == null || v1OwnerReferences.isEmpty());
+        // pod 没有完整的workload标签。完整的workload标签表示该pod由工作负载创建
+        boolean isWorkloadLabelEmpty = StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME))||StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT));
+        if (isReferencesEmpty || isWorkloadLabelEmpty) {
             return;
         }
         saveOrUpdateResource(devopsEnvResourceDTO,
@@ -196,8 +203,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setReady(getReadyValue(status, v1Pod));
         devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
-        devopsEnvPodDTO.setOwnerRefKind(v1OwnerReferences.get(0).getKind());
-        devopsEnvPodDTO.setOwnerRefName(v1OwnerReferences.get(0).getName());
+        devopsEnvPodDTO.setOwnerRefKind(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT));
+        devopsEnvPodDTO.setOwnerRefName(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME));
         devopsEnvPodDTO.setEnvId(envId);
 
         Boolean flag = false;
@@ -508,7 +515,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     // env id是null的
                     handleUpdatePvMsg(key, clusterId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
+                case DEPLOYMENT:
+                    handleUpdateDeploymentMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                 default:
+                    // 默认为Release对象
                     releaseName = KeyParseUtil.getReleaseName(key);
                     if (releaseName != null) {
                         appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
@@ -545,6 +555,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } catch (IOException e) {
             logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e);
         }
+    }
+
+    private void handleUpdateDeploymentMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
+        DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
+                devopsEnvResourceService.baseQueryOptions(
+                        null,
+                        null,
+                        envId,
+                        KeyParseUtil.getResourceType(key),
+                        KeyParseUtil.getResourceName(key));
+        saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
+                devopsEnvResourceDetailDTO, null);
     }
 
     /**
@@ -1386,7 +1408,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
             devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
         }
-
     }
 
     private void installResource(List<Resource> resources, AppServiceInstanceDTO appServiceInstanceDTO) {
