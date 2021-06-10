@@ -640,4 +640,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         }
         return podEventVOS;
     }
+
+    @Override
+    public String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType pod) {
+        return devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, name, pod.getType());
+    }
 }
