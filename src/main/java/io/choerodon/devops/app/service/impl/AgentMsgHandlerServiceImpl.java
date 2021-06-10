@@ -151,6 +151,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
+    @Autowired
+    private WorkloadService workloadService;
 
     @Autowired
     private ChartResourceOperator chartResourceOperator;
@@ -158,16 +160,37 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
-        AppServiceInstanceDTO appServiceInstanceDTO =
-                appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseUtil.getReleaseName(key), envId);
-        if (appServiceInstanceDTO == null) {
-            logger.info("instance not found");
+        String releaseName = KeyParseUtil.getReleaseName(key);
+        AppServiceInstanceDTO appServiceInstanceDTO = null;
+
+        Map<String, String> labels = v1Pod.getMetadata().getLabels();
+        // pod 没有完整的workload标签
+        boolean isWorkloadLabelEmpty = StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME)) || StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT));
+        List<V1OwnerReference> v1OwnerReferences = v1Pod.getMetadata().getOwnerReferences();
+        // pod 没有属主信息，比如直接创建的pod
+        boolean isReferencesEmpty = (v1OwnerReferences == null || v1OwnerReferences.isEmpty());
+        if (isReferencesEmpty || isWorkloadLabelEmpty) {
             return;
+        }
+        if (!StringUtils.isEmpty(releaseName)) {
+            appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+            if (appServiceInstanceDTO == null && isWorkloadLabelEmpty) {
+                logger.info("instance not found");
+                return;
+            }
+        }
+        String parentName = labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME);
+        String parentType = labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT);
+        Long instanceId;
+        if (appServiceInstanceDTO == null) {
+            instanceId = workloadService.getWorkloadId(envId, parentName, parentType);
+        } else {
+            instanceId = appServiceInstanceDTO.getId();
         }
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         DevopsEnvResourceDTO newDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
-                        appServiceInstanceDTO.getId(),
+                        instanceId,
                         null,
                         null,
                         KeyParseUtil.getResourceType(key),
@@ -178,15 +201,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvResourceDTO.setEnvId(envId);
         devopsEnvResourceDTO.setName(v1Pod.getMetadata().getName());
         devopsEnvResourceDTO.setReversion(TypeUtil.objToLong(v1Pod.getMetadata().getResourceVersion()));
-        List<V1OwnerReference> v1OwnerReferences = v1Pod.getMetadata().getOwnerReferences();
-        Map<String, String> labels = v1Pod.getMetadata().getLabels();
-        // pod 没有属主信息，比如直接创建的pod
-        boolean isReferencesEmpty = (v1OwnerReferences == null || v1OwnerReferences.isEmpty());
-        // pod 没有完整的workload标签。完整的workload标签表示该pod由工作负载创建
-        boolean isWorkloadLabelEmpty = StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME))||StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT));
-        if (isReferencesEmpty || isWorkloadLabelEmpty) {
-            return;
-        }
         saveOrUpdateResource(devopsEnvResourceDTO,
                 newDevopsEnvResourceDTO,
                 devopsEnvResourceDetailDTO,
@@ -208,7 +222,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setEnvId(envId);
 
         Boolean flag = false;
-        if (appServiceInstanceDTO.getId() != null) {
+        if (appServiceInstanceDTO != null && appServiceInstanceDTO.getId() != null) {
             List<DevopsEnvPodDTO> devopsEnvPodEList = devopsEnvPodService
                     .baseListByInstanceId(appServiceInstanceDTO.getId());
             handleEnvPod(v1Pod, appServiceInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);

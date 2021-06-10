@@ -159,6 +159,24 @@ public class WorkloadServiceImpl implements WorkloadService {
         }
     }
 
+    @Override
+    public Long getWorkloadId(Long envId, String workloadName, String type) {
+        switch (type) {
+            case "Deployment":
+                DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, workloadName);
+                if (devopsDeploymentDTO == null) {
+                    throw new CommonException("error.workload.resource.not.exist", workloadName, type);
+                }
+                return devopsDeploymentDTO.getId();
+//            case "Job":
+//            case "CronJob":
+//            case "StatefulSet":
+//            case "DaemonSet":
+            default:
+                throw new CommonException("error.workload.resource.not.supported");
+        }
+    }
+
     private WorkloadBaseVO processKeyEncrypt(WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO) {
         // TODO 待hzero兼容 ModelAttribute 注解后删除
         WorkloadBaseVO decryptedWorkloadBaseVO = ConvertUtils.convertObject(workloadBaseCreateOrUpdateVO, WorkloadBaseVO.class);
