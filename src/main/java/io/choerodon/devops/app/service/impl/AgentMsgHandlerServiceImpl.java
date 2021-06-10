@@ -58,6 +58,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String METADATA = "metadata";
     private static final String SERVICE_KIND = "service";
     private static final String INGRESS_KIND = "ingress";
+    private static final String OWNER_REFERENCES = "ownerReferences";
     private static final String CONFIGMAP_KIND = "configmap";
     private static final String C7NHELMRELEASE_KIND = "c7nhelmrelease";
     private static final String CERTIFICATE_KIND = "certificate";
@@ -1399,6 +1400,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         .get(METADATA).toString());
                 devopsEnvResourceDTO.setReversion(
                         TypeUtil.objToLong(jsonResult.get(RESOURCE_VERSION).toString()));
+
+                // 添加资源所属关系
+                JSONArray jsonArray = jsonResult.getJSONObject(METADATA).getJSONArray(OWNER_REFERENCES);
+                if (!jsonArray.isEmpty()) {
+                    V1OwnerReference ownerReference = jsonArray.getObject(0, V1OwnerReference.class);
+                    devopsEnvResourceDTO.setOwnerRefKind(ownerReference.getKind());
+                    devopsEnvResourceDTO.setOwnerRefName(ownerReference.getName());
+                }
+
                 saveOrUpdateResource(
                         devopsEnvResourceDTO,
                         oldDevopsEnvResourceDTO,

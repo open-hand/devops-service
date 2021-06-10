@@ -25,10 +25,31 @@ public class DevopsEnvResourceDTO extends AuditDomain {
     private Long commandId;
     private Long weight;
     private Long reversion;
+
+    private String ownerRefKind;
+
+    private String ownerRefName;
+
     @Transient
-    private Long  devopsEnvCommandId;
+    private Long devopsEnvCommandId;
     @Transient
-    private Long  devopsEnvironmentId;
+    private Long devopsEnvironmentId;
+
+    public String getOwnerRefKind() {
+        return ownerRefKind;
+    }
+
+    public void setOwnerRefKind(String ownerRefKind) {
+        this.ownerRefKind = ownerRefKind;
+    }
+
+    public String getOwnerRefName() {
+        return ownerRefName;
+    }
+
+    public void setOwnerRefName(String ownerRefName) {
+        this.ownerRefName = ownerRefName;
+    }
 
     public Long getDevopsEnvCommandId() {
         return devopsEnvCommandId;
