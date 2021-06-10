@@ -57,9 +57,10 @@ public class DevopsDeploymentController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "env_id") @Encrypt Long envId,
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
-            @RequestParam(value = "name", required = false) String name
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "from_instance", required = false) Boolean fromInstance
     ) {
-        return ResponseEntity.ok(devopsDeploymentService.pagingByEnvId(projectId, envId, pageable, name));
+        return ResponseEntity.ok(devopsDeploymentService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));
     }
 
 }
