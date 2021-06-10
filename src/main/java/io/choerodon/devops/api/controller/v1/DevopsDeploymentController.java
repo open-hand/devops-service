@@ -16,7 +16,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DeploymentVO;
+import io.choerodon.devops.api.vo.DeploymentInfoVO;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
 import io.choerodon.devops.app.service.WorkloadService;
@@ -52,7 +52,7 @@ public class DevopsDeploymentController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询deployment列表")
     @GetMapping("/paging")
-    public ResponseEntity<Page<DeploymentVO>> pagingByEnvId(
+    public ResponseEntity<Page<DeploymentInfoVO>> pagingByEnvId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "env_id") @Encrypt Long envId,
