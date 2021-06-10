@@ -156,8 +156,8 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     }
 
     @Override
-    public Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name) {
-        Page<DevopsDeploymentVO> devopsDeploymentDTOPage = PageHelper.doPage(pageable, () -> devopsDeploymentMapper.listByEnvId(envId, name));
+    public Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance) {
+        Page<DevopsDeploymentVO> devopsDeploymentDTOPage = PageHelper.doPage(pageable, () -> devopsDeploymentMapper.listByEnvId(envId, name, fromInstance));
         Page<DeploymentVO> deploymentVOPage = new Page<>();
         if (CollectionUtils.isEmpty(devopsDeploymentDTOPage.getContent())) {
             return deploymentVOPage;

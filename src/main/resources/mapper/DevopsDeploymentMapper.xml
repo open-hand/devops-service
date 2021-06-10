@@ -15,6 +15,9 @@
             <if test="name != null">
                 and dd.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
             </if>
+            <if test="fromInstance != null">
+                and instance_id != null
+            </if>
         </where>
     </select>
 

@@ -22,6 +22,6 @@ public interface DevopsDeploymentService extends WorkloadBaseService {
 
     DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId);
 
-    Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name);
+    Page<DeploymentVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance);
 
 }

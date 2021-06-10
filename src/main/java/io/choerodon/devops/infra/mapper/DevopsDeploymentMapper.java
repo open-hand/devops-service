@@ -17,7 +17,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DevopsDeploymentMapper extends BaseMapper<DevopsDeploymentDTO>, WorkLoadBaseMapper {
     List<DevopsDeploymentVO> listByEnvId(@Param("envId") Long envId,
-                                         @Param("name") String name);
+                                         @Param("name") String name,
+                                         @Param("fromInstance") Boolean fromInstance);
 
     DevopsDeploymentDTO queryById(@Param("resourceId") Long resourceId);
 }
