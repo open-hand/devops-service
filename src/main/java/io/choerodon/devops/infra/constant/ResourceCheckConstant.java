@@ -35,4 +35,9 @@ public class ResourceCheckConstant {
 
     public static final String ERROR_POD_NAME_IS_NULL = "error.pod.name.is.null";
 
+    // resource
+    public static final String ERROR_KIND_NAME_IS_NULL = "error.kind.name.is.null";
+    public static final String ERROR_RESOURCE_NAME_IS_NULL = "error.resource.name.is.null";
+
+
 }

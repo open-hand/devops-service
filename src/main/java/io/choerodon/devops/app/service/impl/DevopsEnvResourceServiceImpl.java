@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
@@ -525,10 +525,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(kind, ResourceCheckConstant.ERROR_KIND_NAME_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+
         DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
-        if (!devopsEnvResourceMapper.queryResource(null, null, envId, kind, name).isEmpty()) {
-            devopsEnvResourceDO.setEnvId(envId);
-        }
+        devopsEnvResourceDO.setEnvId(envId);
         devopsEnvResourceDO.setKind(kind);
         devopsEnvResourceDO.setName(name);
         devopsEnvResourceMapper.delete(devopsEnvResourceDO);
