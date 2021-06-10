@@ -1,11 +1,27 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -14,18 +30,6 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Pod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -35,6 +39,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     private static JSON json = new JSON();
     private final Logger logger = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
+
+    private static final String ERROR_DELETE_POD_FAILED = "error.delete.pod.failed";
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
@@ -122,6 +128,17 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
+    public DevopsEnvPodDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_POD_NAME_IS_NULL);
+
+        DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
+        devopsEnvPodDTO.setEnvId(envId);
+        devopsEnvPodDTO.setName(name);
+        return devopsEnvPodMapper.selectOne(devopsEnvPodDTO);
+    }
+
+    @Override
     public DevopsEnvPodDTO baseQueryByPod(DevopsEnvPodDTO devopsEnvPodDTO) {
         List<DevopsEnvPodDTO> devopsEnvPodDOS =
                 devopsEnvPodMapper.select(devopsEnvPodDTO);
@@ -197,6 +214,21 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         if (!devopsEnvPodDOs.isEmpty()) {
             devopsEnvPodMapper.delete(devopsEnvPodDOs.get(0));
         }
+    }
+
+    @Override
+    @Transactional
+    public void baseDeleteByNameAndEnvId(String name, Long envId) {
+        Assert.notNull(name, ResourceCheckConstant.ERROR_POD_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+
+        DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
+        devopsEnvPodDTO.setEnvId(envId);
+        devopsEnvPodDTO.setName(name);
+        if (devopsEnvPodMapper.delete(devopsEnvPodDTO) != 1) {
+            throw new CommonException(ERROR_DELETE_POD_FAILED);
+        }
+
     }
 
     @Override
