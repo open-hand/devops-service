@@ -7,11 +7,11 @@
     </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.api.vo.DevopsDeploymentVO">
-        select dd.*, der.id as env_resource_id, der.resource_detail_id, dec.command_type, dec.`status` AS
-        command_status, dec.error
+        select dd.*, der.id as env_resource_id, der.resource_detail_id, deco.command_type, deco.`status` AS
+        command_status, deco.error
         from devops_deployment dd
         left join devops_env_resource der on (dd.env_id = der.env_id and dd.name = der.name and der.kind = 'Deployment')
-        left join devops_env_command dec ON (dec.id = dd.command_id)
+        left join devops_env_command deco ON (deco.id = dd.command_id)
         <where>
             dd.env_id = #{envId}
             <if test="name != null">
