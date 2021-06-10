@@ -180,9 +180,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (v1OwnerReferences == null || v1OwnerReferences.isEmpty()) {
             return;
         }
-        if (v1OwnerReferences.get(0).getKind().equals(ResourceType.JOB.getType())) {
-            return;
-        }
         saveOrUpdateResource(devopsEnvResourceDTO,
                 newDevopsEnvResourceDTO,
                 devopsEnvResourceDetailDTO,
@@ -199,12 +196,27 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setReady(getReadyValue(status, v1Pod));
         devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+        devopsEnvPodDTO.setOwnerRefKind(v1OwnerReferences.get(0).getKind());
+        devopsEnvPodDTO.setOwnerRefName(v1OwnerReferences.get(0).getName());
+        devopsEnvPodDTO.setEnvId(envId);
 
         Boolean flag = false;
         if (appServiceInstanceDTO.getId() != null) {
             List<DevopsEnvPodDTO> devopsEnvPodEList = devopsEnvPodService
                     .baseListByInstanceId(appServiceInstanceDTO.getId());
             handleEnvPod(v1Pod, appServiceInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);
+        } else {
+            DevopsEnvPodDTO devopsEnvPodDTORecord = devopsEnvPodService.baseQueryByEnvIdAndName(envId, v1Pod.getMetadata().getName());
+            if (devopsEnvPodDTORecord != null && !resourceVersion.equals(devopsEnvPodDTORecord.getResourceVersion())) {
+                devopsEnvPodDTORecord.setStatus(status);
+                devopsEnvPodDTORecord.setResourceVersion(resourceVersion);
+                devopsEnvPodDTORecord.setReady(getReadyValue(status, v1Pod));
+                devopsEnvPodDTORecord.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+                devopsEnvPodService.baseUpdate(devopsEnvPodDTORecord);
+            } else {
+                devopsEnvPodService.baseCreate(devopsEnvPodDTO);
+            }
+
         }
     }
 
@@ -236,7 +248,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void handleEnvPod(V1Pod v1Pod, AppServiceInstanceDTO appServiceInstanceDTO, String resourceVersion, DevopsEnvPodDTO devopsEnvPodDTO, Boolean flag, List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
         //如果pod的状态是被驱逐的，则应该直接删掉
         if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
-            devopsEnvPodService.baseDeleteByName(v1Pod.getMetadata().getName(), appServiceInstanceDTO.getEnvCode());
+            devopsEnvPodService.baseDeleteByNameAndEnvId(v1Pod.getMetadata().getName(), appServiceInstanceDTO.getEnvId());
             devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(), v1Pod.getMetadata().getName(), appServiceInstanceDTO.getId());
         } else {
             if (devopsEnvPodDTOS == null || devopsEnvPodDTOS.isEmpty()) {
@@ -1401,13 +1413,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 devopsEnvResourceDTO.setReversion(
                         TypeUtil.objToLong(jsonResult.get(RESOURCE_VERSION).toString()));
 
-                // 添加资源所属关系
-                JSONArray jsonArray = jsonResult.getJSONObject(METADATA).getJSONArray(OWNER_REFERENCES);
-                if (!jsonArray.isEmpty()) {
-                    V1OwnerReference ownerReference = jsonArray.getObject(0, V1OwnerReference.class);
-                    devopsEnvResourceDTO.setOwnerRefKind(ownerReference.getKind());
-                    devopsEnvResourceDTO.setOwnerRefName(ownerReference.getName());
-                }
 
                 saveOrUpdateResource(
                         devopsEnvResourceDTO,
@@ -1422,7 +1427,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 if (chartResourceOperatorService != null) {
                     chartResourceOperatorService.saveOrUpdateChartResource(resource.getObject(), appServiceInstanceDTO);
                 }
-
 
             }
         } catch (Exception e) {
@@ -1446,6 +1450,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
         devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+        // 添加资源所属关系
+        if (!CollectionUtils.isEmpty(v1Pod.getMetadata().getOwnerReferences())) {
+            V1OwnerReference ownerReference = v1Pod.getMetadata().getOwnerReferences().get(0);
+            devopsEnvPodDTO.setOwnerRefKind(ownerReference.getKind());
+            devopsEnvPodDTO.setOwnerRefName(ownerReference.getName());
+        }
         devopsEnvPodService.baseCreate(devopsEnvPodDTO);
     }
 

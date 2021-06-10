@@ -1,13 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
+import java.util.List;
+import javax.persistence.*;
+
 import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-
-import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/14.
@@ -33,6 +33,12 @@ public class DevopsEnvPodDTO extends AuditDomain {
     private String nodeName;
     private Long restartCount;
 
+    private String ownerRefKind;
+
+    private String ownerRefName;
+
+    private Long envId;
+
     @Transient
     private String appServiceName;
     @Transient
@@ -41,8 +47,6 @@ public class DevopsEnvPodDTO extends AuditDomain {
     private String appServiceVersion;
     @Transient
     private String instanceCode;
-    @Transient
-    private Long envId;
     @Transient
     private String envCode;
     @Transient
@@ -57,6 +61,22 @@ public class DevopsEnvPodDTO extends AuditDomain {
     private Date creationDate;
     @Transient
     private Long clusterId;
+
+    public String getOwnerRefKind() {
+        return ownerRefKind;
+    }
+
+    public void setOwnerRefKind(String ownerRefKind) {
+        this.ownerRefKind = ownerRefKind;
+    }
+
+    public String getOwnerRefName() {
+        return ownerRefName;
+    }
+
+    public void setOwnerRefName(String ownerRefName) {
+        this.ownerRefName = ownerRefName;
+    }
 
     public Long getClusterId() {
         return clusterId;

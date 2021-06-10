@@ -51,4 +51,21 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_pod.groovy') {
             column(name: "instance_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2021-06-10-add-column') {
+        addColumn(tableName: 'devops_env_pod') {
+            column(name: 'owner_ref_kind', type: 'VARCHAR(256)', remarks: '所属资源类型', afterColumn: 'reversion')
+            column(name: 'owner_ref_name', type: 'VARCHAR(256)', remarks: '所属资源名称', afterColumn: 'owner_ref_kind')
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: 'env', afterColumn: 'name')
+        }
+        sql("""
+            UPDATE 
+            devops_env_pod dep 
+            SET dep.env_id = (select env_id from devops_app_service_instance dasi WHERE dasi.id = dep.instance_id)
+            """)
+    }
+    changeSet(author: 'wanghao', id: '2021-06-10-modify-UniqueConstraint') {
+        dropUniqueConstraint(constraintName: "devops_pod_uk_namespace_name", tableName: "devops_env_pod")
+        addUniqueConstraint(tableName: 'devops_env_pod',
+                constraintName: 'devops_pod_uk_envId_name', columnNames: 'env_id,name')
+    }
 }
