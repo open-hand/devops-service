@@ -119,7 +119,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     }
 
     @Override
-    public DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId) {
+    public DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId, String content) {
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
@@ -130,6 +130,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
 
         if (devopsDeploymentVO.getOperateType().equals(CREATE_TYPE)) {
             Long deployId = baseCreate(devopsDeploymentDTO);
+            devopsWorkloadResourceContentService.create(ResourceType.DEPLOYMENT.getType(), deployId, content);
             devopsEnvCommandDTO.setObjectId(deployId);
             devopsDeploymentDTO.setId(deployId);
         } else {

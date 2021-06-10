@@ -238,6 +238,7 @@ public class WorkloadServiceImpl implements WorkloadService {
                 break;
         }
         devopsWorkloadResourceContentService.create(type, workLoadId, content);
+
         devopsEnvCommandDTO.setObjectId(workLoadId);
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
     }
