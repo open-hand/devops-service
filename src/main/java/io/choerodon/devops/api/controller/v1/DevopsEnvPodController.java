@@ -80,7 +80,7 @@ public class DevopsEnvPodController {
             @RequestParam(value = "name") String name,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return ResponseEntity.ok(devopsEnvPodService.pageByKind(envId, kind, name));
+        return ResponseEntity.ok(devopsEnvPodService.pageByKind(envId, kind, name, pageable, searchParam));
     }
 
 //    /**

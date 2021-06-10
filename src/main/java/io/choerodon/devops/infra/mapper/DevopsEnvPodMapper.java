@@ -36,4 +36,10 @@ public interface DevopsEnvPodMapper extends BaseMapper<DevopsEnvPodDTO> {
                        @Param("is_ready") Boolean isReady);
 
     List<PodResourceDetailsDTO> queryResourceDetailsByInstanceId(@Param("instanceId") Long instanceId);
+
+    List<DevopsEnvPodDTO> listPodByKind(@Param("envId") Long envId,
+                                        @Param("kind") String kind,
+                                        @Param("name") String name,
+                                        @Param("searchParam") Map<String, Object> searchParam,
+                                        @Param("params") List<String> params);
 }
