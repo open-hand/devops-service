@@ -169,6 +169,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
 
         deploymentVOPage = ConvertUtils.convertPage(devopsDeploymentDTOPage, v -> {
             DeploymentVO deploymentVO = new DeploymentVO();
+            deploymentVO.setId(v.getId());
             deploymentVO.setInstanceId(v.getInstanceId());
             deploymentVO.setName(v.getName());
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {

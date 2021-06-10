@@ -361,6 +361,12 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         return true;
     }
 
+    @Override
+    public Page<DevopsEnvPodVO> pageByKind(Long envId, String kind, String name) {
+        
+        return null;
+    }
+
     private boolean podExists(Long envId, String podName) {
         DevopsEnvPodDTO condition = new DevopsEnvPodDTO();
         condition.setEnvId(envId);

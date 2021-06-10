@@ -73,4 +73,6 @@ public interface DevopsEnvPodService {
      * @return true表示有权限
      */
     boolean checkLogAndExecPermission(Long projectId, Long clusterId, String envCode, Long userId, String podName);
+
+    Page<DevopsEnvPodVO> pageByKind(Long envId, String kind, String name);
 }
