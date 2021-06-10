@@ -61,6 +61,9 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
 
+    @Autowired
+    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
+
     @Override
     public AuditDomain selectByPrimaryKey(Long id) {
         return devopsDeploymentMapper.selectByPrimaryKey(id);
@@ -83,6 +86,10 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(AuditDomain auditDomain) {
+        if (auditDomain.getObjectVersionNumber() == null) {
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(((DevopsDeploymentDTO) auditDomain).getId());
+            auditDomain.setObjectVersionNumber(devopsDeploymentDTO.getObjectVersionNumber());
+        }
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, (DevopsDeploymentDTO) auditDomain, "error.deployment.update");
     }
 
@@ -108,6 +115,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
 
         devopsEnvCommandService.baseListByObject(ObjectType.CONFIGMAP.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
         devopsDeploymentMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
     }
 
     @Override

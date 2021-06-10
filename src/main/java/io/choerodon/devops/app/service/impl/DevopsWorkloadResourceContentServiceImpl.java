@@ -32,4 +32,9 @@ public class DevopsWorkloadResourceContentServiceImpl implements DevopsWorkloadR
         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentUpdateDTO = new DevopsWorkloadResourceContentDTO(resourceId, type, content);
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsWorkloadResourceContentMapper, devopsWorkloadResourceContentUpdateDTO, "error.workload.resource.update");
     }
+
+    @Override
+    public void deleteByResourceId(String type, Long workloadId) {
+        devopsWorkloadResourceContentMapper.deleteByResourceId(type, workloadId);
+    }
 }
