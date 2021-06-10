@@ -53,7 +53,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_pod.groovy') {
     }
     changeSet(author: 'wanghao', id: '2021-06-10-add-column') {
         addColumn(tableName: 'devops_env_pod') {
-            column(name: 'owner_ref_kind', type: 'VARCHAR(256)', remarks: '所属资源类型', afterColumn: 'reversion')
+            column(name: 'owner_ref_kind', type: 'VARCHAR(256)', remarks: '所属资源类型', afterColumn: 'resource_version')
             column(name: 'owner_ref_name', type: 'VARCHAR(256)', remarks: '所属资源名称', afterColumn: 'owner_ref_kind')
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: 'env', afterColumn: 'name')
         }
