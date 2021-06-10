@@ -86,6 +86,6 @@
                             ON re.resource_detail_id = detail.id
         WHERE re.name = #{name}
           AND re.kind = #{kind}
-          AND re.envId = #{envId}
+          AND re.env_id = #{envId}
     </select>
 </mapper>
