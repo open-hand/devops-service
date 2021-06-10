@@ -9,12 +9,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * 〈〉
  *
  * @author wanghao
- * @since 2021/6/10 21:44
+ * @since 2021/6/10 22:33
  */
-public class DevopsDaemonSetVO extends AuditDomain {
-
+public class DevopsStatefulSetVO extends AuditDomain {
     private Long id;
-    @ApiModelProperty("daemonset名称")
+    @ApiModelProperty("deployment名称")
     private String name;
     @ApiModelProperty("所属项目id")
     private Long projectId;

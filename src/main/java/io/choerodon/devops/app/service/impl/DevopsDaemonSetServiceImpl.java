@@ -75,6 +75,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService {
                     });
                 }
                 daemonSetInfoVO.setPorts(portRes);
+                daemonSetInfoVO.setAge(v.getLastUpdateDate().toString());
             }
             return daemonSetInfoVO;
         });
