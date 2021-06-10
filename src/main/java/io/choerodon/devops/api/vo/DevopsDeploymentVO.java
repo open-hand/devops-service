@@ -65,6 +65,9 @@ public class DevopsDeploymentVO extends AuditDomain {
         this.error = error;
     }
 
+    @ApiModelProperty("资源内容")
+    private String content;
+
     public Long getResourceDetailId() {
         return resourceDetailId;
     }
@@ -135,5 +138,13 @@ public class DevopsDeploymentVO extends AuditDomain {
 
     public void setOperateType(String operateType) {
         this.operateType = operateType;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }

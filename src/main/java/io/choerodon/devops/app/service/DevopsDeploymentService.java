@@ -20,7 +20,7 @@ public interface DevopsDeploymentService extends WorkloadBaseService {
 
     void deleteByGitOps(Long id);
 
-    DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId);
+    DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId,String content);
 
     Page<DeploymentInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance);
 

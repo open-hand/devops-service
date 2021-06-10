@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
@@ -26,7 +25,7 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
-public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsService<V1beta2Deployment> {
+public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsService<DevopsDeploymentDTO> {
     private static final String CREATE_TYPE = "create";
     private static final String UPDATE_TYPE = "update";
     private static final String DEPLOYMENT = "Deployment";
@@ -43,7 +42,7 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
 
 
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
-                                 List<V1beta2Deployment> v1beta2Deployments, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+                                 List<DevopsDeploymentDTO> devopsDeploymentDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeDeployment = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(DEPLOYMENT))
                 .map(devopsEnvFileResourceE -> {
@@ -59,14 +58,14 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         // 比较已存在的秘钥和新增要处理的秘钥,获取新增秘钥，更新秘钥，删除秘钥
-        List<V1beta2Deployment> addDeployment = new ArrayList<>();
-        List<V1beta2Deployment> updateDeployment = new ArrayList<>();
-        v1beta2Deployments.forEach(v1beta2Deployment -> {
-            if (beforeDeployment.contains(v1beta2Deployment.getMetadata().getName())) {
-                updateDeployment.add(v1beta2Deployment);
-                beforeDeployment.remove(v1beta2Deployment.getMetadata().getName());
+        List<DevopsDeploymentDTO> addDeployment = new ArrayList<>();
+        List<DevopsDeploymentDTO> updateDeployment = new ArrayList<>();
+        devopsDeploymentDTOS.forEach(devopsDeploymentDTO -> {
+            if (beforeDeployment.contains(devopsDeploymentDTO.getName())) {
+                updateDeployment.add(devopsDeploymentDTO);
+                beforeDeployment.remove(devopsDeploymentDTO.getName());
             } else {
-                addDeployment.add(v1beta2Deployment);
+                addDeployment.add(devopsDeploymentDTO);
             }
         });
         //删除deployment,删除文件对象关联关系
@@ -85,27 +84,27 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
     }
 
     @Override
-    public Class<V1beta2Deployment> getTarget() {
-        return V1beta2Deployment.class;
+    public Class<DevopsDeploymentDTO> getTarget() {
+        return DevopsDeploymentDTO.class;
     }
 
-    private void addDeployment(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta2Deployment> addV1beta1Ingress, String path, Long userId) {
-        addV1beta1Ingress
-                .forEach(v1beta2Deployment -> {
+    private void addDeployment(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsDeploymentDTO> devopsDeploymentDTOS, String path, Long userId) {
+        devopsDeploymentDTOS
+                .forEach(deploymentDTO -> {
                     String filePath = "";
                     try {
-                        filePath = objectPath.get(TypeUtil.objToString(v1beta2Deployment.hashCode()));
+                        filePath = objectPath.get(TypeUtil.objToString(deploymentDTO.hashCode()));
 
                         DevopsDeploymentDTO devopsDeploymentDTO = deploymentService
-                                .baseQueryByEnvIdAndName(envId, v1beta2Deployment.getMetadata().getName());
+                                .baseQueryByEnvIdAndName(envId, deploymentDTO.getName());
                         DevopsDeploymentVO devopsDeploymentVO = new DevopsDeploymentVO();
                         //初始化deployment对象参数,存在deployment则直接创建文件对象关联关系
                         if (devopsDeploymentDTO == null) {
                             devopsDeploymentVO = getDevopsDeploymentVO(
-                                    v1beta2Deployment,
+                                    deploymentDTO,
                                     projectId,
                                     envId, CREATE_TYPE);
-                            devopsDeploymentVO = deploymentService.createOrUpdateByGitOps(devopsDeploymentVO, userId);
+                            devopsDeploymentVO = deploymentService.createOrUpdateByGitOps(devopsDeploymentVO, userId, deploymentDTO.getContent());
                         } else {
                             devopsDeploymentVO.setCommandId(devopsDeploymentDTO.getCommandId());
                             devopsDeploymentVO.setId(devopsDeploymentDTO.getId());
@@ -115,8 +114,8 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
-                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, v1beta2Deployment.hashCode(), devopsDeploymentVO.getId(),
-                                v1beta2Deployment.getKind());
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, deploymentDTO.hashCode(), devopsDeploymentVO.getId(),
+                                ResourceType.DEPLOYMENT.getType());
                     } catch (CommonException e) {
                         String errorCode = "";
                         if (e instanceof GitOpsExplainException) {
@@ -127,27 +126,26 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                 });
     }
 
-    private void updateDeployment(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta2Deployment> updateV1beta2Deployment, String path, Long userId) {
-        updateV1beta2Deployment
-                .forEach(v1beta2Deployment -> {
+    private void updateDeployment(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsDeploymentDTO> updateDevopsDeploymentDTO, String path, Long userId) {
+        updateDevopsDeploymentDTO
+                .forEach(deploymentDTO -> {
                     String filePath = "";
                     try {
-                        filePath = objectPath.get(TypeUtil.objToString(v1beta2Deployment.hashCode()));
+                        filePath = objectPath.get(TypeUtil.objToString(deploymentDTO.hashCode()));
                         DevopsDeploymentDTO devopsDeploymentDTO = deploymentService
-                                .baseQueryByEnvIdAndName(envId, v1beta2Deployment.getMetadata().getName());
+                                .baseQueryByEnvIdAndName(envId, deploymentDTO.getName());
                         // 初始化deployment对象参数,更新deployment并更新文件对象关联关系
-                        DevopsDeploymentVO devopsDeploymentVO = getDevopsDeploymentVO(v1beta2Deployment, projectId, envId, UPDATE_TYPE);
+                        DevopsDeploymentVO devopsDeploymentVO = getDevopsDeploymentVO(deploymentDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
                         Yaml yaml = new Yaml();
                         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
-                        V1beta2Deployment oldV1beta2Deployment1 = yaml.loadAs(devopsWorkloadResourceContentDTO.getContent(), V1beta2Deployment.class);
-                        boolean isNotChange = Objects.deepEquals(oldV1beta2Deployment1, v1beta2Deployment);
+                        boolean isNotChange = deploymentDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
-                            devopsDeploymentVO = deploymentService.createOrUpdateByGitOps(devopsDeploymentVO, envId);
+                            devopsDeploymentVO = deploymentService.createOrUpdateByGitOps(devopsDeploymentVO, envId, deploymentDTO.getContent());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentVO.getCommandId());
                         }
 
@@ -161,7 +159,7 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                v1beta2Deployment.hashCode(), devopsDeploymentDTO.getId(), ResourceType.CUSTOM.getType());
+                                deploymentDTO.hashCode(), devopsDeploymentDTO.getId(), ResourceType.CUSTOM.getType());
 
 
                     } catch (CommonException e) {
@@ -174,9 +172,10 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                 });
     }
 
-    private DevopsDeploymentVO getDevopsDeploymentVO(V1beta2Deployment deployment, Long projectId, Long envId, String operateType) {
+    private DevopsDeploymentVO getDevopsDeploymentVO(DevopsDeploymentDTO deployment, Long projectId, Long envId, String operateType) {
         DevopsDeploymentVO devopsDeploymentVO = new DevopsDeploymentVO();
-        devopsDeploymentVO.setName(deployment.getMetadata().getName());
+        devopsDeploymentVO.setName(deployment.getName());
+        devopsDeploymentVO.setContent(deployment.getContent());
         devopsDeploymentVO.setProjectId(projectId);
         devopsDeploymentVO.setEnvId(envId);
         devopsDeploymentVO.setOperateType(operateType);
