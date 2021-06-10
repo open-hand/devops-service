@@ -373,11 +373,48 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             devopsEnvPodVO.setClusterId(devopsEnvironmentDTO.getClusterId());
             devopsEnvPodVO.setConnect(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
             //给pod设置containers
-            fillContainers(devopsEnvPodVO);
+            fillContainers(envId, devopsEnvPodVO);
             return devopsEnvPodVO;
         }).collect(Collectors.toList()));
 
         return devopsEnvPodVOPageInfo;
+    }
+
+    private void fillContainers(Long envId, DevopsEnvPodVO devopsEnvPodVO) {
+        //解析pod的yaml内容获取container的信息
+
+        String message = devopsEnvResourceService.getResourceDetailByEnvIdAndKindAndName(envId, devopsEnvPodVO.getName(), ResourceType.POD);
+
+        if (StringUtils.isEmpty(message)) {
+            return;
+        }
+
+        try {
+            V1Pod pod = K8sUtil.deserialize(message, V1Pod.class);
+            List<ContainerVO> containers = pod.getStatus().getContainerStatuses()
+                    .stream()
+                    .map(container -> {
+                        ContainerVO containerVO = new ContainerVO();
+                        containerVO.setName(container.getName());
+                        containerVO.setReady(container.isReady());
+                        return containerVO;
+                    })
+                    .collect(Collectors.toList());
+
+            // 将不可用的容器置于靠前位置
+            Map<Boolean, List<ContainerVO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
+            List<ContainerVO> result = new ArrayList<>();
+            if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.FALSE))) {
+                result.addAll(containsByStatus.get(Boolean.FALSE));
+            }
+            if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.TRUE))) {
+                result.addAll(containsByStatus.get(Boolean.TRUE));
+            }
+            devopsEnvPodVO.setContainers(result);
+        } catch (Exception e) {
+            logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
+        }
+
     }
 
     private Page<DevopsEnvPodDTO> basePageByKind(Long envId, String kind, String name, PageRequest pageable, String searchParam) {
