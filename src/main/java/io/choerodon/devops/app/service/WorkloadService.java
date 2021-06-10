@@ -7,4 +7,6 @@ import io.choerodon.devops.infra.enums.ResourceType;
 
 public interface WorkloadService {
     void createOrUpdate(Long projectId, WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO, MultipartFile multipartFile, ResourceType type);
+
+    Long getWorkloadId(Long envId,String workloadName,String type);
 }
