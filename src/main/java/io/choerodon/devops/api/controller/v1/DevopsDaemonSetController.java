@@ -25,7 +25,7 @@ public class DevopsDaemonSetController {
     private DevopsDaemonSetService devopsDaemonSetService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "分页查询deployment列表")
+    @ApiOperation(value = "分页查询daemonsets列表")
     @GetMapping("/paging")
     public ResponseEntity<Page<DaemonSetInfoVO>> pagingByEnvId(
             @ApiParam(value = "项目Id", required = true)

@@ -9,7 +9,7 @@
         from devops_daemon_set dds
         left join devops_env_resource der on (dds.env_id = der.env_id and dds.name = der.name and der.kind =
         'DaemonSet')
-        left join devops_env_command deco ON (deco.id = dd.command_id)
+        left join devops_env_command deco ON (deco.id = dds.command_id)
         <where>
             dds.env_id = #{envId}
             <if test="name != null">
