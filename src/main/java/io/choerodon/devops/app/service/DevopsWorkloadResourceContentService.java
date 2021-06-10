@@ -8,4 +8,6 @@ public interface DevopsWorkloadResourceContentService {
     void create(String type, Long workLoadId, String content);
 
     void update(String type, Long resourceId, String content);
+
+    void deleteByResourceId(String type, Long workloadId);
 }
