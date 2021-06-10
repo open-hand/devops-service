@@ -362,9 +362,55 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public Page<DevopsEnvPodVO> pageByKind(Long envId, String kind, String name) {
-        
-        return null;
+    public Page<DevopsEnvPodVO> pageByKind(Long envId, String kind, String name, PageRequest pageable, String searchParam) {
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
+        Page<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByKind(envId, kind, name, pageable, searchParam);
+        Page<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
+
+        devopsEnvPodVOPageInfo.setContent(devopsEnvPodDTOPageInfo.getContent().stream().map(devopsEnvPodDTO -> {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsEnvPodDTO.getEnvId());
+            DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
+            devopsEnvPodVO.setClusterId(devopsEnvironmentDTO.getClusterId());
+            devopsEnvPodVO.setConnect(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
+            //给pod设置containers
+            fillContainers(devopsEnvPodVO);
+            return devopsEnvPodVO;
+        }).collect(Collectors.toList()));
+
+        return devopsEnvPodVOPageInfo;
+    }
+
+    private Page<DevopsEnvPodDTO> basePageByKind(Long envId, String kind, String name, PageRequest pageable, String searchParam) {
+        Sort sort = pageable.getSort();
+        if (sort != null) {
+            List<Sort.Order> newOrder = new ArrayList<>();
+            sort.iterator().forEachRemaining(s -> {
+                String property = s.getProperty();
+                if ("name".equals(property)) {
+                    property = "dp.`name`";
+                } else if ("ip".equals(property)) {
+                    property = "dp.ip";
+                } else if ("creationDate".equals(property)) {
+                    property = "dp.creation_date";
+                }
+                newOrder.add(new Sort.Order(s.getDirection(), property));
+            });
+            pageable.setSort(new Sort(newOrder));
+        }
+        Page<DevopsEnvPodDTO> devopsEnvPodDOPage;
+        if (!StringUtils.isEmpty(searchParam)) {
+            Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
+            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listPodByKind(
+                    envId,
+                    kind,
+                    name,
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        } else {
+            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listPodByKind(envId, kind, name, null, null));
+        }
+
+        return devopsEnvPodDOPage;
     }
 
     private boolean podExists(Long envId, String podName) {

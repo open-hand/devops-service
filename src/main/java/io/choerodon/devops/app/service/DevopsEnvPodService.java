@@ -74,5 +74,5 @@ public interface DevopsEnvPodService {
      */
     boolean checkLogAndExecPermission(Long projectId, Long clusterId, String envCode, Long userId, String podName);
 
-    Page<DevopsEnvPodVO> pageByKind(Long envId, String kind, String name);
+    Page<DevopsEnvPodVO> pageByKind(Long envId, String kind, String name, PageRequest pageable, String searchParam);
 }
