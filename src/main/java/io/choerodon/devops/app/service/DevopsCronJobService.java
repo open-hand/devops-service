@@ -11,7 +11,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @author wanghao
  * @since 2021/6/8 11:22
  */
-public interface DevopsCornJobService {
+public interface DevopsCronJobService {
 
     Page<CronJobInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance);
 }
