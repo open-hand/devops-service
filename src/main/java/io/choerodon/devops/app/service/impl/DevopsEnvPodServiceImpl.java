@@ -64,6 +64,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     @Override
     public Page<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageable, String searchParam) {
@@ -362,8 +364,21 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public Page<DevopsEnvPodVO> pageByKind(Long envId, String kind, String name, PageRequest pageable, String searchParam) {
+    public Page<DevopsEnvPodVO> pageByKind(Long projectId, Long envId, String kind, String name, PageRequest pageable, String searchParam) {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
+
+        DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.baseQueryOptions(null, null, envId, kind, name);
+
+        if (devopsEnvResourceDTO.getInstanceId() != null) {
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvResourceDTO.getInstanceId());
+            return pageByOptions(projectId,
+                    envId,
+                    appServiceInstanceDTO.getAppServiceId(),
+                    devopsEnvResourceDTO.getInstanceId(),
+                    pageable,
+                    searchParam);
+        }
+
         Page<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByKind(envId, kind, name, pageable, searchParam);
         Page<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
 
