@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
 import java.util.HashMap;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum ObjectType {
 
@@ -13,6 +13,11 @@ public enum ObjectType {
     CONFIGMAP("configMap"),
     SECRET("secret"),
     CUSTOM("custom"),
+    DEPLOYMENT("deployment"),
+    DAEMONSET("daemonset"),
+    JOB("job"),
+    CRONJOB("cronjob"),
+    STATEFULSET("statefulset"),
     PERSISTENTVOLUMECLAIM("PersistentVolumeClaim"),
     PERSISTENTVOLUME("PersistentVolume");
 

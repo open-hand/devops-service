@@ -207,7 +207,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         DevopsEnvCommandDTO devopsEnvCommandE = initDevopsEnvCommandDTO(DELETE_TYPE);
 
-        //更新ingress
+        //更新configmap
         devopsEnvCommandE.setObjectId(configMapId);
         devopsConfigMapDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandE).getId());
         baseUpdate(devopsConfigMapDTO);

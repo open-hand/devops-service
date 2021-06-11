@@ -24,4 +24,5 @@ public interface DevopsDeploymentService extends WorkloadBaseService {
 
     Page<DeploymentInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance);
 
+    void baseDelete(Long id);
 }
