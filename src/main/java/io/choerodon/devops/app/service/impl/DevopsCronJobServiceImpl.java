@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,12 +24,17 @@ import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.workload.CronJobInfoVO;
 import io.choerodon.devops.api.vo.workload.DevopsCronjobVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsCronJobDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsCronJobMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -53,7 +60,12 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-    private JSON json = new JSON();
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
+
+    private final JSON json = new JSON();
 
     @Override
     public Page<CronJobInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance) {
@@ -129,7 +141,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
         devopsCronJobMapper.deleteByPrimaryKey(id);
-        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.CRON_JOB.getType(), id);
     }
 
     @Override
@@ -138,6 +150,43 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
         devopsCronJobDTO.setEnvId(envId);
         devopsCronJobDTO.setName(name);
         return devopsCronJobMapper.selectOne(devopsCronJobDTO);
+    }
+
+
+    @Override
+    public void deleteByGitOps(Long id) {
+        DevopsCronJobDTO devopsCronJobDTO = devopsCronJobMapper.selectByPrimaryKey(id);
+        //校验环境是否链接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsCronJobDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsEnvCommandService.baseListByObject(ObjectType.CRONJOB.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
+        devopsCronJobMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.CRON_JOB.getType(), id);
+    }
+
+    @Override
+    public DevopsCronjobVO createOrUpdateByGitOps(DevopsCronjobVO devopsCronJobVO, Long userId, String content) {
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsCronJobVO.getEnvId());
+        //校验环境是否连接
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsCronJobVO.getOperateType());
+        devopsEnvCommandDTO.setCreatedBy(userId);
+
+        DevopsCronJobDTO devopsCronJobDTO = ConvertUtils.convertObject(devopsCronJobVO, DevopsCronJobDTO.class);
+
+        if (devopsCronJobVO.getOperateType().equals(CREATE_TYPE)) {
+            Long cronJobId = baseCreate(devopsCronJobDTO);
+            devopsWorkloadResourceContentService.create(ResourceType.CRON_JOB.getType(), cronJobId, content);
+            devopsEnvCommandDTO.setObjectId(cronJobId);
+            devopsCronJobDTO.setId(cronJobId);
+        } else {
+            devopsEnvCommandDTO.setObjectId(devopsCronJobDTO.getId());
+        }
+
+        devopsCronJobDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(devopsCronJobDTO);
+        return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsCronJobDTO, DevopsCronjobVO.class);
     }
 
     @Override

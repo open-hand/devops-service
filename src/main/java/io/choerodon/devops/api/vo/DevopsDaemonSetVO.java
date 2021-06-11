@@ -35,6 +35,12 @@ public class DevopsDaemonSetVO extends AuditDomain {
 
     private String error;
 
+    @ApiModelProperty("操作类型，创建/更新/删除")
+    private String operateType;
+
+    @ApiModelProperty("资源内容")
+    private String content;
+
     public Long getId() {
         return id;
     }
@@ -121,5 +127,21 @@ public class DevopsDaemonSetVO extends AuditDomain {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getOperateType() {
+        return operateType;
+    }
+
+    public void setOperateType(String operateType) {
+        this.operateType = operateType;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }

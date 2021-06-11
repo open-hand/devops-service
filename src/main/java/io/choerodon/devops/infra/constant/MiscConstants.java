@@ -47,4 +47,8 @@ public final class MiscConstants {
     public static final String USER_SYNC_ERROR_FILE_BUCKET_NAME = "devops-service.user-sync.error-file";
 
     public static final String UNKNOWN_SERVICE = "UnknownService";
+
+    public static final String CREATE_TYPE = "create";
+    public static final String UPDATE_TYPE = "update";
+    public static final String DELETE_TYPE = "delete";
 }

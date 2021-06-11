@@ -150,16 +150,16 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                         }
 
                         // 更新之前的command为成功
-                        devopsEnvCommandService.updateOperatingToSuccessBeforeDate(ObjectType.CUSTOM, devopsEnvCommandDTO.getObjectId(), devopsEnvCommandDTO.getCreationDate());
+                        devopsEnvCommandService.updateOperatingToSuccessBeforeDate(ObjectType.DEPLOYMENT, devopsEnvCommandDTO.getObjectId(), devopsEnvCommandDTO.getCreationDate());
                         //没发生改变,更新commit记录，更新文件对应关系记录
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), ResourceType.CUSTOM.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                deploymentDTO.hashCode(), devopsDeploymentDTO.getId(), ResourceType.CUSTOM.getType());
+                                deploymentDTO.hashCode(), devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
 
 
                     } catch (CommonException e) {
