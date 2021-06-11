@@ -1492,12 +1492,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
         devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
-        // 添加资源所属关系
-        if (!CollectionUtils.isEmpty(v1Pod.getMetadata().getOwnerReferences())) {
-            V1OwnerReference ownerReference = v1Pod.getMetadata().getOwnerReferences().get(0);
-            devopsEnvPodDTO.setOwnerRefKind(ownerReference.getKind());
-            devopsEnvPodDTO.setOwnerRefName(ownerReference.getName());
-        }
+
         devopsEnvPodService.baseCreate(devopsEnvPodDTO);
     }
 
