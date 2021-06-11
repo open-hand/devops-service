@@ -15,10 +15,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.WorkloadBaseVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
@@ -31,11 +28,12 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class WorkloadServiceImpl implements WorkloadService {
 
-    public static final String CREATE = "create";
-    public static final String UPDATE = "update";
-    public static final String DELETE = "delete";
-    public static final String METADATA = "metadata";
-    public static final String KIND = "kind";
+    private static final String CREATE = "create";
+    private static final String UPDATE = "update";
+    private static final String DELETE = "delete";
+    private static final String METADATA = "metadata";
+    private static final String KIND = "kind";
+    private static final String MASTER = "master";
 
     private static final Map<String, String> RESOURCE_FILE_TEMPLATE_PATH_MAP;
 
@@ -62,6 +60,9 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
+
+    @Autowired
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     private static final List<String> RESOURCE_TYPE = Arrays.asList(
             ResourceType.DEPLOYMENT.getType(),
@@ -177,6 +178,84 @@ public class WorkloadServiceImpl implements WorkloadService {
         }
     }
 
+    @Override
+    @Transactional
+    public void delete(Long projectId, Long id, ResourceType resourceType) {
+        Long envId;
+        String resourceName;
+        switch (resourceType) {
+            case DEPLOYMENT:
+                DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQuery(id);
+                if (devopsDeploymentDTO == null) {
+                    return;
+                }
+                envId = devopsDeploymentDTO.getEnvId();
+                resourceName = devopsDeploymentDTO.getName();
+                break;
+            default:
+                throw new CommonException("error.workload.resource.not.supported", resourceType.getType());
+        }
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE, id, null);
+
+        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                devopsEnvironmentDTO.getProjectId(),
+                devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getEnvIdRsa(),
+                devopsEnvironmentDTO.getType(),
+                devopsEnvironmentDTO.getClusterCode());
+
+        String resourceFileName = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), resourceName);
+
+        // 查询该对象所在文件中是否含有其它对象
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), id, resourceType.getType());
+        if (devopsEnvFileResourceDTO == null) {
+            deleteWorkload(resourceType.getType(), id);
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, resourceFileName)) {
+                gitlabServiceClientOperator.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
+                        resourceFileName,
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            }
+            return;
+        } else {
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+                    devopsEnvFileResourceDTO.getFilePath())) {
+                deleteWorkload(resourceType.getType(), id);
+                devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
+                return;
+            }
+        }
+        List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), devopsEnvFileResourceDTO.getFilePath());
+
+        // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
+        if (devopsEnvFileResourceDTOS.size() == 1) {
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, devopsEnvFileResourceDTO.getFilePath())) {
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            }
+        } else {
+            ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, gitlabEnvProjectId, DELETE, userAttrDTO.getGitlabUserId(), id,
+                    resourceType.getType(), null, false, devopsEnvironmentDTO.getId(), gitOpsPath);
+        }
+
+    }
+
     private WorkloadBaseVO processKeyEncrypt(WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO) {
         // TODO 待hzero兼容 ModelAttribute 注解后删除
         WorkloadBaseVO decryptedWorkloadBaseVO = ConvertUtils.convertObject(workloadBaseCreateOrUpdateVO, WorkloadBaseVO.class);
@@ -190,6 +269,14 @@ public class WorkloadServiceImpl implements WorkloadService {
             createWorkload(projectId, envId, content, kind, operateType, name, userId);
         } else if (UPDATE.equals(operateType)) {
             updateWorkLoad(kind, name, content, resourceId, userId);
+        } else {
+            //自定义资源关联command
+            DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE, userId);
+            devopsEnvCommandDTO.setObjectId(resourceId);
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+
+            //更新自定义资源关联的最新command
+            updateWorkLoadCommandId(kind, resourceId, devopsEnvCommandDTO.getId());
         }
     }
 
@@ -261,7 +348,6 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
     }
 
-
     private void updateWorkLoad(String type, String name, String content, Long resourceId, Long userId) {
         //自定义资源关联command
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(type, userId);
@@ -271,6 +357,28 @@ public class WorkloadServiceImpl implements WorkloadService {
                 break;
         }
         devopsWorkloadResourceContentService.update(type, resourceId, content);
+    }
+
+
+    private void updateWorkLoadCommandId(String kind, Long resourceId, Long commandId) {
+        switch (kind) {
+            case "Deployment":
+                DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQuery(resourceId);
+                devopsDeploymentDTO.setCommandId(commandId);
+                devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
+                break;
+            default:
+                throw new CommonException("error.workload.resource.not.supported");
+        }
+
+    }
+
+    private void deleteWorkload(String type, Long resourceId) {
+        switch (type) {
+            case "Deployment":
+                devopsDeploymentService.baseDelete(resourceId);
+                break;
+        }
     }
 
     private void checkMetadataInfo(String nowName, String oldName) {

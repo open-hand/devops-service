@@ -103,7 +103,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
 
     @Override
     public DevopsDeploymentDTO baseQuery(Long resourceId) {
-        return devopsDeploymentMapper.queryById(resourceId);
+        return devopsDeploymentMapper.selectByPrimaryKey(resourceId);
     }
 
     @Override
@@ -113,7 +113,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentDTO.getEnvId());
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
 
-        devopsEnvCommandService.baseListByObject(ObjectType.CONFIGMAP.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
+        devopsEnvCommandService.baseListByObject(ObjectType.DEPLOYMENT.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
         devopsDeploymentMapper.deleteByPrimaryKey(id);
         devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
     }
@@ -239,6 +239,12 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
         record.setName(name);
         record.setEnvId(envId);
         devopsDeploymentMapper.delete(record);
+    }
+
+    @Override
+    public void baseDelete(Long id) {
+        devopsDeploymentMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
     }
 
     @Override

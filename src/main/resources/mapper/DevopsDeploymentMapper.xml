@@ -23,11 +23,4 @@
         </where>
     </select>
 
-    <select id="queryById" resultType="io.choerodon.devops.infra.dto.DevopsDeploymentDTO">
-        SELECT dp.* FROM
-        devops_deployment dp
-        LEFT JOIN devops_env_command dc ON dp.command_id=dc.id
-        WHERE
-        dp.id =#{resourceId}
-    </select>
 </mapper>

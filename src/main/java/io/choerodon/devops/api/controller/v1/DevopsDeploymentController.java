@@ -50,6 +50,14 @@ public class DevopsDeploymentController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除deployment资源")
+    @DeleteMapping
+    public void delete(@PathVariable(value = "project_id") Long projectId,
+                       @RequestParam @Encrypt Long id) {
+        workloadService.delete(projectId, id, ResourceType.DEPLOYMENT);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询deployment列表")
     @GetMapping("/paging")
     public ResponseEntity<Page<DeploymentInfoVO>> pagingByEnvId(
