@@ -88,4 +88,13 @@
           AND re.kind = #{kind}
           AND re.env_id = #{envId}
     </select>
+
+    <select id="queryDetailsByKindAndName" resultType="java.lang.String">
+        select ders.message
+        from devops_env_resource der
+                 inner join devops_env_resource_detail ders on ders.id = der.resource_detail_id
+        where der.env_id = #{envId}
+          and der.kind = #{kind}
+          and der.name = #{name}
+    </select>
 </mapper>
