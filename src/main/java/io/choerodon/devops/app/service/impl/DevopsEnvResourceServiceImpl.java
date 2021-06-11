@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -644,5 +645,16 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType pod) {
         return devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, name, pod.getType());
+    }
+
+    @Override
+    public Object queryDetailsByKindAndName(Long envId, String kind, String name) {
+        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+
+        try {
+            return new ObjectMapper().readTree(message);
+        } catch (IOException e) {
+            throw new CommonException("error.resource.json.read.failed", message);
+        }
     }
 }
