@@ -8,9 +8,12 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2StatefulSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -18,10 +21,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DevopsStatefulSetVO;
 import io.choerodon.devops.api.vo.StatefulSetInfoVO;
-import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
-import io.choerodon.devops.app.service.DevopsStatefulSetService;
-import io.choerodon.devops.app.service.DevopsWorkloadResourceContentService;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsStatefulSetDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsStatefulSetMapper;
@@ -38,14 +42,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 2021/6/8 11:20
  */
 @Service
-public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService {
+public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, ChartResourceOperatorService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsStatefulSetServiceImpl.class);
     @Autowired
     private DevopsStatefulSetMapper devopsStatefulSetMapper;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
     @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
-
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
     private JSON json = new JSON();
 
     @Override
@@ -133,5 +140,46 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService {
         devopsStatefulSetDTO.setEnvId(envId);
         devopsStatefulSetDTO.setName(name);
         return devopsStatefulSetMapper.selectOne(devopsStatefulSetDTO);
+    }
+
+    @Override
+    public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
+        V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(detailsJson, V1beta2StatefulSet.class);
+
+        DevopsStatefulSetDTO oldDevopsStatefulSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2StatefulSet.getMetadata().getName());
+        if (oldDevopsStatefulSetDTO != null) {
+            oldDevopsStatefulSetDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            devopsStatefulSetMapper.updateByPrimaryKeySelective(oldDevopsStatefulSetDTO);
+        } else {
+
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+            if (devopsEnvironmentDTO == null) {
+                LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
+                return;
+            }
+            DevopsStatefulSetDTO devopsStatefulSetDTO = new DevopsStatefulSetDTO();
+
+            devopsStatefulSetDTO.setEnvId(appServiceInstanceDTO.getEnvId());
+            devopsStatefulSetDTO.setInstanceId(appServiceInstanceDTO.getId());
+            devopsStatefulSetDTO.setCommandId(appServiceInstanceDTO.getId());
+            devopsStatefulSetDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
+            devopsStatefulSetDTO.setName(v1beta2StatefulSet.getMetadata().getName());
+            devopsStatefulSetMapper.insertSelective(devopsStatefulSetDTO);
+        }
+    }
+
+    @Override
+    public void deleteByEnvIdAndName(Long envId, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        DevopsStatefulSetDTO devopsStatefulSetDTO = new DevopsStatefulSetDTO();
+        devopsStatefulSetDTO.setEnvId(envId);
+        devopsStatefulSetDTO.setName(name);
+        devopsStatefulSetMapper.delete(devopsStatefulSetDTO);
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.STATEFULSET;
     }
 }
