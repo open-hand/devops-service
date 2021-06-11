@@ -2,6 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsDaemonSetMapper">
 
+    <select id="selectCountByEnvIdAndName" resultType="int">
+    SELECT COUNT(*) FROM devops_daemon_set dds
+    WHERE dds.env_id=#{envId} AND dds.name=#{name}
+    </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.api.vo.DevopsDaemonSetVO">
         select dds.*, der.id as env_resource_id, der.resource_detail_id, deco.command_type, deco.`status` AS

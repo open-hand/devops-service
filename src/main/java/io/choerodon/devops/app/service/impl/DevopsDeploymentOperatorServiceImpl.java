@@ -30,7 +30,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.domain.AuditDomain;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -65,7 +64,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Override
-    public AuditDomain selectByPrimaryKey(Long id) {
+    public DevopsDeploymentDTO selectByPrimaryKey(Long id) {
         return devopsDeploymentMapper.selectByPrimaryKey(id);
     }
 
@@ -78,19 +77,19 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long baseCreate(AuditDomain auditDomain) {
-        devopsDeploymentMapper.insert((DevopsDeploymentDTO) auditDomain);
-        return ((DevopsDeploymentDTO) auditDomain).getId();
+    public Long baseCreate(DevopsDeploymentDTO devopsDeploymentDTO) {
+        devopsDeploymentMapper.insert(devopsDeploymentDTO);
+        return devopsDeploymentDTO.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseUpdate(AuditDomain auditDomain) {
-        if (auditDomain.getObjectVersionNumber() == null) {
-            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(((DevopsDeploymentDTO) auditDomain).getId());
-            auditDomain.setObjectVersionNumber(devopsDeploymentDTO.getObjectVersionNumber());
+    public void baseUpdate(DevopsDeploymentDTO devopsDeploymentDTOToUpdate) {
+        if (devopsDeploymentDTOToUpdate.getObjectVersionNumber() == null) {
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(devopsDeploymentDTOToUpdate.getId());
+            devopsDeploymentDTOToUpdate.setObjectVersionNumber(devopsDeploymentDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, (DevopsDeploymentDTO) auditDomain, "error.deployment.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, devopsDeploymentDTOToUpdate, "error.deployment.update");
     }
 
     @Override
@@ -99,11 +98,6 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
         devopsDeploymentDTO.setEnvId(envId);
         devopsDeploymentDTO.setName(name);
         return devopsDeploymentMapper.selectOne(devopsDeploymentDTO);
-    }
-
-    @Override
-    public DevopsDeploymentDTO baseQuery(Long resourceId) {
-        return devopsDeploymentMapper.selectByPrimaryKey(resourceId);
     }
 
     @Override
@@ -242,6 +236,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
         devopsDeploymentMapper.deleteByPrimaryKey(id);
         devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);

@@ -15,7 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author wanghao
  * @since 2021/6/8 11:15
  */
-public interface DevopsStatefulSetMapper extends BaseMapper<DevopsStatefulSetDTO> {
+public interface DevopsStatefulSetMapper extends BaseMapper<DevopsStatefulSetDTO>, WorkLoadBaseMapper {
 
     List<DevopsStatefulSetVO> listByEnvId(@Param("envId") Long envId, @Param("name") String name, @Param("fromInstance") Boolean fromInstance);
 }

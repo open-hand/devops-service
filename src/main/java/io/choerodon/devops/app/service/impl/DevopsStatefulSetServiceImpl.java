@@ -10,16 +10,22 @@ import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2StatefulSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DevopsStatefulSetVO;
 import io.choerodon.devops.api.vo.StatefulSetInfoVO;
 import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
 import io.choerodon.devops.app.service.DevopsStatefulSetService;
+import io.choerodon.devops.app.service.DevopsWorkloadResourceContentService;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.dto.DevopsStatefulSetDTO;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsStatefulSetMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -37,6 +43,9 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService {
     private DevopsStatefulSetMapper devopsStatefulSetMapper;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
+    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
+
     private JSON json = new JSON();
 
     @Override
@@ -80,5 +89,49 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService {
             }
             return statefulSetInfoVO;
         });
+    }
+
+    @Override
+    public DevopsStatefulSetDTO selectByPrimaryKey(Long resourceId) {
+        return devopsStatefulSetMapper.selectByPrimaryKey(resourceId);
+    }
+
+    @Override
+    public void checkExist(Long envId, String name) {
+        if (devopsStatefulSetMapper.selectCountByEnvIdAndName(envId, name) != 0) {
+            throw new CommonException("error.workload.exist", "Deployment", name);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long baseCreate(DevopsStatefulSetDTO devopsStatefulSetDTO) {
+        devopsStatefulSetMapper.insert(devopsStatefulSetDTO);
+        return devopsStatefulSetDTO.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(DevopsStatefulSetDTO devopsStatefulSetDTOToUpdate) {
+        if (devopsStatefulSetDTOToUpdate.getObjectVersionNumber() == null) {
+            DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetMapper.selectByPrimaryKey(devopsStatefulSetDTOToUpdate.getId());
+            devopsStatefulSetDTOToUpdate.setObjectVersionNumber(devopsStatefulSetDTO.getObjectVersionNumber());
+        }
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsStatefulSetMapper, devopsStatefulSetDTOToUpdate, "error.statefulset.update");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseDelete(Long id) {
+        devopsStatefulSetMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
+    }
+
+    @Override
+    public DevopsStatefulSetDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsStatefulSetDTO devopsStatefulSetDTO = new DevopsStatefulSetDTO();
+        devopsStatefulSetDTO.setEnvId(envId);
+        devopsStatefulSetDTO.setName(name);
+        return devopsStatefulSetMapper.selectOne(devopsStatefulSetDTO);
     }
 }

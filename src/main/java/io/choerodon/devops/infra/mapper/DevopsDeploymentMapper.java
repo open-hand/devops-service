@@ -19,6 +19,4 @@ public interface DevopsDeploymentMapper extends BaseMapper<DevopsDeploymentDTO>,
     List<DevopsDeploymentVO> listByEnvId(@Param("envId") Long envId,
                                          @Param("name") String name,
                                          @Param("fromInstance") Boolean fromInstance);
-
-    DevopsDeploymentDTO queryById(@Param("resourceId") Long resourceId);
 }
