@@ -68,6 +68,9 @@ public class WorkloadServiceImpl implements WorkloadService {
     private DevopsDaemonSetService devopsDaemonSetService;
 
     @Autowired
+    private DevopsCronJobService devopsCronJobService;
+
+    @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Autowired
@@ -184,16 +187,26 @@ public class WorkloadServiceImpl implements WorkloadService {
                     throw new CommonException("error.workload.resource.not.exist", workloadName, type);
                 }
                 return devopsJobDTO.getId();
-//            case "CronJob":
+            case "CronJob":
+                DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, workloadName);
+                if (devopsCronJobDTO == null) {
+                    throw new CommonException("error.workload.resource.not.exist", workloadName, type);
+                }
+                return devopsCronJobDTO.getId();
             case "StatefulSet":
                 DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.baseQueryByEnvIdAndName(envId, workloadName);
                 if (devopsStatefulSetDTO == null) {
                     throw new CommonException("error.workload.resource.not.exist", workloadName, type);
                 }
                 return devopsStatefulSetDTO.getId();
-//            case "DaemonSet":
+            case "DaemonSet":
+                DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService.baseQueryByEnvIdAndName(envId, workloadName);
+                if (devopsDaemonSetDTO == null) {
+                    throw new CommonException("error.workload.resource.not.exist", workloadName, type);
+                }
+                return devopsDaemonSetDTO.getId();
             default:
-                throw new CommonException("error.workload.resource.not.supported");
+                throw new CommonException("error.workload.resource.not.supported", type);
         }
     }
 
@@ -234,6 +247,14 @@ public class WorkloadServiceImpl implements WorkloadService {
                 }
                 envId = devopsDaemonSetDTO.getEnvId();
                 resourceName = devopsDaemonSetDTO.getName();
+                break;
+            case CRON_JOB:
+                DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.selectByPrimaryKey(id);
+                if (devopsCronJobDTO == null) {
+                    return;
+                }
+                envId = devopsCronJobDTO.getEnvId();
+                resourceName = devopsCronJobDTO.getName();
                 break;
             default:
                 throw new CommonException("error.workload.resource.not.supported", resourceType.getType());
@@ -366,6 +387,20 @@ public class WorkloadServiceImpl implements WorkloadService {
             case "Deployment":
                 devopsDeploymentService.checkExist(envId, name);
                 break;
+            case "StatefulSet":
+                devopsStatefulSetService.checkExist(envId, name);
+                break;
+            case "Job":
+                devopsJobService.checkExist(envId, name);
+                break;
+            case "DaemonSet":
+                devopsDaemonSetService.checkExist(envId, name);
+                break;
+            case "CronJob":
+                devopsCronJobService.checkExist(envId, name);
+                break;
+            default:
+                throw new CommonException("error.workload.resource.not.supported", type);
         }
     }
 
@@ -395,6 +430,12 @@ public class WorkloadServiceImpl implements WorkloadService {
                 DevopsDaemonSetDTO daemonSetDTO = new DevopsDaemonSetDTO(name, projectId, envId, devopsEnvCommandDTO.getId());
                 workLoadId = devopsDaemonSetService.baseCreate(daemonSetDTO);
                 break;
+            case "CronJob":
+                DevopsCronJobDTO devopsCronJobDTO = new DevopsCronJobDTO(name, projectId, envId, devopsEnvCommandDTO.getId());
+                workLoadId = devopsCronJobService.baseCreate(devopsCronJobDTO);
+                break;
+            default:
+                throw new CommonException("error.workload.resource.not.supported", type);
         }
         devopsWorkloadResourceContentService.create(type, workLoadId, content);
 
@@ -418,6 +459,10 @@ public class WorkloadServiceImpl implements WorkloadService {
             case "DaemonSet":
                 updateDaemonSet(devopsEnvCommandDTO, name, resourceId);
                 break;
+            case "CronJob":
+                updateCronJob(devopsEnvCommandDTO, name, resourceId);
+            default:
+                throw new CommonException("error.workload.resource.not.supported", type);
         }
         devopsWorkloadResourceContentService.update(type, resourceId, content);
     }
@@ -445,8 +490,13 @@ public class WorkloadServiceImpl implements WorkloadService {
                 devopsDaemonSetDTO.setCommandId(commandId);
                 devopsDaemonSetService.baseUpdate(devopsDaemonSetDTO);
                 break;
+            case "CronJob":
+                DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.selectByPrimaryKey(resourceId);
+                devopsCronJobDTO.setCommandId(commandId);
+                devopsCronJobService.baseUpdate(devopsCronJobDTO);
+                break;
             default:
-                throw new CommonException("error.workload.resource.not.supported");
+                throw new CommonException("error.workload.resource.not.supported", kind);
         }
 
     }
@@ -512,5 +562,16 @@ public class WorkloadServiceImpl implements WorkloadService {
         //更新资源关联的最新command
         daemonSetDTO.setCommandId(devopsEnvCommandDTO.getId());
         devopsDaemonSetService.baseUpdate(daemonSetDTO);
+    }
+
+    private void updateCronJob(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+        DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.selectByPrimaryKey(resourceId);
+        checkMetadataInfo(newName, devopsCronJobDTO.getName());
+        devopsEnvCommandDTO.setObjectId(devopsCronJobDTO.getId());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+
+        //更新资源关联的最新command
+        devopsCronJobDTO.setCommandId(devopsEnvCommandDTO.getId());
+        devopsCronJobService.baseUpdate(devopsCronJobDTO);
     }
 }

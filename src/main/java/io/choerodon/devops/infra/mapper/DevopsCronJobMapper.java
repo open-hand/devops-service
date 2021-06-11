@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.workload.DevopsCronjobVO;
-import io.choerodon.devops.infra.dto.DevopsCornJobDTO;
+import io.choerodon.devops.infra.dto.DevopsCronJobDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -15,7 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author wanghao
  * @since 2021/6/8 11:16
  */
-public interface DevopsCronJobMapper extends BaseMapper<DevopsCornJobDTO> {
+public interface DevopsCronJobMapper extends BaseMapper<DevopsCronJobDTO>, WorkLoadBaseMapper {
 
     List<DevopsCronjobVO> listByEnvId(@Param("envId") Long envId,
                                       @Param("name") String name,

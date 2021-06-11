@@ -10,16 +10,22 @@ import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta1CronJob;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.workload.CronJobInfoVO;
 import io.choerodon.devops.api.vo.workload.DevopsCronjobVO;
 import io.choerodon.devops.app.service.DevopsCronJobService;
 import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
+import io.choerodon.devops.app.service.DevopsWorkloadResourceContentService;
+import io.choerodon.devops.infra.dto.DevopsCronJobDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsCronJobMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -36,6 +42,9 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService {
     private DevopsCronJobMapper devopsCronJobMapper;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
+    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
+
     private JSON json = new JSON();
 
     @Override
@@ -76,5 +85,50 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService {
             }
             return cronJobInfoVO;
         });
+    }
+
+
+    @Override
+    public DevopsCronJobDTO selectByPrimaryKey(Long resourceId) {
+        return devopsCronJobMapper.selectByPrimaryKey(resourceId);
+    }
+
+    @Override
+    public void checkExist(Long envId, String name) {
+        if (devopsCronJobMapper.selectCountByEnvIdAndName(envId, name) != 0) {
+            throw new CommonException("error.workload.exist", "Deployment", name);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long baseCreate(DevopsCronJobDTO devopsStatefulSetDTO) {
+        devopsCronJobMapper.insert(devopsStatefulSetDTO);
+        return devopsStatefulSetDTO.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(DevopsCronJobDTO devopsStatefulSetDTOToUpdate) {
+        if (devopsStatefulSetDTOToUpdate.getObjectVersionNumber() == null) {
+            DevopsCronJobDTO devopsStatefulSetDTO = devopsCronJobMapper.selectByPrimaryKey(devopsStatefulSetDTOToUpdate.getId());
+            devopsStatefulSetDTOToUpdate.setObjectVersionNumber(devopsStatefulSetDTO.getObjectVersionNumber());
+        }
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCronJobMapper, devopsStatefulSetDTOToUpdate, "error.statefulset.update");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseDelete(Long id) {
+        devopsCronJobMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
+    }
+
+    @Override
+    public DevopsCronJobDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsCronJobDTO devopsStatefulSetDTO = new DevopsCronJobDTO();
+        devopsStatefulSetDTO.setEnvId(envId);
+        devopsStatefulSetDTO.setName(name);
+        return devopsCronJobMapper.selectOne(devopsStatefulSetDTO);
     }
 }

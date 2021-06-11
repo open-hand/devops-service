@@ -21,7 +21,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_cron_job")
 @ModifyAudit
 @VersionAudit
-public class DevopsCornJobDTO extends AuditDomain {
+public class DevopsCronJobDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -35,6 +35,16 @@ public class DevopsCornJobDTO extends AuditDomain {
     private Long commandId;
     @ApiModelProperty("所属实例id")
     private Long instanceId;
+
+    public DevopsCronJobDTO() {
+    }
+
+    public DevopsCronJobDTO(String name, Long projectId, Long envId, Long commandId) {
+        this.name = name;
+        this.projectId = projectId;
+        this.envId = envId;
+        this.commandId = commandId;
+    }
 
     public Long getId() {
         return id;

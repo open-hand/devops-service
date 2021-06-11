@@ -2,6 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCronJobMapper">
 
+    <select id="selectCountByEnvIdAndName" resultType="int">
+        SELECT COUNT(*) FROM devops_cron_job dcj
+        WHERE dcj.env_id=#{envId} AND dcj.name=#{name}
+    </select>
+
     <select id="listByEnvId" resultType="io.choerodon.devops.api.vo.workload.DevopsCronjobVO">
         select dcj.*, der.id as env_resource_id, der.resource_detail_id, deco.command_type, deco.`status` AS
         command_status, deco.error
