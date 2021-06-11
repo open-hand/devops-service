@@ -58,12 +58,12 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
         // 比较已存在的秘钥和新增要处理的秘钥,获取新增秘钥，更新秘钥，删除秘钥
         List<DevopsStatefulSetDTO> addStatefulSet = new ArrayList<>();
         List<DevopsStatefulSetDTO> updateStatefulSet = new ArrayList<>();
-        devopsStatefulSetDTOS.forEach(devopsDeploymentDTO -> {
-            if (beforeStatefulSet.contains(devopsDeploymentDTO.getName())) {
-                updateStatefulSet.add(devopsDeploymentDTO);
-                beforeStatefulSet.remove(devopsDeploymentDTO.getName());
+        devopsStatefulSetDTOS.forEach(statefulSetDTO -> {
+            if (beforeStatefulSet.contains(statefulSetDTO.getName())) {
+                updateStatefulSet.add(statefulSetDTO);
+                beforeStatefulSet.remove(statefulSetDTO.getName());
             } else {
-                addStatefulSet.add(devopsDeploymentDTO);
+                addStatefulSet.add(statefulSetDTO);
             }
         });
         //删除statefulSet,删除文件对象关联关系
@@ -93,19 +93,19 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(statefulSetDTO.hashCode()));
 
-                        DevopsStatefulSetDTO devopsDeploymentDTO = devopsStatefulSetService
+                        DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService
                                 .baseQueryByEnvIdAndName(envId, statefulSetDTO.getName());
                         DevopsStatefulSetVO devopsStatefulSetVO = new DevopsStatefulSetVO();
                         //初始化statefulSet对象参数,存在statefulSet则直接创建文件对象关联关系
-                        if (devopsDeploymentDTO == null) {
+                        if (devopsStatefulSetDTO == null) {
                             devopsStatefulSetVO = getDevopsStatefulSetVO(
                                     statefulSetDTO,
                                     projectId,
                                     envId, CREATE_TYPE);
                             devopsStatefulSetVO = devopsStatefulSetService.createOrUpdateByGitOps(devopsStatefulSetVO, userId, statefulSetDTO.getContent());
                         } else {
-                            devopsStatefulSetVO.setCommandId(devopsDeploymentDTO.getCommandId());
-                            devopsStatefulSetVO.setId(devopsDeploymentDTO.getId());
+                            devopsStatefulSetVO.setCommandId(devopsStatefulSetDTO.getCommandId());
+                            devopsStatefulSetVO.setId(devopsStatefulSetDTO.getId());
                         }
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsStatefulSetVO.getCommandId());
 
@@ -133,17 +133,17 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
                         DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService
                                 .baseQueryByEnvIdAndName(envId, statefulSetDTO.getName());
                         // 初始化statefulSet对象参数,更新statefulSet并更新文件对象关联关系
-                        DevopsStatefulSetVO devopsDeploymentVO = getDevopsStatefulSetVO(statefulSetDTO, projectId, envId, UPDATE_TYPE);
+                        DevopsStatefulSetVO devopsStatefulSetVO = getDevopsStatefulSetVO(statefulSetDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsStatefulSetDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
                         boolean isNotChange = statefulSetDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsStatefulSetDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
-                            devopsDeploymentVO = devopsStatefulSetService.createOrUpdateByGitOps(devopsDeploymentVO, envId, statefulSetDTO.getContent());
-                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentVO.getCommandId());
+                            devopsStatefulSetVO = devopsStatefulSetService.createOrUpdateByGitOps(devopsStatefulSetVO, envId, statefulSetDTO.getContent());
+                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsStatefulSetVO.getCommandId());
                         }
 
                         // 更新之前的command为成功

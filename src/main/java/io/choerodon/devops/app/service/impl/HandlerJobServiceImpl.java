@@ -40,38 +40,38 @@ public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<
 
 
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
-                                 List<DevopsJobDTO> devopsDeploymentDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+                                 List<DevopsJobDTO> devopsJobDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeJob = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(JOB))
                 .map(devopsEnvFileResourceE -> {
-                    DevopsJobDTO devopsDeploymentDTO = devopsJobService
+                    DevopsJobDTO devopsJobDTO = devopsJobService
                             .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
-                    if (devopsDeploymentDTO == null) {
+                    if (devopsJobDTO == null) {
                         devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), JOB);
                         return null;
                     }
-                    return devopsDeploymentDTO.getName();
+                    return devopsJobDTO.getName();
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         // 比较已存在的秘钥和新增要处理的秘钥,获取新增秘钥，更新秘钥，删除秘钥
         List<DevopsJobDTO> addJob = new ArrayList<>();
         List<DevopsJobDTO> updateJob = new ArrayList<>();
-        devopsDeploymentDTOS.forEach(devopsDeploymentDTO -> {
-            if (beforeJob.contains(devopsDeploymentDTO.getName())) {
-                updateJob.add(devopsDeploymentDTO);
-                beforeJob.remove(devopsDeploymentDTO.getName());
+        devopsJobDTOS.forEach(devopsJobDTO -> {
+            if (beforeJob.contains(devopsJobDTO.getName())) {
+                updateJob.add(devopsJobDTO);
+                beforeJob.remove(devopsJobDTO.getName());
             } else {
-                addJob.add(devopsDeploymentDTO);
+                addJob.add(devopsJobDTO);
             }
         });
         //删除job,删除文件对象关联关系
         beforeJob.forEach(jobName -> {
-            DevopsJobDTO devopsDeploymentDTO = devopsJobService.baseQueryByEnvIdAndName(envId, jobName);
-            if (devopsDeploymentDTO != null) {
-                devopsJobService.deleteByGitOps(devopsDeploymentDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), JOB);
+            DevopsJobDTO devopsJobDTO = devopsJobService.baseQueryByEnvIdAndName(envId, jobName);
+            if (devopsJobDTO != null) {
+                devopsJobService.deleteByGitOps(devopsJobDTO.getId());
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsJobDTO.getId(), JOB);
             }
         });
 
@@ -126,24 +126,24 @@ public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<
 
     private void updateJob(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsJobDTO> updateDevopsJobDTO, String path, Long userId) {
         updateDevopsJobDTO
-                .forEach(devopsJobDTO -> {
+                .forEach(jobDTO -> {
                     String filePath = "";
                     try {
-                        filePath = objectPath.get(TypeUtil.objToString(devopsJobDTO.hashCode()));
-                        DevopsJobDTO devopsDeploymentDTO = devopsJobService
-                                .baseQueryByEnvIdAndName(envId, devopsJobDTO.getName());
+                        filePath = objectPath.get(TypeUtil.objToString(jobDTO.hashCode()));
+                        DevopsJobDTO devopsJobDTO = devopsJobService
+                                .baseQueryByEnvIdAndName(envId, jobDTO.getName());
                         // 初始化job对象参数,更新job并更新文件对象关联关系
-                        DevopsJobVO devopsDeploymentVO = getDevopsJobVO(devopsJobDTO, projectId, envId, UPDATE_TYPE);
+                        DevopsJobVO devopsJobVO = getDevopsJobVO(jobDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
-                        boolean isNotChange = devopsJobDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentDTO.getCommandId());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsJobDTO.getId(), ResourceType.JOB.getType());
+                        boolean isNotChange = jobDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsJobDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
-                            devopsDeploymentVO = devopsJobService.createOrUpdateByGitOps(devopsDeploymentVO, envId, devopsJobDTO.getContent());
-                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentVO.getCommandId());
+                            devopsJobVO = devopsJobService.createOrUpdateByGitOps(devopsJobVO, envId, jobDTO.getContent());
+                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsJobVO.getCommandId());
                         }
 
                         // 更新之前的command为成功
@@ -152,11 +152,11 @@ public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, devopsJobDTO.getId(), ResourceType.JOB.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                devopsJobDTO.hashCode(), devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                                jobDTO.hashCode(), devopsJobDTO.getId(), ResourceType.JOB.getType());
 
 
                     } catch (CommonException e) {
