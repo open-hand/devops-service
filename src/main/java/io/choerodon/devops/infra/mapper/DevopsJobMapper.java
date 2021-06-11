@@ -13,7 +13,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author wanghao
  * @since 2021/6/8 11:16
  */
-public interface DevopsJobMapper extends BaseMapper<DevopsJobDTO> {
+public interface DevopsJobMapper extends BaseMapper<DevopsJobDTO>, WorkLoadBaseMapper {
 
     List<DevopsJobVO> listByEnvId(Long envId, String name, Boolean fromInstance);
 }

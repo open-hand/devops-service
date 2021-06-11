@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsJobMapper">
+    <select id="selectCountByEnvIdAndName" resultType="int">
+        SELECT COUNT(*) FROM devops_job dd
+        WHERE dd.env_id=#{envId} AND dd.name=#{name}
+    </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.api.vo.DevopsJobVO">
         select dj.*, der.id as env_resource_id, der.resource_detail_id, deco.command_type, deco.`status` AS

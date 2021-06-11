@@ -62,6 +62,9 @@ public class WorkloadServiceImpl implements WorkloadService {
     private DevopsStatefulSetService devopsStatefulSetService;
 
     @Autowired
+    private DevopsJobService devopsJobService;
+
+    @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Autowired
@@ -172,7 +175,12 @@ public class WorkloadServiceImpl implements WorkloadService {
                     throw new CommonException("error.workload.resource.not.exist", workloadName, type);
                 }
                 return devopsDeploymentDTO.getId();
-//            case "Job":
+            case "Job":
+                DevopsJobDTO devopsJobDTO = devopsJobService.baseQueryByEnvIdAndName(envId, workloadName);
+                if (devopsJobDTO == null) {
+                    throw new CommonException("error.workload.resource.not.exist", workloadName, type);
+                }
+                return devopsJobDTO.getId();
 //            case "CronJob":
             case "StatefulSet":
                 DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.baseQueryByEnvIdAndName(envId, workloadName);
@@ -207,6 +215,14 @@ public class WorkloadServiceImpl implements WorkloadService {
                 }
                 envId = devopsStatefulSetDTO.getEnvId();
                 resourceName = devopsStatefulSetDTO.getName();
+                break;
+            case JOB:
+                DevopsJobDTO devopsJobDTO = devopsJobService.selectByPrimaryKey(id);
+                if (devopsJobDTO == null) {
+                    return;
+                }
+                envId = devopsJobDTO.getEnvId();
+                resourceName = devopsJobDTO.getName();
                 break;
             default:
                 throw new CommonException("error.workload.resource.not.supported", resourceType.getType());
@@ -360,6 +376,10 @@ public class WorkloadServiceImpl implements WorkloadService {
                 DevopsStatefulSetDTO devopsStatefulSetDTO = new DevopsStatefulSetDTO(name, projectId, envId, devopsEnvCommandDTO.getId());
                 workLoadId = devopsStatefulSetService.baseCreate(devopsStatefulSetDTO);
                 break;
+            case "Job":
+                DevopsJobDTO devopsJobDTO = new DevopsJobDTO(name, projectId, envId, devopsEnvCommandDTO.getId());
+                workLoadId = devopsJobService.baseCreate(devopsJobDTO);
+                break;
         }
         devopsWorkloadResourceContentService.create(type, workLoadId, content);
 
@@ -376,6 +396,10 @@ public class WorkloadServiceImpl implements WorkloadService {
                 break;
             case "StatefulSet":
                 updateStatefulSet(devopsEnvCommandDTO, name, resourceId);
+                break;
+            case "Job":
+                updateJob(devopsEnvCommandDTO, name, resourceId);
+                break;
         }
         devopsWorkloadResourceContentService.update(type, resourceId, content);
     }
@@ -392,6 +416,12 @@ public class WorkloadServiceImpl implements WorkloadService {
                 DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.selectByPrimaryKey(resourceId);
                 devopsStatefulSetDTO.setCommandId(commandId);
                 devopsStatefulSetService.baseUpdate(devopsStatefulSetDTO);
+                break;
+            case "Job":
+                DevopsJobDTO devopsJobDTO = devopsJobService.selectByPrimaryKey(resourceId);
+                devopsJobDTO.setCommandId(commandId);
+                devopsJobService.baseUpdate(devopsJobDTO);
+                break;
             default:
                 throw new CommonException("error.workload.resource.not.supported");
         }
@@ -416,7 +446,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     }
 
     private void updateDeployment(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
-        DevopsDeploymentDTO devopsDeploymentDTO = (DevopsDeploymentDTO) devopsDeploymentService.selectByPrimaryKey(resourceId);
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(resourceId);
         checkMetadataInfo(newName, devopsDeploymentDTO.getName());
         devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
@@ -436,5 +466,17 @@ public class WorkloadServiceImpl implements WorkloadService {
         //更新资源关联的最新command
         devopsStatefulSetDTO.setCommandId(devopsEnvCommandDTO.getId());
         devopsStatefulSetService.baseUpdate(devopsStatefulSetDTO);
+    }
+
+
+    private void updateJob(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+        DevopsJobDTO devopsJobDTO = devopsJobService.selectByPrimaryKey(resourceId);
+        checkMetadataInfo(newName, devopsJobDTO.getName());
+        devopsEnvCommandDTO.setObjectId(devopsJobDTO.getId());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+
+        //更新资源关联的最新command
+        devopsJobDTO.setCommandId(devopsEnvCommandDTO.getId());
+        devopsJobService.baseUpdate(devopsJobDTO);
     }
 }

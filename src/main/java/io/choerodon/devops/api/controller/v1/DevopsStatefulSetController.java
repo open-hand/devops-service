@@ -50,7 +50,7 @@ public class DevopsStatefulSetController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "通过粘贴yaml/或上传文件形式创建或更新deployment资源")
+    @ApiOperation(value = "通过粘贴yaml/或上传文件形式创建或更新statefulset资源")
     @PostMapping
     public void createOrUpdate(@PathVariable(value = "project_id") Long projectId,
                                @ModelAttribute @Valid WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO,
@@ -63,7 +63,7 @@ public class DevopsStatefulSetController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "删除deployment资源")
+    @ApiOperation(value = "删除statefulset资源")
     @DeleteMapping
     public void delete(@PathVariable(value = "project_id") Long projectId,
                        @RequestParam @Encrypt Long id) {
