@@ -26,7 +26,7 @@ public class DevopsEnvResourceController {
     private DevopsEnvResourceService devopsEnvResourceService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "根据实例id获取更多部署详情(Json格式)")
+    @ApiOperation(value = "获取资源json详情")
     @GetMapping(value = "/detail_json")
     public ResponseEntity<Object> queryDetailsByKindAndName(
             @ApiParam(value = "项目ID", required = true)
@@ -37,5 +37,19 @@ public class DevopsEnvResourceController {
             @RequestParam(value = "name") String name
     ) {
         return ResponseEntity.ok(devopsEnvResourceService.queryDetailsByKindAndName(envId, kind, name));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "获取资源yaml")
+    @GetMapping(value = "/yaml")
+    public ResponseEntity<String> queryYamlById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @RequestParam(value = "env_id") Long envId,
+            @RequestParam(value = "workload_id") Long workLoadId,
+            @RequestParam(value = "type") String type
+    ) {
+        return ResponseEntity.ok(devopsEnvResourceService.queryYamlById(envId, workLoadId, type));
     }
 }

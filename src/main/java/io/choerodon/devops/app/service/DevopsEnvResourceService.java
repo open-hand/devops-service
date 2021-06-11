@@ -73,4 +73,6 @@ public interface DevopsEnvResourceService {
     String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType pod);
 
     Object queryDetailsByKindAndName(Long envId, String kind, String name);
+
+    String queryYamlById(Long envId, Long workLoadId, String type);
 }
