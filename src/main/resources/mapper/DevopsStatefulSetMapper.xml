@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsStatefulSetMapper">
     <select id="selectCountByEnvIdAndName" resultType="int">
-        SELECT COUNT(*) FROM devops_stateful_set dd
-        WHERE dd.env_id=#{envId} AND dd.name=#{name}
+        SELECT COUNT(*) FROM devops_stateful_set dss
+        WHERE dss.env_id=#{envId} AND dss.name=#{name}
     </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.api.vo.DevopsStatefulSetVO">

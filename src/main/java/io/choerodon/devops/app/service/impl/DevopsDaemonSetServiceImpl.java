@@ -10,16 +10,22 @@ import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2DaemonSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DaemonSetInfoVO;
 import io.choerodon.devops.api.vo.DevopsDaemonSetVO;
 import io.choerodon.devops.app.service.DevopsDaemonSetService;
 import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
+import io.choerodon.devops.app.service.DevopsWorkloadResourceContentService;
+import io.choerodon.devops.infra.dto.DevopsDaemonSetDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsDaemonSetMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -38,6 +44,8 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService {
     private final JSON json = new JSON();
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
+    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Override
     public Page<DaemonSetInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance) {
@@ -80,4 +88,50 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService {
             return daemonSetInfoVO;
         });
     }
+
+
+    @Override
+    public DevopsDaemonSetDTO selectByPrimaryKey(Long resourceId) {
+        return devopsDaemonSetMapper.selectByPrimaryKey(resourceId);
+    }
+
+    @Override
+    public void checkExist(Long envId, String name) {
+        if (devopsDaemonSetMapper.selectCountByEnvIdAndName(envId, name) != 0) {
+            throw new CommonException("error.workload.exist", "Deployment", name);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long baseCreate(DevopsDaemonSetDTO devopsStatefulSetDTO) {
+        devopsDaemonSetMapper.insert(devopsStatefulSetDTO);
+        return devopsStatefulSetDTO.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(DevopsDaemonSetDTO devopsStatefulSetDTOToUpdate) {
+        if (devopsStatefulSetDTOToUpdate.getObjectVersionNumber() == null) {
+            DevopsDaemonSetDTO devopsStatefulSetDTO = devopsDaemonSetMapper.selectByPrimaryKey(devopsStatefulSetDTOToUpdate.getId());
+            devopsStatefulSetDTOToUpdate.setObjectVersionNumber(devopsStatefulSetDTO.getObjectVersionNumber());
+        }
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDaemonSetMapper, devopsStatefulSetDTOToUpdate, "error.statefulset.update");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseDelete(Long id) {
+        devopsDaemonSetMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
+    }
+
+    @Override
+    public DevopsDaemonSetDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsDaemonSetDTO devopsStatefulSetDTO = new DevopsDaemonSetDTO();
+        devopsStatefulSetDTO.setEnvId(envId);
+        devopsStatefulSetDTO.setName(name);
+        return devopsDaemonSetMapper.selectOne(devopsStatefulSetDTO);
+    }
+
 }

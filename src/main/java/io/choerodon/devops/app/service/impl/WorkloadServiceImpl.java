@@ -65,6 +65,9 @@ public class WorkloadServiceImpl implements WorkloadService {
     private DevopsJobService devopsJobService;
 
     @Autowired
+    private DevopsDaemonSetService devopsDaemonSetService;
+
+    @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Autowired
@@ -224,6 +227,14 @@ public class WorkloadServiceImpl implements WorkloadService {
                 envId = devopsJobDTO.getEnvId();
                 resourceName = devopsJobDTO.getName();
                 break;
+            case DAEMONSET:
+                DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService.selectByPrimaryKey(id);
+                if (devopsDaemonSetDTO == null) {
+                    return;
+                }
+                envId = devopsDaemonSetDTO.getEnvId();
+                resourceName = devopsDaemonSetDTO.getName();
+                break;
             default:
                 throw new CommonException("error.workload.resource.not.supported", resourceType.getType());
         }
@@ -380,6 +391,10 @@ public class WorkloadServiceImpl implements WorkloadService {
                 DevopsJobDTO devopsJobDTO = new DevopsJobDTO(name, projectId, envId, devopsEnvCommandDTO.getId());
                 workLoadId = devopsJobService.baseCreate(devopsJobDTO);
                 break;
+            case "DaemonSet":
+                DevopsDaemonSetDTO daemonSetDTO = new DevopsDaemonSetDTO(name, projectId, envId, devopsEnvCommandDTO.getId());
+                workLoadId = devopsDaemonSetService.baseCreate(daemonSetDTO);
+                break;
         }
         devopsWorkloadResourceContentService.create(type, workLoadId, content);
 
@@ -399,6 +414,9 @@ public class WorkloadServiceImpl implements WorkloadService {
                 break;
             case "Job":
                 updateJob(devopsEnvCommandDTO, name, resourceId);
+                break;
+            case "DaemonSet":
+                updateDaemonSet(devopsEnvCommandDTO, name, resourceId);
                 break;
         }
         devopsWorkloadResourceContentService.update(type, resourceId, content);
@@ -421,6 +439,11 @@ public class WorkloadServiceImpl implements WorkloadService {
                 DevopsJobDTO devopsJobDTO = devopsJobService.selectByPrimaryKey(resourceId);
                 devopsJobDTO.setCommandId(commandId);
                 devopsJobService.baseUpdate(devopsJobDTO);
+                break;
+            case "DaemonSet":
+                DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService.selectByPrimaryKey(resourceId);
+                devopsDaemonSetDTO.setCommandId(commandId);
+                devopsDaemonSetService.baseUpdate(devopsDaemonSetDTO);
                 break;
             default:
                 throw new CommonException("error.workload.resource.not.supported");
@@ -478,5 +501,16 @@ public class WorkloadServiceImpl implements WorkloadService {
         //更新资源关联的最新command
         devopsJobDTO.setCommandId(devopsEnvCommandDTO.getId());
         devopsJobService.baseUpdate(devopsJobDTO);
+    }
+
+    private void updateDaemonSet(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+        DevopsDaemonSetDTO daemonSetDTO = devopsDaemonSetService.selectByPrimaryKey(resourceId);
+        checkMetadataInfo(newName, daemonSetDTO.getName());
+        devopsEnvCommandDTO.setObjectId(daemonSetDTO.getId());
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+
+        //更新资源关联的最新command
+        daemonSetDTO.setCommandId(devopsEnvCommandDTO.getId());
+        devopsDaemonSetService.baseUpdate(daemonSetDTO);
     }
 }
