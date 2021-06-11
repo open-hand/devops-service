@@ -197,6 +197,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         v1Pod.getMetadata().getName());
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
         devopsEnvResourceDetailDTO.setMessage(msg);
+        devopsEnvResourceDTO.setInstanceId(instanceId);
         devopsEnvResourceDTO.setKind(KeyParseUtil.getResourceType(key));
         devopsEnvResourceDTO.setEnvId(envId);
         devopsEnvResourceDTO.setName(v1Pod.getMetadata().getName());
