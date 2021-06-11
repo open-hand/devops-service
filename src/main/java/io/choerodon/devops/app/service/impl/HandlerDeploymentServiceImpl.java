@@ -47,7 +47,7 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(DEPLOYMENT))
                 .map(devopsEnvFileResourceE -> {
                     DevopsDeploymentDTO devopsDeploymentDTO = deploymentService
-                            .baseQuery(devopsEnvFileResourceE.getResourceId());
+                            .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
                     if (devopsDeploymentDTO == null) {
                         devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), DEPLOYMENT);

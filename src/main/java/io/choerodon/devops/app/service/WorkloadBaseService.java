@@ -1,14 +1,15 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.mybatis.domain.AuditDomain;
+public interface WorkloadBaseService<T> {
+    T baseQueryByEnvIdAndName(Long envId, String name);
 
-public interface WorkloadBaseService {
-
-    AuditDomain selectByPrimaryKey(Long id);
+    T selectByPrimaryKey(Long id);
 
     void checkExist(Long envId, String name);
 
-    Long baseCreate(AuditDomain auditDomain);
+    Long baseCreate(T t);
 
-    void baseUpdate(AuditDomain auditDomain);
+    void baseUpdate(T t);
+
+    void baseDelete(Long id);
 }
