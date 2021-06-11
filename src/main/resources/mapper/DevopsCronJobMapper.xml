@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCronJobMapper">
+
+    <select id="listByEnvId" resultType="io.choerodon.devops.api.vo.workload.DevopsCronjobVO">
+        select dcj.*, der.id as env_resource_id, der.resource_detail_id, deco.command_type, deco.`status` AS
+        command_status, deco.error
+        from devops_cron_job dcj
+        left join devops_env_resource der on (dcj.env_id = der.env_id and dcj.name = der.name and der.kind = 'CronJob')
+        left join devops_env_command deco ON (deco.id = dcj.command_id)
+        <where>
+            dcj.env_id = #{envId}
+            <if test="name != null">
+                and dcj.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="fromInstance != null">
+                and instance_id != null
+            </if>
+        </where>
+    </select>
+
+</mapper>

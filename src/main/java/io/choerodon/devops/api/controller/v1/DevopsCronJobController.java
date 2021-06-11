@@ -11,7 +11,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.workload.CronJobInfoVO;
-import io.choerodon.devops.app.service.DevopsCornJobService;
+import io.choerodon.devops.app.service.DevopsCronJobService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -21,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/cron_jobs")
 public class DevopsCronJobController {
     @Autowired
-    private DevopsCornJobService devopsCornJobService;
+    private DevopsCronJobService devopsCronJobService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询cronjobs列表")
@@ -34,6 +34,6 @@ public class DevopsCronJobController {
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "from_instance", required = false) Boolean fromInstance
     ) {
-        return ResponseEntity.ok(devopsCornJobService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));
+        return ResponseEntity.ok(devopsCronJobService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));
     }
 }
