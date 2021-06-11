@@ -87,6 +87,7 @@
         WHERE re.name = #{name}
           AND re.kind = #{kind}
           AND re.env_id = #{envId}
+        order by re.id desc limit 1
     </select>
 
     <select id="queryDetailsByKindAndName" resultType="java.lang.String">
