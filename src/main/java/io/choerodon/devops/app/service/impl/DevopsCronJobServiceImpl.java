@@ -96,25 +96,25 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService {
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsCronJobMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "Deployment", name);
+            throw new CommonException("error.workload.exist", "CronJob", name);
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long baseCreate(DevopsCronJobDTO devopsStatefulSetDTO) {
-        devopsCronJobMapper.insert(devopsStatefulSetDTO);
-        return devopsStatefulSetDTO.getId();
+    public Long baseCreate(DevopsCronJobDTO devopsCronJobDTO) {
+        devopsCronJobMapper.insert(devopsCronJobDTO);
+        return devopsCronJobDTO.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseUpdate(DevopsCronJobDTO devopsStatefulSetDTOToUpdate) {
-        if (devopsStatefulSetDTOToUpdate.getObjectVersionNumber() == null) {
-            DevopsCronJobDTO devopsStatefulSetDTO = devopsCronJobMapper.selectByPrimaryKey(devopsStatefulSetDTOToUpdate.getId());
-            devopsStatefulSetDTOToUpdate.setObjectVersionNumber(devopsStatefulSetDTO.getObjectVersionNumber());
+    public void baseUpdate(DevopsCronJobDTO devopsCronJobDTOToUpdate) {
+        if (devopsCronJobDTOToUpdate.getObjectVersionNumber() == null) {
+            DevopsCronJobDTO devopsCronJobDTO = devopsCronJobMapper.selectByPrimaryKey(devopsCronJobDTOToUpdate.getId());
+            devopsCronJobDTOToUpdate.setObjectVersionNumber(devopsCronJobDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCronJobMapper, devopsStatefulSetDTOToUpdate, "error.statefulset.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCronJobMapper, devopsCronJobDTOToUpdate, "error.cronjob.update");
     }
 
     @Override
@@ -126,9 +126,9 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService {
 
     @Override
     public DevopsCronJobDTO baseQueryByEnvIdAndName(Long envId, String name) {
-        DevopsCronJobDTO devopsStatefulSetDTO = new DevopsCronJobDTO();
-        devopsStatefulSetDTO.setEnvId(envId);
-        devopsStatefulSetDTO.setName(name);
-        return devopsCronJobMapper.selectOne(devopsStatefulSetDTO);
+        DevopsCronJobDTO devopsCronJobDTO = new DevopsCronJobDTO();
+        devopsCronJobDTO.setEnvId(envId);
+        devopsCronJobDTO.setName(name);
+        return devopsCronJobMapper.selectOne(devopsCronJobDTO);
     }
 }

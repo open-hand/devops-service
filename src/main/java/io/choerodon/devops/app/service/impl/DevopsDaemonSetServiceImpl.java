@@ -98,25 +98,25 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService {
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsDaemonSetMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "Deployment", name);
+            throw new CommonException("error.workload.exist", "DaemonSet", name);
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long baseCreate(DevopsDaemonSetDTO devopsStatefulSetDTO) {
-        devopsDaemonSetMapper.insert(devopsStatefulSetDTO);
-        return devopsStatefulSetDTO.getId();
+    public Long baseCreate(DevopsDaemonSetDTO devopsDaemonSetDTO) {
+        devopsDaemonSetMapper.insert(devopsDaemonSetDTO);
+        return devopsDaemonSetDTO.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseUpdate(DevopsDaemonSetDTO devopsStatefulSetDTOToUpdate) {
-        if (devopsStatefulSetDTOToUpdate.getObjectVersionNumber() == null) {
-            DevopsDaemonSetDTO devopsStatefulSetDTO = devopsDaemonSetMapper.selectByPrimaryKey(devopsStatefulSetDTOToUpdate.getId());
-            devopsStatefulSetDTOToUpdate.setObjectVersionNumber(devopsStatefulSetDTO.getObjectVersionNumber());
+    public void baseUpdate(DevopsDaemonSetDTO devopsDaemonSetDTOToUpdate) {
+        if (devopsDaemonSetDTOToUpdate.getObjectVersionNumber() == null) {
+            DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetMapper.selectByPrimaryKey(devopsDaemonSetDTOToUpdate.getId());
+            devopsDaemonSetDTOToUpdate.setObjectVersionNumber(devopsDaemonSetDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDaemonSetMapper, devopsStatefulSetDTOToUpdate, "error.statefulset.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDaemonSetMapper, devopsDaemonSetDTOToUpdate, "error.daemonset.update");
     }
 
     @Override
@@ -128,10 +128,10 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService {
 
     @Override
     public DevopsDaemonSetDTO baseQueryByEnvIdAndName(Long envId, String name) {
-        DevopsDaemonSetDTO devopsStatefulSetDTO = new DevopsDaemonSetDTO();
-        devopsStatefulSetDTO.setEnvId(envId);
-        devopsStatefulSetDTO.setName(name);
-        return devopsDaemonSetMapper.selectOne(devopsStatefulSetDTO);
+        DevopsDaemonSetDTO devopsDaemonSetDTO = new DevopsDaemonSetDTO();
+        devopsDaemonSetDTO.setEnvId(envId);
+        devopsDaemonSetDTO.setName(name);
+        return devopsDaemonSetMapper.selectOne(devopsDaemonSetDTO);
     }
 
 }

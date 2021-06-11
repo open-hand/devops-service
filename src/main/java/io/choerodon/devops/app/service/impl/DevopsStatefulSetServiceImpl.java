@@ -99,7 +99,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService {
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsStatefulSetMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "Deployment", name);
+            throw new CommonException("error.workload.exist", "StatefulSet", name);
         }
     }
 
