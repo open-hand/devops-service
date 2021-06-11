@@ -8,9 +8,12 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta1CronJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -18,11 +21,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.workload.CronJobInfoVO;
 import io.choerodon.devops.api.vo.workload.DevopsCronjobVO;
-import io.choerodon.devops.app.service.DevopsCronJobService;
-import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
-import io.choerodon.devops.app.service.DevopsWorkloadResourceContentService;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsCronJobDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsCronJobMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -37,14 +41,18 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 2021/6/8 11:22
  */
 @Service
-public class DevopsCronJobServiceImpl implements DevopsCronJobService {
+public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartResourceOperatorService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCronJobServiceImpl.class);
+
     @Autowired
     private DevopsCronJobMapper devopsCronJobMapper;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
     @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
-
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
     private JSON json = new JSON();
 
     @Override
@@ -130,5 +138,47 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService {
         devopsCronJobDTO.setEnvId(envId);
         devopsCronJobDTO.setName(name);
         return devopsCronJobMapper.selectOne(devopsCronJobDTO);
+    }
+
+    @Override
+    public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
+        V1beta1CronJob v1beta1CronJob = json.deserialize(detailsJson, V1beta1CronJob.class);
+
+        DevopsCronJobDTO oldDevopsCronJobDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta1CronJob.getMetadata().getName());
+        if (oldDevopsCronJobDTO != null) {
+            oldDevopsCronJobDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            devopsCronJobMapper.updateByPrimaryKeySelective(oldDevopsCronJobDTO);
+        } else {
+
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+            if (devopsEnvironmentDTO == null) {
+                LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
+                return;
+            }
+            DevopsCronJobDTO devopsCronJobDTO = new DevopsCronJobDTO();
+
+            devopsCronJobDTO.setEnvId(appServiceInstanceDTO.getEnvId());
+            devopsCronJobDTO.setInstanceId(appServiceInstanceDTO.getId());
+            devopsCronJobDTO.setCommandId(appServiceInstanceDTO.getId());
+            devopsCronJobDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
+            devopsCronJobDTO.setName(v1beta1CronJob.getMetadata().getName());
+            devopsCronJobMapper.insertSelective(devopsCronJobDTO);
+        }
+    }
+
+    @Override
+    public void deleteByEnvIdAndName(Long envId, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+
+        DevopsCronJobDTO devopsCronJobDTO = new DevopsCronJobDTO();
+        devopsCronJobDTO.setEnvId(envId);
+        devopsCronJobDTO.setName(name);
+        devopsCronJobMapper.delete(devopsCronJobDTO);
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.CRON_JOB;
     }
 }
