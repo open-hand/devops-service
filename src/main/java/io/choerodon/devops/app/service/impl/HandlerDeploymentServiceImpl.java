@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +29,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsService<DevopsDeploymentDTO> {
-    private static final String CREATE_TYPE = "create";
-    private static final String UPDATE_TYPE = "update";
     private static final String DEPLOYMENT = "Deployment";
     private static final String GIT_SUFFIX = "/.git";
 
@@ -138,7 +139,6 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                         DevopsDeploymentVO devopsDeploymentVO = getDevopsDeploymentVO(deploymentDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        Yaml yaml = new Yaml();
                         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
                         boolean isNotChange = deploymentDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentDTO.getCommandId());

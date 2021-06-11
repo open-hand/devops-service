@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +10,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.util.Yaml;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.core.exception.CommonException;
@@ -24,8 +26,6 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelationsService<DevopsStatefulSetDTO> {
-    private static final String CREATE_TYPE = "create";
-    private static final String UPDATE_TYPE = "update";
     private static final String STATEFUL_SET = "StatefulSet";
     private static final String GIT_SUFFIX = "/.git";
 
@@ -88,21 +88,21 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
 
     private void addStatefulSet(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsStatefulSetDTO> devopsStatefulSetDTOS, String path, Long userId) {
         devopsStatefulSetDTOS
-                .forEach(deploymentDTO -> {
+                .forEach(statefulSetDTO -> {
                     String filePath = "";
                     try {
-                        filePath = objectPath.get(TypeUtil.objToString(deploymentDTO.hashCode()));
+                        filePath = objectPath.get(TypeUtil.objToString(statefulSetDTO.hashCode()));
 
                         DevopsStatefulSetDTO devopsDeploymentDTO = devopsStatefulSetService
-                                .baseQueryByEnvIdAndName(envId, deploymentDTO.getName());
+                                .baseQueryByEnvIdAndName(envId, statefulSetDTO.getName());
                         DevopsStatefulSetVO devopsStatefulSetVO = new DevopsStatefulSetVO();
-                        //初始化deployment对象参数,存在deployment则直接创建文件对象关联关系
+                        //初始化statefulSet对象参数,存在statefulSet则直接创建文件对象关联关系
                         if (devopsDeploymentDTO == null) {
                             devopsStatefulSetVO = getDevopsStatefulSetVO(
-                                    deploymentDTO,
+                                    statefulSetDTO,
                                     projectId,
                                     envId, CREATE_TYPE);
-                            devopsStatefulSetVO = devopsStatefulSetService.createOrUpdateByGitOps(devopsStatefulSetVO, userId, deploymentDTO.getContent());
+                            devopsStatefulSetVO = devopsStatefulSetService.createOrUpdateByGitOps(devopsStatefulSetVO, userId, statefulSetDTO.getContent());
                         } else {
                             devopsStatefulSetVO.setCommandId(devopsDeploymentDTO.getCommandId());
                             devopsStatefulSetVO.setId(devopsDeploymentDTO.getId());
@@ -112,7 +112,7 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
-                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, deploymentDTO.hashCode(), devopsStatefulSetVO.getId(),
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, statefulSetDTO.hashCode(), devopsStatefulSetVO.getId(),
                                 ResourceType.STATEFULSET.getType());
                     } catch (CommonException e) {
                         String errorCode = "";
@@ -136,7 +136,6 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
                         DevopsStatefulSetVO devopsDeploymentVO = getDevopsStatefulSetVO(statefulSetDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        Yaml yaml = new Yaml();
                         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsStatefulSetDTO.getId(), ResourceType.DEPLOYMENT.getType());
                         boolean isNotChange = statefulSetDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsStatefulSetDTO.getCommandId());
