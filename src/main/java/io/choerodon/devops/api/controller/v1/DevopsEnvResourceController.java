@@ -36,6 +36,6 @@ public class DevopsEnvResourceController {
             @RequestParam(value = "kind") String kind,
             @RequestParam(value = "name") String name
     ) {
-        return ResponseEntity.ok(devopsEnvResourceService.queryDetailsByKindAndName(envId, kind, name);
+        return ResponseEntity.ok(devopsEnvResourceService.queryDetailsByKindAndName(envId, kind, name));
     }
 }
