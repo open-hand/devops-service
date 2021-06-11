@@ -57,6 +57,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsIngressService devopsIngressService;
+    @Autowired
+    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
+
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
@@ -656,5 +659,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         } catch (IOException e) {
             throw new CommonException("error.resource.json.read.failed", message);
         }
+    }
+
+    @Override
+    public String queryYamlById(Long envId, Long workLoadId, String type) {
+        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(workLoadId, type);
+        return devopsWorkloadResourceContentDTO.getContent();
     }
 }
