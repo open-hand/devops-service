@@ -102,25 +102,25 @@ public class DevopsJobServiceImpl implements DevopsJobService {
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsJobMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "Deployment", name);
+            throw new CommonException("error.workload.exist", "Job", name);
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long baseCreate(DevopsJobDTO devopsStatefulSetDTO) {
-        devopsJobMapper.insert(devopsStatefulSetDTO);
-        return devopsStatefulSetDTO.getId();
+    public Long baseCreate(DevopsJobDTO devopsJobDTO) {
+        devopsJobMapper.insert(devopsJobDTO);
+        return devopsJobDTO.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseUpdate(DevopsJobDTO devopsStatefulSetDTOToUpdate) {
-        if (devopsStatefulSetDTOToUpdate.getObjectVersionNumber() == null) {
-            DevopsJobDTO devopsStatefulSetDTO = devopsJobMapper.selectByPrimaryKey(devopsStatefulSetDTOToUpdate.getId());
-            devopsStatefulSetDTOToUpdate.setObjectVersionNumber(devopsStatefulSetDTO.getObjectVersionNumber());
+    public void baseUpdate(DevopsJobDTO devopsJobDTOToUpdate) {
+        if (devopsJobDTOToUpdate.getObjectVersionNumber() == null) {
+            DevopsJobDTO devopsJobDTO = devopsJobMapper.selectByPrimaryKey(devopsJobDTOToUpdate.getId());
+            devopsJobDTOToUpdate.setObjectVersionNumber(devopsJobDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJobMapper, devopsStatefulSetDTOToUpdate, "error.statefulset.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJobMapper, devopsJobDTOToUpdate, "error.job.update");
     }
 
     @Override
@@ -132,9 +132,9 @@ public class DevopsJobServiceImpl implements DevopsJobService {
 
     @Override
     public DevopsJobDTO baseQueryByEnvIdAndName(Long envId, String name) {
-        DevopsJobDTO devopsStatefulSetDTO = new DevopsJobDTO();
-        devopsStatefulSetDTO.setEnvId(envId);
-        devopsStatefulSetDTO.setName(name);
-        return devopsJobMapper.selectOne(devopsStatefulSetDTO);
+        DevopsJobDTO devopsJobDTO = new DevopsJobDTO();
+        devopsJobDTO.setEnvId(envId);
+        devopsJobDTO.setName(name);
+        return devopsJobMapper.selectOne(devopsJobDTO);
     }
 }
