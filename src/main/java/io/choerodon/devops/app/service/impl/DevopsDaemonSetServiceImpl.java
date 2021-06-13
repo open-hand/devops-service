@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,11 +25,10 @@ import io.choerodon.devops.api.vo.DaemonSetInfoVO;
 import io.choerodon.devops.api.vo.DevopsDaemonSetVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsDaemonSetDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDaemonSetMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -54,6 +55,10 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
 
     @Override
     public Page<DaemonSetInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance) {
@@ -131,7 +136,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
         devopsDaemonSetMapper.deleteByPrimaryKey(id);
-        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DAEMONSET.getType(), id);
     }
 
     @Override
@@ -141,6 +146,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
         devopsDaemonSetDTO.setName(name);
         return devopsDaemonSetMapper.selectOne(devopsDaemonSetDTO);
     }
+
     @Override
     @Transactional
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
@@ -186,4 +192,40 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
         return ResourceType.DAEMONSET;
     }
 
+
+    @Override
+    public void deleteByGitOps(Long id) {
+        DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetMapper.selectByPrimaryKey(id);
+        //校验环境是否链接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDaemonSetDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsEnvCommandService.baseListByObject(ObjectType.DAEMONSET.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
+        devopsDaemonSetMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DAEMONSET.getType(), id);
+    }
+
+    @Override
+    public DevopsDaemonSetVO createOrUpdateByGitOps(DevopsDaemonSetVO devopsDaemonSetVO, Long userId, String content) {
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDaemonSetVO.getEnvId());
+        //校验环境是否连接
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsDaemonSetVO.getOperateType());
+        devopsEnvCommandDTO.setCreatedBy(userId);
+
+        DevopsDaemonSetDTO devopsDaemonSetDTO = ConvertUtils.convertObject(devopsDaemonSetVO, DevopsDaemonSetDTO.class);
+
+        if (devopsDaemonSetVO.getOperateType().equals(CREATE_TYPE)) {
+            Long daemonSetId = baseCreate(devopsDaemonSetDTO);
+            devopsWorkloadResourceContentService.create(ResourceType.DAEMONSET.getType(), daemonSetId, content);
+            devopsEnvCommandDTO.setObjectId(daemonSetId);
+            devopsDaemonSetDTO.setId(daemonSetId);
+        } else {
+            devopsEnvCommandDTO.setObjectId(devopsDaemonSetDTO.getId());
+        }
+
+        devopsDaemonSetDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(devopsDaemonSetDTO);
+        return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsDaemonSetDTO, DevopsDaemonSetVO.class);
+    }
 }

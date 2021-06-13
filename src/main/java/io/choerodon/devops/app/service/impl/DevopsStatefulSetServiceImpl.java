@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,11 +25,10 @@ import io.choerodon.devops.api.vo.DevopsStatefulSetVO;
 import io.choerodon.devops.api.vo.StatefulSetInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.DevopsStatefulSetDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsStatefulSetMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -53,6 +54,12 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
+
+
     private JSON json = new JSON();
 
     @Override
@@ -131,7 +138,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
         devopsStatefulSetMapper.deleteByPrimaryKey(id);
-        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.STATEFULSET.getType(), id);
     }
 
     @Override
@@ -140,6 +147,42 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
         devopsStatefulSetDTO.setEnvId(envId);
         devopsStatefulSetDTO.setName(name);
         return devopsStatefulSetMapper.selectOne(devopsStatefulSetDTO);
+    }
+
+    @Override
+    public void deleteByGitOps(Long id) {
+        DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetMapper.selectByPrimaryKey(id);
+        //校验环境是否链接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsStatefulSetDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsEnvCommandService.baseListByObject(ObjectType.STATEFULSET.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
+        devopsStatefulSetMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.STATEFULSET.getType(), id);
+    }
+
+    @Override
+    public DevopsStatefulSetVO createOrUpdateByGitOps(DevopsStatefulSetVO devopsStatefulSetVO, Long userId, String content) {
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsStatefulSetVO.getEnvId());
+        //校验环境是否连接
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsStatefulSetVO.getOperateType());
+        devopsEnvCommandDTO.setCreatedBy(userId);
+
+        DevopsStatefulSetDTO devopsStatefulSetDTO = ConvertUtils.convertObject(devopsStatefulSetVO, DevopsStatefulSetDTO.class);
+
+        if (devopsStatefulSetVO.getOperateType().equals(CREATE_TYPE)) {
+            Long deployId = baseCreate(devopsStatefulSetDTO);
+            devopsWorkloadResourceContentService.create(ResourceType.STATEFULSET.getType(), deployId, content);
+            devopsEnvCommandDTO.setObjectId(deployId);
+            devopsStatefulSetDTO.setId(deployId);
+        } else {
+            devopsEnvCommandDTO.setObjectId(devopsStatefulSetDTO.getId());
+        }
+
+        devopsStatefulSetDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(devopsStatefulSetDTO);
+        return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsStatefulSetDTO, DevopsStatefulSetVO.class);
     }
 
     @Override

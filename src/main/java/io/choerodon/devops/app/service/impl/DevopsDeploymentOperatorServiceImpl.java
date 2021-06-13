@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,8 +24,6 @@ import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -42,8 +42,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentService, ChartResourceOperatorService {
-    private static final String CREATE_TYPE = "create";
-    private static final String UPDATE_TYPE = "update";
     @Autowired
     private DevopsDeploymentMapper devopsDeploymentMapper;
     @Autowired
@@ -134,20 +132,6 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
         devopsDeploymentDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(devopsDeploymentDTO);
         return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsDeploymentDTO, DevopsDeploymentVO.class);
-    }
-
-    private DevopsEnvCommandDTO initDevopsEnvCommandDTO(String type) {
-        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
-        if (type.equals(CREATE_TYPE)) {
-            devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
-        } else if (type.equals(UPDATE_TYPE)) {
-            devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
-        } else {
-            devopsEnvCommandDTO.setCommandType(CommandType.DELETE.getType());
-        }
-        devopsEnvCommandDTO.setObject(ObjectType.CONFIGMAP.getType());
-        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        return devopsEnvCommandDTO;
     }
 
     @Override

@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -35,6 +32,9 @@ public class DevopsStatefulSetDTO extends AuditDomain {
     private Long commandId;
     @ApiModelProperty("所属实例id")
     private Long instanceId;
+
+    @Transient
+    private String content;
 
     public DevopsStatefulSetDTO() {
     }
@@ -92,5 +92,13 @@ public class DevopsStatefulSetDTO extends AuditDomain {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }

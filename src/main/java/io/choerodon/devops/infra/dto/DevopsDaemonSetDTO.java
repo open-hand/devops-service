@@ -36,8 +36,11 @@ public class DevopsDaemonSetDTO extends AuditDomain {
     @ApiModelProperty("所属实例id")
     private Long instanceId;
 
+    private String content;
+
     public DevopsDaemonSetDTO() {
     }
+
     public DevopsDaemonSetDTO(String name, Long projectId, Long envId, Long commandId) {
         this.name = name;
         this.projectId = projectId;
@@ -91,5 +94,13 @@ public class DevopsDaemonSetDTO extends AuditDomain {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }

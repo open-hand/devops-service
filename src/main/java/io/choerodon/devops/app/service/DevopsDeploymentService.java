@@ -13,11 +13,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @author wanghao
  * @since 2021/6/8 11:17
  */
-public interface DevopsDeploymentService extends WorkloadBaseService<DevopsDeploymentDTO> {
-    void deleteByGitOps(Long id);
-
-    DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId, String content);
+public interface DevopsDeploymentService extends WorkloadBaseService<DevopsDeploymentDTO, DevopsDeploymentVO> {
 
     Page<DeploymentInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance);
-
 }

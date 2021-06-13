@@ -41,6 +41,9 @@ public class DevopsDeploymentVO extends AuditDomain {
     @ApiModelProperty("操作类型，创建/更新/删除")
     private String operateType;
 
+    @ApiModelProperty("资源内容")
+    private String content;
+
     public String getCommandType() {
         return commandType;
     }
@@ -64,9 +67,6 @@ public class DevopsDeploymentVO extends AuditDomain {
     public void setError(String error) {
         this.error = error;
     }
-
-    @ApiModelProperty("资源内容")
-    private String content;
 
     public Long getResourceDetailId() {
         return resourceDetailId;

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,10 +26,14 @@ import io.choerodon.devops.api.vo.JobInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsJobDTO;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsJobMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -53,6 +59,10 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
 
     private JSON json = new JSON();
 
@@ -135,7 +145,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
         devopsJobMapper.deleteByPrimaryKey(id);
-        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.JOB.getType(), id);
     }
 
     @Override
@@ -144,6 +154,42 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
         devopsJobDTO.setEnvId(envId);
         devopsJobDTO.setName(name);
         return devopsJobMapper.selectOne(devopsJobDTO);
+    }
+
+    @Override
+    public void deleteByGitOps(Long id) {
+        DevopsJobDTO devopsJobDTO = devopsJobMapper.selectByPrimaryKey(id);
+        //校验环境是否链接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsJobDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsEnvCommandService.baseListByObject(ObjectType.JOB.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
+        devopsJobMapper.deleteByPrimaryKey(id);
+        devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.JOB.getType(), id);
+    }
+
+    @Override
+    public DevopsJobVO createOrUpdateByGitOps(DevopsJobVO devopsJobVO, Long userId, String content) {
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsJobVO.getEnvId());
+        //校验环境是否连接
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsJobVO.getOperateType());
+        devopsEnvCommandDTO.setCreatedBy(userId);
+
+        DevopsJobDTO devopsJobDTO = ConvertUtils.convertObject(devopsJobVO, DevopsJobDTO.class);
+
+        if (devopsJobVO.getOperateType().equals(CREATE_TYPE)) {
+            Long devopsJob = baseCreate(devopsJobDTO);
+            devopsWorkloadResourceContentService.create(ResourceType.JOB.getType(), devopsJob, content);
+            devopsEnvCommandDTO.setObjectId(devopsJob);
+            devopsJobDTO.setId(devopsJob);
+        } else {
+            devopsEnvCommandDTO.setObjectId(devopsJobDTO.getId());
+        }
+
+        devopsJobDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(devopsJobDTO);
+        return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsJobDTO, DevopsJobVO.class);
     }
 
     @Override

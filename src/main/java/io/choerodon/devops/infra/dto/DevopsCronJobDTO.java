@@ -36,6 +36,8 @@ public class DevopsCronJobDTO extends AuditDomain {
     @ApiModelProperty("所属实例id")
     private Long instanceId;
 
+    private String content;
+
     public DevopsCronJobDTO() {
     }
 
@@ -92,5 +94,13 @@ public class DevopsCronJobDTO extends AuditDomain {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }
