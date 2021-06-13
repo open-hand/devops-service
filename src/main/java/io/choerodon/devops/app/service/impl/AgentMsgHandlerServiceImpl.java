@@ -1161,6 +1161,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         case CRON_JOB:
                         case STATEFULSET:
                             syncWorkload(objects[0], envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
                         default:
                             syncCustom(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
@@ -1286,7 +1287,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
                     return;
                 }
-                envId = devopsStatefulSetDTO.getId();
+                resourceId = devopsStatefulSetDTO.getId();
                 commandId = devopsStatefulSetDTO.getCommandId();
                 break;
             case JOB:
@@ -1295,7 +1296,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
                     return;
                 }
-                envId = devopsJobDTO.getId();
+                resourceId = devopsJobDTO.getId();
                 commandId = devopsJobDTO.getCommandId();
                 break;
             case DAEMONSET:
@@ -1304,7 +1305,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
                     return;
                 }
-                envId = devopsDaemonSetDTO.getId();
+                resourceId = devopsDaemonSetDTO.getId();
                 commandId = devopsDaemonSetDTO.getCommandId();
                 break;
             case CRON_JOB:
@@ -1313,7 +1314,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
                     return;
                 }
-                envId = devopsCronJobDTO.getId();
+                resourceId = devopsCronJobDTO.getId();
                 commandId = devopsCronJobDTO.getCommandId();
                 break;
         }
