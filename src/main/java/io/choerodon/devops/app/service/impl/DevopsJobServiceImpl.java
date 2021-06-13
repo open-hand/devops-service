@@ -25,12 +25,7 @@ import io.choerodon.devops.api.vo.DevopsJobVO;
 import io.choerodon.devops.api.vo.JobInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.DevopsJobDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -173,7 +168,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsJobVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsJobVO.getOperateType());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.JOB.getType(), devopsJobVO.getOperateType(), userId);
         devopsEnvCommandDTO.setCreatedBy(userId);
 
         DevopsJobDTO devopsJobDTO = ConvertUtils.convertObject(devopsJobVO, DevopsJobDTO.class);

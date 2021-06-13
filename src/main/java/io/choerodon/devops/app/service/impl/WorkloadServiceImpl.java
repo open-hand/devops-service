@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.*;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -12,13 +14,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.WorkloadBaseVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -28,9 +30,6 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class WorkloadServiceImpl implements WorkloadService {
 
-    private static final String CREATE = "create";
-    private static final String UPDATE = "update";
-    private static final String DELETE = "delete";
     private static final String METADATA = "metadata";
     private static final String KIND = "kind";
     private static final String MASTER = "master";
@@ -75,14 +74,6 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
-
-    private static final List<String> RESOURCE_TYPE = Arrays.asList(
-            ResourceType.DEPLOYMENT.getType(),
-            ResourceType.JOB.getType(),
-            ResourceType.CRON_JOB.getType(),
-            ResourceType.DAEMONSET.getType(),
-            ResourceType.STATEFULSET.getType()
-    );
 
     static {
         Map<String, String> filePathMap = new HashMap<>();
@@ -138,10 +129,10 @@ public class WorkloadServiceImpl implements WorkloadService {
             // 前面对资源进行了数量校验，因此只会循环一次，resourceFilePath也只会被设置一次
             resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
             objects.add(datas);
-            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), FileUtil.getYaml().dump(data), kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), null);
+            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), FileUtil.getYaml().dump(data), kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId());
         }
 
-        if (CREATE.equals(workloadBaseVO.getOperateType())) {
+        if (CREATE_TYPE.equals(workloadBaseVO.getOperateType())) {
             gitlabServiceClientOperator.createFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()),
                     "ADD FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
@@ -262,7 +253,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE, id, null);
+        handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE_TYPE, id, null);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
@@ -309,7 +300,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         } else {
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, gitlabEnvProjectId, DELETE, userAttrDTO.getGitlabUserId(), id,
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, gitlabEnvProjectId, DELETE_TYPE, userAttrDTO.getGitlabUserId(), id,
                     resourceType.getType(), null, false, devopsEnvironmentDTO.getId(), gitOpsPath);
         }
     }
@@ -323,13 +314,13 @@ public class WorkloadServiceImpl implements WorkloadService {
     }
 
     private void handleWorkLoad(Long projectId, Long envId, String content, String kind, String name, String operateType, Long resourceId, Long userId) {
-        if (CREATE.equals(operateType)) {
+        if (CREATE_TYPE.equals(operateType)) {
             createWorkload(projectId, envId, content, kind, operateType, name, userId);
-        } else if (UPDATE.equals(operateType)) {
+        } else if (UPDATE_TYPE.equals(operateType)) {
             updateWorkLoad(kind, name, content, resourceId, userId);
         } else {
             //自定义资源关联command
-            DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE, userId);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(kind, DELETE_TYPE, userId);
             devopsEnvCommandDTO.setObjectId(resourceId);
             devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
@@ -358,25 +349,6 @@ public class WorkloadServiceImpl implements WorkloadService {
         return name.toString();
     }
 
-    private DevopsEnvCommandDTO initDevopsEnvCommandDTO(String type, Long userId) {
-        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
-        switch (type) {
-            case CREATE:
-                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
-                break;
-            case UPDATE:
-                devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
-                break;
-            default:
-                devopsEnvCommandDTO.setCommandType(CommandType.DELETE.getType());
-                break;
-        }
-        devopsEnvCommandDTO.setCreatedBy(userId);
-        devopsEnvCommandDTO.setObject(ObjectType.CUSTOM.getType());
-        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        return devopsEnvCommandDTO;
-    }
-
     private void checkWorkloadExist(String type, Long envId, String name) {
         switch (type) {
             case "Deployment":
@@ -399,16 +371,16 @@ public class WorkloadServiceImpl implements WorkloadService {
         }
     }
 
-    private void createWorkload(Long projectId, Long envId, String content, String type, String operateType, String name, Long userId) {
+    private void createWorkload(Long projectId, Long envId, String content, String resourceType, String operateType, String name, Long userId) {
         //校验新增的类型是否已存在
-        checkWorkloadExist(type, envId, name);
+        checkWorkloadExist(resourceType, envId, name);
 
         //自定义资源关联command
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(operateType, userId);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, operateType, userId);
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         Long workLoadId = null;
 
-        switch (type) {
+        switch (resourceType) {
             case "Deployment":
                 DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO(name, projectId, envId, devopsEnvCommandDTO.getId());
                 workLoadId = devopsDeploymentService.baseCreate(devopsDeploymentDTO);
@@ -430,18 +402,18 @@ public class WorkloadServiceImpl implements WorkloadService {
                 workLoadId = devopsCronJobService.baseCreate(devopsCronJobDTO);
                 break;
             default:
-                throw new CommonException("error.workload.resource.not.supported", type);
+                throw new CommonException("error.workload.resource.not.supported", resourceType);
         }
-        devopsWorkloadResourceContentService.create(type, workLoadId, content);
+        devopsWorkloadResourceContentService.create(resourceType, workLoadId, content);
 
         devopsEnvCommandDTO.setObjectId(workLoadId);
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
     }
 
-    private void updateWorkLoad(String type, String name, String content, Long resourceId, Long userId) {
+    private void updateWorkLoad(String resourceType, String name, String content, Long resourceId, Long userId) {
         //自定义资源关联command
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(type, userId);
-        switch (type) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, UPDATE_TYPE, userId);
+        switch (resourceType) {
             case "Deployment":
                 updateDeployment(devopsEnvCommandDTO, name, resourceId);
                 break;
@@ -457,9 +429,9 @@ public class WorkloadServiceImpl implements WorkloadService {
             case "CronJob":
                 updateCronJob(devopsEnvCommandDTO, name, resourceId);
             default:
-                throw new CommonException("error.workload.resource.not.supported", type);
+                throw new CommonException("error.workload.resource.not.supported", resourceType);
         }
-        devopsWorkloadResourceContentService.update(type, resourceId, content);
+        devopsWorkloadResourceContentService.update(resourceType, resourceId, content);
     }
 
 
@@ -568,5 +540,25 @@ public class WorkloadServiceImpl implements WorkloadService {
         //更新资源关联的最新command
         devopsCronJobDTO.setCommandId(devopsEnvCommandDTO.getId());
         devopsCronJobService.baseUpdate(devopsCronJobDTO);
+    }
+
+    public static DevopsEnvCommandDTO initDevopsEnvCommandDTO(String resourceType, String operateType, Long userId) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+        switch (operateType) {
+            case CREATE_TYPE:
+                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
+                break;
+            case UPDATE_TYPE:
+                devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
+                break;
+            default:
+                devopsEnvCommandDTO.setCommandType(CommandType.DELETE.getType());
+                break;
+        }
+
+        devopsEnvCommandDTO.setCreatedBy(userId);
+        devopsEnvCommandDTO.setObject(resourceType.toLowerCase());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        return devopsEnvCommandDTO;
     }
 }

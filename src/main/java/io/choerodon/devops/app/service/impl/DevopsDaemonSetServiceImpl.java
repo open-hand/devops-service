@@ -210,7 +210,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDaemonSetVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsDaemonSetVO.getOperateType());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.DAEMONSET.getType(), devopsDaemonSetVO.getOperateType(), userId);
         devopsEnvCommandDTO.setCreatedBy(userId);
 
         DevopsDaemonSetDTO devopsDaemonSetDTO = ConvertUtils.convertObject(devopsDaemonSetVO, DevopsDaemonSetDTO.class);
