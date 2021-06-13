@@ -28,7 +28,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
 public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsService<DevopsCronJobDTO> {
-    private static final String CRONJOB = "CronJob";
     private static final String GIT_SUFFIX = "/.git";
 
     @Autowired
@@ -44,13 +43,13 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
                                  List<DevopsCronJobDTO> devopsCronJobDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeCronJob = beforeSync.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CRONJOB))
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.CRON_JOB.getType()))
                 .map(devopsEnvFileResourceE -> {
                     DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService
                             .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
                     if (devopsCronJobDTO == null) {
                         devopsEnvFileResourceService
-                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), CRONJOB);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.CRON_JOB.getType());
                         return null;
                     }
                     return devopsCronJobDTO.getName();
@@ -73,7 +72,7 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
             DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, cronJobName);
             if (devopsCronJobDTO != null) {
                 devopsCronJobService.deleteByGitOps(devopsCronJobDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsCronJobDTO.getId(), CRONJOB);
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
             }
         });
 
