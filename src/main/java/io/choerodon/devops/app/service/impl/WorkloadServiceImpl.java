@@ -126,25 +126,19 @@ public class WorkloadServiceImpl implements WorkloadService {
             throw new CommonException("error.workload.size", resourceType.getType());
         }
 
-        try {
-            for (Object data : yaml.loadAll(content)) {
-                Map<String, Object> datas = (Map<String, Object>) data;
+        for (Object data : yaml.loadAll(content)) {
+            Map<String, Object> datas = (Map<String, Object>) data;
 
-                String kind = (String) datas.get(KIND);
+            String kind = (String) datas.get(KIND);
 
-                LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
-                //校验yaml文件内资源属性是否合法,并返回资源的name
-                String name = checkResource(metadata, kind, resourceType.getType());
+            LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
+            //校验yaml文件内资源属性是否合法,并返回资源的name
+            String name = checkResource(metadata, kind, resourceType.getType());
 
-                // 前面对资源进行了数量校验，因此只会循环一次，resourceFilePath也只会被设置一次
-                resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
-                objects.add(datas);
-                handleWorkLoad(projectId, workloadBaseVO.getEnvId(), FileUtil.getYaml().dump(data), kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), null);
-            }
-        } catch (CommonException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new CommonException("error.load.yaml.content");
+            // 前面对资源进行了数量校验，因此只会循环一次，resourceFilePath也只会被设置一次
+            resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
+            objects.add(datas);
+            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), FileUtil.getYaml().dump(data), kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), null);
         }
 
         if (CREATE.equals(workloadBaseVO.getOperateType())) {
@@ -170,6 +164,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, resourceFilePath, resourceType.getType(), gitOpsPath, CommandType.UPDATE.getType());
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
+
     }
 
     @Override
