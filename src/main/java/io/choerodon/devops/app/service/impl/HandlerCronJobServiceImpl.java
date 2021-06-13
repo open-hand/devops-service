@@ -42,45 +42,45 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
 
 
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
-                                 List<DevopsCronJobDTO> devopsDeploymentDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
-        List<String> beforeDeployment = beforeSync.stream()
+                                 List<DevopsCronJobDTO> devopsCronJobDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+        List<String> beforeCronJob = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CRONJOB))
                 .map(devopsEnvFileResourceE -> {
-                    DevopsCronJobDTO devopsDeploymentDTO = devopsCronJobService
+                    DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService
                             .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
-                    if (devopsDeploymentDTO == null) {
+                    if (devopsCronJobDTO == null) {
                         devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), CRONJOB);
                         return null;
                     }
-                    return devopsDeploymentDTO.getName();
+                    return devopsCronJobDTO.getName();
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         // 比较已存在的秘钥和新增要处理的秘钥,获取新增秘钥，更新秘钥，删除秘钥
-        List<DevopsCronJobDTO> addDeployment = new ArrayList<>();
-        List<DevopsCronJobDTO> updateDeployment = new ArrayList<>();
-        devopsDeploymentDTOS.forEach(devopsDeploymentDTO -> {
-            if (beforeDeployment.contains(devopsDeploymentDTO.getName())) {
-                updateDeployment.add(devopsDeploymentDTO);
-                beforeDeployment.remove(devopsDeploymentDTO.getName());
+        List<DevopsCronJobDTO> addCronJob = new ArrayList<>();
+        List<DevopsCronJobDTO> updateCronJob = new ArrayList<>();
+        devopsCronJobDTOS.forEach(devopsCronJob -> {
+            if (beforeCronJob.contains(devopsCronJob.getName())) {
+                updateCronJob.add(devopsCronJob);
+                beforeCronJob.remove(devopsCronJob.getName());
             } else {
-                addDeployment.add(devopsDeploymentDTO);
+                addCronJob.add(devopsCronJob);
             }
         });
-        //删除deployment,删除文件对象关联关系
-        beforeDeployment.forEach(deploymentName -> {
-            DevopsCronJobDTO devopsDeploymentDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, deploymentName);
-            if (devopsDeploymentDTO != null) {
-                devopsCronJobService.deleteByGitOps(devopsDeploymentDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), CRONJOB);
+        //删除crobjob,删除文件对象关联关系
+        beforeCronJob.forEach(cronJobName -> {
+            DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, cronJobName);
+            if (devopsCronJobDTO != null) {
+                devopsCronJobService.deleteByGitOps(devopsCronJobDTO.getId());
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsCronJobDTO.getId(), CRONJOB);
             }
         });
 
-        // 新增deployment
-        addDeployment(objectPath, envId, projectId, addDeployment, path, userId);
-        // 更新deployment
-        updateDeployment(objectPath, envId, projectId, updateDeployment, path, userId);
+        // 新增cronJob
+        addCronJob(objectPath, envId, projectId, addCronJob, path, userId);
+        // 更新cronJob
+        updateCronJob(objectPath, envId, projectId, updateCronJob, path, userId);
     }
 
     @Override
@@ -88,34 +88,34 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
         return DevopsCronJobDTO.class;
     }
 
-    private void addDeployment(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsCronJobDTO> devopsDeploymentDTOS, String path, Long userId) {
-        devopsDeploymentDTOS
-                .forEach(deploymentDTO -> {
+    private void addCronJob(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsCronJobDTO> devopsCronJobDTOS, String path, Long userId) {
+        devopsCronJobDTOS
+                .forEach(cronJobDTO -> {
                     String filePath = "";
                     try {
-                        filePath = objectPath.get(TypeUtil.objToString(deploymentDTO.hashCode()));
+                        filePath = objectPath.get(TypeUtil.objToString(cronJobDTO.hashCode()));
 
-                        DevopsCronJobDTO devopsDeploymentDTO = devopsCronJobService
-                                .baseQueryByEnvIdAndName(envId, deploymentDTO.getName());
-                        DevopsCronjobVO devopsDeploymentVO = new DevopsCronjobVO();
-                        //初始化deployment对象参数,存在deployment则直接创建文件对象关联关系
-                        if (devopsDeploymentDTO == null) {
-                            devopsDeploymentVO = getDevopsCronjobVO(
-                                    deploymentDTO,
+                        DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService
+                                .baseQueryByEnvIdAndName(envId, cronJobDTO.getName());
+                        DevopsCronjobVO devopsCronjobVO = new DevopsCronjobVO();
+                        //初始化cronJob对象参数,存在cronJob则直接创建文件对象关联关系
+                        if (devopsCronJobDTO == null) {
+                            devopsCronjobVO = getDevopsCronjobVO(
+                                    cronJobDTO,
                                     projectId,
                                     envId, CREATE_TYPE);
-                            devopsDeploymentVO = devopsCronJobService.createOrUpdateByGitOps(devopsDeploymentVO, userId, deploymentDTO.getContent());
+                            devopsCronjobVO = devopsCronJobService.createOrUpdateByGitOps(devopsCronjobVO, userId, cronJobDTO.getContent());
                         } else {
-                            devopsDeploymentVO.setCommandId(devopsDeploymentDTO.getCommandId());
-                            devopsDeploymentVO.setId(devopsDeploymentDTO.getId());
+                            devopsCronjobVO.setCommandId(devopsCronJobDTO.getCommandId());
+                            devopsCronjobVO.setId(devopsCronJobDTO.getId());
                         }
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentVO.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsCronjobVO.getCommandId());
 
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
-                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, deploymentDTO.hashCode(), devopsDeploymentVO.getId(),
-                                ResourceType.DEPLOYMENT.getType());
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, cronJobDTO.hashCode(), devopsCronjobVO.getId(),
+                                ResourceType.CRON_JOB.getType());
                     } catch (CommonException e) {
                         String errorCode = "";
                         if (e instanceof GitOpsExplainException) {
@@ -126,7 +126,7 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
                 });
     }
 
-    private void updateDeployment(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsCronJobDTO> updateDevopsCronJobDTO, String path, Long userId) {
+    private void updateCronJob(Map<String, String> objectPath, Long envId, Long projectId, List<DevopsCronJobDTO> updateDevopsCronJobDTO, String path, Long userId) {
         updateDevopsCronJobDTO
                 .forEach(cronJobDTO -> {
                     String filePath = "";
@@ -138,7 +138,7 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
                         DevopsCronjobVO devopsCronjobVO = getDevopsCronjobVO(cronJobDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsCronJobDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
                         boolean isNotChange = cronJobDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsCronJobDTO.getCommandId());
 

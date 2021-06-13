@@ -154,7 +154,7 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsDaemonSetDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, devopsDaemonSetDTO.getId(), ResourceType.DAEMONSET.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
