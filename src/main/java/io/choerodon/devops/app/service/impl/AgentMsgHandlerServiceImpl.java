@@ -67,6 +67,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String SECRET_KIND = "secret";
     private static final String PERSISTENT_VOLUME_KIND = "persistentvolume";
     private static final String PERSISTENT_VOLUME_CLAIM_KIND = "persistentvolumeclaim";
+    private static final String DEPLOYMENT = "deployment";
+    private static final String JOB = "job";
+    private static final String DAEMONSET = "daemonset";
+    private static final String CRON_JOB = "cronjob";
+    private static final String STATEFULSET = "statefulset";
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
@@ -153,6 +158,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsSecretMapper devopsSecretMapper;
     @Autowired
     private WorkloadService workloadService;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
+    @Autowired
+    private DevopsStatefulSetService devopsStatefulSetService;
+    @Autowired
+    private DevopsJobService devopsJobService;
+    @Autowired
+    private DevopsDaemonSetService devopsDaemonSetService;
+    @Autowired
+    private DevopsCronJobService devopsCronJobService;
+    @Autowired
+    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Autowired
     private ChartResourceOperator chartResourceOperator;
@@ -1138,6 +1155,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         case PERSISTENT_VOLUME_CLAIM_KIND:
                             syncPersistentVolumeClaim(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
+                        case DEPLOYMENT:
+                        case JOB:
+                        case DAEMONSET:
+                        case CRON_JOB:
+                        case STATEFULSET:
+                            syncWorkload(objects[0], envId, errorDevopsFiles, resourceCommitVO, objects);
                         default:
                             syncCustom(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
@@ -1240,7 +1263,70 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByEnvIdAndResourceId(envId, devopsCustomizeResourceDTO.getId(), ObjectType.CUSTOM.getType());
         updateEnvCommandStatus(resourceCommitVO, devopsCustomizeResourceDTO.getCommandId(), devopsEnvFileResourceDTO,
                 objects[0], devopsCustomizeResourceDTO.getName(), CommandStatus.SUCCESS.getStatus(), envFileErrorFiles);
+    }
 
+
+    private void syncWorkload(String type, Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
+        Long resourceId = null;
+        Long commandId = null;
+        switch (type) {
+            case DEPLOYMENT:
+                DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsDeploymentDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                resourceId = devopsDeploymentDTO.getId();
+                commandId = devopsDeploymentDTO.getCommandId();
+                break;
+            case STATEFULSET:
+                DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsStatefulSetDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                envId = devopsStatefulSetDTO.getId();
+                commandId = devopsStatefulSetDTO.getCommandId();
+                break;
+            case JOB:
+                DevopsJobDTO devopsJobDTO = devopsJobService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsJobDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                envId = devopsJobDTO.getId();
+                commandId = devopsJobDTO.getCommandId();
+                break;
+            case DAEMONSET:
+                DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsDaemonSetDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                envId = devopsDaemonSetDTO.getId();
+                commandId = devopsDaemonSetDTO.getCommandId();
+                break;
+            case CRON_JOB:
+                DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsCronJobDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                envId = devopsCronJobDTO.getId();
+                commandId = devopsCronJobDTO.getCommandId();
+                break;
+        }
+
+        if (resourceId == null || commandId == null) {
+            logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
+
+        devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndResourceId(envId, resourceId, type);
+        updateEnvCommandStatus(resourceCommitVO, commandId, devopsEnvFileResourceDTO,
+                objects[0], objects[1], CommandStatus.SUCCESS.getStatus(), envFileErrorFiles);
     }
 
     private void syncCetificate(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
