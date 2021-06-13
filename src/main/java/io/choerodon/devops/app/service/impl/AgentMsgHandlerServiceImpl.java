@@ -771,9 +771,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
-        if (KeyParseUtil.getResourceType(key).equals(ResourceType.JOB.getType())) {
-            return;
-        }
+        // 不知道这里为什么要留着job数据，但是会对工作负载产生的job造成影响，所以先注释这个逻辑，看后续出现的问题再做处理
+//        if (KeyParseUtil.getResourceType(key).equals(ResourceType.JOB.getType())) {
+//            return;
+//        }
         if (KeyParseUtil.getResourceType(key).equals(ResourceType.POD.getType())) {
             String podName = KeyParseUtil.getResourceName(key);
             String podNameSpace = KeyParseUtil.getNamespace(key);
