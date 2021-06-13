@@ -531,7 +531,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     handleUpdatePvMsg(key, clusterId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
                 case DEPLOYMENT:
-                    handleUpdateDeploymentMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
+                case JOB:
+                case DAEMONSET:
+                case CRON_JOB:
+                case STATEFULSET:
+                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
+                    break;
                 default:
                     // 默认为Release对象
                     releaseName = KeyParseUtil.getReleaseName(key);
@@ -572,7 +577,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
-    private void handleUpdateDeploymentMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
+    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
                         null,
