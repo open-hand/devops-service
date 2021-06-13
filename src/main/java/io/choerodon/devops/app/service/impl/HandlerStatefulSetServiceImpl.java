@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsStatefulSetVO;
@@ -25,6 +26,7 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
+@Service
 public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelationsService<DevopsStatefulSetDTO> {
     private static final String STATEFUL_SET = "StatefulSet";
     private static final String GIT_SUFFIX = "/.git";

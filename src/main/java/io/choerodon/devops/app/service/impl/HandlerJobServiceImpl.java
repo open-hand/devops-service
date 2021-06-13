@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsJobVO;
@@ -25,6 +26,7 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
+@Component
 public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<DevopsJobDTO> {
     private static final String JOB = "job";
     private static final String GIT_SUFFIX = "/.git";

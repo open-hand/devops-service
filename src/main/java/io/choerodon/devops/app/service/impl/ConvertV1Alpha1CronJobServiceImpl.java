@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.DevopsCronJobService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
@@ -17,6 +18,7 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
+@Component
 public class ConvertV1Alpha1CronJobServiceImpl extends ConvertK8sObjectService<DevopsCronJobDTO> {
 
     public ConvertV1Alpha1CronJobServiceImpl() {
