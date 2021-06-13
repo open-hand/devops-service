@@ -115,7 +115,7 @@ public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentServ
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsDeploymentVO.getOperateType());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getOperateType(), userId);
         devopsEnvCommandDTO.setCreatedBy(userId);
 
         DevopsDeploymentDTO devopsDeploymentDTO = ConvertUtils.convertObject(devopsDeploymentVO, DevopsDeploymentDTO.class);

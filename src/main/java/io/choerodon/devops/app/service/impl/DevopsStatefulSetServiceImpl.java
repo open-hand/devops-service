@@ -166,7 +166,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsStatefulSetVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsStatefulSetVO.getOperateType());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.STATEFULSET.getType(), devopsStatefulSetVO.getOperateType(), userId);
         devopsEnvCommandDTO.setCreatedBy(userId);
 
         DevopsStatefulSetDTO devopsStatefulSetDTO = ConvertUtils.convertObject(devopsStatefulSetVO, DevopsStatefulSetDTO.class);

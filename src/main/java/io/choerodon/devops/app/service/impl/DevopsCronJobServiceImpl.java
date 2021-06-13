@@ -24,15 +24,9 @@ import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.workload.CronJobInfoVO;
 import io.choerodon.devops.api.vo.workload.DevopsCronjobVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsCronJobDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsCronJobMapper;
@@ -170,7 +164,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsCronJobVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsCronJobVO.getOperateType());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.CRON_JOB.getType(), devopsCronJobVO.getOperateType(), userId);
         devopsEnvCommandDTO.setCreatedBy(userId);
 
         DevopsCronJobDTO devopsCronJobDTO = ConvertUtils.convertObject(devopsCronJobVO, DevopsCronJobDTO.class);
