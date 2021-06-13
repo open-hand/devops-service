@@ -28,7 +28,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
 public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<DevopsJobDTO> {
-    private static final String JOB = "job";
     private static final String GIT_SUFFIX = "/.git";
 
     @Autowired
@@ -44,13 +43,13 @@ public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
                                  List<DevopsJobDTO> devopsJobDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeJob = beforeSync.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(JOB))
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.JOB.getType()))
                 .map(devopsEnvFileResourceE -> {
                     DevopsJobDTO devopsJobDTO = devopsJobService
                             .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
                     if (devopsJobDTO == null) {
                         devopsEnvFileResourceService
-                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), JOB);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.JOB.getType());
                         return null;
                     }
                     return devopsJobDTO.getName();
@@ -73,7 +72,7 @@ public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<
             DevopsJobDTO devopsJobDTO = devopsJobService.baseQueryByEnvIdAndName(envId, jobName);
             if (devopsJobDTO != null) {
                 devopsJobService.deleteByGitOps(devopsJobDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsJobDTO.getId(), JOB);
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsJobDTO.getId(), ResourceType.JOB.getType());
             }
         });
 

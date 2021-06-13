@@ -28,7 +28,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsService<DevopsDeploymentDTO> {
-    private static final String DEPLOYMENT = "Deployment";
     private static final String GIT_SUFFIX = "/.git";
 
     @Autowired
@@ -44,13 +43,13 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
                                  List<DevopsDeploymentDTO> devopsDeploymentDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeDeployment = beforeSync.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(DEPLOYMENT))
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.DEPLOYMENT.getType()))
                 .map(devopsEnvFileResourceE -> {
                     DevopsDeploymentDTO devopsDeploymentDTO = deploymentService
                             .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
                     if (devopsDeploymentDTO == null) {
                         devopsEnvFileResourceService
-                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), DEPLOYMENT);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.DEPLOYMENT.getType());
                         return null;
                     }
                     return devopsDeploymentDTO.getName();
@@ -73,7 +72,7 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
             DevopsDeploymentDTO devopsDeploymentDTO = deploymentService.baseQueryByEnvIdAndName(envId, deploymentName);
             if (devopsDeploymentDTO != null) {
                 deploymentService.deleteByGitOps(devopsDeploymentDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), DEPLOYMENT);
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
             }
         });
 

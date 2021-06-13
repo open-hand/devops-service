@@ -28,7 +28,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelationsService<DevopsStatefulSetDTO> {
-    private static final String STATEFUL_SET = "StatefulSet";
     private static final String GIT_SUFFIX = "/.git";
 
     @Autowired
@@ -44,13 +43,13 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
                                  List<DevopsStatefulSetDTO> devopsStatefulSetDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeStatefulSet = beforeSync.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(STATEFUL_SET))
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.STATEFULSET.getType()))
                 .map(devopsEnvFileResourceE -> {
                     DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService
                             .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
                     if (devopsStatefulSetDTO == null) {
                         devopsEnvFileResourceService
-                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), STATEFUL_SET);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.STATEFULSET.getType());
                         return null;
                     }
                     return devopsStatefulSetDTO.getName();
@@ -73,7 +72,7 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
             DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.baseQueryByEnvIdAndName(envId, statefulSetName);
             if (devopsStatefulSetDTO != null) {
                 devopsStatefulSetService.deleteByGitOps(devopsStatefulSetDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsStatefulSetDTO.getId(), STATEFUL_SET);
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
             }
         });
 
