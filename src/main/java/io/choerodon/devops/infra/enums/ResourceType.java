@@ -33,6 +33,8 @@ public enum ResourceType {
      */
     public static ResourceType forString(String type) {
         switch (type) {
+            case "CronJob":
+                return ResourceType.CRON_JOB;
             case "Job":
                 return ResourceType.JOB;
             case "Service":
