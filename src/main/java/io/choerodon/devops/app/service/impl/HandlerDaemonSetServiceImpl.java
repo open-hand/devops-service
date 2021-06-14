@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+import static io.choerodon.devops.infra.enums.ResourceType.DAEMONSET;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
 public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsService<DevopsDaemonSetDTO> {
-    private static final String DAEMONSET = "daemonset";
     private static final String GIT_SUFFIX = "/.git";
 
     @Autowired
@@ -44,13 +44,13 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
                                  List<DevopsDaemonSetDTO> devopsDaemonSetDTOS, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeDaemonSet = beforeSync.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(DAEMONSET))
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.DAEMONSET.getType()))
                 .map(devopsEnvFileResourceE -> {
                     DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService
                             .selectByPrimaryKey(devopsEnvFileResourceE.getResourceId());
                     if (devopsDaemonSetDTO == null) {
                         devopsEnvFileResourceService
-                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), DAEMONSET);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.DAEMONSET.getType());
                         return null;
                     }
                     return devopsDaemonSetDTO.getName();
@@ -73,7 +73,7 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
             DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService.baseQueryByEnvIdAndName(envId, daemonSetName);
             if (devopsDaemonSetDTO != null) {
                 devopsDaemonSetService.deleteByGitOps(devopsDaemonSetDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsDaemonSetDTO.getId(), DAEMONSET);
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsDaemonSetDTO.getId(), ResourceType.DAEMONSET.getType());
             }
         });
 
@@ -115,7 +115,7 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, daemonSetDTO.hashCode(), devopsDaemonSetVO.getId(),
-                                ResourceType.DAEMONSET.getType());
+                                DAEMONSET.getType());
                     } catch (CommonException e) {
                         String errorCode = "";
                         if (e instanceof GitOpsExplainException) {
@@ -138,7 +138,7 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
                         DevopsDaemonSetVO devopsDaemonSetVO = getDevopsDaemonSetVO(daemonSetDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsDaemonSetDTO.getId(), ResourceType.DAEMONSET.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsDaemonSetDTO.getId(), DAEMONSET.getType());
                         boolean isNotChange = daemonSetDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDaemonSetDTO.getCommandId());
 
@@ -154,11 +154,11 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsDaemonSetDTO.getId(), ResourceType.DAEMONSET.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, devopsDaemonSetDTO.getId(), DAEMONSET.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                daemonSetDTO.hashCode(), devopsDaemonSetDTO.getId(), ResourceType.DAEMONSET.getType());
+                                daemonSetDTO.hashCode(), devopsDaemonSetDTO.getId(), DAEMONSET.getType());
 
 
                     } catch (CommonException e) {
