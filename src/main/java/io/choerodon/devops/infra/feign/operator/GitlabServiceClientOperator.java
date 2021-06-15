@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,7 +23,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -615,17 +616,19 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public Page<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
-        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectDTO.getId())) {
-            MemberDTO memberDTO = getProjectMember(
-                    gitlabProjectId,
-                    userId);
-            if (memberDTO == null) {
-                throw new CommonException("error.user.not.in.gitlab.project");
+    public Page<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId, boolean checkMember) {
+        if (checkMember) {
+            if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectDTO.getId())) {
+                MemberDTO memberDTO = getProjectMember(
+                        gitlabProjectId,
+                        userId);
+                if (memberDTO == null) {
+                    throw new CommonException("error.user.not.in.gitlab.project");
+                }
             }
         }
 
-        List<TagDTO> tagTotalList = listTags(gitlabProjectId, userId);
+        List<TagDTO> tagTotalList = listTags(gitlabProjectId, checkMember ? userId : getAdminId());
         List<TagDTO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
                 .peek(t -> {
