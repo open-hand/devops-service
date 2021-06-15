@@ -1233,16 +1233,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             devopsServiceDTO.setEnvId(appServiceInstanceDTO.getEnvId());
             devopsServiceDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsServiceDTO.setName(v1Service.getMetadata().getName());
+            devopsServiceDTO.setInstanceId(appServiceInstanceDTO.getId());
             fillDevopsServiceInfo(devopsServiceDTO, v1Service);
 
             devopsServiceMapper.insertSelective(devopsServiceDTO);
-
-            DevopsServiceInstanceDTO devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
-            devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
-            devopsServiceInstanceDTO.setServiceId(devopsServiceDTO.getId());
-            devopsServiceInstanceDTO.setCode(appServiceInstanceDTO.getCode());
-
-            devopsServiceInstanceService.baseCreate(devopsServiceInstanceDTO);
         }
     }
 
