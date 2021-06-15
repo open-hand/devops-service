@@ -25,4 +25,6 @@ public interface DevopsIngressPathMapper extends BaseMapper<DevopsIngressPathDTO
                                @Param("path") String path, @Param("ingressId") Long ingressId);
 
     void deleteByIngressIds(@Param("ingressIds") List<Long> ingressIds);
+
+    void deleteByIngressId(@Param("ingressId") Long ingressId);
 }

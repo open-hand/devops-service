@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -13,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -67,9 +67,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
     private static final Gson gson = new Gson();
+    private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
 
-    @Value("${services.gitlab.sshUrl}")
-    private String gitlabSshUrl;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -1004,27 +1003,44 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     @Override
     @Transactional
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        // todo 完善ingress Path保存逻辑
         V1beta1Ingress v1beta1Ingress = json.deserialize(detailsJson, V1beta1Ingress.class);
-
+        DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(v1beta1Ingress, appServiceInstanceDTO.getEnvId());
         DevopsIngressDTO oldDevopsIngressDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta1Ingress.getMetadata().getName());
+        // 更新ingress
         if (oldDevopsIngressDTO != null) {
+            // 更新ingress记录
             oldDevopsIngressDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             devopsIngressMapper.updateByPrimaryKeySelective(oldDevopsIngressDTO);
-        } else {
 
+            // 删除旧的ingressPath记录
+            devopsIngressPathMapper.deleteByIngressId(oldDevopsIngressDTO.getId());
+
+            // 插入ingressPath记录
+            devopsIngressDTO.getDevopsIngressPathDTOS().forEach(t -> {
+                t.setIngressId(devopsIngressDTO.getId());
+                devopsIngressPathMapper.insert(t);
+            });
+        } else {
+            // 添加ingress
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
             if (devopsEnvironmentDTO == null) {
                 LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
                 return;
             }
-            DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
 
+            // 插入ingress记录
             devopsIngressDTO.setEnvId(appServiceInstanceDTO.getEnvId());
             devopsIngressDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsIngressDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsIngressDTO.setName(v1beta1Ingress.getMetadata().getName());
+            devopsIngressDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsIngressMapper.insertSelective(devopsIngressDTO);
+
+            // 插入ingressPath记录
+            devopsIngressDTO.getDevopsIngressPathDTOS().forEach(t -> {
+                t.setIngressId(devopsIngressDTO.getId());
+                devopsIngressPathMapper.insert(t);
+            });
         }
     }
 
@@ -1040,14 +1056,63 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     public void deleteByEnvIdAndName(Long envId, String name) {
         Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
         Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
-        DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
-        devopsIngressDTO.setEnvId(envId);
-        devopsIngressDTO.setName(name);
-        devopsIngressMapper.delete(devopsIngressDTO);
+        DevopsIngressDTO devopsIngressToSearchDTO = new DevopsIngressDTO();
+        devopsIngressToSearchDTO.setEnvId(envId);
+        devopsIngressToSearchDTO.setName(name);
+        DevopsIngressDTO devopsIngressDTO = baseQueryByEnvIdAndName(envId, name);
+
+        devopsIngressPathMapper.deleteByIngressId(devopsIngressDTO.getId());
+        devopsIngressMapper.deleteByPrimaryKey(devopsIngressDTO.getId());
     }
 
     @Override
     public ResourceType getType() {
         return ResourceType.INGRESS;
+    }
+
+    private DevopsIngressDTO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress, Long envId) {
+        DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
+        devopsIngressDTO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
+        );
+        devopsIngressDTO.setName(v1beta1Ingress.getMetadata().getName());
+        String annotations = gson.toJson(v1beta1Ingress.getMetadata().getAnnotations());
+        // 避免数据比数据库结构的size还大
+        if (annotations.length() > 2000) {
+            throw new CommonException("error.ingress.annotations.too.large");
+        }
+        devopsIngressDTO.setAnnotations(annotations);
+        devopsIngressDTO.setEnvId(envId);
+        List<String> pathCheckList = new ArrayList<>();
+        List<DevopsIngressPathDTO> devopsIngressPathDTOS = new ArrayList<>();
+        List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
+        for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
+            String path = v1beta1HTTPIngressPath.getPath();
+            DevopsIngressValidator.checkPath(path);
+            pathCheckList.add(path);
+            V1beta1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
+            String serviceName = backend.getServiceName();
+            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
+                    serviceName, envId);
+
+            Long servicePort = null;
+            IntOrString backendServicePort = backend.getServicePort();
+            if (backendServicePort.isInteger() || PATTERN.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
+                servicePort = TypeUtil.objToLong(backendServicePort);
+            } else {
+                if (devopsServiceDTO != null) {
+                    List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
+                    }.getType());
+                    servicePort = listPorts.get(0).getPort();
+                }
+            }
+            DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
+            devopsIngressPathDTO.setPath(path);
+            devopsIngressPathDTO.setServicePort(servicePort);
+            devopsIngressPathDTO.setServiceName(serviceName);
+            devopsIngressPathDTO.setServiceId(devopsServiceDTO == null ? null : devopsServiceDTO.getId());
+            devopsIngressPathDTOS.add(devopsIngressPathDTO);
+        }
+        devopsIngressDTO.setDevopsIngressPathDTOS(devopsIngressPathDTOS);
+        return devopsIngressDTO;
     }
 }
