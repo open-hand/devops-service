@@ -338,7 +338,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 logger.info("Install resource: resources null...");
             } else {
                 logger.info("Install resource: resource size: {}", resources.size());
-                resources.forEach(resource -> logger.info("Install resource: resource name {}", resource.getName()));
+                resources.forEach(resource -> logger.info("Install resource: resource kind {} resource name {}", resource.getName()));
             }
         }
         String releaseName = releasePayloadVO.getName();
