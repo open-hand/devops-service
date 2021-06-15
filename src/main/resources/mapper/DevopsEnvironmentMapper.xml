@@ -426,7 +426,7 @@
 
     <!-- 此方法不需要在mapper接口中有 -->
     <select id="listServices" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
-        SELECT t.id, t.`name`, t.status
+        SELECT t.id, t.`name`, t.status, t.instance_id
         FROM devops_service t
         WHERE t.env_id = #{envId}
           AND t.status != 'deleted'
@@ -434,7 +434,7 @@
 
     <!-- 此方法不需要在mapper接口中有 -->
     <select id="listIngresses" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
-        SELECT t.id, t.`name`, t.status
+        SELECT t.id, t.`name`, t.status, t.instance_id
         FROM devops_ingress t
         WHERE t.env_id = #{envId};
     </select>
