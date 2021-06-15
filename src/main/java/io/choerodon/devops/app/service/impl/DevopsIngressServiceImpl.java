@@ -1,7 +1,25 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -16,6 +34,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -30,26 +49,11 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
-public class DevopsIngressServiceImpl implements DevopsIngressService {
+public class DevopsIngressServiceImpl implements DevopsIngressService, ChartResourceOperatorService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DevopsIngressServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsIngressServiceImpl.class);
 
     public static final String ERROR_DOMAIN_PATH_EXIST = "error.domain.path.exist";
     public static final String INGRESS = "Ingress";
@@ -99,6 +103,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private SendNotificationService sendNotificationService;
     @Autowired
     PermissionHelper permissionHelper;
+
+    private JSON json = new JSON();
 
 
     @Override
@@ -666,7 +672,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 sendNotificationService.sendWhenIngressSuccessOrDelete(ingressSagaPayload.getDevopsIngressDTO(), SendSettingEnum.CREATE_RESOURCE.value());
             }
         } catch (Exception e) {
-            logger.info("create or update Ingress failed!", e);
+            LOGGER.info("create or update Ingress failed!", e);
             //有异常更新实例以及command的状态
             DevopsIngressDTO devopsIngressDTO = baseQuery(ingressSagaPayload.getDevopsIngressDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -993,5 +999,55 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         if (!allIngressIds.isEmpty()) {
             devopsIngressPathMapper.deleteByIngressIds(allIngressIds);
         }
+    }
+
+    @Override
+    @Transactional
+    public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
+        // todo 完善ingress Path保存逻辑
+        V1beta1Ingress v1beta1Ingress = json.deserialize(detailsJson, V1beta1Ingress.class);
+
+        DevopsIngressDTO oldDevopsIngressDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta1Ingress.getMetadata().getName());
+        if (oldDevopsIngressDTO != null) {
+            oldDevopsIngressDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            devopsIngressMapper.updateByPrimaryKeySelective(oldDevopsIngressDTO);
+        } else {
+
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+            if (devopsEnvironmentDTO == null) {
+                LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
+                return;
+            }
+            DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
+
+            devopsIngressDTO.setEnvId(appServiceInstanceDTO.getEnvId());
+            devopsIngressDTO.setCommandId(appServiceInstanceDTO.getId());
+            devopsIngressDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
+            devopsIngressDTO.setName(v1beta1Ingress.getMetadata().getName());
+            devopsIngressMapper.insertSelective(devopsIngressDTO);
+        }
+    }
+
+    private DevopsIngressDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
+        devopsIngressDTO.setEnvId(envId);
+        devopsIngressDTO.setName(name);
+        return devopsIngressMapper.selectOne(devopsIngressDTO);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByEnvIdAndName(Long envId, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
+        devopsIngressDTO.setEnvId(envId);
+        devopsIngressDTO.setName(name);
+        devopsIngressMapper.delete(devopsIngressDTO);
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.INGRESS;
     }
 }
