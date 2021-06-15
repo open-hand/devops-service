@@ -494,18 +494,22 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvResourceDTO.setReversion(
                     TypeUtil.objToLong(
                             ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCE_VERSION).toString()));
-            String releaseName;
+            String releaseName = KeyParseUtil.getReleaseName(key);
             DevopsEnvResourceDTO oldDevopsEnvResourceDTO;
-            AppServiceInstanceDTO appServiceInstanceDTO;
+            AppServiceInstanceDTO appServiceInstanceDTO = null;
+
             ResourceType resourceType = ResourceType.forString(KeyParseUtil.getResourceType(key));
             if (resourceType == null) {
                 resourceType = ResourceType.MISSTYPE;
+            }
+            if (releaseName != null) {
+                appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
             }
             switch (resourceType) {
                 case INGRESS:
                     oldDevopsEnvResourceDTO =
                             devopsEnvResourceService.baseQueryOptions(
-                                    null,
+                                    appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getId(),
                                     null,
                                     envId,
                                     KeyParseUtil.getResourceType(key),
@@ -520,7 +524,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 KeyParseUtil.getResourceName(key));
                     }
                     saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
-                            devopsEnvResourceDetailDTO, null);
+                            devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     break;
                 case POD:
                     handlerUpdatePodMessage(key, msg, envId);
@@ -552,13 +556,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 case DAEMONSET:
                 case CRON_JOB:
                 case STATEFULSET:
-                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
+                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     break;
                 default:
                     // 默认为Release对象
-                    releaseName = KeyParseUtil.getReleaseName(key);
                     if (releaseName != null) {
-                        appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
                         if (appServiceInstanceDTO == null) {
                             return;
                         }
@@ -594,16 +596,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
-    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
+    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
-                        null,
+                        appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getId(),
                         null,
                         envId,
                         KeyParseUtil.getResourceType(key),
                         KeyParseUtil.getResourceName(key));
         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
-                devopsEnvResourceDetailDTO, null);
+                devopsEnvResourceDetailDTO, appServiceInstanceDTO);
     }
 
     /**
