@@ -1010,6 +1010,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (oldDevopsIngressDTO != null) {
             // 更新ingress记录
             oldDevopsIngressDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsIngressDTO.setStatus(IngressStatus.RUNNING.getStatus());
             devopsIngressMapper.updateByPrimaryKeySelective(oldDevopsIngressDTO);
 
             // 删除旧的ingressPath记录
@@ -1029,6 +1030,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             }
 
             // 插入ingress记录
+            devopsIngressDTO.setStatus(IngressStatus.RUNNING.getStatus());
             devopsIngressDTO.setEnvId(appServiceInstanceDTO.getEnvId());
             devopsIngressDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsIngressDTO.setProjectId(devopsEnvironmentDTO.getProjectId());

@@ -1219,6 +1219,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsServiceDTO oldDevopsServiceDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1Service.getMetadata().getName());
         if (oldDevopsServiceDTO != null) {
             oldDevopsServiceDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
 
             fillDevopsServiceInfo(oldDevopsServiceDTO, v1Service);
 
@@ -1235,6 +1236,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             devopsServiceDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsServiceDTO.setName(v1Service.getMetadata().getName());
             devopsServiceDTO.setInstanceId(appServiceInstanceDTO.getId());
+            devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
             fillDevopsServiceInfo(devopsServiceDTO, v1Service);
             devopsServiceMapper.insertSelective(devopsServiceDTO);
         }

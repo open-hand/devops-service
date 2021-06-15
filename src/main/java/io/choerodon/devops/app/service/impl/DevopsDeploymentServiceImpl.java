@@ -41,7 +41,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @since 2021/6/8 11:17
  */
 @Service
-public class DevopsDeploymentOperatorServiceImpl implements DevopsDeploymentService, ChartResourceOperatorService {
+public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, ChartResourceOperatorService {
     @Autowired
     private DevopsDeploymentMapper devopsDeploymentMapper;
     @Autowired
