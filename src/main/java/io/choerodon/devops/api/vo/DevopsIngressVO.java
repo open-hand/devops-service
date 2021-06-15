@@ -51,7 +51,7 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
      * 构造函数
      */
     public DevopsIngressVO(Long id, String domain, String name,
-                           Long envId, Boolean isUsable, String envName) {
+                           Long envId, Boolean isUsable, String envName, Long instanceId) {
         this.envId = envId;
         this.id = id;
         this.name = name;
@@ -59,6 +59,7 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
         this.pathList = new ArrayList<>();
         this.isUsable = isUsable;
         this.envName = envName;
+        this.instanceId = instanceId;
     }
 
     public Long getId() {

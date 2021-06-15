@@ -365,7 +365,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
             DevopsIngressVO devopsIngressVO = new DevopsIngressVO(
                     ingressId, devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), devopsEnvironmentDTO.getId(),
-                    devopsIngressDTO.getUsable(), devopsEnvironmentDTO.getName());
+                    devopsIngressDTO.getUsable(), devopsEnvironmentDTO.getName(), devopsIngressDTO.getInstanceId());
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(ingressId);
             devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressDTO.setStatus(devopsIngressDTO.getStatus());
@@ -851,7 +851,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         devopsIngressDTOPageInfo.getContent().forEach(t -> {
             DevopsIngressVO devopsIngressVO =
                     new DevopsIngressVO(t.getId(), t.getDomain(), t.getName(),
-                            t.getEnvId(), t.getUsable(), t.getEnvName());
+                            t.getEnvId(), t.getUsable(), t.getEnvName(), t.getInstanceId());
             devopsIngressVO.setStatus(t.getStatus());
             devopsIngressVO.setCommandStatus(t.getCommandStatus());
             devopsIngressVO.setCommandType(t.getCommandType());
