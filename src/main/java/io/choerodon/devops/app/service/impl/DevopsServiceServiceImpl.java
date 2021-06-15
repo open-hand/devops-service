@@ -1258,7 +1258,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             // do nothing
         } else {
             // 其他类型不保存
-            return;
+            throw new CommonException("error.unknown.service.type");
         }
 
         // 添加选择器
