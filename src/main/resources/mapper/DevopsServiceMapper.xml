@@ -86,6 +86,7 @@
         ds.`type`,
         ds.selectors,
         ds.end_points,
+        ds.instance_id,
         da.id AS app_service_id,
         da.`name` AS app_service_name,
         de.id AS env_id,
