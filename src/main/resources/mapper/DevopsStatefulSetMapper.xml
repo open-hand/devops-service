@@ -14,12 +14,12 @@
         'StatefulSet')
         left join devops_env_command deco ON (deco.id = dss.command_id)
         <where>
-            dd.env_id = #{envId}
+            dss.env_id = #{envId}
             <if test="name != null">
-                and dd.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                and dss.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
             </if>
             <if test="fromInstance != null">
-                and instance_id != null
+                and dss.instance_id != null
             </if>
         </where>
     </select>
