@@ -1017,7 +1017,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
             // 插入ingressPath记录
             devopsIngressDTO.getDevopsIngressPathDTOS().forEach(t -> {
-                t.setIngressId(devopsIngressDTO.getId());
+                t.setIngressId(oldDevopsIngressDTO.getId());
                 devopsIngressPathMapper.insert(t);
             });
         } else {
