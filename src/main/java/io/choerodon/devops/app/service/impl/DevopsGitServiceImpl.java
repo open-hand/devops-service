@@ -530,11 +530,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size) {
-        try {
-            checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
-        } catch (GitlabAccessInvalidException e) {
-            return null;
+    public Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size, Boolean checkMember) {
+        if (Boolean.TRUE.equals(checkMember)) {
+            try {
+                checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
+            } catch (GitlabAccessInvalidException e) {
+                return null;
+            }
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);

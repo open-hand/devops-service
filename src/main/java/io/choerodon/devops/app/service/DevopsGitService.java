@@ -147,9 +147,10 @@ public interface DevopsGitService {
      * @param params
      * @param page
      * @param size
+     * @param checkMember 是否校验gitlab项目角色
      * @return
      */
-    Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size);
+    Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size, Boolean checkMember);
 
     /**
      * 获取标签列表
