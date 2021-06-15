@@ -489,6 +489,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         //分页组件暂不支持级联查询，只能手写分页
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
         List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
+        // todo 遗留逻辑混乱，待梳理
         return PageInfoUtil.createPageFromList(devopsServiceMapper.listDevopsServiceByPage(
                 projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 paramList, sortResult, appServiceId), pageable);
