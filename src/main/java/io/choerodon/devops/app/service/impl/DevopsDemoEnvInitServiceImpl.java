@@ -151,7 +151,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         mergeBranch(gitlabProjectId);
 
         // 6. 创建标记，由于选择人工造版本数据而不是通过ci，此处tag-name不使用正确的。
-        Optional<TagVO> tagVO = devopsGitService.pageTagsByOptions(projectId, applicationRepDTO.getId(), null, 0, 100).getContent().stream().filter(tagVO1 -> tagVO1.getName().equals(demoDataVO.getTagInfo().getTag() + "-alpha.1")).findFirst();
+        Optional<TagVO> tagVO = devopsGitService.pageTagsByOptions(projectId, applicationRepDTO.getId(), null, 0, 100, true).getContent().stream().filter(tagVO1 -> tagVO1.getName().equals(demoDataVO.getTagInfo().getTag() + "-alpha.1")).findFirst();
         if (!tagVO.isPresent()) {
             devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataVO.getTagInfo().getTag() + "-alpha.1", demoDataVO.getTagInfo().getRef(), demoDataVO.getTagInfo().getMsg(), demoDataVO.getTagInfo().getReleaseNotes());
         }

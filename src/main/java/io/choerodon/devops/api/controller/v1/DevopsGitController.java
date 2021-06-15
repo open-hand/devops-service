@@ -144,8 +144,10 @@ public class DevopsGitController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
-            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-        return Results.success(devopsGitService.pageTagsByOptions(projectId, appServiceId, params, page, size));
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
+            @ApiParam(value = "是否校验gitlab项目角色")
+            @RequestParam(value = "checkMember", required = false, defaultValue = "true") Boolean checkMember) {
+        return Results.success(devopsGitService.pageTagsByOptions(projectId, appServiceId, params, page, size, checkMember));
     }
 
     /**
