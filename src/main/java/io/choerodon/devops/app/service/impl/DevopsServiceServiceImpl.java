@@ -1236,7 +1236,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             devopsServiceDTO.setName(v1Service.getMetadata().getName());
             devopsServiceDTO.setInstanceId(appServiceInstanceDTO.getId());
             fillDevopsServiceInfo(devopsServiceDTO, v1Service);
-
             devopsServiceMapper.insertSelective(devopsServiceDTO);
         }
     }
@@ -1269,6 +1268,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
 
         oldDevopsServiceDTO.setPorts(gson.toJson(v1Service.getSpec().getPorts()));
+        oldDevopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
     }
 
     private DevopsServiceDTO baseQueryByEnvIdAndName(Long envId, String name) {
