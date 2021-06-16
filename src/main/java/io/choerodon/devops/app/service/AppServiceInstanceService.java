@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
@@ -312,12 +311,13 @@ public interface AppServiceInstanceService {
     /**
      * 操作pod的数量
      *
-     * @param projectId      项目id
-     * @param envId          环境id
-     * @param deploymentName deploymentName
-     * @param count          pod数量
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param kind      资源类型
+     * @param name      deploymentName
+     * @param count     pod数量
      */
-    void operationPodCount(Long projectId, String deploymentName, Long envId, Long count);
+    void operationPodCount(Long projectId, String kind, String name, Long envId, Long count);
 
 
     DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);

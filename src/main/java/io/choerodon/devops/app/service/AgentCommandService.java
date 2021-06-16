@@ -51,7 +51,7 @@ public interface AgentCommandService {
      */
     void installCertManager(String certManagerRepoUrl, Long clusterId, String certManagerReleaseName, String namespace, String chartVersion);
 
-    void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
+    void operatePodCount(String kind, String deployment, String namespace, Long clusterId, Long count);
 
     void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type);
 

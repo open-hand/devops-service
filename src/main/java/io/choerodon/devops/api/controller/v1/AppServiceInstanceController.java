@@ -881,11 +881,13 @@ public class AppServiceInstanceController {
             @ApiParam(value = "环境id", required = true)
             @Encrypt
             @RequestParam Long envId,
+            @ApiParam(value = "kind", required = true)
+            @RequestParam String kind,
             @ApiParam(value = "name", required = true)
             @RequestParam String name,
             @ApiParam(value = "pod数量", required = true)
             @RequestParam Long count) {
-        appServiceInstanceService.operationPodCount(projectId, name, envId, count);
+        appServiceInstanceService.operationPodCount(projectId, kind, name, envId, count);
     }
 
 
