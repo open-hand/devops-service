@@ -23,6 +23,7 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
+import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -669,6 +670,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public String queryDetailsYamlByKindAndName(Long envId, String kind, String name) {
-        return devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+        try {
+            return JsonYamlConversionUtil.json2yaml(message);
+        } catch (IOException e) {
+            throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, message);
+        }
     }
 }
