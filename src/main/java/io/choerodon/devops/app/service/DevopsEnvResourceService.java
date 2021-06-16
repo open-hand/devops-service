@@ -75,4 +75,6 @@ public interface DevopsEnvResourceService {
     Object queryDetailsByKindAndName(Long envId, String kind, String name);
 
     String queryYamlById(Long envId, Long workLoadId, String type);
+
+    String queryDetailsYamlByKindAndName(Long envId, String kind, String name);
 }

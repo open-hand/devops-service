@@ -666,4 +666,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(workLoadId, type);
         return devopsWorkloadResourceContentDTO.getContent();
     }
+
+    @Override
+    public String queryDetailsYamlByKindAndName(Long envId, String kind, String name) {
+        return devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+    }
 }
