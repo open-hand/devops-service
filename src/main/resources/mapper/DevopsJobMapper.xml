@@ -10,7 +10,7 @@
         select dj.*, der.id as env_resource_id, der.resource_detail_id, deco.command_type, deco.`status` AS
         command_status, deco.error
         from devops_job dj
-        left join devops_env_resource der on (dj.env_id = der.env_id and dj.name = der.name and der.kind = 'Deployment')
+        left join devops_env_resource der on (dj.env_id = der.env_id and dj.name = der.name and der.kind = 'Job')
         left join devops_env_command deco ON (deco.id = dj.command_id)
         <where>
             dj.env_id = #{envId}

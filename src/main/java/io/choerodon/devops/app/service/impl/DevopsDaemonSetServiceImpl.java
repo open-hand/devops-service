@@ -84,6 +84,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
                 daemonSetInfoVO.setCurrentScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getCurrentNumberScheduled()));
                 daemonSetInfoVO.setDesiredScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getDesiredNumberScheduled()));
                 daemonSetInfoVO.setNumberAvailable(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getNumberAvailable()));
+                daemonSetInfoVO.setNumberReady(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getNumberReady()));
 
                 daemonSetInfoVO.setLabels(v1beta2DaemonSet.getSpec().getSelector().getMatchLabels());
                 List<Integer> portRes = new ArrayList<>();

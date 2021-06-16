@@ -83,7 +83,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
                         V1Job.class);
 
                 jobInfoVO.setCompletions(v1Job.getSpec().getCompletions());
-                jobInfoVO.setActive(v1Job.getStatus().getActive());
+                jobInfoVO.setActive(v1Job.getStatus().getActive() == null ? 0 : v1Job.getStatus().getActive());
                 jobInfoVO.setLabels(v1Job.getSpec().getSelector().getMatchLabels());
                 List<Integer> portRes = new ArrayList<>();
                 for (V1Container container : v1Job.getSpec().getTemplate().getSpec().getContainers()) {
