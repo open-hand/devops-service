@@ -428,6 +428,7 @@ public class WorkloadServiceImpl implements WorkloadService {
                 break;
             case "CronJob":
                 updateCronJob(devopsEnvCommandDTO, name, resourceId);
+                break;
             default:
                 throw new CommonException("error.workload.resource.not.supported", resourceType);
         }
