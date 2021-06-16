@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,6 +47,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, ChartResourceOperatorService {
 
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDaemonSetServiceImpl.class);
     @Autowired
     private DevopsDaemonSetMapper devopsDaemonSetMapper;
@@ -80,7 +84,6 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
 
 
                 daemonSetInfoVO.setName(v1beta2DaemonSet.getMetadata().getName());
-                daemonSetInfoVO.setAge(v1beta2DaemonSet.getMetadata().getCreationTimestamp().toString());
                 daemonSetInfoVO.setCurrentScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getCurrentNumberScheduled()));
                 daemonSetInfoVO.setDesiredScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getDesiredNumberScheduled()));
                 daemonSetInfoVO.setNumberAvailable(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getNumberAvailable()));
@@ -97,7 +100,8 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
                     });
                 }
                 daemonSetInfoVO.setPorts(portRes);
-                daemonSetInfoVO.setAge(v.getLastUpdateDate().toString());
+                ZoneId zoneId = ZoneId.systemDefault();
+                daemonSetInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
             }
             return daemonSetInfoVO;
         });

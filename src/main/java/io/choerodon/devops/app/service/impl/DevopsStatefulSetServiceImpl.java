@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,6 +47,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, ChartResourceOperatorService {
 
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsStatefulSetServiceImpl.class);
     @Autowired
     private DevopsStatefulSetMapper devopsStatefulSetMapper;
@@ -98,7 +101,8 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
                     });
                 }
                 statefulSetInfoVO.setPorts(portRes);
-                statefulSetInfoVO.setAge(v.getLastUpdateDate().toString());
+                ZoneId zoneId = ZoneId.systemDefault();
+                statefulSetInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
 
             }
             return statefulSetInfoVO;
