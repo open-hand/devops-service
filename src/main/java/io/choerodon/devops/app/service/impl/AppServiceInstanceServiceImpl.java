@@ -564,7 +564,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void operationPodCount(Long projectId, String deploymentName, Long envId, Long count) {
+    public void operationPodCount(Long projectId, String kind, String name, Long envId, Long count) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -576,7 +576,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (count == 0) {
             return;
         }
-        agentCommandService.operatePodCount(deploymentName, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count);
+
+        agentCommandService.operatePodCount(kind, name, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count);
     }
 
 
@@ -961,7 +962,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 marketServiceVO.getMarketServiceName(),
                 chartVersion,
                 appServiceInstanceDTO.getCode(),
-                deploySourceVO,DetailsHelper.getUserDetails().getUserId());
+                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
     }
 
     @Override
@@ -1178,7 +1179,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode(),
-                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()),DetailsHelper.getUserDetails().getUserId());
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()), DetailsHelper.getUserDetails().getUserId());
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
@@ -1299,7 +1300,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode(),
-                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()),DetailsHelper.getUserDetails().getUserId());
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()), DetailsHelper.getUserDetails().getUserId());
 
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
