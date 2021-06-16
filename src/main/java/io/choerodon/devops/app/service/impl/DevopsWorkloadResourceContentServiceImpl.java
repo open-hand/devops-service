@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsWorkloadResourceContentService;
 import io.choerodon.devops.infra.dto.DevopsWorkloadResourceContentDTO;
 import io.choerodon.devops.infra.mapper.DevopsWorkloadResourceContentMapper;
@@ -30,7 +31,9 @@ public class DevopsWorkloadResourceContentServiceImpl implements DevopsWorkloadR
     @Override
     public void update(String type, Long resourceId, String content) {
         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentUpdateDTO = new DevopsWorkloadResourceContentDTO(resourceId, type, content);
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsWorkloadResourceContentMapper, devopsWorkloadResourceContentUpdateDTO, "error.workload.resource.update");
+        if (devopsWorkloadResourceContentMapper.updateContentByResourceIdAndResourceKind(type, resourceId, content) != 1) {
+            throw new CommonException("error.workload.resource.update");
+        }
     }
 
     @Override

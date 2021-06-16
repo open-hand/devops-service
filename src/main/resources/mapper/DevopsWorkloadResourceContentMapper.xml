@@ -4,7 +4,14 @@
     <delete id="deleteByResourceId">
         DELETE
         FROM devops_workload_resource_content
-        WHERE type = #{type}
-          AND workload_id = #{workloadId}
+        WHERE workload_id = #{workloadId}
+          AND type = #{type}
     </delete>
+
+    <update id="updateContentByResourceIdAndResourceKind">
+        UPDATE devops_workload_resource_content
+        SET content=#{content}
+        WHERE workload_id = #{workloadId}
+          AND type = #{kind}
+    </update>
 </mapper>
