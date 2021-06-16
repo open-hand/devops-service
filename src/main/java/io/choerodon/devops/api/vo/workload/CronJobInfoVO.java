@@ -14,6 +14,14 @@ public class CronJobInfoVO {
     private Long id;
     private String name;
 
+    private String schedule;
+
+    private Boolean suspend;
+
+    private Integer active;
+
+    private String creationTimestamp;
+
     private String age;
     private List<Integer> ports;
     private Map<String, String> labels;
@@ -24,6 +32,38 @@ public class CronJobInfoVO {
     private String commandStatus;
 
     private String error;
+
+    public String getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    public void setCreationTimestamp(String creationTimestamp) {
+        this.creationTimestamp = creationTimestamp;
+    }
+
+    public String getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(String schedule) {
+        this.schedule = schedule;
+    }
+
+    public Boolean getSuspend() {
+        return suspend;
+    }
+
+    public void setSuspend(Boolean suspend) {
+        this.suspend = suspend;
+    }
+
+    public Integer getActive() {
+        return active;
+    }
+
+    public void setActive(Integer active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return id;

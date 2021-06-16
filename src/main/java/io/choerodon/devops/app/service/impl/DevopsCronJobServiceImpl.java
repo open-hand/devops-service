@@ -85,8 +85,12 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                         detailDTOMap.get(v.getResourceDetailId()).getMessage(),
                         V1beta1CronJob.class);
 
-
+                cronJobInfoVO.setActive(v1beta1CronJob.getStatus().getActive() == null ? 0 : v1beta1CronJob.getStatus().getActive().size());
+                cronJobInfoVO.setSchedule(v1beta1CronJob.getSpec().getSchedule());
+                cronJobInfoVO.setSuspend(v1beta1CronJob.getSpec().isSuspend());
                 cronJobInfoVO.setLabels(v1beta1CronJob.getMetadata().getLabels());
+                cronJobInfoVO.setAge(v1beta1CronJob.getStatus().getLastScheduleTime().toString());
+                cronJobInfoVO.setCreationTimestamp(v1beta1CronJob.getMetadata().getCreationTimestamp().toString());
                 List<Integer> portRes = new ArrayList<>();
                 for (V1Container container : v1beta1CronJob.getSpec().getJobTemplate().getSpec().getTemplate().getSpec().getContainers()) {
                     List<V1ContainerPort> ports = container.getPorts();
