@@ -509,7 +509,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
             // 保存chart内资源信息到对应资源表
             ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resourceType.getType());
-            if (chartResourceOperatorService != null) {
+            if (chartResourceOperatorService != null && appServiceInstanceDTO != null) {
                 chartResourceOperatorService.saveOrUpdateChartResource(msg, appServiceInstanceDTO);
             }
 
