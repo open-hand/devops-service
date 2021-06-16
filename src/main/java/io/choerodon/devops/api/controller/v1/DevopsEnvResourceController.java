@@ -52,4 +52,18 @@ public class DevopsEnvResourceController {
     ) {
         return ResponseEntity.ok(devopsEnvResourceService.queryYamlById(envId, workLoadId, type));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "获取资源yaml")
+    @GetMapping(value = "/detail_yaml")
+    public ResponseEntity<String> queryDetailsYamlById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @RequestParam(value = "env_id") Long envId,
+            @RequestParam(value = "kind") String kind,
+            @RequestParam(value = "name") String name
+    ) {
+        return ResponseEntity.ok(devopsEnvResourceService.queryDetailsYamlByKindAndName(envId, kind, name));
+    }
 }
