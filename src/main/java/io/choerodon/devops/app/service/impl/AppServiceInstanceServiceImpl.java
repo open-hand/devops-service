@@ -564,7 +564,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void operationPodCount(Long projectId, String kind, String name, Long envId, Long count) {
+    public void operationPodCount(Long projectId, String kind, String name, Long envId, Long count, boolean workload) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -573,7 +573,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         //不能减少到0
-        if (count == 0) {
+        if (!workload && count == 0) {
             return;
         }
 

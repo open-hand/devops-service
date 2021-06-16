@@ -316,8 +316,9 @@ public interface AppServiceInstanceService {
      * @param kind      资源类型
      * @param name      deploymentName
      * @param count     pod数量
+     * @param workload  是否为操作工作负载pod
      */
-    void operationPodCount(Long projectId, String kind, String name, Long envId, Long count);
+    void operationPodCount(Long projectId, String kind, String name, Long envId, Long count, boolean workload);
 
 
     DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);
