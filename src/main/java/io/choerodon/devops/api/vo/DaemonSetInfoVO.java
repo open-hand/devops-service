@@ -17,6 +17,7 @@ public class DaemonSetInfoVO {
     private Long desiredScheduled;
     private Long currentScheduled;
     private Long numberAvailable;
+    private Long numberReady;
     private String age;
     private List<Integer> ports;
     private Map<String, String> labels;
@@ -27,6 +28,14 @@ public class DaemonSetInfoVO {
     private String commandStatus;
 
     private String error;
+
+    public Long getNumberReady() {
+        return numberReady;
+    }
+
+    public void setNumberReady(Long numberReady) {
+        this.numberReady = numberReady;
+    }
 
     public Long getId() {
         return id;
