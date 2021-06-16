@@ -4,6 +4,7 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
@@ -1093,7 +1094,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         insertDevopsCommandEvent(event, ResourceType.POD.getType());
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class, isolation = READ_COMMITTED)
     @Override
     public void gitOpsSyncEvent(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
