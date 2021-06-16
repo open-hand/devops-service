@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,6 +48,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOperatorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsJobServiceImpl.class);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     @Autowired
     private DevopsJobMapper devopsJobMapper;
     @Autowired
@@ -95,12 +98,11 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
                     });
                 }
                 jobInfoVO.setPorts(portRes);
-                if (v1Job.getStatus() != null && v1Job.getStatus().getConditions() != null) {
-                    v1Job.getStatus().getConditions().forEach(v1beta2DeploymentCondition -> {
-                        if ("NewReplicaSetAvailable".equals(v1beta2DeploymentCondition.getReason())) {
-                            jobInfoVO.setAge(v1beta2DeploymentCondition.getLastTransitionTime().toString());
-                        }
-                    });
+                if (v1Job.getStatus() != null && v1Job.getStatus().getCompletionTime() != null) {
+                    jobInfoVO.setAge(v1Job.getStatus().getCompletionTime().toString("yyyy-MM-dd HH:mm:ss"));
+                } else {
+                    ZoneId zoneId = ZoneId.systemDefault();
+                    jobInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
                 }
             }
             return jobInfoVO;

@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,7 +47,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartResourceOperatorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCronJobServiceImpl.class);
-
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     @Autowired
     private DevopsCronJobMapper devopsCronJobMapper;
     @Autowired
@@ -95,7 +97,12 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                     });
                 }
                 cronJobInfoVO.setPorts(portRes);
-
+                if (v1beta1CronJob.getStatus() != null && v1beta1CronJob.getStatus().getLastScheduleTime() != null) {
+                    cronJobInfoVO.setAge(v1beta1CronJob.getStatus().getLastScheduleTime().toString("yyyy-MM-dd HH:mm:ss"));
+                } else {
+                    ZoneId zoneId = ZoneId.systemDefault();
+                    cronJobInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
+                }
             }
             return cronJobInfoVO;
         });
