@@ -886,8 +886,10 @@ public class AppServiceInstanceController {
             @ApiParam(value = "name", required = true)
             @RequestParam String name,
             @ApiParam(value = "pod数量", required = true)
-            @RequestParam Long count) {
-        appServiceInstanceService.operationPodCount(projectId, kind, name, envId, count);
+            @RequestParam Long count,
+            @ApiParam(value = "是否为操作工作负载pod", required = false)
+            @RequestParam(value = "workload", defaultValue = "false", required = false) boolean workload) {
+        appServiceInstanceService.operationPodCount(projectId, kind, name, envId, count, workload);
     }
 
 
