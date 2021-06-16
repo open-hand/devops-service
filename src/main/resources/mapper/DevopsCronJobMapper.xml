@@ -19,7 +19,7 @@
                 and dcj.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
             </if>
             <if test="fromInstance != null">
-                and dcj.instance_id != null
+                and dcj.instance_id is not null
             </if>
         </where>
     </select>
