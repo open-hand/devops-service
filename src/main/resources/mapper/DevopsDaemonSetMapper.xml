@@ -20,7 +20,12 @@
                 and dds.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
             </if>
             <if test="fromInstance != null">
-                and dds.instance_id is not null
+                <if test="fromInstance == true">
+                    and dds.instance_id is not null
+                </if>
+                <if test="fromInstance==false">
+                    and dds.instance_id is null
+                </if>
             </if>
         </where>
     </select>
