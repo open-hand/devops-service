@@ -131,18 +131,19 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(deploymentDTO.hashCode()));
-                        DevopsDeploymentDTO devopsDeploymentDTO = deploymentService
+                        DevopsDeploymentDTO existDeploymentDTO = deploymentService
                                 .baseQueryByEnvIdAndName(envId, deploymentDTO.getName());
                         // 初始化deployment对象参数,更新deployment并更新文件对象关联关系
                         DevopsDeploymentVO devopsDeploymentVO = getDevopsDeploymentVO(deploymentDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(existDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
                         boolean isNotChange = deploymentDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentDTO.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(existDeploymentDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
+                            devopsDeploymentVO.setId(existDeploymentDTO.getId());
                             devopsDeploymentVO = deploymentService.createOrUpdateByGitOps(devopsDeploymentVO, envId, deploymentDTO.getContent());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentVO.getCommandId());
                         }
@@ -153,11 +154,11 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, existDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                deploymentDTO.hashCode(), devopsDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
+                                deploymentDTO.hashCode(), existDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
 
 
                     } catch (CommonException e) {

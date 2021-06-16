@@ -131,18 +131,19 @@ public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(jobDTO.hashCode()));
-                        DevopsJobDTO devopsJobDTO = devopsJobService
+                        DevopsJobDTO existDevopsJobDTO = devopsJobService
                                 .baseQueryByEnvIdAndName(envId, jobDTO.getName());
                         // 初始化job对象参数,更新job并更新文件对象关联关系
                         DevopsJobVO devopsJobVO = getDevopsJobVO(jobDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsJobDTO.getId(), ResourceType.JOB.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(existDevopsJobDTO.getId(), ResourceType.JOB.getType());
                         boolean isNotChange = jobDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsJobDTO.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(existDevopsJobDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
+                            devopsJobVO.setId(existDevopsJobDTO.getId());
                             devopsJobVO = devopsJobService.createOrUpdateByGitOps(devopsJobVO, envId, jobDTO.getContent());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsJobVO.getCommandId());
                         }
@@ -153,11 +154,11 @@ public class HandlerJobServiceImpl implements HandlerObjectFileRelationsService<
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsJobDTO.getId(), ResourceType.JOB.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, existDevopsJobDTO.getId(), ResourceType.JOB.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                jobDTO.hashCode(), devopsJobDTO.getId(), ResourceType.JOB.getType());
+                                jobDTO.hashCode(), existDevopsJobDTO.getId(), ResourceType.JOB.getType());
 
 
                     } catch (CommonException e) {

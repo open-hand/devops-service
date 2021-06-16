@@ -131,18 +131,19 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(statefulSetDTO.hashCode()));
-                        DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService
+                        DevopsStatefulSetDTO existDevopsStatefulSetDTO = devopsStatefulSetService
                                 .baseQueryByEnvIdAndName(envId, statefulSetDTO.getName());
                         // 初始化statefulSet对象参数,更新statefulSet并更新文件对象关联关系
                         DevopsStatefulSetVO devopsStatefulSetVO = getDevopsStatefulSetVO(statefulSetDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(existDevopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
                         boolean isNotChange = statefulSetDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsStatefulSetDTO.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(existDevopsStatefulSetDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
+                            devopsStatefulSetVO.setId(existDevopsStatefulSetDTO.getId());
                             devopsStatefulSetVO = devopsStatefulSetService.createOrUpdateByGitOps(devopsStatefulSetVO, envId, statefulSetDTO.getContent());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsStatefulSetVO.getCommandId());
                         }
@@ -153,11 +154,11 @@ public class HandlerStatefulSetServiceImpl implements HandlerObjectFileRelations
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, existDevopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                statefulSetDTO.hashCode(), devopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
+                                statefulSetDTO.hashCode(), existDevopsStatefulSetDTO.getId(), ResourceType.STATEFULSET.getType());
 
 
                     } catch (CommonException e) {
