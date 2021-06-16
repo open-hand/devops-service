@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
@@ -41,6 +43,15 @@ public class ResourceConvertToYamlHandler<T> {
     private static final String PERSISTENT_VOLUME = "!!io.kubernetes.client.models.V1PersistentVolume";
     private static final String PERSISTENT_VOLUME_CLAIM = "!!io.kubernetes.client.models.V1PersistentVolumeClaim";
     private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1beta2Deployment";
+    private static final List<String> WORKLOAD_RESOURCE_TYPE = new ArrayList<>();
+
+    static {
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.DEPLOYMENT.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.STATEFULSET.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.JOB.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.CRON_JOB.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.DAEMONSET.getType());
+    }
 
     private T type;
 
@@ -175,15 +186,11 @@ public class ResourceConvertToYamlHandler<T> {
                         // 忽视掉Endpoints
                         break;
                     case "Deployment":
-                        handleDeployment(t, objectType, operationType, resultBuilder, jsonObject);
-                        break;
                     case "StatefulSet":
-                        break;
                     case "Job":
-                        break;
                     case "CronJob":
-                        break;
                     case "DaemonSet":
+                        handleWorkload(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     default:
                         handleCustom(t, objectType, operationType, resultBuilder, jsonObject);
@@ -194,6 +201,23 @@ public class ResourceConvertToYamlHandler<T> {
         } catch (FileNotFoundException e) {
             throw new CommonException(e.getMessage(), e);
         }
+    }
+
+    private void handleWorkload(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+        Yaml yaml7 = new Yaml();
+        Object workloadResource = yaml7.load(jsonObject.toJSONString());
+        if (WORKLOAD_RESOURCE_TYPE.contains(objectType)) {
+            String oldResourceName = ((LinkedHashMap) (((Map<String, Object>) workloadResource).get("metadata"))).get("name").toString();
+            String newResourceName = ((LinkedHashMap) (((Map<String, Object>) t).get("metadata"))).get("name").toString();
+            if (oldResourceName.equals(newResourceName)) {
+                if (operationType.equals(UPDATE)) {
+                    workloadResource = t;
+                } else {
+                    return;
+                }
+            }
+        }
+        resultBuilder.append("---").append("\n").append(getYamlObject(null, false).dump(workloadResource)).append("\n");
     }
 
     private void handleDeployment(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {

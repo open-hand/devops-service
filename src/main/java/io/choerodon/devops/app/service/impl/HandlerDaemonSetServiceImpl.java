@@ -132,18 +132,19 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(daemonSetDTO.hashCode()));
-                        DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService
+                        DevopsDaemonSetDTO existDevopsDaemonSetDTO = devopsDaemonSetService
                                 .baseQueryByEnvIdAndName(envId, daemonSetDTO.getName());
                         // 初始化daemonSet对象参数,更新daemonSet并更新文件对象关联关系
                         DevopsDaemonSetVO devopsDaemonSetVO = getDevopsDaemonSetVO(daemonSetDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsDaemonSetDTO.getId(), DAEMONSET.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(existDevopsDaemonSetDTO.getId(), DAEMONSET.getType());
                         boolean isNotChange = daemonSetDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDaemonSetDTO.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(existDevopsDaemonSetDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
+                            devopsDaemonSetVO.setId(existDevopsDaemonSetDTO.getId());
                             devopsDaemonSetVO = devopsDaemonSetService.createOrUpdateByGitOps(devopsDaemonSetVO, envId, daemonSetDTO.getContent());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDaemonSetVO.getCommandId());
                         }
@@ -154,11 +155,11 @@ public class HandlerDaemonSetServiceImpl implements HandlerObjectFileRelationsSe
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsDaemonSetDTO.getId(), DAEMONSET.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, existDevopsDaemonSetDTO.getId(), DAEMONSET.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                daemonSetDTO.hashCode(), devopsDaemonSetDTO.getId(), DAEMONSET.getType());
+                                daemonSetDTO.hashCode(), existDevopsDaemonSetDTO.getId(), DAEMONSET.getType());
 
 
                     } catch (CommonException e) {

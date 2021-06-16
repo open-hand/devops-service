@@ -131,18 +131,19 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(cronJobDTO.hashCode()));
-                        DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService
+                        DevopsCronJobDTO existDevopsCronJobDTO = devopsCronJobService
                                 .baseQueryByEnvIdAndName(envId, cronJobDTO.getName());
                         // 初始化cronjob对象参数,更新cronjob并更新文件对象关联关系
                         DevopsCronjobVO devopsCronjobVO = getDevopsCronjobVO(cronJobDTO, projectId, envId, UPDATE_TYPE);
 
                         //判断资源是否发生了改变
-                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(devopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
+                        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(existDevopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
                         boolean isNotChange = cronJobDTO.getContent().equals(devopsWorkloadResourceContentDTO.getContent());
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsCronJobDTO.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(existDevopsCronJobDTO.getCommandId());
 
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
+                            devopsCronjobVO.setId(existDevopsCronJobDTO.getId());
                             devopsCronjobVO = devopsCronJobService.createOrUpdateByGitOps(devopsCronjobVO, envId, cronJobDTO.getContent());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsCronjobVO.getCommandId());
                         }
@@ -153,11 +154,11 @@ public class HandlerCronJobServiceImpl implements HandlerObjectFileRelationsServ
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, existDevopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                cronJobDTO.hashCode(), devopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
+                                cronJobDTO.hashCode(), existDevopsCronJobDTO.getId(), ResourceType.CRON_JOB.getType());
 
 
                     } catch (CommonException e) {
