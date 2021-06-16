@@ -89,7 +89,6 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                 cronJobInfoVO.setSchedule(v1beta1CronJob.getSpec().getSchedule());
                 cronJobInfoVO.setSuspend(v1beta1CronJob.getSpec().isSuspend());
                 cronJobInfoVO.setLabels(v1beta1CronJob.getMetadata().getLabels());
-                cronJobInfoVO.setAge(v1beta1CronJob.getStatus().getLastScheduleTime().toString());
                 cronJobInfoVO.setCreationTimestamp(v1beta1CronJob.getMetadata().getCreationTimestamp().toString());
                 List<Integer> portRes = new ArrayList<>();
                 for (V1Container container : v1beta1CronJob.getSpec().getJobTemplate().getSpec().getTemplate().getSpec().getContainers()) {
@@ -102,10 +101,10 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                 }
                 cronJobInfoVO.setPorts(portRes);
                 if (v1beta1CronJob.getStatus() != null && v1beta1CronJob.getStatus().getLastScheduleTime() != null) {
-                    cronJobInfoVO.setAge(v1beta1CronJob.getStatus().getLastScheduleTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    cronJobInfoVO.setLastScheduleTime(v1beta1CronJob.getStatus().getLastScheduleTime().toString("yyyy-MM-dd HH:mm:ss"));
                 } else {
                     ZoneId zoneId = ZoneId.systemDefault();
-                    cronJobInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
+                    cronJobInfoVO.setLastScheduleTime(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
                 }
             }
             return cronJobInfoVO;

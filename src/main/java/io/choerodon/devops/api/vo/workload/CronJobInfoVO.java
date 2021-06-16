@@ -22,7 +22,7 @@ public class CronJobInfoVO {
 
     private String creationTimestamp;
 
-    private String age;
+    private String lastScheduleTime;
     private List<Integer> ports;
     private Map<String, String> labels;
     private Long instanceId;
@@ -81,12 +81,12 @@ public class CronJobInfoVO {
         this.name = name;
     }
 
-    public String getAge() {
-        return age;
+    public String getLastScheduleTime() {
+        return lastScheduleTime;
     }
 
-    public void setAge(String age) {
-        this.age = age;
+    public void setLastScheduleTime(String lastScheduleTime) {
+        this.lastScheduleTime = lastScheduleTime;
     }
 
     public List<Integer> getPorts() {
