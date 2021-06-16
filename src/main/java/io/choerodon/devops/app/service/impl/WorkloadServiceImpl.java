@@ -477,6 +477,15 @@ public class WorkloadServiceImpl implements WorkloadService {
             case "StatefulSet":
                 devopsStatefulSetService.baseDelete(resourceId);
                 break;
+            case "CronJob":
+                devopsCronJobService.baseDelete(resourceId);
+                break;
+            case "Job":
+                devopsJobService.baseDelete(resourceId);
+                break;
+            case "DaemonSet":
+                devopsDaemonSetService.baseDelete(resourceId);
+                break;
         }
     }
 
