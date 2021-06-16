@@ -200,7 +200,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
             devopsDeploymentDTO.setEnvId(appServiceInstanceDTO.getEnvId());
             devopsDeploymentDTO.setInstanceId(appServiceInstanceDTO.getId());
-            devopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getId());
+            devopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             devopsDeploymentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsDeploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
             devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
