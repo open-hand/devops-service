@@ -506,6 +506,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (releaseName != null) {
                 appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
             }
+
+            // 保存chart内资源信息到对应资源表
+            ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resourceType.getType());
+            if (chartResourceOperatorService != null) {
+                chartResourceOperatorService.saveOrUpdateChartResource(msg, appServiceInstanceDTO);
+            }
+
             switch (resourceType) {
                 case INGRESS:
                     oldDevopsEnvResourceDTO =
@@ -584,11 +591,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         }
                         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
 
-                        // 保存chart内资源信息到对应资源表
-                        ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resourceType.getType());
-                        if (chartResourceOperatorService != null) {
-                            chartResourceOperatorService.saveOrUpdateChartResource(msg, appServiceInstanceDTO);
-                        }
                     }
                     break;
             }
