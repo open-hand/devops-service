@@ -425,6 +425,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.TRUE))) {
                 result.addAll(containsByStatus.get(Boolean.TRUE));
             }
+            devopsEnvPodVO.setIp(pod.getStatus().getPodIP());
             devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
             logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
