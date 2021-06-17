@@ -52,7 +52,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         List<ImageScanResultVO> imageScanResultVOS = new ArrayList<>();
         try {
             content = new String(file.getBytes(), "UTF-8");
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
+            LOGGER.debug(">>>>>>>>>>>>>>>>>>>trivy scan result:{}", content);
             if (StringUtils.isEmpty(content)) {
                 handEmptyScanResult(gitlabPipelineId, startDate, endDate);
                 return;
