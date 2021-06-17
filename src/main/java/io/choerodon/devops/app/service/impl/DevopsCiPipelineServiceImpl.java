@@ -1821,7 +1821,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void createUserRel(List<Long> cdAuditUserIds, Long projectId, Long pipelineId, Long jobId) {
         if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
-            cdAuditUserIds.forEach(t -> {
+            // 去重
+            Set<Long> userIds = new HashSet<>(cdAuditUserIds);
+            userIds.forEach(t -> {
                 DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(projectId, pipelineId, jobId);
                 devopsCdAuditDTO.setUserId(t);
                 devopsCdAuditService.baseCreate(devopsCdAuditDTO);
