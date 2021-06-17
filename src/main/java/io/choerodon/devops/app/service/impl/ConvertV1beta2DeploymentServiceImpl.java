@@ -61,7 +61,7 @@ public class ConvertV1beta2DeploymentServiceImpl extends ConvertK8sObjectService
         String deployName = devopsDeploymentDTO.getName();
         DevopsDeploymentDTO oldDevopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, deployName);
         if (oldDevopsDeploymentDTO != null) {
-            Long deploymentDTOId = devopsDeploymentDTO.getId();
+            Long deploymentDTOId = oldDevopsDeploymentDTO.getId();
             if (beforeSyncDelete.stream()
                     .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(this.getType().getType()))

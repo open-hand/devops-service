@@ -43,7 +43,7 @@ public class ConvertV1JobServiceImpl extends ConvertK8sObjectService<DevopsJobDT
         String jobDTOName = devopsJobDTO.getName();
         DevopsJobDTO oldDevopsJobDTO = devopsJobService.baseQueryByEnvIdAndName(envId, jobDTOName);
         if (oldDevopsJobDTO != null) {
-            Long devopsJobDTOId = devopsJobDTO.getId();
+            Long devopsJobDTOId = oldDevopsJobDTO.getId();
             if (beforeSyncDelete.stream()
                     .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(this.getType().getType()))

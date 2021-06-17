@@ -43,7 +43,7 @@ public class ConvertV1beta2StatefulSetServiceImpl extends ConvertK8sObjectServic
         String statefulSetName = devopsStatefulSetDTO.getName();
         DevopsStatefulSetDTO oldDevopsStatefulSetDTO = devopsStatefulSetService.baseQueryByEnvIdAndName(envId, statefulSetName);
         if (oldDevopsStatefulSetDTO != null) {
-            Long statefulSetDTOId = devopsStatefulSetDTO.getId();
+            Long statefulSetDTOId = oldDevopsStatefulSetDTO.getId();
             if (beforeSyncDelete.stream()
                     .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(this.getType().getType()))
