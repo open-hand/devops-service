@@ -170,7 +170,7 @@ public class CiController {
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = false)
-            @RequestParam("job_id") Long jobId,
+            @RequestParam(value = "job_id",required = false) Long jobId,
             @ApiParam(value = "start_date")
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "end_date")
