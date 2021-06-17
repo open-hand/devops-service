@@ -1151,7 +1151,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId) {
+    public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId, Long userId) {
         LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, userIds, stageName, stageId);
         doWithTryCatchAndLog(
                 () -> {
@@ -1160,7 +1160,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
                     Map<String, String> params = new HashMap<>();
                     params.put(STAGE_NAME, stageName);
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(DetailsHelper.getUserDetails().getUserId());
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
                     sendCdPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
