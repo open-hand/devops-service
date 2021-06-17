@@ -1,16 +1,18 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import java.util.List;
+
 public class DevopsMergeRequestPayload {
     private String serviceCode;
-    private Long issueId;
+    private List<Long> issueIds;
     private Long projectId;
 
-    public Long getIssueId() {
-        return issueId;
+    public List<Long> getIssueIds() {
+        return issueIds;
     }
 
-    public void setIssueId(Long issueId) {
-        this.issueId = issueId;
+    public void setIssueIds(List<Long> issueIds) {
+        this.issueIds = issueIds;
     }
 
     public String getServiceCode() {

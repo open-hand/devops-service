@@ -2,10 +2,10 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +22,11 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMergeRequestPayload;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsBranchService;
-import io.choerodon.devops.app.service.DevopsMergeRequestService;
-import io.choerodon.devops.app.service.SendNotificationService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.enums.MergeRequestState;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
@@ -53,6 +51,8 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     private DevopsBranchService devopsBranchService;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private DevopsIssueRelService devopsIssueRelService;
 
     @Override
     public List<DevopsMergeRequestDTO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
@@ -137,23 +137,35 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         } else if (MergeRequestState.MERGED.getValue().equals(devopsMergeRequestDTO.getState())) {
             AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
             DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appServiceDTO.getId(), devopsMergeRequestVO.getObjectAttributes().getSourceBranch());
-            // 如果该分支绑定了某个issue，先判断绑定的issue关联的所有分支是否已合并，都合并的话发送saga
-            Long issueId = devopsBranchDTO.getIssueId();
-            if (issueId != null) {
-                List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
-                Set<String> branchNames = devopsBranchDTOS.stream().map(DevopsBranchDTO::getBranchName).collect(Collectors.toSet());
-                // 如果tag关联了2个及以上分支，那么已合并分支数量等于tag关联分支数量才发送saga
-                if (branchNames.size() >= 2) {
-                    Integer count = devopsMergeRequestMapper.countMergedBranchesByName(branchNames,gitlabProjectId);
-                    if (count == branchNames.size()) {
-                        applyMergeRequestSaga(issueId, appServiceDTO);
-                    }
-                } else if (branchNames.size() == 1) {
-                    // 如果tag只关联一个分支，发送saga
-                    applyMergeRequestSaga(issueId, appServiceDTO);
+            Set<Long> ids = new HashSet<>();
+            ids.add(devopsBranchDTO.getId());
+            Map<Long, List<Long>> issueIdsBranchIdMap = devopsIssueRelService.listMappedIssueIdsByObjectTypeAndObjectId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), ids);
+            List<Long> issueIds = issueIdsBranchIdMap.get(devopsBranchDTO.getId());
+            if (!CollectionUtils.isEmpty(issueIds)) {
+                // 如果该分支绑定了某个issue，先判断绑定的issue关联的所有分支是否已合并，都合并的话发送saga
+                List<Long> issueIdsToSend = new ArrayList<>();
+                issueIds.forEach(id -> {
+                            Long issueId = devopsBranchDTO.getIssueId();
+                            if (issueId != null) {
+                                List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
+                                Set<String> branchNames = devopsBranchDTOS.stream().map(DevopsBranchDTO::getBranchName).collect(Collectors.toSet());
+                                // 如果tag关联了2个及以上分支，那么已合并分支数量等于tag关联分支数量才发送saga
+                                if (branchNames.size() >= 2) {
+                                    Integer count = devopsMergeRequestMapper.countMergedBranchesByName(branchNames, gitlabProjectId);
+                                    if (count == branchNames.size()) {
+                                        issueIdsToSend.add(id);
+                                    }
+                                } else if (branchNames.size() == 1) {
+                                    // 如果tag只关联一个分支，发送saga
+                                    issueIdsToSend.add(id);
+                                }
+                            }
+                        }
+                );
+                if (!CollectionUtils.isEmpty(issueIdsToSend)) {
+                    applyMergeRequestSaga(issueIdsToSend, appServiceDTO);
                 }
             }
-
             sendNotificationService.sendWhenMergeRequestPassed(gitProjectId, devopsMergeRequestDTO.getGitlabMergeRequestId(), operatorUserLoginName);
         }
     }
@@ -178,9 +190,9 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         return devopsMergeRequestDTO;
     }
 
-    private void applyMergeRequestSaga(Long issueId, AppServiceDTO appServiceDTO) {
+    private void applyMergeRequestSaga(List<Long> issueIds, AppServiceDTO appServiceDTO) {
         DevopsMergeRequestPayload devopsMergeRequestPayload = new DevopsMergeRequestPayload();
-        devopsMergeRequestPayload.setIssueId(issueId);
+        devopsMergeRequestPayload.setIssueIds(issueIds);
         devopsMergeRequestPayload.setServiceCode(appServiceDTO.getCode());
         devopsMergeRequestPayload.setProjectId(appServiceDTO.getProjectId());
 
