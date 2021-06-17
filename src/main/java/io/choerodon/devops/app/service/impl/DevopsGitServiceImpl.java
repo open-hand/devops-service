@@ -248,7 +248,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
         Long devopsBranchId = devopsBranchDTO.getId();
-        devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchId, devopsBranchVO.getIssueId());
+        if (devopsBranchVO.getIssueId() != null) {
+            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchId, devopsBranchVO.getIssueId());
+        }
 
 
         BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
