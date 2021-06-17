@@ -43,7 +43,7 @@ public class ConvertV1Alpha1CronJobServiceImpl extends ConvertK8sObjectService<D
         String cronJobDTOName = devopsCronJobDTO.getName();
         DevopsCronJobDTO oldDevopsCronJobDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, cronJobDTOName);
         if (oldDevopsCronJobDTO != null) {
-            Long devopsCronJobDTOId = devopsCronJobDTO.getId();
+            Long devopsCronJobDTOId = oldDevopsCronJobDTO.getId();
             if (beforeSyncDelete.stream()
                     .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(this.getType().getType()))

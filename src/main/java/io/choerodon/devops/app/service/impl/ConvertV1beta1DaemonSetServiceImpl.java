@@ -43,7 +43,7 @@ public class ConvertV1beta1DaemonSetServiceImpl extends ConvertK8sObjectService<
         String daemonSetDTOName = devopsDaemonSetDTO.getName();
         DevopsDaemonSetDTO oldDevopsDaemonSetDTO = daemonSetService.baseQueryByEnvIdAndName(envId, daemonSetDTOName);
         if (oldDevopsDaemonSetDTO != null) {
-            Long devopsDaemonSetDTOId = devopsDaemonSetDTO.getId();
+            Long devopsDaemonSetDTOId = oldDevopsDaemonSetDTO.getId();
             if (beforeSyncDelete.stream()
                     .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(this.getType().getType()))
