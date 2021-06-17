@@ -194,6 +194,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
     }
 
     @Override
+    @Transactional
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1beta1CronJob v1beta1CronJob = json.deserialize(detailsJson, V1beta1CronJob.class);
 
@@ -220,6 +221,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
     }
 
     @Override
+    @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
         Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
         Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);

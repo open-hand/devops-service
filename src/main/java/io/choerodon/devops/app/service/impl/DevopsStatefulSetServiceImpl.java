@@ -190,6 +190,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     }
 
     @Override
+    @Transactional
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(detailsJson, V1beta2StatefulSet.class);
 
@@ -216,6 +217,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     }
 
     @Override
+    @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
         Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
         Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
