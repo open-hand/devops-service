@@ -4,14 +4,15 @@ All notable changes to devops-service will be documented in this file.
 
 ## [1.0.0] 2020-06-18
 
-#### 新增
+#### New
 
-#### 优化
+#### Optimization
 
+- Upgrading hzero dependency on version 1.6.4
 - Removes the pipeline menu and functionality in the deployment module
 - Optimize the menu directory structure
 
-#### 修复
+#### Repair
 
 - Fixed record out of sync with new execution pipeline
 - Fix pipeline manual stuck task audit error
