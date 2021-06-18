@@ -187,7 +187,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         List<V1OwnerReference> v1OwnerReferences = v1Pod.getMetadata().getOwnerReferences();
         // pod 没有属主信息，比如直接创建的pod
         boolean isReferencesEmpty = (v1OwnerReferences == null || v1OwnerReferences.isEmpty());
-        if (isReferencesEmpty || isWorkloadLabelEmpty) {
+        // 没有属主信息并且没有workload标签，舍弃
+        if (isReferencesEmpty && isWorkloadLabelEmpty) {
             return;
         }
         if (!StringUtils.isEmpty(releaseName)) {
@@ -339,7 +340,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 logger.info("Install resource: resources null...");
             } else {
                 logger.info("Install resource: resource size: {}", resources.size());
-                resources.forEach(resource -> logger.info("Install resource: resource kind {} resource name {}", resource.getName()));
+                resources.forEach(resource -> logger.info("Install resource: resource kind {} resource name {}", resource.getKind(), resource.getName()));
             }
         }
         String releaseName = releasePayloadVO.getName();
