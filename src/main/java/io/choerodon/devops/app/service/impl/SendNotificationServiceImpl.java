@@ -75,11 +75,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String BASE_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
     private static final String LOGIN_NAME = "loginName";
     private static final String USER_NAME = "userName";
-    private static final String DEPLOY_RESOURCES_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&viewType=resource&itemType=%s";
+    private static final String DEPLOY_RESOURCES_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&activeKey=resource&itemType=%s";
     private static final String APP_SERVICE_URL = "%s/#/devops/app-service?type=project&id=%s&name=%s&organizationId=%s";
     private static final String MERGE_REQUEST_URL = "%s/#/devops/code-management?type=project&id=%s&name=%s&organizationId=%s&appServiceId=%s";
 
-    private static final String INSTANCE_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&viewType=resource&itemType=instances";
+    private static final String INSTANCE_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&activeKey=resource&itemType=instances";
 
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
