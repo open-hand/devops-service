@@ -15,12 +15,14 @@ All notable changes to devops-service will be documented in this file.
 - Delete the test host logic
 - Removes the pipeline menu and functionality in the deployment module
 - Optimize the menu directory structure
+- Optimize the pipeline query chart task version information logic
 
 #### Repair
 - Fixed batch verification host status interface error
 - Fixed creating an environment group that does not show problems when there is no environment
 - Fixed record out of sync with new execution pipeline
 - Fix pipeline manual stuck task audit error
+- Fixed state issue with pipeline replication defunct
 
 ## [0.25.0] 2021-04-09
 #### New
