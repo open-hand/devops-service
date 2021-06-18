@@ -1,12 +1,32 @@
 # Changelog
+
 All notable changes to devops-service will be documented in this file.
 
+## [1.0.0] 2020-06-18
+
+#### 新增
+
+#### 优化
+
+- Removes the pipeline menu and functionality in the deployment module
+- Optimize the menu directory structure
+
+#### 修复
+
+- Fixed record out of sync with new execution pipeline
+- Fix pipeline manual stuck task audit error
+
 ## [0.25.0] 2020-04-09
+
 #### New
-- The platform layer adds support for the maintenance and management of application templates, and supports all projects in the platform to be used when creating application services
-- The organization layer adds support for the maintenance and management of application templates, and supports all projects under the organization to use when creating application services
+
+- The platform layer adds support for the maintenance and management of application templates, and supports all projects
+  in the platform to be used when creating application services
+- The organization layer adds support for the maintenance and management of application templates, and supports all
+  projects under the organization to use when creating application services
 - Import application services, adding support for importing services containing source code from the application market
-- Project layer-application deployment, adding support for deployment of market applications that have released deployment packages or Jar packages
+- Project layer-application deployment, adding support for deployment of market applications that have released
+  deployment packages or Jar packages
 - In the application pipeline-CI phase, support for mirroring security scanning tasks is newly added
 - The result of pipeline construction supports local download
 - Pipeline build log supports local download
