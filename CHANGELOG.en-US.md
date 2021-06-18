@@ -2,23 +2,27 @@
 
 All notable changes to devops-service will be documented in this file.
 
-## [1.0.0] 2020-06-18
-
+## [1.0.0] 2021-06-18
 #### New
+- Get all issue ids of commits between two tags
+- Support for container deployment and host deployment of Redis, MySQL base components
+- Support for branching to relate multiple agile issues
 
 #### Optimization
-
 - Upgrading hzero dependency on version 1.6.4
+- Control the number of concurrent synchronous GitRepo when choerodon-cluster-agent starts
+- Add an error message field to the deployment record
+- Delete the test host logic
 - Removes the pipeline menu and functionality in the deployment module
 - Optimize the menu directory structure
 
 #### Repair
-
+- Fixed batch verification host status interface error
+- Fixed creating an environment group that does not show problems when there is no environment
 - Fixed record out of sync with new execution pipeline
 - Fix pipeline manual stuck task audit error
 
-## [0.25.0] 2020-04-09
-
+## [0.25.0] 2021-04-09
 #### New
 
 - The platform layer adds support for the maintenance and management of application templates, and supports all projects
