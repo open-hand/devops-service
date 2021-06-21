@@ -2050,6 +2050,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     sendNotificationService.sendWhenPVCResource(devopsPvcDTO, baseQueryById, SendSettingEnum.CREATE_RESOURCE.value());
                 }
                 break;
+            case DEPLOYMENT:
+            case STATEFULSET:
+            case JOB:
+            case CRONJOB:
+            case DAEMONSET:
+                break;
             default:
                 logger.warn("Unexpected resource kind when syncing commands: {}", devopsEnvCommandDTO.getObject());
                 break;
