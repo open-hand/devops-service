@@ -821,5 +821,21 @@ public class AppServiceController {
             @RequestBody(required = false) String params) {
         return ResponseEntity.ok(applicationServiceService.pageAppServiceToCreateCiPipeline(projectId, pageRequest, params));
     }
+
+
+    /**
+     * 获取项目下应用服务的数量
+     *
+     * @return 环应用服务的数量
+     */
+    @ApiOperation("获取项目下应用服务的数量")
+    @Permission(permissionWithin = true)
+    @GetMapping("/count_by_options")
+    public ResponseEntity<Long> countAppCountByOptions(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId) {
+        return new ResponseEntity<>(applicationServiceService.countAppCountByOptions(projectId), HttpStatus.OK);
+    }
 }
+
 

@@ -503,7 +503,7 @@ public class DevopsClusterController {
      *
      * @return 环境数量
      */
-    @ApiOperation("查询环境的数量")
+    @ApiOperation("获取集群的数量")
     @Permission(permissionWithin = true)
     @GetMapping("/count_by_options")
     public ResponseEntity<Long> countClusterByOptions(
