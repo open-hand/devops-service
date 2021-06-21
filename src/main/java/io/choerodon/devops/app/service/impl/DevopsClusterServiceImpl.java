@@ -987,4 +987,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             throw new CommonException(ERROR_UPDATE_CLUSTER_STATUS_FAILED);
         }
     }
+
+    @Override
+    public Long countClusterByOptions(Long projectId) {
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setProjectId(projectId);
+        int selectCount = devopsClusterMapper.selectCount(devopsClusterDTO);
+        return Long.valueOf(selectCount);
+    }
 }
