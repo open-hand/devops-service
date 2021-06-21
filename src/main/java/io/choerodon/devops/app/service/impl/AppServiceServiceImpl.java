@@ -2123,6 +2123,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         return new ArrayList<>();
     }
 
+    @Override
+    public Long countAppCountByOptions(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        int selectCount = appServiceMapper.selectCount(appServiceDTO);
+        return Long.valueOf(selectCount);
+    }
+
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
         // 获取push代码所需的access token

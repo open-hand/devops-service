@@ -561,4 +561,6 @@ public interface AppServiceService {
      * @return
      */
     List<AppServiceSimpleVO> listByProjectIdAndCode(List<AppServiceSimpleVO> appServiceList);
+
+    Long countAppCountByOptions(Long projectId);
 }
