@@ -144,6 +144,71 @@
         WHERE command.status = 'operating'
         AND dasi.env_id = #{envId,jdbcType=BIGINT}
         AND command.last_update_date <![CDATA[<=]]> #{beforeDate})
+
+        UNION ALL
+        (SELECT command.id,
+                command.sha  AS commit,
+                ddp.name     AS resource_name,
+                'deployment' AS resource_type,
+                NULL         AS namespace
+         FROM devops_deployment ddp
+                      INNER JOIN devops_env_command command ON ddp.command_id = command.id
+         WHERE command.status = 'operating'
+           AND ddp.env_id = #{envId,jdbcType=BIGINT}
+           AND command.last_update_date <![CDATA[<=]]> #{beforeDate})
+
+
+        UNION ALL
+        (SELECT command.id,
+        command.sha  AS commit,
+        dss.name     AS resource_name,
+        'statefulset' AS resource_type,
+        NULL         AS namespace
+        FROM devops_stateful_set dss
+        INNER JOIN devops_env_command command ON dss.command_id = command.id
+        WHERE command.status = 'operating'
+        AND dss.env_id = #{envId,jdbcType=BIGINT}
+        AND command.last_update_date <![CDATA[<=]]> #{beforeDate})
+
+
+        UNION ALL
+        (SELECT command.id,
+        command.sha  AS commit,
+        dds.name     AS resource_name,
+        'daemonset' AS resource_type,
+        NULL         AS namespace
+        FROM devops_daemon_set dds
+        INNER JOIN devops_env_command command ON dds.command_id = command.id
+        WHERE command.status = 'operating'
+        AND dds.env_id = #{envId,jdbcType=BIGINT}
+        AND command.last_update_date <![CDATA[<=]]> #{beforeDate})
+
+
+        UNION ALL
+        (SELECT command.id,
+        command.sha  AS commit,
+        dj.name     AS resource_name,
+        'job' AS resource_type,
+        NULL         AS namespace
+        FROM devops_job dj
+        INNER JOIN devops_env_command command ON dj.command_id = command.id
+        WHERE command.status = 'operating'
+        AND dj.env_id = #{envId,jdbcType=BIGINT}
+        AND command.last_update_date <![CDATA[<=]]> #{beforeDate})
+
+
+        UNION ALL
+        (SELECT command.id,
+        command.sha  AS commit,
+        dcj.name     AS resource_name,
+        'cronjob' AS resource_type,
+        NULL         AS namespace
+        FROM devops_cron_job dcj
+        INNER JOIN devops_env_command command ON dcj.command_id = command.id
+        WHERE command.status = 'operating'
+        AND dcj.env_id = #{envId,jdbcType=BIGINT}
+        AND command.last_update_date <![CDATA[<=]]> #{beforeDate})
+
     </select>
     <select id="listByInstanceIdsAndStartDate" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT id, creation_date
