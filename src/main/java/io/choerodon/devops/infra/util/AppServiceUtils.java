@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -77,7 +78,7 @@ public class AppServiceUtils {
     public Boolean checkEnableCreateAppSvcWithSize(Long projectId, int appSize) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(projectDTO.getOrganizationId());
-        if (resourceLimitVO != null) {
+        if (resourceLimitVO != null && !Objects.isNull(resourceLimitVO.getAppSvcMaxNumber())) {
             AppServiceDTO example = new AppServiceDTO();
             example.setProjectId(projectId);
             int num = appServiceMapper.selectCount(example);

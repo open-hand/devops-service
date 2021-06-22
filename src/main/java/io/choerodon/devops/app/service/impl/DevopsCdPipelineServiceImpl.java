@@ -799,7 +799,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
 
                     // 发送通知
-                    sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, userIds, pipelineRecordId, devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
+                    sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_PASS, userIds, pipelineRecordId, devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId(), details.getUserId());
                     // 执行下一个任务
                     startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
 
@@ -866,7 +866,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 3. 更新流水线状态为终止
             devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.STOP.toValue());
             // 4. 发送审核记录通知
-            sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId());
+            sendNotificationService.sendPipelineAuditMassage(MessageCodeConstants.PIPELINE_STOP, userIds, devopsCdPipelineRecordDTO.getId(), devopsCdStageRecordDTO.getStageName(), devopsCdStageRecordDTO.getStageId(), details.getUserId());
         }
         return auditResultVO;
     }
