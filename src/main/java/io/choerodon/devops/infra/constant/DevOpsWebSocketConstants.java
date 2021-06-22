@@ -9,9 +9,11 @@ package io.choerodon.devops.infra.constant;
 public final class DevOpsWebSocketConstants {
     public static final String AGENT = "agent";
     public static final String FRONT_LOG = "front_log";
+    public static final String FRONT_DOWNLOAD_LOG = "front_download_log";
     public static final String FRONT_EXEC = "front_exec";
     public static final String FRONT_DESCRIBE = "front_describe";
     public static final String AGENT_LOG = "agent_log";
+    public static final String AGENT_DOWNLOAD_LOG = "agent_download_log";
     public static final String AGENT_EXEC = "agent_exec";
     public static final String AGENT_DESCRIBE = "agent_describe";
     public static final String AGENT_POLARIS = "agent_polaris";
@@ -47,6 +49,8 @@ public final class DevOpsWebSocketConstants {
     public static final String PARAMETER_NULL_TEMPLATE = "The parameter %s is unexpectedly null";
 
     public static final String KUBERNETES_GET_LOGS = "kubernetes_get_logs";
+
+    public static final String KubernetesDownloadLogs = "kubernetes_download_logs";
 
     public static final String EXEC_COMMAND = "kubernetes_exec";
 

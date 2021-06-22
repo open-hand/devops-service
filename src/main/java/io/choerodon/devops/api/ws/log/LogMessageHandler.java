@@ -21,6 +21,8 @@ import io.choerodon.devops.api.ws.WebSocketTool;
  */
 @Component
 public class LogMessageHandler {
+    public static String VIEW_LOG = "viewLog";
+    public static String DOWNLOAD_LOG = "downloadLog";
     private static final Logger LOGGER = LoggerFactory.getLogger(LogMessageHandler.class);
     private static final String AGENT_LOG = "AgentLog";
 
@@ -28,7 +30,7 @@ public class LogMessageHandler {
     @Lazy
     private KeySocketSendHelper keySocketSendHelper;
 
-    public void handle(WebSocketSession webSocketSession, BinaryMessage message) {
+    public void handle(WebSocketSession webSocketSession, BinaryMessage message, String type) {
         // 获取rawKey， 用于拼接转发的目的地group
         String rawKey = WebSocketTool.getKey(webSocketSession);
         String destinationGroup;
@@ -39,15 +41,23 @@ public class LogMessageHandler {
 
         String processor = WebSocketTool.getProcessor(webSocketSession);
 
-        if (FRONT_LOG.equals(processor)) {
-            LOGGER.info("Received message from front. The processor is {} and the byte array length is {}", processor, bytesArray.length);
-            destinationGroup = WebSocketTool.buildAgentGroup(rawKey);
-        } else {
-            LOGGER.info("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
-            destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
+        switch (type) {
+            case "viewLog":
+                if (FRONT_LOG.equals(processor)) {
+                    LOGGER.info("Received message from front. The processor is {} and the byte array length is {}", processor, bytesArray.length);
+                    destinationGroup = WebSocketTool.buildAgentGroup(rawKey);
+                } else {
+                    LOGGER.info("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
+                    destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
+                }
+                keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
+                break;
+            case "downloadLog":
+                LOGGER.info("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
+                destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
+                keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
+                break;
         }
-
-        keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
     }
 
 }
