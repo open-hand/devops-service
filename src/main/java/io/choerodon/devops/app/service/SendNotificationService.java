@@ -215,7 +215,7 @@ public interface SendNotificationService {
 
     void sendWhenSecret(DevopsSecretDTO devopsSecretDTO, String code);
 
-    void sendPipelineAuditMassage(String type, List<Long> auditUser, Long pipelineRecordId, String stageName, Long stageId);
+    void sendPipelineAuditMassage(String type, List<Long> auditUser, Long pipelineRecordId, String stageName, Long stageId,Long detailsUserId);
 
     void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params);
 

@@ -57,6 +57,11 @@ public class SagaHandler {
      */
     private static final String DEVOPS = "N_DEVOPS";
 
+    /**
+     * 运维项目类型
+     */
+    private static final String OPERATIONS = "N_OPERATIONS";
+
     @Autowired
     private GitlabGroupService gitlabGroupService;
     @Autowired
@@ -96,7 +101,7 @@ public class SagaHandler {
             seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
+        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
             return msg;
         }
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
@@ -127,7 +132,7 @@ public class SagaHandler {
         if (CollectionUtils.isEmpty(projectPayload.getProjectCategoryVOS())) {
             return msg;
         }
-        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).collect(Collectors.toList()).contains(DEVOPS)) {
+        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
             return msg;
         }
         gitlabHandleService.handleProjectCategoryEvent(projectPayload);
@@ -174,7 +179,7 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> tempList = new ArrayList<>(gitlabGroupMemberVOList);
         tempList.forEach(t -> {
             if (t.getResourceType().equals(ResourceLevel.PROJECT.value())) {
-                if (!baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).contains(DEVOPS)) {
+                if (!baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).stream().anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
                     gitlabGroupMemberVOList.remove(t);
                 }
             }
