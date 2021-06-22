@@ -1,22 +1,20 @@
 package io.choerodon.devops.api.ws.log.agent;
 
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_LOG;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_DOWNLOAD_LOG;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.AgentExecAndLogSocketHandler;
 import io.choerodon.devops.api.ws.log.LogMessageHandler;
 
-/**
- * @author zmf
- * @since 20-5-9
- */
 @Component
-public class AgentLogSocketHandler extends AbstractSocketHandler {
+public class AgentDownloadLogSocketHandler extends AbstractSocketHandler {
+
     @Autowired
     private AgentExecAndLogSocketHandler agentExecAndLogSocketHandler;
     @Autowired
@@ -24,7 +22,7 @@ public class AgentLogSocketHandler extends AbstractSocketHandler {
 
     @Override
     public String processor() {
-        return AGENT_LOG;
+        return AGENT_DOWNLOAD_LOG;
     }
 
     @Override
@@ -34,6 +32,11 @@ public class AgentLogSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void handleBinaryMessage(WebSocketSession session, BinaryMessage message) {
-        logMessageHandler.handle(session, message, LogMessageHandler.VIEW_LOG);
+        logMessageHandler.handle(session, message, LogMessageHandler.DOWNLOAD_LOG);
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        agentExecAndLogSocketHandler.afterConnectionClosed(session, status);
     }
 }

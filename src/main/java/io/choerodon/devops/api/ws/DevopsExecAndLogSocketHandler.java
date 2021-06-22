@@ -76,6 +76,8 @@ public class DevopsExecAndLogSocketHandler {
 
         if (FRONT_LOG.equals(processor)) {
             agentCommandService.startLogOrExecConnection(KUBERNETES_GET_LOGS, key, pipeRequest, clusterId);
+        } else if (FRONT_DOWNLOAD_LOG.equals(processor)) {
+            agentCommandService.startLogOrExecConnection(KubernetesDownloadLogs, key, pipeRequest, clusterId);
         } else {
             agentCommandService.startLogOrExecConnection(EXEC_COMMAND, key, pipeRequest, clusterId);
         }
