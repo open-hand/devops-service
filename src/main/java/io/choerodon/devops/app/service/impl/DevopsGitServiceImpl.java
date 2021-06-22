@@ -395,7 +395,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 if (!CollectionUtils.isEmpty(mappedIssueIds.get(t.getId()))) {
                     mappedIssueIds.get(t.getId()).forEach(i -> {
                         IssueDTO issueDTO = finalIssues.get(i);
-                        if (finalProjectDTOMap != null && issueDTO != null) {
+                        if (issueDTO != null) {
                             ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
                             if (!Objects.isNull(dto)) {
                                 if (dto.getId().longValue() == projectId.longValue()) {
