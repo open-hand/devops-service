@@ -259,7 +259,7 @@ public class GitlabCiUtil {
 
         // 默认跳过证书校验， 之后可以进行配置, 因为自签名的证书不方便进行证书校验
 //        String rawCommand = "kaniko %s-c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
-        String rawCommand = "ssh root@127.0.0.1 /kaniko/kaniko %s --no-push -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --tarPath ${PWD}/${PROJECT_NAME}.tar";
+        String rawCommand = "ssh -o StrictHostKeyChecking=no root@127.0.0.1 /kaniko/kaniko %s --no-push -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --tarPath ${PWD}/${PROJECT_NAME}.tar";
         commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
         //kaniko推镜像成功后可以执行trivy  这里是将镜像扫描的结果保存为json文件 以commmit_tag作为文件的名字 这个文件存在于runner的 /builds/orgCode-projectCode/appCode下，runner的pod停掉以后会自动删除
         if (imageScan) {
