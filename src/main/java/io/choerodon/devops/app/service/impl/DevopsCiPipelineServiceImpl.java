@@ -291,11 +291,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (StringUtils.isEmpty(ciCdPipelineVO.getImage())) {
             ciCdPipelineVO.setImage(defaultCiImage);
         }
-        //1.0以后如果使用默认镜像  统一使用配置的默认镜像
-        String[] split = StringUtils.split(defaultCiImage, ":");
-        if (StringUtils.startsWith(ciCdPipelineVO.getImage(), split[0])) {
-            ciCdPipelineVO.setImage(defaultCiImage);
-        }
         // 创建CICD流水线
         CiCdPipelineDTO ciCdPipelineDTO = ConvertUtils.convertObject(ciCdPipelineVO, CiCdPipelineDTO.class);
         ciCdPipelineDTO.setId(null);
@@ -1190,11 +1185,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             ciCdPipelineDTO.setImage(defaultCiImage);
         } else {
             ciCdPipelineDTO.setImage(ciCdPipelineVO.getImage());
-        }
-        //1.0以后 如果修改流水线  使用的是默认镜像 则统一换成配置默认配置的镜像
-        String[] split = StringUtils.split(defaultCiImage, ":");
-        if (StringUtils.startsWith(ciCdPipelineVO.getImage(), split[0])) {
-            ciCdPipelineDTO.setImage(defaultCiImage);
         }
         ciCdPipelineDTO.setName(ciCdPipelineVO.getName());
         ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
