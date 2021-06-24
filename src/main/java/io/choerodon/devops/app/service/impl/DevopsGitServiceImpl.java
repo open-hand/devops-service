@@ -1188,7 +1188,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchNameWithIssueIds(appServiceId, branchName);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
-        devopsIssueRelService.deleteRelation(issueId);
+        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId(), issueId);
     }
 
     @Override

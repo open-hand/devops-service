@@ -196,7 +196,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 throw new CommonException("Failed to delete branch due to result count " + resultCount);
             }
             // 删除敏捷问题关联关系
-            devopsIssueRelService.deleteRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId());
+            devopsIssueRelService.deleteRelationByObjectAndObjectId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId());
         } else {
             LOGGER.info("Branch {} is not found in app service with id {}", branchName, appServiceId);
         }

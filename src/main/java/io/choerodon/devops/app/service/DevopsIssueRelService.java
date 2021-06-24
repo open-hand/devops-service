@@ -9,9 +9,9 @@ public interface DevopsIssueRelService {
 
     void addRelation(String object, Long objectId, Long issueIds);
 
-    void deleteRelation(String object, Long objectId);
+    void deleteRelationByObjectAndObjectId(String object, Long objectId);
 
-    void deleteRelation(Long issueId);
+    void deleteRelationByObjectAndObjectIdAndIssueId(String object, Long objectId, Long issueId);
 
     Map<Long, List<Long>> listMappedIssueIdsByObjectTypeAndObjectId(String object, Set<Long> objectIds);
 }
