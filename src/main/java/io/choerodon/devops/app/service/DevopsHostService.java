@@ -1,13 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
  * @author zmf
@@ -85,7 +84,7 @@ public interface DevopsHostService {
 
     /**
      * 查询主机
-     *
+     * @deprecated
      * @param projectId 项目id
      * @param hostId    主机id
      */
@@ -101,7 +100,7 @@ public interface DevopsHostService {
 
     /**
      * 测试主机连接情况
-     *
+     * @deprecated
      * @param projectId                  项目id
      * @param devopsHostConnectionTestVO 主机连接信息
      * @return 连接结果
@@ -110,6 +109,7 @@ public interface DevopsHostService {
 
     /**
      * 测试多个主机连接情况
+     * @deprecated
      *
      * @param projectId 项目id
      * @param hostIds   主机ids
@@ -119,7 +119,7 @@ public interface DevopsHostService {
 
     /**
      * 通过id测试部署主机连接情况
-     *
+     * @deprecated
      * @param projectId 项目id
      * @param hostId    主机id
      * @return true表示连接成功
@@ -168,4 +168,11 @@ public interface DevopsHostService {
     CheckingProgressVO getCheckingProgress(Long projectId, String correctKey);
 
     Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam);
+
+    /**
+     * 查询主机信息
+     * @param hostId 主机id
+     * @return
+     */
+    DevopsHostDTO baseQuery(Long hostId);
 }
