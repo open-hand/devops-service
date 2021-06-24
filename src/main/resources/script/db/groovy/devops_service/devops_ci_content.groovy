@@ -18,7 +18,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_content.groovy') {
     }
 
 
-    changeSet(author: 'wx', id: '2021-06-24-fix-data') {
+    changeSet(author: 'wx', id: '2021-06-24-fix-data-content') {
         sql("""
             UPDATE devops_ci_content dcc 
             SET dcc.ci_content_file = REPLACE ( dcc.ci_content_file, "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1", "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4" ) 

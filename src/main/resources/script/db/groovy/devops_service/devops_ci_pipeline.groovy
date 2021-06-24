@@ -53,7 +53,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
         }
     }
 
-    changeSet(author: 'wx', id: '2021-06-24-fix-data') {
+    changeSet(author: 'wx', id: '2021-06-24-fix-data-pipeline') {
         sql("""
             UPDATE devops_cicd_pipeline dcp 
             SET dcp.image="registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4"
