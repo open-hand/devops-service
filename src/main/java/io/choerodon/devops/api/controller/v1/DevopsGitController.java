@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -231,7 +230,7 @@ public class DevopsGitController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation("获取服务两个tag之间的issueId列表")
     @GetMapping("/tags/issue_ids")
-    public ResponseEntity<Set<Long>> getIssueIdsBetweenTags(
+    public ResponseEntity<List<IssueIdAndBranchIdsVO>> getIssueIdsBetweenTags(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务id", required = true)

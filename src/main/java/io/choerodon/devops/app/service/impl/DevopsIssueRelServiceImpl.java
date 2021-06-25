@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hzero.mybatis.BatchInsertHelper;
@@ -13,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.devops.infra.mapper.DevopsIssueRelMapper;
@@ -79,5 +77,29 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
         }
         List<DevopsIssueRelDTO> devopsIssueRelDTOS = devopsIssueRelMapper.listIssueIdsByObjectTypeAndObjectIds(objectIds, object);
         return devopsIssueRelDTOS.stream().collect(Collectors.groupingBy(DevopsIssueRelDTO::getObjectId, Collectors.mapping(DevopsIssueRelDTO::getIssueId, Collectors.toList())));
+    }
+
+    @Override
+    public Set<Long> listObjectIdsByIssueIdAndObjectType(String object, Long issueId) {
+        return devopsIssueRelMapper.listObjectIdsByIssueIdAndObjectType(object, issueId);
+    }
+
+    @Override
+    public List<IssueIdAndBranchIdsVO> listObjectIdsByIssueIdsAndObjectType(String object, Set<Long> issueIds) {
+        if (CollectionUtils.isEmpty(issueIds)) {
+            return new ArrayList<>();
+        }
+        List<IssueIdAndBranchIdsVO> result = new ArrayList<>();
+        List<DevopsIssueRelDTO> devopsIssueRelDTOList = devopsIssueRelMapper.listObjectIdsByIssueIdsAndObjectType(object, issueIds);
+        devopsIssueRelDTOList
+                .stream()
+                .collect(Collectors.groupingBy(DevopsIssueRelDTO::getIssueId, Collectors.mapping(DevopsIssueRelDTO::getObjectId, Collectors.toList())))
+                .forEach((k, v) -> {
+                    IssueIdAndBranchIdsVO issueIdAndBranchIdsVO = new IssueIdAndBranchIdsVO();
+                    issueIdAndBranchIdsVO.setIssueId(k);
+                    issueIdAndBranchIdsVO.setBranchIds(v);
+                    result.add(issueIdAndBranchIdsVO);
+                });
+        return result;
     }
 }

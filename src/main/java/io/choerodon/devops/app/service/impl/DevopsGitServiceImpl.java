@@ -1183,21 +1183,38 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_BRANCH_ISSUE_DELETE, description = "移除分支和敏捷问题关联关系", inputSchemaClass = IssueIdAndBranchIdsVO.class)
     public void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchNameWithIssueIds(appServiceId, branchName);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
         devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId(), issueId);
+
+        Set<Long> remainBranchIds = devopsIssueRelService.listObjectIdsByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
+        IssueIdAndBranchIdsVO issueIdAndBranchIdsVO = new IssueIdAndBranchIdsVO();
+        issueIdAndBranchIdsVO.setIssueId(issueId);
+        issueIdAndBranchIdsVO.setBranchIds(new ArrayList<>(remainBranchIds));
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withRefType("project")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_BRANCH_ISSUE_DELETE),
+                builder -> builder
+                        .withPayloadAndSerialize(issueIdAndBranchIdsVO)
+                        .withRefId(String.valueOf(issueId)));
     }
 
     @Override
-    public Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
+    public List<IssueIdAndBranchIdsVO> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         Set<String> commitSha;
 
         if (StringUtils.isEmpty(to)) {
-            return new HashSet<>();
+            return new ArrayList<>();
         }
 
         if (!StringUtils.isEmpty(from)) {
@@ -1213,9 +1230,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Map<Long, List<Long>> mappedIssueIds = devopsIssueRelService.listMappedIssueIdsByObjectTypeAndObjectId(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), commitIds);
             Set<Long> issueIds = new HashSet<>();
             mappedIssueIds.forEach((k, v) -> issueIds.addAll(v));
-            return issueIds;
+            return devopsIssueRelService.listObjectIdsByIssueIdsAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueIds);
         } else {
-            return new HashSet<>();
+            return new ArrayList<>();
         }
     }
 }
