@@ -395,19 +395,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 if (!CollectionUtils.isEmpty(mappedIssueIds.get(t.getId()))) {
                     mappedIssueIds.get(t.getId()).forEach(i -> {
                         IssueDTO issueDTO = finalIssues.get(i);
-                        ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
-                        if (!Objects.isNull(dto)) {
-                            if (dto.getId().longValue() == projectId.longValue()) {
-                                issueDTO.setProjectName("(本项目)" + dto.getName());
-                                issueDTO.setProjectId(dto.getId());
-                                issueDTO.setProjectCode(dto.getCode());
-                            } else {
-                                issueDTO.setProjectName(dto.getName());
-                                issueDTO.setProjectId(dto.getId());
-                                issueDTO.setProjectCode(dto.getCode());
+                        if (issueDTO != null) {
+                            ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
+                            if (!Objects.isNull(dto)) {
+                                if (dto.getId().longValue() == projectId.longValue()) {
+                                    issueDTO.setProjectName("(本项目)" + dto.getName());
+                                    issueDTO.setProjectId(dto.getId());
+                                    issueDTO.setProjectCode(dto.getCode());
+                                } else {
+                                    issueDTO.setProjectName(dto.getName());
+                                    issueDTO.setProjectId(dto.getId());
+                                    issueDTO.setProjectCode(dto.getCode());
+                                }
                             }
+                            issueDTOList.add(issueDTO);
                         }
-                        issueDTOList.add(issueDTO);
                     });
                 }
             }

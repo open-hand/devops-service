@@ -16,4 +16,40 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_content.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+
+    changeSet(author: 'wx', id: '2021-06-24-fix-data-content') {
+        sql("""
+            UPDATE devops_ci_content dcc 
+            SET dcc.ci_content_file = REPLACE ( dcc.ci_content_file, "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.9.1", "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4" ) 
+            WHERE
+            dcc.ci_content_file LIKE '%registry.cn-shanghai.aliyuncs.com/c7n/cibase%';
+            
+            UPDATE devops_ci_content dcc 
+            SET dcc.ci_content_file = REPLACE ( dcc.ci_content_file, "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.10.1", "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4" ) 
+            WHERE
+            dcc.ci_content_file LIKE '%registry.cn-shanghai.aliyuncs.com/c7n/cibase%';
+            
+            UPDATE devops_ci_content dcc 
+            SET dcc.ci_content_file = REPLACE ( dcc.ci_content_file, "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.0", "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4" ) 
+            WHERE
+            dcc.ci_content_file LIKE '%registry.cn-shanghai.aliyuncs.com/c7n/cibase%';
+
+            UPDATE devops_ci_content dcc 
+            SET dcc.ci_content_file = REPLACE ( dcc.ci_content_file, "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.1", "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4" ) 
+            WHERE
+            dcc.ci_content_file LIKE '%registry.cn-shanghai.aliyuncs.com/c7n/cibase%';
+            
+            UPDATE devops_ci_content dcc 
+            SET dcc.ci_content_file = REPLACE ( dcc.ci_content_file, "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.2", "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4" ) 
+            WHERE
+            dcc.ci_content_file LIKE '%registry.cn-shanghai.aliyuncs.com/c7n/cibase%';
+            
+            UPDATE devops_ci_content dcc 
+            SET dcc.ci_content_file = REPLACE ( dcc.ci_content_file, "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.3", "registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4" ) 
+            WHERE
+            dcc.ci_content_file LIKE '%registry.cn-shanghai.aliyuncs.com/c7n/cibase%';
+
+        """)
+    }
 }
