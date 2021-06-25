@@ -587,6 +587,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return devopsHostMapper.selectByPrimaryKey(hostId);
     }
 
+    @Override
+    @Transactional
+    public void baseUpdateHostStatus(Long hostId, DevopsHostStatus status) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        // 更新主机连接状态
+        if (devopsHostDTO != null) {
+            devopsHostDTO.setHostStatus(status.getValue());
+        }
+        devopsHostMapper.updateByPrimaryKeySelective(devopsHostDTO);
+    }
+
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
         List<Long> userIds = devopsHostVOS.getContent().stream().map(DevopsHostVO::getLastUpdatedBy).collect(Collectors.toList());
         Map<Long, IamUserDTO> userInfo = baseServiceClientOperator.listUsersByIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, Functions.identity()));
