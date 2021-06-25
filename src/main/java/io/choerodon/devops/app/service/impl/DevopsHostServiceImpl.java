@@ -1,28 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.util.UUIDUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -44,6 +24,25 @@ import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.util.UUIDUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -581,6 +580,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             });
         }
         return page;
+    }
+
+    @Override
+    public DevopsHostDTO baseQuery(Long hostId) {
+        return devopsHostMapper.selectByPrimaryKey(hostId);
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

@@ -28,6 +28,8 @@ public final class DevOpsWebSocketConstants {
     public static final String KIND = "kind";
     public static final String NAME = "name";
     public static final String DESCRIBE_Id = "describeId";
+    public static final String HOST_AGENT = "host_agent";
+    public static final String HOST_ID = "hostId";
 
     /**
      * 形如:  cluster:123
