@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.handler;
 
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
@@ -29,14 +28,6 @@ public class HostConnectionHandler {
         String hostId = request.getParameter(HOST_ID);
         String token = request.getParameter(TOKEN);
 
-        if (key == null || key.trim().isEmpty()) {
-            LOGGER.warn("Agent Handshake : Key is null");
-            return false;
-        }
-        if (!KeyParseUtil.matchPattern(key)) {
-            LOGGER.warn("Agent Handshake : Key not match the pattern");
-            return false;
-        }
         if (hostId == null || hostId.trim().isEmpty()) {
             LOGGER.warn("Agent Handshake : hostId is null");
             return false;
@@ -52,11 +43,10 @@ public class HostConnectionHandler {
             LogUtil.loggerWarnObjectNullWithId("hostId", TypeUtil.objToLong(hostId), LOGGER);
             return false;
         }
-        // todo 校验token
-//        if (!token.equals(devopsHostDTO.getToken())) {
-//            LOGGER.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
-//            return false;
-//        }
+        if (!token.equals(devopsHostDTO.getToken())) {
+            LOGGER.warn("Host with id {} exists but its token doesn't match the token that agent offers as {}", hostId, token);
+            return false;
+        }
 
         return true;
     }

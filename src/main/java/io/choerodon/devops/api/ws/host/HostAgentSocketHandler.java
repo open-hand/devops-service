@@ -4,8 +4,10 @@ import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.api.vo.host.HostMsgVO;
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
+import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.app.service.HostMsgHandler;
 import io.choerodon.devops.infra.constant.DevOpsWebSocketConstants;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.util.JsonHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,8 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
     @Autowired
     private List<HostMsgHandler> hostMsgHandlers;
 
+    @Autowired
+    private DevopsHostService devopsHostService;
 
     @Override
     public String processor() {
@@ -58,18 +62,15 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         // 就是agent连接时应该传入的group参数，形如  front_agent:clusterId:21
-        String group = WebSocketTool.getGroup(session);
+        String hostId = WebSocketTool.getHostId(session);
 
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(Long.parseLong(hostId));
 
-        // todo 保存链接信息
-        //将已连接的agent集群信息放到redis中,用于判断集群是否连接
-        ClusterSessionVO clusterSession = new ClusterSessionVO();
-        clusterSession.setWebSocketSessionId(session.getId());
-        Long clusterId = WebSocketTool.getClusterId(session);
-        clusterSession.setClusterId(clusterId);
-        clusterSession.setVersion(WebSocketTool.getVersion(session));
-        clusterSession.setRegisterKey(group);
-        redisTemplate.opsForHash().put(CLUSTER_SESSION, clusterSession.getRegisterKey(), clusterSession);
+        // 更新主机连接状态
+        if (devopsHostDTO != null) {
+//            devopsHostDTO.setHostStatus();
+        }
+
 
 
     }
