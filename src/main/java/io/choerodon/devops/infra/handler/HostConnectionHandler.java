@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.handler;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ public class HostConnectionHandler {
 
         //校验ws连接参数是否正确
         String key = request.getParameter(KEY);
-        String clusterId = request.getParameter(CLUSTER_ID);
+        String hostId = request.getParameter(HOST_ID);
         String token = request.getParameter(TOKEN);
 
         if (key == null || key.trim().isEmpty()) {
@@ -36,8 +37,8 @@ public class HostConnectionHandler {
             LOGGER.warn("Agent Handshake : Key not match the pattern");
             return false;
         }
-        if (clusterId == null || clusterId.trim().isEmpty()) {
-            LOGGER.warn("Agent Handshake : ClusterId is null");
+        if (hostId == null || hostId.trim().isEmpty()) {
+            LOGGER.warn("Agent Handshake : hostId is null");
             return false;
         }
         if (token == null || token.trim().isEmpty()) {
@@ -46,11 +47,12 @@ public class HostConnectionHandler {
         }
 
         //检验连接过来的agent和集群是否匹配
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(TypeUtil.objToLong(clusterId));
-//        if (devopsHostDTO == null) {
-//            LogUtil.loggerWarnObjectNullWithId("Cluster", TypeUtil.objToLong(clusterId), LOGGER);
-//            return false;
-//        }
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(TypeUtil.objToLong(hostId));
+        if (devopsHostDTO == null) {
+            LogUtil.loggerWarnObjectNullWithId("hostId", TypeUtil.objToLong(hostId), LOGGER);
+            return false;
+        }
+        // todo 校验token
 //        if (!token.equals(devopsHostDTO.getToken())) {
 //            LOGGER.warn("Cluster with id {} exists but its token doesn't match the token that agent offers as {}", clusterId, token);
 //            return false;
