@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.annotation.Nullable;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.annotation.Nullable;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * 主机配置
@@ -29,11 +29,6 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("主机名称")
     private String name;
 
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostType}
-     */
-    @ApiModelProperty("主机类型")
-    private String type;
 
     @ApiModelProperty("项目id")
     private Long projectId;
@@ -48,29 +43,11 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("主机连接错误信息")
     private String hostCheckError;
 
-    @Deprecated
-    @Nullable
-    @ApiModelProperty("jmeter连接错误信息")
-    private String jmeterCheckError;
-
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
-     */
-    @Deprecated
-    @ApiModelProperty("jmeter状态")
-    private String jmeterStatus;
-
     @ApiModelProperty("主机ip")
     private String hostIp;
 
     @ApiModelProperty("主机ssh的端口")
     private Integer sshPort;
-
-    @ApiModelProperty("内网ip")
-    private String privateIp;
-
-    @ApiModelProperty("内网ssh端口")
-    private Integer privatePort;
 
     /**
      * {@link HostAuthType}
@@ -84,13 +61,56 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
+    @ApiModelProperty("主机连接token")
+    private String token;
+
+    // todo 下方字段在重新开发主机部署时移除
     @Deprecated
     @ApiModelProperty("jmeter进程的端口号")
+    @Transient
     private Integer jmeterPort;
 
     @Deprecated
     @ApiModelProperty("jmeter二进制文件的路径")
+    @Transient
     private String jmeterPath;
+
+    /**
+     * {@link io.choerodon.devops.infra.enums.DevopsHostType}
+     */
+    @ApiModelProperty("主机类型")
+    @Transient
+    private String type;
+
+    @ApiModelProperty("内网ip")
+    @Transient
+    private String privateIp;
+
+    @ApiModelProperty("内网ssh端口")
+    @Transient
+    private Integer privatePort;
+
+    /**
+     * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
+     */
+    @Deprecated
+    @Transient
+    @ApiModelProperty("jmeter状态")
+    private String jmeterStatus;
+
+    @Deprecated
+    @Transient
+    @ApiModelProperty("jmeter连接错误信息")
+    private String jmeterCheckError;
+
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public Long getId() {
         return id;
