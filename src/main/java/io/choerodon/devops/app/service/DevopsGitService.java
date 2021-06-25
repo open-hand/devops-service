@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -147,7 +146,7 @@ public interface DevopsGitService {
      * @param params
      * @param page
      * @param size
-     * @param checkMember 是否校验gitlab项目角色
+     * @param checkMember   是否校验gitlab项目角色
      * @return
      */
     Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size, Boolean checkMember);
@@ -227,5 +226,5 @@ public interface DevopsGitService {
      * @param to           后一个tag
      * @return 所有的issueId
      */
-    Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
+    List<IssueIdAndBranchIdsVO> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
 }
