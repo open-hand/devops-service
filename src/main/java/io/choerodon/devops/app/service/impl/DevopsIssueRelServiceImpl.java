@@ -55,7 +55,7 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteRelation(String object, Long objectId) {
+    public void deleteRelationByObjectAndObjectId(String object, Long objectId) {
         DevopsIssueRelDTO devopsIssueRelDTOToDelete = new DevopsIssueRelDTO();
         devopsIssueRelDTOToDelete.setObject(object);
         devopsIssueRelDTOToDelete.setObjectId(objectId);
@@ -64,9 +64,11 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteRelation(Long issueId) {
+    public void deleteRelationByObjectAndObjectIdAndIssueId(String object, Long objectId, Long issueId) {
         DevopsIssueRelDTO devopsIssueRelDTOToDelete = new DevopsIssueRelDTO();
         devopsIssueRelDTOToDelete.setIssueId(issueId);
+        devopsIssueRelDTOToDelete.setObjectId(objectId);
+        devopsIssueRelDTOToDelete.setObject(object);
         devopsIssueRelMapper.delete(devopsIssueRelDTOToDelete);
     }
 
