@@ -81,6 +81,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
     }
     changeSet(author: 'wanghao', id: '2021-06-25-modify-column') {
 
+        dropUniqueConstraint(constraintName: "uk_project_ip_jmeter_port", tableName: "devops_host")
         dropColumn(columnName: "type", tableName: "devops_host")
         dropColumn(columnName: "jmeter_status", tableName: "devops_host")
         dropColumn(columnName: "jmeter_port", tableName: "devops_host")
