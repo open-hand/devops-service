@@ -12,6 +12,7 @@ import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.app.service.EncryptService;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
@@ -596,6 +597,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsHostDTO.setHostStatus(status.getValue());
         }
         devopsHostMapper.updateByPrimaryKeySelective(devopsHostDTO);
+    }
+
+    @Override
+    public List<Object> listJavaProcessInfo(Long projectId, Long hostId) {
+
+        return redisTemplate.opsForHash().values(String.format(DevopsHostConstants.HOST_JAVA_PROCESS_INFO_KEY, hostId));
+    }
+
+    @Override
+    public List<Object> listDockerProcessInfo(Long projectId, Long hostId) {
+
+        return redisTemplate.opsForHash().values(String.format(DevopsHostConstants.HOST_DOCKER_PROCESS_INFO_KEY, hostId));
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

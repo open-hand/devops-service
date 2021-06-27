@@ -1,17 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Set;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -23,6 +11,18 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author zmf
@@ -211,5 +211,25 @@ public class DevopsHostController {
                                                                        @RequestParam(value = "correctKey", required = false) String correctKey,
                                                                        @RequestParam(value = "search_param", required = false) String searchParam) {
         return ResponseEntity.ok(devopsHostService.pagingWithCheckingStatus(projectId, pageRequest, correctKey, searchParam));
+    }
+
+    @ApiOperation("获取java进程信息接口")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{host_id}/java_process")
+    public ResponseEntity<List<Object>> listJavaProcessInfo(@ApiParam(value = "项目id", required = true)
+                                                                       @PathVariable("project_id") Long projectId,
+                                                                       @ApiParam(value = "主机id", required = true)
+                                                                       @PathVariable("host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.listJavaProcessInfo(projectId, hostId));
+    }
+
+    @ApiOperation("获取docker进程信息接口")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{host_id}/docker_process")
+    public ResponseEntity<List<Object>> listDockerProcessInfo(@ApiParam(value = "项目id", required = true)
+                                                            @PathVariable("project_id") Long projectId,
+                                                            @ApiParam(value = "主机id", required = true)
+                                                            @PathVariable("host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.listDockerProcessInfo(projectId, hostId));
     }
 }
