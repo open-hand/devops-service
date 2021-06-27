@@ -49,7 +49,7 @@ public class DockerProcessUpdateHandler implements HostMsgHandler {
         });
 
         // 更新缓存
-        redisTemplate.opsForHash().putAll(String.format(DevopsHostConstants.HOST_JAVA_PROCESS_INFO_KEY, hostId), processInfoMap);
+        redisTemplate.opsForHash().putAll(String.format(DevopsHostConstants.HOST_DOCKER_PROCESS_INFO_KEY, hostId), processInfoMap);
 
     }
 
