@@ -7,6 +7,7 @@ import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -184,4 +185,20 @@ public interface DevopsHostService {
      * @param status
      */
     void baseUpdateHostStatus(Long hostId, DevopsHostStatus status);
+
+    /**
+     * 查询主机下所有java进程信息
+     * @param projectId
+     * @param hostId
+     * @return 集合中的object对象为JavaProcessInfoVO
+     */
+    List<Object> listJavaProcessInfo(Long projectId, Long hostId);
+
+    /**
+     * 查询docker进程信息接口
+     * @param projectId
+     * @param hostId
+     * @return 集合中的object对象为DockerProcessInfoVO
+     */
+    List<Object> listDockerProcessInfo(Long projectId, Long hostId);
 }
