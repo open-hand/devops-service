@@ -15,10 +15,19 @@ public class DockerProcessInfoVO {
     private String containerId;
     private String image;
     private String name;
+    private String status;
     private String port;
     private IamUserDTO deployer;
     private Date deployDate;
 
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getName() {
         return name;
