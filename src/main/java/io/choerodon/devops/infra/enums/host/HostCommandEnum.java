@@ -14,12 +14,13 @@ package io.choerodon.devops.infra.enums.host;
  * @author wanghao
  * @Date 2021/6/28 9:08
  */
-public enum HostOperatorEnum {
+public enum HostCommandEnum {
 
     DEPLOY_DOCKER("deploy_docker"),
     RESTART_DOCKER("restart_docker"),
+    START_DOCKER("start_docker"),
     STOP_DOCKER("stop_docker"),
-    EXIT_DOCKER("exit_docker"),
+    REMOVE_DOCKER("remove_docker"),
     DEPLOY_JAR("deploy_jar"),
     KILL_JAR("kill_jar"),
     INIT_AGENT("init_agent"),
@@ -27,7 +28,7 @@ public enum HostOperatorEnum {
 
     private String value;
 
-    HostOperatorEnum(String value) {
+    HostCommandEnum(String value) {
         this.value = value;
     }
     public String value() {

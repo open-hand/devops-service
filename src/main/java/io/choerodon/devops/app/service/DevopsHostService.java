@@ -201,4 +201,45 @@ public interface DevopsHostService {
      * @return 集合中的object对象为DockerProcessInfoVO
      */
     List<Object> listDockerProcessInfo(Long projectId, Long hostId);
+
+    /**
+     * 删除java进程
+     * @param projectId
+     * @param hostId
+     * @param pid
+     */
+    void deleteJavaProcess(Long projectId, Long hostId, String pid);
+
+    /**
+     * 删除docker进程
+     * @param projectId
+     * @param hostId
+     * @param containerId
+     */
+    void deleteDockerProcess(Long projectId, Long hostId, String containerId);
+
+    /**
+     * 停止docker进程
+     * @param projectId
+     * @param hostId
+     * @param containerId
+     */
+    void stopDockerProcess(Long projectId, Long hostId, String containerId);
+
+    /**
+     * 重启docker进程
+     * @param projectId
+     * @param hostId
+     * @param containerId
+     */
+    void restartDockerProcess(Long projectId, Long hostId, String containerId);
+
+    /**
+     * 启动docker进程
+     * @param projectId
+     * @param hostId
+     * @param containerId
+     */
+    void startDockerProcess(Long projectId, Long hostId, String containerId);
+
 }
