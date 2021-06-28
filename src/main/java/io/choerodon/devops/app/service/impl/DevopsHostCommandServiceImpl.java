@@ -1,0 +1,31 @@
+package io.choerodon.devops.app.service.impl;
+
+import io.choerodon.devops.app.service.DevopsHostCommandService;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 〈功能简述〉
+ * 〈〉
+ *
+ * @author wanghao
+ * @Date 2021/6/28 14:45
+ */
+@Service
+public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
+
+    private static final String ERROR_SAVE_HOST_COMMAND_FAILED = "error.save.host.command.failed";
+
+    @Autowired
+    private DevopsHostCommandMapper devopsHostCommandMapper;
+
+    @Override
+    @Transactional
+    public void baseCreate(DevopsHostCommandDTO devopsHostCommandDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsHostCommandMapper, devopsHostCommandDTO, ERROR_SAVE_HOST_COMMAND_FAILED);
+    }
+}

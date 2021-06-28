@@ -10,15 +10,23 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
+import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
+import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
+import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.app.service.EncryptService;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.host.HostCommandEnum;
+import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
@@ -29,6 +37,7 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.util.UUIDUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +86,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private StringRedisTemplate redisTemplate;
     @Autowired
     EncryptService encryptService;
+    @Autowired
+    private DevopsHostCommandService devopsHostCommandService;
+    @Autowired
+    private KeySocketSendHelper webSocketHelper;
 
     private final Gson gson = new Gson();
 
@@ -609,6 +622,136 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public List<Object> listDockerProcessInfo(Long projectId, Long hostId) {
 
         return redisTemplate.opsForHash().values(String.format(DevopsHostConstants.HOST_DOCKER_PROCESS_INFO_KEY, hostId));
+    }
+
+    @Override
+    @Transactional
+    public void deleteJavaProcess(Long projectId, Long hostId, String pid) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setObject_type(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setObject(pid);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+
+        JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
+        javaProcessInfoVO.setPid(pid);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void deleteDockerProcess(Long projectId, Long hostId, String containerId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.REMOVE_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setType(HostCommandEnum.REMOVE_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setContainerId(containerId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void stopDockerProcess(Long projectId, Long hostId, String containerId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.STOP_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setType(HostCommandEnum.STOP_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setContainerId(containerId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void restartDockerProcess(Long projectId, Long hostId, String containerId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.RESTART_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setType(HostCommandEnum.RESTART_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setContainerId(containerId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void startDockerProcess(Long projectId, Long hostId, String containerId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.START_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setType(HostCommandEnum.START_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setContainerId(containerId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
