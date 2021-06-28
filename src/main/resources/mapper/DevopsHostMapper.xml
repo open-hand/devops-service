@@ -9,26 +9,7 @@
             AND dh.project_id = #{projectId}
         </if>
         <if test="searchParam != null">
-            <if test="searchParam.type != null">
-                AND dh.type = #{searchParam.type}
-            </if>
-            <if test="searchParam.status != null">
-                <choose>
-                    <when test="searchParam.status == 'success'">
-                        AND ((dh.type = 'distribute_test' AND dh.host_status = 'success' AND dh.jmeter_status = 'success' ) OR (dh.type = 'deploy' AND dh.host_status = 'success'))
-                    </when>
-                    <when test="searchParam.status == 'failed'">
-                        AND ((dh.type = 'distribute_test' AND (dh.host_status = 'failed' OR dh.jmeter_status = 'failed')) OR (dh.type = 'deploy' AND dh.host_status = 'failed'))
-                    </when>
-                    <when test="searchParam.status == 'occupied'">
-                        AND (dh.type = 'distribute_test' AND dh.jmeter_status = 'occupied')
-                    </when>
-                    <otherwise>
-                        AND ((dh.type = 'distribute_test' AND (dh.host_status != 'success' OR dh.jmeter_status != 'success')
-                        AND dh.host_status != 'failed' AND dh.jmeter_status != 'failed') OR (dh.type = 'deploy' AND dh.host_status = 'operating'))
-                    </otherwise>
-                </choose>
-            </if>
+
         </if>
         <if test='params != null and params.size > 0'>
             AND
@@ -36,8 +17,6 @@
                 (dh.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dh.host_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dh.ssh_port LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dh.jmeter_port LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dh.jmeter_path LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 )
             </foreach>
         </if>

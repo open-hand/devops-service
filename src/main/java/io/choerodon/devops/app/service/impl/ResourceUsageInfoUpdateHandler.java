@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.devops.app.service.HostMsgHandler;
-import io.choerodon.devops.infra.enums.HostMsgEventEnum;
+import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;

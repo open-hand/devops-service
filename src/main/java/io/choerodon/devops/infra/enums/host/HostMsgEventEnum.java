@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra.enums;
+package io.choerodon.devops.infra.enums.host;
 
 /**
  * 〈功能简述〉
