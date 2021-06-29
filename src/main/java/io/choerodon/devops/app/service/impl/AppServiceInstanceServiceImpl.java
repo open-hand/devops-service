@@ -1,37 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1beta1Ingress;
-import org.apache.commons.lang.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -41,6 +12,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
@@ -71,6 +43,34 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1beta1Ingress;
+import org.apache.commons.lang.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -1948,6 +1948,27 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public AppServiceVersionDTO queryVersion(Long appServiceInstanceId) {
         return appServiceInstanceMapper.queryVersion(appServiceInstanceId);
+    }
+
+    @Override
+    public List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId) {
+        List<ApplicationInstanceInfoVO> applicationInstanceInfoVOS = appServiceInstanceMapper.listAppInstanceByAppSvcIdAndEnvId(appServiceId, envId);
+        if (CollectionUtils.isEmpty(applicationInstanceInfoVOS)) {
+            return new ArrayList<>();
+        }
+        applicationInstanceInfoVOS.forEach(applicationInstanceInfoVO -> {
+            List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(applicationInstanceInfoVO.getId());
+            if (CollectionUtils.isEmpty(devopsEnvPodDTOS)) {
+                applicationInstanceInfoVO.setPodCount(0);
+                applicationInstanceInfoVO.setPodRunningCount(0);
+            } else {
+                long count = devopsEnvPodDTOS.stream().filter(v -> Boolean.TRUE.equals(v.getReady())).count();
+                applicationInstanceInfoVO.setPodCount(devopsEnvPodDTOS.size());
+                applicationInstanceInfoVO.setPodRunningCount((int) count);
+            }
+        });
+
+        return applicationInstanceInfoVOS;
     }
 
     private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {
