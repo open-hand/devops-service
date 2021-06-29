@@ -987,6 +987,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "应用服务ID", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
+            @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return ResponseEntity.ok(appServiceInstanceService.listByServiceAndEnv(projectId, appServiceId, envId));
