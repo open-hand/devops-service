@@ -168,6 +168,8 @@ devops:
   host:
     occupy:
       timeout-hours: 24
+    download-api-url: ${API_URL:http://api.c7n.devops.hand-china.com}
+    download-file-url: /devops/v1/projects/{project_id}/hosts/{host_id}/download_file/{token}
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     default:

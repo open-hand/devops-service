@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
@@ -37,13 +38,12 @@ public class DevopsHostController {
     @ApiOperation("创建主机")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping
-    public ResponseEntity<DevopsHostVO> createHost(
+    public ResponseEntity<String> createHost(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "创建主机相关参数")
             @RequestBody @Valid DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        DevopsHostVO resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
+        String resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
         return Results.success(resp);
     }
 
@@ -296,5 +296,19 @@ public class DevopsHostController {
                                                      @PathVariable("container_id") String containerId) {
         devopsHostService.startDockerProcess(projectId, hostId, containerId);
         return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("下载创建主机脚本")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{host_id}/download_file/{token}")
+    public void downloadCreateHostFile(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable("host_id") Long hostId,
+            @ApiParam(value = "token", required = true)
+            @PathVariable("token") String token,
+            HttpServletResponse res) {
+        devopsHostService.downloadCreateHostFile(projectId, hostId, token, res);
     }
 }

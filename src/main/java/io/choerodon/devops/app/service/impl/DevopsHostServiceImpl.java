@@ -50,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -66,12 +67,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private static final long OPERATING_TIMEOUT = 300L * 1000;
     private static final String CHECKING_HOST = "checking";
+    private static final String HOST_AGENT = "curl -o {download_file_api} && sh host.sh";
 
     /**
      * 占用主机的过期时间, 超过这个时间, 主机会被释放
      */
     @Value("${devops.host.occupy.timeout-hours:24}")
     private long hostOccupyTimeoutHours;
+    @Value("${devops.host.download-api-url}")
+    private String downloadApiUrl;
+    @Value("${devops.host.download-file-url}")
+    private String downloadFileUrl;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -96,7 +102,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+    public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
@@ -105,7 +111,25 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setProjectId(projectId);
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
-        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
+        devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", "a"));
+        DevopsHostVO resp =  ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
+        asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
+        return getInstallString(projectId, resp, devopsHostDTO.getToken());
+    }
+
+    /**
+     * 获得agent安装命令
+     *
+     * @return agent安装命令
+     */
+    @Override
+    public String getInstallString(Long projectId, DevopsHostVO devopsHostVO, String token) {
+        Map<String, String> params = new HashMap<>();
+        // 渲染激活环境的命令参数
+        params.put("{project_id}", projectId.toString());
+        params.put("{host_id}", devopsHostVO.getId().toString());
+        params.put("{token}", token);
+        return HOST_AGENT.replace("{download_file_api}", downloadApiUrl + FileUtil.replaceReturnString(downloadFileUrl, params));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -752,6 +776,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
 
+    }
+
+    @Override
+    public void downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res) {
+        DevopsHostDTO devopsHostDTO = new DevopsHostDTO();
+        devopsHostDTO.setId(hostId);
+        String dbToken = devopsHostMapper.selectByPrimaryKey(devopsHostDTO).getToken();
+        if (dbToken.equals(token)) {
+            FileUtil.downloadFile(res,"/shell/host.sh");
+        }
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

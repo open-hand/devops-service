@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +24,16 @@ public interface DevopsHostService {
      * @param devopsHostCreateRequestVO 主机相关数据
      * @return 创建后的主机
      */
-    DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO);
+    String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO);
+
+    /**
+     * 获得agent安装命令
+     *
+     * @param devopsHostVO     主机dto
+     * @param token            token
+     * @return 安装命令
+     */
+    String getInstallString(Long projectId, DevopsHostVO devopsHostVO, String token);
 
     /**
      * 批量设置主机状态为处理中
@@ -241,5 +252,14 @@ public interface DevopsHostService {
      * @param containerId
      */
     void startDockerProcess(Long projectId, Long hostId, String containerId);
+
+    /**
+     * 下载创建主机脚本
+     * @param projectId
+     * @param hostId
+     * @param token
+     * @param res
+     */
+    void downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
 
 }
