@@ -3,11 +3,14 @@ package io.choerodon.devops.api.ws.host;
 import io.choerodon.devops.api.vo.host.HostMsgVO;
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
+import io.choerodon.devops.app.eventhandler.host.HostMsgHandler;
 import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.app.service.HostMsgHandler;
 import io.choerodon.devops.infra.constant.DevOpsWebSocketConstants;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
+import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
+import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,9 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
     @Autowired
     private DevopsHostService devopsHostService;
 
+    @Autowired
+    private KeySocketSendHelper webSocketHelper;
+
     @Override
     public String processor() {
         return DevOpsWebSocketConstants.HOST_AGENT;
@@ -57,6 +63,15 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         String hostId = WebSocketTool.getHostId(session);
 
         devopsHostService.baseUpdateHostStatus(Long.parseLong(hostId), DevopsHostStatus.CONNECTED);
+
+        //
+        HostMsgVO hostMsgVO = new HostMsgVO();
+        hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
+        // todo 添加agent启动参数
+        hostMsgVO.setPayload("");
+        hostMsgVO.setHostId(Long.parseLong(hostId));
+
+        webSocketHelper.sendBySession(session.getId(), DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostMsgVO));
     }
 
 

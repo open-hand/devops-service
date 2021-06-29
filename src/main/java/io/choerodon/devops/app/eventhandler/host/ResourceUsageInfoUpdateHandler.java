@@ -1,6 +1,5 @@
-package io.choerodon.devops.app.service.impl;
+package io.choerodon.devops.app.eventhandler.host;
 
-import io.choerodon.devops.app.service.HostMsgHandler;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

@@ -13,4 +13,7 @@ public interface DevopsHostCommandService {
 
     void baseCreate(DevopsHostCommandDTO devopsHostCommandDTO);
 
+    DevopsHostCommandDTO baseQueryById(Long commandId);
+
+    void baseUpdate(DevopsHostCommandDTO devopsHostCommandDTO);
 }
