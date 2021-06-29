@@ -6,6 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
  * 主机ws传输数据vo
  */
 public class HostMsgVO {
+    /**
+     * {@link io.choerodon.devops.infra.enums.host.HostCommandEnum}
+     */
     @ApiModelProperty("消息事件类型")
     private String type;
     @ApiModelProperty("消息内容")

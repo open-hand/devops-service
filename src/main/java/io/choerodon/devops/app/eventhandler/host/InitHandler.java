@@ -1,9 +1,8 @@
-package io.choerodon.devops.app.service.impl;
+package io.choerodon.devops.app.eventhandler.host;
 
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.InitInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
-import io.choerodon.devops.app.service.HostMsgHandler;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;

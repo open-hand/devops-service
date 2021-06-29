@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
 
     private static final String ERROR_SAVE_HOST_COMMAND_FAILED = "error.save.host.command.failed";
+    private static final String ERROR_UPDATE_HOST_COMMAND_FAILED = "error.update.host.command.failed";
 
     @Autowired
     private DevopsHostCommandMapper devopsHostCommandMapper;
@@ -27,5 +28,16 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
     @Transactional
     public void baseCreate(DevopsHostCommandDTO devopsHostCommandDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsHostCommandMapper, devopsHostCommandDTO, ERROR_SAVE_HOST_COMMAND_FAILED);
+    }
+
+    @Override
+    public DevopsHostCommandDTO baseQueryById(Long commandId) {
+        return devopsHostCommandMapper.selectByPrimaryKey(commandId);
+    }
+
+    @Override
+    @Transactional
+    public void baseUpdate(DevopsHostCommandDTO devopsHostCommandDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostCommandMapper, devopsHostCommandDTO, ERROR_UPDATE_HOST_COMMAND_FAILED);
     }
 }

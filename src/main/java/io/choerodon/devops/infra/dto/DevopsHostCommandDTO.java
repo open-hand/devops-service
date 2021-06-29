@@ -26,14 +26,24 @@ public class DevopsHostCommandDTO extends AuditDomain {
     private Long id;
     @ApiModelProperty("操作主机id")
     private Long hostId;
+    /**
+     * {@link io.choerodon.devops.infra.enums.host.HostResourceType}
+     */
     @ApiModelProperty("主机资源类型")
     private String object_type;
     @ApiModelProperty("主机资源标识，唯一性索引")
     private String object;
     @ApiModelProperty("资源版本")
     private String objectVersion;
+
+    /**
+     * {@link io.choerodon.devops.infra.enums.host.HostCommandEnum}
+     */
     @ApiModelProperty("操作类型")
     private String commandType;
+    /**
+     * {@link io.choerodon.devops.infra.enums.host.HostCommandStatusEnum}
+     */
     @ApiModelProperty("操作状态")
     private String status;
     @ApiModelProperty("错误信息")
