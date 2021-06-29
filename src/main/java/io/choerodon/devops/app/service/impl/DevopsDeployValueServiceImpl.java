@@ -135,8 +135,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId) {
-        return ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appServiceId, envId), DevopsDeployValueVO.class);
+    public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId, String name) {
+        return ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appServiceId, envId, name), DevopsDeployValueVO.class);
     }
 
     @Override
@@ -230,12 +230,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
-        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
-        devopsDeployValueDTO.setProjectId(projectId);
-        devopsDeployValueDTO.setAppServiceId(appServiceId);
-        devopsDeployValueDTO.setEnvId(envId);
-        return devopsDeployValueMapper.select(devopsDeployValueDTO);
+    public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId, String name) {
+        return devopsDeployValueMapper.listByAppServiceIdAndEnvId(projectId, appServiceId, envId, name);
     }
 
     @Override
