@@ -81,7 +81,6 @@ public class DevopsHostController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @SortDefault.SortDefaults({
-                    @SortDefault(value = "jmeter_status", direction = Sort.Direction.DESC),
                     @SortDefault(value = "host_status", direction = Sort.Direction.DESC),
                     @SortDefault(value = "id", direction = Sort.Direction.DESC)})
             @ApiIgnore PageRequest pageRequest,
