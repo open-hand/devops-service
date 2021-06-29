@@ -39,9 +39,9 @@ public class DockerProcessUpdateHandler implements HostMsgHandler {
             });
         }
 
-        // 处理新增的数据
-        List<DockerProcessInfoVO> addProcessInfos = dockerProcessUpdatePayload.getAddProcessInfos();
-        addProcessInfos.forEach(addProcessInfo -> {
+        // 处理更新的数据
+        List<DockerProcessInfoVO> updateProcessInfos = dockerProcessUpdatePayload.getUpdateProcessInfos();
+        updateProcessInfos.forEach(addProcessInfo -> {
             // todo 完善部署者、部署时间信息
 
             processInfoMap.put(addProcessInfo.getContainerId(), addProcessInfo);
