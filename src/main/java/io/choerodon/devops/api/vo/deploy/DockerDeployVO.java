@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo.deploy;
 
 import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @Date 2021/6/30 14:29
  */
 public class DockerDeployVO {
+    @Encrypt
     @ApiModelProperty("主机id")
     private Long hostId;
     @ApiModelProperty("容器名")
@@ -21,8 +23,21 @@ public class DockerDeployVO {
     private Integer containerPort;
     @ApiModelProperty("部署来源")
     private String sourceType;
-    @ApiModelProperty("镜像信息")
+    @ApiModelProperty("制品库镜像信息")
     private ProdImageInfoVO imageInfo;
+    /**
+     *  应用市场部署对象id
+     */
+    @Encrypt
+    private Long deployObjectId;
+
+    public Long getDeployObjectId() {
+        return deployObjectId;
+    }
+
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
+    }
 
     public ProdImageInfoVO getImageInfo() {
         return imageInfo;
