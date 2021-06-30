@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -31,6 +32,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -43,6 +45,7 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
@@ -740,12 +743,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceDeployVO.setIsNotChange(true);
             }
         }
-
+        boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
         //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         if (!appServiceDeployVO.getIsNotChange()) {
-            //存储数据
+            //插入应用服务与环境的关联
+            ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId(), appSourceType.value(), appServiceDTO.getCode(), appServiceDTO.getName());
             if (appServiceDeployVO.getType().equals(CREATE)) {
-                devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
                 appServiceInstanceDTO.setCode(code);
                 appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
             }
@@ -755,7 +759,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceDTO.setCommandId(devopsEnvCommandDTO.getId());
             baseUpdate(appServiceInstanceDTO);
 
-            boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
+
             //插入部署记录
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
             devopsDeployRecordService.saveRecord(
@@ -876,9 +880,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         if (!appServiceDeployVO.getNotChanged()) {
             //存储数据
+            // 创建关联关系
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId(), ApplicationCenterEnum.MARKET.value, appServiceVersionDTO.getDevopsAppServiceCode(), appServiceVersionDTO.getDevopsAppServiceName());
             if (appServiceDeployVO.getCommandType().equals(CREATE)) {
-                // 创建关联关系
-                devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId());
                 appServiceInstanceDTO.setCode(code);
                 appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
             }
@@ -1158,14 +1162,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         baseUpdate(appServiceInstanceDTO);
 
         // 插入应用服务和环境的关联关系
-        if (appServiceInstanceDTO.getAppServiceId() != null) {
-            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId());
-        }
-
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId());
-
         boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
+        if (appServiceInstanceDTO.getAppServiceId() != null) {
+            ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
+            String serviceCode = appServiceDTO.getCode();
+            String serviceName = appServiceDTO.getName();
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId(), appSourceType.value, serviceCode, serviceName);
+        }
+
+
         //插入部署记录
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
@@ -1200,9 +1207,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
 
         //实例相关对象数据库操作
+        // 创建或跟新关联关系
+        // TODO: 2021/6/30 hzero 组件的serviceCode,和serviceName
+        String source = AppSourceType.MARKET.getValue();
+        String serviceName = null;
+        String serviceCode = null;
+        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(0L, appServiceDeployVO.getMarketDeployObjectId());
+        if (Objects.isNull(marketServiceDeployObjectVO)) {
+            serviceName = marketServiceDeployObjectVO.getDevopsAppServiceName();
+            serviceCode = marketServiceDeployObjectVO.getDevopsAppServiceCode();
+        }
+        devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), appServiceDeployVO.getEnvironmentId(), source, serviceCode, serviceName);
         if (appServiceDeployVO.getCommandType().equals(CREATE)) {
-            // 创建关联关系
-            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
             appServiceInstanceDTO.setCode(appServiceDeployVO.getInstanceName());
             appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
         } else {
@@ -1774,8 +1790,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             code = appServiceDeployVO.getInstanceName();
         }
 
-        //存储数据
-        devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId());
+
         appServiceInstanceDTO.setCode(code);
         appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
         devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId());
@@ -1783,6 +1798,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(appServiceInstanceDTO);
         boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
+        //存储数据
+        ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
+        String serviceCode = appServiceDTO.getCode();
+        String serviceName = appServiceDTO.getName();
+        devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId(), appSourceType.value, serviceCode, serviceName);
 
         //插入部署记录
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
