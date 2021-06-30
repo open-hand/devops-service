@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -16,12 +17,15 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -37,13 +41,12 @@ public class DevopsHostController {
     @ApiOperation("创建主机")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping
-    public ResponseEntity<DevopsHostVO> createHost(
+    public ResponseEntity<String> createHost(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "创建主机相关参数")
             @RequestBody @Valid DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        DevopsHostVO resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
+        String resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
         return Results.success(resp);
     }
 
@@ -298,5 +301,19 @@ public class DevopsHostController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @ApiOperation("下载创建主机脚本")
+    @Permission(permissionPublic = true)
+    @GetMapping("/{host_id}/download_file/{token}")
+    public ResponseEntity<String> downloadCreateHostFile(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable("host_id") Long hostId,
+            @ApiParam(value = "token", required = true)
+            @PathVariable("token") String token,
+            HttpServletResponse res) {
+        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token, res))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.host.insert"));
+    }
 }

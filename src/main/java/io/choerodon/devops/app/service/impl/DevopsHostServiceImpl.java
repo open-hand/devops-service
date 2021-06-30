@@ -50,6 +50,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -66,12 +70,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private static final long OPERATING_TIMEOUT = 300L * 1000;
     private static final String CHECKING_HOST = "checking";
+    private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
+    private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
     /**
      * 占用主机的过期时间, 超过这个时间, 主机会被释放
      */
     @Value("${devops.host.occupy.timeout-hours:24}")
     private long hostOccupyTimeoutHours;
+    @Value("${devops.host.download-api-url}")
+    private String downloadApiUrl;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -93,10 +101,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     private final Gson gson = new Gson();
 
+    static {
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
+            HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.host.sh");
+        }
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+    public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
@@ -105,7 +120,24 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setProjectId(projectId);
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
-        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
+        devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
+        DevopsHostDTO resp =  MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host");
+        return String.format(HOST_AGENT, downloadApiUrl, projectId, resp.getId(), devopsHostDTO.getToken());
+    }
+
+    /**
+     * 获得agent安装命令
+     *
+     * @return agent安装命令
+     */
+    @Override
+    public String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO) {
+        Map<String, String> params = new HashMap<>();
+        // 渲染激活环境的命令参数
+        params.put("{project_id}", projectId.toString());
+        params.put("{host_id}", devopsHostDTO.getId().toString());
+        params.put("{token}", devopsHostDTO.getToken());
+        return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -752,6 +784,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
 
+    }
+
+    @Override
+    public String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res) {
+        DevopsHostDTO devopsHostDTO = new DevopsHostDTO();
+        devopsHostDTO.setId(hostId);
+        devopsHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostDTO);
+        String response = null;
+        if (devopsHostDTO.getToken().equals(token)) {
+            response = getInstallString(projectId, devopsHostDTO);
+        }
+        return response;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
