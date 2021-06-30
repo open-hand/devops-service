@@ -848,11 +848,11 @@ public class AppServiceController {
      */
     @ApiOperation("应用中心")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/app_center")
+    @PostMapping("/app_center")
     @CustomPageRequest
     public ResponseEntity<Page<AppServiceRepVO>> applicationCenter(
             @PathVariable("project_id") Long projectId,
-            @RequestParam(value = "envIds", required = false) List<Long> envIds,
+            @Encrypt @RequestBody() List<Long> envIds,
             @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "params", required = false) String params,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
