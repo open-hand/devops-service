@@ -29,12 +29,10 @@ public class DevopsHostCommandDTO extends AuditDomain {
     /**
      * {@link io.choerodon.devops.infra.enums.host.HostResourceType}
      */
-    @ApiModelProperty("主机资源类型")
-    private String object_type;
-    @ApiModelProperty("主机资源标识，唯一性索引")
-    private String object;
-    @ApiModelProperty("资源版本")
-    private String objectVersion;
+    @ApiModelProperty("实例类型,docker、jar")
+    private String instanceType;
+    @ApiModelProperty("实例id")
+    private Long instanceId;
 
     /**
      * {@link io.choerodon.devops.infra.enums.host.HostCommandEnum}
@@ -65,28 +63,20 @@ public class DevopsHostCommandDTO extends AuditDomain {
         this.hostId = hostId;
     }
 
-    public String getObject_type() {
-        return object_type;
+    public String getInstanceType() {
+        return instanceType;
     }
 
-    public void setObject_type(String object_type) {
-        this.object_type = object_type;
+    public void setInstanceType(String instanceType) {
+        this.instanceType = instanceType;
     }
 
-    public String getObject() {
-        return object;
+    public Long getInstanceId() {
+        return instanceId;
     }
 
-    public void setObject(String object) {
-        this.object = object;
-    }
-
-    public String getObjectVersion() {
-        return objectVersion;
-    }
-
-    public void setObjectVersion(String objectVersion) {
-        this.objectVersion = objectVersion;
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 
     public String getCommandType() {

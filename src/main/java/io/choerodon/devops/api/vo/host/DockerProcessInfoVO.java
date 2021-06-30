@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.host;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import java.util.Date;
 
@@ -12,6 +13,8 @@ import java.util.Date;
  * @Date 2021/6/27 20:41
  */
 public class DockerProcessInfoVO {
+    @Encrypt
+    private Long instanceId;
     private String containerId;
     private String image;
     private String name;
@@ -20,6 +23,13 @@ public class DockerProcessInfoVO {
     private IamUserDTO deployer;
     private Date deployDate;
 
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
 
     public String getStatus() {
         return status;

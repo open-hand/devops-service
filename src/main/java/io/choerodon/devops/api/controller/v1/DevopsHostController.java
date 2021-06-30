@@ -237,66 +237,76 @@ public class DevopsHostController {
 
     @ApiOperation("删除java进程")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping("/{host_id}/java_process/{pid}")
+    @DeleteMapping("/{host_id}/java_process/{instance_id}")
     public ResponseEntity<Void> deleteJavaProcess(@ApiParam(value = "项目id", required = true)
                                                         @PathVariable("project_id") Long projectId,
                                                         @ApiParam(value = "主机id", required = true)
+                                                        @Encrypt
                                                         @PathVariable("host_id") Long hostId,
-                                                        @ApiParam(value = "java进程id", required = true)
-                                                        @PathVariable("pid") String pid) {
-        devopsHostService.deleteJavaProcess(projectId, hostId, pid);
+                                                        @ApiParam(value = "java实例id", required = true)
+                                                        @Encrypt
+                                                        @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.deleteJavaProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("删除docker进程")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping("/{host_id}/docker_process/{container_id}")
+    @DeleteMapping("/{host_id}/docker_process/{instance_id}")
     public ResponseEntity<Void> deleteDockerProcess(@ApiParam(value = "项目id", required = true)
                                                   @PathVariable("project_id") Long projectId,
                                                   @ApiParam(value = "主机id", required = true)
+                                                  @Encrypt
                                                   @PathVariable("host_id") Long hostId,
-                                                  @ApiParam(value = "java进程id", required = true)
-                                                  @PathVariable("container_id") String containerId) {
-        devopsHostService.deleteDockerProcess(projectId, hostId, containerId);
+                                                  @ApiParam(value = "docker实例id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.deleteDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("停止docker进程")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PutMapping("/{host_id}/docker_process/{container_id}/stop")
+    @PutMapping("/{host_id}/docker_process/{instance_id}/stop")
     public ResponseEntity<Void> stopDockerProcess(@ApiParam(value = "项目id", required = true)
                                                     @PathVariable("project_id") Long projectId,
                                                     @ApiParam(value = "主机id", required = true)
+                                                    @Encrypt
                                                     @PathVariable("host_id") Long hostId,
-                                                    @ApiParam(value = "java进程id", required = true)
-                                                    @PathVariable("container_id") String containerId) {
-        devopsHostService.stopDockerProcess(projectId, hostId, containerId);
+                                                    @ApiParam(value = "docker实例id", required = true)
+                                                    @Encrypt
+                                                    @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.stopDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("重启docker进程")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PutMapping("/{host_id}/docker_process/{container_id}/restart")
+    @PutMapping("/{host_id}/docker_process/{instance_id}/restart")
     public ResponseEntity<Void> restartDockerProcess(@ApiParam(value = "项目id", required = true)
                                                   @PathVariable("project_id") Long projectId,
                                                   @ApiParam(value = "主机id", required = true)
+                                                  @Encrypt
                                                   @PathVariable("host_id") Long hostId,
-                                                  @ApiParam(value = "java进程id", required = true)
-                                                  @PathVariable("container_id") String containerId) {
-        devopsHostService.restartDockerProcess(projectId, hostId, containerId);
+                                                  @ApiParam(value = "docker实例id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.restartDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("启动docker进程")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PutMapping("/{host_id}/docker_process/{container_id}/start")
+    @PutMapping("/{host_id}/docker_process/{instance_id}/start")
     public ResponseEntity<Void> startDockerProcess(@ApiParam(value = "项目id", required = true)
                                                      @PathVariable("project_id") Long projectId,
                                                      @ApiParam(value = "主机id", required = true)
+                                                     @Encrypt
                                                      @PathVariable("host_id") Long hostId,
-                                                     @ApiParam(value = "java进程id", required = true)
-                                                     @PathVariable("container_id") String containerId) {
-        devopsHostService.startDockerProcess(projectId, hostId, containerId);
+                                                     @ApiParam(value = "docker实例id", required = true)
+                                                     @Encrypt
+                                                     @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.startDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
 

@@ -656,12 +656,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     @Transactional
-    public void deleteJavaProcess(Long projectId, Long hostId, String pid) {
+    public void deleteJavaProcess(Long projectId, Long hostId, Long instanceId) {
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setObject_type(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setObject(pid);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -673,7 +673,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
 
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
-        javaProcessInfoVO.setPid(pid);
+        javaProcessInfoVO.setInstanceId(instanceId);
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -682,12 +682,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     @Transactional
-    public void deleteDockerProcess(Long projectId, Long hostId, String containerId) {
+    public void deleteDockerProcess(Long projectId, Long hostId, Long instanceId) {
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.REMOVE_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
-        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -699,7 +699,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setContainerId(containerId);
+        dockerProcessInfoVO.setInstanceId(instanceId);
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -708,12 +708,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     @Transactional
-    public void stopDockerProcess(Long projectId, Long hostId, String containerId) {
+    public void stopDockerProcess(Long projectId, Long hostId, Long instanceId) {
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.STOP_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
-        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -725,7 +725,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setContainerId(containerId);
+        dockerProcessInfoVO.setInstanceId(instanceId);
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -734,12 +734,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     @Transactional
-    public void restartDockerProcess(Long projectId, Long hostId, String containerId) {
+    public void restartDockerProcess(Long projectId, Long hostId, Long instanceId) {
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.RESTART_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
-        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -751,7 +751,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setContainerId(containerId);
+        dockerProcessInfoVO.setInstanceId(instanceId);
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -760,12 +760,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     @Transactional
-    public void startDockerProcess(Long projectId, Long hostId, String containerId) {
+    public void startDockerProcess(Long projectId, Long hostId, Long instanceId) {
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.START_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setObject_type(HostResourceType.DOCKER_PROCESS.value());
-        devopsHostCommandDTO.setObject(containerId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -777,7 +777,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setContainerId(containerId);
+        dockerProcessInfoVO.setInstanceId(instanceId);
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
