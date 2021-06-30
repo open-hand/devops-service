@@ -2140,19 +2140,19 @@ public class AppServiceServiceImpl implements AppServiceService {
             return new Page<>();
         }
         //env为null查询所有环境关联的应用服务，
-        Page<AppServiceRepVO> appServiceRepVOS = PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.queryApplicationCenter(envIds, type, params));
-
+        Page<AppServiceRepVO> appServiceRepVOS = PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.queryApplicationCenter(projectId, envIds, type, params));
         //处理最新版本,仓库地址
         //
         appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
+            // TODO: 2021/6/30  如果是market 来源要去marketService拿到最新的版本
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
-            if (!Objects.isNull(appServiceDTO)){
+            if (!Objects.isNull(appServiceDTO)) {
                 appServiceRepVO.setRepoUrl(appServiceDTO.getRepoUrl());
             }
-            AppServiceVersionDTO appServiceVersionDTO=new AppServiceVersionDTO();
+            AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
             appServiceVersionDTO.setAppServiceId(appServiceRepVO.getId());
             List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-            if (!CollectionUtils.isEmpty(appServiceVersionDTOS)){
+            if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
                 List<AppServiceVersionDTO> serviceVersionDTOS = appServiceVersionDTOS.stream().sorted(comparing(AppServiceVersionDTO::getId).reversed()).collect(toList());
                 appServiceRepVO.setLatestVersion(serviceVersionDTOS.get(0).getVersion());
             }
