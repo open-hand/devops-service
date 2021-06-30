@@ -136,4 +136,9 @@ public interface MarketServiceClient {
             @RequestParam("appName") String appName,
             @RequestParam("mode") String mode,
             @RequestParam("version") String version);
+
+
+    @ApiOperation("根据marketServiceId 查询部署对象的列表")
+    @GetMapping("/v1/projects/{project_id}/deploy/deploy_objects/by_market_service")
+    ResponseEntity<String> queryDeployObjectByMarketServiceId(@PathVariable("project_id") Long projectId, @RequestParam("marketServiceId") Long marketServiceId);
 }

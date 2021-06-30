@@ -564,5 +564,5 @@ public interface AppServiceService {
 
     Long countAppCountByOptions(Long projectId);
 
-    Page<AppServiceRepVO> applicationCenter(Long projectId, List<Long> envIds, String type, String params, PageRequest pageRequest);
+    Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest);
 }

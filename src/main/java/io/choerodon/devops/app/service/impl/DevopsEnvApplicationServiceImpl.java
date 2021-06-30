@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.app.service.PermissionHelper;
@@ -200,16 +201,16 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
             if (CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
                 return;
             }
-            AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceDTOS.get(0);
-            if (StringUtils.equalsIgnoreCase(serviceInstanceDTO.getSource(), AppSourceType.MARKET.getValue())) {
+            AppServiceInstanceDTO instanceDTO = appServiceInstanceDTOS.stream().sorted(Comparator.comparing(AppServiceInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
+            if (StringUtils.equalsIgnoreCase(instanceDTO.getSource(), AppSourceType.MARKET.getValue())) {
                 //查询市场服务,
                 devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.MARKET.value);
-
-                // TODO: 2021/6/30  
-
-//                devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
-//                devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
-                
+                List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.queryDeployObjectByMarketServiceId(0l, devopsEnvAppServiceDTO.getAppServiceId());
+                if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOS)) {
+                    MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.get(0);
+                    devopsEnvAppServiceDTO.setServiceCode(marketServiceDeployObjectVO.getDevopsAppServiceCode());
+                    devopsEnvAppServiceDTO.setServiceName(marketServiceDeployObjectVO.getDevopsAppServiceName());
+                }
                 devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
 
                 return;
