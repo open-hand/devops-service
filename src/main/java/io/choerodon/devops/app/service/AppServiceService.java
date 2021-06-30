@@ -565,4 +565,9 @@ public interface AppServiceService {
     Long countAppCountByOptions(Long projectId);
 
     Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest);
+
+    List<DevopsEnvironmentRepVO> listEnvByAppServiceId(Long projectId, Long appServiceId);
+
+    Boolean checkDeleteEnvApp(Long appServiceId, Long envId);
+
 }

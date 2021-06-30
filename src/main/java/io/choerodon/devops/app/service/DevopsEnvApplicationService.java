@@ -71,6 +71,8 @@ public interface DevopsEnvApplicationService {
      */
     List<BaseApplicationServiceVO> listNonRelatedAppService(Long projectId, Long envId);
 
+    boolean checkCanDelete(Long envId, Long appServiceId);
+
     void fixData();
 
 }
