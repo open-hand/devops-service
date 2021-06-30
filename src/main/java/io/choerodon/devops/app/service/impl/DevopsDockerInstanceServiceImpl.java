@@ -7,6 +7,8 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
@@ -29,11 +31,13 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +46,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 〈功能简述〉
@@ -71,6 +76,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private DevopsHostService devopsHostService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
 
     @Override
@@ -83,14 +90,39 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
 
+        String deployObjectName = null;
+        String deployVersion = null;
+
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(dockerDeployVO.getSourceType());
         deploySourceVO.setProjectName(projectDTO.getName());
         if (AppSourceType.MARKET.getValue().equals(dockerDeployVO.getSourceType())) {
+            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(dockerDeployVO.getDeployObjectId()));
+            if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
+                throw new CommonException("error.harbor.deploy.object.not.exist");
+            }
+            MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
+
+            DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
+            dockerPullAccountDTO.setPullAccount(marketHarborConfigVO.getRobotName());
+            dockerPullAccountDTO.setPullPassword(marketHarborConfigVO.getToken());
+            dockerPullAccountDTO.setHarborUrl(marketHarborConfigVO.getRepoUrl());
+
+            //部署对象的名称
+            deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
+            deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
+
+            deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
+            deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
+            //如果是市场部署将部署人员添加为应用的订阅人员
+            marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
 
 
         } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
+            deployObjectName = dockerDeployVO.getImageInfo().getTag();
+            deployVersion = dockerDeployVO.getImageInfo().getImageName();
+
             HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(dockerDeployVO.getImageInfo().getRepoType(), TypeUtil.objToLong(dockerDeployVO.getImageInfo().getRepoId()), dockerDeployVO.getImageInfo().getImageName(), dockerDeployVO.getImageInfo().getTag());
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);
@@ -137,8 +169,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 devopsHostDTO.getName(),
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.IMAGE,
-                dockerDeployVO.getImageInfo().getImageName(),
-                dockerDeployVO.getImageInfo().getTag(),
+                deployObjectName,
+                deployVersion,
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
     }
