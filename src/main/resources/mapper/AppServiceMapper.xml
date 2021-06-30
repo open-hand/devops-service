@@ -887,20 +887,17 @@
            deas.service_code as serviceCode
         FROM
         	devops_env_app_service deas
-        <if test="envIds == null or  envIds.size()==0 ">
+        <if test="envId == null ">
             JOIN  devops_env de on deas.env_id = de.id
         </if>
         WHERE
-        <if test="envIds != null and envIds.size() > 0">
-            deas.env_id IN
-            <foreach collection="envIds" item="envId" open="(" close=")" index="i" separator=",">
-                #{envId}
-            </foreach>
+        <if test="envId != null">
+            deas.env_id = #{envId,jdbcType=BIGINT}
         </if>
-        <if test="envIds == null or  envIds.size()==0 ">
+        <if test="envId == null  ">
             de.project_id=#{projectId,jdbcType=BIGINT}
         </if>
-        <if test="type != null and type != ''">
+        <if test="type != null and type != '' and type != 'all'">
             AND deas.source= #{type}
         </if>
         <if test="params != null and params != ''">

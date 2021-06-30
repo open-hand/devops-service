@@ -92,6 +92,11 @@ public class MarketServiceClientOperator {
     }
 
     public MarketServiceDeployObjectVO getMiddlewareServiceReleaseInfo(String appName, String mode, String version) {
-        return FeignClientUtils.doRequest(() -> marketServiceClient.getMiddlewareServiceReleaseInfo(appName, mode, version),MarketServiceDeployObjectVO.class);
+        return FeignClientUtils.doRequest(() -> marketServiceClient.getMiddlewareServiceReleaseInfo(appName, mode, version), MarketServiceDeployObjectVO.class);
+    }
+
+    public List<MarketServiceDeployObjectVO> queryDeployObjectByMarketServiceId(Long projectId, Long marketServiceId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObjectByMarketServiceId(projectId, marketServiceId), new TypeReference<List<MarketServiceDeployObjectVO>>() {
+        });
     }
 }

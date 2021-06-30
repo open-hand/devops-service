@@ -841,22 +841,22 @@ public class AppServiceController {
     }
 
     /**
-     * @param envIds
-     * @param type   ,项目下应用project,市场应用market 共享 share
+     * @param envId 为null代表查全部环境
+     * @param type   ,项目下应用project,市场应用market 共享 share 全部 all
      * @param params
      * @return
      */
     @ApiOperation("应用中心")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/app_center")
+    @GetMapping("/app_center")
     @CustomPageRequest
     public ResponseEntity<Page<AppServiceRepVO>> applicationCenter(
             @PathVariable("project_id") Long projectId,
-            @Encrypt @RequestBody() List<Long> envIds,
+            @Encrypt @RequestParam(value = "envId") Long envId,
             @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "params", required = false) String params,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(applicationServiceService.applicationCenter(projectId, envIds, type, params, pageRequest));
+        return ResponseEntity.ok(applicationServiceService.applicationCenter(projectId, envId, type, params, pageRequest));
     }
 
 
