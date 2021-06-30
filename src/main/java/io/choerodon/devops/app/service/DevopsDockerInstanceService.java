@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 
+import java.util.List;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -24,4 +26,7 @@ public interface DevopsDockerInstanceService {
     void baseUpdate(DevopsDockerInstanceDTO devopsDockerInstanceDTO);
 
     void baseDelete(Long instanceId);
+
+
+    List<DevopsDockerInstanceDTO> listByHostId(Long hostId);
 }

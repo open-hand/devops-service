@@ -12,6 +12,7 @@ import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
@@ -37,7 +38,10 @@ import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -154,5 +158,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Transactional
     public void baseDelete(Long instanceId) {
         devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
+    }
+
+    @Override
+    public List<DevopsDockerInstanceDTO> listByHostId(Long hostId) {
+        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setHostId(hostId);
+        return devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
     }
 }
