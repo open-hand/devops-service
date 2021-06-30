@@ -54,6 +54,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
 
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(Long projectId, DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
@@ -124,7 +125,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
      * @param appServiceId 应用服务id
      * @return true 可以删除
      */
-    private boolean checkCanDelete(Long envId, Long appServiceId) {
+    public boolean checkCanDelete(Long envId, Long appServiceId) {
         return devopsEnvAppServiceMapper.countInstances(appServiceId, envId, null) == 0 &&
                 devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, envId, null) == 0 &&
                 devopsEnvAppServiceMapper.countRelatedSecret(appServiceId, envId, null) == 0 &&

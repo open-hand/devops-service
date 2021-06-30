@@ -859,7 +859,23 @@ public class AppServiceController {
         return ResponseEntity.ok(applicationServiceService.applicationCenter(projectId, envId, type, params, pageRequest));
     }
 
+    @ApiOperation("查询应用服务所关联的环境列表")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center/envs/by_app_id")
+    public ResponseEntity<List<DevopsEnvironmentRepVO>> listEnvByAppServiceId(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "appServiceId") Long appServiceId) {
+        return ResponseEntity.ok(applicationServiceService.listEnvByAppServiceId(projectId, appServiceId));
+    }
 
+    @ApiOperation("检查是否可以删除关联")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping("/app_center/env_app")
+    public ResponseEntity<Boolean> checkDeleteEnvApp(
+            @Encrypt @RequestParam(value = "appServiceId") Long appServiceId,
+            @Encrypt @RequestParam(value = "envId") Long envId) {
+        return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
+    }
 }
 
 

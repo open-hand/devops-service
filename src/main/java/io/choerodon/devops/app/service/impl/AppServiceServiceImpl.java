@@ -233,6 +233,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsAppTemplateMapper devopsAppTemplateMapper;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private DevopsEnvApplicationService devopsEnvApplicationService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -2173,6 +2177,24 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
         return appServiceRepVOS;
+    }
+
+    @Override
+    public List<DevopsEnvironmentRepVO> listEnvByAppServiceId(Long projectId, Long appServiceId) {
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
+        devopsEnvAppServiceDTO.setAppServiceId(appServiceId);
+        List<DevopsEnvAppServiceDTO> devopsEnvAppServiceDTOS = devopsEnvAppServiceMapper.select(devopsEnvAppServiceDTO);
+        if (!CollectionUtils.isEmpty(devopsEnvAppServiceDTOS)) {
+            Set<Long> envIds = devopsEnvAppServiceDTOS.stream().map(DevopsEnvAppServiceDTO::getEnvId).collect(toSet());
+            List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(envIds));
+            return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Boolean checkDeleteEnvApp(Long appServiceId, Long envId) {
+        return devopsEnvApplicationService.checkCanDelete(appServiceId, envId);
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
