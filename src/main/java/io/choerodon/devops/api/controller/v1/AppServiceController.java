@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,7 +19,9 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.GitPlatformType;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -836,6 +839,27 @@ public class AppServiceController {
             @PathVariable("project_id") Long projectId) {
         return new ResponseEntity<>(applicationServiceService.countAppCountByOptions(projectId), HttpStatus.OK);
     }
+
+    /**
+     * @param envIds
+     * @param type   ,项目下应用project,市场应用market 共享 share
+     * @param params
+     * @return
+     */
+    @ApiOperation("应用中心")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center")
+    @CustomPageRequest
+    public ResponseEntity<Page<AppServiceRepVO>> applicationCenter(
+            @PathVariable("project_id") Long projectId,
+            @RequestParam(value = "envIds", required = false) List<Long> envIds,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "params", required = false) String params,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
+        return ResponseEntity.ok(applicationServiceService.applicationCenter(projectId, envIds, type, params, pageRequest));
+    }
+
+
 }
 
 

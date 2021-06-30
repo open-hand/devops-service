@@ -550,17 +550,19 @@ public interface AppServiceService {
 
     /**
      * 查询项目下资源使用情况
+     *
      * @param projectIds
      * @return
      */
     List<ResourceVO> listResourceByIds(List<Long> projectIds);
 
     /**
-     *
      * @param appServiceList
      * @return
      */
     List<AppServiceSimpleVO> listByProjectIdAndCode(List<AppServiceSimpleVO> appServiceList);
 
     Long countAppCountByOptions(Long projectId);
+
+    Page<AppServiceRepVO> applicationCenter(Long projectId, List<Long> envIds, String type, String params, PageRequest pageRequest);
 }
