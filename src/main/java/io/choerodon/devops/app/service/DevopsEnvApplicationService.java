@@ -20,7 +20,7 @@ public interface DevopsEnvApplicationService {
      * @param appServiceId 应用id
      * @param envId        环境id
      */
-    void createEnvAppRelationShipIfNon(Long appServiceId, Long envId);
+    void createEnvAppRelationShipIfNon(Long appServiceId, Long envId, String type, String serviceCode, String serviceName);
 
     /**
      * 删除与该环境关联的应用

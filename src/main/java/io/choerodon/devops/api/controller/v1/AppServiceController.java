@@ -841,7 +841,7 @@ public class AppServiceController {
     }
 
     /**
-     * @param envId 为null代表查全部环境
+     * @param envId  为null代表查全部环境
      * @param type   ,项目下应用project,市场应用market 共享 share 全部 all
      * @param params
      * @return
@@ -852,7 +852,7 @@ public class AppServiceController {
     @CustomPageRequest
     public ResponseEntity<Page<AppServiceRepVO>> applicationCenter(
             @PathVariable("project_id") Long projectId,
-            @Encrypt @RequestParam(value = "envId") Long envId,
+            @Encrypt @RequestParam(value = "envId", required = false) Long envId,
             @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "params", required = false) String params,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {

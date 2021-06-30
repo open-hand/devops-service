@@ -59,9 +59,17 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     public List<DevopsEnvApplicationVO> batchCreate(Long projectId, DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         permissionHelper.checkEnvBelongToProject(projectId, devopsEnvAppServiceVO.getEnvId());
         permissionHelper.checkAppServicesBelongToProject(projectId, devopsEnvAppServiceVO.getAppServiceIds());
+
         return devopsEnvAppServiceVO.getAppServiceIds().stream()
                 .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
-                .peek(e -> createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId()))
+                .peek(e -> {
+                    AppServiceDTO appServiceDTO = applicationService.baseQuery(e.getAppServiceId());
+                    if (!Objects.isNull(appServiceDTO)) {
+                        boolean isProjectAppService = projectId.equals(appServiceDTO.getProjectId());
+                        AppSourceType appSourceType = isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE;
+                        createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId(), appSourceType.getValue(), appServiceDTO.getCode(), appServiceDTO.getName());
+                    }
+                })
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
     }
@@ -74,13 +82,22 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void createEnvAppRelationShipIfNon(Long appServiceId, Long envId) {
+    public void createEnvAppRelationShipIfNon(Long appServiceId, Long envId, String source, String serviceCode, String serviceName) {
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
         devopsEnvAppServiceDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
         devopsEnvAppServiceDTO.setEnvId(Objects.requireNonNull(envId));
         // 如果没有，插入
         if (devopsEnvAppServiceMapper.selectCount(devopsEnvAppServiceDTO) == 0) {
+            devopsEnvAppServiceDTO.setSource(source);
+            devopsEnvAppServiceDTO.setServiceName(serviceName);
+            devopsEnvAppServiceDTO.setServiceCode(serviceCode);
             devopsEnvAppServiceMapper.insertSelective(devopsEnvAppServiceDTO);
+        } else {
+            //旧的关联关系可以跟新
+            devopsEnvAppServiceDTO.setSource(source);
+            devopsEnvAppServiceDTO.setServiceName(serviceName);
+            devopsEnvAppServiceDTO.setServiceCode(serviceCode);
+            devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
         }
     }
 
