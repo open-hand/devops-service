@@ -12,10 +12,19 @@ import java.util.Date;
  * @Date 2021/6/25 17:35
  */
 public class JavaProcessInfoVO {
+    private Long instanceId;
     private String pid;
     private String port;
     private IamUserDTO deployer;
     private Date deployDate;
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
 
     public String getPid() {
         return pid;

@@ -216,41 +216,41 @@ public interface DevopsHostService {
      * 删除java进程
      * @param projectId
      * @param hostId
-     * @param pid
+     * @param instanceId
      */
-    void deleteJavaProcess(Long projectId, Long hostId, String pid);
+    void deleteJavaProcess(Long projectId, Long hostId, Long instanceId);
 
     /**
      * 删除docker进程
      * @param projectId
      * @param hostId
-     * @param containerId
+     * @param instanceId
      */
-    void deleteDockerProcess(Long projectId, Long hostId, String containerId);
+    void deleteDockerProcess(Long projectId, Long hostId, Long instanceId);
 
     /**
      * 停止docker进程
      * @param projectId
      * @param hostId
-     * @param containerId
+     * @param instanceId
      */
-    void stopDockerProcess(Long projectId, Long hostId, String containerId);
+    void stopDockerProcess(Long projectId, Long hostId, Long instanceId);
 
     /**
      * 重启docker进程
      * @param projectId
      * @param hostId
-     * @param containerId
+     * @param instanceId
      */
-    void restartDockerProcess(Long projectId, Long hostId, String containerId);
+    void restartDockerProcess(Long projectId, Long hostId, Long instanceId);
 
     /**
      * 启动docker进程
      * @param projectId
      * @param hostId
-     * @param containerId
+     * @param instanceId
      */
-    void startDockerProcess(Long projectId, Long hostId, String containerId);
+    void startDockerProcess(Long projectId, Long hostId, Long instanceId);
 
     /**
      * 下载创建主机脚本

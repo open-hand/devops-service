@@ -9,11 +9,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_command.groovy') {
             column(name: "host_id", type: "BIGINT UNSIGNED", remarks: '主机id') {
                 constraints(nullable: false)
             }
-            column(name: 'object_type', type: 'VARCHAR(32)', remarks: '操作对象类型') {
+            column(name: 'instance_type', type: 'VARCHAR(32)', remarks: '实例类型') {
                 constraints(nullable: false)
             }
-            column(name: 'object', type: 'VARCHAR(32)', remarks: '操作对象')
-            column(name: 'object_version', type: 'VARCHAR(256)', remarks: '对象版本')
+            column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: '实例id')
 
             column(name: 'command_type', type: 'VARCHAR(32)', remarks: '操作类型') {
                 constraints(nullable: false)
