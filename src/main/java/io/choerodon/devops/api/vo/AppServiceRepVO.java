@@ -122,6 +122,10 @@ public class AppServiceRepVO {
     @ApiModelProperty("错误信息")
     private String errorMessage;
 
+    @ApiModelProperty("环境Id")
+    @Encrypt
+    private Long envId;
+
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -424,6 +428,14 @@ public class AppServiceRepVO {
 
     public void setLatestVersion(String latestVersion) {
         this.latestVersion = latestVersion;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }
 
