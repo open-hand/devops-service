@@ -302,7 +302,7 @@ public class DevopsHostController {
     }
 
     @ApiOperation("下载创建主机脚本")
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionPublic = true)
     @GetMapping("/{host_id}/download_file/{token}")
     public ResponseEntity<String> downloadCreateHostFile(
             @ApiParam(value = "项目id", required = true)
