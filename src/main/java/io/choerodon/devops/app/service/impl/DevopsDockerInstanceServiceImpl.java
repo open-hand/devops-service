@@ -50,6 +50,7 @@ import org.springframework.util.CollectionUtils;
 public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceService {
 
     private static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
+    private static final String ERROR_UPDATE_DOCKER_INSTANCE_FAILED = "error.update.docker.instance.failed";
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
 
     @Autowired
@@ -136,5 +137,22 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 dockerDeployVO.getImageInfo().getTag(),
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+    }
+
+    @Override
+    public DevopsDockerInstanceDTO baseQuery(Long instanceId) {
+        return devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+    }
+
+    @Override
+    @Transactional
+    public void baseUpdate(DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_UPDATE_DOCKER_INSTANCE_FAILED);
+    }
+
+    @Override
+    @Transactional
+    public void baseDelete(Long instanceId) {
+        devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
     }
 }
