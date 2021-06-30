@@ -2164,7 +2164,17 @@ public class AppServiceServiceImpl implements AppServiceService {
                         initApplicationParams(info, appServiceDTO, urlSlash);
                         appServiceRepVO.setRepoUrl(appServiceDTO.getRepoUrl());
                     }
+                    //判断是不是共享的应用服务 如果是要返回项目的来源
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(appServiceRepVO.getEnvId());
+                    if (!Objects.isNull(devopsEnvironmentDTO)) {
+                        if (!devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId())) {
+                            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                            appServiceRepVO.setShareProjectName(projectDTO.getName());
+                        }
+                    }
                 }
+
+
                 AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
                 appServiceVersionDTO.setAppServiceId(appServiceRepVO.getId());
                 List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);

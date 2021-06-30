@@ -890,6 +890,7 @@
                any_value ( deas.source ) AS source,
                any_value ( deas.service_name ) AS serviceName,
                any_value ( deas.service_code ) AS serviceCode,
+               any_value ( deas.env_id ) AS envId,
                any_value ( deas.id ) AS tempId
             FROM
               devops_env_app_service deas
