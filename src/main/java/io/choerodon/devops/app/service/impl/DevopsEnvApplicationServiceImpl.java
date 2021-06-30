@@ -7,9 +7,11 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -17,8 +19,14 @@ import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.app.service.PermissionHelper;
-import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
@@ -36,6 +44,14 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private AppServiceShareRuleMapper appServiceShareRuleMapper;
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -165,5 +181,70 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public List<BaseApplicationServiceVO> listNonRelatedAppService(Long projectId, Long envId) {
         return devopsEnvAppServiceMapper.listNonRelatedApplications(projectId, envId);
+    }
+
+    @Override
+    public void fixData() {
+        List<DevopsEnvAppServiceDTO> devopsEnvAppServiceDTOS = devopsEnvAppServiceMapper.selectAll();
+        if (CollectionUtils.isEmpty(devopsEnvAppServiceDTOS)) {
+            return;
+        }
+
+
+        devopsEnvAppServiceDTOS.forEach(devopsEnvAppServiceDTO -> {
+            //根据部署的实例来修复
+            AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
+            appServiceInstanceDTO.setEnvId(devopsEnvAppServiceDTO.getEnvId());
+            appServiceInstanceDTO.setAppServiceId(devopsEnvAppServiceDTO.getAppServiceId());
+            List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.select(appServiceInstanceDTO);
+            if (CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
+                return;
+            }
+            AppServiceInstanceDTO serviceInstanceDTO = appServiceInstanceDTOS.get(0);
+            if (StringUtils.equalsIgnoreCase(serviceInstanceDTO.getSource(), AppSourceType.MARKET.getValue())) {
+                //查询市场服务,
+                devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.MARKET.value);
+
+                // TODO: 2021/6/30  
+
+//                devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
+//                devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
+                
+                devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
+
+                return;
+            }
+
+            //1.应用服务是不是在本项目下，如果在，则来源为本项目
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO.getEnvId());
+            if (Objects.isNull(devopsEnvAppServiceDTO)) {
+                //环境删除
+                return;
+            }
+            AppServiceDTO appServiceDTO = applicationService.baseQuery(devopsEnvAppServiceDTO.getAppServiceId());
+            if (Objects.isNull(appServiceDTO)) {
+                //应用服务被删除
+                return;
+            }
+            //环境与应用服务在一个项目下，则认为是本项目部署
+            if (devopsEnvironmentDTO.getProjectId().longValue() == appServiceDTO.getProjectId()) {
+                devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.PROJECT.value);
+                devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
+                devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
+                devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
+                return;
+            }
+            //2.不在本项目的应用服务是不是来源于共享规则，如果是来源为共享应用（不考虑部署后删除共享规则的）
+            AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
+            appServiceShareRuleDTO.setAppServiceId(devopsEnvAppServiceDTO.getAppServiceId());
+            List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(appServiceShareRuleDTO);
+            if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
+                devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.SHARE.value);
+                devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
+                devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
+                devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
+                return;
+            }
+        });
     }
 }

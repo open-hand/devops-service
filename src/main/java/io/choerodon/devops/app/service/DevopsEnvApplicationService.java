@@ -70,4 +70,7 @@ public interface DevopsEnvApplicationService {
      * @return 应用列表
      */
     List<BaseApplicationServiceVO> listNonRelatedAppService(Long projectId, Long envId);
+
+    void fixData();
+
 }

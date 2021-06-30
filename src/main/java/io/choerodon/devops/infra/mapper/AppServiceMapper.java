@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.AppServiceRepVO;
 import io.choerodon.devops.api.vo.AppServiceSimpleVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
@@ -202,5 +203,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                          @Param("artifactId") String artifactId);
 
     List<AppServiceSimpleVO> listByProjectIdsAndCodes(@Param("projectIds") List<Long> projectIds, @Param("codes") List<String> codes);
+
+    List<AppServiceRepVO> queryApplicationCenter(@Param("envIds") List<Long> envIds, @Param("type") String type, @Param("params") String params);
 }
 
