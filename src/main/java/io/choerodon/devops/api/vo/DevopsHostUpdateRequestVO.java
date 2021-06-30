@@ -44,20 +44,6 @@ public class DevopsHostUpdateRequestVO {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
-    @Deprecated
-    @ApiModelProperty("jmeter进程的端口号")
-    private Integer jmeterPort;
-
-    @Deprecated
-    @ApiModelProperty("jmeter二进制文件的路径")
-    private String jmeterPath;
-
-    @ApiModelProperty("内网ip")
-    private String privateIp;
-
-    @ApiModelProperty("内网ssh端口")
-    private Integer privatePort;
-
     public String getName() {
         return name;
     }
@@ -100,45 +86,5 @@ public class DevopsHostUpdateRequestVO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    @Deprecated
-    public Integer getJmeterPort() {
-        return jmeterPort;
-    }
-
-    @Deprecated
-    public void setJmeterPort(Integer jmeterPort) {
-        this.jmeterPort = jmeterPort;
-    }
-
-    @Deprecated
-    public String getJmeterPath() {
-        return jmeterPath;
-    }
-
-    @Deprecated
-    public void setJmeterPath(String jmeterPath) {
-        this.jmeterPath = jmeterPath;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPrivateIp() {
-        return privateIp;
-    }
-
-    public void setPrivateIp(String privateIp) {
-        this.privateIp = privateIp;
-    }
-
-    public Integer getPrivatePort() {
-        return privatePort;
-    }
-
-    public void setPrivatePort(Integer privatePort) {
-        this.privatePort = privatePort;
     }
 }
