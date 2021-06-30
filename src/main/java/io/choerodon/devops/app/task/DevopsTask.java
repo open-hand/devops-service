@@ -24,8 +24,8 @@ public class DevopsTask {
 
 
     @JobTask(maxRetryCount = 3, code = "fixEnvAppData", description = "修复环境应用服务数据")
-//    @TimedTask(name = "fixEnvAppData", description = "修复环境应用服务数据", oneExecution = true,
-//            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    @TimedTask(name = "fixEnvAppData", description = "修复环境应用服务数据", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixEnvAppData(Map<String, Object> map) {
         logger.info(">>>>>>>>>>>>>>>>>>>>begin to fix env app data<<<<<<<<<<<<<<<<<<<<<<<<<<");
         try {

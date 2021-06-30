@@ -2154,7 +2154,12 @@ public class AppServiceServiceImpl implements AppServiceService {
                 //共享与本项目
                 AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
                 if (!Objects.isNull(appServiceDTO)) {
-                    appServiceRepVO.setRepoUrl(appServiceDTO.getRepoUrl());
+                    ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(appServiceDTO.getProjectId());
+                    String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+                    if (!Objects.isNull(info)) {
+                        initApplicationParams(info, appServiceDTO, urlSlash);
+                        appServiceRepVO.setRepoUrl(appServiceDTO.getRepoUrl());
+                    }
                 }
                 AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
                 appServiceVersionDTO.setAppServiceId(appServiceRepVO.getId());
