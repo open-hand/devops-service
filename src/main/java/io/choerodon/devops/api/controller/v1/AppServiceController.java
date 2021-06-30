@@ -870,7 +870,7 @@ public class AppServiceController {
 
     @ApiOperation("检查是否可以删除关联")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping("/app_center/env_app")
+    @GetMapping("/app_center/env_app")
     public ResponseEntity<Boolean> checkDeleteEnvApp(
             @Encrypt @RequestParam(value = "appServiceId") Long appServiceId,
             @Encrypt @RequestParam(value = "envId") Long envId) {
