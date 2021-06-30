@@ -51,6 +51,9 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -67,7 +70,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      */
     private static final long OPERATING_TIMEOUT = 300L * 1000;
     private static final String CHECKING_HOST = "checking";
-    private static final String HOST_AGENT = "curl -o {download_file_api} && sh host.sh";
+    private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
+    private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
     /**
      * 占用主机的过期时间, 超过这个时间, 主机会被释放
@@ -76,8 +80,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private long hostOccupyTimeoutHours;
     @Value("${devops.host.download-api-url}")
     private String downloadApiUrl;
-    @Value("${devops.host.download-file-url}")
-    private String downloadFileUrl;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -99,6 +101,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     private final Gson gson = new Gson();
 
+    static {
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
+            HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.host.sh");
+        }
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -111,10 +120,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setProjectId(projectId);
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
-        devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", "a"));
+        devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
         DevopsHostVO resp =  ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
-        asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
-        return getInstallString(projectId, resp, devopsHostDTO.getToken());
+        return String.format(HOST_AGENT, downloadApiUrl, projectId, resp.getId(), devopsHostDTO.getToken());
     }
 
     /**
@@ -123,13 +131,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
      * @return agent安装命令
      */
     @Override
-    public String getInstallString(Long projectId, DevopsHostVO devopsHostVO, String token) {
+    public String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO) {
         Map<String, String> params = new HashMap<>();
         // 渲染激活环境的命令参数
         params.put("{project_id}", projectId.toString());
-        params.put("{host_id}", devopsHostVO.getId().toString());
-        params.put("{token}", token);
-        return HOST_AGENT.replace("{download_file_api}", downloadApiUrl + FileUtil.replaceReturnString(downloadFileUrl, params));
+        params.put("{host_id}", devopsHostDTO.getId().toString());
+        params.put("{token}", devopsHostDTO.getToken());
+        return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -779,13 +787,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public void downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res) {
+    public String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res) {
         DevopsHostDTO devopsHostDTO = new DevopsHostDTO();
         devopsHostDTO.setId(hostId);
-        String dbToken = devopsHostMapper.selectByPrimaryKey(devopsHostDTO).getToken();
-        if (dbToken.equals(token)) {
-            FileUtil.downloadFile(res,"/shell/host.sh");
+        devopsHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostDTO);
+        String response = null;
+        if (devopsHostDTO.getToken().equals(token)) {
+            response = getInstallString(projectId, devopsHostDTO);
         }
+        return response;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

@@ -29,11 +29,11 @@ public interface DevopsHostService {
     /**
      * 获得agent安装命令
      *
-     * @param devopsHostVO     主机dto
-     * @param token            token
+     * @param projectId         项目id
+     * @param devopsHostDTO     主机配置dto
      * @return 安装命令
      */
-    String getInstallString(Long projectId, DevopsHostVO devopsHostVO, String token);
+    String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO);
 
     /**
      * 批量设置主机状态为处理中
@@ -260,6 +260,6 @@ public interface DevopsHostService {
      * @param token
      * @param res
      */
-    void downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
+    String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
 
 }

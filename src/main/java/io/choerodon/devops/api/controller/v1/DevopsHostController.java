@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -16,6 +17,7 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -23,6 +25,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -301,7 +304,7 @@ public class DevopsHostController {
     @ApiOperation("下载创建主机脚本")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/download_file/{token}")
-    public void downloadCreateHostFile(
+    public ResponseEntity<String> downloadCreateHostFile(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "主机id", required = true)
@@ -309,6 +312,8 @@ public class DevopsHostController {
             @ApiParam(value = "token", required = true)
             @PathVariable("token") String token,
             HttpServletResponse res) {
-        devopsHostService.downloadCreateHostFile(projectId, hostId, token, res);
+        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token, res))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.host.insert"));
     }
 }
