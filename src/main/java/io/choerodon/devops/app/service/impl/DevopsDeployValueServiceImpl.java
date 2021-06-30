@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -136,7 +138,21 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId, String name) {
-        return ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appServiceId, envId, name), DevopsDeployValueVO.class);
+        List<DevopsDeployValueVO> devopsDeployValueVOS = ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appServiceId, envId, name), DevopsDeployValueVO.class);
+        if (CollectionUtils.isEmpty(devopsDeployValueVOS)) {
+            return new ArrayList<>();
+        }
+        // 添加用户信息
+        List<Long> userIds = devopsDeployValueVOS.stream().map(DevopsDeployValueVO::getCreatedBy).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(userIds);
+        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+        devopsDeployValueVOS.forEach(devopsDeployValueVO -> {
+            IamUserDTO iamUserDTO = userDTOMap.get(devopsDeployValueVO.getCreatedBy());
+            if (iamUserDTO != null) {
+                devopsDeployValueVO.setCreator(iamUserDTO);
+            }
+        });
+        return devopsDeployValueVOS;
     }
 
     @Override
