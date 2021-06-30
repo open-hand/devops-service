@@ -66,8 +66,8 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
                     AppServiceDTO appServiceDTO = applicationService.baseQuery(e.getAppServiceId());
                     if (!Objects.isNull(appServiceDTO)) {
                         boolean isProjectAppService = projectId.equals(appServiceDTO.getProjectId());
-                        AppSourceType appSourceType = isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE;
-                        createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId(), appSourceType.getValue(), appServiceDTO.getCode(), appServiceDTO.getName());
+                        ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
+                        createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId(), appSourceType.value, appServiceDTO.getCode(), appServiceDTO.getName());
                     }
                 })
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
@@ -215,54 +215,62 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
             appServiceInstanceDTO.setEnvId(devopsEnvAppServiceDTO.getEnvId());
             appServiceInstanceDTO.setAppServiceId(devopsEnvAppServiceDTO.getAppServiceId());
             List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.select(appServiceInstanceDTO);
-            if (CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
-                return;
-            }
-            AppServiceInstanceDTO instanceDTO = appServiceInstanceDTOS.stream().sorted(Comparator.comparing(AppServiceInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
-            if (StringUtils.equalsIgnoreCase(instanceDTO.getSource(), AppSourceType.MARKET.getValue())) {
-                //查询市场服务,
-                devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.MARKET.value);
-                List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.queryDeployObjectByMarketServiceId(0l, devopsEnvAppServiceDTO.getAppServiceId());
-                if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOS)) {
-                    MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.get(0);
-                    devopsEnvAppServiceDTO.setServiceCode(marketServiceDeployObjectVO.getDevopsAppServiceCode());
-                    devopsEnvAppServiceDTO.setServiceName(marketServiceDeployObjectVO.getDevopsAppServiceName());
+            if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
+                AppServiceInstanceDTO instanceDTO = appServiceInstanceDTOS.stream().sorted(Comparator.comparing(AppServiceInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
+                if (StringUtils.equalsIgnoreCase(instanceDTO.getSource(), AppSourceType.MARKET.getValue())) {
+                    //查询市场服务,
+                    devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.MARKET.value);
+                    List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.queryDeployObjectByMarketServiceId(0l, devopsEnvAppServiceDTO.getAppServiceId());
+                    if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOS)) {
+                        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.get(0);
+                        devopsEnvAppServiceDTO.setServiceCode(marketServiceDeployObjectVO.getDevopsAppServiceCode());
+                        devopsEnvAppServiceDTO.setServiceName(marketServiceDeployObjectVO.getDevopsAppServiceName());
+                    }
+                    devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
+
+                    return;
+                } else {
+                    //共享的或本项目的
+                    handDevopsAppservice(devopsEnvAppServiceDTO);
                 }
-                devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
-
-                return;
+            } else {
+                //有关联 没有实例
+                handDevopsAppservice(devopsEnvAppServiceDTO);
             }
 
-            //1.应用服务是不是在本项目下，如果在，则来源为本项目
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO.getEnvId());
-            if (Objects.isNull(devopsEnvAppServiceDTO)) {
-                //环境删除
-                return;
-            }
-            AppServiceDTO appServiceDTO = applicationService.baseQuery(devopsEnvAppServiceDTO.getAppServiceId());
-            if (Objects.isNull(appServiceDTO)) {
-                //应用服务被删除
-                return;
-            }
-            //环境与应用服务在一个项目下，则认为是本项目部署
-            if (devopsEnvironmentDTO.getProjectId().longValue() == appServiceDTO.getProjectId()) {
-                devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.PROJECT.value);
-                devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
-                devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
-                devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
-                return;
-            }
-            //2.不在本项目的应用服务是不是来源于共享规则，如果是来源为共享应用（不考虑部署后删除共享规则的）
-            AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
-            appServiceShareRuleDTO.setAppServiceId(devopsEnvAppServiceDTO.getAppServiceId());
-            List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(appServiceShareRuleDTO);
-            if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
-                devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.SHARE.value);
-                devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
-                devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
-                devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
-                return;
-            }
         });
+    }
+
+    private void handDevopsAppservice(DevopsEnvAppServiceDTO devopsEnvAppServiceDTO) {
+        //1.应用服务是不是在本项目下，如果在，则来源为本项目
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO.getEnvId());
+        if (Objects.isNull(devopsEnvironmentDTO)) {
+            //环境删除
+            return;
+        }
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(devopsEnvAppServiceDTO.getAppServiceId());
+        if (Objects.isNull(appServiceDTO)) {
+            //应用服务被删除
+            return;
+        }
+        //环境与应用服务在一个项目下，则认为是本项目部署
+        if (devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId())) {
+            devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.PROJECT.value);
+            devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
+            devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
+            devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
+            return;
+        }
+        //2.不在本项目的应用服务是不是来源于共享规则，如果是来源为共享应用（不考虑部署后删除共享规则的）
+        AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
+        appServiceShareRuleDTO.setAppServiceId(devopsEnvAppServiceDTO.getAppServiceId());
+        List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(appServiceShareRuleDTO);
+        if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
+            devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.SHARE.value);
+            devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
+            devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
+            devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
+            return;
+        }
     }
 }
