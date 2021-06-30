@@ -107,6 +107,14 @@ public class AppServiceRepVO {
 
     @ApiModelProperty("来源项目名")
     private String shareProjectName;
+    @ApiModelProperty("服务的编码")
+    private String serviceCode;
+    @ApiModelProperty("服务的名称")
+    private String serviceName;
+    @ApiModelProperty("服务来源")
+    private String source;
+    @ApiModelProperty("最新版本")
+    private String latestVersion;
 
     @ApiModelProperty("事务实例id")
     @Encrypt
@@ -384,6 +392,38 @@ public class AppServiceRepVO {
 
     public void setUpdateUserImage(String updateUserImage) {
         this.updateUserImage = updateUserImage;
+    }
+
+    public String getServiceCode() {
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getLatestVersion() {
+        return latestVersion;
+    }
+
+    public void setLatestVersion(String latestVersion) {
+        this.latestVersion = latestVersion;
     }
 }
 

@@ -1,12 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
@@ -14,6 +10,11 @@ import io.choerodon.devops.app.eventhandler.payload.MarketInstanceSagaPayload;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -406,4 +407,13 @@ public interface AppServiceInstanceService {
      * @return 版本
      */
     AppServiceVersionDTO queryVersion(Long appServiceInstanceId);
+
+    /**
+     * 查询应用服务在环境下的实例列表
+     * @param projectId 项目id
+     * @param appServiceId 应用服务id
+     * @param envId 环境id
+     * @return 实例列表
+     */
+    List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId);
 }

@@ -40,14 +40,6 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
             });
         }
 
-        // 处理新增的数据
-        List<JavaProcessInfoVO> addProcessInfos = javaProcessUpdatePayload.getAddProcessInfos();
-        addProcessInfos.forEach(addProcessInfo -> {
-            // todo 完善部署者、部署时间信息
-
-            processInfoMap.put(addProcessInfo.getPid(), addProcessInfo);
-        });
-
         // 更新缓存
         redisTemplate.opsForHash().putAll(String.format(DevopsHostConstants.HOST_JAVA_PROCESS_INFO_KEY, hostId), processInfoMap);
 

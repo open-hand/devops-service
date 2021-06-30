@@ -878,4 +878,36 @@
             </if>
         </where>
     </select>
+
+    <select id="queryApplicationCenter" resultType="io.choerodon.devops.api.vo.AppServiceRepVO">
+        SELECT
+           deas.app_service_id as id,
+           deas.source as source,
+           deas.service_name as serviceName,
+           deas.service_code as serviceCode
+        FROM
+        	devops_env_app_service deas
+        <if test="envId == null ">
+            JOIN  devops_env de on deas.env_id = de.id
+        </if>
+        WHERE
+        <if test="envId != null">
+            deas.env_id = #{envId,jdbcType=BIGINT}
+        </if>
+        <if test="envId == null  ">
+            de.project_id=#{projectId,jdbcType=BIGINT}
+        </if>
+        <if test="type != null and type != '' and type != 'all'">
+            AND deas.source= #{type}
+        </if>
+        <if test="params != null and params != ''">
+            AND  (
+            deas.service_name=#{params}
+            or
+            deas.service_code=#{params}
+            )
+        </if>
+        ORDER BY
+     	    deas.id DESC
+    </select>
 </mapper>

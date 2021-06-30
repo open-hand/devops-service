@@ -11,7 +11,6 @@ import java.util.List;
  */
 public class JavaProcessUpdatePayload {
     private List<JavaProcessInfoVO> deleteProcessInfos;
-    private List<JavaProcessInfoVO> addProcessInfos;
 
     public List<JavaProcessInfoVO> getDeleteProcessInfos() {
         return deleteProcessInfos;
@@ -21,11 +20,4 @@ public class JavaProcessUpdatePayload {
         this.deleteProcessInfos = deleteProcessInfos;
     }
 
-    public List<JavaProcessInfoVO> getAddProcessInfos() {
-        return addProcessInfos;
-    }
-
-    public void setAddProcessInfos(List<JavaProcessInfoVO> addProcessInfos) {
-        this.addProcessInfos = addProcessInfos;
-    }
 }

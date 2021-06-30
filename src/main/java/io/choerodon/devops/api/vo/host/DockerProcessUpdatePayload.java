@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class DockerProcessUpdatePayload {
     private List<DockerProcessInfoVO> deleteProcessInfos;
-    private List<DockerProcessInfoVO> addProcessInfos;
+    private List<DockerProcessInfoVO> updateProcessInfos;
 
     public List<DockerProcessInfoVO> getDeleteProcessInfos() {
         return deleteProcessInfos;
@@ -21,11 +21,11 @@ public class DockerProcessUpdatePayload {
         this.deleteProcessInfos = deleteProcessInfos;
     }
 
-    public List<DockerProcessInfoVO> getAddProcessInfos() {
-        return addProcessInfos;
+    public List<DockerProcessInfoVO> getUpdateProcessInfos() {
+        return updateProcessInfos;
     }
 
-    public void setAddProcessInfos(List<DockerProcessInfoVO> addProcessInfos) {
-        this.addProcessInfos = addProcessInfos;
+    public void setUpdateProcessInfos(List<DockerProcessInfoVO> updateProcessInfos) {
+        this.updateProcessInfos = updateProcessInfos;
     }
 }

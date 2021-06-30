@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -68,6 +69,7 @@ import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.iam.ResourceVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -88,6 +90,7 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.ChartClient;
@@ -2129,6 +2132,42 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setProjectId(projectId);
         int selectCount = appServiceMapper.selectCount(appServiceDTO);
         return Long.valueOf(selectCount);
+    }
+
+    @Override
+    public Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest) {
+
+        //env为null查询所有环境关联的应用服务，
+        Page<AppServiceRepVO> appServiceRepVOS = PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.queryApplicationCenter(projectId, envId, type, params));
+        //处理最新版本,仓库地址
+        appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)) {
+                //根据市场服务id查询已发布部署对象
+                List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.queryDeployObjectByMarketServiceId(projectId, appServiceRepVO.getId());
+                //过滤出已发布的最新的版本
+                if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOS)) {
+                    MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.stream().sorted(comparing(MarketServiceDeployObjectVO::getId).reversed()).collect(toList()).get(0);
+                    appServiceRepVO.setLatestVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
+                }
+
+            } else {
+                //共享与本项目
+                AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
+                if (!Objects.isNull(appServiceDTO)) {
+                    appServiceRepVO.setRepoUrl(appServiceDTO.getRepoUrl());
+                }
+                AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+                appServiceVersionDTO.setAppServiceId(appServiceRepVO.getId());
+                List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+                if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                    List<AppServiceVersionDTO> serviceVersionDTOS = appServiceVersionDTOS.stream().sorted(comparing(AppServiceVersionDTO::getId).reversed()).collect(toList());
+                    appServiceRepVO.setLatestVersion(serviceVersionDTOS.get(0).getVersion());
+                }
+            }
+        });
+
+
+        return appServiceRepVOS;
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {

@@ -660,4 +660,11 @@
                  INNER JOIN devops_app_service_version dasv ON command.object_version_id = dasv.id
         WHERE dasv.app_service_id  = #{appServiceId};
     </select>
+    <select id="listAppInstanceByAppSvcIdAndEnvId"
+            resultType="io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO">
+        select dasi.*, dasv.version
+        from devops_app_service_instance dasi
+        left join devops_app_service_version dasv on dasi.app_service_version_id = dasv.id
+        where dasi.app_service_id = #{appServiceId} and dasi.env_id = #{envId};
+    </select>
 </mapper>

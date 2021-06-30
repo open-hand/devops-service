@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,7 +15,12 @@ public class DevopsEnvAppServiceDTO {
 
     private Long appServiceId;
     private Long envId;
-
+    @ApiModelProperty("应用的来源")
+    private String source;
+    @ApiModelProperty("服务的code")
+    private String serviceCode;
+    @ApiModelProperty("服务的名称")
+    private String serviceName;
     public DevopsEnvAppServiceDTO() {
     }
 
@@ -65,5 +71,29 @@ public class DevopsEnvAppServiceDTO {
     @Override
     public int hashCode() {
         return Objects.hash(appServiceId, envId);
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getServiceCode() {
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 }

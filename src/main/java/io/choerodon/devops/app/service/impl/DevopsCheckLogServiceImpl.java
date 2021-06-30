@@ -19,6 +19,7 @@ import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
 
 
@@ -44,6 +45,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsBranchService devopsBranchService;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
+    @Autowired
+    private DevopsEnvApplicationService devopsEnvApplicationService;
 
     @Override
     public void checkLog(String version) {
@@ -93,6 +96,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     devopsBranchService.fixIssueId();
                     devopsGitlabCommitService.fixIssueId();
                     LOGGER.info("修复数据完成!!!!!!");
+                } else if ("1.1.0".equals(version)) {
+                    devopsEnvApplicationService.fixData();
                 } else {
                     LOGGER.info("version not matched");
                 }

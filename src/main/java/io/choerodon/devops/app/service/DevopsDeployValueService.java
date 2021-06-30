@@ -1,11 +1,11 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -77,9 +77,10 @@ public interface DevopsDeployValueService {
      * @param projectId    项目id
      * @param appServiceId 应用服务id
      * @param envId        环境id
+     * @param name
      * @return 查看环境下服务的配置
      */
-    List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId);
+    List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId, String name);
 
     /**
      * 检测能否删除
@@ -100,7 +101,7 @@ public interface DevopsDeployValueService {
 
     DevopsDeployValueDTO baseQueryById(Long valueId);
 
-    List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
+    List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId, String name);
 
     /**
      * 根据环境id删除所有相关的部署配置
