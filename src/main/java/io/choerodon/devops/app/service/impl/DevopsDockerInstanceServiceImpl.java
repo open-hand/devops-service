@@ -124,7 +124,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
         // 4. 保存部署记录
-        Long deployRecordId = devopsDeployRecordService.saveRecord(
+        devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
                 null,
