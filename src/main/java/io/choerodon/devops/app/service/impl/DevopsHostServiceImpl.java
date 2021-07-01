@@ -363,7 +363,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public DevopsHostVO updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
+    public void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         CommonExAssertUtil.assertNotNull(devopsHostDTO, "error.host.not.exist", hostId);
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
@@ -381,7 +381,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
 
         MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
-        return queryHost(projectId, hostId);
     }
 
     @Override
@@ -390,9 +389,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (devopsHostDTO == null || !projectId.equals(devopsHostDTO.getProjectId())) {
             return null;
         }
-
-        // 校验超时
-        checkTimeout(projectId, ArrayUtil.singleAsList(devopsHostDTO));
 
         return ConvertUtils.convertObject(devopsHostDTO, DevopsHostVO.class);
     }

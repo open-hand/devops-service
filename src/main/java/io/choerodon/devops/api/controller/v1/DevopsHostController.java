@@ -54,15 +54,15 @@ public class DevopsHostController {
     @ApiOperation("更新主机")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping("/{host_id}")
-    public ResponseEntity<DevopsHostVO> updateHost(
+    public ResponseEntity<Void> updateHost(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "主机id", required = true)
             @Encrypt @PathVariable("host_id") Long hostId,
             @ApiParam(value = "更新主机相关参数")
             @RequestBody @Valid DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
-        DevopsHostVO resp = devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
-        return Results.success(resp);
+        devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
+        return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("查询单个主机")
