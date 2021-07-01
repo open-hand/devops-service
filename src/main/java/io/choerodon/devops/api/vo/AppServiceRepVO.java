@@ -113,6 +113,10 @@ public class AppServiceRepVO {
     private String serviceName;
     @ApiModelProperty("服务来源")
     private String source;
+    @ApiModelProperty("服务来源显示")
+    private String sourceView;
+    @ApiModelProperty("如果是市场服务的话是不是平台预置的")
+    private Boolean builtIn;
     @ApiModelProperty("最新版本")
     private String latestVersion;
 
@@ -436,6 +440,22 @@ public class AppServiceRepVO {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public String getSourceView() {
+        return sourceView;
+    }
+
+    public void setSourceView(String sourceView) {
+        this.sourceView = sourceView;
+    }
+
+    public Boolean getBuiltIn() {
+        return builtIn;
+    }
+
+    public void setBuiltIn(Boolean builtIn) {
+        this.builtIn = builtIn;
     }
 }
 

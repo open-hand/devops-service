@@ -99,4 +99,9 @@ public class MarketServiceClientOperator {
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObjectByMarketServiceId(projectId, marketServiceId), new TypeReference<List<MarketServiceDeployObjectVO>>() {
         });
     }
+
+    public List<MarketServiceVO> queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(Long projectId, Set<Long> marketServiceIds) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(projectId, marketServiceIds), new TypeReference<List<MarketServiceVO>>() {
+        });
+    }
 }

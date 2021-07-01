@@ -68,6 +68,7 @@ import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.iam.ResourceVO;
+import io.choerodon.devops.api.vo.market.MarketCategoryVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
@@ -2143,20 +2144,54 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //env为null查询所有环境关联的应用服务，
         Page<AppServiceRepVO> appServiceRepVOS = PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.queryApplicationCenter(projectId, envId, type, params));
+        List<AppServiceRepVO> appServiceRepVOSContent = appServiceRepVOS.getContent();
+        if (CollectionUtils.isEmpty(appServiceRepVOSContent)) {
+            return appServiceRepVOS;
+        }
+
+        //筛出应用市场类型的marketServiceId
+        List<AppServiceRepVO> serviceRepVOS = appServiceRepVOSContent.stream().filter(appServiceRepVO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)).collect(toList());
+
+        Map<Long, MarketServiceVO> longMarketServiceVOMap = new HashMap<>();
+
+        if (!CollectionUtils.isEmpty(serviceRepVOS)) {
+            Set<Long> marketServiceIds = serviceRepVOS.stream().map(AppServiceRepVO::getId).collect(toSet());
+            List<MarketServiceVO> marketServiceVOs = marketServiceClientOperator.queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(projectId, marketServiceIds);
+            if (!CollectionUtils.isEmpty(marketServiceVOs)) {
+                longMarketServiceVOMap = marketServiceVOs.stream().collect(toMap(MarketServiceVO::getId, Function.identity()));
+            }
+        }
+
+
         //处理最新版本,仓库地址
+        //项目的来源处理：来源是这样的  如果是项目发布的  那么显示组织/项目   如果是中间件之类的就显示平台预置的
+        Map<Long, MarketServiceVO> finalLongMarketServiceVOMap = longMarketServiceVOMap;
         appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
             if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)) {
                 //根据市场服务id查询已发布部署对象
-                List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.queryDeployObjectByMarketServiceId(projectId, appServiceRepVO.getId());
-                //过滤出已发布的最新的版本
-                if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOS)) {
-                    MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.stream().sorted(comparing(MarketServiceDeployObjectVO::getId).reversed()).collect(toList()).get(0);
-                    appServiceRepVO.setLatestVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
-                }
-                //如果是市场服务名称取marketServiceName
-                MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceRepVO.getId());
-                if (!Objects.isNull(marketServiceVO)) {
-                    appServiceRepVO.setServiceName(marketServiceVO.getMarketServiceName());
+                MarketServiceVO serviceVO = finalLongMarketServiceVOMap.get(appServiceRepVO.getId());
+
+                if (!Objects.isNull(serviceVO)) {
+                    appServiceRepVO.setServiceName(serviceVO.getMarketServiceName());
+
+                    //看看是不是预置的
+                    List<MarketCategoryVO> marketCategoryVOS = serviceVO.getMarketCategoryVOS().stream().filter(MarketCategoryVO::getBuiltIn).collect(toList());
+                    appServiceRepVO.setBuiltIn(Boolean.FALSE);
+                    if (!CollectionUtils.isEmpty(marketCategoryVOS)) {
+                        appServiceRepVO.setBuiltIn(Boolean.TRUE);
+                    }
+
+                    //过滤出已发布的最新的版本
+                    if (!CollectionUtils.isEmpty(serviceVO.getMarketServiceDeployObjectVOS())) {
+                        MarketServiceDeployObjectVO marketServiceDeployObjectVO = serviceVO.getMarketServiceDeployObjectVOS().stream().sorted(comparing(MarketServiceDeployObjectVO::getId).reversed()).collect(toList()).get(0);
+                        appServiceRepVO.setLatestVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
+                        if (!appServiceRepVO.getBuiltIn()) {
+                            //如果是项目发布的  那么显示组织/项目
+                            appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
+                            appServiceRepVO.setSourceView(serviceVO.getSourceName());
+                        }
+                    }
+
                 }
 
             } else {
