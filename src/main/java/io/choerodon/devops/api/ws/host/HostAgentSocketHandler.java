@@ -71,7 +71,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         //
         HostMsgVO hostMsgVO = new HostMsgVO();
         hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
-        hostMsgVO.setHostId(Long.parseLong(hostId));
+        hostMsgVO.setHostId(hostId);
 
         // 为了保持和其他通过hzero发送的消息结构一致
         MsgVO msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);

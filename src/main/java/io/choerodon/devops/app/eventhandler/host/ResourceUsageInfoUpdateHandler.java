@@ -4,6 +4,8 @@ import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -22,8 +24,8 @@ public class ResourceUsageInfoUpdateHandler implements HostMsgHandler {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Override
-    public void handler(Long hostId, Long commandId, String payload) {
-        ResourceUsageInfoVO resourceUsageInfoVO = ConvertUtils.convertObject(payload, ResourceUsageInfoVO.class);
+    public void handler(String hostId, Long commandId, String payload) {
+        ResourceUsageInfoVO resourceUsageInfoVO = JsonHelper.unmarshalByJackson(payload, ResourceUsageInfoVO.class);
         redisTemplate.opsForValue().set(String.format(DevopsHostConstants.HOST_RESOURCE_INFO_KEY, hostId), resourceUsageInfoVO);
     }
 

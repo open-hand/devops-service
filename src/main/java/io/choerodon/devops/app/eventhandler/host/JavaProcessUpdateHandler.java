@@ -34,11 +34,11 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
 
     @Override
     @Transactional
-    public void handler(Long hostId, Long commandId, String payload) {
+    public void handler(String hostId, Long commandId, String payload) {
 
 
         JavaProcessUpdatePayload javaProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, JavaProcessUpdatePayload.class);
-        List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(hostId);
+        List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(Long.valueOf(hostId));
         if (CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
             return;
         }
