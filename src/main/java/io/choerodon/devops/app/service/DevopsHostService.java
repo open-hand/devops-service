@@ -265,4 +265,6 @@ public interface DevopsHostService {
     String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
 
     ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId);
+
+    String queryShell(Long projectId, Long hostId);
 }

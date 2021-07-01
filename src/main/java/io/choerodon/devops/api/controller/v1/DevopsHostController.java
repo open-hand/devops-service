@@ -8,7 +8,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -63,7 +62,6 @@ public class DevopsHostController {
             @ApiParam(value = "更新主机相关参数")
             @RequestBody @Valid DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
         DevopsHostVO resp = devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
         return Results.success(resp);
     }
 
@@ -339,5 +337,24 @@ public class DevopsHostController {
         return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token, res))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.host.insert"));
+    }
+
+    /**
+     * 查询连接主机的命令
+     *
+     * @param projectId 项目ID
+     * @param hostId 主机Id
+     * @return String
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询连接主机的命令")
+    @GetMapping("/{host_id}/link_shell")
+    public ResponseEntity<String> queryShell(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "集群Id", required = true)
+            @PathVariable(value = "host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId));
     }
 }
