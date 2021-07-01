@@ -1,16 +1,14 @@
 package io.choerodon.devops.api.vo;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
+import io.choerodon.devops.api.validator.annotation.EnumCheck;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.enums.HostAuthType;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Range;
 
-import io.choerodon.devops.api.validator.annotation.EnumCheck;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.enums.DevopsHostType;
-import io.choerodon.devops.infra.enums.HostAuthType;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  * @author zmf
@@ -33,15 +31,13 @@ public class DevopsHostCreateRequestVO {
     /**
      * {@link HostAuthType}
      */
-    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = HostAuthType.class)
+    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = HostAuthType.class, skipNull = true)
     @ApiModelProperty("认证类型")
     private String authType;
 
-    @NotEmpty(message = "error.host.username.empty")
     @ApiModelProperty("用户名")
     private String username;
 
-    @NotEmpty(message = "error.host.password.empty")
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 

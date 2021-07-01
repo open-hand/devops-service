@@ -77,7 +77,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         String hostId = WebSocketTool.getHostId(session);
 
-        devopsHostService.baseUpdateHostStatus(Long.parseLong(hostId), DevopsHostStatus.CONNECTED);
+        devopsHostService.baseUpdateHostStatus(Long.parseLong(hostId), DevopsHostStatus.DISCONNECT);
 
         WebSocketTool.closeSessionQuietly(session);
     }
@@ -100,6 +100,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         HostMsgHandler hostMsgHandler = hostMsgHandlerMap.get(msg.getType());
         if (hostMsgHandler == null) {
             LOGGER.info("unknown msg type, msg {}", msg);
+            return;
         }
         hostMsgHandler.handler(msg.getHostId(), msg.getCommandId(), msg.getPayload());
 
