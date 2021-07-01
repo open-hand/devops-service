@@ -142,9 +142,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO) {
         Map<String, String> params = new HashMap<>();
         // 渲染激活环境的命令参数
-        params.put("{project_id}", projectId.toString());
-        params.put("{host_id}", devopsHostDTO.getId().toString());
-        params.put("{token}", devopsHostDTO.getToken());
+        params.put("{{ TOKEN }}", devopsHostDTO.getToken());
+        params.put("{{ CONNECT }}", devopsHostDTO.getId().toString());
+        params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
         return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
@@ -380,7 +380,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
         devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
 
-        devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
         MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
         return queryHost(projectId, hostId);
     }

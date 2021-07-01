@@ -3,6 +3,7 @@
 
 TOKEN={{ TOKEN }}
 CONNECT={{ CONNECT }}
+HOST_ID={{ HOST_ID }}
 
 # 1. 校验当前用户有HOME目录
 if [ "$HOME" ];then
@@ -26,7 +27,7 @@ cd "$WORK_DIR" || exit
 curl -o "$WORK_DIR"/c7n-agent https://www.baidu.com
 
 # 5. 启动程序
-nohup ./c7n-agent --connect="${CONNECT}" --token="${TOKEN}" > agent.log 2>&1 &
+nohup ./c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" > agent.log 2>&1 &
 
 # 6. 保存agent进程号
 echo $! > c7n-agent.pid
