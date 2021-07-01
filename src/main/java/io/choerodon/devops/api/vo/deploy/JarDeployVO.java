@@ -32,7 +32,19 @@ public class JarDeployVO {
     @Encrypt
     private Long deployObjectId;
 
+    @ApiModelProperty("部署values")
+    @NotNull(message = "error.value.is.null")
+    private String value;
+
     private ProdJarInfoVO prodJarInfoVO;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public Long getDeployObjectId() {
         return deployObjectId;

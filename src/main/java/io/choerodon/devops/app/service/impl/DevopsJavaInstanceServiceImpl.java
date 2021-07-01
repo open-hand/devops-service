@@ -19,7 +19,10 @@ import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsJavaInstanceDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.repo.*;
+import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
+import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
+import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -37,6 +40,8 @@ import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -60,6 +65,7 @@ import java.util.Objects;
 @Service
 public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsJavaInstanceServiceImpl.class);
 
     private static final String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
@@ -103,8 +109,6 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         String deployObjectName = null;
         String deployVersion = null;
         // 0.1 查询部署信息
-
-        C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
 
         // 0.3 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
@@ -167,6 +171,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
         javaDeployDTO.setJarPullInfoDTO(jarPullInfoDTO);
 
+
         // 2.保存记录
         DevopsJavaInstanceDTO devopsJavaInstanceDTO = new DevopsJavaInstanceDTO();
         devopsJavaInstanceDTO.setName(deployObjectName);
@@ -174,6 +179,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         devopsJavaInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
         MapperUtil.resultJudgedInsertSelective(devopsJavaInstanceMapper, devopsJavaInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
+        javaDeployDTO.setCmd(genCmd(javaDeployDTO, jarDeployVO, devopsJavaInstanceDTO.getId()));
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
@@ -183,6 +189,8 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+
+
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(hostId);
@@ -190,6 +198,8 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsJavaInstanceDTO.getId()),
@@ -209,6 +219,42 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
                 deployVersion,
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+    }
+
+    private String genCmd(JavaDeployDTO javaDeployDTO, JarDeployVO jarDeployVO, Long instanceId) {
+        StringBuilder cmdStr = new StringBuilder();
+        String workingPath = "$HOME/choerodon/" + instanceId;
+
+        cmdStr.append(String.format("mkdir -p %s/temp-jar && ", workingPath));
+        cmdStr.append(String.format("mkdir -p %s/temp-log && ", workingPath));
+        String jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
+        // 2.2
+        String curlExec = String.format("curl -o %s -u %s:%s %s ",
+                jarPathAndName,
+                javaDeployDTO.getJarPullInfoDTO().getPullUserId(),
+                javaDeployDTO.getJarPullInfoDTO().getPullUserPassword(),
+                javaDeployDTO.getJarPullInfoDTO().getDownloadUrl());
+        cmdStr.append(curlExec).append(" && ");
+
+        // 2.3
+        String[] strings = jarDeployVO.getValue().split("\n");
+        String values = "";
+        for (String s : strings) {
+            if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
+                values = s;
+            }
+        }
+        if (StringUtils.isEmpty(values) || !values.contains("${jar}")) {
+            throw new CommonException("error.instruction");
+        }
+
+        String logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
+        String logPathAndName = workingPath + "/temp-log/" + logName;
+        String javaJarExec = values.replace("${jar}", jarPathAndName);
+
+        cmdStr.append(javaJarExec);
+        StringBuilder finalCmdStr = new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
+        return finalCmdStr.toString();
     }
 
     @Override

@@ -15,6 +15,16 @@ public class JavaDeployDTO {
     @ApiModelProperty("jar包下载信息")
     private JarPullInfoDTO jarPullInfoDTO;
 
+    private String cmd;
+
+    public String getCmd() {
+        return cmd;
+    }
+
+    public void setCmd(String cmd) {
+        this.cmd = cmd;
+    }
+
     public JarPullInfoDTO getJarPullInfoDTO() {
         return jarPullInfoDTO;
     }
