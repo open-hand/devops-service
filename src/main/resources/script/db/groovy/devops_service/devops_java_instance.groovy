@@ -12,6 +12,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_java_instance.groovy') {
             column(name: 'name', type: 'VARCHAR(128)', remarks: 'jar包名称') {
                 constraints(nullable: false)
             }
+            column(name: 'status', type: 'VARCHAR(20)', remarks: 'java进程状态') {
+                constraints(nullable: false)
+            }
             column(name: 'pid', type: 'VARCHAR(128)', remarks: 'java进程id')
 
             column(name: 'port', type: 'BIGINT UNSIGNED', remarks: '占用端口')
