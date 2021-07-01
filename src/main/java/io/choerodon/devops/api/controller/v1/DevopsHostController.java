@@ -89,12 +89,14 @@ public class DevopsHostController {
                     @SortDefault(value = "host_status", direction = Sort.Direction.DESC),
                     @SortDefault(value = "id", direction = Sort.Direction.DESC)})
             @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "是否带有更新者信息", required = false)
+            @ApiParam(value = "是否带有更新者信息")
             @RequestParam(value = "with_updater_info", required = false, defaultValue = "false")
                     Boolean withUpdaterInfo,
-            @ApiParam(value = "查询参数", required = false)
-            @RequestBody(required = false) String options) {
-        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, options));
+            @ApiParam(value = "搜索参数")
+            @RequestParam(value = "search_param", required = false) String searchParam,
+            @ApiParam(value = "主机状态")
+            @RequestParam(value = "host_status", required = false) String hostStatus) {
+        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, searchParam, hostStatus));
     }
 
     @ApiOperation("删除主机")

@@ -1,15 +1,13 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.api.vo.DevopsHostVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author zmf
@@ -21,12 +19,12 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      *
      * @param projectId   项目id
      * @param searchParam 查询参数
-     * @param params      模糊搜索参数
+     * @param hostStatus  主机状态
      * @return 主机列表
      */
-    List<DevopsHostDTO> listByOptions(@Param("projectId") Long projectId,
-                                      @Param("searchParam") Map<String, Object> searchParam,
-                                      @Param("params") List<String> params);
+    List<DevopsHostVO> listByOptions(@Param("projectId") Long projectId,
+                                      @Param("searchParam") String searchParam,
+                                      @Param("hostStatus") String hostStatus);
 
     List<DevopsHostDTO> listByProjectIdAndIds(@Param("projectId") Long projectId,
                                               @Param("hostIds") Set<Long> hostIds);

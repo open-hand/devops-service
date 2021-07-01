@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsHostDTO">
+    <select id="listByOptions" resultType="io.choerodon.devops.api.vo.DevopsHostVO">
         SELECT dh.*
         FROM devops_host dh
         WHERE 1 = 1
@@ -9,16 +9,11 @@
             AND dh.project_id = #{projectId}
         </if>
         <if test="searchParam != null">
-
+            and (dh.name LIKE CONCAT(CONCAT('%', #{searchParam}),'%')
+            OR dh.host_ip LIKE CONCAT(CONCAT('%', #{searchParam}),'%'))
         </if>
-        <if test='params != null and params.size > 0'>
-            AND
-            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                (dh.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dh.host_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dh.ssh_port LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                )
-            </foreach>
+        <if test='hostStatus != null'>
+            AND dh.host_status = #{hostStatus}
         </if>
     </select>
 
