@@ -33,12 +33,12 @@ public class DockerProcessUpdateHandler implements HostMsgHandler {
     private DevopsDockerInstanceService devopsDockerInstanceService;
 
     @Override
-    public void handler(Long hostId, Long commandId, String payload) {
+    public void handler(String hostId, Long commandId, String payload) {
         Map<Object, Object> processInfoMap = redisTemplate.opsForHash().entries(String.format(DevopsHostConstants.HOST_DOCKER_PROCESS_INFO_KEY, hostId));
 
         DockerProcessUpdatePayload dockerProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, DockerProcessUpdatePayload.class);
 
-        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(hostId);
+        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(Long.valueOf(hostId));
         // 为空不处理
         if (CollectionUtils.isEmpty(devopsDockerInstanceDTOList)) {
             return;

@@ -14,7 +14,7 @@ public class HostMsgVO {
     @ApiModelProperty("消息内容")
     private String payload;
     @ApiModelProperty("消息来源主机id")
-    private Long hostId;
+    private String hostId;
     @ApiModelProperty("command_id")
     private Long commandId;
 
@@ -34,11 +34,11 @@ public class HostMsgVO {
         this.payload = payload;
     }
 
-    public Long getHostId() {
+    public String getHostId() {
         return hostId;
     }
 
-    public void setHostId(Long hostId) {
+    public void setHostId(String hostId) {
         this.hostId = hostId;
     }
 

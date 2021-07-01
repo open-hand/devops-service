@@ -30,7 +30,7 @@ public class InitHandler implements HostMsgHandler {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Override
-    public void handler(Long hostId, Long commandId, String payload) {
+    public void handler(String hostId, Long commandId, String payload) {
 
         InitInfoVO initInfoVO = JsonHelper.unmarshalByJackson(payload, InitInfoVO.class);
 

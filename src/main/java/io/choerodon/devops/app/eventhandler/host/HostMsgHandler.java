@@ -15,7 +15,7 @@ public interface HostMsgHandler {
      * @param commandId commandId
      * @param payload 消息内容
      */
-    void handler(Long hostId, Long commandId, String payload);
+    void handler(String hostId, Long commandId, String payload);
 
     /**
      * 获取处理器类型

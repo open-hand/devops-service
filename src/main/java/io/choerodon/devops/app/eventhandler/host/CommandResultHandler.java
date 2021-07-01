@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.ObjLongConsumer;
 
 /**
@@ -32,7 +34,7 @@ import java.util.function.ObjLongConsumer;
 @Component
 public class CommandResultHandler implements HostMsgHandler {
 
-    private Map<String, ObjLongConsumer<String>> resultHandlerMap = new HashMap<>();
+    private Map<String, Consumer<String>> resultHandlerMap = new HashMap<>();
 
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
@@ -46,11 +48,11 @@ public class CommandResultHandler implements HostMsgHandler {
 
     @PostConstruct
     void init() {
-        resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (payload, hostId) -> {
+        resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
             devopsJavaInstanceService.baseDelete(processInfoVO.getInstanceId());
         });
-        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (payload, hostId) -> {
+        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
             DevopsJavaInstanceDTO devopsJavaInstanceDTO = devopsJavaInstanceService.baseQuery(processInfoVO.getInstanceId());
             devopsJavaInstanceDTO.setStatus(processInfoVO.getStatus());
@@ -58,11 +60,11 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsJavaInstanceDTO.setPort(processInfoVO.getPort());
             devopsJavaInstanceService.baseUpdate(devopsJavaInstanceDTO);
         });
-        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload, hostId) -> {
+        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             devopsDockerInstanceService.baseDelete(processInfoVO.getInstanceId());
         });
-        ObjLongConsumer<String> dockerUpdateConsumer = (payload, hostId) -> {
+        Consumer<String> dockerUpdateConsumer = (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             // 更新状态和容器id
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(processInfoVO.getInstanceId());
@@ -79,14 +81,14 @@ public class CommandResultHandler implements HostMsgHandler {
 
 
     @Override
-    public void handler(Long hostId, Long commandId, String payload) {
+    public void handler(String hostId, Long commandId, String payload) {
         DevopsHostCommandDTO devopsHostCommandDTO = devopsHostCommandService.baseQueryById(commandId);
         CommandResultVO commandResultVO = JsonHelper.unmarshalByJackson(payload, CommandResultVO.class);
         if (Boolean.TRUE.equals(commandResultVO.getSuccess())) {
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.SUCCESS.value());
-            ObjLongConsumer<String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
+            Consumer<String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
             if (consumer != null) {
-                consumer.accept(commandResultVO.getPayload(), hostId);
+                consumer.accept(commandResultVO.getPayload());
             }
         } else {
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.FAILED.value());
