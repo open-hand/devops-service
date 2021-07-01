@@ -480,21 +480,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options) {
+    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus) {
         // 解析查询参数
-        Map<String, Object> maps = TypeUtil.castMapParams(options);
-        Page<DevopsHostDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
-
-        // 校验超时
-        checkTimeout(projectId, page.getContent());
+        Page<DevopsHostVO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, searchParam, hostStatus));
 
         // 分页查询
-        Page<DevopsHostVO> result = ConvertUtils.convertPage(page, DevopsHostVO.class);
         if (withUpdaterInfo) {
             // 填充更新者用户信息
-            fillUpdaterInfo(result);
+            fillUpdaterInfo(page);
         }
-        return result;
+        return page;
     }
 
     /**

@@ -165,10 +165,11 @@ public interface DevopsHostService {
      * @param projectId       项目id
      * @param pageRequest     分页参数
      * @param withUpdaterInfo 是否需要更新者信息
-     * @param options         查询参数
+     * @param searchParam         查询参数
+     * @param hostStatus
      * @return 一页主机数据
      */
-    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options);
+    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus);
 
     /**
      * 能否删除主机
