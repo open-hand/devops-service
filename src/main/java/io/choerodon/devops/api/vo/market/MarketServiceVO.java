@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.market;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 
@@ -36,6 +37,24 @@ public class MarketServiceVO {
 
     @ApiModelProperty("错误消息")
     private String errorMessage;
+
+    @ApiModelProperty("部署对象里列表")
+    private List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS;
+
+    @ApiModelProperty("应用类型列表")
+    private List<MarketCategoryVO> marketCategoryVOS;
+
+
+    @ApiModelProperty("应用来源")
+    private String sourceName;
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
 
     public String getMarketAppName() {
         return marketAppName;
@@ -107,5 +126,21 @@ public class MarketServiceVO {
 
     public void setMarketAppType(String marketAppType) {
         this.marketAppType = marketAppType;
+    }
+
+    public List<MarketServiceDeployObjectVO> getMarketServiceDeployObjectVOS() {
+        return marketServiceDeployObjectVOS;
+    }
+
+    public void setMarketServiceDeployObjectVOS(List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS) {
+        this.marketServiceDeployObjectVOS = marketServiceDeployObjectVOS;
+    }
+
+    public List<MarketCategoryVO> getMarketCategoryVOS() {
+        return marketCategoryVOS;
+    }
+
+    public void setMarketCategoryVOS(List<MarketCategoryVO> marketCategoryVOS) {
+        this.marketCategoryVOS = marketCategoryVOS;
     }
 }
