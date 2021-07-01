@@ -94,7 +94,7 @@ public interface DevopsHostService {
      * @param devopsHostUpdateRequestVO 主机更新相关数据
      * @return 更新后的主机
      */
-    DevopsHostVO updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO);
+    void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO);
 
     /**
      * 查询主机
