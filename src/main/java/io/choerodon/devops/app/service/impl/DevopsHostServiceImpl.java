@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
+import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.app.service.DevopsHostService;
@@ -45,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -93,7 +95,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private DevopsCdJobMapper devopsCdJobMapper;
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     EncryptService encryptService;
     @Autowired
@@ -103,6 +105,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     @Lazy
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final Gson gson = new Gson();
 
@@ -184,7 +188,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         Map<Long, String> map = new HashMap<>();
         hostIds.forEach(hostId -> map.put(hostId, CHECKING_HOST));
 
-        redisTemplate.opsForValue().set(correctKey, gson.toJson(map), 10, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(correctKey, gson.toJson(map), 10, TimeUnit.MINUTES);
         hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, correctKey, hostId));
         return correctKey;
     }
@@ -295,7 +299,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     private void updateHostStatus(String correctKey, Long hostId, String status) {
         String lockKey = "checkHost:status:lock:" + correctKey;
-        while (!Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
+        while (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
@@ -303,15 +307,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             }
         }
         try {
-            Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+            Map<Long, String> hostStatus = gson.fromJson(stringRedisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
             }.getType());
             if (hostStatus == null) {
                 hostStatus = new HashMap<>();
             }
             hostStatus.put(hostId, status);
-            redisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
         } finally {
-            redisTemplate.delete(lockKey);
+            stringRedisTemplate.delete(lockKey);
         }
 
     }
@@ -560,7 +564,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public CheckingProgressVO getCheckingProgress(Long projectId, String correctKey) {
-        Map<Long, String> hostStatusMap = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+        Map<Long, String> hostStatusMap = gson.fromJson(stringRedisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
         }.getType());
         if (hostStatusMap == null) {
             return null;
@@ -604,7 +608,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam) {
         Set<Long> hostIds = new HashSet<>();
         if (!StringUtils.isAllEmpty(correctKey)) {
-            Map<Long, String> hostStatusMap = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+            Map<Long, String> hostStatusMap = gson.fromJson(stringRedisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
             }.getType());
             if (!CollectionUtils.isEmpty(hostStatusMap)) {
                 hostIds = hostStatusMap.keySet();
@@ -799,6 +803,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             response = getInstallString(projectId, devopsHostDTO);
         }
         return response;
+    }
+
+    @Override
+    public ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId) {
+        return (ResourceUsageInfoVO) redisTemplate.opsForValue().get(String.format(DevopsHostConstants.HOST_RESOURCE_INFO_KEY));
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

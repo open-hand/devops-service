@@ -67,8 +67,6 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         //
         HostMsgVO hostMsgVO = new HostMsgVO();
         hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
-        // todo 添加agent启动参数
-        hostMsgVO.setPayload("");
         hostMsgVO.setHostId(Long.parseLong(hostId));
 
         webSocketHelper.sendBySession(session.getId(), DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostMsgVO));

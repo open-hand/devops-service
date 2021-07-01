@@ -5,6 +5,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.util.ArrayUtil;
@@ -309,6 +310,17 @@ public class DevopsHostController {
                                                      @PathVariable("instance_id") Long instanceId) {
         devopsHostService.startDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("获取主机资源使用率")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/{host_id}/resource_usage_info")
+    public ResponseEntity<ResourceUsageInfoVO> queryResourceUsageInfo(@ApiParam(value = "项目id", required = true)
+                                                   @PathVariable("project_id") Long projectId,
+                                                   @ApiParam(value = "主机id", required = true)
+                                                   @Encrypt
+                                                   @PathVariable("host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.queryResourceUsageInfo(projectId, hostId));
     }
 
     @ApiOperation("下载创建主机脚本")
