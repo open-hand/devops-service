@@ -15,8 +15,17 @@ public class JavaProcessInfoVO {
     private Long instanceId;
     private String pid;
     private String port;
+    private String status;
     private IamUserDTO deployer;
     private Date deployDate;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Long getInstanceId() {
         return instanceId;

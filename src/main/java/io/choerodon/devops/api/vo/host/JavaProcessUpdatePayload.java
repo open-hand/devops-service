@@ -10,14 +10,14 @@ import java.util.List;
  * @Date 2021/6/27 19:27
  */
 public class JavaProcessUpdatePayload {
-    private List<JavaProcessInfoVO> deleteProcessInfos;
+    private List<JavaProcessInfoVO> updateProcessInfos;
 
-    public List<JavaProcessInfoVO> getDeleteProcessInfos() {
-        return deleteProcessInfos;
+    public List<JavaProcessInfoVO> getUpdateProcessInfos() {
+        return updateProcessInfos;
     }
 
-    public void setDeleteProcessInfos(List<JavaProcessInfoVO> deleteProcessInfos) {
-        this.deleteProcessInfos = deleteProcessInfos;
+    public void setUpdateProcessInfos(List<JavaProcessInfoVO> updateProcessInfos) {
+        this.updateProcessInfos = updateProcessInfos;
     }
 
 }
