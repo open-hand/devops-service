@@ -6,7 +6,6 @@ import io.choerodon.devops.infra.enums.HostAuthType;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import javax.annotation.Nullable;
 import java.util.Date;
 
 /**
@@ -28,10 +27,6 @@ public class DevopsHostVO {
      */
     @ApiModelProperty("主机状态")
     private String hostStatus;
-
-    @Nullable
-    @ApiModelProperty("主机连接错误信息")
-    private String hostCheckError;
 
     @ApiModelProperty("主机ip")
     private String hostIp;
@@ -137,15 +132,6 @@ public class DevopsHostVO {
 
     public void setLastUpdatedBy(Long lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Nullable
-    public String getHostCheckError() {
-        return hostCheckError;
-    }
-
-    public void setHostCheckError(@Nullable String hostCheckError) {
-        this.hostCheckError = hostCheckError;
     }
 
     public Boolean getSelected() {
