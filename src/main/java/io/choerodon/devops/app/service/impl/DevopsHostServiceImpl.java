@@ -128,7 +128,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
 
-        devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
+        devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
         devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
         DevopsHostDTO resp =  MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host");
         return String.format(HOST_AGENT, downloadApiUrl, projectId, resp.getId(), devopsHostDTO.getToken());
