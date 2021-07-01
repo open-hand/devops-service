@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
@@ -262,4 +263,5 @@ public interface DevopsHostService {
      */
     String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
 
+    ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId);
 }
