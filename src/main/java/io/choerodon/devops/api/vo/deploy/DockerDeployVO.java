@@ -4,6 +4,8 @@ import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -30,6 +32,18 @@ public class DockerDeployVO {
      */
     @Encrypt
     private Long deployObjectId;
+
+    @ApiModelProperty("部署values")
+    @NotNull(message = "error.value.is.null")
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public Long getDeployObjectId() {
         return deployObjectId;

@@ -39,11 +39,14 @@ import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +60,8 @@ import java.util.Objects;
  */
 @Service
 public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDockerInstanceServiceImpl.class);
 
     private static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
     private static final String ERROR_UPDATE_DOCKER_INSTANCE_FAILED = "error.update.docker.instance.failed";
@@ -147,6 +152,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+
+        dockerDeployDTO.setCmd(genCmd(dockerDeployDTO, dockerDeployVO.getValue()));
+
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(hostId);
@@ -154,6 +162,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
+
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
@@ -173,6 +183,32 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 deployVersion,
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+    }
+
+    private String genCmd(DockerDeployDTO dockerDeployDTO, String value) {
+        String[] strings = value.split("\n");
+        String values = "";
+        for (String s : strings) {
+            if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
+                values = s;
+            }
+        }
+        if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
+            throw new CommonException("error.instruction");
+        }
+
+        // 判断镜像是否存在 存在删除 部署
+        StringBuilder dockerRunExec = new StringBuilder();
+        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
+        return dockerRunExec.toString();
+    }
+
+    private Boolean checkInstruction(String type, String instruction) {
+        if (type.equals("jar")) {
+            return instruction.contains("${jar}");
+        } else {
+            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d ");
+        }
     }
 
     @Override
