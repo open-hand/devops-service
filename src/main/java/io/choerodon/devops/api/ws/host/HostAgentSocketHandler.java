@@ -6,7 +6,6 @@ import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.eventhandler.host.HostMsgHandler;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.constant.DevOpsWebSocketConstants;
-import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -17,9 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,10 +70,22 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
         hostMsgVO.setHostId(Long.parseLong(hostId));
 
-        webSocketHelper.sendBySession(session.getId(), DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostMsgVO));
+        sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(hostMsgVO)));
     }
 
-
+    private void sendToSession(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
+        if (webSocketSession.isOpen()) {
+            synchronized (webSocketSession) {
+                try {
+                    webSocketSession.sendMessage(webSocketMessage);
+                } catch (IOException e) {
+                    LOGGER.warn("Send to session: Failed to send message. the message is {}, and the ex is: ", webSocketMessage.getPayload(), e);
+                }
+            }
+        } else {
+            LOGGER.warn("Send to session: session is unexpectedly closed. the message is {}", webSocketMessage.getPayload());
+        }
+    }
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         String hostId = WebSocketTool.getHostId(session);
