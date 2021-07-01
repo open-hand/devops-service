@@ -130,8 +130,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
         devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
-        DevopsHostDTO resp =  MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host");
-        return String.format(HOST_AGENT, downloadApiUrl, projectId, resp.getId(), devopsHostDTO.getToken());
+        MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host");
+        return queryShell(projectId, devopsHostDTO.getId());
     }
 
     /**
@@ -803,6 +803,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId) {
         return (ResourceUsageInfoVO) redisTemplate.opsForValue().get(String.format(DevopsHostConstants.HOST_RESOURCE_INFO_KEY));
+    }
+
+    @Override
+    public String queryShell(Long projectId, Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        return String.format(HOST_AGENT, downloadApiUrl, projectId, hostId, devopsHostDTO.getToken());
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
