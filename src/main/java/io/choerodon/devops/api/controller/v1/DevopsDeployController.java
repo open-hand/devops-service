@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
+import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.app.service.DevopsDeployService;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.app.service.DevopsJavaInstanceService;
@@ -51,15 +52,15 @@ public class DevopsDeployController {
         return ResponseEntity.noContent().build();
     }
 
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "java部署")
-//    @PostMapping("/java")
-//    public ResponseEntity<Void> deployJavaInstance(
-//            @ApiParam(value = "项目Id", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @RequestBody @Validated DockerDeployVO dockerDeployVO) {
-//        devopsJavaInstanceService.deployJavaInstance(projectId, dockerDeployVO);
-//        return ResponseEntity.noContent().build();
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "java部署")
+    @PostMapping("/java")
+    public ResponseEntity<Void> deployJavaInstance(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody @Validated JarDeployVO jarDeployVO) {
+        devopsJavaInstanceService.deployJavaInstance(projectId, jarDeployVO);
+        return ResponseEntity.noContent().build();
+    }
 
 }

@@ -35,6 +35,17 @@ public class DevopsJavaInstanceDTO extends AuditDomain {
     private String port;
     @ApiModelProperty("部署来源")
     private String sourceType;
+    @ApiModelProperty("进程状态")
+    private String status;
+
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Long getId() {
         return id;
