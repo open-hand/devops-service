@@ -2153,6 +2153,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                     MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.stream().sorted(comparing(MarketServiceDeployObjectVO::getId).reversed()).collect(toList()).get(0);
                     appServiceRepVO.setLatestVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
                 }
+                //如果是市场服务名称取marketServiceName
+                MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceRepVO.getId());
+                if (!Objects.isNull(marketServiceVO)) {
+                    appServiceRepVO.setServiceName(marketServiceVO.getMarketServiceName());
+                }
 
             } else {
                 //共享与本项目
