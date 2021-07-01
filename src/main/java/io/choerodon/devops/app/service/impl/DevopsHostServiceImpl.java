@@ -398,7 +398,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void deleteHost(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        if (devopsHostDTO == null) {
+        if (devopsHostDTO == null || !devopsHostDTO.getHostStatus().equals(DevopsHostStatus.DISCONNECT.getValue())) {
             return;
         }
 
