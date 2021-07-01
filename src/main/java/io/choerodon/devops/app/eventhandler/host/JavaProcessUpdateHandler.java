@@ -2,16 +2,20 @@ package io.choerodon.devops.app.eventhandler.host;
 
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessUpdatePayload;
-import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.app.service.DevopsJavaInstanceService;
+import io.choerodon.devops.infra.dto.DevopsJavaInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -25,23 +29,30 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private DevopsJavaInstanceService devopsJavaInstanceService;
 
     @Override
+    @Transactional
     public void handler(Long hostId, Long commandId, String payload) {
 
-        Map<Object, Object> processInfoMap = redisTemplate.opsForHash().entries(String.format(DevopsHostConstants.HOST_JAVA_PROCESS_INFO_KEY, hostId));
 
         JavaProcessUpdatePayload javaProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, JavaProcessUpdatePayload.class);
-        // 处理删除的数据
-        List<JavaProcessInfoVO> deleteProcessInfos = javaProcessUpdatePayload.getDeleteProcessInfos();
+        List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(hostId);
+        if (CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
+            return;
+        }
+        Map<Long, DevopsJavaInstanceDTO> devopsJavaInstanceDTOMap = devopsJavaInstanceDTOList.stream().collect(Collectors.toMap(DevopsJavaInstanceDTO::getId, Function.identity()));
+
+        // 处理更新的数据
+        List<JavaProcessInfoVO> deleteProcessInfos = javaProcessUpdatePayload.getUpdateProcessInfos();
         if (!CollectionUtils.isEmpty(deleteProcessInfos)) {
             deleteProcessInfos.forEach(deleteProcessInfo -> {
-                processInfoMap.remove(deleteProcessInfo.getPid());
+                DevopsJavaInstanceDTO devopsJavaInstanceDTO = devopsJavaInstanceDTOMap.get(deleteProcessInfo.getInstanceId());
+                devopsJavaInstanceDTO.setStatus(deleteProcessInfo.getPort());
+                devopsJavaInstanceService.baseUpdate(devopsJavaInstanceDTO);
             });
         }
-
-        // 更新缓存
-        redisTemplate.opsForHash().putAll(String.format(DevopsHostConstants.HOST_JAVA_PROCESS_INFO_KEY, hostId), processInfoMap);
 
     }
 

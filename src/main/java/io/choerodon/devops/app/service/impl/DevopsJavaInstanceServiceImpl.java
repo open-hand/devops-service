@@ -14,6 +14,7 @@ import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.app.service.DevopsJavaInstanceService;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsJavaInstanceDTO;
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -60,6 +62,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
 
 
     private static final String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
+    private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
     private static final String ERROR_JAR_VERSION_NOT_FOUND = "error.jar.version.not.found";
     private static final String ERROR_DEPLOY_JAR_FAILED = "error.deploy.jar.failed";
 
@@ -206,6 +209,31 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
                 deployVersion,
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+    }
+
+    @Override
+    public List<DevopsJavaInstanceDTO> listByHostId(Long hostId) {
+        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        DevopsJavaInstanceDTO devopsJavaInstanceDTO = new DevopsJavaInstanceDTO();
+        devopsJavaInstanceDTO.setHostId(hostId);
+        return devopsJavaInstanceMapper.select(devopsJavaInstanceDTO);
+    }
+
+    @Override
+    @Transactional
+    public void baseUpdate(DevopsJavaInstanceDTO devopsJavaInstanceDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJavaInstanceMapper, devopsJavaInstanceDTO, ERROR_UPDATE_JAVA_INSTANCE_FAILED);
+    }
+
+    @Override
+    @Transactional
+    public void baseDelete(Long instanceId) {
+        devopsJavaInstanceMapper.deleteByPrimaryKey(instanceId);
+    }
+
+    @Override
+    public DevopsJavaInstanceDTO baseQuery(Long instanceId) {
+        return devopsJavaInstanceMapper.selectByPrimaryKey(instanceId);
     }
 
     private String getDownloadUrl(JarReleaseConfigVO jarReleaseConfigVO) {

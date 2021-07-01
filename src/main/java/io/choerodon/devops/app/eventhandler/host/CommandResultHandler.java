@@ -5,9 +5,10 @@ import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.app.service.DevopsJavaInstanceService;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.dto.DevopsJavaInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
@@ -37,6 +38,8 @@ public class CommandResultHandler implements HostMsgHandler {
     private DevopsHostCommandService devopsHostCommandService;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DevopsJavaInstanceService devopsJavaInstanceService;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -45,7 +48,15 @@ public class CommandResultHandler implements HostMsgHandler {
     void init() {
         resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (payload, hostId) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
-            redisTemplate.opsForHash().delete(String.format(DevopsHostConstants.HOST_JAVA_PROCESS_INFO_KEY, hostId), processInfoVO.getPid());
+            devopsJavaInstanceService.baseDelete(processInfoVO.getInstanceId());
+        });
+        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (payload, hostId) -> {
+            JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
+            DevopsJavaInstanceDTO devopsJavaInstanceDTO = devopsJavaInstanceService.baseQuery(processInfoVO.getInstanceId());
+            devopsJavaInstanceDTO.setStatus(processInfoVO.getStatus());
+            devopsJavaInstanceDTO.setPid(processInfoVO.getPid());
+            devopsJavaInstanceDTO.setPort(processInfoVO.getPort());
+            devopsJavaInstanceService.baseUpdate(devopsJavaInstanceDTO);
         });
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload, hostId) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
