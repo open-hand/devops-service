@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -210,7 +211,7 @@ public interface DevopsHostService {
      * @param hostId
      * @return 集合中的object对象为DockerProcessInfoVO
      */
-    List<Object> listDockerProcessInfo(Long projectId, Long hostId);
+    List<DevopsDockerInstanceDTO> listDockerProcessInfo(Long projectId, Long hostId);
 
     /**
      * 删除java进程

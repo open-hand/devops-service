@@ -6,6 +6,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -228,7 +229,7 @@ public class DevopsHostController {
     @ApiOperation("获取docker进程信息接口")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/docker_process")
-    public ResponseEntity<List<Object>> listDockerProcessInfo(@ApiParam(value = "项目id", required = true)
+    public ResponseEntity<List<DevopsDockerInstanceDTO>> listDockerProcessInfo(@ApiParam(value = "项目id", required = true)
                                                             @PathVariable("project_id") Long projectId,
                                                             @ApiParam(value = "主机id", required = true)
                                                             @PathVariable("host_id") Long hostId) {
