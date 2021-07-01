@@ -6,10 +6,13 @@ import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.eventhandler.host.HostMsgHandler;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.constant.DevOpsWebSocketConstants;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
+import org.hzero.websocket.constant.WebSocketConstant;
 import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.hzero.websocket.vo.MsgVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +73,11 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
         hostMsgVO.setHostId(Long.parseLong(hostId));
 
-        sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(hostMsgVO)));
+        // 为了保持和其他通过hzero发送的消息结构一致
+        MsgVO msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);
+
+
+        sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(msgVO)));
     }
 
     private void sendToSession(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
