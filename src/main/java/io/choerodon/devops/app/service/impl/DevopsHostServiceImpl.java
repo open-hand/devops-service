@@ -77,13 +77,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
-    /**
-     * 占用主机的过期时间, 超过这个时间, 主机会被释放
-     */
-    @Value("${devops.host.occupy.timeout-hours:24}")
-    private long hostOccupyTimeoutHours;
     @Value("${devops.host.download-api-url}")
     private String downloadApiUrl;
+    @Value("${agent.serviceUrl}")
+    private String agentServiceUrl;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -143,7 +140,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         Map<String, String> params = new HashMap<>();
         // 渲染激活环境的命令参数
         params.put("{{ TOKEN }}", devopsHostDTO.getToken());
-        params.put("{{ CONNECT }}", devopsHostDTO.getId().toString());
+        params.put("{{ CONNECT }}", agentServiceUrl);
         params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
         return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
@@ -502,20 +499,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!ids.isEmpty()) {
             ApplicationContextHelper.getContext().getBean(DevopsHostService.class).asyncBatchSetTimeoutHostFailed(projectId, ids);
         }
-    }
-
-    /**
-     * 主机被占用的时长是否超时了
-     *
-     * @param lastUpdateDate 最后更新时间
-     * @return true表示超时
-     */
-    private boolean isHostOccupiedTimeout(Date lastUpdateDate) {
-        long current = System.currentTimeMillis();
-        long lastUpdate = lastUpdateDate.getTime();
-        long hourToMillis = 60L * 60L * 1000L;
-        // 最后更新时间加上过期时间的毫秒数是否大于现在的毫秒数
-        return (lastUpdate + hostOccupyTimeoutHours * hourToMillis) < current;
     }
 
     @Override
