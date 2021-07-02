@@ -10,21 +10,12 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
-import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
-import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
-import io.choerodon.devops.app.service.DevopsDockerInstanceService;
-import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.app.service.EncryptService;
+import io.choerodon.devops.api.vo.host.*;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
-import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
@@ -34,6 +25,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.domain.AuditDomain;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import net.schmizz.sshj.SSHClient;
@@ -60,6 +52,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -102,6 +95,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     @Lazy
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    @Lazy
+    private DevopsJavaInstanceService devopsJavaInstanceService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -623,15 +619,40 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public List<Object> listJavaProcessInfo(Long projectId, Long hostId) {
+    public List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId) {
+        List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(hostId);
+        if(!CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
+            return new ArrayList<>();
+        }
 
-        return null;
+        List<DevopsJavaInstanceVO> devopsJavaInstanceVOS = ConvertUtils.convertList(devopsJavaInstanceDTOList, DevopsJavaInstanceVO.class);
+
+        List<Long> usrIds = devopsJavaInstanceVOS.stream().map(AuditDomain::getCreatedBy).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(usrIds);
+        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
+            Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+
+            devopsJavaInstanceVOS.forEach(devopsJavaInstanceVO -> devopsJavaInstanceVO.setDeployer(iamUserDTOMap.get(devopsJavaInstanceVO.getCreatedBy())));
+        }
+        return devopsJavaInstanceVOS;
     }
 
     @Override
-    public List<DevopsDockerInstanceDTO> listDockerProcessInfo(Long projectId, Long hostId) {
+    public List<DevopsDockerInstanceVO> listDockerProcessInfo(Long projectId, Long hostId) {
+        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(hostId);
+        if (CollectionUtils.isEmpty(devopsDockerInstanceDTOList)) {
+            return new ArrayList<>();
+        }
+        List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOList, DevopsDockerInstanceVO.class);
 
-        return devopsDockerInstanceService.listByHostId(hostId);
+        List<Long> usrIds = devopsDockerInstanceVOS.stream().map(AuditDomain::getCreatedBy).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(usrIds);
+        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
+            Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+
+            devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> devopsDockerInstanceVO.setDeployer(iamUserDTOMap.get(devopsDockerInstanceVO.getCreatedBy())));
+        }
+        return devopsDockerInstanceVOS;
     }
 
     @Override

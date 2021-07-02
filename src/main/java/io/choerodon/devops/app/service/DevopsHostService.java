@@ -2,8 +2,9 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
-import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -205,7 +206,7 @@ public interface DevopsHostService {
      * @param hostId
      * @return 集合中的object对象为JavaProcessInfoVO
      */
-    List<Object> listJavaProcessInfo(Long projectId, Long hostId);
+    List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId);
 
     /**
      * 查询docker进程信息接口
@@ -213,7 +214,7 @@ public interface DevopsHostService {
      * @param hostId
      * @return 集合中的object对象为DockerProcessInfoVO
      */
-    List<DevopsDockerInstanceDTO> listDockerProcessInfo(Long projectId, Long hostId);
+    List<DevopsDockerInstanceVO> listDockerProcessInfo(Long projectId, Long hostId);
 
     /**
      * 删除java进程
