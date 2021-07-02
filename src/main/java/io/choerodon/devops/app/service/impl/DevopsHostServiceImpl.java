@@ -799,7 +799,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId) {
-        return (ResourceUsageInfoVO) redisTemplate.opsForValue().get(String.format(DevopsHostConstants.HOST_RESOURCE_INFO_KEY, hostId));
+        String resourceInfo = stringRedisTemplate.opsForValue().get(String.format(DevopsHostConstants.HOST_RESOURCE_INFO_KEY, hostId));
+
+        return JsonHelper.unmarshalByJackson(resourceInfo, ResourceUsageInfoVO.class);
     }
 
     @Override
