@@ -112,6 +112,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+        if (StringUtils.isNotEmpty(devopsHostCreateRequestVO.getUsername()) && StringUtils.isEmpty(devopsHostCreateRequestVO.getPassword())) {
+            throw new CommonException("error.host.password.empty");
+        }
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
