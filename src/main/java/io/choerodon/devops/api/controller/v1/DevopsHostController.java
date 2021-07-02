@@ -314,7 +314,7 @@ public class DevopsHostController {
 
     @ApiOperation("获取主机资源使用率")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PutMapping("/{host_id}/resource_usage_info")
+    @GetMapping("/{host_id}/resource_usage_info")
     public ResponseEntity<ResourceUsageInfoVO> queryResourceUsageInfo(@ApiParam(value = "项目id", required = true)
                                                    @PathVariable("project_id") Long projectId,
                                                    @ApiParam(value = "主机id", required = true)

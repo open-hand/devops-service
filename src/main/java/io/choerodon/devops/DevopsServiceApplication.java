@@ -1,7 +1,6 @@
 package io.choerodon.devops;
 
-import java.nio.charset.StandardCharsets;
-
+import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
@@ -18,7 +17,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 
-import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
+import java.nio.charset.StandardCharsets;
 
 @EnableFeignClients("io.choerodon")
 @EnableEurekaClient

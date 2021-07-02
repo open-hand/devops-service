@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class HostMsgVO {
     /**
-     * {@link io.choerodon.devops.infra.enums.host.HostCommandEnum}
+     * {@link io.choerodon.devops.infra.enums.host.HostMsgEventEnum}
      */
     @ApiModelProperty("消息事件类型")
     private String type;

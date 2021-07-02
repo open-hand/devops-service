@@ -3,7 +3,6 @@ package io.choerodon.devops.app.eventhandler.host;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
-import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -34,8 +33,6 @@ public class DockerProcessUpdateHandler implements HostMsgHandler {
 
     @Override
     public void handler(String hostId, Long commandId, String payload) {
-        Map<Object, Object> processInfoMap = redisTemplate.opsForHash().entries(String.format(DevopsHostConstants.HOST_DOCKER_PROCESS_INFO_KEY, hostId));
-
         DockerProcessUpdatePayload dockerProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, DockerProcessUpdatePayload.class);
 
         List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(Long.valueOf(hostId));
