@@ -33,10 +33,8 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
     private String containerId;
     @ApiModelProperty("镜像名")
     private String image;
-    @ApiModelProperty("主机端口")
-    private Integer hostPort;
-    @ApiModelProperty("容器端口")
-    private Integer containerPort;
+    @ApiModelProperty("端口映射列表")
+    private String ports;
     /**
      * {@link io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum}
      */
@@ -44,6 +42,14 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
     private String status;
     @ApiModelProperty("部署来源")
     private String sourceType;
+
+    public String getPorts() {
+        return ports;
+    }
+
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
 
     public Long getId() {
         return id;
@@ -83,22 +89,6 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public Integer getHostPort() {
-        return hostPort;
-    }
-
-    public void setHostPort(Integer hostPort) {
-        this.hostPort = hostPort;
-    }
-
-    public Integer getContainerPort() {
-        return containerPort;
-    }
-
-    public void setContainerPort(Integer containerPort) {
-        this.containerPort = containerPort;
     }
 
     public String getStatus() {

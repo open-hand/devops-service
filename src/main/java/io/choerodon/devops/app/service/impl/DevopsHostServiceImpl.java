@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -644,6 +645,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return new ArrayList<>();
         }
         List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOList, DevopsDockerInstanceVO.class);
+
+        devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
+            devopsDockerInstanceVO.setPortMappingList(JsonHelper.unmarshalByJackson(devopsDockerInstanceVO.getPorts(), new TypeReference<List<DockerPortMapping>>() {
+            }));
+        });
 
         List<Long> usrIds = devopsDockerInstanceVOS.stream().map(AuditDomain::getCreatedBy).collect(Collectors.toList());
         List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(usrIds);

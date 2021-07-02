@@ -4,6 +4,8 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.List;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -24,10 +26,8 @@ public class DevopsDockerInstanceVO extends AuditDomain {
     private String containerId;
     @ApiModelProperty("镜像名")
     private String image;
-    @ApiModelProperty("主机端口")
-    private Integer hostPort;
-    @ApiModelProperty("容器端口")
-    private Integer containerPort;
+    @ApiModelProperty("端口映射列表")
+    private String ports;
     /**
      * {@link io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum}
      */
@@ -37,6 +37,24 @@ public class DevopsDockerInstanceVO extends AuditDomain {
     private String sourceType;
 
     private IamUserDTO deployer;
+
+    private List<DockerPortMapping> portMappingList;
+
+    public List<DockerPortMapping> getPortMappingList() {
+        return portMappingList;
+    }
+
+    public void setPortMappingList(List<DockerPortMapping> portMappingList) {
+        this.portMappingList = portMappingList;
+    }
+
+    public String getPorts() {
+        return ports;
+    }
+
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
 
     public Long getId() {
         return id;
@@ -76,22 +94,6 @@ public class DevopsDockerInstanceVO extends AuditDomain {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public Integer getHostPort() {
-        return hostPort;
-    }
-
-    public void setHostPort(Integer hostPort) {
-        this.hostPort = hostPort;
-    }
-
-    public Integer getContainerPort() {
-        return containerPort;
-    }
-
-    public void setContainerPort(Integer containerPort) {
-        this.containerPort = containerPort;
     }
 
     public String getStatus() {
