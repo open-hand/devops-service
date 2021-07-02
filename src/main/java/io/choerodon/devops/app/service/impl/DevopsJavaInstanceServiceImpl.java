@@ -163,7 +163,6 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         }
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO();
-        javaDeployDTO.setWorkingPath(jarDeployVO.getWorkingPath());
 
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
         jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());

@@ -18,11 +18,6 @@ public class JarDeployVO {
     @ApiModelProperty("主机id")
     private Long hostId;
 
-
-    @ApiModelProperty("工作目录,默认值/temp")
-    @NotNull(message = "error.workingPath.is.null")
-    private String workingPath;
-
     @ApiModelProperty("部署来源")
     private String sourceType;
 
@@ -76,14 +71,6 @@ public class JarDeployVO {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
-    }
-
-    public String getWorkingPath() {
-        return workingPath;
-    }
-
-    public void setWorkingPath(String workingPath) {
-        this.workingPath = workingPath;
     }
 
 
