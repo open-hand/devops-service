@@ -222,9 +222,10 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/java_process")
     public ResponseEntity<List<DevopsJavaInstanceVO>> listJavaProcessInfo(@ApiParam(value = "项目id", required = true)
-                                                            @PathVariable("project_id") Long projectId,
+                                                                          @PathVariable("project_id") Long projectId,
+                                                                          @Encrypt
                                                                           @ApiParam(value = "主机id", required = true)
-                                                            @PathVariable("host_id") Long hostId) {
+                                                                          @PathVariable("host_id") Long hostId) {
         return ResponseEntity.ok(devopsHostService.listJavaProcessInfo(projectId, hostId));
     }
 
@@ -233,6 +234,7 @@ public class DevopsHostController {
     @GetMapping("/{host_id}/docker_process")
     public ResponseEntity<List<DevopsDockerInstanceVO>> listDockerProcessInfo(@ApiParam(value = "项目id", required = true)
                                                                               @PathVariable("project_id") Long projectId,
+                                                                              @Encrypt
                                                                               @ApiParam(value = "主机id", required = true)
                                                                               @PathVariable("host_id") Long hostId) {
         return ResponseEntity.ok(devopsHostService.listDockerProcessInfo(projectId, hostId));
