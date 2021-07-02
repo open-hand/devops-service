@@ -622,7 +622,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId) {
         List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(hostId);
-        if(!CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
+        if(CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
             return new ArrayList<>();
         }
 
