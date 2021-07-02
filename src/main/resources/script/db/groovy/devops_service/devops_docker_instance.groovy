@@ -17,10 +17,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_docker_instance.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'host_port', type: 'BIGINT UNSIGNED', remarks: '主机端口') {
-                constraints(nullable: false)
-            }
-            column(name: 'container_port', type: 'BIGINT UNSIGNED', remarks: '容器端口') {
+            column(name: 'ports', type: 'BIGINT UNSIGNED', remarks: '端口映射列表') {
                 constraints(nullable: false)
             }
             column(name: 'status', type: 'VARCHAR(20)', remarks: '容器状态') {
@@ -38,7 +35,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_docker_instance.groovy') {
         }
         addUniqueConstraint(tableName: 'devops_docker_instance',
                 constraintName: 'uk_host_id_name', columnNames: 'host_id,name')
-        addUniqueConstraint(tableName: 'devops_docker_instance',
-                constraintName: 'uk_host_id_port', columnNames: 'host_id,host_port')
     }
 }
