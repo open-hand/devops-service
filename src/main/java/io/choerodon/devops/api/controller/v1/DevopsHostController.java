@@ -5,9 +5,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -220,20 +221,20 @@ public class DevopsHostController {
     @ApiOperation("获取java进程信息接口")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/java_process")
-    public ResponseEntity<List<Object>> listJavaProcessInfo(@ApiParam(value = "项目id", required = true)
-                                                                       @PathVariable("project_id") Long projectId,
-                                                                       @ApiParam(value = "主机id", required = true)
-                                                                       @PathVariable("host_id") Long hostId) {
+    public ResponseEntity<List<DevopsJavaInstanceVO>> listJavaProcessInfo(@ApiParam(value = "项目id", required = true)
+                                                            @PathVariable("project_id") Long projectId,
+                                                                          @ApiParam(value = "主机id", required = true)
+                                                            @PathVariable("host_id") Long hostId) {
         return ResponseEntity.ok(devopsHostService.listJavaProcessInfo(projectId, hostId));
     }
 
     @ApiOperation("获取docker进程信息接口")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/docker_process")
-    public ResponseEntity<List<DevopsDockerInstanceDTO>> listDockerProcessInfo(@ApiParam(value = "项目id", required = true)
-                                                            @PathVariable("project_id") Long projectId,
-                                                            @ApiParam(value = "主机id", required = true)
-                                                            @PathVariable("host_id") Long hostId) {
+    public ResponseEntity<List<DevopsDockerInstanceVO>> listDockerProcessInfo(@ApiParam(value = "项目id", required = true)
+                                                                              @PathVariable("project_id") Long projectId,
+                                                                              @ApiParam(value = "主机id", required = true)
+                                                                              @PathVariable("host_id") Long hostId) {
         return ResponseEntity.ok(devopsHostService.listDockerProcessInfo(projectId, hostId));
     }
 
@@ -241,13 +242,13 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{host_id}/java_process/{instance_id}")
     public ResponseEntity<Void> deleteJavaProcess(@ApiParam(value = "项目id", required = true)
-                                                        @PathVariable("project_id") Long projectId,
-                                                        @ApiParam(value = "主机id", required = true)
-                                                        @Encrypt
-                                                        @PathVariable("host_id") Long hostId,
-                                                        @ApiParam(value = "java实例id", required = true)
-                                                        @Encrypt
-                                                        @PathVariable("instance_id") Long instanceId) {
+                                                  @PathVariable("project_id") Long projectId,
+                                                  @ApiParam(value = "主机id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("host_id") Long hostId,
+                                                  @ApiParam(value = "java实例id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("instance_id") Long instanceId) {
         devopsHostService.deleteJavaProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
@@ -256,13 +257,13 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{host_id}/docker_process/{instance_id}")
     public ResponseEntity<Void> deleteDockerProcess(@ApiParam(value = "项目id", required = true)
-                                                  @PathVariable("project_id") Long projectId,
-                                                  @ApiParam(value = "主机id", required = true)
-                                                  @Encrypt
-                                                  @PathVariable("host_id") Long hostId,
-                                                  @ApiParam(value = "docker实例id", required = true)
-                                                  @Encrypt
-                                                  @PathVariable("instance_id") Long instanceId) {
+                                                    @PathVariable("project_id") Long projectId,
+                                                    @ApiParam(value = "主机id", required = true)
+                                                    @Encrypt
+                                                    @PathVariable("host_id") Long hostId,
+                                                    @ApiParam(value = "docker实例id", required = true)
+                                                    @Encrypt
+                                                    @PathVariable("instance_id") Long instanceId) {
         devopsHostService.deleteDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
@@ -271,13 +272,13 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping("/{host_id}/docker_process/{instance_id}/stop")
     public ResponseEntity<Void> stopDockerProcess(@ApiParam(value = "项目id", required = true)
-                                                    @PathVariable("project_id") Long projectId,
-                                                    @ApiParam(value = "主机id", required = true)
-                                                    @Encrypt
-                                                    @PathVariable("host_id") Long hostId,
-                                                    @ApiParam(value = "docker实例id", required = true)
-                                                    @Encrypt
-                                                    @PathVariable("instance_id") Long instanceId) {
+                                                  @PathVariable("project_id") Long projectId,
+                                                  @ApiParam(value = "主机id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("host_id") Long hostId,
+                                                  @ApiParam(value = "docker实例id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("instance_id") Long instanceId) {
         devopsHostService.stopDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
@@ -286,13 +287,13 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping("/{host_id}/docker_process/{instance_id}/restart")
     public ResponseEntity<Void> restartDockerProcess(@ApiParam(value = "项目id", required = true)
-                                                  @PathVariable("project_id") Long projectId,
-                                                  @ApiParam(value = "主机id", required = true)
-                                                  @Encrypt
-                                                  @PathVariable("host_id") Long hostId,
-                                                  @ApiParam(value = "docker实例id", required = true)
-                                                  @Encrypt
-                                                  @PathVariable("instance_id") Long instanceId) {
+                                                     @PathVariable("project_id") Long projectId,
+                                                     @ApiParam(value = "主机id", required = true)
+                                                     @Encrypt
+                                                     @PathVariable("host_id") Long hostId,
+                                                     @ApiParam(value = "docker实例id", required = true)
+                                                     @Encrypt
+                                                     @PathVariable("instance_id") Long instanceId) {
         devopsHostService.restartDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
@@ -301,13 +302,13 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping("/{host_id}/docker_process/{instance_id}/start")
     public ResponseEntity<Void> startDockerProcess(@ApiParam(value = "项目id", required = true)
-                                                     @PathVariable("project_id") Long projectId,
-                                                     @ApiParam(value = "主机id", required = true)
-                                                     @Encrypt
-                                                     @PathVariable("host_id") Long hostId,
-                                                     @ApiParam(value = "docker实例id", required = true)
-                                                     @Encrypt
-                                                     @PathVariable("instance_id") Long instanceId) {
+                                                   @PathVariable("project_id") Long projectId,
+                                                   @ApiParam(value = "主机id", required = true)
+                                                   @Encrypt
+                                                   @PathVariable("host_id") Long hostId,
+                                                   @ApiParam(value = "docker实例id", required = true)
+                                                   @Encrypt
+                                                   @PathVariable("instance_id") Long instanceId) {
         devopsHostService.startDockerProcess(projectId, hostId, instanceId);
         return ResponseEntity.noContent().build();
     }
@@ -316,10 +317,10 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/resource_usage_info")
     public ResponseEntity<ResourceUsageInfoVO> queryResourceUsageInfo(@ApiParam(value = "项目id", required = true)
-                                                   @PathVariable("project_id") Long projectId,
-                                                   @ApiParam(value = "主机id", required = true)
-                                                   @Encrypt
-                                                   @PathVariable("host_id") Long hostId) {
+                                                                      @PathVariable("project_id") Long projectId,
+                                                                      @ApiParam(value = "主机id", required = true)
+                                                                      @Encrypt
+                                                                      @PathVariable("host_id") Long hostId) {
         return ResponseEntity.ok(devopsHostService.queryResourceUsageInfo(projectId, hostId));
     }
 
@@ -343,7 +344,7 @@ public class DevopsHostController {
      * 查询连接主机的命令
      *
      * @param projectId 项目ID
-     * @param hostId 主机Id
+     * @param hostId    主机Id
      * @return String
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
