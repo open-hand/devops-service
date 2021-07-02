@@ -647,8 +647,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOList, DevopsDockerInstanceVO.class);
 
         devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
-            devopsDockerInstanceVO.setPortMappingList(JsonHelper.unmarshalByJackson(devopsDockerInstanceVO.getPorts(), new TypeReference<List<DockerPortMapping>>() {
-            }));
+            if (StringUtils.isNoneBlank(devopsDockerInstanceVO.getPorts())) {
+                devopsDockerInstanceVO.setPortMappingList(JsonHelper.unmarshalByJackson(devopsDockerInstanceVO.getPorts(), new TypeReference<List<DockerPortMapping>>() {
+                }));
+            }
+
         });
 
         List<Long> usrIds = devopsDockerInstanceVOS.stream().map(AuditDomain::getCreatedBy).collect(Collectors.toList());
