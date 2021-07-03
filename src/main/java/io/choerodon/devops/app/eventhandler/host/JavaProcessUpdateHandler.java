@@ -6,6 +6,7 @@ import io.choerodon.devops.app.service.DevopsJavaInstanceService;
 import io.choerodon.devops.infra.dto.DevopsJavaInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -49,7 +50,7 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
         if (!CollectionUtils.isEmpty(deleteProcessInfos)) {
             deleteProcessInfos.forEach(deleteProcessInfo -> {
                 DevopsJavaInstanceDTO devopsJavaInstanceDTO = devopsJavaInstanceDTOMap.get(deleteProcessInfo.getInstanceId());
-                devopsJavaInstanceDTO.setStatus(deleteProcessInfo.getPort());
+                devopsJavaInstanceDTO.setStatus(deleteProcessInfo.getStatus());
                 devopsJavaInstanceService.baseUpdate(devopsJavaInstanceDTO);
             });
         }
