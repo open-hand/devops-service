@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.vo.host;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,7 +14,7 @@ import java.util.List;
  * @Date 2021/7/2 10:52
  */
 
-public class DevopsDockerInstanceVO extends AuditDomain {
+public class DevopsDockerInstanceVO {
 
     private Long id;
 
@@ -36,9 +36,55 @@ public class DevopsDockerInstanceVO extends AuditDomain {
     @ApiModelProperty("部署来源")
     private String sourceType;
 
+    private Date creationDate;
+    private Long createdBy;
+    private Date lastUpdateDate;
+    private Long lastUpdatedBy;
+    private Long objectVersionNumber;
+
     private IamUserDTO deployer;
 
     private List<DockerPortMapping> portMappingList;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public List<DockerPortMapping> getPortMappingList() {
         return portMappingList;

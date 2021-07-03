@@ -26,7 +26,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.domain.AuditDomain;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import net.schmizz.sshj.SSHClient;
@@ -53,7 +52,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -628,13 +626,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         List<DevopsJavaInstanceVO> devopsJavaInstanceVOS = ConvertUtils.convertList(devopsJavaInstanceDTOList, DevopsJavaInstanceVO.class);
 
-        List<Long> usrIds = devopsJavaInstanceVOS.stream().map(AuditDomain::getCreatedBy).collect(Collectors.toList());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(usrIds);
-        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
-            Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-
-            devopsJavaInstanceVOS.forEach(devopsJavaInstanceVO -> devopsJavaInstanceVO.setDeployer(iamUserDTOMap.get(devopsJavaInstanceVO.getCreatedBy())));
-        }
+        UserDTOFillUtil.fillUserInfo(devopsJavaInstanceVOS, "createdBy", "deployer");
         return devopsJavaInstanceVOS;
     }
 
@@ -654,13 +646,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         });
 
-        List<Long> usrIds = devopsDockerInstanceVOS.stream().map(AuditDomain::getCreatedBy).collect(Collectors.toList());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(usrIds);
-        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
-            Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-
-            devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> devopsDockerInstanceVO.setDeployer(iamUserDTOMap.get(devopsDockerInstanceVO.getCreatedBy())));
-        }
+        UserDTOFillUtil.fillUserInfo(devopsDockerInstanceVOS, "createdBy", "deployer");
         return devopsDockerInstanceVOS;
     }
 
