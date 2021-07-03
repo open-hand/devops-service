@@ -11,8 +11,8 @@ public class HostAgentMsgVO {
     private String key;
     private String type;
     private String payload;
-    private Long commandId;
-    private Long hostId;
+    private String commandId;
+    private String hostId;
 
     public String getKey() {
         return key;
@@ -38,19 +38,19 @@ public class HostAgentMsgVO {
         this.payload = payload;
     }
 
-    public Long getCommandId() {
+    public String getCommandId() {
         return commandId;
     }
 
-    public void setCommandId(Long commandId) {
+    public void setCommandId(String commandId) {
         this.commandId = commandId;
     }
 
-    public Long getHostId() {
+    public String getHostId() {
         return hostId;
     }
 
-    public void setHostId(Long hostId) {
+    public void setHostId(String hostId) {
         this.hostId = hostId;
     }
 }

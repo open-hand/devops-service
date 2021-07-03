@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiModelProperty;
  * @Date 2021/6/30 15:44
  */
 public class DockerDeployDTO {
+    @ApiModelProperty("实例id")
+    private String instanceId;
     @ApiModelProperty("镜像地址")
     private String image;
     @ApiModelProperty("容器名")
@@ -20,6 +22,14 @@ public class DockerDeployDTO {
     private Integer containerPort;
     @ApiModelProperty("镜像拉取账户信息")
     private DockerPullAccountDTO dockerPullAccountDTO;
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
+    }
 
     private String cmd;
 

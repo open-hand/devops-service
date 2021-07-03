@@ -38,6 +38,7 @@ import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsJavaInstanceMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
+
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -176,9 +177,12 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         devopsJavaInstanceDTO.setName(deployObjectName);
         devopsJavaInstanceDTO.setSourceType(jarDeployVO.getSourceType());
         devopsJavaInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
+        devopsJavaInstanceDTO.setHostId(hostId);
         MapperUtil.resultJudgedInsertSelective(devopsJavaInstanceMapper, devopsJavaInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         javaDeployDTO.setCmd(genCmd(javaDeployDTO, jarDeployVO, devopsJavaInstanceDTO.getId()));
+        javaDeployDTO.setJarName(deployObjectName);
+        javaDeployDTO.setInstanceId(String.valueOf(devopsJavaInstanceDTO.getId()));
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
@@ -189,13 +193,12 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
 
-
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
 
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -28,6 +29,7 @@ import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -663,10 +665,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
 
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
         javaProcessInfoVO.setInstanceId(instanceId);
@@ -689,10 +691,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
 
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.REMOVE_DOCKER.value());
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(instanceId);
@@ -715,10 +717,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
 
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.STOP_DOCKER.value());
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(instanceId);
@@ -741,10 +743,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
 
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.RESTART_DOCKER.value());
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(instanceId);
@@ -767,10 +769,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
 
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.START_DOCKER.value());
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(instanceId);

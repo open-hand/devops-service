@@ -14,6 +14,26 @@ public class JavaDeployDTO {
     private String workingPath;
     @ApiModelProperty("jar包下载信息")
     private JarPullInfoDTO jarPullInfoDTO;
+    @ApiModelProperty("jar包名称")
+    private String jarName;
+    @ApiModelProperty("当前部署实例id")
+    private String instanceId;
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public String getJarName() {
+        return jarName;
+    }
+
+    public void setJarName(String jarName) {
+        this.jarName = jarName;
+    }
 
     private String cmd;
 

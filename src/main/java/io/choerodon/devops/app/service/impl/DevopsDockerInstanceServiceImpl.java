@@ -37,6 +37,7 @@ import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -123,7 +124,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
 
-
         } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
             deployObjectName = dockerDeployVO.getImageInfo().getTag();
             deployVersion = dockerDeployVO.getImageInfo().getImageName();
@@ -154,13 +154,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
 
         dockerDeployDTO.setCmd(genCmd(dockerDeployDTO, dockerDeployVO.getValue()));
+        dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(hostId);
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
         hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(devopsHostCommandDTO.getId());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
 
         LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
