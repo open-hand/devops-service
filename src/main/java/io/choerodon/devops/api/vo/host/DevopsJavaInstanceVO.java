@@ -1,8 +1,9 @@
 package io.choerodon.devops.api.vo.host;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Date;
 
 /**
  * 〈功能简述〉
@@ -11,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author wanghao
  * @Date 2021/7/2 11:07
  */
-public class DevopsJavaInstanceVO extends AuditDomain {
+public class DevopsJavaInstanceVO {
     private Long id;
 
     @ApiModelProperty("主机id")
@@ -26,6 +27,12 @@ public class DevopsJavaInstanceVO extends AuditDomain {
     private String sourceType;
     @ApiModelProperty("进程状态")
     private String status;
+
+    private Date creationDate;
+    private Long createdBy;
+    private Date lastUpdateDate;
+    private Long lastUpdatedBy;
+    private Long objectVersionNumber;
 
     private IamUserDTO deployer;
 
@@ -91,5 +98,45 @@ public class DevopsJavaInstanceVO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
