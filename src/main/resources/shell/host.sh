@@ -1,33 +1,42 @@
 #!/bin/bash
-#set -e
+set -e
 
 TOKEN={{ TOKEN }}
 CONNECT={{ CONNECT }}
 HOST_ID={{ HOST_ID }}
 
 # 1. 校验当前用户有HOME目录
-if [ "$HOME" ];then
-    echo "请创建用户目录，并设置HOME变量"
-    exit 1
+if [ -z "$HOME" ]; then
+  echo "Please create a user home directory and set the HOME variable"
+  exit 1
 fi
 
-# 2. 将用户加入docker组中
-sudo gpasswd -a "${USER}" docker
-sudo systemctl restart docker
-newgrp - docker
-
-# 3. 创建choerodon目录
-mkdir "$HOME"/choerodon
-chmod 0777 "$HOME"/choerodon
+# 2. 创建choerodon目录
 WORK_DIR=$HOME/choerodon
+if [ ! -d "${WORK_DIR}" ]; then
+  echo "Creating ${WORK_DIR} directory"
+  mkdir "$HOME"/choerodon
+  chmod 0777 "$HOME"/choerodon
+  echo "Working directory ${WORK_DIR} created successfully"
+fi
 
 cd "$WORK_DIR" || exit
 
-# 4. 下载执行程序
-curl -o "$WORK_DIR"/c7n-agent {{ BINARY }}
+AGENT_NAME="c7n-agent"
 
-# 5. 启动程序
-nohup ./c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" > agent.log 2>&1 &
+AGENT=${WORK_DIR}/${AGENT_NAME}
+AGENT_LOG=$WORK_DIR/${AGENT_NAME}.log
 
-# 6. 保存agent进程号
-echo $! > c7n-agent.pid
+# 3. 下载执行程序
+echo "Downloading c7n-agent"
+curl -o "${AGENT}" "{{ BINARY }}"
+echo "c7n-agent downloaded successfully"
+
+# 4. 启动程序
+cd "${WORK_DIR}"
+chmod +x "${AGENT}"
+nohup "${AGENT}" --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" >"${AGENT_LOG}" 2>&1 &
+
+# 5. 保存agent进程号
+echo $! >c7n-agent.pid
+echo "c7n-agent started successfully"
