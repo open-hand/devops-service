@@ -343,6 +343,18 @@ public class DevopsHostController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询连接主机的命令")
+    @GetMapping("/{host_id}/link_shell")
+    public ResponseEntity<String> queryShell(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "集群Id", required = true)
+            @PathVariable(value = "host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询删除主机的命令")
     @GetMapping("/{host_id}/uninstall_shell")
     public ResponseEntity<String> queryUninstallShell(
