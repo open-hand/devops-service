@@ -62,6 +62,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsHostServiceImpl implements DevopsHostService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
+
+    private static final String ERROR_HOST_NOT_FOUND = "error.host.not.found";
+    private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
     /**
      * 主机状态处于处理中的超时时长
      */
@@ -396,17 +399,24 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void deleteHost(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        if (devopsHostDTO == null || !devopsHostDTO.getHostStatus().equals(DevopsHostStatus.DISCONNECT.getValue())) {
-            return;
-        }
+
+        checkEnableHostDelete(hostId);
 
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
-        if (!checkHostDelete(projectId, hostId)) {
-            throw new CommonException("error.delete.host.already.referenced.in.pipeline");
-        }
+
 
         devopsHostMapper.deleteByPrimaryKey(hostId);
+    }
+
+    private void checkEnableHostDelete(Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        if (devopsHostDTO == null) {
+            throw new CommonException(ERROR_HOST_NOT_FOUND);
+        }
+        if (DevopsHostStatus.CONNECTED.getValue().equals(devopsHostDTO.getHostStatus())) {
+            throw new CommonException(ERROR_HOST_STATUS_IS_NOT_DISCONNECT);
+        }
     }
 
     @Override
@@ -507,28 +517,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public boolean checkHostDelete(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         if (Objects.isNull(devopsHostDTO)) {
-            return Boolean.TRUE;
+            throw new CommonException(ERROR_HOST_NOT_FOUND);
         }
-        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
-        devopsCdJobDTO.setProjectId(projectId);
-        devopsCdJobDTO.setType(JobTypeEnum.CD_HOST.value());
-        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.select(devopsCdJobDTO);
-        if (CollectionUtils.isEmpty(devopsCdJobDTOS)) {
-            return Boolean.TRUE;
+        if (DevopsHostStatus.CONNECTED.getValue().equals(devopsHostDTO.getHostStatus())) {
+            return Boolean.FALSE;
         }
-        for (DevopsCdJobDTO cdJobDTO : devopsCdJobDTOS) {
-            CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(cdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
-            if (!HostDeployType.CUSTOMIZE_DEPLOY.getValue().equalsIgnoreCase(cdHostDeployConfigVO.getHostDeployType().trim())) {
-                continue;
-            }
-            HostConnectionVO hostConnectionVO = cdHostDeployConfigVO.getHostConnectionVO();
-            if (!HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource().trim())) {
-                continue;
-            }
-            if (hostConnectionVO.getHostId().equals(hostId)) {
-                return Boolean.FALSE;
-            }
-        }
+
         return Boolean.TRUE;
     }
 
