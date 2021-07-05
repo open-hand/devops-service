@@ -156,21 +156,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         dockerDeployDTO.setCmd(genCmd(dockerDeployDTO, dockerDeployVO.getValue()));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
-        // 3. 发送部署指令给agent
-        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
-        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
-
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
-
-        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
-                JsonHelper.marshalByJackson(hostAgentMsgVO));
-
-        // 4. 保存部署记录
+        // 3. 保存部署记录
         devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
@@ -184,6 +170,21 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 deployVersion,
                 null,
                 deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+
+        // 4. 发送部署指令给agent
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
+
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
+                JsonHelper.marshalByJackson(hostAgentMsgVO));
+
     }
 
     private String genCmd(DockerDeployDTO dockerDeployDTO, String value) {
