@@ -96,6 +96,17 @@ public class MarketServiceDeployObjectVO {
     @ApiModelProperty("版本的values")
     private String value;
 
+    @ApiModelProperty("市场服务版本id")
+    private Long marketAppVersionId;
+
+    public Long getMarketAppVersionId() {
+        return marketAppVersionId;
+    }
+
+    public void setMarketAppVersionId(Long marketAppVersionId) {
+        this.marketAppVersionId = marketAppVersionId;
+    }
+
     public String getMarketAppVersion() {
         return marketAppVersion;
     }
