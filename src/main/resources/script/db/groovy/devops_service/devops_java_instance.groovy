@@ -30,4 +30,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_java_instance.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'wanghao', id: '2021-07-05-add-index') {
+
+        createIndex(indexName: "idx_host_id", tableName: "devops_java_instance") {
+            column(name: "host_id")
+        }
+    }
 }
