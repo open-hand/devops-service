@@ -237,4 +237,12 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             pageNumber++;
         } while (pageNumber < totalPage);
     }
+
+    @Override
+    public List<DevopsBranchDTO> listByCommitIs(List<Long> commitIds) {
+        if (!CollectionUtils.isEmpty(commitIds)) {
+            return devopsBranchMapper.listByCommitIds(commitIds);
+        }
+        return new ArrayList<>();
+    }
 }

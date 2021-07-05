@@ -47,6 +47,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private DevopsEnvApplicationService devopsEnvApplicationService;
+    @Autowired
+    private DevopsIssueRelService devopsIssueRelService;
 
     @Override
     public void checkLog(String version) {
@@ -95,6 +97,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("修复数据开始!");
                     devopsBranchService.fixIssueId();
                     devopsGitlabCommitService.fixIssueId();
+                    LOGGER.info("修复数据完成!!!!!!");
+                } else if ("1.0.6".equals(version)) {
+                    LOGGER.info("修复数据开始!");
+                    devopsIssueRelService.fixBranchId();
                     LOGGER.info("修复数据完成!!!!!!");
                 } else if ("1.1.0".equals(version)) {
                     devopsEnvApplicationService.fixData();
