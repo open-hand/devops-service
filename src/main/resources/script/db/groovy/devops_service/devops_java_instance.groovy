@@ -29,7 +29,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_java_instance.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'devops_java_instance',
-                constraintName: 'uk_host_id_port', columnNames: 'host_id,port')
     }
 }
