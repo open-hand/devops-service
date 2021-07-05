@@ -342,22 +342,15 @@ public class DevopsHostController {
                 .orElseThrow(() -> new CommonException("error.devops.host.insert"));
     }
 
-    /**
-     * 查询连接主机的命令
-     *
-     * @param projectId 项目ID
-     * @param hostId    主机Id
-     * @return String
-     */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询连接主机的命令")
-    @GetMapping("/{host_id}/link_shell")
-    public ResponseEntity<String> queryShell(
+    @ApiOperation(value = "查询删除主机的命令")
+    @GetMapping("/{host_id}/uninstall_shell")
+    public ResponseEntity<String> queryUninstallShell(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "host_id") Long hostId) {
-        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId));
+        return ResponseEntity.ok(devopsHostService.queryUninstallShell(projectId, hostId));
     }
 }

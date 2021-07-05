@@ -71,6 +71,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final long OPERATING_TIMEOUT = 300L * 1000;
     private static final String CHECKING_HOST = "checking";
     private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
+    private static final String HOST_UNINSTALL_SHELL = "ps aux|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
     @Value("${services.gateway.url}")
@@ -801,6 +802,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public String queryShell(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken());
+    }
+
+    @Override
+    public String queryUninstallShell(Long projectId, Long hostId) {
+        return HOST_UNINSTALL_SHELL;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
