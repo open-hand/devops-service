@@ -262,9 +262,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
     @Override
     public List<DevopsJavaInstanceDTO> listByHostId(Long hostId) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        DevopsJavaInstanceDTO devopsJavaInstanceDTO = new DevopsJavaInstanceDTO();
-        devopsJavaInstanceDTO.setHostId(hostId);
-        return devopsJavaInstanceMapper.select(devopsJavaInstanceDTO);
+        return devopsJavaInstanceMapper.listByHostId(hostId);
     }
 
     @Override

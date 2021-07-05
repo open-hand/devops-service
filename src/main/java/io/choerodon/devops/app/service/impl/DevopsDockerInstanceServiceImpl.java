@@ -234,8 +234,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     public List<DevopsDockerInstanceDTO> listByHostId(Long hostId) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
 
-        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
-        devopsDockerInstanceDTO.setHostId(hostId);
-        return devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
+        return devopsDockerInstanceMapper.listByHostId(hostId);
     }
 }
