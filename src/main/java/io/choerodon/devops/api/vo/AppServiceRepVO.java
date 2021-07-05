@@ -6,6 +6,7 @@ import java.util.Date;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 
 /**
@@ -129,6 +130,9 @@ public class AppServiceRepVO {
     @ApiModelProperty("环境Id")
     @Encrypt
     private Long envId;
+
+    @ApiModelProperty("如果是市场服务，对应的就是部署对象")
+    private MarketServiceDeployObjectVO marketServiceDeployObjectVO;
 
     public String getErrorMessage() {
         return errorMessage;
@@ -456,6 +460,14 @@ public class AppServiceRepVO {
 
     public void setBuiltIn(Boolean builtIn) {
         this.builtIn = builtIn;
+    }
+
+    public MarketServiceDeployObjectVO getMarketServiceDeployObjectVO() {
+        return marketServiceDeployObjectVO;
+    }
+
+    public void setMarketServiceDeployObjectVO(MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+        this.marketServiceDeployObjectVO = marketServiceDeployObjectVO;
     }
 }
 

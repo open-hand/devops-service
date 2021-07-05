@@ -2190,6 +2190,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                             appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
                             appServiceRepVO.setSourceView(serviceVO.getSourceName());
                         }
+                        //还需要版本的id,
+                        appServiceRepVO.setMarketServiceDeployObjectVO(marketServiceDeployObjectVO);
                     }
 
                 }
