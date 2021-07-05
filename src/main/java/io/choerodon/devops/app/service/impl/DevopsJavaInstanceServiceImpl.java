@@ -28,7 +28,7 @@ import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
-import io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum;
+import io.choerodon.devops.infra.enums.deploy.JavaInstanceStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
@@ -38,7 +38,6 @@ import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsJavaInstanceMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
-
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -176,7 +175,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         DevopsJavaInstanceDTO devopsJavaInstanceDTO = new DevopsJavaInstanceDTO();
         devopsJavaInstanceDTO.setName(deployObjectName);
         devopsJavaInstanceDTO.setSourceType(jarDeployVO.getSourceType());
-        devopsJavaInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
+        devopsJavaInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
         devopsJavaInstanceDTO.setHostId(hostId);
         MapperUtil.resultJudgedInsertSelective(devopsJavaInstanceMapper, devopsJavaInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
 

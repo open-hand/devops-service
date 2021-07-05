@@ -13,6 +13,26 @@ public enum DockerInstanceStatusEnum {
      */
     RUNNING("running"),
     /**
+     * 已创建
+     */
+    CREATED("created"),
+    /**
+     * 重启中
+     */
+    RESTARTING("restarting"),
+    /**
+     * 移除中
+     */
+    REMOVING("removing"),
+    /**
+     * 已终止
+     */
+    PAUSED("paused"),
+    /**
+     * 已死亡
+     */
+    DEAD("dead"),
+    /**
      * 退出
      */
     EXITED("exited"),
