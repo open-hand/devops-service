@@ -191,6 +191,20 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        // 保存执行记录
+        devopsDeployRecordService.saveRecord(
+                projectId,
+                DeployType.MANUAL,
+                null,
+                DeployModeEnum.HOST,
+                devopsHostDTO.getId(),
+                devopsHostDTO.getName(),
+                PipelineStatus.SUCCESS.toValue(),
+                DeployObjectTypeEnum.JAR,
+                deployObjectName,
+                deployVersion,
+                null,
+                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
 
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
@@ -206,20 +220,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
                 String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsJavaInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
-        // 保存执行记录
-        devopsDeployRecordService.saveRecord(
-                projectId,
-                DeployType.MANUAL,
-                null,
-                DeployModeEnum.HOST,
-                devopsHostDTO.getId(),
-                devopsHostDTO.getName(),
-                PipelineStatus.SUCCESS.toValue(),
-                DeployObjectTypeEnum.JAR,
-                deployObjectName,
-                deployVersion,
-                null,
-                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+
     }
 
     private String genCmd(JavaDeployDTO javaDeployDTO, JarDeployVO jarDeployVO, Long instanceId) {
