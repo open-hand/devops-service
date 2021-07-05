@@ -46,11 +46,12 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
         Map<Long, DevopsJavaInstanceDTO> devopsJavaInstanceDTOMap = devopsJavaInstanceDTOList.stream().collect(Collectors.toMap(DevopsJavaInstanceDTO::getId, Function.identity()));
 
         // 处理更新的数据
-        List<JavaProcessInfoVO> deleteProcessInfos = javaProcessUpdatePayload.getUpdateProcessInfos();
-        if (!CollectionUtils.isEmpty(deleteProcessInfos)) {
-            deleteProcessInfos.forEach(deleteProcessInfo -> {
-                DevopsJavaInstanceDTO devopsJavaInstanceDTO = devopsJavaInstanceDTOMap.get(deleteProcessInfo.getInstanceId());
-                devopsJavaInstanceDTO.setStatus(deleteProcessInfo.getStatus());
+        List<JavaProcessInfoVO> updateProcessInfos = javaProcessUpdatePayload.getUpdateProcessInfos();
+        if (!CollectionUtils.isEmpty(updateProcessInfos)) {
+            updateProcessInfos.forEach(updateProcessInfo -> {
+                DevopsJavaInstanceDTO devopsJavaInstanceDTO = devopsJavaInstanceDTOMap.get(updateProcessInfo.getInstanceId());
+                devopsJavaInstanceDTO.setStatus(updateProcessInfo.getStatus());
+                devopsJavaInstanceDTO.setPort(updateProcessInfo.getPort());
                 devopsJavaInstanceService.baseUpdate(devopsJavaInstanceDTO);
             });
         }
