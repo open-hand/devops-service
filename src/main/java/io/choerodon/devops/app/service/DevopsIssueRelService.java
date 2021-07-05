@@ -14,4 +14,6 @@ public interface DevopsIssueRelService {
     void deleteRelationByObjectAndObjectIdAndIssueId(String object, Long objectId, Long issueId);
 
     Map<Long, List<Long>> listMappedIssueIdsByObjectTypeAndObjectId(String object, Set<Long> objectIds);
+
+    void fixBranchId();
 }

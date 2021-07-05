@@ -44,6 +44,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsBranchService devopsBranchService;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
+    @Autowired
+    private DevopsIssueRelService devopsIssueRelService;
 
     @Override
     public void checkLog(String version) {
@@ -93,10 +95,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     devopsBranchService.fixIssueId();
                     devopsGitlabCommitService.fixIssueId();
                     LOGGER.info("修复数据完成!!!!!!");
+                } else if ("1.0.6".equals(version)) {
+                    LOGGER.info("修复数据开始!");
+                    devopsIssueRelService.fixBranchId();
+                    LOGGER.info("修复数据完成!!!!!!");
                 } else {
                     LOGGER.info("version not matched");
                 }
-
                 devopsCheckLogDTO.setLog(JSON.toJSONString(logs));
                 devopsCheckLogDTO.setEndCheckDate(new Date());
 
