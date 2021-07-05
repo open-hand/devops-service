@@ -70,10 +70,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
+    @Value("${services.gateway.url}")
+    private String apiHost;
     @Value("${devops.host.binary-download-url}")
     private String binaryDownloadUrl;
-    @Value("${devops.host.shell-download-url}")
-    private String shellDownloadUrl;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
 
@@ -806,7 +806,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public String queryShell(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        return String.format(HOST_AGENT, shellDownloadUrl, projectId, hostId, devopsHostDTO.getToken());
+        return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken());
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
