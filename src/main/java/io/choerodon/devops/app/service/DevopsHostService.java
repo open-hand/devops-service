@@ -268,4 +268,6 @@ public interface DevopsHostService {
     ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId);
 
     String queryShell(Long projectId, Long hostId);
+
+    String queryUninstallShell(Long projectId, Long hostId);
 }
