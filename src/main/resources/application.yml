@@ -169,7 +169,9 @@ devops:
     occupy:
       timeout-hours: 24
     #api地址
-    download-api-url: ${API_URL:http://api.c7n.devops.hand-china.com}
+    shell-download-url: ${C7N_AGENT_SHELL_URL:http://api.c7n.devops.hand-china.com}
+    # 二进制文件下载地址
+    binary-download-url: ${C7N_AGENT_BINARY_URL:http://example.minio.com/c7n-agent}
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     default:

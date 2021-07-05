@@ -1,9 +1,34 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.util.UUIDUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
@@ -30,32 +55,6 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.util.UUIDUtils;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 /**
  * @author zmf
  * @since 2020/9/15
@@ -71,8 +70,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
-    @Value("${devops.host.download-api-url}")
-    private String downloadApiUrl;
+    @Value("${devops.host.binary-download-url}")
+    private String binaryDownloadUrl;
+    @Value("${devops.host.shell-download-url}")
+    private String shellDownloadUrl;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
 
@@ -142,6 +143,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         params.put("{{ TOKEN }}", devopsHostDTO.getToken());
         params.put("{{ CONNECT }}", agentServiceUrl);
         params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
+        params.put("{{ BINARY }}", binaryDownloadUrl);
         return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
@@ -622,7 +624,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId) {
         List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(hostId);
-        if(CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
+        if (CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
             return new ArrayList<>();
         }
 
@@ -804,7 +806,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public String queryShell(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        return String.format(HOST_AGENT, downloadApiUrl, projectId, hostId, devopsHostDTO.getToken());
+        return String.format(HOST_AGENT, shellDownloadUrl, projectId, hostId, devopsHostDTO.getToken());
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
