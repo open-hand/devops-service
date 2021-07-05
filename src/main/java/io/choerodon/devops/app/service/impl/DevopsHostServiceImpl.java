@@ -406,7 +406,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
 
-
         devopsHostMapper.deleteByPrimaryKey(hostId);
     }
 
@@ -794,7 +793,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId) {
         String resourceInfo = stringRedisTemplate.opsForValue().get(String.format(DevopsHostConstants.HOST_RESOURCE_INFO_KEY, hostId));
-
+        if (StringUtils.isEmpty(resourceInfo)) {
+            return new ResourceUsageInfoVO();
+        }
         return JsonHelper.unmarshalByJackson(resourceInfo, ResourceUsageInfoVO.class);
     }
 
