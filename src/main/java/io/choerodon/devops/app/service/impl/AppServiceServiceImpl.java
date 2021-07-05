@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -93,7 +92,6 @@ import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
 import io.choerodon.devops.infra.feign.RdupmClient;
@@ -1349,11 +1347,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public SonarContentsVO getSonarContent(Long projectId, Long appServiceId) {
-        try {
-            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.SONAR_LIST);
-        } catch (GitlabAccessInvalidException e) {
-            return null;
-        }
         //没有使用sonarqube直接返回空对象
         if (sonarqubeUrl.equals("")) {
             return new SonarContentsVO();
