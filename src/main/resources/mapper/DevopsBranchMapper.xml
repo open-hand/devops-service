@@ -141,4 +141,15 @@
         WHERE db.app_service_id = #{appServiceId}
         AND db.id = #{branchId}
     </select>
+
+    <select id="listByCommitIds" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        SELECT db.id,dgc.id AS commitId
+        FROM devops_gitlab_commit dgc
+        INNER JOIN devops_branch db ON db.branch_name = dgc.ref AND db.app_service_id=dgc.app_service_id
+        WHERE
+        dgc.id IN
+        <foreach collection="commitIds" item="commitId" open="(" close=")" separator=",">
+            #{commitId}
+        </foreach>
+    </select>
 </mapper>

@@ -48,4 +48,22 @@
             #{issueId}
         </foreach>
     </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM devops_issue_rel;
+    </select>
+
+    <update id="batchUpdate">
+        UPDATE devops_issue_rel
+        SET branch_id = CASE id
+        <foreach collection="dtosToUpdate" item="dto" close="end">
+            WHEN #{dto.id} then #{dto.branchId}
+
+        </foreach>
+        WHERE id IN
+        <foreach collection="dtosToUpdate" item="dto" open="(" close=")" separator=",">
+            #{dto.id}
+        </foreach>
+    </update>
 </mapper>

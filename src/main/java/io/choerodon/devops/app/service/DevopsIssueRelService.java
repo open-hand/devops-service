@@ -40,4 +40,6 @@ public interface DevopsIssueRelService {
      * @param issueIds 敏捷问题ids
      */
     List<IssueIdAndBranchIdsVO> listObjectIdsByIssueIdsAndObjectType(String object, Set<Long> issueIds);
+
+    void fixBranchId();
 }

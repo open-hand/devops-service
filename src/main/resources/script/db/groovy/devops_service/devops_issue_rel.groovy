@@ -30,4 +30,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_issue_rel.groovy') {
         }
         addUniqueConstraint(tableName: 'devops_issue_rel', constraintName: 'uk_object_id_issue_id_object', columnNames: 'object_id,issue_id,object')
     }
+
+    changeSet(author: 'lihao', id: '2021-06-06-add-column-branch-id') {
+        addColumn(tableName: 'devops_issue_rel') {
+            column(name: 'branch_id', type: 'BIGINT UNSIGNED', remarks: '该条记录所属branchId', afterColumn: 'issue_id')
+        }
+    }
 }
