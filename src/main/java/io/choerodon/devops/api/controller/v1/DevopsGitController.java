@@ -412,12 +412,12 @@ public class DevopsGitController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @Encrypt @PathVariable(value = "app_service_id") Long appServiceId,
-            @ApiParam(value = "分支名称")
-            @RequestParam("branch_name") String branchName,
+            @ApiParam(value = "分支id")
+            @Encrypt @RequestParam("branch_id") Long branchId,
             @ApiParam(value = "关联问题id")
             @Encrypt @RequestParam("issue_id") Long issueId
     ) {
-        devopsGitService.removeAssociation(projectId, appServiceId, branchName, issueId);
+        devopsGitService.removeAssociation(projectId, appServiceId, branchId, issueId);
         return ResponseEntity.noContent().build();
     }
 

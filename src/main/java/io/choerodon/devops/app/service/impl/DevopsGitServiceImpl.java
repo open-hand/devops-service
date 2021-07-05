@@ -249,7 +249,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
         Long devopsBranchId = devopsBranchDTO.getId();
         if (devopsBranchVO.getIssueId() != null) {
-            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchId, devopsBranchVO.getIssueId());
+            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchId, devopsBranchId, devopsBranchVO.getIssueId());
         }
 
 
@@ -474,7 +474,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchService.baseDelete(appServiceId, branchName);
     }
 
-
     @Override
     public MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, PageRequest pageable) {
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
@@ -568,7 +567,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()).stream()
                 .noneMatch(t -> tagName.equals(t.getName()));
     }
-
 
     @Override
     public void branchSync(PushWebHookVO pushWebHookVO, String token) {
@@ -831,7 +829,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-
     private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
                              Set<DevopsEnvFileResourceDTO> beforeSync, Set<DevopsEnvFileResourceDTO> beforeSyncDelete,
                              DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO) {
@@ -866,7 +863,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
     }
-
 
     /**
      * 将涉及的文件内的对象进行反序列化处理，获取后续处理所需要的元数据
@@ -1184,12 +1180,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_BRANCH_ISSUE_DELETE, description = "移除分支和敏捷问题关联关系", inputSchemaClass = IssueIdAndBranchIdsVO.class)
-    public void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId) {
+    public void removeAssociation(Long projectId, Long appServiceId, Long branchId, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchNameWithIssueIds(appServiceId, branchName);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
-        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId(), issueId);
+        DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchIdWithIssueId(appServiceId, branchId);
+        if (devopsBranchDTO != null) {
+            CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
+        }
+        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueId);
 
         Set<Long> remainBranchIds = devopsIssueRelService.listObjectIdsByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
         IssueIdAndBranchIdsVO issueIdAndBranchIdsVO = new IssueIdAndBranchIdsVO();

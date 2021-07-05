@@ -7,9 +7,9 @@ import java.util.Set;
 import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 
 public interface DevopsIssueRelService {
-    void addRelation(String object, Long objectId, List<Long> issueIds);
+    void addRelation(String object, Long objectId, Long branchId, List<Long> issueIds);
 
-    void addRelation(String object, Long objectId, Long issueIds);
+    void addRelation(String object, Long objectId, Long branchId, Long issueId);
 
     void deleteRelationByObjectAndObjectId(String object, Long objectId);
 
