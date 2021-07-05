@@ -24,7 +24,7 @@ WORK_DIR=$HOME/choerodon
 cd "$WORK_DIR" || exit
 
 # 4. 下载执行程序
-curl -o "$WORK_DIR"/c7n-agent https://www.baidu.com
+curl -o "$WORK_DIR"/c7n-agent {{ BINARY }}
 
 # 5. 启动程序
 nohup ./c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" > agent.log 2>&1 &
