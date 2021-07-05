@@ -28,6 +28,9 @@ public class DevopsIssueRelDTO extends AuditDomain {
     @ApiModelProperty("敏捷的issueId")
     private Long issueId;
 
+    @ApiModelProperty("该记录关联的branchId，关联对象为 提交 时 使用")
+    private Long branchId;
+
     public Long getId() {
         return id;
     }
@@ -58,5 +61,13 @@ public class DevopsIssueRelDTO extends AuditDomain {
 
     public void setIssueId(Long issueId) {
         this.issueId = issueId;
+    }
+
+    public Long getBranchId() {
+        return branchId;
+    }
+
+    public void setBranchId(Long branchId) {
+        this.branchId = branchId;
     }
 }

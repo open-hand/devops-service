@@ -132,4 +132,13 @@
         WHERE db.app_service_id = #{appServiceId}
           AND db.branch_name = #{branchName}
     </select>
+
+    <select id="queryByAppAndBranchIdWithIssueId" resultMap="DevopsBranchDTOWithIssueIds">
+        SELECT db.id,
+        dsr.issue_id AS issue_id
+        FROM devops_branch db
+        LEFT JOIN devops_issue_rel dsr ON dsr.object_id = db.id
+        WHERE db.app_service_id = #{appServiceId}
+        AND db.id = #{branchId}
+    </select>
 </mapper>

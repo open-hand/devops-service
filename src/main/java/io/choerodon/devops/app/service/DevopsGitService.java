@@ -211,10 +211,10 @@ public interface DevopsGitService {
      *
      * @param projectId    项目id
      * @param appServiceId 应用id
-     * @param branchName   分支名称
+     * @param branchId     分支id
      * @param issueId      关联问题id
      */
-    void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId);
+    void removeAssociation(Long projectId, Long appServiceId, Long branchId, Long issueId);
 
 
     /**

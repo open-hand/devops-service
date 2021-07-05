@@ -26,7 +26,7 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addRelation(String object, Long objectId, List<Long> issueIds) {
+    public void addRelation(String object, Long objectId, Long branchId, List<Long> issueIds) {
         List<DevopsIssueRelDTO> devopsIssueRelDTOList = issueIds
                 .stream()
                 .map(i -> {
@@ -34,6 +34,7 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
                     devopsIssueRelDTO.setIssueId(i);
                     devopsIssueRelDTO.setObject(object);
                     devopsIssueRelDTO.setObjectId(objectId);
+                    devopsIssueRelDTO.setBranchId(branchId);
                     return devopsIssueRelDTO;
                 }).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(devopsIssueRelDTOList)) {
@@ -43,11 +44,12 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void addRelation(String object, Long objectId, Long issueIds) {
+    public void addRelation(String object, Long objectId, Long branchId, Long issueId) {
         DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
-        devopsIssueRelDTO.setIssueId(issueIds);
+        devopsIssueRelDTO.setIssueId(issueId);
         devopsIssueRelDTO.setObject(object);
         devopsIssueRelDTO.setObjectId(objectId);
+        devopsIssueRelDTO.setBranchId(branchId);
         devopsIssueRelMapper.insert(devopsIssueRelDTO);
     }
 

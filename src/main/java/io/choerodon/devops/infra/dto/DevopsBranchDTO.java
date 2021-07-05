@@ -33,6 +33,8 @@ public class DevopsBranchDTO extends AuditDomain {
     private String lastCommitMsg;
     private Long lastCommitUser;
     private Date lastCommitDate;
+    @Transient
+    private Long commitId;
 
     @Transient
     @ApiModelProperty("关联的敏捷Issue的ids")
@@ -165,5 +167,13 @@ public class DevopsBranchDTO extends AuditDomain {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public Long getCommitId() {
+        return commitId;
+    }
+
+    public void setCommitId(Long commitId) {
+        this.commitId = commitId;
     }
 }
