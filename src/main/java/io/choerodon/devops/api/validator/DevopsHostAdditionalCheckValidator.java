@@ -31,6 +31,6 @@ public class DevopsHostAdditionalCheckValidator {
     }
 
     public void validUsernamePasswordMatch(String username, String password) {
-        CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(username) && StringUtils.isEmpty(password), "error.host.password.empty");
+        CommonExAssertUtil.assertTrue(!(StringUtils.isNotEmpty(username) && StringUtils.isEmpty(password)), "error.host.password.empty");
     }
 }

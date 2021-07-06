@@ -36,11 +36,9 @@ public class DevopsHostUpdateRequestVO {
     @ApiModelProperty("认证类型")
     private String authType;
 
-    @NotEmpty(message = "error.host.username.empty")
     @ApiModelProperty("用户名")
     private String username;
 
-    @NotEmpty(message = "error.host.password.empty")
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
