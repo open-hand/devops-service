@@ -95,9 +95,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             }
         }
     }
-    changeSet(author: 'wanghao', id: '2021-07-01-drop-index') {
-        dropUniqueConstraint(constraintName: "uk_project_ip_port", tableName: "devops_host")
-    }
 
     changeSet(author: 'wanghao', id: '2021-07-02-drop-constraint') {
         dropNotNullConstraint(columnName: "username", columnDataType: "VARCHAR(32)", tableName: "devops_host")
