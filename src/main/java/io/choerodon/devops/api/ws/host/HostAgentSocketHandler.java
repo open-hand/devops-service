@@ -115,6 +115,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     private void doHandle(WebSocketSession session, TextMessage message) {
         String payload = message.getPayload();
+        LOGGER.info("Received agent msg: {}", payload);
         HostMsgVO msg = JsonHelper.unmarshalByJackson(payload, HostMsgVO.class);
 
 
