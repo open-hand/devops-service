@@ -905,9 +905,9 @@
               </if>
               <if test="params != null and params != ''">
                   AND  (
-                  deas.service_name=#{params}
+                  deas.service_name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
                   or
-                  deas.service_code=#{params}
+                  deas.service_code LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
                   )
               </if>
             GROUP BY
