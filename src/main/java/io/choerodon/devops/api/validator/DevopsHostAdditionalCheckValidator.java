@@ -2,6 +2,7 @@ package io.choerodon.devops.api.validator;
 
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -27,5 +28,9 @@ public class DevopsHostAdditionalCheckValidator {
 
     public void validIpAndSshPortProjectUnique(Long projectId, String ip, Integer sshPort) {
         CommonExAssertUtil.assertTrue(devopsHostService.isSshIpPortUnique(projectId, ip, sshPort), "error.host.ip.ssh.port.not.unique");
+    }
+
+    public void validUsernamePasswordMatch(String username, String password) {
+        CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(username) && StringUtils.isEmpty(password), "error.host.password.empty");
     }
 }

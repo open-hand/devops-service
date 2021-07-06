@@ -112,9 +112,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        if (StringUtils.isNotEmpty(devopsHostCreateRequestVO.getUsername()) && StringUtils.isEmpty(devopsHostCreateRequestVO.getPassword())) {
-            throw new CommonException("error.host.password.empty");
-        }
+        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostCreateRequestVO.getUsername(), devopsHostCreateRequestVO.getPassword());
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
@@ -362,6 +360,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         CommonExAssertUtil.assertNotNull(devopsHostDTO, "error.host.not.exist", hostId);
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostUpdateRequestVO.getUsername(), devopsHostUpdateRequestVO.getPassword());
 
         // 补充校验参数
         if (!devopsHostDTO.getName().equals(devopsHostUpdateRequestVO.getName())) {
