@@ -308,8 +308,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 }
                 return true;
             } else if (CiTriggerType.REGEX_MATCH.value().equals(triggerType)) {
-                Pattern pattern = Pattern.compile(job.getTriggerValue());
-                return pattern.matcher(ref).matches();
+                try {
+                    Pattern pattern = Pattern.compile(job.getTriggerValue());
+                    return pattern.matcher(ref).matches();
+                } catch (Exception e) {
+                    LOGGER.info("parse regex failed, regex: {}, ref: {}, error: {}", job.getTriggerValue(), ref, e);
+                }
+                return false;
+
             }
             return false;
         }).collect(Collectors.toList());
