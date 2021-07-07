@@ -307,12 +307,6 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_MERGE_REQUEST_PASS = "devops-merge-request-pass";
 
     /**
-     * 移除分支和敏捷问题关联关系
-     */
-    public static final String DEVOPS_BRANCH_ISSUE_DELETE = "devops-branch-issue-delete";
-
-
-    /**
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";

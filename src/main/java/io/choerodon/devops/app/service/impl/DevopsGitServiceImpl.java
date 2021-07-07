@@ -1179,7 +1179,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_BRANCH_ISSUE_DELETE, description = "移除分支和敏捷问题关联关系", inputSchemaClass = IssueIdAndBranchIdsVO.class)
     public void removeAssociation(Long projectId, Long appServiceId, Long branchId, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
@@ -1194,16 +1193,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         issueIdAndBranchIdsVO.setIssueId(issueId);
         issueIdAndBranchIdsVO.setBranchIds(new ArrayList<>(remainBranchIds));
 
-        producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(projectId)
-                        .withRefType("project")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_BRANCH_ISSUE_DELETE),
-                builder -> builder
-                        .withPayloadAndSerialize(issueIdAndBranchIdsVO)
-                        .withRefId(String.valueOf(issueId)));
+        agileServiceClientOperator.deleteTagByBranch(projectId, issueIdAndBranchIdsVO);
     }
 
     @Override
