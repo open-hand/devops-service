@@ -1179,6 +1179,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void removeAssociation(Long projectId, Long appServiceId, Long branchId, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);

@@ -39,7 +39,7 @@ public interface AgileServiceClient {
             @RequestBody List<Long> issueIds);
 
     @ApiOperation("devops删除issue和branch关系时，判断是否要删除issue和tag关系")
-    @PostMapping(value = "/v1/projects/{project_id}/issues/delete_tag_by_branch")
+    @PostMapping(value = "/v1/inner/projects/{project_id}/delete_tag_by_branch")
     ResponseEntity<String> deleteTagByBranch(@ApiParam(value = "项目id", required = true)
                                              @PathVariable(name = "project_id") Long projectId,
                                              @RequestBody IssueIdAndBranchIdsVO issueIdAndBranchIdsVO);
