@@ -6,9 +6,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ServiceUnavailableException;
 import io.choerodon.core.utils.FeignClientUtils;
 import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
@@ -58,9 +58,9 @@ public class AgileServiceClientOperator {
 
     public void deleteTagByBranch(Long projectId, IssueIdAndBranchIdsVO issueIdAndBranchIdsVO) {
         try {
-            ResponseEntity<String> result= agileServiceClient.deleteTagByBranch(projectId, issueIdAndBranchIdsVO);
+            agileServiceClient.deleteTagByBranch(projectId, issueIdAndBranchIdsVO);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new CommonException("error.issue.delete.tag.by.branch");
         }
     }
 }
