@@ -26,6 +26,20 @@ public class ResourceCheckConstant {
 
     // env
     public static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
+    public static final String ERROR_ENV_ID_IS_NULL = "error.env.id.is.null";
+
+    // instance
+    public static final String ERROR_INSTANCE_NAME_IS_NULL = "error.instance.name.is.null";
+
+    // pod
+
+    public static final String ERROR_POD_NAME_IS_NULL = "error.pod.name.is.null";
+
+    // resource
+    public static final String ERROR_KIND_NAME_IS_NULL = "error.kind.name.is.null";
+    public static final String ERROR_RESOURCE_NAME_IS_NULL = "error.resource.name.is.null";
 
 
+    // host
+    public static final String ERROR_HOST_ID_IS_NULL = "error.host.id.is.null";
 }

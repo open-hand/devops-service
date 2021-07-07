@@ -79,4 +79,26 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             }
         }
     }
+    changeSet(author: 'wanghao', id: '2021-06-25-modify-column') {
+
+        dropUniqueConstraint(constraintName: "uk_project_ip_jmeter_port", tableName: "devops_host")
+        dropColumn(columnName: "type", tableName: "devops_host")
+        dropColumn(columnName: "jmeter_status", tableName: "devops_host")
+        dropColumn(columnName: "jmeter_port", tableName: "devops_host")
+        dropColumn(columnName: "jmeter_path", tableName: "devops_host")
+        dropColumn(columnName: "jmeter_check_error", tableName: "devops_host")
+        dropColumn(columnName: "private_ip", tableName: "devops_host")
+        dropColumn(columnName: "private_port", tableName: "devops_host")
+        addColumn(tableName: 'devops_host') {
+            column(name: 'token', type: 'VARCHAR(64)', remarks: '主机token', afterColumn: 'host_status') {
+                constraints(nullable: false)
+            }
+        }
+    }
+
+    changeSet(author: 'wanghao', id: '2021-07-02-drop-constraint') {
+        dropNotNullConstraint(columnName: "username", columnDataType: "VARCHAR(32)", tableName: "devops_host")
+        dropNotNullConstraint(columnName: "password", columnDataType: "VARCHAR(2048)", tableName: "devops_host")
+        dropNotNullConstraint(columnName: "auth_type", columnDataType: "VARCHAR(63)", tableName: "devops_host")
+    }
 }

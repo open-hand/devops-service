@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsDaemonSetMapper">
+
+    <select id="selectCountByEnvIdAndName" resultType="int">
+    SELECT COUNT(*) FROM devops_daemon_set dds
+    WHERE dds.env_id=#{envId} AND dds.name=#{name}
+    </select>
+
+    <select id="listByEnvId" resultType="io.choerodon.devops.api.vo.DevopsDaemonSetVO">
+        select dds.*, der.id as env_resource_id, der.resource_detail_id, deco.command_type, deco.`status` AS
+        command_status, deco.error
+        from devops_daemon_set dds
+        left join devops_env_resource der on (dds.env_id = der.env_id and dds.name = der.name and der.kind =
+        'DaemonSet')
+        left join devops_env_command deco ON (deco.id = dds.command_id)
+        <where>
+            dds.env_id = #{envId}
+            <if test="name != null">
+                and dds.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="fromInstance != null">
+                <if test="fromInstance == true">
+                    and dds.instance_id is not null
+                </if>
+                <if test="fromInstance==false">
+                    and dds.instance_id is null
+                </if>
+            </if>
+        </where>
+    </select>
+
+</mapper>

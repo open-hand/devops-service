@@ -15,6 +15,10 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
 
     List<DevopsIssueRelDTO> listIssueIdsByObjectTypeAndObjectIds(Set<Long> objectIds, String object);
 
+    Set<Long> listObjectIdsByIssueIdAndObjectType(@Param("object") String object, @Param("issueId") Long issueId);
+
+    List<DevopsIssueRelDTO> listObjectIdsByIssueIdsAndObjectType(@Param("object") String object, @Param("issueIds") Set<Long> issueIds);
+
     Integer count();
 
     void batchUpdate(@Param("dtosToUpdate") List<DevopsIssueRelDTO> dtosToUpdate);

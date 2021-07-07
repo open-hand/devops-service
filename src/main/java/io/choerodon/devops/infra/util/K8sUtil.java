@@ -68,7 +68,7 @@ public class K8sUtil {
 
 
     private static String getPodStatus(V1ContainerStateTerminated containerStateTerminated) {
-        LOGGER.info("Get pod status: {}", containerStateTerminated);
+        LOGGER.debug("Get pod status: {}", containerStateTerminated);
         String podStatus;
         if (containerStateTerminated.getReason() != null) {
             if (containerStateTerminated.getReason().length() == 0) {
@@ -81,7 +81,7 @@ public class K8sUtil {
         } else {
             podStatus = "";
         }
-        LOGGER.info("Got pod status : {}", podStatus);
+        LOGGER.debug("Got pod status : {}", podStatus);
         return podStatus;
     }
 

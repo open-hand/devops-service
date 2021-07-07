@@ -2,11 +2,13 @@ package io.choerodon.devops.infra.feign;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.devops.infra.feign.fallback.AgileServiceClientFallback;
 
 @FeignClient(value = "agile-service", fallback = AgileServiceClientFallback.class)
@@ -20,9 +22,9 @@ public interface AgileServiceClient {
 
     @PostMapping(value = "/v1/projects/{project_id}/issues/query_issue_ids")
     ResponseEntity<String> queryIssues(@ApiParam(value = "项目id", required = true)
-                                               @PathVariable(name = "project_id") Long projectId,
-                                               @ApiParam(value = "issue编号", required = true)
-                                               @RequestBody List<Long> issueIds);
+                                       @PathVariable(name = "project_id") Long projectId,
+                                       @ApiParam(value = "issue编号", required = true)
+                                       @RequestBody List<Long> issueIds);
 
     @GetMapping(value = "/v1/projects/{project_id}/sprint/active/{organization_id}")
     ResponseEntity<String> getActiveSprint(
@@ -35,4 +37,10 @@ public interface AgileServiceClient {
     ResponseEntity<String> queryIssuesByIds(
             @ApiParam(value = "组织id", required = true)
             @RequestBody List<Long> issueIds);
+
+    @ApiOperation("devops删除issue和branch关系时，判断是否要删除issue和tag关系")
+    @PostMapping(value = "/v1/inner/projects/{project_id}/delete_tag_by_branch")
+    ResponseEntity<String> deleteTagByBranch(@ApiParam(value = "项目id", required = true)
+                                             @PathVariable(name = "project_id") Long projectId,
+                                             @RequestBody IssueIdAndBranchIdsVO issueIdAndBranchIdsVO);
 }

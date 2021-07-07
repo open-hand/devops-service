@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,7 +19,9 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.GitPlatformType;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -821,5 +824,58 @@ public class AppServiceController {
             @RequestBody(required = false) String params) {
         return ResponseEntity.ok(applicationServiceService.pageAppServiceToCreateCiPipeline(projectId, pageRequest, params));
     }
+
+
+    /**
+     * 获取项目下应用服务的数量
+     *
+     * @return 环应用服务的数量
+     */
+    @ApiOperation("获取项目下应用服务的数量")
+    @Permission(permissionWithin = true)
+    @GetMapping("/count_by_options")
+    public ResponseEntity<Long> countAppCountByOptions(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId) {
+        return new ResponseEntity<>(applicationServiceService.countAppCountByOptions(projectId), HttpStatus.OK);
+    }
+
+    /**
+     * @param envId  为null代表查全部环境
+     * @param type   ,项目下应用project,市场应用market 共享 share 全部 all
+     * @param params
+     * @return
+     */
+    @ApiOperation("应用中心")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center")
+    @CustomPageRequest
+    public ResponseEntity<Page<AppServiceRepVO>> applicationCenter(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "envId", required = false) Long envId,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "params", required = false) String params,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
+        return ResponseEntity.ok(applicationServiceService.applicationCenter(projectId, envId, type, params, pageRequest));
+    }
+
+    @ApiOperation("查询应用服务所关联的环境列表")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center/envs/by_app_id")
+    public ResponseEntity<List<DevopsEnvironmentRepVO>> listEnvByAppServiceId(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "appServiceId") Long appServiceId) {
+        return ResponseEntity.ok(applicationServiceService.listEnvByAppServiceId(projectId, appServiceId));
+    }
+
+    @ApiOperation("检查是否可以删除关联")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center/env_app")
+    public ResponseEntity<Boolean> checkDeleteEnvApp(
+            @Encrypt @RequestParam(value = "appServiceId") Long appServiceId,
+            @Encrypt @RequestParam(value = "envId") Long envId) {
+        return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
+    }
 }
+
 

@@ -1,54 +1,30 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
-import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
-import io.choerodon.devops.api.vo.iam.ResourceVO;
-import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
-import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
-import io.choerodon.devops.api.vo.sonar.*;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.RoleDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
-import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
-import io.choerodon.devops.infra.feign.RdupmClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.*;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -77,27 +53,55 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
+import io.choerodon.devops.api.vo.iam.ResourceVO;
+import io.choerodon.devops.api.vo.market.MarketCategoryVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
+import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
+import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.RoleDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
+import io.choerodon.devops.infra.feign.RdupmClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.*;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -228,6 +232,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsAppTemplateMapper devopsAppTemplateMapper;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private DevopsEnvApplicationService devopsEnvApplicationService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -2114,6 +2122,124 @@ public class AppServiceServiceImpl implements AppServiceService {
             }).collect(toList());
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public Long countAppCountByOptions(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        int selectCount = appServiceMapper.selectCount(appServiceDTO);
+        return Long.valueOf(selectCount);
+    }
+
+    @Override
+    public Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest) {
+
+        //env为null查询所有环境关联的应用服务，
+        Page<AppServiceRepVO> appServiceRepVOS = PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.queryApplicationCenter(projectId, envId, type, params));
+        List<AppServiceRepVO> appServiceRepVOSContent = appServiceRepVOS.getContent();
+        if (CollectionUtils.isEmpty(appServiceRepVOSContent)) {
+            return appServiceRepVOS;
+        }
+
+        //筛出应用市场类型的marketServiceId
+        List<AppServiceRepVO> serviceRepVOS = appServiceRepVOSContent.stream().filter(appServiceRepVO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)).collect(toList());
+
+        Map<Long, MarketServiceVO> longMarketServiceVOMap = new HashMap<>();
+
+        if (!CollectionUtils.isEmpty(serviceRepVOS)) {
+            Set<Long> marketServiceIds = serviceRepVOS.stream().map(AppServiceRepVO::getId).collect(toSet());
+            List<MarketServiceVO> marketServiceVOs = marketServiceClientOperator.queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(projectId, marketServiceIds);
+            if (!CollectionUtils.isEmpty(marketServiceVOs)) {
+                longMarketServiceVOMap = marketServiceVOs.stream().collect(toMap(MarketServiceVO::getId, Function.identity()));
+            }
+        }
+
+
+        //处理最新版本,仓库地址
+        //项目的来源处理：来源是这样的  如果是项目发布的  那么显示组织/项目   如果是中间件之类的就显示平台预置的
+        Map<Long, MarketServiceVO> finalLongMarketServiceVOMap = longMarketServiceVOMap;
+        appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)) {
+                //根据市场服务id查询已发布部署对象
+                MarketServiceVO serviceVO = finalLongMarketServiceVOMap.get(appServiceRepVO.getId());
+
+                if (!Objects.isNull(serviceVO)) {
+                    appServiceRepVO.setServiceName(serviceVO.getMarketServiceName());
+
+                    //看看是不是预置的
+                    List<MarketCategoryVO> marketCategoryVOS = serviceVO.getMarketCategoryVOS().stream().filter(MarketCategoryVO::getBuiltIn).collect(toList());
+                    appServiceRepVO.setBuiltIn(Boolean.FALSE);
+                    if (!CollectionUtils.isEmpty(marketCategoryVOS)) {
+                        appServiceRepVO.setBuiltIn(Boolean.TRUE);
+                    }
+
+                    //过滤出已发布的最新的版本
+                    if (!CollectionUtils.isEmpty(serviceVO.getMarketServiceDeployObjectVOS())) {
+                        MarketServiceDeployObjectVO marketServiceDeployObjectVO = serviceVO.getMarketServiceDeployObjectVOS().stream().sorted(comparing(MarketServiceDeployObjectVO::getId).reversed()).collect(toList()).get(0);
+                        appServiceRepVO.setLatestVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
+                        if (!appServiceRepVO.getBuiltIn()) {
+                            //如果是项目发布的  那么显示组织/项目
+                            appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
+                            appServiceRepVO.setSourceView(serviceVO.getSourceName());
+                        }
+                        //还需要版本的id,
+                        appServiceRepVO.setMarketServiceDeployObjectVO(marketServiceDeployObjectVO);
+                    }
+
+                }
+
+            } else {
+                //共享与本项目
+                AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
+                if (!Objects.isNull(appServiceDTO)) {
+                    ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(appServiceDTO.getProjectId());
+                    String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+                    if (!Objects.isNull(info)) {
+                        initApplicationParams(info, appServiceDTO, urlSlash);
+                        appServiceRepVO.setRepoUrl(appServiceDTO.getRepoUrl());
+                    }
+                    //判断是不是共享的应用服务 如果是要返回项目的来源
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(appServiceRepVO.getEnvId());
+                    if (!Objects.isNull(devopsEnvironmentDTO)) {
+                        if (!devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId())) {
+                            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                            appServiceRepVO.setShareProjectName(projectDTO.getName());
+                        }
+                    }
+                }
+
+
+                AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+                appServiceVersionDTO.setAppServiceId(appServiceRepVO.getId());
+                List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+                if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+                    List<AppServiceVersionDTO> serviceVersionDTOS = appServiceVersionDTOS.stream().sorted(comparing(AppServiceVersionDTO::getId).reversed()).collect(toList());
+                    appServiceRepVO.setLatestVersion(serviceVersionDTOS.get(0).getVersion());
+                }
+            }
+        });
+
+
+        return appServiceRepVOS;
+    }
+
+    @Override
+    public List<DevopsEnvironmentRepVO> listEnvByAppServiceId(Long projectId, Long appServiceId) {
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
+        devopsEnvAppServiceDTO.setAppServiceId(appServiceId);
+        List<DevopsEnvAppServiceDTO> devopsEnvAppServiceDTOS = devopsEnvAppServiceMapper.select(devopsEnvAppServiceDTO);
+        if (!CollectionUtils.isEmpty(devopsEnvAppServiceDTOS)) {
+            Set<Long> envIds = devopsEnvAppServiceDTOS.stream().map(DevopsEnvAppServiceDTO::getEnvId).collect(toSet());
+            List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(envIds));
+            return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Boolean checkDeleteEnvApp(Long appServiceId, Long envId) {
+        return devopsEnvApplicationService.checkCanDelete(appServiceId, envId);
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {

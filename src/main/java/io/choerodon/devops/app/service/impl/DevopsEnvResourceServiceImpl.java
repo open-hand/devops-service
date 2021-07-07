@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.sql.Timestamp;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,12 +16,14 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
+import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -56,6 +58,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsIngressService devopsIngressService;
+    @Autowired
+    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
+
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
@@ -525,10 +530,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(kind, ResourceCheckConstant.ERROR_KIND_NAME_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+
         DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
-        if (!devopsEnvResourceMapper.queryResource(null, null, envId, kind, name).isEmpty()) {
-            devopsEnvResourceDO.setEnvId(envId);
-        }
+        devopsEnvResourceDO.setEnvId(envId);
         devopsEnvResourceDO.setKind(kind);
         devopsEnvResourceDO.setName(name);
         devopsEnvResourceMapper.delete(devopsEnvResourceDO);
@@ -637,5 +644,37 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             }
         }
         return podEventVOS;
+    }
+
+    @Override
+    public String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType pod) {
+        return devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, name, pod.getType());
+    }
+
+    @Override
+    public Object queryDetailsByKindAndName(Long envId, String kind, String name) {
+        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+
+        try {
+            return new ObjectMapper().readTree(message);
+        } catch (IOException e) {
+            throw new CommonException("error.resource.json.read.failed", message);
+        }
+    }
+
+    @Override
+    public String queryYamlById(Long envId, Long workLoadId, String type) {
+        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(workLoadId, type);
+        return devopsWorkloadResourceContentDTO.getContent();
+    }
+
+    @Override
+    public String queryDetailsYamlByKindAndName(Long envId, String kind, String name) {
+        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+        try {
+            return JsonYamlConversionUtil.json2yaml(message);
+        } catch (IOException e) {
+            throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, message);
+        }
     }
 }

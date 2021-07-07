@@ -878,4 +878,43 @@
             </if>
         </where>
     </select>
+
+    <select id="queryApplicationCenter" resultType="io.choerodon.devops.api.vo.AppServiceRepVO">
+
+        SELECT
+           *
+        FROM
+        (
+            SELECT
+               any_value ( deas.app_service_id ) AS ID,
+               any_value ( deas.source ) AS source,
+               any_value ( deas.service_name ) AS serviceName,
+               any_value ( deas.service_code ) AS serviceCode,
+               any_value ( deas.env_id ) AS envId,
+               any_value ( deas.id ) AS tempId
+            FROM
+              devops_env_app_service deas
+            JOIN devops_env de ON deas.env_id = de.id
+            WHERE
+              de.project_id=#{projectId,jdbcType=BIGINT}
+              <if test="envId != null">
+                  AND  deas.env_id = #{envId,jdbcType=BIGINT}
+              </if>
+              <if test="type != null and type != '' and type != 'all'">
+                  AND deas.source= #{type}
+              </if>
+              <if test="params != null and params != ''">
+                  AND  (
+                  deas.service_name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                  or
+                  deas.service_code LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                  )
+              </if>
+            GROUP BY
+              ID
+        ) temp
+        ORDER BY
+             temp.tempId DESC
+
+    </select>
 </mapper>

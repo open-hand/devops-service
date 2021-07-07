@@ -74,6 +74,11 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         return devopsBranchMapper.queryByAppAndBranchNameWithIssueIds(appServiceId, branchName);
     }
 
+    @Override
+    public DevopsBranchDTO baseQueryByAppAndBranchIdWithIssueId(Long appServiceId, Long branchId) {
+        return devopsBranchMapper.queryByAppAndBranchIdWithIssueId(appServiceId, branchId);
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -96,7 +101,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 .filter(i -> !oldIssueIds.contains(i))
                 .collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(issueIdsToAdd)) {
-            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueIdsToAdd);
+            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, branchId, issueIdsToAdd);
         }
 
         // 如果不仅是插入操作，那么还需要更新被删除的关联关系
@@ -195,8 +200,9 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             if ((resultCount = devopsBranchMapper.delete(deleteCondition)) != 1) {
                 throw new CommonException("Failed to delete branch due to result count " + resultCount);
             }
-            // 删除敏捷问题关联关系
-            devopsIssueRelService.deleteRelationByObjectAndObjectId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId());
+            // 在2021.7.5之前，删除分支会移除敏捷问题关联关系
+            // 在此之后会保留该关系，是为了在gitlab或界面上删除分支后，敏捷照样能够获得分支和问题的关联关系
+//            devopsIssueRelService.deleteRelationByObjectAndObjectId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId());
         } else {
             LOGGER.info("Branch {} is not found in app service with id {}", branchName, appServiceId);
         }

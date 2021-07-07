@@ -1,28 +1,34 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Set;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
+import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author zmf
@@ -37,29 +43,27 @@ public class DevopsHostController {
     @ApiOperation("创建主机")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping
-    public ResponseEntity<DevopsHostVO> createHost(
+    public ResponseEntity<String> createHost(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "创建主机相关参数")
             @RequestBody @Valid DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        DevopsHostVO resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
+        String resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
         return Results.success(resp);
     }
 
     @ApiOperation("更新主机")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping("/{host_id}")
-    public ResponseEntity<DevopsHostVO> updateHost(
+    public ResponseEntity<Void> updateHost(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "主机id", required = true)
             @Encrypt @PathVariable("host_id") Long hostId,
             @ApiParam(value = "更新主机相关参数")
             @RequestBody @Valid DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
-        DevopsHostVO resp = devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
-        devopsHostService.asyncBatchCorrectStatus(projectId, ArrayUtil.singleAsSet(resp.getId()), DetailsHelper.getUserDetails().getUserId());
-        return Results.success(resp);
+        devopsHostService.updateHost(projectId, hostId, devopsHostUpdateRequestVO);
+        return ResponseEntity.noContent().build();
     }
 
     @ApiOperation("查询单个主机")
@@ -81,16 +85,17 @@ public class DevopsHostController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @SortDefault.SortDefaults({
-                    @SortDefault(value = "jmeter_status", direction = Sort.Direction.DESC),
                     @SortDefault(value = "host_status", direction = Sort.Direction.DESC),
                     @SortDefault(value = "id", direction = Sort.Direction.DESC)})
             @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "是否带有更新者信息", required = false)
+            @ApiParam(value = "是否带有更新者信息")
             @RequestParam(value = "with_updater_info", required = false, defaultValue = "false")
                     Boolean withUpdaterInfo,
-            @ApiParam(value = "查询参数", required = false)
-            @RequestBody(required = false) String options) {
-        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, options));
+            @ApiParam(value = "搜索参数")
+            @RequestParam(value = "search_param", required = false) String searchParam,
+            @ApiParam(value = "主机状态")
+            @RequestParam(value = "host_status", required = false) String hostStatus) {
+        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, searchParam, hostStatus));
     }
 
     @ApiOperation("删除主机")
@@ -211,5 +216,153 @@ public class DevopsHostController {
                                                                        @RequestParam(value = "correctKey", required = false) String correctKey,
                                                                        @RequestParam(value = "search_param", required = false) String searchParam) {
         return ResponseEntity.ok(devopsHostService.pagingWithCheckingStatus(projectId, pageRequest, correctKey, searchParam));
+    }
+
+    @ApiOperation("获取java进程信息接口")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{host_id}/java_process")
+    public ResponseEntity<List<DevopsJavaInstanceVO>> listJavaProcessInfo(@ApiParam(value = "项目id", required = true)
+                                                                          @PathVariable("project_id") Long projectId,
+                                                                          @Encrypt
+                                                                          @ApiParam(value = "主机id", required = true)
+                                                                          @PathVariable("host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.listJavaProcessInfo(projectId, hostId));
+    }
+
+    @ApiOperation("获取docker进程信息接口")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{host_id}/docker_process")
+    public ResponseEntity<List<DevopsDockerInstanceVO>> listDockerProcessInfo(@ApiParam(value = "项目id", required = true)
+                                                                              @PathVariable("project_id") Long projectId,
+                                                                              @Encrypt
+                                                                              @ApiParam(value = "主机id", required = true)
+                                                                              @PathVariable("host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.listDockerProcessInfo(projectId, hostId));
+    }
+
+    @ApiOperation("删除java进程")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping("/{host_id}/java_process/{instance_id}")
+    public ResponseEntity<Void> deleteJavaProcess(@ApiParam(value = "项目id", required = true)
+                                                  @PathVariable("project_id") Long projectId,
+                                                  @ApiParam(value = "主机id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("host_id") Long hostId,
+                                                  @ApiParam(value = "java实例id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.deleteJavaProcess(projectId, hostId, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("删除docker进程")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping("/{host_id}/docker_process/{instance_id}")
+    public ResponseEntity<Void> deleteDockerProcess(@ApiParam(value = "项目id", required = true)
+                                                    @PathVariable("project_id") Long projectId,
+                                                    @ApiParam(value = "主机id", required = true)
+                                                    @Encrypt
+                                                    @PathVariable("host_id") Long hostId,
+                                                    @ApiParam(value = "docker实例id", required = true)
+                                                    @Encrypt
+                                                    @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.deleteDockerProcess(projectId, hostId, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("停止docker进程")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/{host_id}/docker_process/{instance_id}/stop")
+    public ResponseEntity<Void> stopDockerProcess(@ApiParam(value = "项目id", required = true)
+                                                  @PathVariable("project_id") Long projectId,
+                                                  @ApiParam(value = "主机id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("host_id") Long hostId,
+                                                  @ApiParam(value = "docker实例id", required = true)
+                                                  @Encrypt
+                                                  @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.stopDockerProcess(projectId, hostId, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("重启docker进程")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/{host_id}/docker_process/{instance_id}/restart")
+    public ResponseEntity<Void> restartDockerProcess(@ApiParam(value = "项目id", required = true)
+                                                     @PathVariable("project_id") Long projectId,
+                                                     @ApiParam(value = "主机id", required = true)
+                                                     @Encrypt
+                                                     @PathVariable("host_id") Long hostId,
+                                                     @ApiParam(value = "docker实例id", required = true)
+                                                     @Encrypt
+                                                     @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.restartDockerProcess(projectId, hostId, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("启动docker进程")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/{host_id}/docker_process/{instance_id}/start")
+    public ResponseEntity<Void> startDockerProcess(@ApiParam(value = "项目id", required = true)
+                                                   @PathVariable("project_id") Long projectId,
+                                                   @ApiParam(value = "主机id", required = true)
+                                                   @Encrypt
+                                                   @PathVariable("host_id") Long hostId,
+                                                   @ApiParam(value = "docker实例id", required = true)
+                                                   @Encrypt
+                                                   @PathVariable("instance_id") Long instanceId) {
+        devopsHostService.startDockerProcess(projectId, hostId, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation("获取主机资源使用率")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{host_id}/resource_usage_info")
+    public ResponseEntity<ResourceUsageInfoVO> queryResourceUsageInfo(@ApiParam(value = "项目id", required = true)
+                                                                      @PathVariable("project_id") Long projectId,
+                                                                      @ApiParam(value = "主机id", required = true)
+                                                                      @Encrypt
+                                                                      @PathVariable("host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.queryResourceUsageInfo(projectId, hostId));
+    }
+
+    @ApiOperation("下载创建主机脚本")
+    @Permission(permissionPublic = true)
+    @GetMapping("/{host_id}/download_file/{token}")
+    public ResponseEntity<String> downloadCreateHostFile(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable("host_id") Long hostId,
+            @ApiParam(value = "token", required = true)
+            @PathVariable("token") String token,
+            HttpServletResponse res) {
+        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token, res))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.host.insert"));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询连接主机的命令")
+    @GetMapping("/{host_id}/link_shell")
+    public ResponseEntity<String> queryShell(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "集群Id", required = true)
+            @PathVariable(value = "host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询删除主机的命令")
+    @GetMapping("/{host_id}/uninstall_shell")
+    public ResponseEntity<String> queryUninstallShell(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "集群Id", required = true)
+            @PathVariable(value = "host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.queryUninstallShell(projectId, hostId));
     }
 }

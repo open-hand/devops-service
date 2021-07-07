@@ -123,10 +123,52 @@
         </if>
     </select>
     <select id="queryResourceDetailsByInstanceId" resultType="io.choerodon.devops.infra.dto.PodResourceDetailsDTO">
-        SELECT derd.message,dep.is_ready
+        SELECT derd.message, dep.is_ready
         FROM devops_env_pod dep
-                 INNER JOIN devops_env_resource der ON (der.instance_id = dep.instance_id AND der.`name` = dep.`name` AND der.kind = 'pod')
+                 INNER JOIN devops_env_resource der
+                            ON (der.instance_id = dep.instance_id AND der.`name` = dep.`name` AND der.kind = 'pod')
                  INNER JOIN devops_env_resource_detail derd ON derd.id = der.resource_detail_id
         WHERE dep.instance_id = #{instanceId}
+    </select>
+    <select id="listPodByKind" resultType="io.choerodon.devops.infra.dto.DevopsEnvPodDTO">
+        SELECT
+        dp.id,
+        dp.ip,
+        dp.`name`,
+        dp.instance_id,
+        dp.namespace namespace,
+        dp.is_ready,
+        dp.`status`,
+        dp.creation_date,
+        de.id envId,
+        de.`code` envCode,
+        de.`name` envName,
+        dp.object_version_number
+        FROM
+        devops_env_pod dp
+        LEFT JOIN devops_env de ON de.id = dp.env_id
+        WHERE de.id = #{envId} and dp.owner_ref_kind = #{kind} and dp.owner_ref_name = #{name}
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
+                AND
+                dp.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.ip != null and searchParam.ip.length > 0'>
+                AND
+                dp.ip LIKE CONCAT(CONCAT('%', #{searchParam.ip, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.ready != null and searchParam.ready.length > 0'>
+                AND dp.is_ready = #{searchParam.ready}
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dp.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dp.ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dp.is_ready LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
+        </if>
     </select>
 </mapper>

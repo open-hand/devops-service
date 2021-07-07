@@ -1,10 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -12,11 +17,13 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.util.UUIDUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -30,14 +37,17 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.app.service.EncryptService;
+import io.choerodon.devops.api.vo.host.*;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.host.HostCommandEnum;
+import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
@@ -52,17 +62,24 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsHostServiceImpl implements DevopsHostService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
+
+    private static final String ERROR_HOST_NOT_FOUND = "error.host.not.found";
+    private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
     /**
      * 主机状态处于处理中的超时时长
      */
     private static final long OPERATING_TIMEOUT = 300L * 1000;
     private static final String CHECKING_HOST = "checking";
+    private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
+    private static final String HOST_UNINSTALL_SHELL = "ps aux|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
+    private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
-    /**
-     * 占用主机的过期时间, 超过这个时间, 主机会被释放
-     */
-    @Value("${devops.host.occupy.timeout-hours:24}")
-    private long hostOccupyTimeoutHours;
+    @Value("${services.gateway.url}")
+    private String apiHost;
+    @Value("${devops.host.binary-download-url}")
+    private String binaryDownloadUrl;
+    @Value("${agent.serviceUrl}")
+    private String agentServiceUrl;
 
     @Autowired
     private DevopsHostMapper devopsHostMapper;
@@ -74,16 +91,36 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private DevopsCdJobMapper devopsCdJobMapper;
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     EncryptService encryptService;
+    @Autowired
+    private DevopsHostCommandService devopsHostCommandService;
+    @Autowired
+    private KeySocketSendHelper webSocketHelper;
+    @Autowired
+    @Lazy
+    private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    @Lazy
+    private DevopsJavaInstanceService devopsJavaInstanceService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final Gson gson = new Gson();
 
+    static {
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
+            HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.host.sh");
+        }
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+    public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostCreateRequestVO.getUsername(), devopsHostCreateRequestVO.getPassword());
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
         devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
@@ -91,8 +128,26 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
 
-        devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
-        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
+        devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
+        devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
+        MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host");
+        return queryShell(projectId, devopsHostDTO.getId());
+    }
+
+    /**
+     * 获得agent安装命令
+     *
+     * @return agent安装命令
+     */
+    @Override
+    public String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO) {
+        Map<String, String> params = new HashMap<>();
+        // 渲染激活环境的命令参数
+        params.put("{{ TOKEN }}", devopsHostDTO.getToken());
+        params.put("{{ CONNECT }}", agentServiceUrl);
+        params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
+        params.put("{{ BINARY }}", binaryDownloadUrl);
+        return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -134,7 +189,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         Map<Long, String> map = new HashMap<>();
         hostIds.forEach(hostId -> map.put(hostId, CHECKING_HOST));
 
-        redisTemplate.opsForValue().set(correctKey, gson.toJson(map), 10, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(correctKey, gson.toJson(map), 10, TimeUnit.MINUTES);
         hostIds.forEach(hostId -> ApplicationContextHelper.getContext().getBean(DevopsHostService.class).correctStatus(projectId, correctKey, hostId));
         return correctKey;
     }
@@ -245,7 +300,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     private void updateHostStatus(String correctKey, Long hostId, String status) {
         String lockKey = "checkHost:status:lock:" + correctKey;
-        while (!Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
+        while (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "lock", 10, TimeUnit.MINUTES))) {
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
@@ -253,15 +308,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             }
         }
         try {
-            Map<Long, String> hostStatus = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+            Map<Long, String> hostStatus = gson.fromJson(stringRedisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
             }.getType());
             if (hostStatus == null) {
                 hostStatus = new HashMap<>();
             }
             hostStatus.put(hostId, status);
-            redisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(correctKey, gson.toJson(hostStatus), 10, TimeUnit.MINUTES);
         } finally {
-            redisTemplate.delete(lockKey);
+            stringRedisTemplate.delete(lockKey);
         }
 
     }
@@ -310,18 +365,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public DevopsHostVO updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
+    public void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         CommonExAssertUtil.assertNotNull(devopsHostDTO, "error.host.not.exist", hostId);
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostUpdateRequestVO.getUsername(), devopsHostUpdateRequestVO.getPassword());
 
         // 补充校验参数
         if (!devopsHostDTO.getName().equals(devopsHostUpdateRequestVO.getName())) {
             devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostUpdateRequestVO.getName());
-        }
-        boolean ipChanged = !devopsHostDTO.getHostIp().equals(devopsHostUpdateRequestVO.getHostIp());
-        if (ipChanged || !devopsHostDTO.getSshPort().equals(devopsHostUpdateRequestVO.getSshPort())) {
-            devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostUpdateRequestVO.getHostIp(), devopsHostUpdateRequestVO.getSshPort());
         }
 
         devopsHostDTO.setName(devopsHostUpdateRequestVO.getName());
@@ -330,12 +382,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setAuthType(devopsHostUpdateRequestVO.getAuthType());
         devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
         devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
-        devopsHostDTO.setPrivateIp(devopsHostUpdateRequestVO.getPrivateIp());
-        devopsHostDTO.setPrivatePort(devopsHostUpdateRequestVO.getPrivatePort());
 
-        devopsHostDTO.setHostStatus(DevopsHostStatus.OPERATING.getValue());
         MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
-        return queryHost(projectId, hostId);
     }
 
     @Override
@@ -345,9 +393,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return null;
         }
 
-        // 校验超时
-        checkTimeout(projectId, ArrayUtil.singleAsList(devopsHostDTO));
-
         return ConvertUtils.convertObject(devopsHostDTO, DevopsHostVO.class);
     }
 
@@ -355,17 +400,23 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void deleteHost(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        if (devopsHostDTO == null) {
-            return;
-        }
+
+        checkEnableHostDelete(hostId);
 
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
-        if (!checkHostDelete(projectId, hostId)) {
-            throw new CommonException("error.delete.host.already.referenced.in.pipeline");
-        }
 
         devopsHostMapper.deleteByPrimaryKey(hostId);
+    }
+
+    private void checkEnableHostDelete(Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        if (devopsHostDTO == null) {
+            throw new CommonException(ERROR_HOST_NOT_FOUND);
+        }
+        if (DevopsHostStatus.CONNECTED.getValue().equals(devopsHostDTO.getHostStatus())) {
+            throw new CommonException(ERROR_HOST_STATUS_IS_NOT_DISCONNECT);
+        }
     }
 
     @Override
@@ -428,21 +479,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options) {
+    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus) {
         // 解析查询参数
-        Map<String, Object> maps = TypeUtil.castMapParams(options);
-        Page<DevopsHostDTO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
-
-        // 校验超时
-        checkTimeout(projectId, page.getContent());
+        Page<DevopsHostVO> page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, searchParam, hostStatus));
 
         // 分页查询
-        Page<DevopsHostVO> result = ConvertUtils.convertPage(page, DevopsHostVO.class);
         if (withUpdaterInfo) {
             // 填充更新者用户信息
-            fillUpdaterInfo(result);
+            fillUpdaterInfo(page);
         }
-        return result;
+        return page;
     }
 
     /**
@@ -467,52 +513,22 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    /**
-     * 主机被占用的时长是否超时了
-     *
-     * @param lastUpdateDate 最后更新时间
-     * @return true表示超时
-     */
-    private boolean isHostOccupiedTimeout(Date lastUpdateDate) {
-        long current = System.currentTimeMillis();
-        long lastUpdate = lastUpdateDate.getTime();
-        long hourToMillis = 60L * 60L * 1000L;
-        // 最后更新时间加上过期时间的毫秒数是否大于现在的毫秒数
-        return (lastUpdate + hostOccupyTimeoutHours * hourToMillis) < current;
-    }
-
     @Override
     public boolean checkHostDelete(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         if (Objects.isNull(devopsHostDTO)) {
-            return Boolean.TRUE;
+            throw new CommonException(ERROR_HOST_NOT_FOUND);
         }
-        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
-        devopsCdJobDTO.setProjectId(projectId);
-        devopsCdJobDTO.setType(JobTypeEnum.CD_HOST.value());
-        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.select(devopsCdJobDTO);
-        if (CollectionUtils.isEmpty(devopsCdJobDTOS)) {
-            return Boolean.TRUE;
+        if (DevopsHostStatus.CONNECTED.getValue().equals(devopsHostDTO.getHostStatus())) {
+            return Boolean.FALSE;
         }
-        for (DevopsCdJobDTO cdJobDTO : devopsCdJobDTOS) {
-            CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(cdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
-            if (!HostDeployType.CUSTOMIZE_DEPLOY.getValue().equalsIgnoreCase(cdHostDeployConfigVO.getHostDeployType().trim())) {
-                continue;
-            }
-            HostConnectionVO hostConnectionVO = cdHostDeployConfigVO.getHostConnectionVO();
-            if (!HostSourceEnum.EXISTHOST.getValue().equalsIgnoreCase(hostConnectionVO.getHostSource().trim())) {
-                continue;
-            }
-            if (hostConnectionVO.getHostId().equals(hostId)) {
-                return Boolean.FALSE;
-            }
-        }
+
         return Boolean.TRUE;
     }
 
     @Override
     public CheckingProgressVO getCheckingProgress(Long projectId, String correctKey) {
-        Map<Long, String> hostStatusMap = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+        Map<Long, String> hostStatusMap = gson.fromJson(stringRedisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
         }.getType());
         if (hostStatusMap == null) {
             return null;
@@ -556,7 +572,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam) {
         Set<Long> hostIds = new HashSet<>();
         if (!StringUtils.isAllEmpty(correctKey)) {
-            Map<Long, String> hostStatusMap = gson.fromJson(redisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
+            Map<Long, String> hostStatusMap = gson.fromJson(stringRedisTemplate.opsForValue().get(correctKey), new TypeToken<Map<Long, String>>() {
             }.getType());
             if (!CollectionUtils.isEmpty(hostStatusMap)) {
                 hostIds = hostStatusMap.keySet();
@@ -581,6 +597,217 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             });
         }
         return page;
+    }
+
+    @Override
+    public DevopsHostDTO baseQuery(Long hostId) {
+        return devopsHostMapper.selectByPrimaryKey(hostId);
+    }
+
+    @Override
+    @Transactional
+    public void baseUpdateHostStatus(Long hostId, DevopsHostStatus status) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        // 更新主机连接状态
+        if (devopsHostDTO != null) {
+            devopsHostDTO.setHostStatus(status.getValue());
+        }
+        devopsHostMapper.updateByPrimaryKeySelective(devopsHostDTO);
+    }
+
+    @Override
+    public List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId) {
+        List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(hostId);
+        if (CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
+            return new ArrayList<>();
+        }
+
+        List<DevopsJavaInstanceVO> devopsJavaInstanceVOS = ConvertUtils.convertList(devopsJavaInstanceDTOList, DevopsJavaInstanceVO.class);
+
+        UserDTOFillUtil.fillUserInfo(devopsJavaInstanceVOS, "createdBy", "deployer");
+        return devopsJavaInstanceVOS;
+    }
+
+    @Override
+    public List<DevopsDockerInstanceVO> listDockerProcessInfo(Long projectId, Long hostId) {
+        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(hostId);
+        if (CollectionUtils.isEmpty(devopsDockerInstanceDTOList)) {
+            return new ArrayList<>();
+        }
+        List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOList, DevopsDockerInstanceVO.class);
+
+        devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
+            if (StringUtils.isNoneBlank(devopsDockerInstanceVO.getPorts())) {
+                devopsDockerInstanceVO.setPortMappingList(JsonHelper.unmarshalByJackson(devopsDockerInstanceVO.getPorts(), new TypeReference<List<DockerPortMapping>>() {
+                }));
+            }
+
+        });
+
+        UserDTOFillUtil.fillUserInfo(devopsDockerInstanceVOS, "createdBy", "deployer");
+        return devopsDockerInstanceVOS;
+    }
+
+    @Override
+    @Transactional
+    public void deleteJavaProcess(Long projectId, Long hostId, Long instanceId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+        JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
+        javaProcessInfoVO.setInstanceId(instanceId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void deleteDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.REMOVE_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.REMOVE_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setInstanceId(instanceId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void stopDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.STOP_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.STOP_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setInstanceId(instanceId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void restartDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.RESTART_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.RESTART_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setInstanceId(instanceId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional
+    public void startDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.START_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(instanceId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.START_DOCKER.value());
+        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setInstanceId(instanceId);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    public String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res) {
+        DevopsHostDTO devopsHostDTO = new DevopsHostDTO();
+        devopsHostDTO.setId(hostId);
+        devopsHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostDTO);
+        String response = null;
+        if (devopsHostDTO.getToken().equals(token)) {
+            response = getInstallString(projectId, devopsHostDTO);
+        }
+        return response;
+    }
+
+    @Override
+    public ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId) {
+        String resourceInfo = stringRedisTemplate.opsForValue().get(String.format(DevopsHostConstants.HOST_RESOURCE_INFO_KEY, hostId));
+        if (StringUtils.isEmpty(resourceInfo)) {
+            return new ResourceUsageInfoVO();
+        }
+        return JsonHelper.unmarshalByJackson(resourceInfo, ResourceUsageInfoVO.class);
+    }
+
+    @Override
+    public String queryShell(Long projectId, Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken());
+    }
+
+    @Override
+    public String queryUninstallShell(Long projectId, Long hostId) {
+        return HOST_UNINSTALL_SHELL;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

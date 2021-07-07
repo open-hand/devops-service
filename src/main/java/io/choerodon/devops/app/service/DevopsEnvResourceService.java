@@ -69,4 +69,12 @@ public interface DevopsEnvResourceService {
     List<DevopsEnvResourceDTO> listEnvResourceByOptions(Long envId, String type, List<String> names);
 
     List<PodEventVO> listPodEventBycommandId(Long commandId);
+
+    String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType pod);
+
+    Object queryDetailsByKindAndName(Long envId, String kind, String name);
+
+    String queryYamlById(Long envId, Long workLoadId, String type);
+
+    String queryDetailsYamlByKindAndName(Long envId, String kind, String name);
 }

@@ -32,6 +32,23 @@
         </foreach>
     </select>
 
+    <select id="listObjectIdsByIssueIdAndObjectType" resultType="java.lang.Long">
+        SELECT dir.object_id
+        FROM devops_service.devops_issue_rel dir
+        WHERE dir.issue_id = #{issueId}
+          AND dir.object = #{object}
+    </select>
+
+    <select id="listObjectIdsByIssueIdsAndObjectType" resultType="io.choerodon.devops.infra.dto.DevopsIssueRelDTO">
+        SELECT issue_id, object_id
+        FROM devops_issue_rel dir
+                WHERE dir.object = #{object}
+                  AND dir.issue_id IN
+        <foreach collection="issueIds" item="issueId" open="(" close=")" separator=",">
+            #{issueId}
+        </foreach>
+    </select>
+
     <select id="count" resultType="java.lang.Integer">
         SELECT COUNT(*)
         FROM devops_issue_rel;

@@ -1,13 +1,18 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
+import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author zmf
@@ -21,7 +26,16 @@ public interface DevopsHostService {
      * @param devopsHostCreateRequestVO 主机相关数据
      * @return 创建后的主机
      */
-    DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO);
+    String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO);
+
+    /**
+     * 获得agent安装命令
+     *
+     * @param projectId         项目id
+     * @param devopsHostDTO     主机配置dto
+     * @return 安装命令
+     */
+    String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO);
 
     /**
      * 批量设置主机状态为处理中
@@ -81,11 +95,11 @@ public interface DevopsHostService {
      * @param devopsHostUpdateRequestVO 主机更新相关数据
      * @return 更新后的主机
      */
-    DevopsHostVO updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO);
+    void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO);
 
     /**
      * 查询主机
-     *
+     * @deprecated
      * @param projectId 项目id
      * @param hostId    主机id
      */
@@ -101,7 +115,7 @@ public interface DevopsHostService {
 
     /**
      * 测试主机连接情况
-     *
+     * @deprecated
      * @param projectId                  项目id
      * @param devopsHostConnectionTestVO 主机连接信息
      * @return 连接结果
@@ -110,6 +124,7 @@ public interface DevopsHostService {
 
     /**
      * 测试多个主机连接情况
+     * @deprecated
      *
      * @param projectId 项目id
      * @param hostIds   主机ids
@@ -119,7 +134,7 @@ public interface DevopsHostService {
 
     /**
      * 通过id测试部署主机连接情况
-     *
+     * @deprecated
      * @param projectId 项目id
      * @param hostId    主机id
      * @return true表示连接成功
@@ -151,10 +166,11 @@ public interface DevopsHostService {
      * @param projectId       项目id
      * @param pageRequest     分页参数
      * @param withUpdaterInfo 是否需要更新者信息
-     * @param options         查询参数
+     * @param searchParam         查询参数
+     * @param hostStatus
      * @return 一页主机数据
      */
-    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String options);
+    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus);
 
     /**
      * 能否删除主机
@@ -168,4 +184,90 @@ public interface DevopsHostService {
     CheckingProgressVO getCheckingProgress(Long projectId, String correctKey);
 
     Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam);
+
+    /**
+     * 查询主机信息
+     * @param hostId 主机id
+     * @return
+     */
+    DevopsHostDTO baseQuery(Long hostId);
+
+
+    /**
+     * 更新主机状态
+     * @param hostId
+     * @param status
+     */
+    void baseUpdateHostStatus(Long hostId, DevopsHostStatus status);
+
+    /**
+     * 查询主机下所有java进程信息
+     * @param projectId
+     * @param hostId
+     * @return 集合中的object对象为JavaProcessInfoVO
+     */
+    List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId);
+
+    /**
+     * 查询docker进程信息接口
+     * @param projectId
+     * @param hostId
+     * @return 集合中的object对象为DockerProcessInfoVO
+     */
+    List<DevopsDockerInstanceVO> listDockerProcessInfo(Long projectId, Long hostId);
+
+    /**
+     * 删除java进程
+     * @param projectId
+     * @param hostId
+     * @param instanceId
+     */
+    void deleteJavaProcess(Long projectId, Long hostId, Long instanceId);
+
+    /**
+     * 删除docker进程
+     * @param projectId
+     * @param hostId
+     * @param instanceId
+     */
+    void deleteDockerProcess(Long projectId, Long hostId, Long instanceId);
+
+    /**
+     * 停止docker进程
+     * @param projectId
+     * @param hostId
+     * @param instanceId
+     */
+    void stopDockerProcess(Long projectId, Long hostId, Long instanceId);
+
+    /**
+     * 重启docker进程
+     * @param projectId
+     * @param hostId
+     * @param instanceId
+     */
+    void restartDockerProcess(Long projectId, Long hostId, Long instanceId);
+
+    /**
+     * 启动docker进程
+     * @param projectId
+     * @param hostId
+     * @param instanceId
+     */
+    void startDockerProcess(Long projectId, Long hostId, Long instanceId);
+
+    /**
+     * 下载创建主机脚本
+     * @param projectId
+     * @param hostId
+     * @param token
+     * @param res
+     */
+    String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
+
+    ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId);
+
+    String queryShell(Long projectId, Long hostId);
+
+    String queryUninstallShell(Long projectId, Long hostId);
 }

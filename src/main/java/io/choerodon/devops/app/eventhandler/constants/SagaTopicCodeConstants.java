@@ -306,7 +306,6 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_MERGE_REQUEST_PASS = "devops-merge-request-pass";
 
-
     /**
      * iam添加项目类型
      */

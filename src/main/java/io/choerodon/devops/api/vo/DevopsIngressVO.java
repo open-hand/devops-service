@@ -40,6 +40,8 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
     private Map<String, String> annotations;
     @ApiModelProperty("实例名称数组")
     private List<String> instances;
+    @ApiModelProperty("如果ingress由helm实例产生，此字段为helm实例id")
+    private Long instanceId;
 
     public DevopsIngressVO() {
         this.pathList = new ArrayList<>();
@@ -49,7 +51,7 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
      * 构造函数
      */
     public DevopsIngressVO(Long id, String domain, String name,
-                           Long envId, Boolean isUsable, String envName) {
+                           Long envId, Boolean isUsable, String envName, Long instanceId) {
         this.envId = envId;
         this.id = id;
         this.name = name;
@@ -57,6 +59,7 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
         this.pathList = new ArrayList<>();
         this.isUsable = isUsable;
         this.envName = envName;
+        this.instanceId = instanceId;
     }
 
     public Long getId() {
@@ -226,6 +229,14 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
                 && Objects.equals(envId, that.envId)
                 && Objects.equals(pathList, that.pathList)
                 && Objects.equals(certId, that.certId);
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 
     @Override

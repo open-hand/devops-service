@@ -223,11 +223,12 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count) {
+    public void operatePodCount(String kind, String name, String namespace, Long clusterId, Long count) {
         AgentMsgVO msg = new AgentMsgVO();
         OperationPodPayload operationPodPayload = new OperationPodPayload();
         operationPodPayload.setCount(count);
-        operationPodPayload.setDeploymentName(deploymentName);
+        operationPodPayload.setName(name);
+        operationPodPayload.setKind(kind);
         operationPodPayload.setNamespace(namespace);
         msg.setPayload(JsonHelper.marshalByJackson(operationPodPayload));
         msg.setType(OPERATE_POD_COUNT);

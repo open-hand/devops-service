@@ -7,6 +7,17 @@ package io.choerodon.devops.infra.enums;
  * @since 2020/9/15
  */
 public enum DevopsHostStatus {
+
+    /**
+     * 未连接
+     */
+    DISCONNECT("disconnect"),
+
+    /**
+     * 已连接
+     */
+    CONNECTED("connected"),
+
     /**
      * 成功
      */
