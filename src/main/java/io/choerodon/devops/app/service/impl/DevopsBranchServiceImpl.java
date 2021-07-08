@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -244,5 +241,14 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             return devopsBranchMapper.listByCommitIds(commitIds);
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<Long> listDeletedBranchIds(Set<Long> branchIds) {
+        if (CollectionUtils.isEmpty(branchIds)){
+            return new ArrayList<>();
+        }
+        List<Long> existBranchIds = devopsBranchMapper.listExistBranchIds(branchIds);
+       return  branchIds.stream().filter(id->!existBranchIds.contains(id)).collect(Collectors.toList());
     }
 }

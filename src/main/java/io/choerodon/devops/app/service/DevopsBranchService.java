@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
@@ -37,4 +38,6 @@ public interface DevopsBranchService {
     void fixIssueId();
 
     List<DevopsBranchDTO> listByCommitIs(List<Long> commitIds);
+
+    List<Long> listDeletedBranchIds(Set<Long> collect);
 }
