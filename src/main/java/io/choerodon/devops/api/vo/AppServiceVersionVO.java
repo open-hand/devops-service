@@ -17,9 +17,18 @@ public class AppServiceVersionVO {
     private Date creationDate;
     private String repoType;
     private Boolean deleteFlag = true;
+    private Date lastUpdateDate;
 
     @ApiModelProperty("docker镜像版本")
     private String image;
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
 
     public Long getId() {
         return id;
