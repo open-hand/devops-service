@@ -99,6 +99,10 @@ public class IssueServiceImpl implements IssueService {
                 List<String> branchNames = appServiceIdDevopsBranchNameMap.get(d.getAppServiceId());
                 if (CollectionUtils.isEmpty(branchNames) || !branchNames.contains(d.getBranchName())) {
                     devopsBranchDTOS.add(d);
+                    if (branchNames == null) {
+                        branchNames = new ArrayList<>();
+                        appServiceIdDevopsBranchNameMap.put(d.getAppServiceId(), branchNames);
+                    }
                     branchNames.add(d.getBranchName());
                 }
             }
@@ -114,7 +118,7 @@ public class IssueServiceImpl implements IssueService {
             List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService.baseListByAppIdAndBranch(devopsBranchDO.getAppServiceId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
 
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
-                    !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
+                            !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
             DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);
