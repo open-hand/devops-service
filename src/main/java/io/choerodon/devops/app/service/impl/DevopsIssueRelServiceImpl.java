@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
@@ -154,5 +154,13 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
             }
             pageNumber++;
         } while (pageNumber < totalPage);
+    }
+
+    @Override
+    public List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds) {
+        if (CollectionUtils.isEmpty(commitRelatedBranchIds)) {
+            return new ArrayList<>();
+        }
+        return devopsIssueRelMapper.listRelatedBranchIds(commitRelatedBranchIds);
     }
 }

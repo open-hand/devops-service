@@ -22,4 +22,6 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
     Integer count();
 
     void batchUpdate(@Param("dtosToUpdate") List<DevopsIssueRelDTO> dtosToUpdate);
+
+    List<Long> listRelatedBranchIds(@Param("commitRelatedBranchIds") Set<Long> commitRelatedBranchIds);
 }

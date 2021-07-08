@@ -66,4 +66,13 @@
             #{dto.id}
         </foreach>
     </update>
+
+    <select id="listRelatedBranchIds" resultType="java.lang.Long">
+        SELECT id FROM devops_issue_rel dir
+        WHERE dir.object='branch'
+        AND dir.object_id IN
+        <foreach collection="commitRelatedBranchIds" item="branchId" open="(" close=")" separator=",">
+            #{branchId}
+        </foreach>
+    </select>
 </mapper>
