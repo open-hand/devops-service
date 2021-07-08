@@ -177,7 +177,6 @@ public class CiController {
             @RequestParam(value = "end_date") Date endDate,
             @ApiParam(value = "json文件", required = false)
             @RequestParam MultipartFile file) {
-        logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>到达CiController>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         devopsImageScanResultService.resolveImageScanJson(gitlabPipelineId, jobId, startDate, endDate, file);
         return ResponseEntity.ok().build();
     }
