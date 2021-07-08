@@ -68,6 +68,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private AppServiceMapper appServiceMapper;
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
+    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -81,7 +82,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   AppServiceMapper appServiceMapper,
                                   CheckGitlabAccessLevelService checkGitlabAccessLevelService,
                                   BaseServiceClientOperator baseServiceClientOperator,
-                                  DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
+                                  DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
+                                  DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
@@ -93,6 +95,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.appServiceMapper = appServiceMapper;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
+        this.devopsCiJobRecordMapper = devopsCiJobRecordMapper;
     }
 
     @Override
@@ -253,6 +256,22 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             }
         }
         return sonarInfoVO;
+    }
+
+    @Override
+    @Transactional
+    public void playJob(Long projectId, Long gitlabProjectId, Long jobId) {
+        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+
+        JobDTO jobDTO = gitlabServiceClientOperator.playJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+
+        devopsCiJobRecordDTO.setStatus(jobDTO.getStatus().toString());
+
+        devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
     }
 
     private SonarInfoVO getCiSonar(Long appServiceId) {

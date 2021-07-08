@@ -1121,6 +1121,10 @@ public class GitlabServiceClientOperator {
         return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId).getBody();
     }
 
+    public JobDTO playJob(int gitlabProjectId, int jobId, int gitlabUserId) {
+        return gitlabServiceClient.playJob(gitlabProjectId, jobId, gitlabUserId).getBody();
+    }
+
     public BranchDTO getBranch(int gitlabProjectId, String ref) {
         return gitlabServiceClient.queryBranchByName(gitlabProjectId, ref).getBody();
     }

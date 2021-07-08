@@ -75,6 +75,17 @@ public class DevopsCiJobController {
         return ResponseEntity.noContent().build();
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "执行 manul状态 job")
+    @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/play")
+    public ResponseEntity<Void> playJob(
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
+            @PathVariable(value = "job_id") Long jobId) {
+        devopsCiJobService.playJob(projectId, gitlabProjectId, jobId);
+        return ResponseEntity.noContent().build();
+    }
+
     @ApiOperation("获取job指定sequence的step的maven构建的settings文件内容")
     @Permission(permissionPublic = true)
     @GetMapping("/maven_settings")
