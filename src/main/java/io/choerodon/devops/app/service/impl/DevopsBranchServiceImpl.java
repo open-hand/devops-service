@@ -18,6 +18,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
@@ -79,7 +80,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateBranchIssue(DevopsBranchDTO devopsBranchDTO, boolean onlyInsert) {
+    public void updateBranchIssue(Long projectId, AppServiceDTO appServiceDTO, DevopsBranchDTO devopsBranchDTO, boolean onlyInsert) {
         DevopsBranchDTO oldDevopsBranchDTO = devopsBranchMapper
                 .queryByAppAndBranchNameWithIssueIds(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName());
 
@@ -98,7 +99,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 .filter(i -> !oldIssueIds.contains(i))
                 .collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(issueIdsToAdd)) {
-            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, branchId, issueIdsToAdd);
+            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, branchId, projectId, appServiceDTO.getCode(), issueIdsToAdd);
         }
 
         // 如果不仅是插入操作，那么还需要更新被删除的关联关系

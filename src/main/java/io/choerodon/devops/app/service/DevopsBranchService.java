@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -19,7 +20,7 @@ public interface DevopsBranchService {
 
     DevopsBranchDTO baseQueryByAppAndBranchIdWithIssueId(Long appServiceId, Long branchId);
 
-    void updateBranchIssue(DevopsBranchDTO devopsBranchDTO, boolean onlyInsert);
+    void updateBranchIssue(Long projectId, AppServiceDTO appServiceDTO, DevopsBranchDTO devopsBranchDTO, boolean onlyInsert);
 
     void baseUpdateBranchLastCommit(DevopsBranchDTO devopsBranchDTO);
 

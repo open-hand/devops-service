@@ -249,7 +249,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
         Long devopsBranchId = devopsBranchDTO.getId();
         if (devopsBranchVO.getIssueId() != null) {
-            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchId, devopsBranchId, devopsBranchVO.getIssueId());
+            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchId, devopsBranchId, projectId, appServiceDTO.getCode(), devopsBranchVO.getIssueId());
         }
 
 
@@ -443,8 +443,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO, boolean onyInsert) {
-        permissionHelper.checkAppServiceBelongToProject(projectId, devopsBranchUpdateVO.getAppServiceId());
-        devopsBranchService.updateBranchIssue(ConvertUtils.convertObject(devopsBranchUpdateVO, DevopsBranchDTO.class), onyInsert);
+        AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, devopsBranchUpdateVO.getAppServiceId());
+        devopsBranchService.updateBranchIssue(projectId, appServiceDTO, ConvertUtils.convertObject(devopsBranchUpdateVO, DevopsBranchDTO.class), onyInsert);
     }
 
     @Override
@@ -1189,10 +1189,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
         devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueId);
 
-        Set<Long> remainBranchIds = devopsIssueRelService.listObjectIdsByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
+        Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
+        List<DevopsBranchVO> devopsBranchVOS = remainBranchIssueRelation.stream().map(r -> {
+            DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
+            devopsBranchVO.setAppServiceCode(r.getAppServiceCode());
+            devopsBranchVO.setProjectId(r.getProjectId());
+            return devopsBranchVO;
+        }).collect(Collectors.toList());
         IssueIdAndBranchIdsVO issueIdAndBranchIdsVO = new IssueIdAndBranchIdsVO();
         issueIdAndBranchIdsVO.setIssueId(issueId);
-        issueIdAndBranchIdsVO.setBranchIds(new ArrayList<>(remainBranchIds));
+        issueIdAndBranchIdsVO.setBranches(new ArrayList<>(devopsBranchVOS));
 
         agileServiceClientOperator.deleteTagByBranch(projectId, issueIdAndBranchIdsVO);
     }
