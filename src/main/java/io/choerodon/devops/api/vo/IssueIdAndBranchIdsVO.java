@@ -4,7 +4,7 @@ import java.util.List;
 
 public class IssueIdAndBranchIdsVO {
     private Long issueId;
-    private List<Long> branchIds;
+    private List<DevopsBranchVO> branches;
 
     public Long getIssueId() {
         return issueId;
@@ -14,11 +14,11 @@ public class IssueIdAndBranchIdsVO {
         this.issueId = issueId;
     }
 
-    public List<Long> getBranchIds() {
-        return branchIds;
+    public List<DevopsBranchVO> getBranches() {
+        return branches;
     }
 
-    public void setBranchIds(List<Long> branchIds) {
-        this.branchIds = branchIds;
+    public void setBranches(List<DevopsBranchVO> branches) {
+        this.branches = branches;
     }
 }

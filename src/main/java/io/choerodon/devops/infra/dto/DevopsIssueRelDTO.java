@@ -31,6 +31,12 @@ public class DevopsIssueRelDTO extends AuditDomain {
     @ApiModelProperty("该记录关联的branchId")
     private Long branchId;
 
+    @ApiModelProperty("关联应用服务code")
+    private String appServiceCode;
+
+    @ApiModelProperty("关联项目id")
+    private Long projectId;
+
     public Long getId() {
         return id;
     }
@@ -69,5 +75,21 @@ public class DevopsIssueRelDTO extends AuditDomain {
 
     public void setBranchId(Long branchId) {
         this.branchId = branchId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 }

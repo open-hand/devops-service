@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
@@ -38,13 +39,15 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addRelation(String object, Long objectId, Long branchId, List<Long> issueIds) {
+    public void addRelation(String object, Long objectId, Long branchId, Long projectId, String appServiceCode, List<Long> issueIds) {
         List<DevopsIssueRelDTO> devopsIssueRelDTOList = issueIds
                 .stream()
                 .map(i -> {
                     DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
                     devopsIssueRelDTO.setIssueId(i);
                     devopsIssueRelDTO.setObject(object);
+                    devopsIssueRelDTO.setProjectId(projectId);
+                    devopsIssueRelDTO.setAppServiceCode(appServiceCode);
                     devopsIssueRelDTO.setObjectId(objectId);
                     devopsIssueRelDTO.setBranchId(branchId);
                     return devopsIssueRelDTO;
@@ -56,12 +59,14 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void addRelation(String object, Long objectId, Long branchId, Long issueId) {
+    public void addRelation(String object, Long objectId, Long branchId, Long projectId, String appServiceCode, Long issueId) {
         DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
         devopsIssueRelDTO.setIssueId(issueId);
         devopsIssueRelDTO.setObject(object);
         devopsIssueRelDTO.setObjectId(objectId);
         devopsIssueRelDTO.setBranchId(branchId);
+        devopsIssueRelDTO.setProjectId(projectId);
+        devopsIssueRelDTO.setAppServiceCode(appServiceCode);
         devopsIssueRelMapper.insert(devopsIssueRelDTO);
     }
 
@@ -94,8 +99,8 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public Set<Long> listObjectIdsByIssueIdAndObjectType(String object, Long issueId) {
-        return devopsIssueRelMapper.listObjectIdsByIssueIdAndObjectType(object, issueId);
+    public Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId) {
+        return devopsIssueRelMapper.listRelationByIssueIdAndObjectType(object, issueId);
     }
 
     @Override
@@ -107,11 +112,16 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
         List<DevopsIssueRelDTO> devopsIssueRelDTOList = devopsIssueRelMapper.listObjectIdsByIssueIdsAndObjectType(object, issueIds);
         devopsIssueRelDTOList
                 .stream()
-                .collect(Collectors.groupingBy(DevopsIssueRelDTO::getIssueId, Collectors.mapping(DevopsIssueRelDTO::getObjectId, Collectors.toList())))
+                .collect(Collectors.groupingBy(DevopsIssueRelDTO::getIssueId, Collectors.mapping(r -> {
+                    DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
+                    devopsBranchVO.setProjectId(r.getProjectId());
+                    devopsBranchVO.setAppServiceCode(r.getAppServiceCode());
+                    return devopsBranchVO;
+                }, Collectors.toList())))
                 .forEach((k, v) -> {
                     IssueIdAndBranchIdsVO issueIdAndBranchIdsVO = new IssueIdAndBranchIdsVO();
                     issueIdAndBranchIdsVO.setIssueId(k);
-                    issueIdAndBranchIdsVO.setBranchIds(v);
+                    issueIdAndBranchIdsVO.setBranches(v);
                     result.add(issueIdAndBranchIdsVO);
                 });
         return result;

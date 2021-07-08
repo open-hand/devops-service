@@ -5,11 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
+import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 
 public interface DevopsIssueRelService {
-    void addRelation(String object, Long objectId, Long branchId, List<Long> issueIds);
+    void addRelation(String object, Long objectId, Long branchId, Long projectId, String appServiceCode, List<Long> issueIds);
 
-    void addRelation(String object, Long objectId, Long branchId, Long issueId);
+    void addRelation(String object, Long objectId, Long branchId, Long projectId, String appServiceCode, Long issueId);
 
     void deleteRelationByObjectAndObjectId(String object, Long objectId);
 
@@ -31,7 +32,7 @@ public interface DevopsIssueRelService {
      * @param issueId
      * @return
      */
-    Set<Long> listObjectIdsByIssueIdAndObjectType(String object, Long issueId);
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId);
 
     /**
      * 列出关联了敏捷问题的commitId或branchId

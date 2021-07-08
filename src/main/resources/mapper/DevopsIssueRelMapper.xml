@@ -32,15 +32,15 @@
         </foreach>
     </select>
 
-    <select id="listObjectIdsByIssueIdAndObjectType" resultType="java.lang.Long">
-        SELECT dir.object_id
-        FROM devops_service.devops_issue_rel dir
+    <select id="listRelationByIssueIdAndObjectType" resultType="io.choerodon.devops.infra.dto.DevopsIssueRelDTO">
+        SELECT dir.object_id, dir.project_id, dir.app_service_code
+        FROM devops_issue_rel dir
         WHERE dir.issue_id = #{issueId}
           AND dir.object = #{object}
     </select>
 
     <select id="listObjectIdsByIssueIdsAndObjectType" resultType="io.choerodon.devops.infra.dto.DevopsIssueRelDTO">
-        SELECT issue_id, object_id
+        SELECT dir.issue_id, dir.object_id, dir.app_service_code, dir.project_id
         FROM devops_issue_rel dir
                 WHERE dir.object = #{object}
                   AND dir.issue_id IN
@@ -56,10 +56,9 @@
 
     <update id="batchUpdate">
         UPDATE devops_issue_rel
-        SET branch_id = CASE id
+                SET branch_id = CASE id
         <foreach collection="dtosToUpdate" item="dto" close="end">
             WHEN #{dto.id} then #{dto.branchId}
-
         </foreach>
         WHERE id IN
         <foreach collection="dtosToUpdate" item="dto" open="(" close=")" separator=",">

@@ -12,6 +12,9 @@ public class DevopsBranchVO {
     @Encrypt
     private Long appServiceId;
 
+    @ApiModelProperty("应用服务code")
+    private String appServiceCode;
+
     @ApiModelProperty("应用服务名称")
     private String appServiceName;
 
@@ -140,5 +143,13 @@ public class DevopsBranchVO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 }
