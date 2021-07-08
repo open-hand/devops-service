@@ -93,9 +93,14 @@ public class IssueServiceImpl implements IssueService {
         // 这一步操作是根据commit查出所有分支信息
         List<DevopsBranchDTO> devopsDeletedBranchDTOS = devopsGitlabCommitService.baseListDevopsBranchesByIssueId(issueId);
 
+        Set<Long> collect = devopsDeletedBranchDTOS.stream().map(DevopsBranchDTO::getId).collect(Collectors.toSet());
+
+        List<Long> deletedBranchIds = devopsBranchService.listDeletedBranchIds(collect);
+
+
         // 这一步操作将已删除的分支信息也添加到devopsBranchDTOS中
         devopsDeletedBranchDTOS.forEach(d -> {
-            if (d.getId() != null) {
+            if (d.getId() != null && deletedBranchIds.contains(d.getId())) {
                 List<String> branchNames = appServiceIdDevopsBranchNameMap.get(d.getAppServiceId());
                 if (CollectionUtils.isEmpty(branchNames) || !branchNames.contains(d.getBranchName())) {
                     devopsBranchDTOS.add(d);

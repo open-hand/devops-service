@@ -152,4 +152,12 @@
             #{commitId}
         </foreach>
     </select>
+
+    <select id="listExistBranchIds" resultType="java.lang.Long">
+        SELECT id FROM devops_branch db
+        WHERE db.id IN
+        <foreach collection="branchIds" item="branchId" open="(" close=")" separator=",">
+            #{branchId}
+        </foreach>
+    </select>
 </mapper>
