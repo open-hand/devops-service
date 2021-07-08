@@ -48,6 +48,8 @@ public class IssueServiceImpl implements IssueService {
     private AppServiceMapper appServiceMapper;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private DevopsIssueRelService devopsIssueRelService;
 
 
     @Override
@@ -91,16 +93,20 @@ public class IssueServiceImpl implements IssueService {
         Map<Long, List<String>> appServiceIdDevopsBranchNameMap = devopsBranchDTOS.stream().collect(Collectors.groupingBy(DevopsBranchDTO::getAppServiceId, Collectors.mapping(DevopsBranchDTO::getBranchName, Collectors.toList())));
 
         // 这一步操作是根据commit查出所有分支信息
-        List<DevopsBranchDTO> devopsDeletedBranchDTOS = devopsGitlabCommitService.baseListDevopsBranchesByIssueId(issueId);
+        List<DevopsBranchDTO> devopsCommitRelatedBranchDTOS = devopsGitlabCommitService.baseListDevopsBranchesByIssueId(issueId);
 
-        Set<Long> collect = devopsDeletedBranchDTOS.stream().map(DevopsBranchDTO::getId).collect(Collectors.toSet());
+        Set<Long> commitRelatedBranchIds = devopsCommitRelatedBranchDTOS.stream().map(DevopsBranchDTO::getId).collect(Collectors.toSet());
 
-        List<Long> deletedBranchIds = devopsBranchService.listDeletedBranchIds(collect);
+        // 已经被删除的branchId
+        List<Long> deletedBranchIds = devopsBranchService.listDeletedBranchIds(commitRelatedBranchIds);
 
+        // 仍与issue存在关联关系的branchId
+        List<Long> relatedBranchIds = devopsIssueRelService.listRelatedBranchIds(commitRelatedBranchIds);
 
         // 这一步操作将已删除的分支信息也添加到devopsBranchDTOS中
-        devopsDeletedBranchDTOS.forEach(d -> {
-            if (d.getId() != null && deletedBranchIds.contains(d.getId())) {
+        devopsCommitRelatedBranchDTOS.forEach(d -> {
+            // 通过commit查出来的分支，要满足分支已被删除但是分支与问题关联关系仍存在
+            if (d.getId() != null && deletedBranchIds.contains(d.getId()) && relatedBranchIds.contains(d.getId())) {
                 List<String> branchNames = appServiceIdDevopsBranchNameMap.get(d.getAppServiceId());
                 if (CollectionUtils.isEmpty(branchNames) || !branchNames.contains(d.getBranchName())) {
                     devopsBranchDTOS.add(d);

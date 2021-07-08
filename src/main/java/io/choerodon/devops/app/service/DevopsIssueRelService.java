@@ -42,4 +42,6 @@ public interface DevopsIssueRelService {
     List<IssueIdAndBranchIdsVO> listObjectIdsByIssueIdsAndObjectType(String object, Set<Long> issueIds);
 
     void fixBranchId();
+
+    List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds);
 }
