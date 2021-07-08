@@ -42,4 +42,6 @@ public interface DevopsBranchMapper extends BaseMapper<DevopsBranchDTO> {
     DevopsBranchDTO queryByAppAndBranchNameWithIssueIds(@Param("appServiceId") Long appServiceId, @Param("branchName") String branchName);
 
     List<DevopsBranchDTO> listByCommitIds(@Param("commitIds") List<Long> commitIds);
+
+    List<DevopsBranchDTO> listByIds(@Param("branchIds") List<Long> branchIds);
 }

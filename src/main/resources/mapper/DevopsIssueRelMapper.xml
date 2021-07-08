@@ -39,12 +39,23 @@
 
     <update id="batchUpdate">
         UPDATE devops_issue_rel
-        SET branch_id = CASE id
-        <foreach collection="dtosToUpdate" item="dto" close="end">
+                SET branch_id = CASE id
+        <foreach collection="dtosToUpdate" item="dto">
             WHEN #{dto.id} then #{dto.branchId}
-
         </foreach>
-        WHERE id IN
+        END,
+                project_id =CASE id
+
+        <foreach collection="dtosToUpdate" item="dto">
+            WHEN #{dto.id} then #{dto.projectId}
+        </foreach>
+        END,
+                app_service_code = CASE id
+        <foreach collection="dtosToUpdate" item="dto">
+            WHEN #{dto.id} then #{dto.appServiceCode}
+        </foreach>
+        END
+                WHERE id IN
         <foreach collection="dtosToUpdate" item="dto" open="(" close=")" separator=",">
             #{dto.id}
         </foreach>

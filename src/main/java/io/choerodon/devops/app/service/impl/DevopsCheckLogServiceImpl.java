@@ -95,9 +95,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     devopsBranchService.fixIssueId();
                     devopsGitlabCommitService.fixIssueId();
                     LOGGER.info("修复数据完成!!!!!!");
-                } else if ("1.0.6".equals(version)) {
+                } else if ("1.0.9".equals(version)) {
                     LOGGER.info("修复数据开始!");
-                    devopsIssueRelService.fixBranchId();
+                    devopsIssueRelService.fixBranchInfo();
                     LOGGER.info("修复数据完成!!!!!!");
                 } else {
                     LOGGER.info("version not matched");

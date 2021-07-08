@@ -105,7 +105,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     devopsGitlabCommitService.baseCreate(devopsGitlabCommitDTO);
                     // 如果分支和issue关联了，添加关联关系
                     if (!CollectionUtils.isEmpty(devopsBranchDTO.getIssueIds())) {
-                        devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), devopsGitlabCommitDTO.getId(), devopsBranchDTO.getIssueIds());
+                        devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), devopsGitlabCommitDTO.getId(), devopsBranchDTO.getId(), applicationDTO.getProjectId(), applicationDTO.getCode(), devopsBranchDTO.getIssueIds());
                     }
                 }
             });
