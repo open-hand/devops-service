@@ -40,7 +40,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_issue_rel.groovy') {
     changeSet(author: 'lihao', id: '2021-06-08-add-column-branch-id') {
         addColumn(tableName: 'devops_issue_rel') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '该条记录所属项目id', afterColumn: 'branch_id')
-            column(name: 'service_code', type: 'VARCHAR(64)', remarks: '该条记录所属应用code', afterColumn: 'project_id')
+            column(name: 'app_service_code', type: 'VARCHAR(64)', remarks: '该条记录所属应用code', afterColumn: 'project_id')
         }
     }
 }
