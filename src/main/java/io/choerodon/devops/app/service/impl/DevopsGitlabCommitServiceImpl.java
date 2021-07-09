@@ -32,6 +32,7 @@ import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
@@ -77,7 +78,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private DevopsIssueRelService devopsIssueRelService;
 
     @Override
-    public void create(PushWebHookVO pushWebHookVO, String token) {
+    public void create(PushWebHookVO pushWebHookVO, String token, String operate) {
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         String ref = pushWebHookVO.getRef().split("/")[2];
         if (!pushWebHookVO.getCommits().isEmpty()) {
@@ -103,8 +104,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     }
                     devopsGitlabCommitDTO.setCommitDate(commitDTO.getTimestamp());
                     devopsGitlabCommitService.baseCreate(devopsGitlabCommitDTO);
-                    // 如果分支和issue关联了，添加关联关系
-                    if (!CollectionUtils.isEmpty(devopsBranchDTO.getIssueIds())) {
+                    // 如果分支和issue关联了，且此次操作为提交代码，添加关联关系
+                    if (!CollectionUtils.isEmpty(devopsBranchDTO.getIssueIds()) && operate.equals(GitOpsConstants.COMMIT)) {
                         devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), devopsGitlabCommitDTO.getId(), devopsBranchDTO.getId(), applicationDTO.getProjectId(), applicationDTO.getCode(), devopsBranchDTO.getIssueIds());
                     }
                 }

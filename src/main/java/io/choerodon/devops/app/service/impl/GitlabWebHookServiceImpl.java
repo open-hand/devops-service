@@ -95,7 +95,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                     devopsGitlabCommitService.deleteTag(tagPushWebHookVO, token);
                 } else {
                     setUserContext(tagPushWebHookVO.getUserUserName());
-                    devopsGitlabCommitService.create(tagPushWebHookVO, token);
+                    devopsGitlabCommitService.create(tagPushWebHookVO, token, GitOpsConstants.TAG_PUSH);
                 }
                 break;
             default:

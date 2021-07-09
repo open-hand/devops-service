@@ -573,14 +573,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void branchSync(PushWebHookVO pushWebHookVO, String token) {
         AppServiceDTO applicationDTO = appServiceService.baseQueryByToken(token);
+        // 创建分支操作
         if (GitOpsConstants.NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
             createBranchSync(pushWebHookVO, applicationDTO.getId());
-            devopsGitlabCommitService.create(pushWebHookVO, token);
+            devopsGitlabCommitService.create(pushWebHookVO, token, GitOpsConstants.CREATE);
         } else if (GitOpsConstants.NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
+            // 删除分支操作
             deleteBranchSync(pushWebHookVO, applicationDTO.getId());
         } else {
+            // 某一分支提交代码操作
             commitBranchSync(pushWebHookVO, applicationDTO.getId());
-            devopsGitlabCommitService.create(pushWebHookVO, token);
+            devopsGitlabCommitService.create(pushWebHookVO, token, GitOpsConstants.COMMIT);
 
         }
     }
