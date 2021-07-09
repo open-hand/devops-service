@@ -18,4 +18,8 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
     Integer count();
 
     void batchUpdate(@Param("dtosToUpdate") List<DevopsIssueRelDTO> dtosToUpdate);
+
+    void deleteCommitRelationByBranchIdAndIssueId(@Param("branchId") Long branchId, @Param("issueId") Long issueId);
+
+    void batchDeleteCommitRelationByBranchIdAndIssueIds(@Param("branchId") Long branchId, @Param("issueIdsToDelete") List<Long> issueIdsToDelete);
 }

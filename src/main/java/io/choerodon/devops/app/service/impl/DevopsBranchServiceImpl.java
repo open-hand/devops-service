@@ -109,7 +109,10 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                     .collect(Collectors.toList());
 
             if (!CollectionUtils.isEmpty(issueIdsToDelete)) {
+                // 根据分支id以及分支关联的issueIds移除所有分支与敏捷问题关联关系
                 devopsIssueRelMapper.batchDeleteByBranchIdAndIssueIds(branchId, issueIdsToDelete);
+                // 根据分支id以及分支关联的issueIds移除所有有关的commit和敏捷问题关联关系
+                devopsIssueRelMapper.batchDeleteCommitRelationByBranchIdAndIssueIds(branchId, issueIdsToDelete);
             }
         }
     }
