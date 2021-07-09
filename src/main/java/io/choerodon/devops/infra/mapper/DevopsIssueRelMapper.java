@@ -23,5 +23,11 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
 
     void batchUpdate(@Param("dtosToUpdate") List<DevopsIssueRelDTO> dtosToUpdate);
 
+    /**
+     * 查出还存在关联关系的分支id
+     *
+     * @param commitRelatedBranchIds 待查询的分支id
+     * @return 仍存在关系的分支id
+     */
     List<Long> listRelatedBranchIds(@Param("commitRelatedBranchIds") Set<Long> commitRelatedBranchIds);
 }

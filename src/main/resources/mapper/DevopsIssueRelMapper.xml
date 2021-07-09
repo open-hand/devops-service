@@ -67,7 +67,7 @@
     </update>
 
     <select id="listRelatedBranchIds" resultType="java.lang.Long">
-        SELECT id
+        SELECT dir.object_id
         FROM devops_issue_rel dir
                 WHERE dir.object = 'branch'
                   AND dir.object_id IN
