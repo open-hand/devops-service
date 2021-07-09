@@ -1,22 +1,22 @@
 package io.choerodon.devops.api.validator;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.enums.CiTriggerType;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.Yaml;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author zmf
@@ -90,9 +90,20 @@ public class DevopsCiPipelineAdditionalValidator {
                     validateStageNameUniqueInPipeline(stage.getName(), stageNames);
 
                     stage.getJobList().forEach(job -> {
+                        validateTriggerRefRegex(job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
                     });
                 });
+    }
+
+    private static void validateTriggerRefRegex(DevopsCdJobVO job) {
+        if (CiTriggerType.REGEX_MATCH.value().equals(job.getTriggerType())) {
+            try {
+                Pattern.compile(job.getTriggerValue());
+            } catch (Exception e) {
+                throw new CommonException("error.job.regular.format", job.getName());
+            }
+        }
     }
 
     /**
