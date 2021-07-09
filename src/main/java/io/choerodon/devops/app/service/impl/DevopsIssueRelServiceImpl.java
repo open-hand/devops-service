@@ -116,6 +116,7 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
                     DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
                     devopsBranchVO.setProjectId(r.getProjectId());
                     devopsBranchVO.setAppServiceCode(r.getAppServiceCode());
+                    devopsBranchVO.setId(r.getObjectId());
                     return devopsBranchVO;
                 }, Collectors.toList())))
                 .forEach((k, v) -> {
