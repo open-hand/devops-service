@@ -49,6 +49,10 @@ public class DevopsBranchVO {
     @ApiModelProperty("分支id")
     private Long id;
 
+    @Encrypt
+    @ApiModelProperty("分支id/ 该字段敏捷用")
+    private Long branchId;
+
     public String getOriginBranch() {
         return originBranch;
     }
@@ -151,5 +155,13 @@ public class DevopsBranchVO {
 
     public void setAppServiceCode(String appServiceCode) {
         this.appServiceCode = appServiceCode;
+    }
+
+    public Long getBranchId() {
+        return branchId;
+    }
+
+    public void setBranchId(Long branchId) {
+        this.branchId = branchId;
     }
 }
