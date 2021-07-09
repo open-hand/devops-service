@@ -152,6 +152,7 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteCommitRelationByBranchId(Long branchId, Long issueId) {
         devopsIssueRelMapper.deleteCommitRelationByBranchIdAndIssueId(branchId, issueId);
     }

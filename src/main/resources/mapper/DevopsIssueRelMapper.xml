@@ -63,17 +63,17 @@
 
     <delete id="deleteCommitRelationByBranchIdAndIssueId">
         DELETE
-        FROM devops_issue_rel dir
-        WHERE dir.object = 'commit'
-          AND dir.branch_id = #{branchId}
-          AND dir.issue_id = #{issueId}
+        FROM devops_issue_rel
+        WHERE object = 'commit'
+          AND branch_id = #{branchId}
+          AND issue_id = #{issueId}
     </delete>
 
     <delete id="batchDeleteCommitRelationByBranchIdAndIssueIds">
         DELETE
-        FROM devops_issue_rel dir
-        WHERE dir.object = 'commit'
-        AND dir.branch_id = #{branchId}
+        FROM devops_issue_rel
+        WHERE object = 'commit'
+        AND branch_id = #{branchId}
         AND issue_id IN
         <foreach collection="issueIdsToDelete" item="issueId" open="(" close=")" separator=",">
             #{issueId}

@@ -1186,6 +1186,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchNameWithIssueIds(appServiceId, branchName);
