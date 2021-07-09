@@ -849,6 +849,30 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
+    public void checkUserBranchMergePermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref) {
+        BranchDTO branchDTO = gitlabServiceClientOperator.getBranch(gitlabProjectId.intValue(), ref);
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(gitlabUserId.intValue());
+        // 管理员跳过权限校验
+        if (Boolean.TRUE.equals(gitLabUserDTO.getIsAdmin())) {
+            return;
+        }
+        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), gitlabUserId.intValue());
+        if (memberDTO == null || memberDTO.getId() == null) {
+            memberDTO = gitlabServiceClientOperator.getMember(gitlabProjectId, gitlabUserId);
+        }
+        if (Boolean.TRUE.equals(branchDTO.getProtected())) {
+            if (Boolean.FALSE.equals(branchDTO.getDevelopersCanMerge()) && memberDTO.getAccessLevel() >= AccessLevel.MASTER.toValue()) {
+                throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+            }
+            if (Boolean.TRUE.equals(branchDTO.getDevelopersCanMerge()) && memberDTO.getAccessLevel() >= AccessLevel.DEVELOPER.toValue()) {
+                throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+            }
+        }
+
+    }
+
+    @Override
     public int selectCountByAppServiceId(Long appServiceId) {
         CiCdPipelineDTO ciCdPipelineDTO = new CiCdPipelineDTO();
         ciCdPipelineDTO.setAppServiceId(Objects.requireNonNull(appServiceId));

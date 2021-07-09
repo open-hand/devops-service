@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,6 +271,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
+
+        devopsCiPipelineService.checkUserBranchMergePermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
+
 
         JobDTO jobDTO = gitlabServiceClientOperator.playJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
 
