@@ -1194,6 +1194,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
             devopsBranchVO.setAppServiceCode(r.getAppServiceCode());
             devopsBranchVO.setProjectId(r.getProjectId());
+            devopsBranchVO.setBranchId(r.getBranchId());
             return devopsBranchVO;
         }).collect(Collectors.toList());
         IssueIdAndBranchIdsVO issueIdAndBranchIdsVO = new IssueIdAndBranchIdsVO();
