@@ -61,9 +61,9 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void addRelation(String object, Long objectId, Long branchId, Long projectId, String appServiceCode, Long issueIds) {
+    public void addRelation(String object, Long objectId, Long branchId, Long projectId, String appServiceCode, Long issueId) {
         DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
-        devopsIssueRelDTO.setIssueId(issueIds);
+        devopsIssueRelDTO.setIssueId(issueId);
         devopsIssueRelDTO.setObject(object);
         devopsIssueRelDTO.setObjectId(objectId);
         devopsIssueRelDTO.setProjectId(projectId);
@@ -149,5 +149,10 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
             }
             pageNumber++;
         } while (pageNumber < totalPage);
+    }
+
+    @Override
+    public void deleteCommitRelationByBranchId(Long branchId, Long issueId) {
+        devopsIssueRelMapper.deleteCommitRelationByBranchIdAndIssueId(branchId, issueId);
     }
 }
