@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -26,6 +27,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +75,8 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
+
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -100,6 +105,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * gateway(%s)+市场应用名称(market)+下载地址(market/repo)
      */
     private static final String MIDDLEWARE_CHART_REPO_TEMPLATE = "%s/market/market/repo/";
+    private static final String ERROR_APP_INSTANCE_IS_OPERATING = "error.app.instance.is.operating";
+
 
     @Value("${services.gateway.url}")
     private String gateway;
@@ -169,6 +176,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -1409,6 +1418,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceInstanceDTO == null) {
             return;
         }
+        // 加锁
+        if (Boolean.FALSE.equals(stringRedisTemplate.opsForValue().setIfAbsent(String.format(APP_INSTANCE_DELETE_REDIS_KEY, instanceId), "lock", 5, TimeUnit.MINUTES))) {
+            throw new CommonException(ERROR_APP_INSTANCE_IS_OPERATING);
+        }
+
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
 
@@ -1495,6 +1509,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     userAttrDTO.getGitlabUserId(),
                     appServiceInstanceDTO.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentDTO.getId(), path);
         }
+        // 删除锁
+        stringRedisTemplate.delete(String.format(APP_INSTANCE_DELETE_REDIS_KEY, instanceId));
         //删除实例发送web hook josn通知
         sendNotificationService.sendWhenInstanceSuccessOrDelete(appServiceInstanceDTO, SendSettingEnum.DELETE_RESOURCE.value());
     }
