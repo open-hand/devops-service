@@ -85,12 +85,15 @@ public class CommandResultHandler implements HostMsgHandler {
         DevopsHostCommandDTO devopsHostCommandDTO = devopsHostCommandService.baseQueryById(commandId);
         CommandResultVO commandResultVO = JsonHelper.unmarshalByJackson(payload, CommandResultVO.class);
         if (Boolean.TRUE.equals(commandResultVO.getSuccess())) {
+            // 操作成功处理逻辑
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.SUCCESS.value());
+            // 使用函数式接口 + 策略模式
             Consumer<String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
             if (consumer != null) {
                 consumer.accept(commandResultVO.getPayload());
             }
         } else {
+            // 操作失败处理逻辑
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.FAILED.value());
             devopsHostCommandDTO.setError(commandResultVO.getErrorMsg());
         }
