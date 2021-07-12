@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hzero.mybatis.BatchInsertHelper;
@@ -45,11 +46,11 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
                 .map(i -> {
                     DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
                     devopsIssueRelDTO.setIssueId(i);
-                    devopsIssueRelDTO.setObject(object);
+                    devopsIssueRelDTO.setBranchId(branchId);
                     devopsIssueRelDTO.setProjectId(projectId);
                     devopsIssueRelDTO.setAppServiceCode(appServiceCode);
+                    devopsIssueRelDTO.setObject(object);
                     devopsIssueRelDTO.setObjectId(objectId);
-                    devopsIssueRelDTO.setBranchId(branchId);
                     return devopsIssueRelDTO;
                 }).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(devopsIssueRelDTOList)) {
@@ -64,8 +65,8 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
         devopsIssueRelDTO.setIssueId(issueId);
         devopsIssueRelDTO.setObject(object);
         devopsIssueRelDTO.setObjectId(objectId);
-        devopsIssueRelDTO.setBranchId(branchId);
         devopsIssueRelDTO.setProjectId(projectId);
+        devopsIssueRelDTO.setBranchId(branchId);
         devopsIssueRelDTO.setAppServiceCode(appServiceCode);
         devopsIssueRelMapper.insert(devopsIssueRelDTO);
     }
@@ -129,7 +130,7 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public void fixBranchId() {
+    public void fixBranchInfo() {
         int totalCount = devopsIssueRelMapper.count();
         int pageNumber = 0;
         int pageSize = 100;
@@ -142,18 +143,30 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
             Page<DevopsIssueRelDTO> result = PageHelper.doPage(pageRequest, () -> devopsIssueRelMapper.selectAll());
             if (!CollectionUtils.isEmpty(result.getContent())) {
                 List<Long> commitIds = result.getContent().stream().filter(b -> DevopsIssueRelObjectTypeEnum.COMMIT.getValue().equals(b.getObject())).map(DevopsIssueRelDTO::getObjectId).collect(Collectors.toList());
+                List<Long> branchIds = result.getContent().stream().filter(b -> DevopsIssueRelObjectTypeEnum.BRANCH.getValue().equals(b.getObject())).map(DevopsIssueRelDTO::getObjectId).collect(Collectors.toList());
+
+                // 查出带有项目id和appServiceCode的branch信息
+                List<DevopsBranchDTO> devopsBranchDTOSByBranchId = devopsBranchService.listByIds(branchIds);
 
                 // 查出所有commit对应的branchId
-                List<DevopsBranchDTO> devopsBranchDTOList = devopsBranchService.listByCommitIs(commitIds);
+                List<DevopsBranchDTO> devopsBranchDTOListByCommitId = devopsBranchService.listByCommitIs(commitIds);
 
-                Map<Long, Long> commitIdAndBranchIdMap = devopsBranchDTOList.stream().collect(Collectors.toMap(DevopsBranchDTO::getCommitId, DevopsBranchDTO::getId));
+                Map<Long, DevopsBranchDTO> commitIdAndBranchIdMap = devopsBranchDTOListByCommitId.stream().collect(Collectors.toMap(DevopsBranchDTO::getCommitId, Function.identity()));
+
+                Map<Long, DevopsBranchDTO> branchIdInfoMap = devopsBranchDTOSByBranchId.stream().collect(Collectors.toMap(DevopsBranchDTO::getId, Function.identity()));
 
                 // 设置关联关系中的branchId
                 List<DevopsIssueRelDTO> devopsIssueRelDTOList = result.getContent().stream().peek(b -> {
+                    DevopsBranchDTO branchDTO;
                     if (DevopsIssueRelObjectTypeEnum.COMMIT.getValue().equals(b.getObject())) {
-                        b.setBranchId(commitIdAndBranchIdMap.get(b.getObjectId()));
+                        branchDTO = commitIdAndBranchIdMap.get(b.getObjectId());
                     } else {
-                        b.setBranchId(b.getObjectId());
+                        branchDTO = branchIdInfoMap.get(b.getObjectId());
+                    }
+                    if (branchDTO != null) {
+                        b.setBranchId(branchDTO.getId());
+                        b.setAppServiceCode(branchDTO.getAppServiceCode());
+                        b.setProjectId(branchDTO.getProjectId());
                     }
                 }).collect(Collectors.toList());
 
@@ -173,5 +186,11 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
             return new ArrayList<>();
         }
         return devopsIssueRelMapper.listRelatedBranchIds(commitRelatedBranchIds);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCommitRelationByBranchId(Long branchId, Long issueId) {
+        devopsIssueRelMapper.deleteCommitRelationByBranchIdAndIssueId(branchId, issueId);
     }
 }

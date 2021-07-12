@@ -47,4 +47,6 @@ public interface DevopsBranchMapper extends BaseMapper<DevopsBranchDTO> {
     List<DevopsBranchDTO> listByCommitIds(@Param("commitIds") List<Long> commitIds);
 
     List<Long> listExistBranchIds(@Param("branchIds") Set<Long> branchIds);
+
+    List<DevopsBranchDTO> listByIds(@Param("branchIds") List<Long> branchIds);
 }

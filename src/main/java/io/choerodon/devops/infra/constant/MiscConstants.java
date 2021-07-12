@@ -41,6 +41,11 @@ public final class MiscConstants {
     public static final String USER_SYNC_REDIS_KEY = "devops-service:user-sync-key";
 
     /**
+     * 设置同步用户的分布式锁时，锁的key
+     */
+    public static final String APP_INSTANCE_DELETE_REDIS_KEY = "devops-service:appInstances:%s:delete";
+
+    /**
      * 用户同步失败的文件存放的桶名称
      * https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
      */

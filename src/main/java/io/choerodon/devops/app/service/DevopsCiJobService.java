@@ -86,4 +86,12 @@ public interface DevopsCiJobService {
     void deleteMavenSettingsRecordByJobIds(List<Long> jobIds);
 
     SonarInfoVO getSonarConfig(Long projectId, Long appServiceId, String code);
+
+    /**
+     * 执行 manul 状态的job
+     * @param projectId
+     * @param gitlabProjectId
+     * @param jobId
+     */
+    void playJob(Long projectId, Long gitlabProjectId, Long jobId);
 }

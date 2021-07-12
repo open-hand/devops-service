@@ -441,6 +441,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<JobDTO> playJob(Integer projectId, Integer jobId, Integer userId) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<BranchDTO> queryBranchByName(Integer projectId, String branchName) {
         throw new CommonException("error.gitlab.branch.query");
     }

@@ -535,6 +535,13 @@ public interface GitlabServiceClient {
             @PathVariable(value = "jobId") Integer jobId,
             @RequestParam(value = "userId") Integer userId);
 
+    @ApiOperation(value = "执行 manul job")
+    @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/play")
+    ResponseEntity<JobDTO> playJob(
+            @PathVariable(value = "projectId") Integer projectId,
+            @PathVariable(value = "jobId") Integer jobId,
+            @RequestParam(value = "userId") Integer userId);
+
     @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{branchName}")
     ResponseEntity<BranchDTO> queryBranchByName(
             @ApiParam(value = "工程id", required = true)

@@ -17,9 +17,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabCommitService {
 
-    void create(PushWebHookVO pushWebHookVO, String token);
+    void create(PushWebHookVO pushWebHookVO, String token, String operate);
 
-    void deleteTag(PushWebHookVO pushWebHookVO,String token);
+    void deleteTag(PushWebHookVO pushWebHookVO, String token);
 
     DevopsGitlabCommitVO queryCommits(Long projectId, String appServiceIds, Date startDate, Date endDate);
 

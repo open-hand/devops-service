@@ -41,4 +41,6 @@ public interface DevopsBranchService {
     List<DevopsBranchDTO> listByCommitIs(List<Long> commitIds);
 
     List<Long> listDeletedBranchIds(Set<Long> collect);
+
+    List<DevopsBranchDTO> listByIds(List<Long> branchIds);
 }
