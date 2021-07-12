@@ -86,6 +86,14 @@ public class GitOpsConstants {
     public static final String CI_FILE_COMMIT_MESSAGE = "[ci skip] update .gitlab-ci.yml";
 
     /**
+     * 操作
+     */
+    public static final String COMMIT = "commit";
+    public static final String DELETE = "delete";
+    public static final String CREATE = "create";
+    public static final String TAG_PUSH = "tag_push";
+
+    /**
      * 换行符
      */
     public static final String NEW_LINE = System.getProperty("line.separator", "\n");

@@ -571,14 +571,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void branchSync(PushWebHookVO pushWebHookVO, String token) {
         AppServiceDTO applicationDTO = appServiceService.baseQueryByToken(token);
+        // 创建分支操作
         if (GitOpsConstants.NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
             createBranchSync(pushWebHookVO, applicationDTO.getId());
-            devopsGitlabCommitService.create(pushWebHookVO, token);
+            devopsGitlabCommitService.create(pushWebHookVO, token, GitOpsConstants.CREATE);
         } else if (GitOpsConstants.NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
+            // 删除分支操作
             deleteBranchSync(pushWebHookVO, applicationDTO.getId());
         } else {
+            // 某一分支提交代码操作
             commitBranchSync(pushWebHookVO, applicationDTO.getId());
-            devopsGitlabCommitService.create(pushWebHookVO, token);
+            devopsGitlabCommitService.create(pushWebHookVO, token, GitOpsConstants.COMMIT);
 
         }
     }
@@ -1187,7 +1190,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsBranchDTO != null) {
             CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
         }
-        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueId);
+        // 移除分支关联关系
+        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId(), issueId);
+
+        // 移除分支对应的提交关联关系
+        devopsIssueRelService.deleteCommitRelationByBranchId(devopsBranchDTO.getId(), issueId);
 
         Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
         List<DevopsBranchVO> devopsBranchVOS = remainBranchIssueRelation.stream().map(r -> {

@@ -57,14 +57,45 @@
     <update id="batchUpdate">
         UPDATE devops_issue_rel
                 SET branch_id = CASE id
-        <foreach collection="dtosToUpdate" item="dto" close="end">
+        <foreach collection="dtosToUpdate" item="dto">
             WHEN #{dto.id} then #{dto.branchId}
         </foreach>
-        WHERE id IN
+        END,
+                project_id =CASE id
+
+        <foreach collection="dtosToUpdate" item="dto">
+            WHEN #{dto.id} then #{dto.projectId}
+        </foreach>
+        END,
+                app_service_code = CASE id
+        <foreach collection="dtosToUpdate" item="dto">
+            WHEN #{dto.id} then #{dto.appServiceCode}
+        </foreach>
+        END
+                WHERE id IN
         <foreach collection="dtosToUpdate" item="dto" open="(" close=")" separator=",">
             #{dto.id}
         </foreach>
     </update>
+
+    <delete id="deleteCommitRelationByBranchIdAndIssueId">
+        DELETE
+        FROM devops_issue_rel
+        WHERE object = 'commit'
+          AND branch_id = #{branchId}
+          AND issue_id = #{issueId}
+    </delete>
+
+    <delete id="batchDeleteCommitRelationByBranchIdAndIssueIds">
+        DELETE
+        FROM devops_issue_rel
+        WHERE object = 'commit'
+        AND branch_id = #{branchId}
+        AND issue_id IN
+        <foreach collection="issueIdsToDelete" item="issueId" open="(" close=")" separator=",">
+            #{issueId}
+        </foreach>
+    </delete>
 
     <select id="listRelatedBranchIds" resultType="java.lang.Long">
         SELECT dir.object_id

@@ -30,4 +30,8 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
      * @return 仍存在关系的分支id
      */
     List<Long> listRelatedBranchIds(@Param("commitRelatedBranchIds") Set<Long> commitRelatedBranchIds);
+
+    void deleteCommitRelationByBranchIdAndIssueId(@Param("branchId") Long branchId, @Param("issueId") Long issueId);
+
+    void batchDeleteCommitRelationByBranchIdAndIssueIds(@Param("branchId") Long branchId, @Param("issueIdsToDelete") List<Long> issueIdsToDelete);
 }

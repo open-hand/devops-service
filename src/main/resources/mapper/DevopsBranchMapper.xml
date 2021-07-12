@@ -143,11 +143,12 @@
     </select>
 
     <select id="listByCommitIds" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
-        SELECT db.id,dgc.id AS commitId
+        SELECT db.id, dgc.id AS commitId, das.code AS app_service_code, das.project_id AS project_id
         FROM devops_gitlab_commit dgc
-        INNER JOIN devops_branch db ON db.branch_name = dgc.ref AND db.app_service_id=dgc.app_service_id
-        WHERE
-        dgc.id IN
+                     INNER JOIN devops_branch db ON db.branch_name = dgc.ref AND db.app_service_id = dgc.app_service_id
+                     INNER JOIN devops_app_service das ON das.id = db.app_service_id
+                WHERE
+                dgc.id IN
         <foreach collection="commitIds" item="commitId" open="(" close=")" separator=",">
             #{commitId}
         </foreach>
@@ -158,6 +159,16 @@
         WHERE db.id IN
         <foreach collection="branchIds" item="branchId" open="(" close=")" separator=",">
             #{branchId}
+        </foreach>
+    </select>
+
+    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        SELECT db.id, das.code AS app_service_code, das.project_id AS project_id
+        FROM devops_branch db
+                     INNER JOIN devops_app_service das ON das.id = db.app_service_id
+                WHERE db.id IN
+        <foreach collection="branchIds" item="id" open="(" close=")" separator=",">
+            #{id}
         </foreach>
     </select>
 </mapper>

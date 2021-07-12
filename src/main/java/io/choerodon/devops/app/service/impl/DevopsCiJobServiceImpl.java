@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +73,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private AppServiceMapper appServiceMapper;
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
+    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -81,7 +87,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   AppServiceMapper appServiceMapper,
                                   CheckGitlabAccessLevelService checkGitlabAccessLevelService,
                                   BaseServiceClientOperator baseServiceClientOperator,
-                                  DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper) {
+                                  DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
+                                  DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
@@ -93,6 +100,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
         this.appServiceMapper = appServiceMapper;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
+        this.devopsCiJobRecordMapper = devopsCiJobRecordMapper;
     }
 
     @Override
@@ -253,6 +261,26 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             }
         }
         return sonarInfoVO;
+    }
+
+    @Override
+    @Transactional
+    public void playJob(Long projectId, Long gitlabProjectId, Long jobId) {
+        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
+
+        devopsCiPipelineService.checkUserBranchMergePermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
+
+
+        JobDTO jobDTO = gitlabServiceClientOperator.playJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+
+        devopsCiJobRecordDTO.setStatus(jobDTO.getStatus().toString());
+
+        devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
     }
 
     private SonarInfoVO getCiSonar(Long appServiceId) {

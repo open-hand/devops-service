@@ -18,6 +18,12 @@ spring:
       charset: UTF-8
       force: true
       enabled: true
+  servlet:
+    multipart:
+      enabled: true
+      max-request-size: 100MB
+      max-file-size: 100MB
+
 services:
   gitlab:
     url: "gitlab.example.com" # gitlab地址

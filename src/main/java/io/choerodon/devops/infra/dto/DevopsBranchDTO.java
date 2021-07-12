@@ -35,6 +35,10 @@ public class DevopsBranchDTO extends AuditDomain {
     private Date lastCommitDate;
     @Transient
     private Long commitId;
+    @Transient
+    private String appServiceCode;
+    @Transient
+    private Long projectId ;
 
     @Transient
     @ApiModelProperty("关联的敏捷Issue的ids")
@@ -175,5 +179,21 @@ public class DevopsBranchDTO extends AuditDomain {
 
     public void setCommitId(Long commitId) {
         this.commitId = commitId;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

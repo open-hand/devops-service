@@ -82,6 +82,7 @@ public interface DevopsCiPipelineService {
      */
     void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref);
 
+    void checkUserBranchMergePermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref);
     /**
      * 查询这个应用服务关联的CI流水线的数量
      *
