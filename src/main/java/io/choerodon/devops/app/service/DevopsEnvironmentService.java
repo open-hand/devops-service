@@ -372,4 +372,8 @@ public interface DevopsEnvironmentService {
      * @return 数量
      */
     Long countEnvByOption(Long projectId, @Nullable Long clusterId, @Nullable Boolean isFailed);
+
+    void updateAutoDeploy(Long projectId, @Nullable Long envId, @Nullable Boolean isAutoDeploy);
+
+    Boolean queryAutoDeploy(Long projectId, @Nullable Long envId);
 }

@@ -1988,4 +1988,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         environmentMsgVO.setCheckResources(check);
         return environmentMsgVO;
     }
+
+    @Override
+    public void updateAutoDeploy(Long projectId, @Nullable Long envId, @Nullable Boolean isAutoDeploy) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+        devopsEnvironmentDTO.setAutoDeploy(isAutoDeploy);
+        if (devopsEnvironmentMapper.updateByPrimaryKey(devopsEnvironmentDTO) != 1) {
+            throw new CommonException("error.update.env");
+        }
+    }
+
+    @Override
+    public Boolean queryAutoDeploy(Long projectId, @Nullable Long envId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+        return devopsEnvironmentDTO.getAutoDeploy();
+    }
 }

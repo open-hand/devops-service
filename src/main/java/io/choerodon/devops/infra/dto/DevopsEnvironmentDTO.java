@@ -54,6 +54,7 @@ public class DevopsEnvironmentDTO extends AuditDomain {
     private Boolean isSynchro;
     private Boolean isFailed;
     private Boolean isSkipCheckPermission;
+    private Boolean isAutoDeploy;
     @Transient
     private Boolean connected;
     @Transient
@@ -66,6 +67,14 @@ public class DevopsEnvironmentDTO extends AuditDomain {
     @ApiModelProperty("环境下实例的code")
     @Transient
     private List<String> instances;
+
+    public Boolean getAutoDeploy() {
+        return isAutoDeploy;
+    }
+
+    public void setAutoDeploy(Boolean autoDeploy) {
+        isAutoDeploy = autoDeploy;
+    }
 
     public String getClusterName() {
         return clusterName;

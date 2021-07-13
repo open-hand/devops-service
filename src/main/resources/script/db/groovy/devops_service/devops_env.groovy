@@ -198,4 +198,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     changeSet(author: 'lihao', id: '2020-07-24-devops_env-modify-column') {
         sql("ALTER TABLE devops_env MODIFY COLUMN `name` VARCHAR(128)")
     }
+
+    changeSet(author: 'scp', id: '2021-07-13-addColumn') {
+        addColumn(tableName: 'devops_env') {
+            column(name: 'is_auto_deploy', type: 'TINYINT UNSIGNED', defaultValue: '1', remarks: '一键开启或者关闭自动部署，1：开启，0：关闭', afterColumn: 'is_active')
+        }
+    }
 }
