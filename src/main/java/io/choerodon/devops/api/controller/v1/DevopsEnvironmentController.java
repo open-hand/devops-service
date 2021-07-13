@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -307,7 +308,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
-            @ApiIgnore @SortDefault(value = "creationDate",direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiIgnore @SortDefault(value = "creationDate", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsEnvironmentService
@@ -625,5 +626,43 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "集群id，传此值时表示查询集群下的环境，不传则查询项目下环境", required = false)
             @RequestParam(value = "cluster_id", required = false) Long clusterId) {
         return new ResponseEntity<>(devopsEnvironmentService.countEnvByOption(projectId, clusterId, isFailed), HttpStatus.OK);
+    }
+
+    @ApiOperation("一键开启所有自动部署")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{env_id}/open_auto_deploy")
+    public ResponseEntity<Void> openAutoDeploy(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("环境id")
+            @Encrypt
+            @PathVariable("env_id") Long envId) {
+        devopsEnvironmentService.updateAutoDeploy(projectId, envId, true);
+        return Results.success();
+    }
+
+    @ApiOperation("一键关闭所有自动部署")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{env_id}/close_auto_deploy")
+    public ResponseEntity<Void> closeAutoDeploy(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("环境id")
+            @Encrypt
+            @PathVariable("env_id") Long envId) {
+        devopsEnvironmentService.updateAutoDeploy(projectId, envId, false);
+        return Results.success();
+    }
+
+    @ApiOperation("查询一键部署状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{env_id}/query_auto_deploy")
+    public ResponseEntity<Boolean> queryAutoDeploy(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("环境id")
+            @Encrypt
+            @PathVariable("env_id") Long envId) {
+        return Results.success(devopsEnvironmentService.queryAutoDeploy(projectId, envId));
     }
 }
