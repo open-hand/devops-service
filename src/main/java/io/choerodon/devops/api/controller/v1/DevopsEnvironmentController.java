@@ -657,7 +657,7 @@ public class DevopsEnvironmentController {
     @ApiOperation("查询一键部署状态")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{env_id}/query_auto_deploy")
-    public ResponseEntity<Boolean> queryAutoDeploy(
+    public ResponseEntity<EnvAutoDeployVO> queryAutoDeploy(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("环境id")

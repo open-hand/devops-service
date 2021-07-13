@@ -14,6 +14,6 @@
         FROM devops_cicd_pipeline dcp
                  INNER JOIN devops_cd_job dcj ON (dcj.pipeline_id = dcp.id AND dcj.type = 'cdDeploy')
                  INNER JOIN devops_cd_env_deploy_info dcedi ON dcedi.id = dcj.deploy_info_id
-        WHERE dcedi.value_id = #{envId}
+        WHERE dcedi.env_id = #{envId}
     </select>
 </mapper>
