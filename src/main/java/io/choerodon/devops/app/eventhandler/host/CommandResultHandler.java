@@ -5,10 +5,10 @@ import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.app.service.DevopsJavaInstanceService;
+import io.choerodon.devops.app.service.DevopsNormalInstanceService;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsJavaInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
@@ -22,7 +22,6 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.ObjLongConsumer;
 
 /**
  * 〈功能简述〉
@@ -41,7 +40,7 @@ public class CommandResultHandler implements HostMsgHandler {
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
-    private DevopsJavaInstanceService devopsJavaInstanceService;
+    private DevopsNormalInstanceService devopsNormalInstanceService;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -50,15 +49,15 @@ public class CommandResultHandler implements HostMsgHandler {
     void init() {
         resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
-            devopsJavaInstanceService.baseDelete(processInfoVO.getInstanceId());
+            devopsNormalInstanceService.baseDelete(processInfoVO.getInstanceId());
         });
         resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
-            DevopsJavaInstanceDTO devopsJavaInstanceDTO = devopsJavaInstanceService.baseQuery(processInfoVO.getInstanceId());
-            devopsJavaInstanceDTO.setStatus(processInfoVO.getStatus());
-            devopsJavaInstanceDTO.setPid(processInfoVO.getPid());
-            devopsJavaInstanceDTO.setPort(processInfoVO.getPort());
-            devopsJavaInstanceService.baseUpdate(devopsJavaInstanceDTO);
+            DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.baseQuery(processInfoVO.getInstanceId());
+            devopsNormalInstanceDTO.setStatus(processInfoVO.getStatus());
+            devopsNormalInstanceDTO.setPid(processInfoVO.getPid());
+            devopsNormalInstanceDTO.setPort(processInfoVO.getPort());
+            devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
         });
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
@@ -85,12 +84,15 @@ public class CommandResultHandler implements HostMsgHandler {
         DevopsHostCommandDTO devopsHostCommandDTO = devopsHostCommandService.baseQueryById(commandId);
         CommandResultVO commandResultVO = JsonHelper.unmarshalByJackson(payload, CommandResultVO.class);
         if (Boolean.TRUE.equals(commandResultVO.getSuccess())) {
+            // 操作成功处理逻辑
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.SUCCESS.value());
+            // 使用函数式接口 + 策略模式
             Consumer<String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
             if (consumer != null) {
                 consumer.accept(commandResultVO.getPayload());
             }
         } else {
+            // 操作失败处理逻辑
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.FAILED.value());
             devopsHostCommandDTO.setError(commandResultVO.getErrorMsg());
         }

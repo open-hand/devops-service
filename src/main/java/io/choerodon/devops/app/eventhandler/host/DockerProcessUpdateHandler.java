@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @Date 2021/6/27 20:35
  */
 @Component
-public class DockerProcessUpdateHandler implements HostMsgHandler {
+public class DockerProcessUpdateHandler implements HostMsgHandler{
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;

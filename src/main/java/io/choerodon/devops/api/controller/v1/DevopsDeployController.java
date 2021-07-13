@@ -6,7 +6,7 @@ import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.app.service.DevopsDeployService;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
-import io.choerodon.devops.app.service.DevopsJavaInstanceService;
+import io.choerodon.devops.app.service.DevopsNormalInstanceService;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,7 +27,7 @@ public class DevopsDeployController {
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
-    private DevopsJavaInstanceService devopsJavaInstanceService;
+    private DevopsNormalInstanceService devopsNormalInstanceService;
 
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -59,7 +59,7 @@ public class DevopsDeployController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Validated JarDeployVO jarDeployVO) {
-        devopsJavaInstanceService.deployJavaInstance(projectId, jarDeployVO);
+        devopsNormalInstanceService.deployJavaInstance(projectId, jarDeployVO);
         return ResponseEntity.noContent().build();
     }
 

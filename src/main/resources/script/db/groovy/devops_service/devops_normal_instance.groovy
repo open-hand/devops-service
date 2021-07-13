@@ -1,25 +1,28 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_java_instance.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_normal_instance.groovy') {
     changeSet(author: 'wanghao', id: '2021-06-30-create-table') {
-        createTable(tableName: "devops_java_instance", remarks: 'java实例') {
+        createTable(tableName: "devops_normal_instance", remarks: '普通实例') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
             column(name: "host_id", type: "BIGINT UNSIGNED", remarks: '主机id') {
                 constraints(nullable: false)
             }
-            column(name: 'name', type: 'VARCHAR(128)', remarks: 'jar包名称') {
+            column(name: 'name', type: 'VARCHAR(128)', remarks: '部署包名称') {
                 constraints(nullable: false)
             }
-            column(name: 'status', type: 'VARCHAR(20)', remarks: 'java进程状态') {
+            column(name: 'instance_type', type: 'VARCHAR(32)', remarks: '实例类型') {
                 constraints(nullable: false)
             }
-            column(name: 'pid', type: 'VARCHAR(128)', remarks: 'java进程id')
+            column(name: 'status', type: 'VARCHAR(32)', remarks: '进程状态') {
+                constraints(nullable: false)
+            }
+            column(name: 'pid', type: 'VARCHAR(128)', remarks: '进程id')
 
             column(name: 'port', type: 'string(128)', remarks: '占用端口')
 
-            column(name: 'source_type', type: 'VARCHAR(20)', remarks: '部署来源') {
+            column(name: 'source_type', type: 'VARCHAR(32)', remarks: '部署来源') {
                 constraints(nullable: false)
             }
 
@@ -32,7 +35,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_java_instance.groovy') {
     }
     changeSet(author: 'wanghao', id: '2021-07-05-add-index') {
 
-        createIndex(indexName: "idx_host_id", tableName: "devops_java_instance") {
+        createIndex(indexName: "idx_host_id", tableName: "devops_normal_instance") {
             column(name: "host_id")
         }
     }

@@ -12,12 +12,12 @@ import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.app.service.DevopsJavaInstanceService;
+import io.choerodon.devops.app.service.DevopsNormalInstanceService;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.dto.DevopsJavaInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
@@ -35,7 +35,7 @@ import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsJavaInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsNormalInstanceMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import org.hzero.core.base.BaseConstants;
@@ -63,9 +63,9 @@ import java.util.Objects;
  * @Date 2021/7/1 9:25
  */
 @Service
-public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService {
+public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsJavaInstanceServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsNormalInstanceServiceImpl.class);
 
     private static final String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
@@ -73,7 +73,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
     private static final String ERROR_DEPLOY_JAR_FAILED = "error.deploy.jar.failed";
 
     @Autowired
-    private DevopsJavaInstanceMapper devopsJavaInstanceMapper;
+    private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -172,22 +172,22 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
 
 
         // 2.保存记录
-        DevopsJavaInstanceDTO devopsJavaInstanceDTO = new DevopsJavaInstanceDTO();
-        devopsJavaInstanceDTO.setName(deployObjectName);
-        devopsJavaInstanceDTO.setSourceType(jarDeployVO.getSourceType());
-        devopsJavaInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
-        devopsJavaInstanceDTO.setHostId(hostId);
-        MapperUtil.resultJudgedInsertSelective(devopsJavaInstanceMapper, devopsJavaInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO();
+        devopsNormalInstanceDTO.setName(deployObjectName);
+        devopsNormalInstanceDTO.setSourceType(jarDeployVO.getSourceType());
+        devopsNormalInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
+        devopsNormalInstanceDTO.setHostId(hostId);
+        MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
-        javaDeployDTO.setCmd(genCmd(javaDeployDTO, jarDeployVO, devopsJavaInstanceDTO.getId()));
+        javaDeployDTO.setCmd(genCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
         javaDeployDTO.setJarName(deployObjectName);
-        javaDeployDTO.setInstanceId(String.valueOf(devopsJavaInstanceDTO.getId()));
+        javaDeployDTO.setInstanceId(String.valueOf(devopsNormalInstanceDTO.getId()));
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(devopsJavaInstanceDTO.getId());
+        devopsHostCommandDTO.setInstanceId(devopsNormalInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -217,7 +217,7 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsJavaInstanceDTO.getId()),
+                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsNormalInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
 
@@ -260,26 +260,26 @@ public class DevopsJavaInstanceServiceImpl implements DevopsJavaInstanceService 
     }
 
     @Override
-    public List<DevopsJavaInstanceDTO> listByHostId(Long hostId) {
+    public List<DevopsNormalInstanceDTO> listByHostId(Long hostId) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        return devopsJavaInstanceMapper.listByHostId(hostId);
+        return devopsNormalInstanceMapper.listByHostId(hostId);
     }
 
     @Override
     @Transactional
-    public void baseUpdate(DevopsJavaInstanceDTO devopsJavaInstanceDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJavaInstanceMapper, devopsJavaInstanceDTO, ERROR_UPDATE_JAVA_INSTANCE_FAILED);
+    public void baseUpdate(DevopsNormalInstanceDTO devopsNormalInstanceDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, ERROR_UPDATE_JAVA_INSTANCE_FAILED);
     }
 
     @Override
     @Transactional
     public void baseDelete(Long instanceId) {
-        devopsJavaInstanceMapper.deleteByPrimaryKey(instanceId);
+        devopsNormalInstanceMapper.deleteByPrimaryKey(instanceId);
     }
 
     @Override
-    public DevopsJavaInstanceDTO baseQuery(Long instanceId) {
-        return devopsJavaInstanceMapper.selectByPrimaryKey(instanceId);
+    public DevopsNormalInstanceDTO baseQuery(Long instanceId) {
+        return devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
     }
 
     private String getDownloadUrl(JarReleaseConfigVO jarReleaseConfigVO) {
