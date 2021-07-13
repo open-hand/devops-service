@@ -1999,8 +1999,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Boolean queryAutoDeploy(Long projectId, @Nullable Long envId) {
+    public EnvAutoDeployVO queryAutoDeploy(Long projectId, @Nullable Long envId) {
+        EnvAutoDeployVO envAutoDeployVO = new EnvAutoDeployVO();
+        envAutoDeployVO.setExistAutoDeploy(false);
+        List<DevopsCdEnvDeployInfoDTO> list = devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId);
+        if (!CollectionUtils.isEmpty(list)) {
+            envAutoDeployVO.setExistAutoDeploy(true);
+        }
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
-        return devopsEnvironmentDTO.getAutoDeploy();
+        envAutoDeployVO.setAutoDeployStatus(devopsEnvironmentDTO.getAutoDeploy());
+        return envAutoDeployVO;
     }
 }
