@@ -468,7 +468,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         // 校验环境是否开启一键关闭自动部署
         if (!checkAutoDeploy(devopsCdEnvDeployInfoDTO.getEnvId())) {
-            log.append("Environment automatic deployment has been turned off!");
+            log.append("Environment automatic deployment has been turned off!").append(System.lineSeparator());
+            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+            devopsCdJobRecordService.updateLogById(jobRecordId, log);
             return;
         }
         // 1. 获取部署版本信息
