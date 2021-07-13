@@ -90,7 +90,7 @@ env:
     # Gitlab ssh 协议访问地址
     SERVICES_GITLAB_SSHURL: git@git.example.com
     # 新建 Gitlab 用户的默认可创建仓库数量
-    SERVICES_GITLAB_PROJECTLIMIT: 100
+    SERVICES_GITLAB_PROJECTLIMIT: 0
 
     # Helm chart 仓库地址
     SERVICES_HELM_URL: helm.example.com
