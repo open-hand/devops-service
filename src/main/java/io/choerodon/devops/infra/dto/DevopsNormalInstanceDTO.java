@@ -17,19 +17,19 @@ import javax.persistence.Table;
  * @author wanghao
  * @Date 2021/7/1 9:22
  */
-@Table(name = "devops_java_instance")
+@Table(name = "devops_normal_instance")
 @ModifyAudit
 @VersionAudit
-public class DevopsJavaInstanceDTO extends AuditDomain {
+public class DevopsNormalInstanceDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty("主机id")
     private Long hostId;
-    @ApiModelProperty("jar包名称")
+    @ApiModelProperty("部署包名称")
     private String name;
-    @ApiModelProperty("java进程id")
+    @ApiModelProperty("进程id")
     private String pid;
     @ApiModelProperty("占用端口")
     private String port;
@@ -37,7 +37,16 @@ public class DevopsJavaInstanceDTO extends AuditDomain {
     private String sourceType;
     @ApiModelProperty("进程状态")
     private String status;
+    @ApiModelProperty("实例类型")
+    private String instanceType;
 
+    public String getInstanceType() {
+        return instanceType;
+    }
+
+    public void setInstanceType(String instanceType) {
+        this.instanceType = instanceType;
+    }
 
     public String getStatus() {
         return status;

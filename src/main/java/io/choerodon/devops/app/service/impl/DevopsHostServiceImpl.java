@@ -103,7 +103,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     @Lazy
-    private DevopsJavaInstanceService devopsJavaInstanceService;
+    private DevopsNormalInstanceService devopsNormalInstanceService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -617,12 +617,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId) {
-        List<DevopsJavaInstanceDTO> devopsJavaInstanceDTOList = devopsJavaInstanceService.listByHostId(hostId);
-        if (CollectionUtils.isEmpty(devopsJavaInstanceDTOList)) {
+        List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOList = devopsNormalInstanceService.listByHostId(hostId);
+        if (CollectionUtils.isEmpty(devopsNormalInstanceDTOList)) {
             return new ArrayList<>();
         }
 
-        List<DevopsJavaInstanceVO> devopsJavaInstanceVOS = ConvertUtils.convertList(devopsJavaInstanceDTOList, DevopsJavaInstanceVO.class);
+        List<DevopsJavaInstanceVO> devopsJavaInstanceVOS = ConvertUtils.convertList(devopsNormalInstanceDTOList, DevopsJavaInstanceVO.class);
 
         UserDTOFillUtil.fillUserInfo(devopsJavaInstanceVOS, "createdBy", "deployer");
         return devopsJavaInstanceVOS;
