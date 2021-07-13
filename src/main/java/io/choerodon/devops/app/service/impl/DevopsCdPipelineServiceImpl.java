@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -35,7 +36,9 @@ import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.*;
+
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1Pod;
 import io.reactivex.Emitter;
@@ -168,6 +171,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Autowired
     @Lazy
     private CiCdPipelineRecordService ciCdPipelineRecordService;
+
+    @Autowired
+    @Lazy
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
 
     @Override
@@ -459,7 +466,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
 
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
-
+        // 校验环境是否开启一键关闭自动部署
+        if (!checkAutoDeploy(devopsCdEnvDeployInfoDTO.getEnvId())) {
+            log.append("Environment automatic deployment has been turned off!");
+            return;
+        }
         // 1. 获取部署版本信息
 
         log.append("## 1.Query Deploy version.").append(System.lineSeparator());
@@ -1364,5 +1375,13 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long instanceId) {
         return devopsCiCdPipelineMapper.queryPipelineReference(instanceId);
+    }
+
+    private Boolean checkAutoDeploy(Long envId) {
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
+        if (environmentDTO == null) {
+            throw new CommonException("error.get.environment");
+        }
+        return environmentDTO.getAutoDeploy();
     }
 }

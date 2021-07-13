@@ -5,7 +5,6 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.NEW_LINE;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
@@ -362,7 +361,7 @@ public class SagaHandler {
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_HOST_FEPLOY,
             description = "主机部署",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY,
+            sagaCode = SagaTopicCodeConstants.DEVOPS_HOST_DEPLOY,
             maxRetryCount = 5, seq = 1)
     public void hostDeploy(String payload) {
         HostDeployPayload hostDeployPayload = gson.fromJson(payload, HostDeployPayload.class);

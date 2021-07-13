@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_HOST_DEPLOY;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -773,7 +773,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    @Saga(code = DEVOPS_HOST_FEPLOY,
+    @Saga(code = DEVOPS_HOST_DEPLOY,
             description = "devops主机部署", inputSchema = "{}")
     public void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         HostDeployPayload hostDeployPayload = new HostDeployPayload(pipelineRecordId, cdStageRecordId, cdJobRecordId);
@@ -787,7 +787,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             .withLevel(ResourceLevel.PROJECT)
                             .withSourceId(pipelineRecordDTO.getProjectId())
                             .withRefType("pipelineRecordId")
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_HOST_FEPLOY),
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_HOST_DEPLOY),
                     builder -> builder
                             .withPayloadAndSerialize(hostDeployPayload)
                             .withRefId(pipelineRecordId.toString()));

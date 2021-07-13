@@ -249,7 +249,7 @@ public class SagaTopicCodeConstants {
     /**
      * devops 主机部署
      */
-    public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
+    public static final String DEVOPS_HOST_DEPLOY = "devops-host-deploy";
 
     /**
      * 创建集群
