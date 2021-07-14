@@ -203,4 +203,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<String> listProjectIdsInOrg(Long tenantId) {
         throw new CommonException("error.list.projectIds.in.org", tenantId);
     }
+
+    @Override
+    public ResponseEntity<List<ProjectDTO>> listProjectsByUserId(Long organizationId, Long userId) {
+        throw new CommonException("error.list.projectIds.in.org", organizationId);
+    }
 }

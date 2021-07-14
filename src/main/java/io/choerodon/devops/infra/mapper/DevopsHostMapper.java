@@ -23,8 +23,8 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      * @return 主机列表
      */
     List<DevopsHostVO> listByOptions(@Param("projectId") Long projectId,
-                                      @Param("searchParam") String searchParam,
-                                      @Param("hostStatus") String hostStatus);
+                                     @Param("searchParam") String searchParam,
+                                     @Param("hostStatus") String hostStatus);
 
     List<DevopsHostDTO> listByProjectIdAndIds(@Param("projectId") Long projectId,
                                               @Param("hostIds") Set<Long> hostIds);
@@ -57,4 +57,12 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
     List<DevopsHostVO> pagingWithCheckingStatus(@Param("projectId") Long projectId,
                                                 @Param("finalHostIds") Set<Long> finalHostIds,
                                                 @Param("searchParam") String searchParam);
+
+    /**
+     * 查询指定项目下的所有主机
+     *
+     * @param projectIds 项目ID列表
+     * @return 主机
+     */
+    List<DevopsHostDTO> listByProject(@Param("projectIds") List<Long> projectIds);
 }

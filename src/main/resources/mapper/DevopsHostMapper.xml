@@ -167,4 +167,14 @@
         WHERE dh.type='distribute_test'
     </select>
 
+    <select id="listByProject" resultType="io.choerodon.devops.infra.dto.DevopsHostDTO">
+        SELECT dh.*
+        FROM devops_host dh
+        WHERE
+        project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
+            #{projectId,jdbcType=BIGINT}
+        </foreach>
+    </select>
+
 </mapper>
