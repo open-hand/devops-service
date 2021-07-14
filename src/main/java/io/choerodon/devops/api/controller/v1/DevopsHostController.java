@@ -97,7 +97,7 @@ public class DevopsHostController {
             @ApiParam(value = "主机状态")
             @RequestParam(value = "host_status", required = false) String hostStatus,
             @ApiParam(value = "是否分页")
-            @RequestParam(value = "do_page", required = false) Boolean doPage) {
+            @RequestParam(value = "do_page", required = false, defaultValue = "true") Boolean doPage) {
         return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, searchParam, hostStatus, doPage));
     }
 
