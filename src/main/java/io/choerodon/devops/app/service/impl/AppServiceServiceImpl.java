@@ -2135,7 +2135,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest) {
 
-        //env为null查询所有环境关联的应用服务，
+        //env为0查询所有环境关联的应用服务，
         Page<AppServiceRepVO> appServiceRepVOS = PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.queryApplicationCenter(projectId, envId, type, params));
         List<AppServiceRepVO> appServiceRepVOSContent = appServiceRepVOS.getContent();
         if (CollectionUtils.isEmpty(appServiceRepVOSContent)) {
