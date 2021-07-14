@@ -12,6 +12,7 @@ import java.util.List;
 import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,24 +31,21 @@ public class UserResourceController {
 
     @ApiOperation("查询上下文用户在指定组织下的资源概览")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/general")
-    @CustomPageRequest
+    @GetMapping("/general")
     public ResponseEntity<GeneralResourceVO> queryGeneral(@PathVariable("organization_id") Long organizationId) {
         return Results.success(userResourceService.queryGeneral(organizationId));
     }
 
     @ApiOperation("查询上下文用户在指定组织下的主机资源详情")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/host")
-    @CustomPageRequest
+    @GetMapping("/host")
     public ResponseEntity<List<HostDetailResourceVO>> queryHostResource(@PathVariable("organization_id") Long organizationId) {
         return Results.success(userResourceService.queryHostResource(organizationId));
     }
 
     @ApiOperation("查询上下文用户在指定组织下的集群资源详情")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/cluster")
-    @CustomPageRequest
+    @GetMapping("/cluster")
     public ResponseEntity<List<ClusterDetailResourceVO>> queryClusterResource(@PathVariable("organization_id") Long organizationId) {
         return Results.success(userResourceService.queryClusterResource(organizationId));
     }
