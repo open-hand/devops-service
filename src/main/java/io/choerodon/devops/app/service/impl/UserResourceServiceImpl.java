@@ -125,7 +125,7 @@ public class UserResourceServiceImpl implements UserResourceService {
         }
         hostDTOS.forEach(hostDTO -> {
             ProjectDTO project = projects.stream().filter(projectDTO -> Objects.equals(projectDTO.getId(),
-                    hostDTO.getId())).findFirst().orElse(null);
+                    hostDTO.getProjectId())).findFirst().orElse(null);
             ResourceUsageInfoVO resourceUsageInfo = devopsHostService.queryResourceUsageInfo(hostDTO.getProjectId(), hostDTO.getId());
             result.add(HostDetailResourceVO.build(hostDTO, resourceUsageInfo, project == null ? null : project.getName()));
         });
@@ -144,10 +144,10 @@ public class UserResourceServiceImpl implements UserResourceService {
         if (CollectionUtils.isEmpty(clusterDTOS)) {
             return result;
         }
-        clusterDTOS.forEach(hostDTO -> {
+        clusterDTOS.forEach(clusterDTO -> {
             ProjectDTO project = projects.stream().filter(projectDTO -> Objects.equals(projectDTO.getId(),
-                    hostDTO.getId())).findFirst().orElse(null);
-            result.add(ClusterDetailResourceVO.build(hostDTO, project == null ? null : project.getName()));
+                    clusterDTO.getProjectId())).findFirst().orElse(null);
+            result.add(ClusterDetailResourceVO.build(clusterDTO, project == null ? null : project.getName()));
         });
         return result;
     }
@@ -159,11 +159,6 @@ public class UserResourceServiceImpl implements UserResourceService {
         }
         List<ProjectDTO> projects = baseServiceClientOperator.listProjectsByUserId(organizationId,
                 userDetails.getUserId());
-//        ProjectDTO projectDTO = new ProjectDTO();
-//        projectDTO.setId(159349538124681216L);
-//        projectDTO.setName("wxx");
-//        List<ProjectDTO> projects = Arrays.asList(projectDTO);
-
         return projects;
 
     }
