@@ -897,7 +897,7 @@
             JOIN devops_env de ON deas.env_id = de.id
             WHERE
               de.project_id=#{projectId,jdbcType=BIGINT}
-              <if test="envId != null">
+              <if test="envId != null and envId !=0">
                   AND  deas.env_id = #{envId,jdbcType=BIGINT}
               </if>
               <if test="type != null and type != '' and type != 'all'">
