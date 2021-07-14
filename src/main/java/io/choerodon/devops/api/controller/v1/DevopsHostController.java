@@ -14,6 +14,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -94,8 +95,10 @@ public class DevopsHostController {
             @ApiParam(value = "搜索参数")
             @RequestParam(value = "search_param", required = false) String searchParam,
             @ApiParam(value = "主机状态")
-            @RequestParam(value = "host_status", required = false) String hostStatus) {
-        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, searchParam, hostStatus));
+            @RequestParam(value = "host_status", required = false) String hostStatus,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "do_page", required = false) Boolean doPage) {
+        return Results.success(devopsHostService.pageByOptions(projectId, pageRequest, withUpdaterInfo, searchParam, hostStatus, doPage));
     }
 
     @ApiOperation("删除主机")
