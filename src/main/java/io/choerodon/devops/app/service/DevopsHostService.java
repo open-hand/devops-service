@@ -31,8 +31,8 @@ public interface DevopsHostService {
     /**
      * 获得agent安装命令
      *
-     * @param projectId         项目id
-     * @param devopsHostDTO     主机配置dto
+     * @param projectId     项目id
+     * @param devopsHostDTO 主机配置dto
      * @return 安装命令
      */
     String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO);
@@ -99,9 +99,10 @@ public interface DevopsHostService {
 
     /**
      * 查询主机
-     * @deprecated
+     *
      * @param projectId 项目id
      * @param hostId    主机id
+     * @deprecated
      */
     DevopsHostVO queryHost(Long projectId, Long hostId);
 
@@ -115,29 +116,31 @@ public interface DevopsHostService {
 
     /**
      * 测试主机连接情况
-     * @deprecated
+     *
      * @param projectId                  项目id
      * @param devopsHostConnectionTestVO 主机连接信息
      * @return 连接结果
+     * @deprecated
      */
     DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO);
 
     /**
      * 测试多个主机连接情况
-     * @deprecated
      *
      * @param projectId 项目id
      * @param hostIds   主机ids
      * @return 所有连接失败的主机id
+     * @deprecated
      */
     Set<Object> multiTestConnection(Long projectId, Set<Long> hostIds);
 
     /**
      * 通过id测试部署主机连接情况
-     * @deprecated
+     *
      * @param projectId 项目id
      * @param hostId    主机id
      * @return true表示连接成功
+     * @deprecated
      */
     Boolean testConnectionByIdForDeployHost(Long projectId, Long hostId);
 
@@ -166,11 +169,11 @@ public interface DevopsHostService {
      * @param projectId       项目id
      * @param pageRequest     分页参数
      * @param withUpdaterInfo 是否需要更新者信息
-     * @param searchParam         查询参数
+     * @param searchParam     查询参数
      * @param hostStatus
      * @return 一页主机数据
      */
-    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus);
+    Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage);
 
     /**
      * 能否删除主机
@@ -187,6 +190,7 @@ public interface DevopsHostService {
 
     /**
      * 查询主机信息
+     *
      * @param hostId 主机id
      * @return
      */
@@ -195,6 +199,7 @@ public interface DevopsHostService {
 
     /**
      * 更新主机状态
+     *
      * @param hostId
      * @param status
      */
@@ -202,6 +207,7 @@ public interface DevopsHostService {
 
     /**
      * 查询主机下所有java进程信息
+     *
      * @param projectId
      * @param hostId
      * @return 集合中的object对象为JavaProcessInfoVO
@@ -210,6 +216,7 @@ public interface DevopsHostService {
 
     /**
      * 查询docker进程信息接口
+     *
      * @param projectId
      * @param hostId
      * @return 集合中的object对象为DockerProcessInfoVO
@@ -218,6 +225,7 @@ public interface DevopsHostService {
 
     /**
      * 删除java进程
+     *
      * @param projectId
      * @param hostId
      * @param instanceId
@@ -226,6 +234,7 @@ public interface DevopsHostService {
 
     /**
      * 删除docker进程
+     *
      * @param projectId
      * @param hostId
      * @param instanceId
@@ -234,6 +243,7 @@ public interface DevopsHostService {
 
     /**
      * 停止docker进程
+     *
      * @param projectId
      * @param hostId
      * @param instanceId
@@ -242,6 +252,7 @@ public interface DevopsHostService {
 
     /**
      * 重启docker进程
+     *
      * @param projectId
      * @param hostId
      * @param instanceId
@@ -250,6 +261,7 @@ public interface DevopsHostService {
 
     /**
      * 启动docker进程
+     *
      * @param projectId
      * @param hostId
      * @param instanceId
@@ -258,6 +270,7 @@ public interface DevopsHostService {
 
     /**
      * 下载创建主机脚本
+     *
      * @param projectId
      * @param hostId
      * @param token
