@@ -20,7 +20,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_normal_instance.groovy') {
             }
             column(name: 'pid', type: 'VARCHAR(128)', remarks: '进程id')
 
-            column(name: 'port', type: 'string(128)', remarks: '占用端口')
+            column(name: 'port', type: 'VARCHAR(128)', remarks: '占用端口')
 
             column(name: 'source_type', type: 'VARCHAR(32)', remarks: '部署来源') {
                 constraints(nullable: false)
