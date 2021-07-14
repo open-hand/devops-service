@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -37,6 +38,7 @@ import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -568,5 +570,22 @@ public class BaseServiceClientOperator {
     public Set<Long> listProjectIdsInOrg(Long tenantId) {
         return FeignClientUtils.doRequest(() -> baseServiceClient.listProjectIdsInOrg(tenantId), new TypeReference<Set<Long>>() {
         });
+    }
+
+    /**
+     * 查询组织下指定角色的项目列表
+     *
+     * @param tenantId
+     * @param userId
+     * @return
+     */
+    public List<ProjectDTO> listProjectsByUserId(Long tenantId, Long userId) {
+        try {
+            ResponseEntity<List<ProjectDTO>> resp = baseServiceClient.listProjectsByUserId(tenantId, userId);
+            return resp == null ? null : resp.getBody();
+        } catch (Exception ex) {
+            LOGGER.info("Exception occurred when querying project by userId {} and organization id {}", userId, tenantId);
+            return null;
+        }
     }
 }

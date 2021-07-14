@@ -133,4 +133,16 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="listByProject" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
+        SELECT
+            *
+        FROM devops_cluster dc
+        WHERE
+        dc.organization_id = #{organizationId}
+        AND dc.project_id IN
+        <foreach collection="projectIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

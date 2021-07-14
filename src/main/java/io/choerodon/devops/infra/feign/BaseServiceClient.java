@@ -3,9 +3,11 @@ package io.choerodon.devops.infra.feign;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -263,4 +265,9 @@ public interface BaseServiceClient {
     @GetMapping("/choerodon/v1/projects/list/ids_in_org")
     @ApiOperation("根据组织id查询项目的id集合")
     ResponseEntity<String> listProjectIdsInOrg(@RequestParam("tenant_id") Long tenantId);
+
+    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/users/{user_id}/projects")
+    @ApiOperation(value = "查询当前组织下用户的项目列表")
+    ResponseEntity<List<ProjectDTO>> listProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @PathVariable(name = "user_id") Long userId);
 }
