@@ -11,6 +11,10 @@ public class ResourceCheckConstant {
     private ResourceCheckConstant() {
 
     }
+    // app
+    public static final String ERROR_APP_GROUP_ID_IS_NULL = "error.app.group.id.is.null";
+    public static final String ERROR_APP_ARTIFACT_ID_IS_NULL = "error.app.artifact.id.is.null";
+
 
     // app service version
     public static final String ERROR_SERVICE_VERSION_VALUE_ID_IS_NULL = "error.service.version.value.id.is.null";

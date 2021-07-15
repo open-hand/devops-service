@@ -9,15 +9,10 @@ import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.JarSourceConfig;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
-import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.app.service.DevopsNormalInstanceService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
@@ -35,6 +30,7 @@ import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsHostAppInstanceRelMapper;
 import io.choerodon.devops.infra.mapper.DevopsNormalInstanceMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -50,10 +46,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
 
 /**
  * 〈功能简述〉
@@ -90,6 +86,10 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     private KeySocketSendHelper webSocketHelper;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
+    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
 
     @Override
     @Transactional
@@ -106,6 +106,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
         deploySourceVO.setDeployObjectId(jarDeployVO.getDeployObjectId());
 
+        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
         String deployObjectName = null;
         String deployVersion = null;
         // 0.1 查询部署信息
@@ -138,6 +139,8 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
             mavenRepoDTOList.add(nexusMavenRepoDTO);
 
+            appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, jarReleaseConfigVO.getGroupId(), jarReleaseConfigVO.getArtifactId());
+
             JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
             deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
             deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
@@ -154,6 +157,9 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
+
+            appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, groupId, artifactId);
+
         }
         if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
             throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
@@ -178,6 +184,20 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         devopsNormalInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
         devopsNormalInstanceDTO.setHostId(hostId);
         MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
+
+        // 有关联的应用，则保存关联关系
+        if (!CollectionUtils.isEmpty(appServiceDTOList)) {
+            Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            appIds.forEach(appId -> {
+                DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
+                devopsHostAppInstanceRelDTO.setAppSource(jarDeployVO.getSourceType());
+                devopsHostAppInstanceRelDTO.setAppId(appId);
+                devopsHostAppInstanceRelDTO.setInstanceId(devopsNormalInstanceDTO.getId());
+                devopsHostAppInstanceRelDTO.setHostId(hostId);
+                MapperUtil.resultJudgedInsert(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
+
+            });
+        }
 
         javaDeployDTO.setCmd(genCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
         javaDeployDTO.setJarName(deployObjectName);

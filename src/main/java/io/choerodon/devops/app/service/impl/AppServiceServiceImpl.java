@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -46,6 +47,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -2240,6 +2242,19 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Boolean checkDeleteEnvApp(Long appServiceId, Long envId) {
         return devopsEnvApplicationService.checkCanDelete(appServiceId, envId);
+    }
+
+    @Override
+    public List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId) {
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(groupId, ResourceCheckConstant.ERROR_APP_GROUP_ID_IS_NULL);
+        Assert.notNull(artifactId, ResourceCheckConstant.ERROR_APP_ARTIFACT_ID_IS_NULL);
+
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        appServiceDTO.setGroupId(groupId);
+        appServiceDTO.setArtifactId(artifactId);
+        return appServiceMapper.select(appServiceDTO);
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
