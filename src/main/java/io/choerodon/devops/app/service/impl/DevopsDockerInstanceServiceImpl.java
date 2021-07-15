@@ -24,6 +24,7 @@ import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -157,6 +158,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsHostAppInstanceRelDTO.setHostId(hostId);
             devopsHostAppInstanceRelDTO.setAppId(appServiceId);
             devopsHostAppInstanceRelDTO.setAppSource(dockerDeployVO.getSourceType());
+            devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
         }
 
@@ -217,7 +219,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         }
 
         // 判断镜像是否存在 存在删除 部署
-        return value;
+        StringBuilder dockerRunExec = new StringBuilder();
+        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
+        return dockerRunExec.toString();
     }
 
     private Boolean checkInstruction(String type, String instruction) {

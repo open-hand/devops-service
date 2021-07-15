@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.JavaInstanceStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -194,6 +195,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
                 devopsHostAppInstanceRelDTO.setAppId(appId);
                 devopsHostAppInstanceRelDTO.setInstanceId(devopsNormalInstanceDTO.getId());
                 devopsHostAppInstanceRelDTO.setHostId(hostId);
+                devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
                 MapperUtil.resultJudgedInsert(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
 
             });
