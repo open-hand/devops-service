@@ -108,6 +108,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsNormalInstanceService devopsNormalInstanceService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
+    @Autowired
+    private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
+    @Autowired
+    private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+
     @Autowired
     private SshUtil sshUtil;
 
