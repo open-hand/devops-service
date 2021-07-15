@@ -288,6 +288,7 @@ public interface DevopsHostService {
      * 主机连接
      *
      * @param projectId
+     * @param hostId
      * @param devopsHostConnectionVO
      */
     String connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO);
