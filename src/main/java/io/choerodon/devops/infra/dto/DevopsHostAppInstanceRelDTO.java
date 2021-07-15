@@ -39,6 +39,17 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
     @ApiModelProperty("实例id")
     private Long instanceId;
 
+    @ApiModelProperty("实例类型")
+    private String instanceType;
+
+    public String getInstanceType() {
+        return instanceType;
+    }
+
+    public void setInstanceType(String instanceType) {
+        this.instanceType = instanceType;
+    }
+
     public Long getId() {
         return id;
     }

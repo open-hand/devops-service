@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
@@ -58,6 +59,7 @@ public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDTO> {
 
     /**
      * 根据ids查出所有集群
+     *
      * @param clusterIds 集群ids
      * @return
      */
@@ -65,8 +67,19 @@ public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDTO> {
 
     /**
      * 更新集群状态为操作中，（status 字段作为乐观锁）
+     *
      * @param clusterId
      * @return
      */
     int updateClusterStatusToOperating(@Param("clusterId") Long clusterId);
+
+    /**
+     * 查询指定项目下的所有集群
+     *
+     * @param projectIds 项目ID列表
+     * @return 集群
+     */
+    List<DevopsClusterDTO> listByProject(@Param("organizationId") Long organizationId,
+                                         @Param("projectIds") List<Long> projectIds);
+
 }

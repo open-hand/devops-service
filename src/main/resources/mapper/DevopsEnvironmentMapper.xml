@@ -570,4 +570,21 @@
         WHERE de.cluster_id = #{clusterId,jdbcType=BIGINT}
           AND de.gitlab_env_project_id IS NOT NULL
     </select>
+    <select id="listByProject" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT
+            de.id,
+            de.name,
+            de.code,
+            de.type,
+            de.cluster_id,
+            de.env_id_rsa,
+            de.project_id
+        FROM devops_env de
+        WHERE
+          de.project_id IN
+        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+            #{projectId}
+        </foreach>
+    </select>
+
 </mapper>

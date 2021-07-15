@@ -12,6 +12,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance_rel.groovy') {
             column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: '实例id') {
                 constraints(nullable: false)
             }
+            column(name: 'instance_type', type: 'VARCHAR(32)', remarks: '实例类型') {
+                constraints(nullable: false)
+            }
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id') {
                 constraints(nullable: false)
             }

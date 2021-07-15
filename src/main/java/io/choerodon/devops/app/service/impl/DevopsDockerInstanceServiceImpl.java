@@ -9,15 +9,10 @@ import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
-import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsDockerInstanceService;
-import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
@@ -29,11 +24,13 @@ import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostAppInstanceRelMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -51,6 +48,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
+
+import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
 
 /**
  * 〈功能简述〉
@@ -84,6 +83,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
+    @Autowired
+    private AppServiceService appServiceService;
 
 
     @Override
@@ -98,6 +101,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         String deployObjectName = null;
         String deployVersion = null;
+        Long appServiceId = null;
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(dockerDeployVO.getSourceType());
@@ -107,6 +111,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
                 throw new CommonException("error.harbor.deploy.object.not.exist");
             }
+            appServiceId = marketServiceDeployObjectVO.getMarketServiceId();
+
             MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
 
             DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
@@ -125,8 +131,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
 
         } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
-            deployObjectName = dockerDeployVO.getImageInfo().getTag();
-            deployVersion = dockerDeployVO.getImageInfo().getImageName();
+            deployVersion = dockerDeployVO.getImageInfo().getTag();
+            deployObjectName = dockerDeployVO.getImageInfo().getImageName();
 
             HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(dockerDeployVO.getImageInfo().getRepoType(), TypeUtil.objToLong(dockerDeployVO.getImageInfo().getRepoId()), dockerDeployVO.getImageInfo().getImageName(), dockerDeployVO.getImageInfo().getTag());
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
@@ -135,6 +141,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             dockerDeployDTO.setDockerPullAccountDTO(ConvertUtils.convertObject(imageTagVo, DockerPullAccountDTO.class));
             dockerDeployDTO.setImage(imageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", ""));
 
+            AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
+            appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
         }
 
         // 2.保存记录
@@ -142,6 +150,17 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsDockerInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
         devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
         MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+
+        // 保存应用实例关系
+        if (appServiceId != null) {
+            DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
+            devopsHostAppInstanceRelDTO.setInstanceId(devopsDockerInstanceDTO.getId());
+            devopsHostAppInstanceRelDTO.setHostId(hostId);
+            devopsHostAppInstanceRelDTO.setAppId(appServiceId);
+            devopsHostAppInstanceRelDTO.setAppSource(dockerDeployVO.getSourceType());
+            devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
+            MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
+        }
 
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
