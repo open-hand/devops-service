@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
@@ -54,6 +56,8 @@ import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import static org.springframework.classify.PatternMatcher.match;
 
 /**
  * @author zmf
@@ -106,6 +110,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsNormalInstanceService devopsNormalInstanceService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private SshUtil sshUtil;
 
     private final Gson gson = new Gson();
 
@@ -119,7 +125,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+    public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostCreateRequestVO.getUsername(), devopsHostCreateRequestVO.getPassword());
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
@@ -130,8 +136,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
         devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
-        MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host");
-        return queryShell(projectId, devopsHostDTO.getId());
+        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
     }
 
     /**
@@ -815,6 +820,25 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public String queryUninstallShell(Long projectId, Long hostId) {
         return HOST_UNINSTALL_SHELL;
+    }
+
+    @Override
+    public String connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO) {
+        String commend = queryShell(projectId, hostId);
+        if (devopsHostConnectionVO.getConnectionType().equals(HostConnectionType.AUTOMATIC.value())) {
+            devopsHostAdditionalCheckValidator.validConnectInformationMatch(devopsHostConnectionVO);
+            SSHClient sshClient = null;
+            try {
+                sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
+                sshUtil.execCommand(sshClient, commend);
+                return null;
+            } catch (IOException exception) {
+                throw new CommonException("error.connect.host");
+            } finally {
+                IOUtils.closeQuietly(sshClient);
+            }
+        }
+        return commend;
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

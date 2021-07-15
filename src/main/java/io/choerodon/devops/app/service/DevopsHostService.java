@@ -26,7 +26,7 @@ public interface DevopsHostService {
      * @param devopsHostCreateRequestVO 主机相关数据
      * @return 创建后的主机
      */
-    String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO);
+    DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO);
 
     /**
      * 获得agent安装命令
@@ -283,4 +283,12 @@ public interface DevopsHostService {
     String queryShell(Long projectId, Long hostId);
 
     String queryUninstallShell(Long projectId, Long hostId);
+
+    /**
+     * 主机连接
+     *
+     * @param projectId
+     * @param devopsHostConnectionVO
+     */
+    String connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO);
 }
