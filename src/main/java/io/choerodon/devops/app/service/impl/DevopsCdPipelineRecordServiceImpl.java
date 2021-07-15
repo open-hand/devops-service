@@ -91,7 +91,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final String STAGE = "stage";
     private static final String TASK = "task";
     private static final String STOP = "stop";
-    private static final String COMMAND_SEPARATOR = "||";
+    private static final String COMMAND_SEPARATOR = "&&";
     private static final Integer WAIT_SECONDS = 6;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
