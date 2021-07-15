@@ -16,10 +16,6 @@ public class DockerDeployDTO {
     private String image;
     @ApiModelProperty("容器名")
     private String name;
-    @ApiModelProperty("主机端口")
-    private Integer hostPort;
-    @ApiModelProperty("容器端口")
-    private Integer containerPort;
     @ApiModelProperty("镜像拉取账户信息")
     private DockerPullAccountDTO dockerPullAccountDTO;
 
@@ -55,22 +51,6 @@ public class DockerDeployDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Integer getHostPort() {
-        return hostPort;
-    }
-
-    public void setHostPort(Integer hostPort) {
-        this.hostPort = hostPort;
-    }
-
-    public Integer getContainerPort() {
-        return containerPort;
-    }
-
-    public void setContainerPort(Integer containerPort) {
-        this.containerPort = containerPort;
     }
 
     public DockerPullAccountDTO getDockerPullAccountDTO() {

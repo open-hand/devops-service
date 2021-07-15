@@ -217,9 +217,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         }
 
         // 判断镜像是否存在 存在删除 部署
-        StringBuilder dockerRunExec = new StringBuilder();
-        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
-        return dockerRunExec.toString();
+        return value;
     }
 
     private Boolean checkInstruction(String type, String instruction) {
