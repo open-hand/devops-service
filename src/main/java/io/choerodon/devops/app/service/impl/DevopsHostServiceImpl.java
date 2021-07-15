@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +17,7 @@ import com.google.gson.reflect.TypeToken;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.UUIDUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -47,10 +49,10 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
-import io.choerodon.devops.infra.mapper.DevopsHostMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -106,6 +108,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsNormalInstanceService devopsNormalInstanceService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
+    @Autowired
+    private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
+    @Autowired
+    private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
 
     private final Gson gson = new Gson();
 
@@ -815,6 +823,37 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public String queryUninstallShell(Long projectId, Long hostId) {
         return HOST_UNINSTALL_SHELL;
+    }
+
+    @Override
+    public List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId) {
+        DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
+        devopsHostAppInstanceRelDTO.setAppId(appServiceId);
+        devopsHostAppInstanceRelDTO.setHostId(hostId);
+        List<DevopsHostAppInstanceRelDTO> devopsHostAppInstanceRelDTOS = devopsHostAppInstanceRelMapper.select(devopsHostAppInstanceRelDTO);
+        if (CollectionUtils.isEmpty(devopsHostAppInstanceRelDTOS)) {
+            return new ArrayList<>();
+        }
+        List<Object> hostInstances = new ArrayList<>();
+        //筛选出docker进程
+        List<DevopsHostAppInstanceRelDTO> dockerHostInstances = devopsHostAppInstanceRelDTOS.stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
+        //筛选出非docker进程
+        List<DevopsHostAppInstanceRelDTO> normalHostInstances = devopsHostAppInstanceRelDTOS.stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.NORMAL_PROCESS.value())).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(dockerHostInstances)) {
+            List<Long> dockerInstanceIds = dockerHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
+            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(dockerInstanceIds));
+            hostInstances.addAll(ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class));
+        }
+
+        if (!CollectionUtils.isEmpty(normalHostInstances)) {
+            List<Long> normalInstanceIds = normalHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
+            List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
+            hostInstances.addAll(ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class));
+        }
+        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
+
+        return hostInstances;
+
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
