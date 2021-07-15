@@ -19,4 +19,8 @@ public class DevopsHostConstants {
     public static String HOST_DOCKER_PROCESS_INFO_KEY = "devops:host:%s:dockerProcess";
 
 
+    public static String ERROR_SAVE_APP_HOST_REL_FAILED = "error.save.app.host.rel.failed";
+
+
+
 }
