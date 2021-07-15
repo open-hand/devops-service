@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +10,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import com.google.gson.Gson;
@@ -58,8 +56,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import static org.springframework.classify.PatternMatcher.match;
 
 /**
  * @author zmf
@@ -112,6 +108,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsNormalInstanceService devopsNormalInstanceService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private SshUtil sshUtil;
+
 
     private final Gson gson = new Gson();
 
