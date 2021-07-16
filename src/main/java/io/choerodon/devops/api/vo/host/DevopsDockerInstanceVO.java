@@ -46,6 +46,18 @@ public class DevopsDockerInstanceVO {
 
     private List<DockerPortMapping> portMappingList;
 
+
+    @ApiModelProperty("实例类型")
+    private String instanceType;
+
+    public String getInstanceType() {
+        return instanceType;
+    }
+
+    public void setInstanceType(String instanceType) {
+        this.instanceType = instanceType;
+    }
+
     public Date getCreationDate() {
         return creationDate;
     }
