@@ -572,10 +572,13 @@ public interface AppServiceService {
 
     /**
      * 根据坐标查询出项目下的应用列表
+     *
      * @param projectId
      * @param groupId
      * @param artifactId
      * @return
      */
     List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId);
+
+    Page<AppServiceRepVO> queryHostAppServices(Long projectId, PageRequest pageRequest);
 }
