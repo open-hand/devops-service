@@ -195,6 +195,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
                 devopsHostAppInstanceRelDTO.setAppId(appId);
                 devopsHostAppInstanceRelDTO.setInstanceId(devopsNormalInstanceDTO.getId());
                 devopsHostAppInstanceRelDTO.setHostId(hostId);
+                devopsHostAppInstanceRelDTO.setProjectId(projectId);
                 devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
                 MapperUtil.resultJudgedInsert(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
 
