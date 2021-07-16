@@ -1,13 +1,10 @@
 package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.HostAuthType;
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 /**
@@ -20,11 +17,9 @@ public class DevopsHostCreateRequestVO {
     @ApiModelProperty("主机名称")
     private String name;
 
-    @Pattern(regexp = GitOpsConstants.IP_PATTERN, message = "error.host.ip.invalid")
     @ApiModelProperty("主机ip")
     private String hostIp;
 
-    @Range(max = 65535, message = "error.ssh.port.invalid")
     @ApiModelProperty("主机ssh的端口")
     private Integer sshPort;
 

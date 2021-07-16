@@ -101,4 +101,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
         dropNotNullConstraint(columnName: "password", columnDataType: "VARCHAR(2048)", tableName: "devops_host")
         dropNotNullConstraint(columnName: "auth_type", columnDataType: "VARCHAR(63)", tableName: "devops_host")
     }
+
+    changeSet(author: 'shanyu', id: '2021-07-16-drop-constraint') {
+        dropNotNullConstraint(columnName: "host_ip", columnDataType: "VARCHAR(15)", tableName: "devops_host")
+        dropNotNullConstraint(columnName: "ssh_port", columnDataType: "SMALLINT UNSIGNED", tableName: "devops_host")
+    }
 }

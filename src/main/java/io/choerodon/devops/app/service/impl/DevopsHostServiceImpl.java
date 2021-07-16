@@ -128,11 +128,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostCreateRequestVO.getUsername(), devopsHostCreateRequestVO.getPassword());
         // 补充校验参数
+        boolean ipEmptyFlag = StringUtils.isNotEmpty(devopsHostCreateRequestVO.getHostIp());
+        boolean portEmptyFlag = devopsHostCreateRequestVO.getSshPort() != null;
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
-        devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
-
+        if (ipEmptyFlag && portEmptyFlag || (!ipEmptyFlag && !portEmptyFlag)) {
+            devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
+        } else {
+            throw new CommonException("error.host.ip.or.port.empty");
+        }
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
 
