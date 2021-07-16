@@ -850,10 +850,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!CollectionUtils.isEmpty(dockerHostInstances)) {
             List<Long> dockerInstanceIds = dockerHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(dockerInstanceIds));
-            devopsDockerInstanceDTOS.forEach(devopsDockerInstanceDTO -> {
-                devopsDockerInstanceDTO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
+            List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class);
+            devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
+                devopsDockerInstanceVO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
             });
-            hostInstances.addAll(ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class));
+            hostInstances.addAll(devopsDockerInstanceVOS);
         }
 
         if (!CollectionUtils.isEmpty(normalHostInstances)) {

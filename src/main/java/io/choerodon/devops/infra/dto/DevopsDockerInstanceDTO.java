@@ -43,17 +43,6 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
     @ApiModelProperty("部署来源")
     private String sourceType;
 
-    @ApiModelProperty("实例类型")
-    private String instanceType;
-
-    public String getInstanceType() {
-        return instanceType;
-    }
-
-    public void setInstanceType(String instanceType) {
-        this.instanceType = instanceType;
-    }
-
     public String getPorts() {
         return ports;
     }
