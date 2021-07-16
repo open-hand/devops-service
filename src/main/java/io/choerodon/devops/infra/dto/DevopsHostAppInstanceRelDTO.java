@@ -24,6 +24,9 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
+
+    private Long projectId;
+
     @Encrypt
     @ApiModelProperty("操作主机id")
     private Long hostId;
@@ -41,6 +44,14 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
 
     @ApiModelProperty("实例类型")
     private String instanceType;
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public String getInstanceType() {
         return instanceType;
