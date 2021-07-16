@@ -2264,16 +2264,24 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, PageRequest pageRequest) {
+    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, PageRequest pageRequest) {
         //查询有主机部署的应用服务
-        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId));
+        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, type));
         if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
             return new Page<>();
         }
         List<Long> appIds = serviceRepVOPage.getContent().stream().map(AppServiceRepVO::getId).collect(toList());
         List<AppServiceDTO> appServiceDTOS = appServiceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(appIds));
-        serviceRepVOPage.setContent(ConvertUtils.convertList(appServiceDTOS, AppServiceRepVO.class));
+        List<AppServiceRepVO> appServiceRepVOS = ConvertUtils.convertList(appServiceDTOS, AppServiceRepVO.class);
+        fillInfoAppService(appServiceRepVOS);
+        serviceRepVOPage.setContent(appServiceRepVOS);
         return serviceRepVOPage;
+    }
+
+    private void fillInfoAppService(List<AppServiceRepVO> appServiceRepVOS) {
+        appServiceRepVOS.forEach(appServiceRepVO -> {
+            // TODO: 2021/7/16 填充来源信息 
+        });
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
