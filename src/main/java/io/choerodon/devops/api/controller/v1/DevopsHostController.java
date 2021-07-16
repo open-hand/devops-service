@@ -9,6 +9,7 @@ import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -372,6 +373,7 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询主机的应用实例列表")
     @GetMapping("/{host_id}/app/{app_service_id}/instance/list")
+    @CustomPageRequest
     public ResponseEntity<List<?>> queryInstanceList(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -379,7 +381,8 @@ public class DevopsHostController {
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "host_id") Long hostId,
             @ApiParam(value = "应用服务id", required = true)
-            @Encrypt @PathVariable(value = "app_service_id") Long appServiceId) {
-        return ResponseEntity.ok(devopsHostService.queryInstanceList(projectId, hostId, appServiceId));
+            @Encrypt @PathVariable(value = "app_service_id") Long appServiceId,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
+        return ResponseEntity.ok(devopsHostService.queryInstanceList(projectId, hostId, appServiceId, pageRequest));
     }
 }

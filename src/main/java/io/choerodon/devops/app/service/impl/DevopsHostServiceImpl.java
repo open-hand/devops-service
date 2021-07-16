@@ -826,22 +826,33 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId) {
+    public List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest) {
         DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
         devopsHostAppInstanceRelDTO.setAppId(appServiceId);
         devopsHostAppInstanceRelDTO.setHostId(hostId);
-        List<DevopsHostAppInstanceRelDTO> devopsHostAppInstanceRelDTOS = devopsHostAppInstanceRelMapper.select(devopsHostAppInstanceRelDTO);
-        if (CollectionUtils.isEmpty(devopsHostAppInstanceRelDTOS)) {
+        Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.select(devopsHostAppInstanceRelDTO));
+        if (CollectionUtils.isEmpty(hostAppInstanceRelDTOPage.getContent())) {
             return new ArrayList<>();
         }
         List<Object> hostInstances = new ArrayList<>();
+        handHostProcess(hostAppInstanceRelDTOPage, hostInstances);
+        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
+
+        return hostInstances;
+
+    }
+
+    private void handHostProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {
         //筛选出docker进程
-        List<DevopsHostAppInstanceRelDTO> dockerHostInstances = devopsHostAppInstanceRelDTOS.stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
+        List<DevopsHostAppInstanceRelDTO> dockerHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
         //筛选出非docker进程
-        List<DevopsHostAppInstanceRelDTO> normalHostInstances = devopsHostAppInstanceRelDTOS.stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.NORMAL_PROCESS.value())).collect(Collectors.toList());
+        List<DevopsHostAppInstanceRelDTO> normalHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.NORMAL_PROCESS.value())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(dockerHostInstances)) {
             List<Long> dockerInstanceIds = dockerHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(dockerInstanceIds));
+            devopsDockerInstanceDTOS.forEach(devopsDockerInstanceDTO -> {
+                devopsDockerInstanceDTO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
+            });
             hostInstances.addAll(ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class));
         }
 
@@ -850,10 +861,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
             hostInstances.addAll(ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class));
         }
-        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
-
-        return hostInstances;
-
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
