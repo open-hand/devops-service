@@ -884,8 +884,9 @@ public class AppServiceController {
     public ResponseEntity<Page<AppServiceRepVO>> queryHostAppServices(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "type", required = false) String type,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(applicationServiceService.queryHostAppServices(projectId, pageRequest));
+        return ResponseEntity.ok(applicationServiceService.queryHostAppServices(projectId, type, pageRequest));
     }
 }
 
