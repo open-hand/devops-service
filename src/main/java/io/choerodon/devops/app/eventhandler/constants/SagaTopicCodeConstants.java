@@ -287,16 +287,6 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
 
     /**
-     * 部署redis
-     */
-    public static final String DEVOPS_DEPLOY_REDIS = "deploy_redis";
-
-    /**
-     * 部署mysql
-     */
-    public static final String DEVOPS_DEPLOY_MYSQL = "deploy_mysql";
-
-    /**
      * 删除tag
      */
     public static final String DEVOPS_GIT_TAG_DELETE = "devops-git-tag-delete";

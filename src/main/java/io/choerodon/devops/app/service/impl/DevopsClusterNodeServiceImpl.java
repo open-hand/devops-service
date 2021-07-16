@@ -539,7 +539,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 安装基础环境、git、ansible
             try {
                 LOGGER.info(">>>>>>>>> [check node] key {} :initialize the environment <<<<<<<<<", redisKey);
-                sshUtil.uploadPreProcessShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode(), "kube");
+                sshUtil.uploadPreProcessShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode());
                 ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, PRE_KUBEADM_HA_SH));
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
                     throw new Exception(String.format(">>>>>>>>> [check node] failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));

@@ -15,7 +15,15 @@ public enum HostInstanceType {
     /**
      * docker进程
      */
-    DOCKER_PROCESS("docker_process");
+    DOCKER_PROCESS("docker_process"),
+    /**
+     * 中间件redis
+     */
+    MIDDLEWARE_REDIS("middleware_redis"),
+    /**
+     * 中间件MySQL
+     */
+    MIDDLEWARE_MYSQL("middleware_mysql");
 
     private final String value;
 
