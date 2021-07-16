@@ -32,6 +32,7 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.map.Serializers;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -2263,14 +2264,16 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, PageRequest pageRequest) {
+    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, PageRequest pageRequest) {
         //查询有主机部署的应用服务
-//        DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
-//        devopsHostAppInstanceRelDTO.setAppId();
-//        devopsHostAppInstanceRelDTO
-//        devopsHostAppInstanceRelMapper.select();
-
-        return null;
+        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId));
+        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
+            return new Page<>();
+        }
+        List<Long> appIds = serviceRepVOPage.getContent().stream().map(AppServiceRepVO::getId).collect(toList());
+        List<AppServiceDTO> appServiceDTOS = appServiceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(appIds));
+        serviceRepVOPage.setContent(ConvertUtils.convertList(appServiceDTOS, AppServiceRepVO.class));
+        return serviceRepVOPage;
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
