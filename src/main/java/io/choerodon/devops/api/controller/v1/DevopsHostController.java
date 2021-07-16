@@ -45,13 +45,12 @@ public class DevopsHostController {
     @ApiOperation("创建主机")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping
-    public ResponseEntity<String> createHost(
+    public ResponseEntity<DevopsHostVO> createHost(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "创建主机相关参数")
             @RequestBody @Valid DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        String resp = devopsHostService.createHost(projectId, devopsHostCreateRequestVO);
-        return Results.success(resp);
+        return Results.success(devopsHostService.createHost(projectId, devopsHostCreateRequestVO));
     }
 
     @ApiOperation("更新主机")

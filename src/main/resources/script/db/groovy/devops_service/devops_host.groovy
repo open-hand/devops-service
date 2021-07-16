@@ -105,5 +105,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
     changeSet(author: 'shanyu', id: '2021-07-16-drop-constraint') {
         dropNotNullConstraint(columnName: "host_ip", columnDataType: "VARCHAR(15)", tableName: "devops_host")
         dropNotNullConstraint(columnName: "ssh_port", columnDataType: "SMALLINT UNSIGNED", tableName: "devops_host")
+        dropUniqueConstraint(constraintName: "uk_project_ip_port", tableName: "devops_host")
     }
 }

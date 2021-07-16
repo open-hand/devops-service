@@ -127,7 +127,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public String createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+    public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         // 补充校验参数
         boolean ipEmptyFlag = StringUtils.isNotEmpty(devopsHostCreateRequestVO.getHostIp());
         boolean portEmptyFlag = devopsHostCreateRequestVO.getSshPort() != null;
@@ -142,8 +142,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
         devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
-        MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host");
-        return queryShell(projectId, devopsHostDTO.getId());
+        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
     }
 
     /**
