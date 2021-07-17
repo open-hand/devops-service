@@ -14,7 +14,7 @@ import java.util.Date;
  */
 public class DockerProcessInfoVO {
     @Encrypt
-    private Long instanceId;
+    private String instanceId;
     private String containerId;
     private String image;
     private String name;
@@ -23,11 +23,11 @@ public class DockerProcessInfoVO {
     private IamUserDTO deployer;
     private Date deployDate;
 
-    public Long getInstanceId() {
+    public String getInstanceId() {
         return instanceId;
     }
 
-    public void setInstanceId(Long instanceId) {
+    public void setInstanceId(String instanceId) {
         this.instanceId = instanceId;
     }
 
