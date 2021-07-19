@@ -2,6 +2,7 @@ package io.choerodon.devops.app.eventhandler.host;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +12,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.devops.api.vo.host.CommandResultVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
-import io.choerodon.devops.app.service.DevopsDockerInstanceService;
-import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.app.service.DevopsNormalInstanceService;
-import io.choerodon.devops.app.service.HostCommandHandler;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
@@ -33,7 +31,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
 @Component
 public class CommandResultHandler implements HostMsgHandler {
 
-    private Map<String, HostCommandHandler<DevopsHostCommandDTO, String>> resultHandlerMap = new HashMap<>();
+    private Map<String, Consumer<String>> resultHandlerMap = new HashMap<>();
 
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
@@ -41,17 +39,18 @@ public class CommandResultHandler implements HostMsgHandler {
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsNormalInstanceService devopsNormalInstanceService;
-
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private DevopsCdPipelineService devopsCdPipelineService;
 
     @PostConstruct
     void init() {
-        resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (devopsHostCommandDTO, payload) -> {
+        resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
             devopsNormalInstanceService.baseDelete(processInfoVO.getInstanceId());
         });
-        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (devopsHostCommandDTO, payload) -> {
+        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
             DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.baseQuery(processInfoVO.getInstanceId());
             devopsNormalInstanceDTO.setStatus(processInfoVO.getStatus());
@@ -59,11 +58,11 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsNormalInstanceDTO.setPort(processInfoVO.getPort());
             devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
         });
-        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (devopsHostCommandDTO, payload) -> {
+        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
         });
-        HostCommandHandler<DevopsHostCommandDTO, String> dockerUpdateConsumer = (devopsHostCommandDTO, payload) -> {
+        Consumer<String> dockerUpdateConsumer = (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             // 更新状态和容器id
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
@@ -72,7 +71,7 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
         };
         resultHandlerMap.put(HostCommandEnum.STOP_DOCKER.value(), dockerUpdateConsumer);
-        resultHandlerMap.put(HostCommandEnum.START_DOCKER.value(), (devopsHostCommandDTO, payload) -> {
+        resultHandlerMap.put(HostCommandEnum.START_DOCKER.value(), (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             // 更新状态和容器id
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
@@ -94,17 +93,18 @@ public class CommandResultHandler implements HostMsgHandler {
             // 操作成功处理逻辑
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.SUCCESS.value());
             // 使用函数式接口 + 策略模式
-
-            HostCommandHandler<DevopsHostCommandDTO, String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
+            Consumer<String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
             if (consumer != null) {
-                consumer.accept(devopsHostCommandDTO, commandResultVO.getPayload());
+                consumer.accept(commandResultVO.getPayload());
             }
         } else {
-            // 操作失败处理逻辑
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.FAILED.value());
             devopsHostCommandDTO.setError(commandResultVO.getErrorMsg());
         }
         devopsHostCommandService.baseUpdate(devopsHostCommandDTO);
+        if (devopsHostCommandDTO.getCdJobRecordId() != null) {
+            devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
+        }
     }
 
     @Override
