@@ -21,6 +21,7 @@ public class DevopsHostConstants {
 
 
     public static String ERROR_SAVE_APP_HOST_REL_FAILED = "error.save.app.host.rel.failed";
+    public static String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
 
     public static String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
 
