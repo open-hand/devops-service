@@ -40,9 +40,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
+import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
@@ -60,6 +62,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum;
+import io.choerodon.devops.infra.enums.deploy.JavaInstanceStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
@@ -193,6 +196,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    DevopsNormalInstanceMapper devopsNormalInstanceMapper;
 
 
 
@@ -811,9 +816,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
             pipelineDeployImage(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
         } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-            cdHostJarDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+            pipelineDeployJar(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
         } else {
-            cdHostCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+            pipelineCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
         }
 
 //        if (online) {
@@ -840,6 +845,198 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //            }
 //        }
 
+    }
+
+    private void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        // todo 未完成
+        LOGGER.info("========================================");
+        LOGGER.info("start custom deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        StringBuilder log = new StringBuilder();
+        try {
+            // 0.1 查询部署信息
+            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+            String value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), StandardCharsets.UTF_8);
+//            sshExecCustom(value, log);
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SUCCESS.toValue());
+        } catch (Exception e) {
+            jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+        }
+    }
+
+    private void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        LOGGER.info("========================================");
+        LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+
+        DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
+
+        JarDeployVO jarDeployVO = new JarDeployVO();
+        jarDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
+        Long projectId = projectDTO.getId();
+
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
+        deploySourceVO.setProjectName(projectDTO.getName());
+        try {
+            // 0.1 查询部署信息
+            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+            CdHostDeployConfigVO.JarDeploy jarDeploy = cdHostDeployConfigVO.getJarDeploy();
+
+            jarDeployVO.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), StandardCharsets.UTF_8));
+
+            C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
+
+            // 0.2 从制品库获取仓库信息
+            Long nexusRepoId;
+            String groupId;
+            String artifactId;
+            String versionRegular;
+
+            if (jarDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
+                nexusRepoId = jarDeploy.getRepositoryId();
+                groupId = jarDeploy.getGroupId();
+                artifactId = jarDeploy.getArtifactId();
+                versionRegular = jarDeploy.getVersionRegular();
+            } else {
+                if (ObjectUtils.isEmpty(cdPipelineRecordDTO.getGitlabPipelineId())) {
+                    throw new CommonException("error.no.gitlab.pipeline.id");
+                }
+                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getGitlabPipelineId(), jarDeploy.getPipelineTask());
+                nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
+                groupId = ciPipelineMavenDTO.getGroupId();
+                artifactId = ciPipelineMavenDTO.getArtifactId();
+                //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
+                versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
+            }
+
+            // 0.3 获取并记录信息
+            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), nexusRepoId, groupId, artifactId, versionRegular);
+            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+                devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
+                LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                return;
+            }
+            List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(nexusRepoId));
+            if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
+                throw new CommonException("error.get.maven.config");
+            }
+
+            C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
+
+
+
+
+            jarDeployVO.setProdJarInfoVO(new ProdJarInfoVO(nexusRepoId,
+                    groupId,
+                    artifactId,
+                    c7nNexusComponentDTO.getVersion()));
+
+            // 1.更新流水线状态 记录信息
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+            c7nNexusDeployDTO.setJarName(getJarName(c7nNexusDeployDTO.getDownloadUrl()));
+            jobRecordDTO.setDeployMetadata(gson.toJson(c7nNexusDeployDTO));
+            devopsCdJobRecordService.update(jobRecordDTO);
+
+            // 2. 执行jar部署
+            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
+
+            Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+            String hostName = null;
+            if (hostId == null) {
+                hostName = cdHostDeployConfigVO.getHostConnectionVO().getHostIp();
+            } else {
+                DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+                hostName = devopsHostDTO != null ? devopsHostDTO.getName() : null;
+            }
+
+            JavaDeployDTO javaDeployDTO = new JavaDeployDTO();
+
+            JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
+            jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
+            jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
+            jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
+            javaDeployDTO.setJarPullInfoDTO(jarPullInfoDTO);
+
+
+            // 2.保存记录
+            DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO();
+            devopsNormalInstanceDTO.setName(c7nNexusComponentDTO.getName());
+            devopsNormalInstanceDTO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+            devopsNormalInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
+            devopsNormalInstanceDTO.setHostId(hostId);
+            MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
+
+            // 有关联的应用，则保存关联关系
+            List<AppServiceDTO> appServiceDTOList = applicationService.listByProjectIdAndGAV(projectId, groupId, artifactId);
+            if (!CollectionUtils.isEmpty(appServiceDTOList)) {
+                Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+                appIds.forEach(appId -> {
+                    DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
+                    devopsHostAppInstanceRelDTO.setAppSource(jarDeployVO.getSourceType());
+                    devopsHostAppInstanceRelDTO.setAppId(appId);
+                    devopsHostAppInstanceRelDTO.setInstanceId(devopsNormalInstanceDTO.getId());
+                    devopsHostAppInstanceRelDTO.setHostId(hostId);
+                    devopsHostAppInstanceRelDTO.setProjectId(projectId);
+                    devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
+                    MapperUtil.resultJudgedInsert(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
+
+                });
+            }
+
+            javaDeployDTO.setCmd(HostDeployUtil.genJavaRunCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
+            javaDeployDTO.setJarName(c7nNexusComponentDTO.getName());
+            javaDeployDTO.setInstanceId(String.valueOf(devopsNormalInstanceDTO.getId()));
+
+            DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+            devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
+            devopsHostCommandDTO.setHostId(hostId);
+            devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
+            devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+            devopsHostCommandDTO.setInstanceId(devopsNormalInstanceDTO.getId());
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+            devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+            // 保存执行记录
+            devopsDeployRecordService.saveRecord(
+                    jobRecordDTO.getProjectId(),
+                    DeployType.AUTO,
+                    null,
+                    DeployModeEnum.HOST,
+                    hostId,
+                    hostName,
+                    PipelineStatus.SUCCESS.toValue(),
+                    DeployObjectTypeEnum.JAR,
+                    c7nNexusComponentDTO.getName(),
+                    c7nNexusComponentDTO.getVersion(),
+                    null, deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+
+            // 3. 发送部署指令给agent
+            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+            hostAgentMsgVO.setHostId(String.valueOf(hostId));
+            hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
+            hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
+            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                    String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsNormalInstanceDTO.getId()),
+                    JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+
+        } catch (Exception e) {
+            LOGGER.info("error.trigger.external.approval.task", e);
+
+            devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId);
+            devopsCdJobRecordService.update(jobRecordDTO);
+            devopsCdStageRecordService.updateStageStatusFailed(cdStageRecordId);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            workFlowServiceOperator.stopInstance(cdPipelineRecordDTO.getProjectId(), cdPipelineRecordDTO.getBusinessKey());
+        }
     }
 
     private void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {

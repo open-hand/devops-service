@@ -24,6 +24,16 @@ public class ProdJarInfoVO {
     @ApiModelProperty("版本")
     private String version;
 
+    public ProdJarInfoVO() {
+    }
+
+    public ProdJarInfoVO(Long repositoryId, String groupId, String artifactId, String version) {
+        this.repositoryId = repositoryId;
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+    }
+
     public Long getRepositoryId() {
         return repositoryId;
     }
