@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -93,6 +96,8 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     @Autowired
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
 
+    private static final BASE64Decoder decoder = new BASE64Decoder();
+
     @Override
     @Transactional
     public void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO) {
@@ -108,6 +113,11 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
         deploySourceVO.setDeployObjectId(jarDeployVO.getDeployObjectId());
 
+        try {
+            jarDeployVO.setValue(new String(decoder.decodeBuffer(jarDeployVO.getValue()), StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            LOGGER.info("decode values failed!!!!. {}", jarDeployVO.getValue());
+        }
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
         String deployObjectName = null;
         String deployVersion = null;
