@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
-
-import javax.annotation.Nullable;
 
 public interface DevopsCdPipelineService {
 
@@ -127,4 +127,6 @@ public interface DevopsCdPipelineService {
      */
     @Nullable
     PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long instanceId);
+
+    void hostDeployStatusUpdate(Long jobRecordId, Boolean status, String error);
 }
