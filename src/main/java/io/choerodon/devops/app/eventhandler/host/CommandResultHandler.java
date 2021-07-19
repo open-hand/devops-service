@@ -61,12 +61,12 @@ public class CommandResultHandler implements HostMsgHandler {
         });
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
-            devopsDockerInstanceService.baseDelete(processInfoVO.getInstanceId());
+            devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
         });
         Consumer<String> dockerUpdateConsumer = (payload) -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             // 更新状态和容器id
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(processInfoVO.getInstanceId());
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsDockerInstanceDTO.setContainerId(processInfoVO.getContainerId());
             devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
             devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
