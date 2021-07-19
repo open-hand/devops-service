@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 〈功能简述〉
@@ -46,6 +47,16 @@ public class DevopsHostCommandDTO extends AuditDomain {
     private String status;
     @ApiModelProperty("错误信息")
     private String error;
+    @ApiModelProperty("操作关联的流水线任务记录id/nullable, 不为空则说明操作关联了流水线任务")
+    private Long cdJobRecordId;
+
+    public Long getCdJobRecordId() {
+        return cdJobRecordId;
+    }
+
+    public void setCdJobRecordId(Long cdJobRecordId) {
+        this.cdJobRecordId = cdJobRecordId;
+    }
 
     public Long getId() {
         return id;

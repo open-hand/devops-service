@@ -1,5 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
+
+import java.util.List;
+import java.util.Objects;
+
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
@@ -31,25 +46,10 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostAppInstanceRelMapper;
+import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
-import java.util.Objects;
-
-import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
 
 /**
  * 〈功能简述〉
@@ -173,7 +173,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
 
-        dockerDeployDTO.setCmd(genCmd(dockerDeployDTO, dockerDeployVO.getValue()));
+        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, dockerDeployVO.getValue()));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
@@ -205,32 +205,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
-    }
-
-    private String genCmd(DockerDeployDTO dockerDeployDTO, String value) {
-        String[] strings = value.split("\n");
-        String values = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
-                values = s;
-            }
-        }
-        if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
-            throw new CommonException("error.instruction");
-        }
-
-        // 判断镜像是否存在 存在删除 部署
-        StringBuilder dockerRunExec = new StringBuilder();
-        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
-        return dockerRunExec.toString();
-    }
-
-    private Boolean checkInstruction(String type, String instruction) {
-        if (type.equals("jar")) {
-            return instruction.contains("${jar}");
-        } else {
-            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d ");
-        }
     }
 
     @Override

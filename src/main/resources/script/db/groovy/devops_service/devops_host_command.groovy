@@ -17,6 +17,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_command.groovy') {
             column(name: 'command_type', type: 'VARCHAR(32)', remarks: '操作类型') {
                 constraints(nullable: false)
             }
+
+            column(name: 'cd_job_record_id', type: 'BIGINT UNSIGNED', remarks: '关联流水线任务id，为空则表示没有与流水线任务关联')
+
             column(name: 'status', type: 'VARCHAR(32)', remarks: '操作状态') {
                 constraints(nullable: false)
             }
