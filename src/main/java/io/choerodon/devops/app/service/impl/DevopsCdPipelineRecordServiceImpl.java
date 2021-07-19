@@ -1133,6 +1133,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
             devopsDockerInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
             devopsDockerInstanceDTO.setImage(image);
+            devopsDockerInstanceDTO.setHostId(hostId);
+            devopsDockerInstanceDTO.setName(imageDeploy.getContainerName());
+            devopsDockerInstanceDTO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
 
             // 保存应用实例关系
@@ -1157,7 +1160,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
             dockerDeployDTO.setImage(image);
-            dockerDeployDTO.setName(imageDeploy.getImageName());
+            dockerDeployDTO.setName(imageDeploy.getContainerName());
             dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO,
                     new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
             dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
