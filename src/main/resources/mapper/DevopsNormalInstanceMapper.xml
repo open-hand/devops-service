@@ -4,9 +4,9 @@
 
     <select id="listByHostId" resultType="io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO">
         select *
-        from devops_java_instance dji
-        where dji.host_id = #{hostId}
-        order by dji.creation_date desc
+        from devops_normal_instance dni
+        where dni.host_id = #{hostId}
+        order by dni.creation_date desc
     </select>
 
 </mapper>
