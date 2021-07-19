@@ -158,13 +158,12 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         // 保存应用实例关系
         if (appServiceId != null) {
-            DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
-            devopsHostAppInstanceRelDTO.setInstanceId(devopsDockerInstanceDTO.getId());
-            devopsHostAppInstanceRelDTO.setHostId(hostId);
-            devopsHostAppInstanceRelDTO.setAppId(appServiceId);
-            devopsHostAppInstanceRelDTO.setAppSource(dockerDeployVO.getSourceType());
-            devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
-            devopsHostAppInstanceRelDTO.setProjectId(projectId);
+            DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO(projectId,
+                    hostId,
+                    appServiceId,
+                    dockerDeployVO.getSourceType(),
+                    devopsDockerInstanceDTO.getId(),
+                    HostInstanceType.DOCKER_PROCESS.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
         }
 

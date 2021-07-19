@@ -1140,12 +1140,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             // 保存应用实例关系
             if (appServiceId != null) {
-                DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
-                devopsHostAppInstanceRelDTO.setInstanceId(devopsDockerInstanceDTO.getId());
-                devopsHostAppInstanceRelDTO.setHostId(hostId);
-                devopsHostAppInstanceRelDTO.setAppId(appServiceId);
-                devopsHostAppInstanceRelDTO.setAppSource(AppSourceType.CURRENT_PROJECT.getValue());
-                devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
+                DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO(projectId,
+                        hostId,
+                        appServiceId,
+                        AppSourceType.CURRENT_PROJECT.getValue(),
+                        devopsDockerInstanceDTO.getId(),
+                        HostInstanceType.DOCKER_PROCESS.value());
                 MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
             }
 
