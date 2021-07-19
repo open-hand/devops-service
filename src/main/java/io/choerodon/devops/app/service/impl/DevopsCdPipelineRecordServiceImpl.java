@@ -1084,7 +1084,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
                     }
                 }
-
+                image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
                 // 设置拉取账户
                 dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
                         imageTagVo.getHarborUrl(),
