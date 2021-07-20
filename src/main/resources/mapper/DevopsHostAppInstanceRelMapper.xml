@@ -15,4 +15,18 @@
 	       dhair.app_id
     </select>
 
+    <select id="queryInstanceListByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppInstanceRelDTO">
+        SELECT
+	     dhair.instance_id,
+	     dhair.app_source
+        FROM
+	     `devops_host_app_instance_rel` dhair
+        WHERE
+	      dhair.project_id = #{projectId,jdbcType=BIGINT}
+        <if test="hostId != null and  hostId != 0">
+            dhair.host_id = #{hostId,jdbcType=BIGINT}
+        </if>
+
+    </select>
+
 </mapper>

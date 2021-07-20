@@ -851,6 +851,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     }
 
+    @Override
+    public List<?> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest) {
+        Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostId(projectId, hostId));
+        if (CollectionUtils.isEmpty(hostAppInstanceRelDTOPage.getContent())) {
+            return new ArrayList<>();
+        }
+        List<Object> hostInstances = new ArrayList<>();
+        handHostProcess(hostAppInstanceRelDTOPage, hostInstances);
+        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
+        return hostInstances;
+    }
+
     private void handHostProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {
         //筛选出docker进程
         List<DevopsHostAppInstanceRelDTO> dockerHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());

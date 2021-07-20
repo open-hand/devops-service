@@ -152,25 +152,29 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         }
         if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
             try {
-                SonarClient sonarClient = RetrofitHandler.getSonarClient(
-                        sonarQubeConfigVO.getSonarUrl(),
-                        SONAR,
-                        sonarQubeConfigVO.getUsername(),
-                        sonarQubeConfigVO.getPassword());
-
-                Response<Void> execute = sonarClient.getUser().execute();
-                if (!Objects.isNull(execute.errorBody())) {
-                    LOGGER.error("test connect response code :{},error messsage:{}", execute.code(), execute.errorBody().toString());
-                    return false;
-                } else {
-                    return true;
-                }
+                return tryCheckSonarConnect(sonarQubeConfigVO);
             } catch (Exception e) {
                 LOGGER.error("error connect :", e);
                 return false;
             }
         }
         return true;
+    }
+
+    private Boolean tryCheckSonarConnect(SonarQubeConfigVO sonarQubeConfigVO) throws IOException {
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(
+                sonarQubeConfigVO.getSonarUrl(),
+                SONAR,
+                sonarQubeConfigVO.getUsername(),
+                sonarQubeConfigVO.getPassword());
+
+        Response<Void> execute = sonarClient.getUser().execute();
+        if (!Objects.isNull(execute.errorBody())) {
+            LOGGER.error("test connect response code :{},error messsage:{}", execute.code(), execute.errorBody().toString());
+            return false;
+        } else {
+            return true;
+        }
     }
 
     @Override
