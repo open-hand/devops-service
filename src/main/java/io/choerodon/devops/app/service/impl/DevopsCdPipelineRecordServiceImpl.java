@@ -195,7 +195,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
-    DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+    private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+    @Autowired
+    private DevopsDockerInstanceService devopsDockerInstanceService;
 
 
     @Value("${choerodon.online:true}")
@@ -1158,25 +1160,31 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             // 1. 更新状态 记录镜像信息
             // 2.保存记录
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
-            devopsDockerInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
-            devopsDockerInstanceDTO.setImage(image);
-            devopsDockerInstanceDTO.setHostId(hostId);
-            devopsDockerInstanceDTO.setName(imageDeploy.getContainerName());
-            devopsDockerInstanceDTO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
-            MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
 
-            // 保存应用实例关系
-            if (appServiceId != null) {
-                DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO(projectId,
-                        hostId,
-                        appServiceId,
-                        AppSourceType.CURRENT_PROJECT.getValue(),
-                        devopsDockerInstanceDTO.getId(),
-                        HostInstanceType.DOCKER_PROCESS.value());
-                MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
+            if (devopsDockerInstanceDTO == null) {
+                // 新建实例
+                devopsDockerInstanceDTO = new DevopsDockerInstanceDTO(hostId,
+                        imageDeploy.getContainerName(),
+                        image,
+                        DockerInstanceStatusEnum.OPERATING.value(),
+                        AppSourceType.CURRENT_PROJECT.getValue());
+                MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+                // 保存应用实例关系
+                if (appServiceId != null) {
+                    DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO(projectId,
+                            hostId,
+                            appServiceId,
+                            AppSourceType.CURRENT_PROJECT.getValue(),
+                            devopsDockerInstanceDTO.getId(),
+                            HostInstanceType.DOCKER_PROCESS.value());
+                    MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper,
+                            devopsHostAppInstanceRelDTO,
+                            ERROR_SAVE_APP_HOST_REL_FAILED);
+                }
+            } else {
+
             }
-
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_DOCKER.value());
