@@ -1,5 +1,25 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import sun.misc.BASE64Decoder;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -33,24 +53,9 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostAppInstanceRelMapper;
 import io.choerodon.devops.infra.mapper.DevopsNormalInstanceMapper;
+import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
 
 /**
  * 〈功能简述〉
@@ -64,7 +69,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsNormalInstanceServiceImpl.class);
 
-    private static final String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
     private static final String ERROR_JAR_VERSION_NOT_FOUND = "error.jar.version.not.found";
     private static final String ERROR_DEPLOY_JAR_FAILED = "error.deploy.jar.failed";
@@ -92,6 +96,8 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     @Autowired
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
 
+    private static final BASE64Decoder decoder = new BASE64Decoder();
+
     @Override
     @Transactional
     public void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO) {
@@ -107,6 +113,11 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
         deploySourceVO.setDeployObjectId(jarDeployVO.getDeployObjectId());
 
+        try {
+            jarDeployVO.setValue(new String(decoder.decodeBuffer(jarDeployVO.getValue()), StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            LOGGER.info("decode values failed!!!!. {}", jarDeployVO.getValue());
+        }
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
         String deployObjectName = null;
         String deployVersion = null;
@@ -184,7 +195,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         devopsNormalInstanceDTO.setSourceType(jarDeployVO.getSourceType());
         devopsNormalInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
         devopsNormalInstanceDTO.setHostId(hostId);
-        MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
+        MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         // 有关联的应用，则保存关联关系
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {
@@ -195,13 +206,14 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
                 devopsHostAppInstanceRelDTO.setAppId(appId);
                 devopsHostAppInstanceRelDTO.setInstanceId(devopsNormalInstanceDTO.getId());
                 devopsHostAppInstanceRelDTO.setHostId(hostId);
+                devopsHostAppInstanceRelDTO.setProjectId(projectId);
                 devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
                 MapperUtil.resultJudgedInsert(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
 
             });
         }
 
-        javaDeployDTO.setCmd(genCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
+        javaDeployDTO.setCmd(HostDeployUtil.genJavaRunCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
         javaDeployDTO.setJarName(deployObjectName);
         javaDeployDTO.setInstanceId(String.valueOf(devopsNormalInstanceDTO.getId()));
 
@@ -232,7 +244,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
 
@@ -245,41 +256,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
     }
 
-    private String genCmd(JavaDeployDTO javaDeployDTO, JarDeployVO jarDeployVO, Long instanceId) {
-        StringBuilder cmdStr = new StringBuilder();
-        String workingPath = "$HOME/choerodon/" + instanceId;
-
-        cmdStr.append(String.format("mkdir -p %s/temp-jar && ", workingPath));
-        cmdStr.append(String.format("mkdir -p %s/temp-log && ", workingPath));
-        String jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
-        // 2.2
-        String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                jarPathAndName,
-                javaDeployDTO.getJarPullInfoDTO().getPullUserId(),
-                javaDeployDTO.getJarPullInfoDTO().getPullUserPassword(),
-                javaDeployDTO.getJarPullInfoDTO().getDownloadUrl());
-        cmdStr.append(curlExec).append(" && ");
-
-        // 2.3
-        String[] strings = jarDeployVO.getValue().split("\n");
-        String values = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
-                values = s;
-            }
-        }
-        if (StringUtils.isEmpty(values) || !values.contains("${jar}")) {
-            throw new CommonException("error.instruction");
-        }
-
-        String logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
-        String logPathAndName = workingPath + "/temp-log/" + logName;
-        String javaJarExec = values.replace("${jar}", jarPathAndName);
-
-        cmdStr.append(javaJarExec);
-        StringBuilder finalCmdStr = new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
-        return finalCmdStr.toString();
-    }
 
     @Override
     public List<DevopsNormalInstanceDTO> listByHostId(Long hostId) {

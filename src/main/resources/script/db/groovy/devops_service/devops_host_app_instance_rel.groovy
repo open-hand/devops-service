@@ -6,6 +6,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance_rel.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
+                constraints(nullable: false)
+            }
             column(name: 'host_id', type: 'BIGINT UNSIGNED', remarks: '主机id') {
                 constraints(nullable: false)
             }

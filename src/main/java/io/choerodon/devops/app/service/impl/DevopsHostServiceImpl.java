@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.schmizz.sshj.SSHClient;
@@ -46,7 +46,8 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.DevopsHostStatus;
+import io.choerodon.devops.infra.enums.DevopsHostType;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
@@ -76,13 +77,23 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String HOST_UNINSTALL_SHELL = "ps aux|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
+    static {
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
+            HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.host.sh");
+        }
+    }
+
+    private final Gson gson = new Gson();
+    @Autowired
+    EncryptService encryptService;
     @Value("${services.gateway.url}")
     private String apiHost;
     @Value("${devops.host.binary-download-url}")
     private String binaryDownloadUrl;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
-
     @Autowired
     private DevopsHostMapper devopsHostMapper;
     @Lazy
@@ -95,8 +106,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
-    EncryptService encryptService;
-    @Autowired
     private DevopsHostCommandService devopsHostCommandService;
     @Autowired
     private KeySocketSendHelper webSocketHelper;
@@ -108,34 +117,20 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsNormalInstanceService devopsNormalInstanceService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
     private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
 
-    @Autowired
-    private SshUtil sshUtil;
-
-
-    private final Gson gson = new Gson();
-
-    static {
-        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
-            HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new CommonException("error.load.host.sh");
-        }
-    }
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostCreateRequestVO.getUsername(), devopsHostCreateRequestVO.getPassword());
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
-        devopsHostAdditionalCheckValidator.validIpAndSshPortProjectUnique(projectId, devopsHostCreateRequestVO.getHostIp(), devopsHostCreateRequestVO.getSshPort());
-
+        devopsHostAdditionalCheckValidator.validIpAndSshPortComplete(devopsHostCreateRequestVO);
+        devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
 
@@ -680,7 +675,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
@@ -706,11 +700,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.REMOVE_DOCKER.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+        DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setInstanceId(instanceId);
+        dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
+        dockerProcessInfoVO.setName(dockerInstanceDTO.getName());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -732,11 +728,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.STOP_DOCKER.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setInstanceId(instanceId);
+        dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
+        dockerProcessInfoVO.setName(devopsDockerInstanceDTO.getName());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -758,11 +756,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.RESTART_DOCKER.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setInstanceId(instanceId);
+        dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -784,11 +781,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.START_DOCKER.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
-        dockerProcessInfoVO.setInstanceId(instanceId);
+        dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
+        dockerProcessInfoVO.setName(devopsDockerInstanceDTO.getName());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -828,42 +827,35 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public String connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO) {
-        String commend = queryShell(projectId, hostId);
-        if (devopsHostConnectionVO.getConnectionType().equals(HostConnectionType.AUTOMATIC.value())) {
-            devopsHostAdditionalCheckValidator.validConnectInformationMatch(devopsHostConnectionVO);
-            SSHClient sshClient = null;
-            try {
-                sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
-                sshUtil.execCommand(sshClient, commend);
-                return null;
-            } catch (IOException exception) {
-                throw new CommonException("error.connect.host");
-            } finally {
-                IOUtils.closeQuietly(sshClient);
-            }
-        }
-        return commend;
-    }
-
-    @Override
-    public List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId) {
+    public List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest) {
         DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
         devopsHostAppInstanceRelDTO.setAppId(appServiceId);
         devopsHostAppInstanceRelDTO.setHostId(hostId);
-        List<DevopsHostAppInstanceRelDTO> devopsHostAppInstanceRelDTOS = devopsHostAppInstanceRelMapper.select(devopsHostAppInstanceRelDTO);
-        if (CollectionUtils.isEmpty(devopsHostAppInstanceRelDTOS)) {
+        Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.select(devopsHostAppInstanceRelDTO));
+        if (CollectionUtils.isEmpty(hostAppInstanceRelDTOPage.getContent())) {
             return new ArrayList<>();
         }
         List<Object> hostInstances = new ArrayList<>();
+        handHostProcess(hostAppInstanceRelDTOPage, hostInstances);
+        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
+
+        return hostInstances;
+
+    }
+
+    private void handHostProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {
         //筛选出docker进程
-        List<DevopsHostAppInstanceRelDTO> dockerHostInstances = devopsHostAppInstanceRelDTOS.stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
+        List<DevopsHostAppInstanceRelDTO> dockerHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
         //筛选出非docker进程
-        List<DevopsHostAppInstanceRelDTO> normalHostInstances = devopsHostAppInstanceRelDTOS.stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.NORMAL_PROCESS.value())).collect(Collectors.toList());
+        List<DevopsHostAppInstanceRelDTO> normalHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.NORMAL_PROCESS.value())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(dockerHostInstances)) {
             List<Long> dockerInstanceIds = dockerHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(dockerInstanceIds));
-            hostInstances.addAll(ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class));
+            List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class);
+            devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
+                devopsDockerInstanceVO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
+            });
+            hostInstances.addAll(devopsDockerInstanceVOS);
         }
 
         if (!CollectionUtils.isEmpty(normalHostInstances)) {
@@ -871,10 +863,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
             hostInstances.addAll(ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class));
         }
-        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
-
-        return hostInstances;
-
     }
 
     private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {

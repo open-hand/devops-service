@@ -19,6 +19,15 @@ public class DockerPullAccountDTO {
     @ApiModelProperty("拉取密码")
     private String pullPassword;
 
+    public DockerPullAccountDTO() {
+    }
+
+    public DockerPullAccountDTO(String harborUrl, String pullAccount, String pullPassword) {
+        this.harborUrl = harborUrl;
+        this.pullAccount = pullAccount;
+        this.pullPassword = pullPassword;
+    }
+
     public String getHarborUrl() {
         return harborUrl;
     }

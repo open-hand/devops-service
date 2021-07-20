@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -25,10 +26,13 @@ import javax.annotation.Nullable;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
+
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.map.Serializers;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -238,6 +242,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private DevopsEnvApplicationService devopsEnvApplicationService;
+    @Autowired
+    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -2255,6 +2261,27 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setGroupId(groupId);
         appServiceDTO.setArtifactId(artifactId);
         return appServiceMapper.select(appServiceDTO);
+    }
+
+    @Override
+    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, PageRequest pageRequest) {
+        //查询有主机部署的应用服务
+        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, type));
+        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
+            return new Page<>();
+        }
+        List<Long> appIds = serviceRepVOPage.getContent().stream().map(AppServiceRepVO::getId).collect(toList());
+        List<AppServiceDTO> appServiceDTOS = appServiceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(appIds));
+        List<AppServiceRepVO> appServiceRepVOS = ConvertUtils.convertList(appServiceDTOS, AppServiceRepVO.class);
+        fillInfoAppService(appServiceRepVOS);
+        serviceRepVOPage.setContent(appServiceRepVOS);
+        return serviceRepVOPage;
+    }
+
+    private void fillInfoAppService(List<AppServiceRepVO> appServiceRepVOS) {
+        appServiceRepVOS.forEach(appServiceRepVO -> {
+            // TODO: 2021/7/16 填充来源信息 
+        });
     }
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {

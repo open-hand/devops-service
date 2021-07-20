@@ -8,19 +8,10 @@ package io.choerodon.devops.api.vo.host;
  * @Date 2021/6/28 14:37
  */
 public class HostAgentMsgVO {
-    private String key;
     private String type;
     private String payload;
     private String commandId;
     private String hostId;
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
 
     public String getType() {
         return type;

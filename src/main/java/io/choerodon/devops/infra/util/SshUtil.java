@@ -463,25 +463,13 @@ public class SshUtil {
         }
     }
 
-    public void uploadPreProcessShell(SSHClient ssh, String suffix, String type) throws IOException {
+    public void uploadPreProcessShell(SSHClient ssh, String suffix) throws IOException {
         InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/pre-process.sh");
         Map<String, String> map = new HashMap<>();
-        switch (type) {
-            case "kube":
-                map.put("{{ git-clone }}", "if [ -d \"/tmp/kubeadm-ha\" ]; then\n" +
-                        "    rm -rf /tmp/kubeadm-ha\n" +
-                        "fi\n" +
-                        "git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha");
-                break;
-            case "middleware":
-                map.put("{{ git-clone }}", "if [ -d \"/tmp/middleware\" ]; then\n" +
-                        "    rm -rf /tmp/middleware\n" +
-                        "fi\n" +
-                        "git clone https://gitee.com/open-hand/middleware.git /tmp/middleware");
-                break;
-            default:
-                throw new CommonException("error.unsupported.preprocess.type", type);
-        }
+        map.put("{{ git-clone }}", "if [ -d \"/tmp/kubeadm-ha\" ]; then\n" +
+                "    rm -rf /tmp/kubeadm-ha\n" +
+                "fi\n" +
+                "git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha");
         String preProcessShell = FileUtil.replaceReturnString(shellInputStream, map);
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "pre-process.sh";
         FileUtil.saveDataToFile(filePath, preProcessShell);

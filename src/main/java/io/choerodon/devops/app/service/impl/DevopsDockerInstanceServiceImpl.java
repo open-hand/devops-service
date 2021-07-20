@@ -1,5 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
+
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import sun.misc.BASE64Decoder;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
@@ -31,25 +49,10 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostAppInstanceRelMapper;
+import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
-import java.util.Objects;
-
-import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
 
 /**
  * 〈功能简述〉
@@ -87,6 +90,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
     @Autowired
     private AppServiceService appServiceService;
+
+    private static final BASE64Decoder decoder = new BASE64Decoder();
 
 
     @Override
@@ -153,12 +158,12 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         // 保存应用实例关系
         if (appServiceId != null) {
-            DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
-            devopsHostAppInstanceRelDTO.setInstanceId(devopsDockerInstanceDTO.getId());
-            devopsHostAppInstanceRelDTO.setHostId(hostId);
-            devopsHostAppInstanceRelDTO.setAppId(appServiceId);
-            devopsHostAppInstanceRelDTO.setAppSource(dockerDeployVO.getSourceType());
-            devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
+            DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO(projectId,
+                    hostId,
+                    appServiceId,
+                    dockerDeployVO.getSourceType(),
+                    devopsDockerInstanceDTO.getId(),
+                    HostInstanceType.DOCKER_PROCESS.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
         }
 
@@ -170,9 +175,13 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostCommandDTO.setInstanceId(devopsDockerInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-
-        dockerDeployDTO.setCmd(genCmd(dockerDeployDTO, dockerDeployVO.getValue()));
+        String values = null;
+        try {
+            values = new String(decoder.decodeBuffer(dockerDeployVO.getValue()), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LOGGER.info("decode values failed!!!!. {}", dockerDeployVO.getValue());
+        }
+        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, values));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
@@ -194,7 +203,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
 
@@ -204,32 +212,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
-    }
-
-    private String genCmd(DockerDeployDTO dockerDeployDTO, String value) {
-        String[] strings = value.split("\n");
-        String values = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
-                values = s;
-            }
-        }
-        if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
-            throw new CommonException("error.instruction");
-        }
-
-        // 判断镜像是否存在 存在删除 部署
-        StringBuilder dockerRunExec = new StringBuilder();
-        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
-        return dockerRunExec.toString();
-    }
-
-    private Boolean checkInstruction(String type, String instruction) {
-        if (type.equals("jar")) {
-            return instruction.contains("${jar}");
-        } else {
-            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d ");
-        }
     }
 
     @Override

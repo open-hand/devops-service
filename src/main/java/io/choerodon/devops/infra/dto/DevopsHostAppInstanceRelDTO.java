@@ -1,14 +1,15 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 〈功能简述〉
@@ -24,6 +25,9 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
+
+    private Long projectId;
+
     @Encrypt
     @ApiModelProperty("操作主机id")
     private Long hostId;
@@ -41,6 +45,26 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
 
     @ApiModelProperty("实例类型")
     private String instanceType;
+
+    public DevopsHostAppInstanceRelDTO() {
+    }
+
+    public DevopsHostAppInstanceRelDTO(Long projectId, Long hostId, Long appId, String appSource, Long instanceId, String instanceType) {
+        this.projectId = projectId;
+        this.hostId = hostId;
+        this.appId = appId;
+        this.appSource = appSource;
+        this.instanceId = instanceId;
+        this.instanceType = instanceType;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public String getInstanceType() {
         return instanceType;

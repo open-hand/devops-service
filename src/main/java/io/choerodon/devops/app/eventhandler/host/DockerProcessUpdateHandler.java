@@ -1,20 +1,21 @@
 package io.choerodon.devops.app.eventhandler.host;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  * @Date 2021/6/27 20:35
  */
 @Component
-public class DockerProcessUpdateHandler implements HostMsgHandler{
+public class DockerProcessUpdateHandler implements HostMsgHandler {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -45,7 +46,7 @@ public class DockerProcessUpdateHandler implements HostMsgHandler{
         // 处理更新的数据
         List<DockerProcessInfoVO> updateProcessInfos = dockerProcessUpdatePayload.getUpdateProcessInfos();
         updateProcessInfos.forEach(addProcessInfo -> {
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getInstanceId());
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(Long.valueOf(addProcessInfo.getInstanceId()));
             if (devopsDockerInstanceDTO != null) {
                 devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
                 devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
