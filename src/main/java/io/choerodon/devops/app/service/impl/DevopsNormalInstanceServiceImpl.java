@@ -215,7 +215,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             });
         }
 
-        HostDeployUtil.genJavaRunCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId());
+        javaDeployDTO.setCmd(HostDeployUtil.genJavaRunCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
         javaDeployDTO.setJarName(deployObjectName);
         javaDeployDTO.setInstanceId(String.valueOf(devopsNormalInstanceDTO.getId()));
 
