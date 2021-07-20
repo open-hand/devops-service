@@ -36,10 +36,11 @@ public class DevopsHostAdditionalCheckValidator {
         CommonExAssertUtil.assertTrue(!(StringUtils.isNotEmpty(username) && StringUtils.isEmpty(password)), "error.host.password.empty");
     }
 
-    public void validIpAndSshPortComplete(DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
+    public boolean validIpAndSshPortComplete(DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         boolean ipEmptyFlag = StringUtils.isNotEmpty(devopsHostCreateRequestVO.getHostIp());
         boolean portEmptyFlag = devopsHostCreateRequestVO.getSshPort() != null;
-        CommonExAssertUtil.assertTrue(ipEmptyFlag && portEmptyFlag || (!ipEmptyFlag && !portEmptyFlag), "error.host.ip.or.port.empty");
+        CommonExAssertUtil.assertTrue((ipEmptyFlag && portEmptyFlag) || (!ipEmptyFlag && !portEmptyFlag), "error.host.ip.or.port.empty");
+        return ipEmptyFlag;
     }
 
     public void validHostInformationMatch(DevopsHostCreateRequestVO devopsHostCreateRequestVO) {

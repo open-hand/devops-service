@@ -130,8 +130,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
-        devopsHostAdditionalCheckValidator.validIpAndSshPortComplete(devopsHostCreateRequestVO);
-        devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
+        if (devopsHostAdditionalCheckValidator.validIpAndSshPortComplete(devopsHostCreateRequestVO)) {
+            devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
+        }
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
 
