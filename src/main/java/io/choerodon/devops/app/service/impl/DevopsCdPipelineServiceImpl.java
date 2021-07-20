@@ -1402,7 +1402,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
         } else {
             devopsCdJobRecordDTO.setLog(error);
-            devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, false);
         }
