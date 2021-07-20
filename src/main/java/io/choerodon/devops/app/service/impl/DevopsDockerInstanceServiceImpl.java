@@ -237,4 +237,11 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         return devopsDockerInstanceMapper.listByHostId(hostId);
     }
+
+    @Override
+    public DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName) {
+        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        Assert.notNull(containerName, ResourceCheckConstant.ERROR_CONTAINER_NAME_IS_NULL);
+        return devopsDockerInstanceMapper.selectOne(new DevopsDockerInstanceDTO(hostId, containerName));
+    }
 }

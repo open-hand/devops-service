@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-
-import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -29,4 +29,7 @@ public interface DevopsDockerInstanceService {
 
 
     List<DevopsDockerInstanceDTO> listByHostId(Long hostId);
+
+    DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName);
+
 }
