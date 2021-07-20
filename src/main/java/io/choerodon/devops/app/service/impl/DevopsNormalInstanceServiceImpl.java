@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
-import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -196,8 +195,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         devopsNormalInstanceDTO.setSourceType(jarDeployVO.getSourceType());
         devopsNormalInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
         devopsNormalInstanceDTO.setHostId(hostId);
-        devopsNormalInstanceDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, ERROR_SAVE_JAVA_INSTANCE_FAILED);
+        MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         // 有关联的应用，则保存关联关系
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {

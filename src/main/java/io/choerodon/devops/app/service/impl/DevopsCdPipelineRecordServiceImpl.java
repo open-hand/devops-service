@@ -1233,7 +1233,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             LOGGER.info("error.trigger.external.approval.task", e);
 
             devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId);
-            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             devopsCdStageRecordService.updateStageStatusFailed(cdStageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
