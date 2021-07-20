@@ -1216,6 +1216,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     null,
                     deploySourceVO, DetailsHelper.getUserDetails().getUserId());
 
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+
             // 4. 发送部署指令给agent
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(hostId));
