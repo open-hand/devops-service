@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 public class JavaProcessUpdateHandler implements HostMsgHandler {
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
     private DevopsNormalInstanceService devopsNormalInstanceService;
 
     @Override
@@ -49,10 +47,12 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
         List<JavaProcessInfoVO> updateProcessInfos = javaProcessUpdatePayload.getUpdateProcessInfos();
         if (!CollectionUtils.isEmpty(updateProcessInfos)) {
             updateProcessInfos.forEach(updateProcessInfo -> {
-                DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsJavaInstanceDTOMap.get(updateProcessInfo.getInstanceId());
-                devopsNormalInstanceDTO.setStatus(updateProcessInfo.getStatus());
-                devopsNormalInstanceDTO.setPort(updateProcessInfo.getPort());
-                devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
+                DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
+                if (devopsNormalInstanceDTO != null) {
+                    devopsNormalInstanceDTO.setStatus(updateProcessInfo.getStatus());
+                    devopsNormalInstanceDTO.setPort(updateProcessInfo.getPort());
+                    devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
+                }
             });
         }
 
