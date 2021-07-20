@@ -48,11 +48,11 @@ public class CommandResultHandler implements HostMsgHandler {
     void init() {
         resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
-            devopsNormalInstanceService.baseDelete(processInfoVO.getInstanceId());
+            devopsNormalInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
         });
         resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (payload) -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
-            DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.baseQuery(processInfoVO.getInstanceId());
+            DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsNormalInstanceDTO.setStatus(processInfoVO.getStatus());
             devopsNormalInstanceDTO.setPid(processInfoVO.getPid());
             devopsNormalInstanceDTO.setPort(processInfoVO.getPort());

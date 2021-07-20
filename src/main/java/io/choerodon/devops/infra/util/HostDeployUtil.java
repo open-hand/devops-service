@@ -1,9 +1,16 @@
 package io.choerodon.devops.infra.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
 
@@ -15,6 +22,17 @@ import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
  * @Date 2021/7/16 11:12
  */
 public class HostDeployUtil {
+
+    private static final String JAVA_DEPLOY_COMMAND_TEMPLATE;
+
+    static {
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/java_deploy.sh")) {
+            JAVA_DEPLOY_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.java.deploy.sh");
+        }
+    }
+
     public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
         String[] strings = value.split("\n");
         String values = "";
@@ -34,19 +52,17 @@ public class HostDeployUtil {
     }
 
     public static String genJavaRunCmd(JavaDeployDTO javaDeployDTO, JarDeployVO jarDeployVO, Long instanceId) {
-        StringBuilder cmdStr = new StringBuilder();
-        String workingPath = "$HOME/choerodon/" + instanceId;
+        Map<String, String> params = new HashMap<>();
+        params.put("{{ WORKING_PATH }}", "$HOME/choerodon/" + instanceId);
 
-        cmdStr.append(String.format("mkdir -p %s/temp-jar && ", workingPath));
-        cmdStr.append(String.format("mkdir -p %s/temp-log && ", workingPath));
+        String workingPath = "$HOME/choerodon/" + instanceId;
         String jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
+
         // 2.2
-        String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                jarPathAndName,
-                javaDeployDTO.getJarPullInfoDTO().getPullUserId(),
-                javaDeployDTO.getJarPullInfoDTO().getPullUserPassword(),
-                javaDeployDTO.getJarPullInfoDTO().getDownloadUrl());
-        cmdStr.append(curlExec).append(" && ");
+        params.put("{{ JAR_NAME }}", jarPathAndName);
+        params.put("{{ USER_ID }}", javaDeployDTO.getJarPullInfoDTO().getPullUserId());
+        params.put("{{ PASSWORD }}", javaDeployDTO.getJarPullInfoDTO().getPullUserPassword());
+        params.put("{{ DOWNLOAD_URL }}", javaDeployDTO.getJarPullInfoDTO().getDownloadUrl());
 
         // 2.3
         String[] strings = jarDeployVO.getValue().split("\n");
@@ -62,11 +78,10 @@ public class HostDeployUtil {
 
         String logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
         String logPathAndName = workingPath + "/temp-log/" + logName;
-        String javaJarExec = values.replace("${jar}", jarPathAndName);
+        String javaJarExec = values.replace("${jar}", jarPathAndName) + String.format("> %s 2>&1", logPathAndName);
+        params.put("{{ JAVA_JAR_EXEC }}", javaJarExec);
 
-        cmdStr.append(javaJarExec);
-        StringBuilder finalCmdStr = new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
-        return finalCmdStr.toString();
+        return FileUtil.replaceReturnString(JAVA_DEPLOY_COMMAND_TEMPLATE, params);
     }
 
     private static Boolean checkInstruction(String type, String instruction) {

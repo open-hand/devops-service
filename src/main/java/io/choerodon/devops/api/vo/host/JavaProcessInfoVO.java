@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.vo.host;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-
 import java.util.Date;
+
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 〈功能简述〉
@@ -12,7 +12,7 @@ import java.util.Date;
  * @Date 2021/6/25 17:35
  */
 public class JavaProcessInfoVO {
-    private Long instanceId;
+    private String instanceId;
     private String pid;
     private String port;
     private String status;
@@ -27,11 +27,11 @@ public class JavaProcessInfoVO {
         this.status = status;
     }
 
-    public Long getInstanceId() {
+    public String getInstanceId() {
         return instanceId;
     }
 
-    public void setInstanceId(Long instanceId) {
+    public void setInstanceId(String instanceId) {
         this.instanceId = instanceId;
     }
 
