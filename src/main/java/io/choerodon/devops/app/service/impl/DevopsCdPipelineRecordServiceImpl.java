@@ -198,7 +198,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     DevopsNormalInstanceMapper devopsNormalInstanceMapper;
 
 
-
     @Value("${choerodon.online:true}")
     private Boolean online;
 
@@ -957,8 +956,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
 
             C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
-
-
 
 
             jarDeployVO.setProdJarInfoVO(new ProdJarInfoVO(nexusRepoId,

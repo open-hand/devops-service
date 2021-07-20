@@ -677,8 +677,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+        DevopsNormalInstanceDTO normalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
-        javaProcessInfoVO.setInstanceId(instanceId);
+        javaProcessInfoVO.setInstanceId(String.valueOf(instanceId));
+        javaProcessInfoVO.setPid(normalInstanceDTO.getPid());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
