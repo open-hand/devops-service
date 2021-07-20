@@ -25,20 +25,6 @@ public class DevopsAnsibleCommandConstants {
     public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo \"%s\" > %s";
 
     /**
-     * 保存redis配置
-     */
-    public static final String SAVE_REDIS_CONFIGURATION = "cat <<EOF >/tmp/redis-configuration.yml\n" +
-            "%s\n" +
-            "EOF";
-
-    /**
-     * 保存MySQL配置
-     */
-    public static final String SAVE_MYSQL_NODE_CONFIGURATION = "cat <<EOF >/tmp/middleware/host_vars/%s.yml\n" +
-            "%s\n" +
-            "EOF";
-
-    /**
      * 创建多节点配置目录
      */
     public static final String MKDIR_FOR_MULTI_NODE_CONFIGURATION = "mkdir -p /tmp/middleware/host_vars";
