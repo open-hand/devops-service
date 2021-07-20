@@ -920,8 +920,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             jarDeployVO.setValue(new String(decoder.decodeBuffer(jarDeploy.getValue()), StandardCharsets.UTF_8));
 
-            C7nNexusDeployDTO c7nNexusDeployDTO = new C7nNexusDeployDTO();
-
             // 0.2 从制品库获取仓库信息
             Long nexusRepoId;
             String groupId;
@@ -965,14 +963,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     artifactId,
                     c7nNexusComponentDTO.getVersion()));
 
-            // 1.更新流水线状态 记录信息
-            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-            c7nNexusDeployDTO.setJarName(getJarName(c7nNexusDeployDTO.getDownloadUrl()));
-            jobRecordDTO.setDeployMetadata(gson.toJson(c7nNexusDeployDTO));
-            devopsCdJobRecordService.update(jobRecordDTO);
-
-            // 2. 执行jar部署
-            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), c7nNexusDeployDTO.getJarName());
 
             Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
             String hostName = null;
@@ -991,6 +981,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
             javaDeployDTO.setJarPullInfoDTO(jarPullInfoDTO);
 
+            // 1.更新流水线状态 记录信息
+            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+            jobRecordDTO.setDeployMetadata(gson.toJson(jarPullInfoDTO));
+            devopsCdJobRecordService.update(jobRecordDTO);
+
+            // 2. 执行jar部署
+            devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
 
             // 2.保存记录
             DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO();
