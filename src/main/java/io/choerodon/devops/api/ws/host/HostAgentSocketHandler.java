@@ -94,6 +94,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
             LOGGER.warn("Send to session: session is unexpectedly closed. the message is {}", webSocketMessage.getPayload());
         }
     }
+
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         String hostId = WebSocketTool.getHostId(session);
@@ -121,7 +122,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
         HostMsgHandler hostMsgHandler = hostMsgHandlerMap.get(msg.getType());
         if (hostMsgHandler == null) {
-            LOGGER.info("unknown msg type, msg {}", msg);
+            LOGGER.info("unknown msg type, msg {}", msg.getType());
             return;
         }
         hostMsgHandler.handler(msg.getHostId(), msg.getCommandId(), msg.getPayload());
