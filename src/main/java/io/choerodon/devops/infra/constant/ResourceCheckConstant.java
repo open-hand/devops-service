@@ -46,4 +46,5 @@ public class ResourceCheckConstant {
 
     // host
     public static final String ERROR_HOST_ID_IS_NULL = "error.host.id.is.null";
+    public static final String ERROR_CONTAINER_NAME_IS_NULL = "error.container.name.is.null";
 }

@@ -132,8 +132,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         // 补充校验参数
         devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
-        devopsHostAdditionalCheckValidator.validIpAndSshPortComplete(devopsHostCreateRequestVO);
-        devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
+        if (devopsHostAdditionalCheckValidator.validIpAndSshPortComplete(devopsHostCreateRequestVO)) {
+            devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
+        }
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
         devopsHostDTO.setProjectId(projectId);
 
@@ -680,8 +681,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+        DevopsNormalInstanceDTO normalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
-        javaProcessInfoVO.setInstanceId(instanceId);
+        javaProcessInfoVO.setInstanceId(String.valueOf(instanceId));
+        javaProcessInfoVO.setPid(normalInstanceDTO.getPid());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -709,7 +713,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
-        dockerProcessInfoVO.setName(dockerInstanceDTO.getName());
+        dockerProcessInfoVO.setContainerId(dockerInstanceDTO.getContainerId());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -737,7 +741,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
-        dockerProcessInfoVO.setName(devopsDockerInstanceDTO.getName());
+        dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -761,8 +765,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setType(HostCommandEnum.RESTART_DOCKER.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
+        dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -790,7 +798,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
-        dockerProcessInfoVO.setName(devopsDockerInstanceDTO.getName());
+        dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -865,6 +873,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         return hostInstances;
 
+    }
+
+    @Override
+    public List<?> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest) {
+        Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostId(projectId, hostId));
+        if (CollectionUtils.isEmpty(hostAppInstanceRelDTOPage.getContent())) {
+            return new ArrayList<>();
+        }
+        List<Object> hostInstances = new ArrayList<>();
+        handHostProcess(hostAppInstanceRelDTOPage, hostInstances);
+        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
+        return hostInstances;
     }
 
     private void handHostProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {

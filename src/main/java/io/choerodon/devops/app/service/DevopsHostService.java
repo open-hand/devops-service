@@ -286,6 +286,8 @@ public interface DevopsHostService {
 
     List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest);
 
+    List<?>  queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest);
+
     /**
      * 主机连接
      *

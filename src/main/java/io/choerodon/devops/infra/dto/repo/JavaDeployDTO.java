@@ -18,6 +18,8 @@ public class JavaDeployDTO {
     private String jarName;
     @ApiModelProperty("当前部署实例id")
     private String instanceId;
+    @ApiModelProperty("部署jar命令")
+    private String cmd;
 
     public String getInstanceId() {
         return instanceId;
@@ -34,8 +36,6 @@ public class JavaDeployDTO {
     public void setJarName(String jarName) {
         this.jarName = jarName;
     }
-
-    private String cmd;
 
     public String getCmd() {
         return cmd;
