@@ -2,10 +2,8 @@ package io.choerodon.devops.api.validator;
 
 import java.util.regex.Pattern;
 
-import io.choerodon.devops.api.vo.DevopsHostConnectionVO;
 import io.choerodon.devops.api.vo.DevopsHostCreateRequestVO;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.enums.HostAuthType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -50,9 +48,5 @@ public class DevopsHostAdditionalCheckValidator {
         CommonExAssertUtil.assertTrue(devopsHostCreateRequestVO.getSshPort() <= 65535, "error.ssh.port.invalid");
         CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getUsername()), "error.host.username.empty");
         CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getPassword()), "error.host.password.empty");
-    }
-
-    public void validHostAuthTypeMatch(DevopsHostConnectionVO devopsHostConnectionVO) {
-        CommonExAssertUtil.assertTrue(devopsHostConnectionVO.getAuthType().equals(HostAuthType.ACCOUNTPASSWORD.value()) || devopsHostConnectionVO.getAuthType().equals(HostAuthType.PUBLICKEY.value()), "error.host.auth.type.invalid");
     }
 }

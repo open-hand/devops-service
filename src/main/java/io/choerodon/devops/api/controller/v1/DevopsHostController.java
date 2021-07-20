@@ -29,6 +29,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -403,12 +404,24 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "主机连接")
     @PostMapping("/{host_id}/connection_host")
-    public ResponseEntity<String> connectHost(
+    public ResponseEntity<Void> connectHost(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "主机id", required = true)
             @PathVariable("host_id") Long hostId,
             @RequestBody @Valid DevopsHostConnectionVO devopsHostConnectionVO) {
-        return ResponseEntity.ok(devopsHostService.connectHost(projectId, hostId, devopsHostConnectionVO));
+        devopsHostService.connectHost(projectId, hostId, devopsHostConnectionVO);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "主机连接")
+    @GetMapping("/{host_id}/connection_host")
+    public ResponseEntity<Map<Object, Object>> queryConnectHost(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable("host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostService.queryConnectHost(projectId, hostId));
     }
 }

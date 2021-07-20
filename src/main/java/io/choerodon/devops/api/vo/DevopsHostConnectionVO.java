@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
+import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.devops.infra.enums.HostConnectionType;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -15,6 +16,10 @@ public class DevopsHostConnectionVO {
     @ApiModelProperty("主机ssh的端口")
     private Integer sshPort;
 
+    /**
+     * {@link HostAuthType}
+     */
+    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = HostAuthType.class, skipNull = true)
     @ApiModelProperty("认证类型")
     private String authType;
 
