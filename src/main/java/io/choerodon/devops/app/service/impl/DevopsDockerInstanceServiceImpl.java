@@ -181,7 +181,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         } catch (IOException e) {
             LOGGER.info("decode values failed!!!!. {}", dockerDeployVO.getValue());
         }
-        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, values));
+        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, null, values));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
