@@ -244,7 +244,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
-        hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + hostId);
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
 
