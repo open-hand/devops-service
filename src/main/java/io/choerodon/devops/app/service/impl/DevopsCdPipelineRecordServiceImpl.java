@@ -1077,10 +1077,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
 
-        DeploySourceVO deploySourceVO = new DeploySourceVO();
-        deploySourceVO.setType(AppSourceType.CURRENT_PROJECT.getValue());
-        deploySourceVO.setProjectName(projectDTO.getName());
-
         try {
             // 0.2
             if (imageDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
@@ -1201,7 +1197,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+                    new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()),
+                    DetailsHelper.getUserDetails().getUserId());
 
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
 
