@@ -14,6 +14,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.infra.enums.HostConnectionType;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -123,6 +124,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
     private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+    @Autowired
+    private SshUtil sshUtil;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -824,6 +827,27 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public String queryUninstallShell(Long projectId, Long hostId) {
         return HOST_UNINSTALL_SHELL;
+    }
+
+    @Override
+    public String connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO) {
+        String commend = queryShell(projectId, hostId);
+        if (devopsHostConnectionVO.getConnectionType().equals(HostConnectionType.AUTOMATIC.value())) {
+
+            devopsHostAdditionalCheckValidator.validHostInformationMatch(Objects.requireNonNull(ConvertUtils.convertObject(devopsHostConnectionVO, DevopsHostCreateRequestVO.class)));
+            devopsHostAdditionalCheckValidator.validHostAuthTypeMatch(devopsHostConnectionVO);
+            SSHClient sshClient = null;
+            try {
+                sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
+                sshUtil.execCommand(sshClient, commend);
+                return null;
+            } catch (IOException exception) {
+                throw new CommonException("error.connect.host");
+            } finally {
+                IOUtils.closeQuietly(sshClient);
+            }
+        }
+        return commend;
     }
 
     @Override

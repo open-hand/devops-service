@@ -285,4 +285,13 @@ public interface DevopsHostService {
     String queryUninstallShell(Long projectId, Long hostId);
 
     List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest);
+
+    /**
+     * 主机连接
+     *
+     * @param projectId
+     * @param hostId
+     * @param devopsHostConnectionVO
+     */
+    String connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO);
 }
