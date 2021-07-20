@@ -958,13 +958,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             artifactId,
                             c7nNexusComponentDTO.getVersion()));
 
-            JavaDeployDTO javaDeployDTO = new JavaDeployDTO();
+
 
             JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
             jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
             jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
             jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
-            javaDeployDTO.setJarPullInfoDTO(jarPullInfoDTO);
+
 
             // 1.更新流水线状态 记录信息
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
@@ -999,9 +999,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 });
             }
 
-            javaDeployDTO.setCmd(HostDeployUtil.genJavaRunCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
-            javaDeployDTO.setJarName(c7nNexusComponentDTO.getName());
-            javaDeployDTO.setInstanceId(String.valueOf(devopsNormalInstanceDTO.getId()));
+            JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
+                    c7nNexusComponentDTO.getName(),
+                    String.valueOf(devopsNormalInstanceDTO.getId()),
+                    HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
+
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
