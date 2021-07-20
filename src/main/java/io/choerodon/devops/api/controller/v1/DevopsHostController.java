@@ -377,11 +377,26 @@ public class DevopsHostController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
-            @ApiParam(value = "集群Id", required = true)
+            @ApiParam(value = "主机", required = true)
             @RequestParam(value = "host_id", required = false) Long hostId,
             @ApiParam(value = "应用服务id", required = true)
             @Encrypt @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
         return ResponseEntity.ok(devopsHostService.queryInstanceList(projectId, hostId, appServiceId, pageRequest));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "主机管理 根据主机查询应用实例")
+    @GetMapping("/instance/list")
+    @CustomPageRequest
+    public ResponseEntity<List<?>> queryInstanceListByHostId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机", required = true)
+            @RequestParam(value = "host_id", required = false) Long hostId,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
+        return ResponseEntity.ok(devopsHostService.queryInstanceListByHostId(projectId, hostId, pageRequest));
+    }
+
 }
