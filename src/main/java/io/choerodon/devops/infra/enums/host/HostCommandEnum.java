@@ -26,7 +26,8 @@ public enum HostCommandEnum {
     DEPLOY_JAR("deploy_jar"),
     KILL_JAR("kill_jar"),
     INIT_AGENT("init_agent"),
-    INIT_AGENT_FAILED("init_agent_failed")
+    INIT_AGENT_FAILED("init_agent_failed"),
+    CUSTOM_DEPLOY("custom_deploy")
     ;
 
     private String value;

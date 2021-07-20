@@ -284,7 +284,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
             hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
-            hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + devopsHostDTOForConnection.getId());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareDeployVO));
 
@@ -379,7 +378,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
             hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
-            hostAgentMsgVO.setKey(DevopsHostConstants.GROUP + devopsHostDTOForConnection.getId());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareDeployVO));
 
