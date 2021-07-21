@@ -2187,6 +2187,12 @@ public class AppServiceServiceImpl implements AppServiceService {
                     appServiceRepVO.setShareProjectName(projectDTO.getName());
                 }
             }
+            if (StringUtils.isEmpty(appServiceRepVO.getServiceName())) {
+                appServiceRepVO.setServiceName(appServiceDTO.getName());
+            }
+            if (StringUtils.isEmpty(appServiceRepVO.getServiceCode())) {
+                appServiceRepVO.setServiceCode(appServiceDTO.getCode());
+            }
         }
 
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
@@ -2221,6 +2227,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
                 //还需要版本的id,
                 appServiceRepVO.setMarketServiceDeployObjectVO(marketServiceDeployObjectVO);
+                if (Objects.isNull(appServiceRepVO.getServiceName())) {
+                    appServiceRepVO.setServiceName(serviceVO.getMarketServiceName());
+                }
             }
 
         }
