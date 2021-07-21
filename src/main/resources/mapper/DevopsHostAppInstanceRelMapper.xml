@@ -18,13 +18,15 @@
     <select id="queryInstanceListByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppInstanceRelDTO">
         SELECT
 	     dhair.instance_id,
-	     dhair.app_source
+	     dhair.app_source,
+         dhair.instance_type,
+         dhair.created_by
         FROM
 	     `devops_host_app_instance_rel` dhair
         WHERE
 	      dhair.project_id = #{projectId,jdbcType=BIGINT}
         <if test="hostId != null and  hostId != 0">
-            dhair.host_id = #{hostId,jdbcType=BIGINT}
+          AND  dhair.host_id = #{hostId,jdbcType=BIGINT}
         </if>
 
     </select>

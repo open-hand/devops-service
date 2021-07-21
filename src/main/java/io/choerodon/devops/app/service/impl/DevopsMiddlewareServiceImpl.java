@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MYSQL;
 import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
 import static io.choerodon.devops.infra.enums.deploy.MiddlewareDeployModeEnum.*;
 import static io.choerodon.devops.infra.enums.host.HostCommandEnum.DEPLOY_MIDDLEWARE;
+import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_MYSQL;
 import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_REDIS;
 
 import java.io.IOException;
@@ -212,13 +213,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
         checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
-        if (SENTINEL.getValue().equals(middlewareRedisHostDeployVO.getMode())) {
-            CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
-        }
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareRedisHostDeployVO.getHostIds());
 
         if (SENTINEL.getValue().equals(middlewareRedisHostDeployVO.getMode())) {
+            CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
             CommonExAssertUtil.assertTrue(devopsHostDTOList.size() >= 3, "error.host.size.less.than.3");
         }
 
@@ -279,11 +278,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareDeployVO.setMiddlewareType(REDIS.getType());
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            middlewareDeployVO.setInstanceId(String.valueOf(devopsMiddlewareDTO.getId()));
+            middlewareDeployVO.setRecordId(String.valueOf(recordId));
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
-            hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
+            hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_MIDDLEWARE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareDeployVO));
 
@@ -365,19 +364,20 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             devopsHostCommandDTO.setHostId(devopsHostDTOForConnection.getId());
             devopsHostCommandDTO.setInstanceId(devopsMiddlewareDTO.getId());
             devopsHostCommandDTO.setCommandType(DEPLOY_MIDDLEWARE.value());
-            devopsHostCommandDTO.setInstanceType(MIDDLEWARE_REDIS.value());
+            devopsHostCommandDTO.setInstanceType(MIDDLEWARE_MYSQL.value());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
             MiddlewareDeployVO middlewareDeployVO = new MiddlewareDeployVO();
-            middlewareDeployVO.setMiddlewareType(REDIS.getType());
+            middlewareDeployVO.setMiddlewareType(MYSQL.getType());
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             middlewareDeployVO.setInstanceId(String.valueOf(devopsMiddlewareDTO.getId()));
+            middlewareDeployVO.setRecordId(String.valueOf(recordId));
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
-            hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
+            hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_MIDDLEWARE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareDeployVO));
 
@@ -439,27 +439,27 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         MiddlewareInventoryVO middlewareInventoryVO = new MiddlewareInventoryVO(middlewareTypeEnum);
         for (DevopsHostDTO hostDTO : devopsHostDTOList) {
             // 如果内网ip不存在，使用公网ip
-            String ip = StringUtils.isEmpty(hostDTO.getPrivateIp()) ? hostDTO.getHostIp() : hostDTO.getPrivateIp();
+            String ip = hostDTO.getHostIp();
             // 如果内网端口不存在，使用公网端口
-            Integer port = hostDTO.getPrivatePort() == null ? hostDTO.getSshPort() : hostDTO.getPrivatePort();
+            Integer port = hostDTO.getSshPort();
             if (HostAuthType.ACCOUNTPASSWORD.value().equals(hostDTO.getAuthType())) {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, hostDTO.getName(), ip, port, hostDTO.getUsername(), hostDTO.getPassword()))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, ip, ip, port, hostDTO.getUsername(), hostDTO.getPassword()))
                         .append(System.lineSeparator());
             } else {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, hostDTO.getName(), ip, port, hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, ip, ip, port, hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))
                         .append(System.lineSeparator());
             }
             // 设置chrony节点
-            middlewareInventoryVO.getChrony().append(hostDTO.getName())
+            middlewareInventoryVO.getChrony().append(ip)
                     .append(System.lineSeparator());
 
             switch (middlewareTypeEnum) {
                 case REDIS:
-                    middlewareInventoryVO.getRedis().append(hostDTO.getName())
+                    middlewareInventoryVO.getRedis().append(ip)
                             .append(System.lineSeparator());
                     break;
                 case MYSQL:
-                    middlewareInventoryVO.getMysql().append(hostDTO.getName())
+                    middlewareInventoryVO.getMysql().append(ip)
                             .append(System.lineSeparator());
                     break;
                 default:
@@ -467,11 +467,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             }
         }
         return middlewareInventoryVO;
-    }
-
-    private ExecResultInfoVO executeInstallMySQL(SSHClient sshClient) throws IOException {
-//        return sshUtil.execCommand(sshClient, String.format(MYSQL_ANSIBLE_COMMAND_TEMPLATE, MYSQL_INSTALL_LOG_PATH));
-        return null;
     }
 
     private String generateRedisStandaloneValues(MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {

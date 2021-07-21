@@ -33,6 +33,15 @@ public class JarDeployVO {
 
     private ProdJarInfoVO prodJarInfoVO;
 
+    public JarDeployVO() {
+    }
+
+    public JarDeployVO(String sourceType, String value, ProdJarInfoVO prodJarInfoVO) {
+        this.sourceType = sourceType;
+        this.value = value;
+        this.prodJarInfoVO = prodJarInfoVO;
+    }
+
     public String getValue() {
         return value;
     }

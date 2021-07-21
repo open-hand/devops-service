@@ -5,6 +5,7 @@ public class MiddlewareDeployVO {
     private String DeployShell;
     private String InstanceId;
     private String CommandId;
+    private String recordId;
 
     public String getMiddlewareType() {
         return MiddlewareType;
@@ -36,5 +37,13 @@ public class MiddlewareDeployVO {
 
     public void setCommandId(String commandId) {
         CommandId = commandId;
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
     }
 }

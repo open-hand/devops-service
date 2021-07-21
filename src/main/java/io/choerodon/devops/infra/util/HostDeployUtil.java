@@ -1,18 +1,17 @@
 package io.choerodon.devops.infra.util;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
+import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
+import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.springframework.util.StringUtils;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.deploy.JarDeployVO;
-import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
-import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
-import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
 
 /**
  * 〈功能简述〉
@@ -33,7 +32,7 @@ public class HostDeployUtil {
         }
     }
 
-    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
+    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String containerId, String value) {
         String[] strings = value.split("\n");
         String values = "";
         for (String s : strings) {
@@ -47,11 +46,15 @@ public class HostDeployUtil {
 
         // 判断镜像是否存在 存在删除 部署
         StringBuilder dockerRunExec = new StringBuilder();
+        if (org.apache.commons.lang3.StringUtils.isNoneBlank(containerId)) {
+            dockerRunExec.append("docker stop " + containerId).append(";");
+            dockerRunExec.append("docker rm " + containerId).append(";");
+        }
         dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
         return dockerRunExec.toString();
     }
 
-    public static String genJavaRunCmd(JavaDeployDTO javaDeployDTO, JarDeployVO jarDeployVO, Long instanceId) {
+    public static String genJavaRunCmd(JarPullInfoDTO jarPullInfoDTO, JarDeployVO jarDeployVO, Long instanceId) {
         Map<String, String> params = new HashMap<>();
         params.put("{{ WORKING_PATH }}", "$HOME/choerodon/" + instanceId);
 
@@ -60,9 +63,9 @@ public class HostDeployUtil {
 
         // 2.2
         params.put("{{ JAR_NAME }}", jarPathAndName);
-        params.put("{{ USER_ID }}", javaDeployDTO.getJarPullInfoDTO().getPullUserId());
-        params.put("{{ PASSWORD }}", javaDeployDTO.getJarPullInfoDTO().getPullUserPassword());
-        params.put("{{ DOWNLOAD_URL }}", javaDeployDTO.getJarPullInfoDTO().getDownloadUrl());
+        params.put("{{ USER_ID }}", jarPullInfoDTO.getPullUserId());
+        params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
+        params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
 
         // 2.3
         String[] strings = jarDeployVO.getValue().split("\n");

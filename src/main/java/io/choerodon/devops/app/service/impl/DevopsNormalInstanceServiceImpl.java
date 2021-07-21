@@ -180,14 +180,10 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             throw new CommonException("error.get.maven.config");
         }
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO();
-
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
         jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
         jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
-        javaDeployDTO.setJarPullInfoDTO(jarPullInfoDTO);
-
 
         // 2.保存记录
         DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO();
@@ -213,9 +209,10 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             });
         }
 
-        javaDeployDTO.setCmd(HostDeployUtil.genJavaRunCmd(javaDeployDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
-        javaDeployDTO.setJarName(deployObjectName);
-        javaDeployDTO.setInstanceId(String.valueOf(devopsNormalInstanceDTO.getId()));
+        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
+                deployObjectName,
+                String.valueOf(devopsNormalInstanceDTO.getId()),
+                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
