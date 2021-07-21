@@ -14,6 +14,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.infra.enums.HostConnectionType;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -123,6 +124,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
     private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+    @Autowired
+    private SshUtil sshUtil;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -835,6 +838,24 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public void connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO) {
+        Map<String, String> map = new HashMap<>();
+        String redisKey = generateRedisKey(projectId, hostId);
+        String commend = queryShell(projectId, hostId);
+        redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null, null));
+        if (devopsHostConnectionVO.getConnectionType().equals(HostConnectionType.AUTOMATIC.value())) {
+            automaticHost(devopsHostConnectionVO, map, redisKey, commend);
+            return;
+        }
+        redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.SUCCESS.getValue(), commend, null));
+    }
+
+    @Override
+    public Map<Object, Object> queryConnectHost(Long projectId, Long hostId) {
+        return redisTemplate.opsForHash().entries(generateRedisKey(projectId, hostId));
+    }
+
+    @Override
     public List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest) {
         DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
         devopsHostAppInstanceRelDTO.setAppId(appServiceId);
@@ -889,5 +910,33 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         List<Long> userIds = devopsHostVOS.getContent().stream().map(DevopsHostVO::getLastUpdatedBy).collect(Collectors.toList());
         Map<Long, IamUserDTO> userInfo = baseServiceClientOperator.listUsersByIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, Functions.identity()));
         devopsHostVOS.getContent().forEach(host -> host.setUpdaterInfo(userInfo.get(host.getLastUpdatedBy())));
+    }
+
+    private String generateRedisKey(Long projectId, Long hostId) {
+        return "host:connect:" + projectId + hostId;
+    }
+
+    @Async
+    void automaticHost(DevopsHostConnectionVO devopsHostConnectionVO, Map<String, String> map, String redisKey, String commend) {
+        devopsHostAdditionalCheckValidator.validHostInformationMatch(Objects.requireNonNull(ConvertUtils.convertObject(devopsHostConnectionVO, DevopsHostCreateRequestVO.class)));
+        SSHClient sshClient = null;
+        map.put("status", DevopsHostStatus.OPERATING.getValue());
+        redisTemplate.opsForHash().putAll(redisKey, map);
+        try {
+            sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, commend);
+            redisTemplate.opsForHash().putAll(redisKey, createMap(map, sshClient != null ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(), null, execResultInfoVO.getStdErr()));
+        } catch (IOException exception) {
+            throw new CommonException("error.connect.host");
+        } finally {
+            IOUtils.closeQuietly(sshClient);
+        }
+    }
+
+    private Map<String, String> createMap(Map<String, String> map, String status, String commend, String exception) {
+        map.put("status", status);
+        map.put("commend", commend);
+        map.put("exception", exception);
+        return map;
     }
 }

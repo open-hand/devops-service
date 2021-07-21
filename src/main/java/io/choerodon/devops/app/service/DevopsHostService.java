@@ -12,6 +12,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -287,4 +288,21 @@ public interface DevopsHostService {
     List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest);
 
     List<?>  queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest);
+
+    /**
+     * 主机连接
+     *
+     * @param projectId
+     * @param hostId
+     * @param devopsHostConnectionVO
+     */
+    void connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO);
+
+    /**
+     * 主机连接状态查询
+     *
+     * @param projectId
+     * @param hostId
+     */
+    Map<Object, Object> queryConnectHost(Long projectId, Long hostId);
 }
