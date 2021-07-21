@@ -23,7 +23,7 @@ fi
 
 cd "$WORK_DIR" || exit
 
-AGENT_NAME="c7n-agent"
+AGENT_NAME="c7n-agent-"${VERSION}
 
 AGENT=${WORK_DIR}/${AGENT_NAME}-${VERSION}
 AGENT_LOG=$WORK_DIR/${AGENT_NAME}.log
