@@ -78,6 +78,11 @@ env:
     # 注册服务地址
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server:8000/eureka/
 
+    # 主机agent下载地址
+    C7N_AGENT_BINARY_URL: http://example.com/c7n-agent-1.0.0
+    # 主机agent版本
+    C7N_AGENT_VERSION: 1.0.0
+
     # 数据库连接地址
     SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false&useInformationSchema=true&remarks=true&serverTimezone=Asia/Shanghai
     # 数据库用户名

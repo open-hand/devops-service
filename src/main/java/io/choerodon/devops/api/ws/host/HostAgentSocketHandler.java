@@ -1,5 +1,23 @@
 package io.choerodon.devops.api.ws.host;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.PostConstruct;
+
+import org.hzero.websocket.constant.WebSocketConstant;
+import org.hzero.websocket.vo.MsgVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+
 import io.choerodon.devops.api.vo.host.HostMsgVO;
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
@@ -10,24 +28,6 @@ import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
-
-import org.hzero.websocket.constant.WebSocketConstant;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.hzero.websocket.vo.MsgVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author wanghao
@@ -40,15 +40,16 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     private final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
 
+    @Value("${C7N_AGENT_VERSION}")
+    private String agentVersion;
+    @Value("${C7N_AGENT_BINARY_URL}")
+    private String agentUrl;
 
     @Autowired
     private List<HostMsgHandler> hostMsgHandlers;
 
     @Autowired
     private DevopsHostService devopsHostService;
-
-    @Autowired
-    private KeySocketSendHelper webSocketHelper;
 
     @Override
     public String processor() {
@@ -68,17 +69,22 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         String hostId = WebSocketTool.getHostId(session);
 
         devopsHostService.baseUpdateHostStatus(Long.parseLong(hostId), DevopsHostStatus.CONNECTED);
-
-        //
-        HostMsgVO hostMsgVO = new HostMsgVO();
-        hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
-        hostMsgVO.setHostId(hostId);
-
-        // 为了保持和其他通过hzero发送的消息结构一致
-        MsgVO msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);
-
+        MsgVO msgVO = new MsgVO();
+        // 版本不一致，需要升级
+        if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
+            HostMsgVO hostMsgVO = new HostMsgVO();
+            hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
+            hostMsgVO.setPayload(agentUrl);
+        } else {
+            HostMsgVO hostMsgVO = new HostMsgVO();
+            hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
+            hostMsgVO.setHostId(hostId);
+            // 为了保持和其他通过hzero发送的消息结构一致
+            msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);
+        }
 
         sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(msgVO)));
+
     }
 
     private void sendToSession(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
