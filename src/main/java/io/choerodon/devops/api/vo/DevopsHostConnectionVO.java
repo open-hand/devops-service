@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.enums.HostAuthType;
-import io.choerodon.devops.infra.enums.HostConnectionType;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -28,13 +27,6 @@ public class DevopsHostConnectionVO {
 
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
-
-    /**
-     * {@link HostConnectionType}
-     */
-    @EnumCheck(message = "error.host.connect.type.invalid", enumClass = HostConnectionType.class)
-    @ApiModelProperty("连接方式")
-    private String connectionType;
 
     public String getHostIp() {
         return hostIp;
@@ -74,13 +66,5 @@ public class DevopsHostConnectionVO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getConnectionType() {
-        return connectionType;
-    }
-
-    public void setConnectionType(String connectionType) {
-        this.connectionType = connectionType;
     }
 }

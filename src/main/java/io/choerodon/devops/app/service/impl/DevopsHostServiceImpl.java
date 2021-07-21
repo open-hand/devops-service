@@ -14,7 +14,6 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.devops.infra.enums.HostConnectionType;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -842,12 +841,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         Map<String, String> map = new HashMap<>();
         String redisKey = generateRedisKey(projectId, hostId);
         String commend = queryShell(projectId, hostId);
-        redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null, null));
-        if (devopsHostConnectionVO.getConnectionType().equals(HostConnectionType.AUTOMATIC.value())) {
-            automaticHost(devopsHostConnectionVO, map, redisKey, commend);
-            return;
-        }
-        redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.SUCCESS.getValue(), commend, null));
+        redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null));
+        automaticHost(devopsHostConnectionVO, map, redisKey, commend);
     }
 
     @Override
@@ -913,19 +908,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     private String generateRedisKey(Long projectId, Long hostId) {
-        return "host:connect:" + projectId + hostId;
+        return "host:connect:" + projectId + ":" + hostId;
     }
 
     @Async
     void automaticHost(DevopsHostConnectionVO devopsHostConnectionVO, Map<String, String> map, String redisKey, String commend) {
         devopsHostAdditionalCheckValidator.validHostInformationMatch(Objects.requireNonNull(ConvertUtils.convertObject(devopsHostConnectionVO, DevopsHostCreateRequestVO.class)));
         SSHClient sshClient = null;
-        map.put("status", DevopsHostStatus.OPERATING.getValue());
-        redisTemplate.opsForHash().putAll(redisKey, map);
         try {
             sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, commend);
-            redisTemplate.opsForHash().putAll(redisKey, createMap(map, sshClient != null ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(), null, execResultInfoVO.getStdErr()));
+            redisTemplate.opsForHash().putAll(redisKey, createMap(map, sshClient != null ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(),  execResultInfoVO.getStdErr()));
         } catch (IOException exception) {
             throw new CommonException("error.connect.host");
         } finally {
@@ -933,9 +926,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    private Map<String, String> createMap(Map<String, String> map, String status, String commend, String exception) {
+    private Map<String, String> createMap(Map<String, String> map, String status, String exception) {
         map.put("status", status);
-        map.put("commend", commend);
         map.put("exception", exception);
         return map;
     }
