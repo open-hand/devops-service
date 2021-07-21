@@ -581,7 +581,8 @@
             de.project_id
         FROM devops_env de
         WHERE
-          de.project_id IN
+        de.type = 'user'
+        AND  de.project_id IN
         <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
             #{projectId}
         </foreach>
