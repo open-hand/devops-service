@@ -144,5 +144,6 @@
         <foreach collection="projectIds" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        order by id desc
     </select>
 </mapper>

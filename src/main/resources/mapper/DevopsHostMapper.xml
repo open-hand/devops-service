@@ -175,6 +175,7 @@
         <foreach collection="projectIds" item="projectId" open="(" close=")" separator=",">
             #{projectId,jdbcType=BIGINT}
         </foreach>
+        order by id desc
     </select>
 
 </mapper>
