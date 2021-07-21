@@ -90,6 +90,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private DevopsDockerInstanceService devopsDockerInstanceService;
+
+
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
@@ -120,10 +124,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
             MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
 
-            DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
-            dockerPullAccountDTO.setPullAccount(marketHarborConfigVO.getRobotName());
-            dockerPullAccountDTO.setPullPassword(marketHarborConfigVO.getToken());
-            dockerPullAccountDTO.setHarborUrl(marketHarborConfigVO.getRepoUrl());
+            DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO(marketHarborConfigVO.getRepoUrl(),
+                    marketHarborConfigVO.getRobotName(),
+                    marketHarborConfigVO.getToken());
             dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
             dockerDeployDTO.setImage(marketServiceDeployObjectVO.getMarketDockerImageUrl());
             //部署对象的名称
@@ -152,10 +155,13 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         }
 
         // 2.保存记录
-        DevopsDockerInstanceDTO devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
-        devopsDockerInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
-        devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
-        MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, dockerDeployDTO.getName());
+        if (devopsDockerInstanceDTO == null) {
+            devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
+            devopsDockerInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
+            devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
+            MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+        }
 
         // 保存应用实例关系
         if (appServiceId != null) {
