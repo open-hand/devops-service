@@ -127,6 +127,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
     @Autowired
     private SshUtil sshUtil;
+    @Autowired
+    private DevopsHostCommandMapper devopsHostCommandMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -157,7 +159,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         params.put("{{ CONNECT }}", agentServiceUrl);
         params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
         params.put("{{ BINARY }}", binaryDownloadUrl);
-        params.put("{{ VERSION }}",agentVersion);
+        params.put("{{ VERSION }}", agentVersion);
         return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
@@ -914,6 +916,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class);
             devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
                 devopsDockerInstanceVO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
+                //加上操作状态
+                devopsDockerInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsDockerInstanceVO.getId()));
+
             });
             hostInstances.addAll(devopsDockerInstanceVOS);
         }
@@ -921,7 +926,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (!CollectionUtils.isEmpty(normalHostInstances)) {
             List<Long> normalInstanceIds = normalHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
             List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
-            hostInstances.addAll(ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class));
+            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class);
+            devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
+                //加上操作状态
+                devopsNormalInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsNormalInstanceVO.getId()));
+            });
+            hostInstances.addAll(devopsNormalInstanceVOS);
         }
     }
 

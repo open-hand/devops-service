@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.host;
 
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -49,6 +50,17 @@ public class DevopsDockerInstanceVO {
 
     @ApiModelProperty("实例类型")
     private String instanceType;
+
+    @ApiModelProperty("操作命令")
+    private DevopsHostCommandDTO devopsHostCommandDTO;
+
+    public DevopsHostCommandDTO getDevopsHostCommandDTO() {
+        return devopsHostCommandDTO;
+    }
+
+    public void setDevopsHostCommandDTO(DevopsHostCommandDTO devopsHostCommandDTO) {
+        this.devopsHostCommandDTO = devopsHostCommandDTO;
+    }
 
     public String getInstanceType() {
         return instanceType;
