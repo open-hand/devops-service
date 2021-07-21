@@ -14,6 +14,7 @@ public class ResourceCheckConstant {
     // app
     public static final String ERROR_APP_GROUP_ID_IS_NULL = "error.app.group.id.is.null";
     public static final String ERROR_APP_ARTIFACT_ID_IS_NULL = "error.app.artifact.id.is.null";
+    public static final String ERROR_APP_SERVICE_ID_IS_NULL = "error.app.service.id.is.null";
 
 
     // app service version
@@ -46,5 +47,8 @@ public class ResourceCheckConstant {
 
     // host
     public static final String ERROR_HOST_ID_IS_NULL = "error.host.id.is.null";
+    public static final String ERROR_HOST_INSTANCE_ID_IS_NULL = "error.host.instance.id.is.null";
+    public static final String ERROR_HOST_INSTANCE_TYPE_IS_NULL = "error.host.instance.type.is.null";
     public static final String ERROR_CONTAINER_NAME_IS_NULL = "error.container.name.is.null";
+    public static final String ERROR_SOURCE_TYPE_IS_NULL = "error.source.type.is.null";
 }

@@ -92,7 +92,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private AppServiceService appServiceService;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
-
+    @Autowired
+    private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
 
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
@@ -160,18 +161,19 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
             devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+
+            // 保存应用实例关系
+            if (appServiceId != null) {
+                devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
+                        hostId,
+                        appServiceId,
+                        dockerDeployVO.getSourceType(),
+                        devopsDockerInstanceDTO.getId(),
+                        HostInstanceType.DOCKER_PROCESS.value());
+            }
         }
 
-        // 保存应用实例关系
-        if (appServiceId != null) {
-            DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO(projectId,
-                    hostId,
-                    appServiceId,
-                    dockerDeployVO.getSourceType(),
-                    devopsDockerInstanceDTO.getId(),
-                    HostInstanceType.DOCKER_PROCESS.value());
-            MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
-        }
+
 
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();

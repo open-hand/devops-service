@@ -95,6 +95,8 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     private AppServiceService appServiceService;
     @Autowired
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
+    @Autowired
+    private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
@@ -195,17 +197,12 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         // 有关联的应用，则保存关联关系
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {
             Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-            appIds.forEach(appId -> {
-                DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
-                devopsHostAppInstanceRelDTO.setAppSource(jarDeployVO.getSourceType());
-                devopsHostAppInstanceRelDTO.setAppId(appId);
-                devopsHostAppInstanceRelDTO.setInstanceId(devopsNormalInstanceDTO.getId());
-                devopsHostAppInstanceRelDTO.setHostId(hostId);
-                devopsHostAppInstanceRelDTO.setProjectId(projectId);
-                devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
-                MapperUtil.resultJudgedInsert(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
-
-            });
+            appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
+                    hostId,
+                    appId,
+                    jarDeployVO.getSourceType(),
+                    devopsNormalInstanceDTO.getId(),
+                    HostInstanceType.NORMAL_PROCESS.value()));
         }
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,

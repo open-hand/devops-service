@@ -49,6 +49,11 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
     public DevopsHostAppInstanceRelDTO() {
     }
 
+    public DevopsHostAppInstanceRelDTO(Long appId, Long instanceId) {
+        this.appId = appId;
+        this.instanceId = instanceId;
+    }
+
     public DevopsHostAppInstanceRelDTO(Long projectId, Long hostId, Long appId, String appSource, Long instanceId, String instanceType) {
         this.projectId = projectId;
         this.hostId = hostId;
