@@ -845,11 +845,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         Map<String, String> map = new HashMap<>();
         String commend = queryShell(projectId, hostId);
         redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null));
-        try {
-            automaticHost(devopsHostConnectionVO, map, redisKey, commend);
-        } catch (Exception exception) {
-            throw new CommonException("error.connect.host");
-        }
+        automaticHost(devopsHostConnectionVO, map, redisKey, commend);
     }
 
     @Override
@@ -925,7 +921,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         try {
             sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
             ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, commend);
-            redisTemplate.opsForHash().putAll(redisKey, createMap(map, sshClient != null ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(),  execResultInfoVO.getStdErr()));
+            redisTemplate.opsForHash().putAll(redisKey, createMap(map, execResultInfoVO.getExitCode() == 0 ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(),  execResultInfoVO.getStdErr()));
         } catch (IOException exception) {
             throw new CommonException("error.connect.host");
         } finally {
