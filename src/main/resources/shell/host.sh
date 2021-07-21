@@ -4,6 +4,7 @@ set -e
 TOKEN={{ TOKEN }}
 CONNECT={{ CONNECT }}
 HOST_ID={{ HOST_ID }}
+VERSION={{ VERSION }}
 
 # 1. 校验当前用户有HOME目录
 if [ -z "$HOME" ]; then
@@ -24,7 +25,7 @@ cd "$WORK_DIR" || exit
 
 AGENT_NAME="c7n-agent"
 
-AGENT=${WORK_DIR}/${AGENT_NAME}
+AGENT=${WORK_DIR}/${AGENT_NAME}-${VERSION}
 AGENT_LOG=$WORK_DIR/${AGENT_NAME}.log
 
 # 3. 下载执行程序
@@ -35,7 +36,7 @@ echo "c7n-agent downloaded successfully"
 # 4. 启动程序
 cd "${WORK_DIR}"
 chmod +x "${AGENT}"
-nohup "${AGENT}" --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" >"${AGENT_LOG}" 2>&1 &
+nohup "${AGENT}" --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}" >"${AGENT_LOG}" 2>&1 &
 
 # 5. 保存agent进程号
 echo $! >c7n-agent.pid
