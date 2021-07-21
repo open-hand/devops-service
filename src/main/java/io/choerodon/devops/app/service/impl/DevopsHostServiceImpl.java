@@ -851,6 +851,24 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public Map<String, String> testConnectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO) {
+        devopsHostAdditionalCheckValidator.validHostInformationMatch(Objects.requireNonNull(ConvertUtils.convertObject(devopsHostConnectionVO, DevopsHostCreateRequestVO.class)));
+        Map<String, String> map = new HashMap<>();
+        SSHClient sshClient = null;
+        try {
+            sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
+            if (sshClient != null) {
+                createMap(map, DevopsHostStatus.SUCCESS.getValue(), null);
+            } else {
+                createMap(map, DevopsHostStatus.FAILED.getValue(), "failed to check ssh, please ensure network and authentication is valid");
+            }
+        } finally {
+            IOUtils.closeQuietly(sshClient);
+        }
+        return map;
+    }
+
+    @Override
     public List<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest) {
         DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
         devopsHostAppInstanceRelDTO.setAppId(appServiceId);

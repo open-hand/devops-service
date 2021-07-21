@@ -305,4 +305,13 @@ public interface DevopsHostService {
      * @param hostId
      */
     Map<Object, Object> queryConnectHost(Long projectId, Long hostId);
+
+    /**
+     * 主机连接测试
+     *
+     * @param projectId
+     * @param hostId
+     * @param devopsHostConnectionVO
+     */
+    Map<String, String> testConnectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO);
 }

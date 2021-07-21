@@ -424,4 +424,16 @@ public class DevopsHostController {
             @PathVariable("host_id") Long hostId) {
         return ResponseEntity.ok(devopsHostService.queryConnectHost(projectId, hostId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "主机连接测试")
+    @PostMapping("/{host_id}/connection_host_test")
+    public ResponseEntity<Map<String, String>> testConnectHost(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable("host_id") Long hostId,
+            @RequestBody @Valid DevopsHostConnectionVO devopsHostConnectionVO) {
+        return ResponseEntity.ok(devopsHostService.testConnectHost(projectId, hostId, devopsHostConnectionVO));
+    }
 }
