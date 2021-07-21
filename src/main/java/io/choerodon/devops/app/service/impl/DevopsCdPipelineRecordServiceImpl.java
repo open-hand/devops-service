@@ -1163,7 +1163,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     }
                 }
             } else {
-
+                dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
             }
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -1178,7 +1178,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             dockerDeployDTO.setImage(image);
             dockerDeployDTO.setName(imageDeploy.getContainerName());
             dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO,
-                    devopsDockerInstanceDTO.getContainerId(),
                     new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
             dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 

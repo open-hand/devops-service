@@ -32,7 +32,7 @@ public class HostDeployUtil {
         }
     }
 
-    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String containerId, String value) {
+    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
         String[] strings = value.split("\n");
         String values = "";
         for (String s : strings) {
@@ -46,10 +46,6 @@ public class HostDeployUtil {
 
         // 判断镜像是否存在 存在删除 部署
         StringBuilder dockerRunExec = new StringBuilder();
-        if (org.apache.commons.lang3.StringUtils.isNoneBlank(containerId)) {
-            dockerRunExec.append("docker stop " + containerId).append(";");
-            dockerRunExec.append("docker rm " + containerId).append(";");
-        }
         dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
         return dockerRunExec.toString();
     }
