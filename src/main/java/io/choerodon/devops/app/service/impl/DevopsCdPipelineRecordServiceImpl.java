@@ -1214,12 +1214,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(cdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
+            ApplicationContextHelper
+                    .getSpringFactory()
+                    .getBean(DevopsCdPipelineRecordService.class)
+                    .pipelineDeployImage(pipelineRecordId, cdStageRecordId, cdJobRecordId);
             retryHostImageDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-            retryHostJarDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+            ApplicationContextHelper
+                    .getSpringFactory()
+                    .getBean(DevopsCdPipelineRecordService.class)
+                    .pipelineDeployJar(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         }
-        devopsCdStageRecordService.updateStatusById(cdStageRecordId, PipelineStatus.SUCCESS.toValue());
-        updateStatusById(pipelineRecordId, PipelineStatus.SUCCESS.toValue());
     }
 
     private void retryHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
