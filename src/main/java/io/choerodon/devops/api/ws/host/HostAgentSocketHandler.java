@@ -74,7 +74,10 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
-            hostMsgVO.setPayload(agentUrl);
+            Map<String, String> upgradeInfo = new HashMap<>();
+            upgradeInfo.put("downloadUrl", agentUrl);
+            upgradeInfo.put("version", agentVersion);
+            hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
 
             msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);
 
