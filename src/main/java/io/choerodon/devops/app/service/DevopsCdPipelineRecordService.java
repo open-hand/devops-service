@@ -39,7 +39,7 @@ public interface DevopsCdPipelineRecordService {
 
     void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
-    void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId)
+    void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
