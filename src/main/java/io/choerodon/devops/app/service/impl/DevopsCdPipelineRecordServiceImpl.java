@@ -977,11 +977,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
 
         // 2.保存记录
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO();
-        devopsNormalInstanceDTO.setName(c7nNexusComponentDTO.getName());
-        devopsNormalInstanceDTO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
-        devopsNormalInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
-        devopsNormalInstanceDTO.setHostId(hostId);
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
+                c7nNexusComponentDTO.getName(),
+                AppSourceType.CURRENT_PROJECT.getValue(),
+                HostInstanceType.NORMAL_PROCESS.value());
         MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         // 有关联的应用，则保存关联关系

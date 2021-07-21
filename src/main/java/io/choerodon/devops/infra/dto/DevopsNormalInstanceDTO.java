@@ -40,6 +40,16 @@ public class DevopsNormalInstanceDTO extends AuditDomain {
     @ApiModelProperty("实例类型")
     private String instanceType;
 
+    public DevopsNormalInstanceDTO() {
+    }
+
+    public DevopsNormalInstanceDTO(Long hostId, String name, String sourceType, String instanceType) {
+        this.hostId = hostId;
+        this.name = name;
+        this.sourceType = sourceType;
+        this.instanceType = instanceType;
+    }
+
     public String getInstanceType() {
         return instanceType;
     }
