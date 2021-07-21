@@ -40,9 +40,9 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     private final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
 
-    @Value("${C7N_AGENT_VERSION}")
+    @Value("${devops.host.agent-version}")
     private String agentVersion;
-    @Value("${C7N_AGENT_BINARY_URL}")
+    @Value("${devops.host.binary-download-url}")
     private String agentUrl;
 
     @Autowired
@@ -75,6 +75,9 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
             hostMsgVO.setPayload(agentUrl);
+
+            msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);
+
         } else {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
