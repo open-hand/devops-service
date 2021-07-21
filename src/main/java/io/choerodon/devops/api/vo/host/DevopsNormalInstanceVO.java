@@ -7,6 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -44,6 +45,15 @@ public class DevopsNormalInstanceVO {
     private Long objectVersionNumber;
     private IamUserDTO deployer;
 
+    private DevopsHostCommandDTO devopsHostCommandDTO;
+
+    public DevopsHostCommandDTO getDevopsHostCommandDTO() {
+        return devopsHostCommandDTO;
+    }
+
+    public void setDevopsHostCommandDTO(DevopsHostCommandDTO devopsHostCommandDTO) {
+        this.devopsHostCommandDTO = devopsHostCommandDTO;
+    }
 
     public String getInstanceType() {
         return instanceType;
