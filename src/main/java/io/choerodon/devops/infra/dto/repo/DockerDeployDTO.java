@@ -16,8 +16,18 @@ public class DockerDeployDTO {
     private String image;
     @ApiModelProperty("容器名")
     private String name;
+    @ApiModelProperty("容器id")
+    private String containerId;
     @ApiModelProperty("镜像拉取账户信息")
     private DockerPullAccountDTO dockerPullAccountDTO;
+
+    public String getContainerId() {
+        return containerId;
+    }
+
+    public void setContainerId(String containerId) {
+        this.containerId = containerId;
+    }
 
     public String getInstanceId() {
         return instanceId;
