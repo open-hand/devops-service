@@ -10,7 +10,12 @@
 	      `devops_host_app_instance_rel` dhair
         WHERE
 	       dhair.project_id = #{projectId,jdbcType=BIGINT}
-           AND  dhair.app_source= #{type,jdbcType=VARCHAR}
+        <if test="type != null and type != 'all'">
+            AND  dhair.app_source= #{type,jdbcType=VARCHAR}
+        </if>
+        <if test="hostId != null and  hostId != 0">
+            AND  dhair.host_id = #{hostId,jdbcType=BIGINT}
+        </if>
         GROUP BY
 	       dhair.app_id
     </select>
