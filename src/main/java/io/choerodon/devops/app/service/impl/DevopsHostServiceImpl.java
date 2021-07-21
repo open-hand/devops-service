@@ -94,6 +94,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private String binaryDownloadUrl;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
+    @Value("${devops.host.agent-version}")
+    private String agentVersion;
     @Autowired
     private DevopsHostMapper devopsHostMapper;
     @Lazy
@@ -155,6 +157,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         params.put("{{ CONNECT }}", agentServiceUrl);
         params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
         params.put("{{ BINARY }}", binaryDownloadUrl);
+        params.put("{{ VERSION }}",agentVersion);
         return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
