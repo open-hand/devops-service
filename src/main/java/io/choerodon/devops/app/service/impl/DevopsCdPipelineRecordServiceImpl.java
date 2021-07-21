@@ -830,6 +830,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 pipelineCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
             }
         } catch (Exception e) {
+            LOGGER.error(" {} failed!, error msg is {}", cdHostDeployConfigVO.getHostDeployType(), e);
             devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId);
             devopsCdStageRecordService.updateStageStatusFailed(cdStageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
