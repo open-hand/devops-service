@@ -938,6 +938,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
             devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
             LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+            workFlowServiceOperator.approveUserTask(projectId, cdPipelineRecordDTO.getBusinessKey());
             return;
         }
         List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(nexusRepoId));
@@ -967,8 +968,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
 
         // 1.更新流水线状态 记录信息
-        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
         jobRecordDTO.setDeployMetadata(gson.toJson(jarPullInfoDTO));
+        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        jobRecordDTO.setStartedDate(new Date());
         devopsCdJobRecordService.update(jobRecordDTO);
 
         // 2. 执行jar部署
