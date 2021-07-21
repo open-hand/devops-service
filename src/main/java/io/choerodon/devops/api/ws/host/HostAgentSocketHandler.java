@@ -25,6 +25,7 @@ import io.choerodon.devops.app.eventhandler.host.HostMsgHandler;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.constant.DevOpsWebSocketConstants;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -72,10 +73,11 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         MsgVO msgVO = new MsgVO();
         // 版本不一致，需要升级
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
+            DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(Long.parseLong(hostId));
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
             Map<String, String> upgradeInfo = new HashMap<>();
-            upgradeInfo.put("downloadUrl", agentUrl);
+            upgradeInfo.put("upgradeCommand", devopsHostService.queryShell(devopsHostDTO.getProjectId(), devopsHostDTO.getId()));
             upgradeInfo.put("version", agentVersion);
             hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
 
