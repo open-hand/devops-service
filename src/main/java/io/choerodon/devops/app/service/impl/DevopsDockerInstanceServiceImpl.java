@@ -124,7 +124,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             dockerPullAccountDTO.setPullAccount(marketHarborConfigVO.getRobotName());
             dockerPullAccountDTO.setPullPassword(marketHarborConfigVO.getToken());
             dockerPullAccountDTO.setHarborUrl(marketHarborConfigVO.getRepoUrl());
-
+            dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
+            dockerDeployDTO.setImage(marketServiceDeployObjectVO.getMarketDockerImageUrl());
             //部署对象的名称
             deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
             deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
