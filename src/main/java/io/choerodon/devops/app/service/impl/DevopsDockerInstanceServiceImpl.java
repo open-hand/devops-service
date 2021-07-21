@@ -173,9 +173,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             }
         }
 
-
-
-
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -189,7 +186,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         } catch (IOException e) {
             LOGGER.info("decode values failed!!!!. {}", dockerDeployVO.getValue());
         }
-        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, null, values));
+        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, devopsDockerInstanceDTO.getContainerId(), values));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
