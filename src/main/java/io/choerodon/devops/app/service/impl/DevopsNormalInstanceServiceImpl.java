@@ -189,7 +189,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO();
         devopsNormalInstanceDTO.setName(deployObjectName);
         devopsNormalInstanceDTO.setSourceType(jarDeployVO.getSourceType());
-        devopsNormalInstanceDTO.setStatus(JavaInstanceStatusEnum.OPERATING.value());
         devopsNormalInstanceDTO.setHostId(hostId);
         MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 

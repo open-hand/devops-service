@@ -180,7 +180,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsDockerInstanceDTO.getId());
-        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
         String values = null;
         try {
