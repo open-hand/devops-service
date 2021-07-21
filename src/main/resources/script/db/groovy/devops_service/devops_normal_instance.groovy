@@ -15,9 +15,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_normal_instance.groovy') {
             column(name: 'instance_type', type: 'VARCHAR(32)', remarks: '实例类型') {
                 constraints(nullable: false)
             }
-            column(name: 'status', type: 'VARCHAR(32)', remarks: '进程状态') {
-                constraints(nullable: false)
-            }
+            column(name: 'status', type: 'VARCHAR(32)', remarks: '进程状态')
             column(name: 'pid', type: 'VARCHAR(128)', remarks: '进程id')
 
             column(name: 'port', type: 'VARCHAR(128)', remarks: '占用端口')

@@ -158,7 +158,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, dockerDeployDTO.getName());
         if (devopsDockerInstanceDTO == null) {
             devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
-            devopsDockerInstanceDTO.setStatus(DockerInstanceStatusEnum.OPERATING.value());
             devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
         }
@@ -180,6 +179,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsDockerInstanceDTO.getId());
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
         String values = null;
         try {
