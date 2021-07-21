@@ -198,6 +198,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
 
 
     @Value("${choerodon.online:true}")
@@ -987,15 +989,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (!CollectionUtils.isEmpty(appServiceDTOList)) {
                 Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
                 appIds.forEach(appId -> {
-                    DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO();
-                    devopsHostAppInstanceRelDTO.setAppSource(jarDeployVO.getSourceType());
-                    devopsHostAppInstanceRelDTO.setAppId(appId);
-                    devopsHostAppInstanceRelDTO.setInstanceId(devopsNormalInstanceDTO.getId());
-                    devopsHostAppInstanceRelDTO.setHostId(hostId);
-                    devopsHostAppInstanceRelDTO.setProjectId(projectId);
-                    devopsHostAppInstanceRelDTO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
-                    MapperUtil.resultJudgedInsert(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
-
+                    devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
+                            hostId,
+                            appId,
+                            jarDeployVO.getSourceType(),
+                            devopsNormalInstanceDTO.getId(),
+                            HostInstanceType.NORMAL_PROCESS.value());
                 });
             }
 
@@ -1154,15 +1153,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
                 // 保存应用实例关系
                 if (appServiceId != null) {
-                    DevopsHostAppInstanceRelDTO devopsHostAppInstanceRelDTO = new DevopsHostAppInstanceRelDTO(projectId,
-                            hostId,
-                            appServiceId,
-                            AppSourceType.CURRENT_PROJECT.getValue(),
-                            devopsDockerInstanceDTO.getId(),
-                            HostInstanceType.DOCKER_PROCESS.value());
-                    MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper,
-                            devopsHostAppInstanceRelDTO,
-                            ERROR_SAVE_APP_HOST_REL_FAILED);
+                    if (appServiceId != null) {
+                        devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
+                                hostId,
+                                appServiceId,
+                                AppSourceType.CURRENT_PROJECT.getValue(),
+                                devopsDockerInstanceDTO.getId(),
+                                HostInstanceType.DOCKER_PROCESS.value());
+                    }
                 }
             } else {
 
