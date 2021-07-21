@@ -1011,6 +1011,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
             devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
             devopsHostCommandDTO.setInstanceId(devopsNormalInstanceDTO.getId());
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
             // 保存执行记录
@@ -1173,6 +1174,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
             devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
             devopsHostCommandDTO.setInstanceId(devopsDockerInstanceDTO.getId());
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
             dockerDeployDTO.setImage(image);
