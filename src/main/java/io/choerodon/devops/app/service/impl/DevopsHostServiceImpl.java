@@ -841,11 +841,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public void connectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO) {
-        Map<String, String> map = new HashMap<>();
         String redisKey = generateRedisKey(projectId, hostId);
+        if (checkRedisStatusOperating(redisKey)) {
+            return;
+        }
+        Map<String, String> map = new HashMap<>();
         String commend = queryShell(projectId, hostId);
         redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null));
-        automaticHost(devopsHostConnectionVO, map, redisKey, commend);
+        try {
+            automaticHost(devopsHostConnectionVO, map, redisKey, commend);
+        } catch (Exception exception) {
+            throw new CommonException("error.connect.host");
+        }
     }
 
     @Override
@@ -943,8 +950,15 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         } catch (IOException exception) {
             throw new CommonException("error.connect.host");
         } finally {
+            if (checkRedisStatusOperating(redisKey)) {
+                redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.FAILED.getValue(), "error.connect.host"));
+            }
             IOUtils.closeQuietly(sshClient);
         }
+    }
+
+    private boolean checkRedisStatusOperating(String redisKey) {
+        return redisTemplate.opsForHash().hasKey(redisKey, "status") && Objects.equals(redisTemplate.opsForHash().get(redisKey, "status"), DevopsHostStatus.OPERATING.getValue());
     }
 
     private Map<String, String> createMap(Map<String, String> map, String status, String exception) {
