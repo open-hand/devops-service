@@ -83,7 +83,7 @@ public class HostDeployUtil {
 
         String logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
         String logPathAndName = workingPath + "/temp-log/" + logName;
-        String javaJarExec = values.replace("${jar}", jarPathAndName) + String.format("-DchoerodonInstanceName=%s", jarDeployVO.getName()) + String.format("> %s 2>&1", logPathAndName);
+        String javaJarExec = values.replace("${jar}", jarPathAndName) + String.format(" -DchoerodonInstanceName=%s", jarDeployVO.getName()) + String.format("> %s 2>&1", logPathAndName);
         params.put("{{ JAVA_JAR_EXEC }}", javaJarExec);
 
         return FileUtil.replaceReturnString(JAVA_DEPLOY_COMMAND_TEMPLATE, params);
