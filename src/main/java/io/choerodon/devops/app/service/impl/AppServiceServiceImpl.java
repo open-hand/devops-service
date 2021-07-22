@@ -2291,6 +2291,11 @@ public class AppServiceServiceImpl implements AppServiceService {
             return new Page<>();
         }
         handAppServices(projectId, serviceRepVOPage);
+        serviceRepVOPage.getContent().forEach(appServiceRepVO -> {
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.CURRENT_PROJECT.getValue())) {
+                appServiceRepVO.setSource("project");
+            }
+        });
         return serviceRepVOPage;
     }
 
