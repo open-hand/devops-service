@@ -1,14 +1,15 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 〈功能简述〉
@@ -41,6 +42,11 @@ public class DevopsNormalInstanceDTO extends AuditDomain {
     private String instanceType;
 
     public DevopsNormalInstanceDTO() {
+    }
+
+    public DevopsNormalInstanceDTO(Long hostId, String name) {
+        this.hostId = hostId;
+        this.name = name;
     }
 
     public DevopsNormalInstanceDTO(Long hostId, String name, String sourceType, String instanceType) {

@@ -32,7 +32,7 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
     @ApiModelProperty("操作主机id")
     private Long hostId;
     @Encrypt
-    @ApiModelProperty("操作主机id")
+    @ApiModelProperty("应用id")
     private Long appId;
     /**
      * {@link io.choerodon.devops.infra.enums.AppSourceType}
