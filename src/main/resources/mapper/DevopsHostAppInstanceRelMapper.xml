@@ -63,7 +63,7 @@
         <if test="hostId != null and  hostId != 0">
             AND dhair.host_id = #{hostId,jdbcType=BIGINT}
         </if>
-        AND dhair.instance_type='normal_process'
+    
 
         ) temp
         where 1=1
@@ -107,7 +107,7 @@
         dni.created_by,
         dni.NAME AS instance_name,
         dni.STATUS,
-        dni.instance_type,
+        "normal_process" AS instance_type,
         dni.host_id
         FROM
         devops_normal_instance dni
