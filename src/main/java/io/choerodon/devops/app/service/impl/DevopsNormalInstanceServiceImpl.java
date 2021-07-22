@@ -220,6 +220,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
+                jarDeployVO.getName(),
                 deployObjectName,
                 String.valueOf(devopsNormalInstanceDTO.getId()),
                 HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()),

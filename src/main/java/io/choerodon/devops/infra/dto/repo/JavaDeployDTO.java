@@ -14,6 +14,8 @@ public class JavaDeployDTO {
     private JarPullInfoDTO jarPullInfoDTO;
     @ApiModelProperty("jar包名称")
     private String jarName;
+    @ApiModelProperty("实例名称")
+    private String name;
     @ApiModelProperty("当前部署实例id")
     private String instanceId;
     @ApiModelProperty("当前进程id，不为空则表示更新，agent会先kill 进程再部署")
@@ -21,7 +23,8 @@ public class JavaDeployDTO {
     @ApiModelProperty("部署jar命令")
     private String cmd;
 
-    public JavaDeployDTO(JarPullInfoDTO jarPullInfoDTO, String jarName, String instanceId, String cmd, String pid) {
+    public JavaDeployDTO(JarPullInfoDTO jarPullInfoDTO, String name, String jarName, String instanceId, String cmd,String pid) {
+        this.name = name;
         this.jarPullInfoDTO = jarPullInfoDTO;
         this.jarName = jarName;
         this.instanceId = instanceId;
@@ -67,5 +70,13 @@ public class JavaDeployDTO {
 
     public void setJarPullInfoDTO(JarPullInfoDTO jarPullInfoDTO) {
         this.jarPullInfoDTO = jarPullInfoDTO;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

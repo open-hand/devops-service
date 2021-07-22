@@ -173,9 +173,9 @@ devops:
   # 占用主机的过期时间, 超过这个时间, 主机会被释放
   host:
     # 二进制文件下载地址
-    binary-download-url: ${C7N_AGENT_BINARY_URL:http://minio.c7n.devops.hand-china.com/agent/c7n-agent-2.0.0}
+    binary-download-url: ${C7N_AGENT_BINARY_URL:http://examplle.minio.com/agent/c7n-agent-1.0.0}
     # agent版本
-    agent-version: ${C7N_AGENT_VERSION:2.0.0}
+    agent-version: ${C7N_AGENT_VERSION:1.0.0}
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     default:
