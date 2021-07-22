@@ -938,9 +938,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 0.3 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), nexusRepoId, groupId, artifactId, versionRegular);
         if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
             LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-            workFlowServiceOperator.approveUserTask(projectId, cdPipelineRecordDTO.getBusinessKey());
+            updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
             return;
         }
         List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(nexusRepoId));
@@ -1083,14 +1082,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             List<HarborC7nImageTagVo> filterImageTagVoList = new ArrayList<>();
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                udpateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
+                updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
             } else {
                 String pattern = getRegexStr(imageDeploy);
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> cd deploy pattern is :{}, filterImageTagVoList is : {} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", pattern, JsonHelper.marshalByJackson(imageTagVo.getImageTagList()));
                 filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(filterImageTagVoList)) {
                     LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                    udpateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
+                    updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
                 }
             }
             image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
@@ -1216,7 +1215,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    private void udpateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
+    private void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         Long cdJobRecordId = devopsCdJobRecordDTO.getId();
         Long projectId = devopsCdPipelineRecordDTO.getProjectId();
         Long pipelineRecordId = devopsCdPipelineRecordDTO.getId();
