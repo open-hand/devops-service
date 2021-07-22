@@ -6,7 +6,7 @@
     <select id="selectHostAppByProjectId" resultType="io.choerodon.devops.api.vo.AppServiceRepVO">
         SELECT
           any_value(dhair.app_id) AS ID,
-          any_value(dhair.app_source) AS source,
+          any_value(dhair.app_source) AS source
 
         FROM
 	      `devops_host_app_instance_rel` dhair
