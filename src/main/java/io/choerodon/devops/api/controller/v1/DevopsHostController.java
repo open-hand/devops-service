@@ -374,7 +374,7 @@ public class DevopsHostController {
     @ApiOperation(value = "查询主机的应用实例列表")
     @GetMapping("/app/{app_service_id}/instance/list")
     @CustomPageRequest
-    public ResponseEntity<List<?>> queryInstanceList(
+    public ResponseEntity<Page<?>> queryInstanceList(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -390,7 +390,7 @@ public class DevopsHostController {
     @ApiOperation(value = "主机管理 根据主机查询应用实例")
     @GetMapping("/instance/list")
     @CustomPageRequest
-    public ResponseEntity<List<?>> queryInstanceListByHostId(
+    public ResponseEntity<Page<?>> queryInstanceListByHostId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
