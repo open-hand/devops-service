@@ -1,39 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.choerodon.devops.infra.constant.MiscConstants;
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.channel.direct.Session;
-import org.apache.commons.lang.BooleanUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import sun.misc.BASE64Decoder;
-
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
@@ -50,6 +18,7 @@ import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.eventhandler.payload.HostDeployPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
@@ -76,6 +45,34 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.util.StringUtil;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.channel.direct.Session;
+import org.apache.commons.lang.BooleanUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import sun.misc.BASE64Decoder;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 
 /**
  * 〈功能简述〉
@@ -99,7 +96,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
     @Autowired
@@ -130,16 +126,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
     @Autowired
-    private DevopsEnvironmentMapper devopsEnvironmentMapper;
-
-    @Autowired
     private AppServiceMapper appServiceMapper;
-
-    @Autowired
-    private AppServiceVersionMapper appServiceVersionMapper;
-
-    @Autowired
-    private AppServiceInstanceMapper appServiceInstanceMapper;
 
     @Autowired
     private DevopsCdAuditService devopsCdAuditService;
@@ -188,12 +175,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Autowired
     private KeySocketSendHelper webSocketHelper;
-
-    @Autowired
-    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
-
-    @Autowired
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
@@ -206,9 +187,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsNormalInstanceService devopsNormalInstanceService;
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
-
-    @Value("${choerodon.online:true}")
-    private Boolean online;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -837,7 +815,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             LOGGER.error(" deploy failed!, error msg is", e);
             devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId, LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500));
             devopsCdStageRecordService.updateStageStatusFailed(cdStageRecordId);
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
         }
 
@@ -848,7 +826,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // todo 未完成
         LOGGER.info("========================================");
         LOGGER.info("start custom deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = queryById(pipelineRecordId);
         try {
             // 0.1 查询部署信息
             DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
