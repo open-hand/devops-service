@@ -34,6 +34,15 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
     private List<DockerPortMapping> portMappingList;
 
     private IamUserDTO deployer;
+    private Long createdBy;
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public IamUserDTO getDeployer() {
         return deployer;
