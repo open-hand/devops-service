@@ -202,6 +202,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
     @Autowired
     private DevopsNormalInstanceService devopsNormalInstanceService;
+    @Autowired
+    private DevopsCdPipelineService devopsCdPipelineService;
 
     @Value("${choerodon.online:true}")
     private Boolean online;
@@ -1082,14 +1084,16 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                 LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
                 workFlowServiceOperator.approveUserTask(projectId, devopsCdPipelineRecordDTO.getBusinessKey());
+                devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, cdStageRecordId, cdJobRecordId, true);
             } else {
                 String pattern = getRegexStr(imageDeploy);
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> cd deploy pattern is :{}, filterImageTagVoList is : {} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", pattern, JsonHelper.marshalByJackson(imageTagVo.getImageTagList()));
                 filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(filterImageTagVoList)) {
+                    LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
                     devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                     workFlowServiceOperator.approveUserTask(projectId, devopsCdPipelineRecordDTO.getBusinessKey());
-                    LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                    devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, cdStageRecordId, cdJobRecordId, true);
                 }
             }
             image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
