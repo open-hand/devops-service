@@ -414,13 +414,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void deleteHost(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-
         checkEnableHostDelete(hostId);
-
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-
-
-        devopsHostMapper.deleteByPrimaryKey(hostId);
+        try {
+            devopsHostMapper.deleteByPrimaryKey(hostId);
+            devopsDockerInstanceMapper.deleteByHostId(hostId);
+            devopsHostCommandMapper.deleteByHostId(hostId);
+            devopsNormalInstanceMapper.deleteByHostId(hostId);
+        } catch (Exception exception) {
+            throw new CommonException("falied to delete host");
+        }
     }
 
     private void checkEnableHostDelete(Long hostId) {

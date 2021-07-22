@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ import java.util.List;
 public interface DevopsNormalInstanceMapper extends BaseMapper<DevopsNormalInstanceDTO> {
 
     List<DevopsNormalInstanceDTO> listByHostId(Long hostId);
+
+    void deleteByHostId(@Param("hostId") Long hostId);
 }
