@@ -1,17 +1,18 @@
 package io.choerodon.devops.infra.util;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.deploy.JarDeployVO;
-import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
-import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
-import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
-import org.springframework.util.StringUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.util.StringUtils;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
+import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 
 /**
  * 〈功能简述〉
@@ -50,7 +51,7 @@ public class HostDeployUtil {
         return dockerRunExec.toString();
     }
 
-    public static String genJavaRunCmd(JarPullInfoDTO jarPullInfoDTO, JarDeployVO jarDeployVO, Long instanceId) {
+    public static String genJavaRunCmd(JarPullInfoDTO jarPullInfoDTO, JarDeployVO jarDeployVO, Long instanceId,String pid) {
         Map<String, String> params = new HashMap<>();
         params.put("{{ WORKING_PATH }}", "$HOME/choerodon/" + instanceId);
 
@@ -63,6 +64,11 @@ public class HostDeployUtil {
         params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
         params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
 
+        if (org.apache.commons.lang3.StringUtils.isNoneBlank(pid)) {
+            params.put("{{ KILL_JAR_PROCESS }}", "kill -9 " + pid);
+        } else {
+            params.put("{{ KILL_JAR_PROCESS }}", " ");
+        }
         // 2.3
         String[] strings = jarDeployVO.getValue().split("\n");
         String values = "";
