@@ -49,6 +49,7 @@ public class DockerProcessUpdateHandler implements HostMsgHandler {
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(Long.valueOf(addProcessInfo.getInstanceId()));
             if (devopsDockerInstanceDTO != null) {
                 devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
+                devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
                 devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
             }
         });
