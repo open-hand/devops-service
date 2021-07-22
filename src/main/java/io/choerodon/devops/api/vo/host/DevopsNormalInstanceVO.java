@@ -20,30 +20,15 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author wanghao
  * @Date 2021/7/1 9:22
  */
-public class DevopsNormalInstanceVO {
-    private Long id;
+public class DevopsNormalInstanceVO extends DevopsHostInstanceVO {
 
-    @ApiModelProperty("主机id")
-    private Long hostId;
-    @ApiModelProperty("部署包名称")
-    private String name;
     @ApiModelProperty("进程id")
     private String pid;
     @ApiModelProperty("占用端口")
     private String port;
     @ApiModelProperty("部署来源")
     private String sourceType;
-    @ApiModelProperty("进程状态")
-    private String status;
-    @ApiModelProperty("实例类型")
-    private String instanceType;
 
-    private Date creationDate;
-    private Long createdBy;
-    private Date lastUpdateDate;
-    private Long lastUpdatedBy;
-    private Long objectVersionNumber;
-    private IamUserDTO deployer;
 
     private DevopsHostCommandDTO devopsHostCommandDTO;
 
@@ -55,45 +40,6 @@ public class DevopsNormalInstanceVO {
         this.devopsHostCommandDTO = devopsHostCommandDTO;
     }
 
-    public String getInstanceType() {
-        return instanceType;
-    }
-
-    public void setInstanceType(String instanceType) {
-        this.instanceType = instanceType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getHostId() {
-        return hostId;
-    }
-
-    public void setHostId(Long hostId) {
-        this.hostId = hostId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getPid() {
         return pid;
@@ -119,51 +65,4 @@ public class DevopsNormalInstanceVO {
         this.sourceType = sourceType;
     }
 
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
-
-    public Long getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy(Long lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public IamUserDTO getDeployer() {
-        return deployer;
-    }
-
-    public void setDeployer(IamUserDTO deployer) {
-        this.deployer = deployer;
-    }
 }
