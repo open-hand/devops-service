@@ -22,7 +22,7 @@ public class DevopsHostInstanceVO {
     private String status;
 
     private Date creationDate;
-    private Long createdBy;
+
     private Date lastUpdateDate;
     private Long lastUpdatedBy;
     private Long objectVersionNumber;
@@ -55,13 +55,6 @@ public class DevopsHostInstanceVO {
         this.creationDate = creationDate;
     }
 
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
 
     public Date getLastUpdateDate() {
         return lastUpdateDate;

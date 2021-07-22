@@ -31,6 +31,16 @@ public class DevopsNormalInstanceVO extends DevopsHostInstanceVO {
 
     private IamUserDTO deployer;
 
+    private Long createdBy;
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
     public IamUserDTO getDeployer() {
         return deployer;
     }
