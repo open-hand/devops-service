@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +12,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.choerodon.core.convertor.ApplicationContextHelper;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -35,6 +33,7 @@ import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -62,7 +61,6 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum;
-import io.choerodon.devops.infra.enums.deploy.JavaInstanceStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
@@ -1218,7 +1216,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     .getSpringFactory()
                     .getBean(DevopsCdPipelineRecordService.class)
                     .pipelineDeployImage(pipelineRecordId, cdStageRecordId, cdJobRecordId);
-            retryHostImageDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
             ApplicationContextHelper
                     .getSpringFactory()
