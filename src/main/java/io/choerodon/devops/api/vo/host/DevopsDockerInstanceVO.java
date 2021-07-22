@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.host;
 
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -32,6 +33,15 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
 
     private List<DockerPortMapping> portMappingList;
 
+    private IamUserDTO deployer;
+
+    public IamUserDTO getDeployer() {
+        return deployer;
+    }
+
+    public void setDeployer(IamUserDTO deployer) {
+        this.deployer = deployer;
+    }
 
     @ApiModelProperty("操作命令")
     private DevopsHostCommandDTO devopsHostCommandDTO;

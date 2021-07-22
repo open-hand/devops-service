@@ -27,7 +27,7 @@ public class DevopsHostInstanceVO {
     private Long lastUpdatedBy;
     private Long objectVersionNumber;
 
-    private IamUserDTO deployer;
+
 
 
 
@@ -87,13 +87,6 @@ public class DevopsHostInstanceVO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public IamUserDTO getDeployer() {
-        return deployer;
-    }
-
-    public void setDeployer(IamUserDTO deployer) {
-        this.deployer = deployer;
-    }
 
     public Long getId() {
         return id;
