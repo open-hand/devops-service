@@ -978,7 +978,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
                 c7nNexusComponentDTO.getName(),
                 AppSourceType.CURRENT_PROJECT.getValue(),
-                HostInstanceType.NORMAL_PROCESS.value());
+                HostResourceType.JAVA_PROCESS.value());
         MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         // 有关联的应用，则保存关联关系
