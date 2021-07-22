@@ -51,7 +51,7 @@ public class HostDeployUtil {
         return dockerRunExec.toString();
     }
 
-    public static String genJavaRunCmd(JarPullInfoDTO jarPullInfoDTO, JarDeployVO jarDeployVO, Long instanceId,String pid) {
+    public static String genJavaRunCmd(JarPullInfoDTO jarPullInfoDTO, JarDeployVO jarDeployVO, Long instanceId) {
         Map<String, String> params = new HashMap<>();
         params.put("{{ WORKING_PATH }}", "$HOME/choerodon/" + instanceId);
 
@@ -64,11 +64,6 @@ public class HostDeployUtil {
         params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
         params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
 
-        if (org.apache.commons.lang3.StringUtils.isNoneBlank(pid)) {
-            params.put("{{ KILL_JAR_PROCESS }}", "kill -9 " + pid);
-        } else {
-            params.put("{{ KILL_JAR_PROCESS }}", " ");
-        }
         // 2.3
         String[] strings = jarDeployVO.getValue().split("\n");
         String values = "";

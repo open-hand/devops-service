@@ -44,6 +44,7 @@ import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -343,7 +344,13 @@ public class DevopsSagaHandler {
             LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
             LOGGER.error("error create pipeline auto deploy instance {}", e);
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            String log = devopsCdJobRecordDTO.getLog();
+            if (log != null) {
+                log = LogUtil.cutOutString(log + System.lineSeparator() + LogUtil.readContentOfThrowable(e), 2500);
+            } else {
+                log = LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500);
+            }
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, log);
             devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
 

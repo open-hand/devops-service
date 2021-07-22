@@ -134,10 +134,11 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
     @Override
     @Transactional
-    public void updateJobStatusFailed(Long jobRecordId) {
+    public void updateJobStatusFailed(Long jobRecordId, String log) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
         devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
         devopsCdJobRecordDTO.setFinishedDate(new Date());
+        devopsCdJobRecordDTO.setLog(log);
         if (devopsCdJobRecordDTO.getStartedDate() != null) {
             devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
         }

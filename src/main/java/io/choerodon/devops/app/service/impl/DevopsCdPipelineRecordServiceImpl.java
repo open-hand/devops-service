@@ -830,7 +830,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
         } catch (Exception e) {
             LOGGER.error(" {} failed!, error msg is {}", cdHostDeployConfigVO.getHostDeployType(), e);
-            devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId);
+            devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId, LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500));
             devopsCdStageRecordService.updateStageStatusFailed(cdStageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
@@ -1006,7 +1006,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
                 c7nNexusComponentDTO.getName(),
                 String.valueOf(devopsNormalInstanceDTO.getId()),
-                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId(), devopsNormalInstanceDTO.getPid()));
+                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()),
+                devopsNormalInstanceDTO.getPid());
 
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
