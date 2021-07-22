@@ -414,13 +414,22 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void deleteHost(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        List<DevopsDockerInstanceDTO>  devopsDockerInstanceDTOList = devopsDockerInstanceMapper.listByHostId(hostId);
+        List<DevopsHostCommandDTO> devopsHostCommandDTOList = devopsHostCommandMapper.listByHostId(hostId);
+        List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOList = devopsNormalInstanceMapper.listByHostId(hostId);
 
         checkEnableHostDelete(hostId);
 
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        try {
+            devopsHostMapper.deleteByPrimaryKey(hostId);
+            devopsDockerInstanceDTOList.forEach(devopsDockerInstanceDTO -> devopsDockerInstanceMapper.deleteByPrimaryKey(devopsDockerInstanceDTO.getHostId()));
+            devopsHostCommandDTOList.forEach(devopsHostCommandDTO -> devopsHostCommandMapper.deleteByPrimaryKey(devopsHostCommandDTO.getHostId()));
+            devopsNormalInstanceDTOList.forEach(devopsNormalInstanceDTO -> devopsNormalInstanceMapper.deleteByPrimaryKey(devopsNormalInstanceDTO));
+        } catch (Exception exception) {
+            throw new CommonException("falied to delete host");
+        }
 
-
-        devopsHostMapper.deleteByPrimaryKey(hostId);
     }
 
     private void checkEnableHostDelete(Long hostId) {
