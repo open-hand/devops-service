@@ -8,7 +8,6 @@ import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -50,7 +49,7 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
                 DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
                 if (devopsNormalInstanceDTO != null) {
                     devopsNormalInstanceDTO.setStatus(updateProcessInfo.getStatus());
-                    devopsNormalInstanceDTO.setPort(updateProcessInfo.getPort());
+                    devopsNormalInstanceDTO.setPort(updateProcessInfo.getPorts());
                     devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
                 }
             });
