@@ -285,9 +285,9 @@ public interface DevopsHostService {
 
     String queryUninstallShell(Long projectId, Long hostId);
 
-    Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest);
+    Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest,String searchType, String searchParam);
 
-    Page<?>  queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest);
+    Page<?> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String searchType, String searchParam);
 
     /**
      * 主机连接

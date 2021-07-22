@@ -382,8 +382,10 @@ public class DevopsHostController {
             @RequestParam(value = "host_id", required = false) Long hostId,
             @ApiParam(value = "应用服务id", required = true)
             @Encrypt @PathVariable(value = "app_service_id") Long appServiceId,
+            @RequestParam(value = "searchType", required = false) String searchType,
+            @RequestParam(value = "searchParam", required = false) String searchParam,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsHostService.queryInstanceList(projectId, hostId, appServiceId, pageRequest));
+        return ResponseEntity.ok(devopsHostService.queryInstanceList(projectId, hostId, appServiceId, pageRequest, searchType, searchParam));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -396,8 +398,10 @@ public class DevopsHostController {
             @Encrypt
             @ApiParam(value = "主机", required = true)
             @RequestParam(value = "host_id", required = false) Long hostId,
+            @RequestParam(value = "searchType", required = false) String searchType,
+            @RequestParam(value = "searchParam", required = false) String searchParam,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsHostService.queryInstanceListByHostId(projectId, hostId, pageRequest));
+        return ResponseEntity.ok(devopsHostService.queryInstanceListByHostId(projectId, hostId, pageRequest, searchType, searchParam));
     }
 
 
