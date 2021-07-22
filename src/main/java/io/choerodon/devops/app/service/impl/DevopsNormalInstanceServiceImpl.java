@@ -27,6 +27,7 @@ import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.JarSourceConfig;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -148,6 +149,10 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             nNexusComponentDTO.setDownloadUrl(getDownloadUrl(jarReleaseConfigVO));
             nexusComponentDTOList.add(nNexusComponentDTO);
 
+            jarDeployVO.setProdJarInfoVO(new ProdJarInfoVO(jarReleaseConfigVO.getGroupId(),
+                    jarReleaseConfigVO.getArtifactId(),
+                    jarReleaseConfigVO.getVersion()));
+
             NexusMavenRepoDTO nexusMavenRepoDTO = new NexusMavenRepoDTO();
             nexusMavenRepoDTO.setNePullUserId(marketMavenConfigVO.getPullUserName());
             nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
@@ -217,7 +222,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
                 deployObjectName,
                 String.valueOf(devopsNormalInstanceDTO.getId()),
-                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()));
+                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId(), devopsNormalInstanceDTO.getPid()));
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());

@@ -27,6 +27,12 @@ public class ProdJarInfoVO {
     public ProdJarInfoVO() {
     }
 
+    public ProdJarInfoVO(String groupId, String artifactId, String version) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+    }
+
     public ProdJarInfoVO(Long repositoryId, String groupId, String artifactId, String version) {
         this.repositoryId = repositoryId;
         this.groupId = groupId;

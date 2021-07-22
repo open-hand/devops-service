@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
+import javax.persistence.Transient;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -32,7 +33,7 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
     @ApiModelProperty("操作主机id")
     private Long hostId;
     @Encrypt
-    @ApiModelProperty("应用id")
+    @ApiModelProperty("应用用服务id")
     private Long appId;
     /**
      * {@link io.choerodon.devops.infra.enums.AppSourceType}
@@ -45,6 +46,29 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
 
     @ApiModelProperty("实例类型")
     private String instanceType;
+
+    @Transient
+    @ApiModelProperty("实例名称")
+    private String instanceName;
+    @Transient
+    @ApiModelProperty("实例状态")
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
 
     public DevopsHostAppInstanceRelDTO() {
     }
