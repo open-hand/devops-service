@@ -1083,6 +1083,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
                 LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
                 updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
+                return;
             } else {
                 String pattern = getRegexStr(imageDeploy);
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> cd deploy pattern is :{}, filterImageTagVoList is : {} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", pattern, JsonHelper.marshalByJackson(imageTagVo.getImageTagList()));
@@ -1090,6 +1091,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (CollectionUtils.isEmpty(filterImageTagVoList)) {
                     LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
                     updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
+                    return;
                 }
             }
             image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
