@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
-
-import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -32,4 +32,6 @@ public interface DevopsNormalInstanceService {
     void baseDelete(Long instanceId);
 
     DevopsNormalInstanceDTO baseQuery(Long instanceId);
+
+    DevopsNormalInstanceDTO queryByHostIdAndName(Long hostId, String name);
 }

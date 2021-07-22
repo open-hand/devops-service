@@ -188,23 +188,31 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
 
         // 2.保存记录
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
-                jarDeployVO.getName(),
-                jarDeployVO.getSourceType(),
-                HostResourceType.JAVA_PROCESS.value());
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = queryByHostIdAndName(hostId, jarDeployVO.getName());
+        if (devopsNormalInstanceDTO == null) {
+            devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
+                    jarDeployVO.getName(),
+                    jarDeployVO.getSourceType(),
+                    HostResourceType.JAVA_PROCESS.value());
 
-        MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
+            MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
+        } else {
+            // 删除原有应用关联关系
+            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsNormalInstanceDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
+        }
         // 有关联的应用，则保存关联关系
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {
             Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            Long instanceId = devopsNormalInstanceDTO.getId();
             appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
                     hostId,
                     appId,
                     jarDeployVO.getSourceType(),
-                    devopsNormalInstanceDTO.getId(),
+                    instanceId,
                     HostInstanceType.NORMAL_PROCESS.value()));
         }
+
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
                 deployObjectName,
@@ -272,6 +280,14 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     @Override
     public DevopsNormalInstanceDTO baseQuery(Long instanceId) {
         return devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+    }
+
+    @Override
+    public DevopsNormalInstanceDTO queryByHostIdAndName(Long hostId, String name) {
+        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_JAR_NAME_IS_NULL);
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId, name);
+        return devopsNormalInstanceMapper.selectOne(devopsNormalInstanceDTO);
     }
 
     private String getDownloadUrl(JarReleaseConfigVO jarReleaseConfigVO) {
