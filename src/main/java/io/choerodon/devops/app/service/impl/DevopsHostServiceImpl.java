@@ -428,7 +428,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         } catch (Exception exception) {
             throw new CommonException("falied to delete host");
         }
-
     }
 
     private void checkEnableHostDelete(Long hostId) {
