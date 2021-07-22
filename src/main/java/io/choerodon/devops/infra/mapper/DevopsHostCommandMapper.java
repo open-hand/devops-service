@@ -18,4 +18,6 @@ public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO
     DevopsHostCommandDTO selectLatestByInstanceId(@Param("instanceId") Long id);
 
     List<DevopsHostCommandDTO> listByHostId(Long hostId);
+
+    void deleteByHostId(@Param("hostId") Long hostId);
 }

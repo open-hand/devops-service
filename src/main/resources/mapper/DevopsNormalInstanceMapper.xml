@@ -9,4 +9,7 @@
         order by dni.creation_date desc
     </select>
 
+    <delete id="deleteByHostId">
+        DELETE FROM devops_normal_instance WHERE host_id = #{hostId}
+    </delete>
 </mapper>

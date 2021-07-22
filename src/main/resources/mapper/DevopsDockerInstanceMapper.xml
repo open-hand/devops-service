@@ -9,4 +9,7 @@
         order by ddi.creation_date desc
     </select>
 
+    <delete id="deleteByHostId">
+        DELETE FROM devops_docker_instance WHERE host_id = #{hostId}
+    </delete>
 </mapper>

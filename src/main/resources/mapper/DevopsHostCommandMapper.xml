@@ -20,7 +20,11 @@
         FROM
           devops_host_command
         WHERE
-          host_id = #{hostId}
+          host_id = # {hostId}
         ORDER BY creation_date DESC
+    </delete>
+
+    <delete id="deleteByHostId">
+        DELETE FROM devops_host_command WHERE host_id = #{hostId}
     </delete>
 </mapper>
