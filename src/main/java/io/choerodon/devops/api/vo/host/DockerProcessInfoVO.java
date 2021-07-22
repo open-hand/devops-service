@@ -19,7 +19,7 @@ public class DockerProcessInfoVO {
     private String image;
     private String name;
     private String status;
-    private String port;
+    private String ports;
     private IamUserDTO deployer;
     private Date deployDate;
 
@@ -63,12 +63,12 @@ public class DockerProcessInfoVO {
         this.image = image;
     }
 
-    public String getPort() {
-        return port;
+    public String getPorts() {
+        return ports;
     }
 
-    public void setPort(String port) {
-        this.port = port;
+    public void setPorts(String ports) {
+        this.ports = ports;
     }
 
     public IamUserDTO getDeployer() {

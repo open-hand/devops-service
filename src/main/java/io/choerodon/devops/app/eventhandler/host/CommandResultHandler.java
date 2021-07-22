@@ -56,7 +56,7 @@ public class CommandResultHandler implements HostMsgHandler {
             DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsNormalInstanceDTO.setStatus(processInfoVO.getStatus());
             devopsNormalInstanceDTO.setPid(processInfoVO.getPid());
-            devopsNormalInstanceDTO.setPort(processInfoVO.getPort());
+            devopsNormalInstanceDTO.setPort(processInfoVO.getPorts());
             devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
         });
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload) -> {
@@ -69,6 +69,7 @@ public class CommandResultHandler implements HostMsgHandler {
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsDockerInstanceDTO.setContainerId(processInfoVO.getContainerId());
             devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
+            devopsDockerInstanceDTO.setPorts(processInfoVO.getPorts());
             devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
         };
         resultHandlerMap.put(HostCommandEnum.STOP_DOCKER.value(), dockerUpdateConsumer);
