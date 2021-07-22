@@ -881,14 +881,14 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String searchType, String searchParam) {
-        return queryHostInstances(projectId, hostId, appServiceId, pageRequest, searchType, searchParam);
+    public Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String name, String type, String status, String params) {
+        return queryHostInstances(projectId, hostId, appServiceId, pageRequest, name, type, status, params);
 
     }
 
     @Override
-    public Page<DevopsHostInstanceVO> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String searchType, String searchParam) {
-        Page<DevopsHostInstanceVO> devopsHostInstanceVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostId(hostId, searchType, searchParam));
+    public Page<DevopsHostInstanceVO> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String name, String type, String status, String params) {
+        Page<DevopsHostInstanceVO> devopsHostInstanceVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostId(hostId, name, type, status, params));
         if (CollectionUtils.isEmpty(devopsHostInstanceVOPage.getContent())) {
             return new Page<>();
         }
@@ -922,8 +922,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    private Page<?> queryHostInstances(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String searchType, String searchParam) {
-        Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostIdAndAppId(projectId, hostId, appServiceId, searchType, searchParam));
+    private Page<?> queryHostInstances(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String name, String type, String status, String params) {
+        Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostIdAndAppId(projectId, hostId, appServiceId, name, type, status, params));
         if (CollectionUtils.isEmpty(hostAppInstanceRelDTOPage.getContent())) {
             return new Page<>();
         }
