@@ -17,5 +17,5 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsHostAppInstanceRelMapper extends BaseMapper<DevopsHostAppInstanceRelDTO> {
     List<AppServiceRepVO> selectHostAppByProjectId(@Param("projectId") Long projectId, @Param("type") String type, @Param("hostId") Long hostId);
 
-    List<DevopsHostAppInstanceRelDTO> queryInstanceListByHostId(@Param("projectId") Long projectId, @Param("hostId") Long hostId);
+    List<DevopsHostAppInstanceRelDTO> queryInstanceListByHostId(@Param("projectId") Long projectId, @Param("hostId") Long hostId, @Param("appId") Long appId, @Param("searchType") String searchType, @Param("searchParam") String searchParam);
 }

@@ -5,36 +5,88 @@
 
     <select id="selectHostAppByProjectId" resultType="io.choerodon.devops.api.vo.AppServiceRepVO">
         SELECT
-          any_value(dhair.app_id) AS ID,
-          any_value(dhair.app_source) AS source
+        any_value(dhair.app_id) AS ID,
+        any_value(dhair.app_source) AS source
 
         FROM
-	      `devops_host_app_instance_rel` dhair
+        `devops_host_app_instance_rel` dhair
         WHERE
-	       dhair.project_id = #{projectId,jdbcType=BIGINT}
+        dhair.project_id = #{projectId,jdbcType=BIGINT}
         <if test="type != null and type != 'all'">
-            AND  dhair.app_source= #{type,jdbcType=VARCHAR}
+            AND dhair.app_source= #{type,jdbcType=VARCHAR}
         </if>
         <if test="hostId != null and  hostId != 0">
-            AND  dhair.host_id = #{hostId,jdbcType=BIGINT}
+            AND dhair.host_id = #{hostId,jdbcType=BIGINT}
         </if>
         GROUP BY
-	       dhair.app_id
+        dhair.app_id
     </select>
 
     <select id="queryInstanceListByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppInstanceRelDTO">
+        select * from(
         SELECT
-	     dhair.instance_id,
-	     dhair.app_source,
-         dhair.instance_type,
-         dhair.created_by
+        dhair.instance_id,
+        dhair.app_source,
+        dhair.instance_type,
+        dhair.created_by,
+        ddi.name as instance_name,
+        ddi.status,
+        dhair.app_id
         FROM
-	     `devops_host_app_instance_rel` dhair
+        `devops_host_app_instance_rel` dhair
+        JOIN devops_docker_instance ddi ON ddi.id=dhair.instance_id
+
         WHERE
-	      dhair.project_id = #{projectId,jdbcType=BIGINT}
+        dhair.project_id = #{projectId,jdbcType=BIGINT}
         <if test="hostId != null and  hostId != 0">
-          AND  dhair.host_id = #{hostId,jdbcType=BIGINT}
+            AND dhair.host_id = #{hostId,jdbcType=BIGINT}
         </if>
+        AND dhair.instance_type='docker_process'
+
+        UNION
+
+        SELECT
+        dhair.instance_id,
+        dhair.app_source,
+        dhair.instance_type,
+        dhair.created_by,
+        dni.name as instance_name,
+        dni.status,
+        dhair.app_id
+        FROM
+        `devops_host_app_instance_rel` dhair
+        JOIN devops_normal_instance dni ON dni.id=dhair.instance_id
+
+        WHERE
+        dhair.project_id = #{projectId,jdbcType=BIGINT}
+        <if test="hostId != null and  hostId != 0">
+            AND dhair.host_id = #{hostId,jdbcType=BIGINT}
+        </if>
+        AND dhair.instance_type='normal_process'
+
+        ) temp
+        <where>
+            <if test="searchType != null and searchType == 'name'">
+                AND instance_name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="searchType != null and searchType == 'type'">
+                AND instance_type = #{searchParam,jdbcType=VARCHAR}
+            </if>
+            <if test="searchType != null and searchType == 'status'">
+                AND status = #{searchParam,jdbcType=VARCHAR}
+            </if>
+            <if test="appId != null and appId!= 0">
+                AND dhair.app_id = #{appId,jdbcType=BIGINT}
+            </if>
+            <if test="searchType==null and searchParam != null and searchParam != ''">
+                (
+                instance_name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+                OR instance_type = #{searchParam,jdbcType=VARCHAR}
+                OR status =#{searchParam,jdbcType=VARCHAR}
+                )
+            </if>
+        </where>
+
 
     </select>
 
