@@ -945,7 +945,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     private void handNormalProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {
-        List<DevopsHostAppInstanceRelDTO> normalHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.NORMAL_PROCESS.value())).collect(Collectors.toList());
+        List<DevopsHostAppInstanceRelDTO> normalHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> !StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(normalHostInstances)) {
             List<Long> normalInstanceIds = normalHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
             List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
