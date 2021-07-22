@@ -189,7 +189,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
         // 2.保存记录
         DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
-                deployObjectName,
+                jarDeployVO.getName(),
                 jarDeployVO.getSourceType(),
                 HostInstanceType.NORMAL_PROCESS.value());
 

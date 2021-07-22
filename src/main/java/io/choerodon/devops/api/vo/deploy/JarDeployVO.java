@@ -1,10 +1,11 @@
 package io.choerodon.devops.api.vo.deploy;
 
-import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import javax.validation.constraints.NotNull;
+import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 
 /**
  * 〈功能简述〉
@@ -21,6 +22,8 @@ public class JarDeployVO {
     @ApiModelProperty("部署来源")
     private String sourceType;
 
+    @ApiModelProperty("实例名")
+    private String name;
     /**
      *  部署对象id
      */
@@ -40,6 +43,14 @@ public class JarDeployVO {
         this.sourceType = sourceType;
         this.value = value;
         this.prodJarInfoVO = prodJarInfoVO;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getValue() {
