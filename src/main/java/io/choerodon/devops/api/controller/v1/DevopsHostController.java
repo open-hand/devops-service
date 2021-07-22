@@ -6,6 +6,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
@@ -392,7 +393,7 @@ public class DevopsHostController {
     @ApiOperation(value = "主机管理 根据主机查询应用实例")
     @GetMapping("/instance/list")
     @CustomPageRequest
-    public ResponseEntity<Page<?>> queryInstanceListByHostId(
+    public ResponseEntity<Page<DevopsHostInstanceVO>> queryInstanceListByHostId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

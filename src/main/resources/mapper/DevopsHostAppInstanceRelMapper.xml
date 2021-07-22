@@ -22,7 +22,8 @@
         dhair.app_id
     </select>
 
-    <select id="queryInstanceListByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppInstanceRelDTO">
+    <select id="queryInstanceListByHostIdAndAppId"
+            resultType="io.choerodon.devops.infra.dto.DevopsHostAppInstanceRelDTO">
         select * from(
         SELECT
         dhair.instance_id,
@@ -87,6 +88,54 @@
             </if>
         </where>
 
+
+    </select>
+
+
+    <select id="queryInstanceListByHostId" resultType="io.choerodon.devops.api.vo.host.DevopsHostInstanceVO">
+        SELECT
+	      *
+        FROM
+	     (
+          SELECT
+	        ddi.id,
+	        ddi.created_by,
+	        ddi.NAME AS instance_name,
+	        ddi.STATUS,
+	        "docker_process" AS instance_type,
+	        ddi.host_id
+          FROM
+        	devops_docker_instance ddi UNION
+          SELECT
+          	dni.id,
+          	dni.created_by,
+          	dni.NAME AS instance_name,
+          	dni.STATUS,
+          	dni.instance_type,
+          	dni.host_id
+          FROM
+          	devops_normal_instance dni
+          	) temp
+          WHERE
+	      host_id = #{hostId,jdbcType=BIGINT}
+
+            <if test="searchType != null and searchType == 'name'">
+                AND instance_name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="searchType != null and searchType == 'type'">
+                AND instance_type = #{searchParam,jdbcType=VARCHAR}
+            </if>
+            <if test="searchType != null and searchType == 'status'">
+                AND status = #{searchParam,jdbcType=VARCHAR}
+            </if>
+
+            <if test="searchType==null and searchParam != null and searchParam != ''">
+                (
+                instance_name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+                OR instance_type = #{searchParam,jdbcType=VARCHAR}
+                OR status =#{searchParam,jdbcType=VARCHAR}
+                )
+            </if>
 
     </select>
 

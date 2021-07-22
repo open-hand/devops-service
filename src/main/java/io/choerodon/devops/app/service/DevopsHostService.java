@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
@@ -287,7 +288,7 @@ public interface DevopsHostService {
 
     Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest,String searchType, String searchParam);
 
-    Page<?> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String searchType, String searchParam);
+    Page<DevopsHostInstanceVO> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String searchType, String searchParam);
 
     /**
      * 主机连接
