@@ -29,6 +29,15 @@ public class DevopsNormalInstanceVO extends DevopsHostInstanceVO {
     @ApiModelProperty("部署来源")
     private String sourceType;
 
+    private IamUserDTO deployer;
+
+    public IamUserDTO getDeployer() {
+        return deployer;
+    }
+
+    public void setDeployer(IamUserDTO deployer) {
+        this.deployer = deployer;
+    }
 
     private DevopsHostCommandDTO devopsHostCommandDTO;
 
