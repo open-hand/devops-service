@@ -200,7 +200,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
-
+    @Autowired
+    private DevopsNormalInstanceService devopsNormalInstanceService;
 
     @Value("${choerodon.online:true}")
     private Boolean online;
@@ -975,24 +976,31 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
 
         // 2.保存记录
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
-                c7nNexusComponentDTO.getName(),
-                AppSourceType.CURRENT_PROJECT.getValue(),
-                HostResourceType.JAVA_PROCESS.value());
-        MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
+        String instanceName = jarDeploy.getName() != null ? c7nNexusComponentDTO.getName() : c7nNexusComponentDTO.getName();
 
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.queryByHostIdAndName(hostId, instanceName);
+        if (devopsNormalInstanceDTO == null) {
+            devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
+                    instanceName,
+                    AppSourceType.CURRENT_PROJECT.getValue(),
+                    HostResourceType.JAVA_PROCESS.value());
+            MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
+
+        } else {
+            // 删除原有应用关联关系
+            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsNormalInstanceDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
+        }
         // 有关联的应用，则保存关联关系
         List<AppServiceDTO> appServiceDTOList = applicationService.listByProjectIdAndGAV(projectId, groupId, artifactId);
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {
             Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-            appIds.forEach(appId -> {
-                devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
-                        hostId,
-                        appId,
-                        AppSourceType.CURRENT_PROJECT.getValue(),
-                        devopsNormalInstanceDTO.getId(),
-                        HostInstanceType.NORMAL_PROCESS.value());
-            });
+            Long instanceId = devopsNormalInstanceDTO.getId();
+            appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
+                    hostId,
+                    appId,
+                    AppSourceType.CURRENT_PROJECT.getValue(),
+                    instanceId,
+                    HostInstanceType.NORMAL_PROCESS.value()));
         }
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
