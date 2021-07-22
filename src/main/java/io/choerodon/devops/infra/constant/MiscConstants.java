@@ -56,4 +56,9 @@ public final class MiscConstants {
     public static final String CREATE_TYPE = "create";
     public static final String UPDATE_TYPE = "update";
     public static final String DELETE_TYPE = "delete";
+    public static final String WORKFLOW_ADMIN_NAME = "admin";
+    public static final Long WORKFLOW_ADMIN_ID = 1L;
+    public static final Long WORKFLOW_ADMIN_ORG_ID = 0L;
+
+
 }

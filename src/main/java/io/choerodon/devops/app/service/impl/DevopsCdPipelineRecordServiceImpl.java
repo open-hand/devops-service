@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -1081,19 +1082,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), null);
             List<HarborC7nImageTagVo> filterImageTagVoList = new ArrayList<>();
             if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
-                devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
                 LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                workFlowServiceOperator.approveUserTask(projectId, devopsCdPipelineRecordDTO.getBusinessKey());
-                devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, cdStageRecordId, cdJobRecordId, true);
+                udpateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
             } else {
                 String pattern = getRegexStr(imageDeploy);
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> cd deploy pattern is :{}, filterImageTagVoList is : {} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", pattern, JsonHelper.marshalByJackson(imageTagVo.getImageTagList()));
                 filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(filterImageTagVoList)) {
                     LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                    devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
-                    workFlowServiceOperator.approveUserTask(projectId, devopsCdPipelineRecordDTO.getBusinessKey());
-                    devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, cdStageRecordId, cdJobRecordId, true);
+                    udpateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
                 }
             }
             image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
@@ -1218,6 +1215,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
     }
+
+    private void udpateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
+        Long cdJobRecordId = devopsCdJobRecordDTO.getId();
+        Long projectId = devopsCdPipelineRecordDTO.getProjectId();
+        Long pipelineRecordId = devopsCdPipelineRecordDTO.getId();
+        Long stageRecordId = devopsCdJobRecordDTO.getStageRecordId();
+        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.SKIPPED.toValue());
+        workFlowServiceOperator.approveUserTask(projectId, devopsCdPipelineRecordDTO.getBusinessKey(), MiscConstants.WORKFLOW_ADMIN_NAME, MiscConstants.WORKFLOW_ADMIN_ID, MiscConstants.WORKFLOW_ADMIN_ORG_ID);
+        devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, cdJobRecordId, true);
+    }
+
 
     @Override
     @Transactional
