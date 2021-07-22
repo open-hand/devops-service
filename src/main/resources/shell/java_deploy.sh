@@ -9,7 +9,6 @@ fi
 # 下载jar包
 curl -o {{ JAR_NAME }} -u {{ USER_ID }}:{{ PASSWORD }} {{ DOWNLOAD_URL }}
 
-{{ KILL_JAR_PROCESS }}
 # 部署命令
 nohup {{ JAVA_JAR_EXEC }} &
 

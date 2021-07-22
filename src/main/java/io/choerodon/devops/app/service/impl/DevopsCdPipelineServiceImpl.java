@@ -607,8 +607,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
-            devopsCdJobRecordService.updateLogById(jobRecordId, log);
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, log.toString());
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
         }
     }
@@ -636,7 +635,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
         } else {
             LOGGER.info(">>>>>>> setAppDeployStatus, update status to failed, pipelineStatus is :{}<<<<<<<<<<<", devopsCdPipelineRecordDTO.getStatus());
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, null);
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());

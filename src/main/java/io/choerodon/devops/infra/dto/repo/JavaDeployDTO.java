@@ -16,14 +16,25 @@ public class JavaDeployDTO {
     private String jarName;
     @ApiModelProperty("当前部署实例id")
     private String instanceId;
+    @ApiModelProperty("当前进程id，不为空则表示更新，agent会先kill 进程再部署")
+    private String pid;
     @ApiModelProperty("部署jar命令")
     private String cmd;
 
-    public JavaDeployDTO(JarPullInfoDTO jarPullInfoDTO, String jarName, String instanceId, String cmd) {
+    public JavaDeployDTO(JarPullInfoDTO jarPullInfoDTO, String jarName, String instanceId, String cmd, String pid) {
         this.jarPullInfoDTO = jarPullInfoDTO;
         this.jarName = jarName;
         this.instanceId = instanceId;
         this.cmd = cmd;
+        this.pid = pid;
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
     }
 
     public String getInstanceId() {
