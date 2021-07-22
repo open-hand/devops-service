@@ -1,19 +1,14 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
+import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
 import io.choerodon.devops.infra.util.CustomContextUtil;
-import io.reactivex.Emitter;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
-import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -42,30 +37,11 @@ public class WorkFlowServiceOperator {
     }
 
     public void approveUserTask(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
-        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
-                .subscribe(new Observer<String>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        CustomContextUtil.setUserContext(loginName, userId, orgId);
-                        try {
-                            approveUserTask(projectId, businessKey);
-                        } catch (Exception e) {
-                            throw new CommonException(e);
-                        }
-                    }
-                });
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        CustomContextUtil.setUserContext(loginName, userId, orgId);
+        approveUserTask(projectId, businessKey);
+        // 复位用户上下文
+        CustomContextUtil.setUserContext(userDetails);
     }
 
 
