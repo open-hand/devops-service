@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.DevopsHostConstants.ERROR_SAVE_APP_HOST_REL_FAILED;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -32,7 +30,10 @@ import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
@@ -43,7 +44,6 @@ import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
-import io.choerodon.devops.infra.enums.deploy.JavaInstanceStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
@@ -188,10 +188,11 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
 
         // 2.保存记录
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO();
-        devopsNormalInstanceDTO.setName(deployObjectName);
-        devopsNormalInstanceDTO.setSourceType(jarDeployVO.getSourceType());
-        devopsNormalInstanceDTO.setHostId(hostId);
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
+                deployObjectName,
+                jarDeployVO.getSourceType(),
+                HostInstanceType.NORMAL_PROCESS.value());
+
         MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         // 有关联的应用，则保存关联关系
