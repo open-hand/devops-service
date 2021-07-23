@@ -33,7 +33,7 @@ public class DevopsNormalInstanceDTO extends AuditDomain {
     @ApiModelProperty("进程id")
     private String pid;
     @ApiModelProperty("占用端口")
-    private String port;
+    private String ports;
     @ApiModelProperty("部署来源")
     private String sourceType;
     @ApiModelProperty("进程状态")
@@ -104,12 +104,12 @@ public class DevopsNormalInstanceDTO extends AuditDomain {
         this.pid = pid;
     }
 
-    public String getPort() {
-        return port;
+    public String getPorts() {
+        return ports;
     }
 
-    public void setPort(String port) {
-        this.port = port;
+    public void setPorts(String ports) {
+        this.ports = ports;
     }
 
     public String getSourceType() {

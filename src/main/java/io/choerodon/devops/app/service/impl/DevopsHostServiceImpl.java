@@ -695,7 +695,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
 
-
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
         javaProcessInfoVO.setInstanceId(String.valueOf(instanceId));
         javaProcessInfoVO.setPid(normalInstanceDTO.getPid());
