@@ -45,7 +45,7 @@ public class DevopsEnvResourceCountVO {
 
     private Long statefulSetCount;
 
-    private Long cronJobSetCount;
+    private Long cronJobCount;
 
     public Long getDeploymentCount() {
         return deploymentCount;
@@ -79,12 +79,12 @@ public class DevopsEnvResourceCountVO {
         this.statefulSetCount = statefulSetCount;
     }
 
-    public Long getCronJobSetCount() {
-        return cronJobSetCount;
+    public Long getCronJobCount() {
+        return cronJobCount;
     }
 
-    public void setCronJobSetCount(Long cronJobSetCount) {
-        this.cronJobSetCount = cronJobSetCount;
+    public void setCronJobCount(Long cronJobCount) {
+        this.cronJobCount = cronJobCount;
     }
 
     private Long podCount;
