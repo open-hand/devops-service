@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.mybatis.common.BaseMapper;
-
-import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -20,4 +20,6 @@ public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO
     List<DevopsHostCommandDTO> listByHostId(Long hostId);
 
     void deleteByHostId(@Param("hostId") Long hostId);
+
+    DevopsHostCommandDTO queryInstanceLatest(@Param("instanceId") Long instanceId);
 }

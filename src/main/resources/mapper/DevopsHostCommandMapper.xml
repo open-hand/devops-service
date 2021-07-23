@@ -13,6 +13,13 @@
         ORDER BY id DESC
 	     LIMIT 0,1;
     </select>
+    <select id="queryInstanceLatest" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        SELECT *
+        FROM devops_host_command dhc
+        WHERE dhc.instance_id = #{instanceId}
+        ORDER BY id DESC
+        limit 1
+    </select>
 
     <delete id="listByHostId">
         SELECT

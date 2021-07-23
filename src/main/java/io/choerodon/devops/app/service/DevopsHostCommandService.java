@@ -16,4 +16,6 @@ public interface DevopsHostCommandService {
     DevopsHostCommandDTO baseQueryById(Long commandId);
 
     void baseUpdate(DevopsHostCommandDTO devopsHostCommandDTO);
+
+    DevopsHostCommandDTO queryInstanceLatest(Long instanceId);
 }

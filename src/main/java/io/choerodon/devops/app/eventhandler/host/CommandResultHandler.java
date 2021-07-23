@@ -56,7 +56,7 @@ public class CommandResultHandler implements HostMsgHandler {
             DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsNormalInstanceDTO.setStatus(processInfoVO.getStatus());
             devopsNormalInstanceDTO.setPid(processInfoVO.getPid());
-            devopsNormalInstanceDTO.setPort(processInfoVO.getPorts());
+            devopsNormalInstanceDTO.setPorts(processInfoVO.getPorts());
             devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
         });
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload) -> {
