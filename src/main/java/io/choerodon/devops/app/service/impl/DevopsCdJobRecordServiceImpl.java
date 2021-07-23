@@ -33,6 +33,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
     private static final String ERROR_SAVE_JOB_RECORD_FAILED = "error.save.job.record.failed";
     private static final String ERROR_UPDATE_JOB_RECORD_FAILED = "error.update.job.record.failed";
+    private static final Long DEFAULT_JOB_DURATION_SECONDS = 1L;
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
@@ -141,6 +142,8 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         devopsCdJobRecordDTO.setLog(log);
         if (devopsCdJobRecordDTO.getStartedDate() != null) {
             devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+        } else {
+            devopsCdJobRecordDTO.setDurationSeconds(DEFAULT_JOB_DURATION_SECONDS);
         }
         update(devopsCdJobRecordDTO);
     }
