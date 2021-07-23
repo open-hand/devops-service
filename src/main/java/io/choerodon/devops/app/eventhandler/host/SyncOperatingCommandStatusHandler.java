@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.host.CommandResultVO;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
@@ -37,7 +38,9 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
         });
         // 1. 将所有agent丢失的命令状态改为超时
         Set<Long> missCommands = commandResultVOS.stream().filter(CommandResultVO::getNotExist).map(CommandResultVO::getCommandId).collect(Collectors.toSet());
-        devopsHostCommandService.batchUpdateTimeoutCommand(missCommands);
+        if(!CollectionUtils.isEmpty(missCommands)) {
+            devopsHostCommandService.batchUpdateTimeoutCommand(missCommands);
+        }
         // 2. 同步devops丢失的命令
         List<CommandResultVO> unSyncCommands = commandResultVOS.stream().filter(v -> Boolean.FALSE.equals(v.getNotExist())).collect(Collectors.toList());
         unSyncCommands.forEach(unSyncCommand -> commandResultHandler.handler(hostId, unSyncCommand.getCommandId(), unSyncCommand));
