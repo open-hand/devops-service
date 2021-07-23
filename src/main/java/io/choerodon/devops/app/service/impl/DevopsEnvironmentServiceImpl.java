@@ -718,7 +718,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvResourceCountVO queryEnvResourceCount(Long environmentId) {
         DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(environmentId);
-        Long workloadCount = devopsEnvResourceCountVO.getCronJobSetCount() +
+        Long workloadCount = devopsEnvResourceCountVO.getCronJobCount() +
                 devopsEnvResourceCountVO.getDaemonSetCount() +
                 devopsEnvResourceCountVO.getDeploymentCount() +
                 devopsEnvResourceCountVO.getJobCount() +
