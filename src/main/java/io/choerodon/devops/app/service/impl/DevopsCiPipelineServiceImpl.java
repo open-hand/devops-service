@@ -129,9 +129,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
 
     @Autowired
-    private CiCdPipelineRecordService ciCdPipelineRecordService;
-
-    @Autowired
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
     @Autowired
@@ -139,10 +136,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-
-    @Autowired
-    @Lazy
-    private DevopsCdStageRecordService devopsCdStageRecordService;
 
     @Autowired
     @Lazy
@@ -172,7 +165,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdStageService devopsCdStageService,
             DevopsCdAuditService devopsCdAuditService,
             DevopsCdJobService devopsCdJobService,
-            @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper,
             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
