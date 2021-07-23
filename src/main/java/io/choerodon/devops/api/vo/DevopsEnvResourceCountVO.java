@@ -35,6 +35,76 @@ public class DevopsEnvResourceCountVO {
 
     private Long pvcCount;
 
+    private Long workloadCount;
+
+    private Long deploymentCount;
+
+    private Long jobCount;
+
+    private Long daemonSetCount;
+
+    private Long statefulSetCount;
+
+    private Long cronJobSetCount;
+
+    public Long getDeploymentCount() {
+        return deploymentCount;
+    }
+
+    public void setDeploymentCount(Long deploymentCount) {
+        this.deploymentCount = deploymentCount;
+    }
+
+    public Long getJobCount() {
+        return jobCount;
+    }
+
+    public void setJobCount(Long jobCount) {
+        this.jobCount = jobCount;
+    }
+
+    public Long getDaemonSetCount() {
+        return daemonSetCount;
+    }
+
+    public void setDaemonSetCount(Long daemonSetCount) {
+        this.daemonSetCount = daemonSetCount;
+    }
+
+    public Long getStatefulSetCount() {
+        return statefulSetCount;
+    }
+
+    public void setStatefulSetCount(Long statefulSetCount) {
+        this.statefulSetCount = statefulSetCount;
+    }
+
+    public Long getCronJobSetCount() {
+        return cronJobSetCount;
+    }
+
+    public void setCronJobSetCount(Long cronJobSetCount) {
+        this.cronJobSetCount = cronJobSetCount;
+    }
+
+    private Long podCount;
+
+    public Long getWorkloadCount() {
+        return workloadCount;
+    }
+
+    public void setWorkloadCount(Long workloadCount) {
+        this.workloadCount = workloadCount;
+    }
+
+    public Long getPodCount() {
+        return podCount;
+    }
+
+    public void setPodCount(Long podCount) {
+        this.podCount = podCount;
+    }
+
     public Long getPvcCount() {
         return pvcCount;
     }

@@ -49,7 +49,7 @@
         SELECT
         dhair.instance_id,
         dhair.app_source,
-        'docker_process' as instance_type,
+        'normal_process' as instance_type,
         dhair.created_by,
         dni.name as instance_name,
         dni.status,
