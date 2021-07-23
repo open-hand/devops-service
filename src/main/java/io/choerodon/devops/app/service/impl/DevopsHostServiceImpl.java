@@ -915,6 +915,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
             List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class);
             devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
+                devopsNormalInstanceVO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
                 //加上操作状态
                 devopsNormalInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsNormalInstanceVO.getId()));
             });
@@ -951,6 +952,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
             List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class);
             devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
+                devopsNormalInstanceVO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
                 //加上操作状态
                 devopsNormalInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsNormalInstanceVO.getId()));
             });
