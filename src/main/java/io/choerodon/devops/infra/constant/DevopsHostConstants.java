@@ -19,6 +19,7 @@ public class DevopsHostConstants {
     public static final String JAVA_INSTANCE = "host:%s:java:instances:%s";
     public static final String PIPELINE_CUSTOM_DEPLOY = "pipeline:custom:deploy:hosts:%s:jobs:%s";
     public static final String MIDDLEWARE_INSTANCE = "host:%s:middleware:instances:%s";
+    public static final String HOST_COMMANDS = "host:%s:commands";
 
     public static String HOST_RESOURCE_INFO_KEY = "devops:host:%s:resourceInfo";
     public static String HOST_JAVA_PROCESS_INFO_KEY = "devops:host:%s:javaProcess";

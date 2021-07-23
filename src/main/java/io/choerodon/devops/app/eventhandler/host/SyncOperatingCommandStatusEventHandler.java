@@ -53,7 +53,7 @@ public class SyncOperatingCommandStatusEventHandler implements HostMsgHandler {
         LOGGER.info(">>>>>>>>>>>>>>>Sync operating host command, payload is {}.<<<<<<<<<<<<<<<<<<", hostAgentMsgVO.getPayload());
         // 2. 将记录发送给agent
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                null,
+                String.format(DevopsHostConstants.HOST_COMMANDS, hostId),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
