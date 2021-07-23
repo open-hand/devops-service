@@ -73,15 +73,7 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
         };
         resultHandlerMap.put(HostCommandEnum.STOP_DOCKER.value(), dockerUpdateConsumer);
-        resultHandlerMap.put(HostCommandEnum.START_DOCKER.value(), (payload) -> {
-            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
-            // 更新状态和容器id
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
-            devopsDockerInstanceDTO.setContainerId(processInfoVO.getContainerId());
-            devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
-            devopsDockerInstanceDTO.setPorts(processInfoVO.getPorts());
-            devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
-        });
+        resultHandlerMap.put(HostCommandEnum.START_DOCKER.value(), dockerUpdateConsumer);
         resultHandlerMap.put(HostCommandEnum.RESTART_DOCKER.value(), dockerUpdateConsumer);
 
         resultHandlerMap.put(HostCommandEnum.DEPLOY_DOCKER.value(), dockerUpdateConsumer);
@@ -90,8 +82,13 @@ public class CommandResultHandler implements HostMsgHandler {
 
     @Override
     public void handler(String hostId, Long commandId, String payload) {
-        DevopsHostCommandDTO devopsHostCommandDTO = devopsHostCommandService.baseQueryById(commandId);
         CommandResultVO commandResultVO = JsonHelper.unmarshalByJackson(payload, CommandResultVO.class);
+        handler(hostId, commandId, commandResultVO);
+    }
+
+    public void handler(String hostId, Long commandId, CommandResultVO commandResultVO) {
+        DevopsHostCommandDTO devopsHostCommandDTO = devopsHostCommandService.baseQueryById(commandId);
+
         // 中间件单独处理
         if (devopsHostCommandDTO.getCommandType().equals(HostCommandEnum.DEPLOY_MIDDLEWARE.value())) {
             MiddlewareDeployVO middlewareDeployVO = JsonHelper.unmarshalByJackson(commandResultVO.getPayload(), MiddlewareDeployVO.class);

@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -22,4 +23,8 @@ public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO
     void deleteByHostId(@Param("hostId") Long hostId);
 
     DevopsHostCommandDTO queryInstanceLatest(@Param("instanceId") Long instanceId);
+
+    void batchUpdateTimeoutCommand(@Param("missCommands") Set<Long> missCommands);
+
+    List<DevopsHostCommandDTO> listStagnatedRecord(@Param("hostId") String hostId, @Param("beforeDate") String beforeDate);
 }

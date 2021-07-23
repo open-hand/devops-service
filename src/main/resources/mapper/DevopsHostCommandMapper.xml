@@ -2,6 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostCommandMapper">
+    <update id="batchUpdateTimeoutCommand">
+        update devops_host_command dhc
+        set dhc.status = 'failed', dhc.error = 'Time out!'
+        where dhc.status = 'operating' and dhc.id in
+        <foreach collection="missCommands" item="commandId" open="(" close=")" index="i" separator=",">
+            #{commandId}
+        </foreach>
+    </update>
 
     <select id="selectLatestByInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
         SELECT
@@ -19,6 +27,11 @@
         WHERE dhc.instance_id = #{instanceId}
         ORDER BY id DESC
         limit 1
+    </select>
+    <select id="listStagnatedRecord" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        select *
+        from devops_host_command dhc
+        where dhc.last_update_date <![CDATA[<=]]> #{beforeDate}
     </select>
 
     <delete id="listByHostId">

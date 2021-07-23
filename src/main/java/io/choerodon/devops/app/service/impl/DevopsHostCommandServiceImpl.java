@@ -1,10 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.app.service.DevopsHostCommandService;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -45,5 +51,21 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
     @Override
     public DevopsHostCommandDTO queryInstanceLatest(Long instanceId) {
         return devopsHostCommandMapper.queryInstanceLatest(instanceId);
+    }
+
+    @Override
+    public List<DevopsHostCommandDTO> listStagnatedRecord(String hostId) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DevopsHostConstants.DATE_PATTERN);
+
+        // 获取三分钟以前的时间
+        Date threeMinutesBefore = new Date(System.currentTimeMillis() - DevopsHostConstants.THREE_MINUTE_MILLISECONDS);
+        String beforeDate = simpleDateFormat.format(threeMinutesBefore);
+        return devopsHostCommandMapper.listStagnatedRecord(hostId, beforeDate);
+    }
+
+    @Override
+    @Transactional
+    public void batchUpdateTimeoutCommand(Set<Long> missCommands) {
+        devopsHostCommandMapper.batchUpdateTimeoutCommand(missCommands);
     }
 }
