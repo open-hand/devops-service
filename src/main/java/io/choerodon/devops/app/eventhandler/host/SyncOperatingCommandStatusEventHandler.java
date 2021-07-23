@@ -42,7 +42,7 @@ public class SyncOperatingCommandStatusEventHandler implements HostMsgHandler {
         // 1. 查询处于操作中三分钟以上的操作记录
         List<DevopsHostCommandDTO> devopsHostCommandDTOList = devopsHostCommandService.listStagnatedRecord(hostId);
         if (CollectionUtils.isEmpty(devopsHostCommandDTOList)) {
-            LOGGER.info(">>>>>>>>>>>>>>>Stagnated operating host command is null, skip.<<<<<<<<<<<<<<<<<<");
+            LOGGER.info(">>>>>>>>>>>>>>>Host : {}, Stagnated operating host command is null, skip.<<<<<<<<<<<<<<<<<<", hostId);
             return;
         }
         Set<String> commandIds = devopsHostCommandDTOList.stream().map(v -> v.getId().toString()).collect(Collectors.toSet());
@@ -50,7 +50,7 @@ public class SyncOperatingCommandStatusEventHandler implements HostMsgHandler {
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.SYNC_OPERATING_COMMAND_STATUS.value());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(commandIds));
-        LOGGER.info(">>>>>>>>>>>>>>>Sync operating host command, payload is {}.<<<<<<<<<<<<<<<<<<", hostAgentMsgVO.getPayload());
+        LOGGER.info(">>>>>>>>>>>>>>>Host : {}, Sync operating host command, payload is {}.<<<<<<<<<<<<<<<<<<", hostId, hostAgentMsgVO.getPayload());
         // 2. 将记录发送给agent
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.HOST_COMMANDS, hostId),

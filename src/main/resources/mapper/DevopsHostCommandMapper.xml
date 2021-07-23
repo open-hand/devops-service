@@ -31,7 +31,7 @@
     <select id="listStagnatedRecord" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
         select *
         from devops_host_command dhc
-        where dhc.last_update_date <![CDATA[<=]]> #{beforeDate}
+        where dhc.host_id = #{hostId} and dhc.status = 'operating' and dhc.last_update_date <![CDATA[<=]]> #{beforeDate}
     </select>
 
     <delete id="listByHostId">
