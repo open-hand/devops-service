@@ -302,6 +302,12 @@
                 WHERE ins.env_id = env.id
                   AND status = 'failed')                                            AS failed_instance_count,
                (SELECT COUNT(1) FROM devops_pvc dpvc WHERE dpvc.env_id = env.id)    AS pvc_count
+               (SELECT COUNT(1) FROM devops_env_pod dep WHERE dep.env_id = env.id and dep.status = 'Running')    AS pod_count
+               (SELECT count(1) FROM devops_deployment dp WHERE dp.env_id = env.id)    AS deployment_count
+               (SELECT count(1) FROM devops_job dj WHERE dj.env_id = env.id)    AS job_count
+               (SELECT COUNT(1) FROM devops_cron_job dcj WHERE dcj.env_id = env.id)   AS cron_job_count
+               (SELECT COUNT(1) FROM devops_daemon_set das WHERE das.env_id = env.id)    AS daemon_set_count
+               (SELECT COUNT(1) FROM devops_stateful_set dss WHERE dss.env_id = env.id)    AS stateful_set_count
         FROM devops_env env
         WHERE env.id = #{envId};
     </select>

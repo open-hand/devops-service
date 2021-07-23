@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -51,6 +52,8 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     @Autowired
     private DevopsHostService devopsHostService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public String processor() {
