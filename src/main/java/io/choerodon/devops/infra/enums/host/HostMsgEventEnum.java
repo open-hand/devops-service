@@ -22,9 +22,18 @@ public enum HostMsgEventEnum {
      */
     DOCKER_PROCESS_UPDATE("docker_process_update"),
     /**
-     * 更新事件状态
+     * 该事件用于告知devops-service将超过3分钟仍处于操作状态的事件发送给agent
+     */
+    SYNC_OPERATING_COMMAND_STATUS_EVENT("sync_operating_command_status_event"),
+    /**
+     * 该事件返回command结果
+     */
+    SYNC_OPERATING_COMMAND_STATUS("sync_operating_command_status"),
+    /**
+     * 更新长时间状态未更新的记录状态
      */
     SYNC_COMMAND_STATUS("sync_command_status"),
+
     /**
      * agent启动初始化
      */

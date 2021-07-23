@@ -9,6 +9,10 @@ package io.choerodon.devops.infra.constant;
  */
 public class DevopsHostConstants {
 
+
+    public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    public static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
     // ws
     public static final String GROUP = "host:";
     public static final String DOCKER_INSTANCE = "host:%s:docker:instances:%s";

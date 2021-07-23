@@ -28,7 +28,11 @@ public enum HostCommandEnum {
     INIT_AGENT("init_agent"),
     UPGRADE_AGENT("upgrade_agent"),
     INIT_AGENT_FAILED("init_agent_failed"),
-    CUSTOM_DEPLOY("custom_deploy")
+    CUSTOM_DEPLOY("custom_deploy"),
+    /**
+     * 该事件返回command结果
+     */
+    SYNC_OPERATING_COMMAND_STATUS("sync_operating_command_status"),
     ;
 
     private String value;

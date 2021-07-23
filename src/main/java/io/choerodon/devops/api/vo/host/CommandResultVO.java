@@ -12,6 +12,28 @@ public class CommandResultVO {
     private String payload;
     private String errorMsg;
 
+    private Long commandId;
+    /**
+     * 用于标识同步的命令，agent是否处理，true表示agent未处理该命令
+     */
+    private Boolean notExist;
+
+    public Boolean getNotExist() {
+        return notExist;
+    }
+
+    public void setNotExist(Boolean notExist) {
+        this.notExist = notExist;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
+
     public String getPayload() {
         return payload;
     }
