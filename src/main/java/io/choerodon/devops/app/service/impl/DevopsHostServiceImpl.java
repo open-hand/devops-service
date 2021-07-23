@@ -675,6 +675,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void deleteJavaProcess(Long projectId, Long hostId, Long instanceId) {
+        DevopsNormalInstanceDTO normalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+        if (normalInstanceDTO.getPid() == null) {
+            devopsNormalInstanceMapper.deleteByPrimaryKey(instanceId);
+            return;
+        }
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -689,7 +694,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
-        DevopsNormalInstanceDTO normalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+
 
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
         javaProcessInfoVO.setInstanceId(String.valueOf(instanceId));
@@ -703,6 +708,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void deleteDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+        if (dockerInstanceDTO.getContainerId() == null) {
+            devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
+            return;
+        }
+
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.REMOVE_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -712,12 +723,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
 
+
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.REMOVE_DOCKER.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
-        DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
