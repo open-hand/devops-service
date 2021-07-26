@@ -22,7 +22,7 @@ public class DevopsHostAppInstanceRelServiceImpl implements DevopsHostAppInstanc
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveHostAppInstanceRel(Long projectId, Long hostId, Long appServiceId, String appSource, Long instanceId, String instanceType) {
+    public void saveHostAppInstanceRel(Long projectId, Long hostId, Long appServiceId, String appSource, Long instanceId, String instanceType, String serviceName) {
         Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
         Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
@@ -38,7 +38,7 @@ public class DevopsHostAppInstanceRelServiceImpl implements DevopsHostAppInstanc
                     appServiceId,
                     appSource,
                     instanceId,
-                    instanceType);
+                    instanceType, serviceName);
             MapperUtil.resultJudgedInsertSelective(devopsHostAppInstanceRelMapper, devopsHostAppInstanceRelDTO, ERROR_SAVE_APP_HOST_REL_FAILED);
         }
     }

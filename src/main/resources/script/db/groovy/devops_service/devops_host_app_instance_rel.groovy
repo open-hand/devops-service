@@ -24,6 +24,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance_rel.groovy') {
             column(name: 'app_source', type: 'VARCHAR(32)', remarks: '应用来源') {
                 constraints(nullable: false)
             }
+            column(name: 'service_name', type: 'VARCHAR(64)', remarks: '应用名称') {
+                constraints(nullable: false)
+            }
+
 
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
