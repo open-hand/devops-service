@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hzero.core.base.BaseConstants;
@@ -209,13 +210,14 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         // 有关联的应用，则保存关联关系
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {
             Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
             Long instanceId = devopsNormalInstanceDTO.getId();
             appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
                     hostId,
                     appId,
                     jarDeployVO.getSourceType(),
                     instanceId,
-                    HostInstanceType.NORMAL_PROCESS.value()));
+                    HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
         }
 
 

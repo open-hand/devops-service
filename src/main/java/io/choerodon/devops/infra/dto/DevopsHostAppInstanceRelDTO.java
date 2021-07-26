@@ -53,6 +53,16 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("实例状态")
     private String status;
+    @ApiModelProperty("服务的名称")
+    private String serviceName;
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
 
     public String getStatus() {
         return status;
@@ -78,13 +88,14 @@ public class DevopsHostAppInstanceRelDTO extends AuditDomain {
         this.instanceId = instanceId;
     }
 
-    public DevopsHostAppInstanceRelDTO(Long projectId, Long hostId, Long appId, String appSource, Long instanceId, String instanceType) {
+    public DevopsHostAppInstanceRelDTO(Long projectId, Long hostId, Long appId, String appSource, Long instanceId, String instanceType, String serviceName) {
         this.projectId = projectId;
         this.hostId = hostId;
         this.appId = appId;
         this.appSource = appSource;
         this.instanceId = instanceId;
         this.instanceType = instanceType;
+        this.serviceName = serviceName;
     }
 
     public Long getProjectId() {

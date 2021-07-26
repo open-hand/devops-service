@@ -2280,13 +2280,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, PageRequest pageRequest) {
+    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, String params, PageRequest pageRequest) {
         //查询有主机部署的应用服务
         if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(type, "project")) {
             type = AppSourceType.CURRENT_PROJECT.getValue();
         }
         String finalType = type;
-        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId));
+        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId, params));
         if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
             return new Page<>();
         }

@@ -112,6 +112,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         String deployObjectName = null;
         String deployVersion = null;
         Long appServiceId = null;
+        String serviceName = null;
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(dockerDeployVO.getSourceType());
@@ -153,6 +154,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
             appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
+            serviceName = appServiceDTO == null ? null : appServiceDTO.getName();
         }
 
         // 2.保存记录
@@ -169,7 +171,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                         appServiceId,
                         dockerDeployVO.getSourceType(),
                         devopsDockerInstanceDTO.getId(),
-                        HostInstanceType.DOCKER_PROCESS.value());
+                        HostInstanceType.DOCKER_PROCESS.value(), serviceName);
             }
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());

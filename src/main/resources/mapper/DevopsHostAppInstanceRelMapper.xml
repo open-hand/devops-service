@@ -6,7 +6,8 @@
     <select id="selectHostAppByProjectId" resultType="io.choerodon.devops.api.vo.AppServiceRepVO">
         SELECT
         any_value(dhair.app_id) AS ID,
-        any_value(dhair.app_source) AS source
+        any_value(dhair.app_source) AS source,
+        any_value( dhair.service_name) as  name
 
         FROM
         `devops_host_app_instance_rel` dhair
@@ -17,6 +18,11 @@
         </if>
         <if test="hostId != null and  hostId != 0">
             AND dhair.host_id = #{hostId,jdbcType=BIGINT}
+        </if>
+        <if test="params != null and params != ''">
+            AND  (
+            dhair.service_name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+            )
         </if>
         GROUP BY
         dhair.app_id

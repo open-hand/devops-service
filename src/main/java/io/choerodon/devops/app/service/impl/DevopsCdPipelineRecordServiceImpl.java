@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
@@ -45,6 +46,8 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.util.StringUtil;
+
+import java.util.function.Function;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -976,13 +979,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         List<AppServiceDTO> appServiceDTOList = applicationService.listByProjectIdAndGAV(projectId, groupId, artifactId);
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {
             Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
             Long instanceId = devopsNormalInstanceDTO.getId();
             appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
                     hostId,
                     appId,
                     AppSourceType.CURRENT_PROJECT.getValue(),
                     instanceId,
-                    HostInstanceType.NORMAL_PROCESS.value()));
+                    HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
         }
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
@@ -1042,6 +1046,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String deployObjectName = null;
         String image = null;
         Long appServiceId = null;
+        String serviceName = null;
 
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
 
@@ -1116,6 +1121,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
             AppServiceRepVO appServiceRepVO = applicationService.queryByCode(projectId, deployObjectName);
             appServiceId = appServiceRepVO == null ? null : appServiceRepVO.getId();
+            serviceName = appServiceRepVO == null ? null : appServiceRepVO.getServiceName();
         }
 
         // 1. 更新状态 记录镜像信息
@@ -1138,7 +1144,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             appServiceId,
                             AppSourceType.CURRENT_PROJECT.getValue(),
                             devopsDockerInstanceDTO.getId(),
-                            HostInstanceType.DOCKER_PROCESS.value());
+                            HostInstanceType.DOCKER_PROCESS.value(), serviceName);
                 }
             }
         } else {
