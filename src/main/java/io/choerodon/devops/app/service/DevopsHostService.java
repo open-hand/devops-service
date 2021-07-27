@@ -315,4 +315,10 @@ public interface DevopsHostService {
      * @param devopsHostConnectionVO
      */
     Map<String, String> testConnectHost(Long projectId, Long hostId, DevopsHostConnectionVO devopsHostConnectionVO);
+
+    /**
+     * 主机断开连接
+     * @return
+     */
+    String disconnectionHost();
 }

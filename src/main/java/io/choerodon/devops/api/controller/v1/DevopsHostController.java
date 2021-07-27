@@ -1,5 +1,22 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -16,23 +33,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.core.util.Results;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author zmf
@@ -445,4 +445,14 @@ public class DevopsHostController {
             @RequestBody @Valid DevopsHostConnectionVO devopsHostConnectionVO) {
         return ResponseEntity.ok(devopsHostService.testConnectHost(projectId, hostId, devopsHostConnectionVO));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "断开连接")
+    @GetMapping("/disconnection")
+    public ResponseEntity<String> disconnectionHost(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId) {
+        return ResponseEntity.ok(devopsHostService.disconnectionHost());
+    }
+
 }
