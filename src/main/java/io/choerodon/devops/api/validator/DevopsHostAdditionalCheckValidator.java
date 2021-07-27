@@ -49,4 +49,8 @@ public class DevopsHostAdditionalCheckValidator {
         CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getUsername()), "error.host.username.empty");
         CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getPassword()), "error.host.password.empty");
     }
+
+    public void validHostIdAndInstanceIdMatch(Long hostId, Long instanceId) {
+        CommonExAssertUtil.assertTrue(devopsHostService.HostIdInstanceIdMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
+    }
 }
