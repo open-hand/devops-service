@@ -82,5 +82,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
             column(name: 'log', type: 'text', afterColumn: 'deploy_type')
         }
     }
+    changeSet(author: 'wanghao', id: '2021-7-28-add-column') {
+        column(name: 'mkt_app_id', type: 'BIGINT UNSIGNED', remarks: '应用id', afterColumn: 'deploy_object_name') {
+            constraints(nullable: false)
+        }
+        column(name: 'mkt_app_version_id', type: 'BIGINT UNSIGNED', remarks: '应用版本id', afterColumn: 'mkt_app_id') {
+            constraints(nullable: false)
+        }
+        column(name: 'business_key', type: 'VARCHAR(255)', remarks: '流程实例关联业务key', afterColumn: 'mkt_app_version_id')
+    }
 
 }
