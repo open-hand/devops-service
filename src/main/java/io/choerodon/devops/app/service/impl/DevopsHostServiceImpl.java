@@ -497,6 +497,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public boolean HostIdInstanceIdMatch(Long hostId, Long instanceId) {
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+        return devopsDockerInstanceDTO != null && devopsDockerInstanceDTO.getHostId().equals(hostId);
+    }
+
+    @Override
     public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage) {
         // 解析查询参数
         Page<DevopsHostVO> page;
@@ -676,6 +682,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void deleteJavaProcess(Long projectId, Long hostId, Long instanceId) {
+        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
         DevopsNormalInstanceDTO normalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
         if (normalInstanceDTO.getPid() == null) {
             devopsNormalInstanceMapper.deleteByPrimaryKey(instanceId);
@@ -708,6 +715,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void deleteDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
         DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
         if (dockerInstanceDTO.getContainerId() == null) {
             devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
@@ -741,6 +749,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void stopDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.STOP_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -769,6 +778,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void restartDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.RESTART_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -798,6 +808,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void startDockerProcess(Long projectId, Long hostId, Long instanceId) {
+        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.START_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -862,9 +873,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return;
         }
         Map<String, String> map = new HashMap<>();
-        String commend = queryShell(projectId, hostId);
+        String command = queryShell(projectId, hostId);
         redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null));
-        automaticHost(devopsHostConnectionVO, map, redisKey, commend);
+        automaticHost(devopsHostConnectionVO, map, redisKey, command);
     }
 
     @Override
@@ -1015,12 +1026,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Async
-    void automaticHost(DevopsHostConnectionVO devopsHostConnectionVO, Map<String, String> map, String redisKey, String commend) {
+    void automaticHost(DevopsHostConnectionVO devopsHostConnectionVO, Map<String, String> map, String redisKey, String command) {
         devopsHostAdditionalCheckValidator.validHostInformationMatch(Objects.requireNonNull(ConvertUtils.convertObject(devopsHostConnectionVO, DevopsHostCreateRequestVO.class)));
         SSHClient sshClient = null;
         try {
             sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, commend);
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, command);
             redisTemplate.opsForHash().putAll(redisKey, createMap(map, execResultInfoVO.getExitCode() == 0 ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(), execResultInfoVO.getStdErr()));
         } catch (IOException exception) {
             throw new CommonException("error.connect.host");
