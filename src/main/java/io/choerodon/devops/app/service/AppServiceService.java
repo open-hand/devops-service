@@ -581,4 +581,6 @@ public interface AppServiceService {
     List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId);
 
     Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, String params, PageRequest pageRequest);
+
+    Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer value);
 }

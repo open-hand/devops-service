@@ -560,7 +560,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (projectOwner) {
             appServiceIds = appServiceMapper.listByActive(projectId).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         } else {
-            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            //如果是项目成员，需要developer及以上的权限
+            appServiceIds = appServiceService.getMemberAppServiceIdsByAccessLevel(projectDTO.getOrganizationId(), projectId, userId, AccessLevel.DEVELOPER.value);
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new Page<>();
             }

@@ -33,4 +33,9 @@ public class HrdsCodeRepoClientFallback implements HrdsCodeRepoClient {
     public ResponseEntity<List<RdmMemberViewDTO>> listMembers(Long organizationId, Long projectId, Set<Long> repositoryIds, String repositoryName, String realName, String loginName, String params, Boolean enabled, Boolean syncGitlabFlag, Boolean glExpiresFlag) {
         throw new CommonException("error.list.code.users.appService");
     }
+
+    @Override
+    public ResponseEntity<List<RepositoryPrivilegeViewDTO>> listRepositoriesByAccessLevel(Long organizationId, Long projectId, Integer accessLevel, Set<Long> userIds) {
+        throw new CommonException("error.get.gitlab.project.appService.by.accessLevel");
+    }
 }
