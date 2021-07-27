@@ -166,7 +166,7 @@ public interface DevopsHostService {
     boolean isSshIpPortUnique(Long projectId, String ip, Integer sshPort);
 
     /**
-     * ip + sshPort 是否在项目下唯一
+     * 校验主机id与实例id是否匹配
      *
      * @param hostId       主机id
      * @param instanceId   实例id
