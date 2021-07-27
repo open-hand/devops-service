@@ -67,6 +67,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsHostServiceImpl implements DevopsHostService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
 
+    private static final String DIS_CONNECTION = "cat $HOME/choerodon/c7n-agent.pid |xargs kill -9";
     private static final String ERROR_HOST_NOT_FOUND = "error.host.not.found";
     private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
     /**
@@ -722,12 +723,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
 
-
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.REMOVE_DOCKER.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-
 
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
@@ -918,6 +917,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         List<DevopsHostInstanceVO> hostInstanceVOS = hostInstances.stream().sorted(Comparator.comparing(DevopsHostInstanceVO::getCreationDate).reversed()).collect(Collectors.toList());
         devopsHostInstanceVOPage.setContent(hostInstanceVOS);
         return devopsHostInstanceVOPage;
+    }
+
+    @Override
+    public String disconnectionHost() {
+        return DIS_CONNECTION;
     }
 
     private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {

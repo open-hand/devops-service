@@ -58,6 +58,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
     private static final String SAGA_INSTALL_K8S_REF_TYPE = "install-cluster";
     private static final String SAGA_RETRY_INSTALL_K8S_REF_TYPE = "retry-install";
+    private static final String DIS_CONNECTION = "helm uninstall %s -n choerodon";
 
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
@@ -994,5 +995,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterDTO.setProjectId(projectId);
         int selectCount = devopsClusterMapper.selectCount(devopsClusterDTO);
         return Long.valueOf(selectCount);
+    }
+
+    @Override
+    public String disconnectionHost(Long clusterId) {
+        DevopsClusterDTO clusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (clusterDTO == null) {
+            throw new CommonException("cluster.not.exist");
+        }
+        return String.format(DIS_CONNECTION, clusterDTO.getCode());
     }
 }
