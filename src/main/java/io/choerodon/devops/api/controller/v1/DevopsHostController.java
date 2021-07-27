@@ -380,7 +380,7 @@ public class DevopsHostController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "主机", required = true)
-            @RequestParam(value = "host_id", required = false) Long hostId,
+            @RequestParam(value = "hostId", required = false) Long hostId,
             @ApiParam(value = "应用服务id", required = true)
             @Encrypt @PathVariable(value = "app_service_id") Long appServiceId,
             @RequestParam(value = "name", required = false) String name,
