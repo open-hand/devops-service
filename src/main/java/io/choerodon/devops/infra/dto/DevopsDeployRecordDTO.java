@@ -59,6 +59,12 @@ public class DevopsDeployRecordDTO extends AuditDomain {
      * 主机部署时执行的指令
      */
     private String log;
+    @ApiModelProperty("市场应用Id,hzero部署时需要")
+    private Long mktAppId;
+    @ApiModelProperty("市场应用版本Id,hzero部署时需要")
+    private Long mktAppVersionId;
+    @ApiModelProperty("关联流程实例的key,hzero部署时需要")
+    private String businessKey;
 
     public DevopsDeployRecordDTO() {
     }
@@ -92,6 +98,30 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectName = deployObjectName;
         this.deployObjectVersion = deployObjectVersion;
         this.instanceName = instanceName;
+    }
+
+    public Long getMktAppId() {
+        return mktAppId;
+    }
+
+    public void setMktAppId(Long mktAppId) {
+        this.mktAppId = mktAppId;
+    }
+
+    public Long getMktAppVersionId() {
+        return mktAppVersionId;
+    }
+
+    public void setMktAppVersionId(Long mktAppVersionId) {
+        this.mktAppVersionId = mktAppVersionId;
+    }
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
     }
 
     public String getLog() {
