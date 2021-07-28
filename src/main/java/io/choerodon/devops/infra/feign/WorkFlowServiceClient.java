@@ -4,6 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.fallback.WorkFlowServiceClientFallback;
 
@@ -34,4 +35,8 @@ public interface WorkFlowServiceClient {
     ResponseEntity<String> createCiCdPipeline(
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody DevopsPipelineDTO devopsPipelineDTO);
+
+    @PostMapping(value = "/v1/projects/{project_id}/process_instances/hzero_pipeline")
+    ResponseEntity<String> createHzeroPipeline(@PathVariable(value = "project_id") Long projectId,
+                                               @RequestBody HzeroDeployPipelineVO hzeroDeployPipelineVO);
 }

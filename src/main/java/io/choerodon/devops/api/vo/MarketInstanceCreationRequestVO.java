@@ -66,6 +66,31 @@ public class MarketInstanceCreationRequestVO {
      */
     private String source;
 
+    public MarketInstanceCreationRequestVO() {
+    }
+
+    public MarketInstanceCreationRequestVO(@Nullable Long instanceId,
+                                           Long marketAppServiceId,
+                                           Long marketDeployObjectId,
+                                           String values,
+                                           String instanceName,
+                                           String commandType,
+                                           Long environmentId,
+                                           DevopsServiceReqVO devopsServiceReqVO,
+                                           DevopsIngressVO devopsIngressVO,
+                                           String source) {
+        this.instanceId = instanceId;
+        this.marketAppServiceId = marketAppServiceId;
+        this.marketDeployObjectId = marketDeployObjectId;
+        this.values = values;
+        this.instanceName = instanceName;
+        this.commandType = commandType;
+        this.environmentId = environmentId;
+        this.devopsServiceReqVO = devopsServiceReqVO;
+        this.devopsIngressVO = devopsIngressVO;
+        this.source = source;
+    }
+
     @Nullable
     public Long getInstanceId() {
         return instanceId;

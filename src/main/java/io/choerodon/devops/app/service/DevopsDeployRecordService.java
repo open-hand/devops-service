@@ -4,12 +4,15 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
+import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
@@ -20,7 +23,41 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsDeployRecordService {
 
+    /**
+     * @deprecated
+     * @param projectId
+     * @param type
+     * @param deployId
+     * @param deployMode
+     * @param deployPayloadId
+     * @param deployPayloadName
+     * @param deployResult
+     * @param deployObjectType
+     * @param deployObjectName
+     * @param deployVersion
+     * @param instanceName
+     * @param deploySourceVO
+     * @param userId
+     * @return
+     */
     Long saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName, DeploySourceVO deploySourceVO, Long userId);
+
+    Long saveDeployRecord(Long projectId,
+                          DeployType type,
+                          Long deployId,
+                          DeployModeEnum deployMode,
+                          Long deployPayloadId,
+                          String deployPayloadName,
+                          String deployResult,
+                          DeployObjectTypeEnum deployObjectType,
+                          String deployObjectName,
+                          String deployVersion,
+                          String instanceName,
+                          DeploySourceVO deploySource,
+                          @Nullable Long mktAppId,
+                          @Nullable Long nktAppVersionId,
+                          @Nullable String businessKey);
+
 
     Long saveFailRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName, DeploySourceVO deploySourceVO, Long userId, String errorMessage);
 
@@ -82,4 +119,8 @@ public interface DevopsDeployRecordService {
     Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion);
 
     DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId);
+
+    void updateResultById(Long deployRecordId, CommandStatus status);
+
+    DevopsDeployRecordDTO baseQueryById(Long deployRecordId);
 }

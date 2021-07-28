@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,15 +14,25 @@ import sun.misc.BASE64Decoder;
 
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsDeployService;
-import io.choerodon.devops.app.service.JarAndImageDeployService;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
+import io.choerodon.devops.infra.dto.market.MarketApplicationDTO;
+import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.util.GenerateUUID;
 
 /**
  * 〈功能简述〉
@@ -51,6 +64,14 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
     private JarAndImageDeployService jarAndImageDeployService;
+    @Autowired
+    private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
+    @Autowired
+    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
 
     @Override
     public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
@@ -67,10 +88,47 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     @Override
     @Transactional
     public void deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO) {
-        // 1. 构建工作流部署对象
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(hzeroDeployVO.getEnvId());
+        MarketApplicationDTO marketApplicationDTO = marketServiceClientOperator.queryApplication(hzeroDeployVO.getMktAppId());
+        // 保存部署记录
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setType(AppSourceType.HZERO.getValue());
+        String businessKey = GenerateUUID.generateUUID();
+        Long deployRecordId = devopsDeployRecordService.saveDeployRecord(projectId,
+                DeployType.HZERO,
+                null,
+                DeployModeEnum.ENV,
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getName(),
+                CommandStatus.OPERATING.getStatus(),
+                DeployObjectTypeEnum.HZERO,
+                marketApplicationDTO.getName(),
+                hzeroDeployVO.getMktAppVersion(),
+                null,
+                deploySourceVO,
+                hzeroDeployVO.getMktAppId(),
+                hzeroDeployVO.getMktAppVersionId(),
+                businessKey);
+        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsList = new ArrayList<>();
+        hzeroDeployVO.getInstanceList().forEach(instanceVO -> {
+            // 保存部署配置
+            DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(instanceVO.getValues());
+            // 保存部署记录详情
+            DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseSave(new DevopsHzeroDeployDetailsDTO(deployRecordId,
+                    devopsEnvironmentDTO.getId(),
+                    instanceVO.getMktServiceId(),
+                    instanceVO.getMktDeployObjectId(),
+                    devopsHzeroDeployConfigDTO.getId(),
+                    HzeroDeployDetailsStatusEnum.CREATED.value(),
+                    instanceVO.getInstanceCode(),
+                    instanceVO.getSequence()));
+            devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
+        });
 
-        // 2. 启动流程实例
-
+        // 构建工作流部署对象
+        HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsList);
+        // 启动流程实例
+        workFlowServiceOperator.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
     }
 
 }

@@ -22,7 +22,11 @@ public enum DeployType {
     /**
      * 基础组件
      */
-    BASE_COMPONENT("baseComponent");
+    BASE_COMPONENT("baseComponent"),
+    /**
+     * hzero部署
+     */
+    HZERO("hzero");
 
 
     private String type;

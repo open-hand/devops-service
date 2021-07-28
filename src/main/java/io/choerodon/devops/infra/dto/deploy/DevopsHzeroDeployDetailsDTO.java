@@ -46,6 +46,9 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
     @Encrypt
     private Long valueId;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum}
+     */
     @ApiModelProperty("部署状态")
     private String status;
 
@@ -54,6 +57,20 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
 
     @ApiModelProperty("部署顺序")
     private Long sequence;
+
+    public DevopsHzeroDeployDetailsDTO() {
+    }
+
+    public DevopsHzeroDeployDetailsDTO(Long deployRecordId, Long envId, Long mktServiceId, Long mktDeployObjectId, Long valueId, String status, String instanceCode, Long sequence) {
+        this.deployRecordId = deployRecordId;
+        this.envId = envId;
+        this.mktServiceId = mktServiceId;
+        this.mktDeployObjectId = mktDeployObjectId;
+        this.valueId = valueId;
+        this.status = status;
+        this.instanceCode = instanceCode;
+        this.sequence = sequence;
+    }
 
     public Long getId() {
         return id;

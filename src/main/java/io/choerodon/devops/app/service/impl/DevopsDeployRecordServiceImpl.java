@@ -9,13 +9,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +22,6 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
@@ -41,6 +38,7 @@ import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.UseRecordType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
@@ -60,6 +58,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployRecordServiceImpl.class);
+
+
+    private static final String UPDATE_DEPLOY_RECORD_STATUS_FAILED = "update.deploy.record.status.failed";
 
     private static final String DEPLOY_STATUS = "deployStatus";
     private static final String DEPLOY_TYPE = "deployType";
@@ -114,6 +115,51 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             baseCreate(devopsDeployRecordDTO);
             if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
                 marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource, userId);
+            }
+        } catch (Exception e) {
+            LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}, errorMsg: {}", devopsDeployRecordDTO, e.getMessage());
+        }
+        return devopsDeployRecordDTO.getId();
+    }
+
+    @Override
+    @Transactional
+    public Long saveDeployRecord(Long projectId,
+                                 DeployType type,
+                                 Long deployId,
+                                 DeployModeEnum deployMode,
+                                 Long deployPayloadId,
+                                 String deployPayloadName,
+                                 String deployResult,
+                                 DeployObjectTypeEnum deployObjectType,
+                                 String deployObjectName,
+                                 String deployVersion,
+                                 String instanceName,
+                                 DeploySourceVO deploySource,
+                                 @Nullable Long mktAppId,
+                                 @Nullable Long nktAppVersionId,
+                                 @Nullable String businessKey) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
+                projectId,
+                type.getType(),
+                deployId,
+                deployMode.value(),
+                deployPayloadId,
+                deployPayloadName,
+                deployResult,
+                new Date(),
+                deployObjectType.value(),
+                deployObjectName,
+                deployVersion,
+                instanceName,
+                JsonHelper.marshalByJackson(deploySource),
+                mktAppId,
+                nktAppVersionId,
+                businessKey);
+        try {
+            baseCreate(devopsDeployRecordDTO);
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.MARKET.getValue(), deploySource.getType())) {
+                marketUseRecordService.saveMarketUseRecord(UseRecordType.DEPLOY.getValue(), projectId, deploySource, DetailsHelper.getUserDetails().getUserId());
             }
         } catch (Exception e) {
             LOGGER.info(">>>>>>>>>>>>>>[deploy record] save deploy record failed.<<<<<<<<<<<<<<<<<< \n, devopsDeployRecordDTO: {}, errorMsg: {}", devopsDeployRecordDTO, e.getMessage());
@@ -330,5 +376,18 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             deployRecordVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
         }
         return deployRecordVO;
+    }
+
+    @Override
+    @Transactional
+    public void updateResultById(Long deployRecordId, CommandStatus status) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
+        devopsDeployRecordDTO.setDeployResult(status.getStatus());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, UPDATE_DEPLOY_RECORD_STATUS_FAILED);
+    }
+
+    @Override
+    public DevopsDeployRecordDTO baseQueryById(Long deployRecordId) {
+        return devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
     }
 }
