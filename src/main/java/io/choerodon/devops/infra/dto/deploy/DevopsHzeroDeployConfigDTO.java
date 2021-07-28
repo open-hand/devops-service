@@ -18,15 +18,35 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author wanghao
  * @since 2021/7/28 1:43
  */
-@Table(name = "")
+@Table(name = "devops_hzero_deploy_config")
 @ModifyAudit
 @VersionAudit
-public class DevopsHzeroDeployValueDTO extends AuditDomain {
+public class DevopsHzeroDeployConfigDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("部署配置")
     private String values;
+    @ApiModelProperty("网络配置")
+    private String service;
+    @ApiModelProperty("域名配置")
+    private String ingress;
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public String getIngress() {
+        return ingress;
+    }
+
+    public void setIngress(String ingress) {
+        this.ingress = ingress;
+    }
 
     public Long getId() {
         return id;

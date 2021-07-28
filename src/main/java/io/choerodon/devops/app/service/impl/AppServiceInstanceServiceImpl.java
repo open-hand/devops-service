@@ -30,6 +30,7 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -61,6 +63,8 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -70,6 +74,7 @@ import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -179,7 +184,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-
+    @Autowired
+    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+    @Autowired
+    private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -2003,6 +2013,63 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         });
 
         return applicationInstanceInfoVOS;
+    }
+
+    @Override
+    @Async
+    @Transactional(rollbackFor = Exception.class)
+    public void hzeroDeploy(Long detailsRecordId) {
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryById(detailsRecordId);
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+
+        try {
+            ApplicationContextHelper
+                    .getSpringFactory()
+                    .getBean(AppServiceInstanceService.class)
+                    .pipelineDeployHzeroApp(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO);
+        } catch (Exception e) {
+            workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
+            devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
+            devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), CommandStatus.FAILED);
+        }
+
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
+        AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
+        DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
+        if (appServiceInstanceDTO == null) {
+            // 新建实例
+            MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
+                    null,
+                    devopsHzeroDeployDetailsDTO.getMktServiceId(),
+                    devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
+                    devopsHzeroDeployConfigDTO.getValues(),
+                    devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                    CommandType.CREATE.getType(),
+                    devopsHzeroDeployDetailsDTO.getEnvId(),
+                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
+                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
+                    AppServiceInstanceSource.MARKET.getValue());
+            createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+        } else {
+            // 更新实例
+            MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
+                    appServiceInstanceDTO.getId(),
+                    devopsHzeroDeployDetailsDTO.getMktServiceId(),
+                    devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
+                    devopsHzeroDeployConfigDTO.getValues(),
+                    devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                    CommandType.UPDATE.getType(),
+                    devopsHzeroDeployDetailsDTO.getEnvId(),
+                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
+                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
+                    AppServiceInstanceSource.MARKET.getValue());
+            createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+        }
+        devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.DEPLOYING);
     }
 
     private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {

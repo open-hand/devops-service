@@ -85,7 +85,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deploySource = deploySource;
     }
 
-    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName) {
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName, String deploySource, Long mktAppId, Long mktAppVersionId, String businessKey) {
         this.projectId = projectId;
         this.deployType = deployType;
         this.deployId = deployId;
@@ -98,6 +98,10 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectName = deployObjectName;
         this.deployObjectVersion = deployObjectVersion;
         this.instanceName = instanceName;
+        this.deploySource = deploySource;
+        this.mktAppId = mktAppId;
+        this.mktAppVersionId = mktAppVersionId;
+        this.businessKey = businessKey;
     }
 
     public Long getMktAppId() {

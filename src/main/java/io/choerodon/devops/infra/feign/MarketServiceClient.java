@@ -36,7 +36,6 @@ public interface MarketServiceClient {
             @PathVariable("project_id") Long projectId,
             @Encrypt @RequestParam(value = "with_values") Boolean withValues,
             @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
-
 //    /**
 //     * queryRepoConfig
 //     */
@@ -148,4 +147,9 @@ public interface MarketServiceClient {
     ResponseEntity<String> queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(
             @PathVariable("project_id") Long projectId,
             @RequestBody Set<Long> marketServiceIds);
+
+    @GetMapping("/v1/market/application/{application_id}")
+    @ApiOperation("查询应用详情")
+    ResponseEntity<String> queryApplication(
+            @PathVariable(name = "application_id", required = false) Long applicationId);
 }

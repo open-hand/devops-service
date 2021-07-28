@@ -17,10 +17,20 @@ public class HzeroDeployVO {
     private Long mktAppId;
     @Encrypt
     private Long mktAppVersionId;
+    private String mktAppVersion;
     @Encrypt
     private Long envId;
 
     private List<HzeroInstanceVO> instanceList;
+
+
+    public String getMktAppVersion() {
+        return mktAppVersion;
+    }
+
+    public void setMktAppVersion(String mktAppVersion) {
+        this.mktAppVersion = mktAppVersion;
+    }
 
     public Long getMktAppId() {
         return mktAppId;

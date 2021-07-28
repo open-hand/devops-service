@@ -26,7 +26,11 @@ public enum AppSourceType {
     /**
      * 平台预置
      */
-    PLATFORM_PRESET("platformPreset");
+    PLATFORM_PRESET("platformPreset"),
+    /**
+     * hzero应用
+     */
+    HZERO("hzero");
 
     private String value;
 
