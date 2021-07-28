@@ -1,55 +1,25 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import net.schmizz.sshj.SSHClient;
-import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 import sun.misc.BASE64Decoder;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.HarborC7nImageTagVo;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
-import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.market.*;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsDeployService;
 import io.choerodon.devops.app.service.JarAndImageDeployService;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
-import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
-import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
-import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.AppSourceType;
-import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.HostDeployType;
-import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsHostMapper;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.SshUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -72,11 +42,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
     @Autowired
-    private SshUtil sshUtil;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private DevopsHostMapper devopsHostMapper;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
@@ -96,6 +62,15 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             jarAndImageDeployService.jarAndImageDeploy(projectId, deployConfigVO, authentication);
         }
+    }
+
+    @Override
+    @Transactional
+    public void deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO) {
+        // 1. 构建工作流部署对象
+
+        // 2. 启动流程实例
+
     }
 
 }

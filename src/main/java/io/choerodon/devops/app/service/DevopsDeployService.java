@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 
 /**
  * 〈功能简述〉
@@ -18,4 +19,12 @@ public interface DevopsDeployService {
      * @param deployConfigVO
      */
     void hostDeploy(Long projectId, DeployConfigVO deployConfigVO);
+
+    /**
+     * 按顺序部署hzero应用
+     * @param projectId
+     * @param hzeroDeployVO
+     */
+    void deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO);
+
 }
