@@ -12,14 +12,14 @@ import io.choerodon.devops.infra.dto.DevopsJobDTO;
  * Created by wangxiang on 2021/7/14
  */
 @Component
-public class WorkLoadJob extends WorkLoad {
+public class JobWorkLoad extends WorkLoad {
 
 
     private WorkloadService workloadService;
 
     private DevopsJobService devopsJobService;
 
-    public WorkLoadJob(WorkloadService workloadService, DevopsJobService devopsJobService) {
+    public JobWorkLoad(WorkloadService workloadService, DevopsJobService devopsJobService) {
         this.workloadService = workloadService;
         this.devopsJobService = devopsJobService;
     }

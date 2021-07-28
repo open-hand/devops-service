@@ -18,7 +18,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.WorkloadBaseVO;
 import io.choerodon.devops.api.vo.workload.WorkLoad;
-import io.choerodon.devops.api.vo.workload.WorkLoadFactory;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
@@ -35,6 +34,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     private static final String METADATA = "metadata";
     private static final String KIND = "kind";
     private static final String MASTER = "master";
+    private static final String WORK_LOAD = "Workload";
 
     private static final Map<String, String> RESOURCE_FILE_TEMPLATE_PATH_MAP;
 
@@ -78,7 +78,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     @Autowired
-    private WorkLoadFactory workLoadFactory;
+    private Map<String, WorkLoad> workLoadMap;
 
     static {
         Map<String, String> filePathMap = new HashMap<>();
@@ -165,7 +165,7 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     @Override
     public Long getWorkloadId(Long envId, String workloadName, String type) {
-        WorkLoad workLoad = workLoadFactory.getWorkLoad(type);
+        WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(type) + WORK_LOAD);
         return workLoad.getWorkloadId(envId, workloadName);
     }
 
@@ -323,7 +323,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     }
 
     private void checkWorkloadExist(String type, Long envId, String name) {
-        WorkLoad workLoad = workLoadFactory.getWorkLoad(type);
+        WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(type) + WORK_LOAD);
         workLoad.checkWorkloadExist(envId, name);
     }
 
@@ -335,7 +335,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, operateType, userId);
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         Long workLoadId = null;
-        WorkLoad workLoad = workLoadFactory.getWorkLoad(resourceType);
+        WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(resourceType) + WORK_LOAD);
         workLoadId = workLoad.createWorkload(name, projectId, envId, devopsEnvCommandDTO.getId());
         devopsWorkloadResourceContentService.create(resourceType, workLoadId, content);
 
@@ -346,19 +346,19 @@ public class WorkloadServiceImpl implements WorkloadService {
     private void updateWorkLoad(String resourceType, String name, String content, Long resourceId, Long userId) {
         //自定义资源关联command
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, UPDATE_TYPE, userId);
-        WorkLoad workLoad = workLoadFactory.getWorkLoad(resourceType);
+        WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(resourceType) + WORK_LOAD);
         workLoad.updateWorkLoad(devopsEnvCommandDTO, name, resourceId);
         devopsWorkloadResourceContentService.update(resourceType, resourceId, content);
     }
 
 
     private void updateWorkLoadCommandId(String kind, Long resourceId, Long commandId) {
-        WorkLoad workLoad = workLoadFactory.getWorkLoad(kind);
-        workLoad.updateWorkLoadCommandId(resourceId,commandId);
+        WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(kind) + WORK_LOAD);
+        workLoad.updateWorkLoadCommandId(resourceId, commandId);
     }
 
     private void deleteWorkload(String type, Long resourceId) {
-        WorkLoad workLoad = workLoadFactory.getWorkLoad(type);
+        WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(type) + WORK_LOAD);
         workLoad.deleteWorkload(resourceId);
     }
 
