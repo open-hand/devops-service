@@ -32,6 +32,15 @@ public class DevopsHzeroDeployConfigDTO extends AuditDomain {
     @ApiModelProperty("域名配置")
     private String ingress;
 
+    public DevopsHzeroDeployConfigDTO() {
+    }
+
+    public DevopsHzeroDeployConfigDTO(String values, String service, String ingress) {
+        this.values = values;
+        this.service = service;
+        this.ingress = ingress;
+    }
+
     public String getService() {
         return service;
     }

@@ -33,6 +33,7 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * 〈功能简述〉
@@ -112,7 +113,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsList = new ArrayList<>();
         hzeroDeployVO.getInstanceList().forEach(instanceVO -> {
             // 保存部署配置
-            DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(instanceVO.getValues());
+            DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(new DevopsHzeroDeployConfigDTO(instanceVO.getValues(),
+                    JsonHelper.marshalByJackson(instanceVO.getDevopsServiceReqVO()),
+                    JsonHelper.marshalByJackson(instanceVO.getDevopsIngressVO())));
             // 保存部署记录详情
             DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseSave(new DevopsHzeroDeployDetailsDTO(deployRecordId,
                     devopsEnvironmentDTO.getId(),
