@@ -13,10 +13,10 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 /**
  * Created by wangxiang on 2021/7/14
  */
+@Component
+public class DaemonSetWorkLoad extends WorkLoad {
 
-public class WorkLoadDaemonSet extends WorkLoad {
-
-    public WorkLoadDaemonSet(WorkloadService workloadService, DevopsDaemonSetService devopsDaemonSetService) {
+    public DaemonSetWorkLoad(WorkloadService workloadService, DevopsDaemonSetService devopsDaemonSetService) {
         this.workloadService = workloadService;
         this.devopsDaemonSetService = devopsDaemonSetService;
     }

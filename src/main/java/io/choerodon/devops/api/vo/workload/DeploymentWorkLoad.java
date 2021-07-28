@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo.workload;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
@@ -12,14 +12,15 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 /**
  * Created by wangxiang on 2021/7/14
  */
-public class WorkLoadDeployment extends WorkLoad {
+@Component
+public class DeploymentWorkLoad extends WorkLoad {
 
 
     private WorkloadService workloadService;
 
     private DevopsDeploymentService devopsDeploymentService;
 
-    public WorkLoadDeployment(WorkloadService workloadService, DevopsDeploymentService devopsDeploymentService) {
+    public DeploymentWorkLoad(WorkloadService workloadService, DevopsDeploymentService devopsDeploymentService) {
         this.workloadService = workloadService;
         this.devopsDeploymentService = devopsDeploymentService;
     }
