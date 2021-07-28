@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
  */
 public interface DevopsHzeroDeployConfigService {
 
-    DevopsHzeroDeployConfigDTO baseSave(String values);
+    DevopsHzeroDeployConfigDTO baseSave(DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO);
 
     DevopsHzeroDeployConfigDTO baseQueryById(Long valueId);
 }
