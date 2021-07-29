@@ -19,11 +19,23 @@ public class MarketInstanceCreationRequestVO {
     private Long instanceId;
 
     @Encrypt
+    @ApiModelProperty("市场服务的应用Id")
     private Long marketAppServiceId;
 
     @Encrypt
     @ApiModelProperty("市场市场服务版本id")
     private Long marketDeployObjectId;
+
+    @ApiModelProperty("Hzero服务id")
+    @Encrypt
+    private Long hzeroAppId;
+
+    @ApiModelProperty("Hzero版本id")
+    @Encrypt
+    private Long hzeroServiceVersionId;
+
+    @ApiModelProperty("应用类型:market hzero")
+    private String applicationType;
 
     @ApiModelProperty("values内容")
     private String values;
@@ -89,6 +101,30 @@ public class MarketInstanceCreationRequestVO {
         this.devopsServiceReqVO = devopsServiceReqVO;
         this.devopsIngressVO = devopsIngressVO;
         this.source = source;
+    }
+
+    public Long getHzeroAppId() {
+        return hzeroAppId;
+    }
+
+    public void setHzeroAppId(Long hzeroAppId) {
+        this.hzeroAppId = hzeroAppId;
+    }
+
+    public Long getHzeroServiceVersionId() {
+        return hzeroServiceVersionId;
+    }
+
+    public void setHzeroServiceVersionId(Long hzeroServiceVersionId) {
+        this.hzeroServiceVersionId = hzeroServiceVersionId;
+    }
+
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
     }
 
     @Nullable
