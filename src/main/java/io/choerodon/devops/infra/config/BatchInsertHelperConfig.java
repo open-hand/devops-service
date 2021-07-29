@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 
 /**
@@ -18,7 +19,12 @@ public class BatchInsertHelperConfig {
     private int sliceSize;
 
     @Bean("devopsIssueRelBatchInsertHelper")
-    public BatchInsertHelper<DevopsIssueRelDTO> uiTestCaseDTOBatchInsertHelper(SqlSessionFactory sqlSessionFactory) {
+    public BatchInsertHelper<DevopsIssueRelDTO> branchIssueBatchInsertHelper(SqlSessionFactory sqlSessionFactory) {
+        return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
+    }
+
+    @Bean("devopsHostUserPermissionInsertHelper")
+    public BatchInsertHelper<DevopsHostUserPermissionDTO> hostUserPermissionDTOBatchInsertHelper(SqlSessionFactory sqlSessionFactory) {
         return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
     }
 }

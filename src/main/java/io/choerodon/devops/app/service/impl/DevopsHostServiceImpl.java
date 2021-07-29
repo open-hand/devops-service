@@ -131,6 +131,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private SshUtil sshUtil;
     @Autowired
     private DevopsHostCommandMapper devopsHostCommandMapper;
+    @Autowired
+    private DevopsHostUserPermissionService devopsHostUserPermissionService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -933,6 +935,76 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public String disconnectionHost() {
         return DIS_CONNECTION;
+    }
+
+    @Override
+    public Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long envId) {
+        return null;
+    }
+
+    @Override
+    public void deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
+
+    }
+
+    @Override
+    public List<DevopsHostUserVO> listAllUserPermission(Long hostId) {
+        return null;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateHostUserPermission(Long projectId, DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO) {
+        DevopsHostDTO preHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostPermissionUpdateVO.getHostId());
+        CommonExAssertUtil.assertTrue(projectId.equals(preHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+
+        List<Long> addIamUserIds = devopsHostPermissionUpdateVO.getUserIds();
+        // 判断更新的情况
+        if (preHostDTO.getSkipCheckPermission()) {
+            if (devopsHostPermissionUpdateVO.getSkipCheckPermission()) {
+                return;
+            } else {
+                // 待添加的用户列表为空
+                if (CollectionUtils.isEmpty(addIamUserIds)) {
+                    return;
+                }
+                // 添加权限
+                List<IamUserDTO> addIamUsers = baseServiceClientOperator.listUsersByIds(addIamUserIds);
+                List<DevopsHostUserPermissionDTO> permissionDTOListToInsert = new ArrayList<>();
+                addIamUsers.forEach(e ->
+                        permissionDTOListToInsert.add(new DevopsHostUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), preHostDTO.getId()))
+                );
+
+                devopsHostUserPermissionService.batchInsert(permissionDTOListToInsert);
+
+                // 更新字段
+                preHostDTO.setSkipCheckPermission(devopsHostPermissionUpdateVO.getSkipCheckPermission());
+                preHostDTO.setObjectVersionNumber(devopsHostPermissionUpdateVO.getObjectVersionNumber());
+                devopsHostMapper.updateByPrimaryKeySelective(preHostDTO);
+            }
+        } else {
+            if (devopsHostPermissionUpdateVO.getSkipCheckPermission()) {
+                // 删除原先所有的分配情况
+                devopsHostUserPermissionService.deleteByHostId(preHostDTO.getId());
+
+                // 更新字段
+                preHostDTO.setSkipCheckPermission(devopsHostPermissionUpdateVO.getSkipCheckPermission());
+                preHostDTO.setObjectVersionNumber(devopsHostPermissionUpdateVO.getObjectVersionNumber());
+                devopsHostMapper.updateByPrimaryKeySelective(preHostDTO);
+            } else {
+                // 待添加的用户列表为空
+                if (CollectionUtils.isEmpty(addIamUserIds)) {
+                    return;
+                }
+                devopsHostUserPermissionService.baseUpdate(devopsHostPermissionUpdateVO.getHostId(), addIamUserIds);
+            }
+        }
+    }
+
+    @Override
+    public Page<DevopsHostUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
+        return null;
     }
 
     private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {

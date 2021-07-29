@@ -19,6 +19,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -27,6 +28,7 @@ import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.app.service.DevopsHostUserPermissionService;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -455,4 +457,130 @@ public class DevopsHostController {
         return ResponseEntity.ok(devopsHostService.disconnectionHost());
     }
 
+    /**
+     * 分页查询主机下用户权限
+     *
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param hostId     主机id
+     * @param params    搜索参数
+     * @return page
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @CustomPageRequest
+    @ApiOperation(value = "分页查询主机下用户权限")
+    @PostMapping(value = "/{host_id}/permission/page_by_options")
+    public ResponseEntity<Page<DevopsUserPermissionVO>> pageHostUserPermissions(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable(value = "host_id") Long hostId,
+            @ApiParam(value = "分页参数", required = true)
+            @ApiIgnore @SortDefault(value = "creationDate", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsHostService.pageUserPermissionByHostId(projectId, pageable, params, hostId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.host.user.permission.get"));
+    }
+
+
+    /**
+     * 列出项目下所有与该主机未分配权限的项目成员
+     *
+     * @param projectId 项目ID
+     * @param hostId     主机ID
+     * @param params    搜索参数
+     * @return 所有与该主机未分配权限的项目成员
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "列出项目下所有与该主机未分配权限的项目成员")
+    @PostMapping(value = "/{host_id}/permission/list_non_related")
+    public ResponseEntity<Page<DevopsHostUserVO>> listAllNonRelatedMembers(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable(value = "host_id") Long hostId,
+            @ApiParam(value = "分页参数", required = true)
+            @ApiIgnore PageRequest pageable,
+            @Encrypt
+            @ApiParam(value = "指定用户id")
+            @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsHostService.listNonRelatedMembers(projectId, hostId, selectedIamUserId, pageable, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.get.host.non.related.users"));
+    }
+
+    /**
+     * 删除该用户在该主机下的权限
+     *
+     * @param projectId 项目id
+     * @param hostId     主机id
+     * @param userId    用户id
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除该用户在该主机下的权限")
+    @DeleteMapping(value = "/{host_id}/permission")
+    public ResponseEntity<Void> deletePermissionOfUser(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable(value = "host_id") Long hostId,
+            @Encrypt
+            @ApiParam(value = "用户id", required = true)
+            @RequestParam(value = "user_id") Long userId) {
+        devopsHostService.deletePermissionOfUser(projectId, hostId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    /**
+     * 获取主机下所有用户权限（获取所有有主机权限的项目下项目成员）
+     *
+     * @param projectId 项目id
+     * @param hostId     主机id
+     * @return baseList
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "获取主机下所有用户权限")
+    @GetMapping(value = "/{host_id}/list_all")
+    public ResponseEntity<List<DevopsHostUserVO>> listAllUserPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable(value = "host_id") Long hostId) {
+        return Optional.ofNullable(devopsHostService.listAllUserPermission(hostId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.host.user.permission.get"));
+    }
+
+    /**
+     * 主机下为用户分配权限
+     *
+     * @param hostId                       主机id
+     * @param devopsHostPermissionUpdateVO 权限分配信息
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "主机下为用户分配权限")
+    @PostMapping(value = "/{host_id}/permission")
+    public ResponseEntity<Void> updateHostUserPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable(value = "host_id") Long hostId,
+            @ApiParam(value = "有权限的用户ids")
+            @RequestBody @Valid DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO) {
+        devopsHostService.updateHostUserPermission(projectId, devopsHostPermissionUpdateVO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
