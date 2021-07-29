@@ -118,50 +118,68 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private String gateway;
 
     @Autowired
+    @Lazy
     private AgentCommandService agentCommandService;
     @Autowired
+    @Lazy
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
+    @Lazy
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
+    @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
+    @Lazy
     private AppServiceVersionService appServiceVersionService;
     @Autowired
+    @Lazy
     private DevopsDeployValueService devopsDeployValueService;
     @Autowired
     private TransactionalProducer producer;
     @Autowired
+    @Lazy
     private UserAttrService userAttrService;
     @Autowired
+    @Lazy
     private AppServiceService applicationService;
     @Autowired
+    @Lazy
     private DevopsConfigService devopsConfigService;
     @Autowired
+    @Lazy
     private DevopsRegistrySecretService devopsRegistrySecretService;
     @Autowired
+    @Lazy
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
+    @Lazy
     private DevopsEnvCommandValueService devopsEnvCommandValueService;
     @Autowired
+    @Lazy
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
+    @Lazy
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
+    @Lazy
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
+    @Lazy
     private DevopsServiceService devopsServiceService;
     @Autowired
+    @Lazy
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
+    @Lazy
     private DevopsHarborUserService devopsHarborUserService;
     @Autowired
     @Lazy
@@ -173,20 +191,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
+    @Lazy
     private DevopsIngressService devopsIngressService;
     @Autowired
+    @Lazy
     private HarborService harborService;
     @Autowired
     private PermissionHelper permissionHelper;
     @Autowired
+    @Lazy
     private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
+    @Lazy
     private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
     @Autowired
+    @Lazy
     private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;

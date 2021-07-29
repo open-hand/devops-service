@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -51,13 +52,10 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
-    @Autowired
-    private DevopsServiceService devopsServiceService;
-    @Autowired
-    private DevopsIngressService devopsIngressService;
     @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
