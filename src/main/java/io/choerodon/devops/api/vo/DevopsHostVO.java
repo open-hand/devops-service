@@ -49,6 +49,9 @@ public class DevopsHostVO {
     @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
 
+    @ApiModelProperty("是否跳过权限检验")
+    private Boolean skipCheckPermission;
+
     @JsonIgnore
     private Long lastUpdatedBy;
 
@@ -140,5 +143,13 @@ public class DevopsHostVO {
 
     public void setSelected(Boolean selected) {
         this.selected = selected;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return skipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        this.skipCheckPermission = skipCheckPermission;
     }
 }
