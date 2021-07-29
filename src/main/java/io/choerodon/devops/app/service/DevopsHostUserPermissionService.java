@@ -31,4 +31,9 @@ public interface DevopsHostUserPermissionService {
     void baseDelete(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO);
 
     List<DevopsHostUserPermissionDTO> baseListByHostId(Long hostId);
+
+    /**
+     * 根据hostId查出所有有权限的用户id
+     */
+    List<Long> listUserIdsByHostId(Long hostId);
 }

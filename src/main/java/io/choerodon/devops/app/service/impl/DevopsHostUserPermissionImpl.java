@@ -69,4 +69,9 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     public List<DevopsHostUserPermissionDTO> baseListByHostId(Long hostId) {
         return devopsHostUserPermissionMapper.listByHostId(hostId);
     }
+
+    @Override
+    public List<Long> listUserIdsByHostId(Long hostId) {
+        return devopsHostUserPermissionMapper.listUserIdsByHostId(hostId);
+    }
 }
