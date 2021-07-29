@@ -110,7 +110,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
 
     changeSet(author: 'lihao', id: '2021-07-29-add-is-skip-check-permission') {
         addColumn(tableName: 'devops_host') {
-            column(name: 'is_skip_check_permission', type: 'TINYINT UNSIGNED', defaultValue: '0', remarks: '是否跳过环境权限校验 0 false 1 true')
+            column(name: 'skip_check_permission', type: 'TINYINT UNSIGNED', defaultValue: '1', remarks: '是否跳过环境权限校验 0 false 1 true')
         }
     }
 }
