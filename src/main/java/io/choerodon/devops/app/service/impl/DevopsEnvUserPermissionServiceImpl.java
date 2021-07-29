@@ -11,7 +11,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsEnvUserVO;
+import io.choerodon.devops.api.vo.DevopsUserVO;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PermissionHelper;
@@ -41,19 +41,9 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Autowired
     private PermissionHelper permissionHelper;
 
-
     @Override
-    public void create(DevopsEnvUserVO devopsEnvUserVO) {
-        DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO();
-        BeanUtils.copyProperties(devopsEnvUserVO, devopsEnvUserPermissionDO);
-        if (devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO) != 1) {
-            throw new CommonException("error.devops.env.user.permission.create");
-        }
-    }
-
-    @Override
-    public Page<DevopsEnvUserVO> pageByOptions(Long envId, PageRequest pageable,
-                                               String params) {
+    public Page<DevopsUserVO> pageByOptions(Long envId, PageRequest pageable,
+                                            String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
@@ -61,7 +51,7 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
         return ConvertUtils.convertPage(
                 PageHelper.doPage(pageable, () -> devopsEnvUserPermissionMapper
                         .listUserEnvPermissionByOption(envId, searchParamMap, paramList)),
-                DevopsEnvUserVO.class);
+                DevopsUserVO.class);
     }
 
     @Override
@@ -72,8 +62,8 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     }
 
     @Override
-    public List<DevopsEnvUserVO> listByEnvId(Long envId) {
-        return ConvertUtils.convertList(devopsEnvUserPermissionMapper.listByEnvId(envId), DevopsEnvUserVO.class);
+    public List<DevopsUserVO> listByEnvId(Long envId) {
+        return ConvertUtils.convertList(devopsEnvUserPermissionMapper.listByEnvId(envId), DevopsUserVO.class);
     }
 
     @Override

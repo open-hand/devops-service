@@ -1149,7 +1149,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Page<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params) {
+    public Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -1173,7 +1173,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据参数搜索所有的项目成员
         List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         if (allProjectMembers.isEmpty()) {
-            Page<DevopsEnvUserVO> pageInfo = new Page<>();
+            Page<DevopsUserVO> pageInfo = new Page<>();
             pageInfo.setContent(new ArrayList<>());
             return pageInfo;
         }
@@ -1205,7 +1205,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         Page<IamUserDTO> pageInfo = PageInfoUtil.createPageFromList(members, pageable);
 
-        return ConvertUtils.convertPage(pageInfo, member -> new DevopsEnvUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
+        return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
 
     @Override
@@ -1269,8 +1269,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvUserVO> listAllUserPermission(Long envId) {
-        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsEnvUserVO.class);
+    public List<DevopsUserVO> listAllUserPermission(Long envId) {
+        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsUserVO.class);
     }
 
 

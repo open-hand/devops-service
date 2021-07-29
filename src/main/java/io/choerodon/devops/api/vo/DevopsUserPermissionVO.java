@@ -17,10 +17,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 /**
  * @author zmf
  */
-public class DevopsUserPermissionVO extends DevopsEnvUserVO {
+public class DevopsUserPermissionVO extends DevopsUserVO {
     private List<RoleDTO> roles;
     private Date creationDate;
     private Boolean gitlabProjectOwner;
+    private Boolean isCreator;
 
     public static DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner) {
         DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
@@ -30,6 +31,7 @@ public class DevopsUserPermissionVO extends DevopsEnvUserVO {
         } else {
             devopsUserPermissionVO.setLoginName(iamUserDTO.getEmail());
         }
+        devopsUserPermissionVO.setImageUrl(iamUserDTO.getImageUrl());
         devopsUserPermissionVO.setRealName(iamUserDTO.getRealName());
         devopsUserPermissionVO.setRoles(iamUserDTO.getRoles());
         devopsUserPermissionVO.setCreationDate(iamUserDTO.getCreationDate());
@@ -115,5 +117,13 @@ public class DevopsUserPermissionVO extends DevopsEnvUserVO {
         }
         DevopsUserPermissionVO s = (DevopsUserPermissionVO) obj;
         return super.getIamUserId().equals(s.getIamUserId());
+    }
+
+    public Boolean getCreator() {
+        return isCreator;
+    }
+
+    public void setCreator(Boolean creator) {
+        isCreator = creator;
     }
 }
