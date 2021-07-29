@@ -27,7 +27,7 @@ public class DevopsHzeroDeployConfigServiceImpl implements DevopsHzeroDeployConf
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DevopsHzeroDeployConfigDTO baseSave(DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO) {
-        MapperUtil.resultJudgedInsert(devopsHzeroDeployConfigMapper, devopsHzeroDeployConfigDTO, ERROR_SAVE_DEPLOY_VALUE_FAILED);
+        MapperUtil.resultJudgedInsertSelective(devopsHzeroDeployConfigMapper, devopsHzeroDeployConfigDTO, ERROR_SAVE_DEPLOY_VALUE_FAILED);
         return devopsHzeroDeployConfigMapper.selectByPrimaryKey(devopsHzeroDeployConfigDTO.getId());
     }
 
