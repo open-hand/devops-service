@@ -9,4 +9,10 @@
         FROM devops_host_user_permission dhup
         WHERE dhup.host_id = #{hostId}
     </select>
+
+    <select id="listUserIdsByHostId" resultType="java.lang.Long">
+        SELECT dhup.iam_user_id
+        FROM devops_host_user_permission dhup
+        WHERE dhup.host_id = #{hostId}
+    </select>
 </mapper>

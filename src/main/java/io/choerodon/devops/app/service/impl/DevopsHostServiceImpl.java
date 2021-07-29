@@ -48,6 +48,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.DevopsHostType;
+import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
@@ -69,6 +70,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String DIS_CONNECTION = "cat $HOME/choerodon/c7n-agent.pid |xargs kill -9";
     private static final String ERROR_HOST_NOT_FOUND = "error.host.not.found";
     private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
+    private static final String LOGIN_NAME = "loginName";
+    private static final String REAL_NAME = "realName";
     /**
      * 主机状态处于处理中的超时时长
      */
@@ -1035,7 +1038,66 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public Page<DevopsHostUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
-        return null;
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        roleAssignmentSearchVO.setEnabled(true);
+        // 处理搜索参数
+        if (!org.springframework.util.StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+
+            roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
+            if (searchParamMap.get(LOGIN_NAME) != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
+                roleAssignmentSearchVO.setLoginName(loginName);
+            }
+
+            if (searchParamMap.get(REAL_NAME) != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
+                roleAssignmentSearchVO.setRealName(realName);
+            }
+        }
+
+        // 根据参数搜索所有的项目成员
+        List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
+        if (allProjectMembers.isEmpty()) {
+            Page<DevopsHostUserVO> pageInfo = new Page<>();
+            pageInfo.setContent(new ArrayList<>());
+            return pageInfo;
+        }
+
+        // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
+        List<Long> allProjectOwnerIds = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue())
+                .stream()
+                .map(IamUserDTO::getId)
+                .collect(Collectors.toList());
+
+
+        // 数据库中已被分配权限的
+        List<Long> assigned = devopsHostUserPermissionService.listUserIdsByHostId(hostId);
+
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+
+        // 过滤项目成员中的项目所有者和已被分配权限的(主机创建者默认有权限)
+        List<IamUserDTO> members = allProjectMembers.stream()
+                .filter(member -> !allProjectOwnerIds.contains(member.getId()))
+                .filter(member -> !assigned.contains(member.getId()))
+                .filter(member -> !member.getId().equals(devopsHostDTO.getCreatedBy()))
+                .collect(Collectors.toList());
+
+        if (selectedIamUserId != null) {
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(selectedIamUserId);
+            if (!members.isEmpty()) {
+                members.remove(iamUserDTO);
+                members.add(0, iamUserDTO);
+            } else {
+                members.add(iamUserDTO);
+            }
+        }
+
+        Page<IamUserDTO> pageInfo = PageInfoUtil.createPageFromList(members, pageable);
+
+        return ConvertUtils.convertPage(pageInfo, member -> new DevopsHostUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
 
     private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {

@@ -9,4 +9,6 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsHostUserPermissionMapper extends BaseMapper<DevopsHostUserPermissionDTO> {
     List<DevopsHostUserPermissionDTO> listByHostId(@Param("hostId") Long hostId);
+
+    List<Long> listUserIdsByHostId(@Param("hostId") Long hostId);
 }
