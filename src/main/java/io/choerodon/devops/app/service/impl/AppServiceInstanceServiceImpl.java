@@ -2042,6 +2042,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Async
     @Transactional(rollbackFor = Exception.class)
     public void hzeroDeploy(Long detailsRecordId) {
+        LOGGER.info(">>>>>>> Start deploy hzero app, detailsRecordId : {} <<<<<<<", detailsRecordId);
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryById(detailsRecordId);
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
 
@@ -2051,6 +2052,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     .getBean(AppServiceInstanceService.class)
                     .pipelineDeployHzeroApp(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO);
         } catch (Exception e) {
+            LOGGER.info(">>>>>>> Deploy hzero app failed ! <<<<<<<", e);
             workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
             devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
             devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), CommandStatus.FAILED);
@@ -2063,6 +2065,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
         DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
+        DetailsHelper.setCustomUserDetails(devopsHzeroDeployDetailsDTO.getCreatedBy(), BaseConstants.DEFAULT_LOCALE_STR);
         if (appServiceInstanceDTO == null) {
             // 新建实例
             MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
@@ -2087,8 +2090,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsHzeroDeployDetailsDTO.getInstanceCode(),
                     CommandType.UPDATE.getType(),
                     devopsHzeroDeployDetailsDTO.getEnvId(),
-                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
-                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
+                    devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
+                    devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                     AppServiceInstanceSource.MARKET.getValue());
             createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
         }
