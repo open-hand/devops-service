@@ -58,4 +58,10 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
         addIamUsers.forEach(e -> devopsHostUserPermissionDTOList.add(new DevopsHostUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), hostId)));
         batchInsert(devopsHostUserPermissionDTOList);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseDelete(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO) {
+        devopsHostUserPermissionMapper.delete(devopsHostUserPermissionDTO);
+    }
 }
