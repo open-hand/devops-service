@@ -17,4 +17,6 @@ public interface DevopsHzeroDeployDetailsService {
     DevopsHzeroDeployDetailsDTO baseQueryById(Long detailsRecordId);
 
     void updateStatusById(Long id, HzeroDeployDetailsStatusEnum status);
+
+    DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String instanceCode);
 }

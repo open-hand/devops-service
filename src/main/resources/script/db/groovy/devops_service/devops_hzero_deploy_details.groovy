@@ -43,6 +43,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_hzero_deploy_details.groovy') {
         createIndex(indexName: "idx_env_id", tableName: "devops_hzero_deploy_details") {
             column(name: "env_id")
         }
+        addUniqueConstraint(tableName: 'devops_hzero_deploy_details',
+                constraintName: 'uk_env_instance', columnNames: 'env_id,instance_code')
 
     }
 }

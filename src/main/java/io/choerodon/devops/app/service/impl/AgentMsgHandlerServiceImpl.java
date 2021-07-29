@@ -175,6 +175,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private ChartResourceOperator chartResourceOperator;
 
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_POD_READY,
+            description = "pod状态更新",
+            inputSchemaClass = PodReadyEventVO.class)
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
@@ -246,6 +249,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             List<DevopsEnvPodDTO> devopsEnvPodEList = devopsEnvPodService
                     .baseListByInstanceId(appServiceInstanceDTO.getId());
             handleEnvPod(v1Pod, appServiceInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);
+            // 实例下的pod状态变为ready,发送通知
+            if (Boolean.TRUE.equals(devopsEnvPodDTO.getReady())) {
+                producer.applyAndReturn(
+                        StartSagaBuilder
+                                .newBuilder()
+                                .withLevel(ResourceLevel.SITE)
+                                .withRefType("")
+                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
+                        builder -> builder
+                                .withPayloadAndSerialize(new PodReadyEventVO(envId, releaseName))
+                                .withRefId(""));
+            }
         } else {
             DevopsEnvPodDTO devopsEnvPodDTORecord = devopsEnvPodService.baseQueryByEnvIdAndName(envId, v1Pod.getMetadata().getName());
             if (devopsEnvPodDTORecord != null) {
