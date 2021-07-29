@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_hzero_deploy_config.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'values', type: 'TEXT', remarks: '部署配置')
+            column(name: 'value', type: 'TEXT', remarks: '部署配置')
             column(name: 'service', type: 'TEXT', remarks: '网络配置')
             column(name: 'ingress', type: 'TEXT', remarks: '域名配置')
 

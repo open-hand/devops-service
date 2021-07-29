@@ -26,7 +26,7 @@ public class DevopsHzeroDeployConfigDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("部署配置")
-    private String values;
+    private String value;
     @ApiModelProperty("网络配置")
     private String service;
     @ApiModelProperty("域名配置")
@@ -35,8 +35,8 @@ public class DevopsHzeroDeployConfigDTO extends AuditDomain {
     public DevopsHzeroDeployConfigDTO() {
     }
 
-    public DevopsHzeroDeployConfigDTO(String values, String service, String ingress) {
-        this.values = values;
+    public DevopsHzeroDeployConfigDTO(String value, String service, String ingress) {
+        this.value = value;
         this.service = service;
         this.ingress = ingress;
     }
@@ -65,11 +65,11 @@ public class DevopsHzeroDeployConfigDTO extends AuditDomain {
         this.id = id;
     }
 
-    public String getValues() {
-        return values;
+    public String getValue() {
+        return value;
     }
 
-    public void setValues(String values) {
-        this.values = values;
+    public void setValue(String value) {
+        this.value = value;
     }
 }

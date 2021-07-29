@@ -16,7 +16,7 @@ public class HzeroInstanceVO {
     @ApiModelProperty("实例code")
     private String instanceCode;
     @ApiModelProperty("部署配置")
-    private String values;
+    private String value;
     @ApiModelProperty("市场服务id")
     private Long mktServiceId;
     @ApiModelProperty("部署对象id")
@@ -61,12 +61,12 @@ public class HzeroInstanceVO {
         this.instanceCode = instanceCode;
     }
 
-    public String getValues() {
-        return values;
+    public String getValue() {
+        return value;
     }
 
-    public void setValues(String values) {
-        this.values = values;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public Long getMktServiceId() {
