@@ -44,6 +44,7 @@ import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
@@ -63,8 +64,8 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -2065,7 +2066,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
         DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
-        DetailsHelper.setCustomUserDetails(devopsHzeroDeployDetailsDTO.getCreatedBy(), BaseConstants.DEFAULT_LOCALE_STR);
+
+        CustomUserDetails customUserDetails = new CustomUserDetails("default", "default");
+        customUserDetails.setUserId(devopsHzeroDeployDetailsDTO.getCreatedBy());
+        customUserDetails.setOrganizationId(BaseConstants.DEFAULT_TENANT_ID);
+        customUserDetails.setLanguage(BaseConstants.DEFAULT_LOCALE_STR);
+
+        DetailsHelper.setCustomUserDetails(customUserDetails);
         if (appServiceInstanceDTO == null) {
             // 新建实例
             MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
