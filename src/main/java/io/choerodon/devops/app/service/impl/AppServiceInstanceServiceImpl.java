@@ -2047,7 +2047,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         try {
             ApplicationContextHelper
-                    .getSpringFactory()
+                    .getContext()
                     .getBean(AppServiceInstanceService.class)
                     .pipelineDeployHzeroApp(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO);
         } catch (Exception e) {
