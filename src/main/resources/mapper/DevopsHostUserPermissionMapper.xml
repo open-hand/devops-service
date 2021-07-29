@@ -15,4 +15,35 @@
         FROM devops_host_user_permission dhup
         WHERE dhup.host_id = #{hostId}
     </select>
+
+    <select id="listUserHostPermissionByOption" resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
+        SELECT dhup.login_name,
+               dhup.iam_user_id,
+               dhup.real_name,
+               dhup.host_id,
+               dhup.creation_date
+        FROM devops_host_user_permission dhup
+                WHERE dhup.host_id = #{hostId}
+        <include refid="sqlparam"/>
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.loginName != null and searchParam.loginName.length > 0'>
+                AND
+                dhup.login_name LIKE CONCAT(CONCAT('%', #{searchParam.loginName, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.realName != null and searchParam.realName.length > 0'>
+                AND
+                dhup.real_name LIKE CONCAT(CONCAT('%', #{searchParam.realName, jdbcType=VARCHAR}),'%')
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dhup.login_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dhup.real_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            </foreach>
+        </if>
+    </sql>
 </mapper>

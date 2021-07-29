@@ -943,7 +943,54 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long envId) {
-        return null;
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(envId);
+
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        roleAssignmentSearchVO.setEnabled(true);
+        Map<String, Object> searchParamMap = null;
+        List<String> paramList = null;
+        // 处理搜索参数
+        if (!org.springframework.util.StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
+            if (searchParamMap != null) {
+                if (searchParamMap.get(LOGIN_NAME) != null) {
+                    String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
+                    roleAssignmentSearchVO.setLoginName(loginName);
+                }
+                if (searchParamMap.get(REAL_NAME) != null) {
+                    String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
+                    roleAssignmentSearchVO.setRealName(realName);
+                }
+            }
+        }
+
+        // 根据搜索参数查询所有的项目所有者
+        List<DevopsUserPermissionVO> projectOwners = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue()),
+                iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, true));
+        List<DevopsUserPermissionVO> projectMembers = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue()),
+                iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, false));
+        if (!devopsHostDTO.getSkipCheckPermission()) {
+            // 根据搜索参数查询数据库中所有的环境权限分配数据
+            List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = devopsHostUserPermissionService.listUserHostPermissionByOption(envId, searchParamMap, paramList);
+            List<Long> permissions = devopsHostUserPermissionDTOList.stream().map(DevopsHostUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+            projectMembers = projectMembers
+                    .stream()
+                    .filter(member -> permissions.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId) || member.getIamUserId().equals(devopsHostDTO.getCreatedBy()))
+                    .collect(Collectors.toList());
+            projectMembers.forEach(devopsUserPermissionVO -> {
+                if (permissions.contains(devopsUserPermissionVO.getIamUserId())) {
+                    devopsHostUserPermissionDTOList.forEach(devopsEnvUserPermissionDTO -> {
+                        if (devopsEnvUserPermissionDTO.getIamUserId().equals(devopsUserPermissionVO.getIamUserId())) {
+                            devopsUserPermissionVO.setCreationDate(devopsEnvUserPermissionDTO.getCreationDate());
+                        }
+                    });
+                }
+            });
+        }
+        return DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable);
     }
 
     @Override

@@ -313,10 +313,6 @@ public interface AppServiceService {
      */
     Page<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageable, String searchParam);
 
-    Page<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, PageRequest pageable);
-
-    DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner);
-
     List<ProjectVO> listProjects(Long organizationId, Long projectId, String params);
 
     /**
