@@ -980,7 +980,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public List<DevopsHostUserVO> listAllUserPermission(Long hostId) {
-        return null;
+        return ConvertUtils.convertList(devopsHostUserPermissionService.baseListByHostId(hostId), DevopsHostUserVO.class);
     }
 
     @Transactional(rollbackFor = Exception.class)

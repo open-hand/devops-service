@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostUserPermissionMapper">
+    <select id="listByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
+        SELECT dhup.login_name,
+               dhup.iam_user_id,
+               dhup.real_name,
+               dhup.host_id,
+        FROM devops_host_user_permission dhup
+        WHERE dhup.host_id = #{hostId}
+    </select>
+</mapper>
