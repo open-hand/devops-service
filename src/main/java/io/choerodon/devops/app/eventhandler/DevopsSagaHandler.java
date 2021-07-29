@@ -778,7 +778,7 @@ public class DevopsSagaHandler {
             AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(podReadyEventVO.getInstanceCode(), podReadyEventVO.getEnvId());
             // 查询部署版本
 
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(instanceE.getProjectId(), devopsHzeroDeployDetailsDTO.getMktDeployObjectId());
+            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO.getMktDeployObjectId());
             // 查询当前实例运行时pod metadata
             List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
 

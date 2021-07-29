@@ -136,8 +136,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                                  String deployVersion,
                                  String instanceName,
                                  DeploySourceVO deploySource,
-                                 @Nullable Long mktAppId,
-                                 @Nullable Long nktAppVersionId,
                                  @Nullable String businessKey) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                 projectId,
@@ -153,8 +151,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 deployVersion,
                 instanceName,
                 JsonHelper.marshalByJackson(deploySource),
-                mktAppId,
-                nktAppVersionId,
                 businessKey);
         try {
             baseCreate(devopsDeployRecordDTO);

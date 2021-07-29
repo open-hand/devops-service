@@ -59,10 +59,6 @@ public class DevopsDeployRecordDTO extends AuditDomain {
      * 主机部署时执行的指令
      */
     private String log;
-    @ApiModelProperty("市场应用Id,hzero部署时需要")
-    private Long mktAppId;
-    @ApiModelProperty("市场应用版本Id,hzero部署时需要")
-    private Long mktAppVersionId;
     @ApiModelProperty("关联流程实例的key,hzero部署时需要")
     private String businessKey;
 
@@ -85,7 +81,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deploySource = deploySource;
     }
 
-    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName, String deploySource, Long mktAppId, Long mktAppVersionId, String businessKey) {
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName, String deploySource, String businessKey) {
         this.projectId = projectId;
         this.deployType = deployType;
         this.deployId = deployId;
@@ -99,25 +95,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectVersion = deployObjectVersion;
         this.instanceName = instanceName;
         this.deploySource = deploySource;
-        this.mktAppId = mktAppId;
-        this.mktAppVersionId = mktAppVersionId;
         this.businessKey = businessKey;
-    }
-
-    public Long getMktAppId() {
-        return mktAppId;
-    }
-
-    public void setMktAppId(Long mktAppId) {
-        this.mktAppId = mktAppId;
-    }
-
-    public Long getMktAppVersionId() {
-        return mktAppVersionId;
-    }
-
-    public void setMktAppVersionId(Long mktAppVersionId) {
-        this.mktAppVersionId = mktAppVersionId;
     }
 
     public String getBusinessKey() {

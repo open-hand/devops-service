@@ -15,8 +15,6 @@ public class HzeroDeployVO {
 
     @Encrypt
     private Long mktAppId;
-    @Encrypt
-    private Long mktAppVersionId;
     private String mktAppVersion;
     @Encrypt
     private Long envId;
@@ -38,14 +36,6 @@ public class HzeroDeployVO {
 
     public void setMktAppId(Long mktAppId) {
         this.mktAppId = mktAppId;
-    }
-
-    public Long getMktAppVersionId() {
-        return mktAppVersionId;
-    }
-
-    public void setMktAppVersionId(Long mktAppVersionId) {
-        this.mktAppVersionId = mktAppVersionId;
     }
 
     public Long getEnvId() {
