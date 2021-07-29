@@ -312,6 +312,11 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
 
+    /**
+     * 删除应用模板
+     */
+    public static final String DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY = "devops-pod-ready-handler-for-hzero-deploy";
+
     private SagaTaskCodeConstants() {
     }
 }

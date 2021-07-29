@@ -6,14 +6,15 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Container;
+import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,9 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.AppServiceInstanceVO;
-import io.choerodon.devops.api.vo.PipelineWebHookVO;
-import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -35,17 +34,18 @@ import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.LogUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 
 
 /**
@@ -117,6 +117,16 @@ public class DevopsSagaHandler {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private MarketUseRecordService marketUseRecordService;
+    @Autowired
+    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
 
     /**
      * devops创建环境
@@ -748,6 +758,52 @@ public class DevopsSagaHandler {
         if (ApiTestTriggerType.PIPELINE.getValue().equals(apiTestCompleteEventVO.getTriggerType())) {
             devopsCdPipelineService.handleApiTestTaskCompleteEvent(apiTestCompleteEventVO);
         }
+    }
+
+    /**
+     * 接收实例下pod ready的消息，用于通知hzero部署是否需要进行下一个流程
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY,
+            description = "处理pod ready消息",
+            sagaCode = DEVOPS_POD_READY,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handlePodReadyEventForHzeroDeploy(String data) {
+        PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryDeployingByEnvIdAndInstanceCode(podReadyEventVO.getEnvId(), podReadyEventVO.getInstanceCode());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+        if (devopsHzeroDeployDetailsDTO != null) {
+            // 查询实例
+            AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(podReadyEventVO.getInstanceCode(), podReadyEventVO.getEnvId());
+            // 查询部署版本
+
+            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(instanceE.getProjectId(), devopsHzeroDeployDetailsDTO.getMktDeployObjectId());
+            // 查询当前实例运行时pod metadata
+            List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
+
+            if (CollectionUtils.isEmpty(podResourceDetailsDTOS)) {
+                return;
+            }
+            if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
+                return;
+            }
+            List<String> images = new ArrayList<>();
+            for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
+                V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
+                images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
+            }
+            if (images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))) {
+                workFlowServiceOperator.approveUserTask(instanceE.getProjectId(),
+                        devopsDeployRecordDTO.getBusinessKey(),
+                        MiscConstants.WORKFLOW_ADMIN_NAME,
+                        MiscConstants.WORKFLOW_ADMIN_ID,
+                        MiscConstants.WORKFLOW_ADMIN_ORG_ID);
+            } else {
+                return;
+            }
+        }
+
     }
 
 }

@@ -35,6 +35,7 @@ public class ResourceCheckConstant {
 
     // instance
     public static final String ERROR_INSTANCE_NAME_IS_NULL = "error.instance.name.is.null";
+    public static final String ERROR_INSTANCE_CODE_IS_NULL = "error.instance.code.is.null";
 
     // pod
 

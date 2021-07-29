@@ -297,6 +297,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_MERGE_REQUEST_PASS = "devops-merge-request-pass";
 
     /**
+     * pod状态更新
+     */
+    public static final String DEVOPS_POD_READY = "devops-pod-ready";
+
+    /**
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
