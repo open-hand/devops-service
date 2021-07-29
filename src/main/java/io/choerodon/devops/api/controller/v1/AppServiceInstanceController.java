@@ -91,14 +91,6 @@ public class AppServiceInstanceController {
         return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
     }
 
-    @Permission(permissionWithin = true)
-    @ApiOperation(value = "hzero部署接口")
-    @PostMapping("/hzero_deploy")
-    public ResponseEntity<Void> hzeroDeploy( @RequestParam(value = "details_record_id") Long detailsRecordId) {
-        appServiceInstanceService.hzeroDeploy(detailsRecordId);
-        return ResponseEntity.noContent().build();
-    }
-
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("更新应用市场的服务实例")
     @PutMapping("/market/instances/{instance_id}")
