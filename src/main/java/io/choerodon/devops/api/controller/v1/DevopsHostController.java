@@ -497,7 +497,7 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出项目下所有与该主机未分配权限的项目成员")
     @PostMapping(value = "/{host_id}/permission/list_non_related")
-    public ResponseEntity<Page<DevopsHostUserVO>> listAllNonRelatedMembers(
+    public ResponseEntity<Page<DevopsUserVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -550,7 +550,7 @@ public class DevopsHostController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取主机下所有用户权限")
     @GetMapping(value = "/{host_id}/list_all")
-    public ResponseEntity<List<DevopsHostUserVO>> listAllUserPermission(
+    public ResponseEntity<List<DevopsUserVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

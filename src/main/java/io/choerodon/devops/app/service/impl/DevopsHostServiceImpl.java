@@ -991,7 +991,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 }
             });
         }
-        return DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable);
+        Page<DevopsUserPermissionVO> devopsUserPermissionVOPage = DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable);
+        devopsUserPermissionVOPage.getContent().forEach(u -> {
+            if (u.getIamUserId().equals(devopsHostDTO.getCreatedBy())) {
+                u.setCreator(true);
+            }
+        });
+        return devopsUserPermissionVOPage;
     }
 
     @Override
@@ -1030,8 +1036,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public List<DevopsHostUserVO> listAllUserPermission(Long hostId) {
-        return ConvertUtils.convertList(devopsHostUserPermissionService.baseListByHostId(hostId), DevopsHostUserVO.class);
+    public List<DevopsUserVO> listAllUserPermission(Long hostId) {
+        return ConvertUtils.convertList(devopsHostUserPermissionService.baseListByHostId(hostId), DevopsUserVO.class);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -1085,7 +1091,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<DevopsHostUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
+    public Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -1109,7 +1115,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         // 根据参数搜索所有的项目成员
         List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         if (allProjectMembers.isEmpty()) {
-            Page<DevopsHostUserVO> pageInfo = new Page<>();
+            Page<DevopsUserVO> pageInfo = new Page<>();
             pageInfo.setContent(new ArrayList<>());
             return pageInfo;
         }
@@ -1145,7 +1151,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         Page<IamUserDTO> pageInfo = PageInfoUtil.createPageFromList(members, pageable);
 
-        return ConvertUtils.convertPage(pageInfo, member -> new DevopsHostUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
+        return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
 
     private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {

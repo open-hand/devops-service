@@ -174,7 +174,7 @@ public interface DevopsEnvironmentService {
      * @param params    搜索参数
      * @return 所有项目成员
      */
-    Page<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params);
+    Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params);
 
     /**
      * 删除环境下该用户的权限
@@ -192,7 +192,7 @@ public interface DevopsEnvironmentService {
      * @param envId 环境id
      * @return baseList
      */
-    List<DevopsEnvUserVO> listAllUserPermission(Long envId);
+    List<DevopsUserVO> listAllUserPermission(Long envId);
 
     /**
      * 环境下为用户分配权限

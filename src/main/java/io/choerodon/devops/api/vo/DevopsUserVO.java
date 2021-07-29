@@ -2,23 +2,29 @@ package io.choerodon.devops.api.vo;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-public class DevopsHostUserVO {
+/**
+ * Created by n!Ck
+ * Date: 2018/10/25
+ * Time: 11:32
+ * Description:
+ */
+public class DevopsUserVO {
     @Encrypt
     private Long iamUserId;
     private String loginName;
     private String realName;
     private String imageUrl;
 
-    public DevopsHostUserVO() {
+    public DevopsUserVO() {
     }
 
-    public DevopsHostUserVO(Long iamUserId, String loginName, String realName) {
+    public DevopsUserVO(Long iamUserId, String loginName, String realName) {
         this.iamUserId = iamUserId;
         this.loginName = loginName;
         this.realName = realName;
     }
 
-    public DevopsHostUserVO(Long iamUserId, String loginName, String realName, String imageUrl) {
+    public DevopsUserVO(Long iamUserId, String loginName, String realName, String imageUrl) {
         this.iamUserId = iamUserId;
         this.loginName = loginName;
         this.realName = realName;

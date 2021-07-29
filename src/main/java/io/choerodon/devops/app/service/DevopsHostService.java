@@ -351,7 +351,7 @@ public interface DevopsHostService {
     /**
      * 获取环境下所有用户权限
      */
-    List<DevopsHostUserVO> listAllUserPermission(Long hostId);
+    List<DevopsUserVO> listAllUserPermission(Long hostId);
 
     /**
      * 环境下为用户分配权限
@@ -361,6 +361,6 @@ public interface DevopsHostService {
     /**
      * 查询项目下所有与该环境未分配权限的项目成员
      */
-    Page<DevopsHostUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params);
+    Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params);
 
 }
