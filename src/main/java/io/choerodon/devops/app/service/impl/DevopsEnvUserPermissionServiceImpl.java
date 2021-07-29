@@ -126,7 +126,7 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Override
     public void baseCreate(DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO) {
         if (devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDTO) != 1) {
-            throw new CommonException("error.insert.env.user.permission");
+            throw new CommonException("error.insert.host.user.permission");
         }
     }
 

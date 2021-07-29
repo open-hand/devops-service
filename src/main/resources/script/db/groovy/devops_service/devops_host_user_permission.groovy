@@ -7,8 +7,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_user_permission.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'login_name', type: 'VARCHAR(32)', remarks: '用户id')
-            column(name: 'real_name', type: 'VARCHAR(32)', remarks: '真实名字', afterColumn: 'login_name')
-            column(name: 'iam_user_id', type: 'BIGINT UNSIGNED', remarks: 'id', afterColumn: 'login_name')
+            column(name: 'real_name', type: 'VARCHAR(32)', remarks: '真实名字')
+            column(name: 'iam_user_id', type: 'BIGINT UNSIGNED', remarks: 'id')
             column(name: 'host_id', type: 'BIGINT UNSIGNED', remarks: '主机id')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

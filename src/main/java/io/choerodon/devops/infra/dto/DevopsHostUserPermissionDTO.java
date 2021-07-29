@@ -29,6 +29,21 @@ public class DevopsHostUserPermissionDTO extends AuditDomain {
     @ApiModelProperty("用户真实名称")
     private String realName;
 
+    public DevopsHostUserPermissionDTO() {
+    }
+
+    public DevopsHostUserPermissionDTO(Long hostId, Long userId) {
+        this.hostId = hostId;
+        this.iamUserId = userId;
+    }
+
+    public DevopsHostUserPermissionDTO(String loginName, Long iamUserId, String realName, Long hostId) {
+        this.loginName = loginName;
+        this.iamUserId = iamUserId;
+        this.realName = realName;
+        this.hostId = hostId;
+    }
+
     public Long getId() {
         return id;
     }

@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
@@ -9,12 +15,6 @@ import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author zmf
@@ -168,8 +168,8 @@ public interface DevopsHostService {
     /**
      * 校验主机id与实例id是否匹配
      *
-     * @param hostId       主机id
-     * @param instanceId   实例id
+     * @param hostId     主机id
+     * @param instanceId 实例id
      * @return true表示匹配
      */
     boolean HostIdInstanceIdMatch(Long hostId, Long instanceId);
@@ -327,7 +327,40 @@ public interface DevopsHostService {
 
     /**
      * 主机断开连接
+     *
      * @return
      */
     String disconnectionHost();
+
+    /**
+     * 分页查询主机下有权限的用户
+     *
+     * @param projectId
+     * @param pageable
+     * @param params
+     * @param envId
+     * @return
+     */
+    Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long envId);
+
+    /**
+     * 删除主机下该用户的权限
+     */
+    void deletePermissionOfUser(Long projectId, Long hostId, Long userId);
+
+    /**
+     * 获取环境下所有用户权限
+     */
+    List<DevopsHostUserVO> listAllUserPermission(Long hostId);
+
+    /**
+     * 环境下为用户分配权限
+     */
+    void updateHostUserPermission(Long projectId, DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO);
+
+    /**
+     * 查询项目下所有与该环境未分配权限的项目成员
+     */
+    Page<DevopsHostUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params);
+
 }
