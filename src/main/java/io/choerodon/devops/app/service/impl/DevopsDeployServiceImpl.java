@@ -107,8 +107,6 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 hzeroDeployVO.getMktAppVersion(),
                 null,
                 deploySourceVO,
-                hzeroDeployVO.getMktAppId(),
-                hzeroDeployVO.getMktAppVersionId(),
                 businessKey);
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsList = new ArrayList<>();
         hzeroDeployVO.getInstanceList().forEach(instanceVO -> {

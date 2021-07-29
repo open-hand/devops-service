@@ -54,8 +54,6 @@ public interface DevopsDeployRecordService {
                           String deployVersion,
                           String instanceName,
                           DeploySourceVO deploySource,
-                          @Nullable Long mktAppId,
-                          @Nullable Long nktAppVersionId,
                           @Nullable String businessKey);
 
 
