@@ -1124,9 +1124,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 根据搜索参数查询所有的项目所有者
         List<DevopsUserPermissionVO> projectOwners = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue()),
-                iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, true));
+                iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, true));
         List<DevopsUserPermissionVO> projectMembers = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue()),
-                iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, false));
+                iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, false));
         if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
@@ -1145,7 +1145,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 }
             });
         }
-        return appServiceService.combineOwnerAndMember(projectMembers, projectOwners, pageable);
+        return DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable);
     }
 
     @Override

@@ -1908,45 +1908,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, PageRequest pageable) {
-        List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(allProjectOwners);
-        userPermissionVOS.addAll(allProjectMembers);
-        if (userPermissionVOS.isEmpty()) {
-            return ConvertUtils.convertPage(new Page<>(), DevopsUserPermissionVO.class);
-        } else {
-            List<DevopsUserPermissionVO> resultPermissionVOs = new ArrayList<>();
-            Map<Long, List<DevopsUserPermissionVO>> maps = userPermissionVOS.stream().collect(Collectors.groupingBy(DevopsUserPermissionVO::getIamUserId));
-            for (Map.Entry<Long, List<DevopsUserPermissionVO>> entry : maps.entrySet()) {
-                DevopsUserPermissionVO userPermissionVO = entry.getValue().get(0);
-                if (entry.getValue().size() > 1) {
-                    List<RoleDTO> roleDTOS = new ArrayList<>();
-                    entry.getValue().forEach(v -> roleDTOS.addAll(v.getRoles()));
-                    userPermissionVO.setRoles(roleDTOS);
-                }
-                resultPermissionVOs.add(userPermissionVO);
-            }
-            resultPermissionVOs = PageRequestUtil.sortUserPermission(resultPermissionVOs, pageable.getSort());
-            return PageInfoUtil.createPageFromList(new ArrayList<>(resultPermissionVOs), pageable);
-        }
-    }
-
-    @Override
-    public DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner) {
-        DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
-        devopsUserPermissionVO.setIamUserId(iamUserDTO.getId());
-        if (iamUserDTO.getLdap()) {
-            devopsUserPermissionVO.setLoginName(iamUserDTO.getLoginName());
-        } else {
-            devopsUserPermissionVO.setLoginName(iamUserDTO.getEmail());
-        }
-        devopsUserPermissionVO.setRealName(iamUserDTO.getRealName());
-        devopsUserPermissionVO.setRoles(iamUserDTO.getRoles());
-        devopsUserPermissionVO.setCreationDate(iamUserDTO.getCreationDate());
-        devopsUserPermissionVO.setGitlabProjectOwner(isGitlabProjectOwner);
-        return devopsUserPermissionVO;
-    }
-
-    @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params).stream()
                 .filter(ProjectDTO::getEnabled)

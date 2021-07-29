@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hzero.mybatis.BatchInsertHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,5 +74,10 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     @Override
     public List<Long> listUserIdsByHostId(Long hostId) {
         return devopsHostUserPermissionMapper.listUserIdsByHostId(hostId);
+    }
+
+    @Override
+    public List<DevopsHostUserPermissionDTO> listUserHostPermissionByOption(Long hostId, Map<String, Object> searchParamMap, List<String> paramList) {
+        return devopsHostUserPermissionMapper.listUserHostPermissionByOption(hostId, searchParamMap, paramList);
     }
 }
