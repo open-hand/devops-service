@@ -133,6 +133,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     @Lazy
@@ -167,6 +168,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Lazy
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
+    @Lazy
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     @Lazy
@@ -198,11 +200,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Lazy
     private HarborService harborService;
     @Autowired
+    @Lazy
     private PermissionHelper permissionHelper;
     @Autowired
     @Lazy
     private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
+    @Lazy
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -213,6 +217,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Lazy
     private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
     @Autowired
+    @Lazy
     private WorkFlowServiceOperator workFlowServiceOperator;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
