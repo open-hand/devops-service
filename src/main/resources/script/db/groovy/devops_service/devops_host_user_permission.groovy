@@ -16,7 +16,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_user_permission.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
+        addUniqueConstraint(tableName: 'devops_host_user_permission',
+                constraintName: 'uk_iam_user_id_host_id', columnNames: 'iam_user_id,host_id')
     }
-    addUniqueConstraint(tableName: 'devops_host_user_permission',
-            constraintName: 'uk_iam_user_id_host_id', columnNames: 'iam_user_id,host_id')
 }
