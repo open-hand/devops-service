@@ -64,4 +64,9 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     public void baseDelete(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO) {
         devopsHostUserPermissionMapper.delete(devopsHostUserPermissionDTO);
     }
+
+    @Override
+    public List<DevopsHostUserPermissionDTO> baseListByHostId(Long hostId) {
+        return devopsHostUserPermissionMapper.listByHostId(hostId);
+    }
 }
