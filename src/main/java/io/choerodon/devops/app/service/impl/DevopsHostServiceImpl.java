@@ -37,7 +37,6 @@ import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.*;
@@ -133,6 +132,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsHostCommandMapper devopsHostCommandMapper;
     @Autowired
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -944,7 +945,37 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public void deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
+        if (hostId == null || userId == null) {
+            return;
+        }
 
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+
+        if (devopsHostDTO == null) {
+            return;
+        }
+
+        if (userId.equals(devopsHostDTO.getCreatedBy())) {
+            throw new CommonException("error.delete.permission.of.creator");
+        }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+
+        if (userAttrDTO == null) {
+            return;
+        }
+
+        if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
+            throw new CommonException("error.delete.permission.of.project.owner");
+        }
+
+        // 删除数据库中的纪录
+        DevopsHostUserPermissionDTO devopsHostUserPermissionDTO = new DevopsHostUserPermissionDTO();
+        devopsHostUserPermissionDTO.setHostId(hostId);
+        devopsHostUserPermissionDTO.setIamUserId(userId);
+        devopsHostUserPermissionService.baseDelete(devopsHostUserPermissionDTO);
     }
 
     @Override

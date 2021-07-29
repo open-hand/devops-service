@@ -24,4 +24,9 @@ public interface DevopsHostUserPermissionService {
      * 更新关系
      */
     void baseUpdate(Long hostId, List<Long> addIamUserIds);
+
+    /**
+     * 删除关系
+     */
+    void baseDelete(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO);
 }

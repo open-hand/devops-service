@@ -28,7 +28,6 @@ import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.app.service.DevopsHostUserPermissionService;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -462,7 +461,7 @@ public class DevopsHostController {
      *
      * @param projectId 项目id
      * @param pageable  分页参数
-     * @param hostId     主机id
+     * @param hostId    主机id
      * @param params    搜索参数
      * @return page
      */
@@ -491,7 +490,7 @@ public class DevopsHostController {
      * 列出项目下所有与该主机未分配权限的项目成员
      *
      * @param projectId 项目ID
-     * @param hostId     主机ID
+     * @param hostId    主机ID
      * @param params    搜索参数
      * @return 所有与该主机未分配权限的项目成员
      */
@@ -520,7 +519,7 @@ public class DevopsHostController {
      * 删除该用户在该主机下的权限
      *
      * @param projectId 项目id
-     * @param hostId     主机id
+     * @param hostId    主机id
      * @param userId    用户id
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -544,7 +543,7 @@ public class DevopsHostController {
      * 获取主机下所有用户权限（获取所有有主机权限的项目下项目成员）
      *
      * @param projectId 项目id
-     * @param hostId     主机id
+     * @param hostId    主机id
      * @return baseList
      */
     @Permission(level = ResourceLevel.ORGANIZATION,
