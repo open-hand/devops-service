@@ -147,6 +147,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
         }
         DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
+        devopsHostDTO.setSkipCheckPermission(true);
         devopsHostDTO.setProjectId(projectId);
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
