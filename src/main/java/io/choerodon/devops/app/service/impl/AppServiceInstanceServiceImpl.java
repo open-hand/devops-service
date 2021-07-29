@@ -2073,8 +2073,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsHzeroDeployDetailsDTO.getInstanceCode(),
                     CommandType.CREATE.getType(),
                     devopsHzeroDeployDetailsDTO.getEnvId(),
-                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
-                    JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
+                    devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
+                    devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                     AppServiceInstanceSource.MARKET.getValue());
             createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
         } else {

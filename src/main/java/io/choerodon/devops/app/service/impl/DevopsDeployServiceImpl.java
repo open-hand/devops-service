@@ -114,8 +114,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         hzeroDeployVO.getInstanceList().forEach(instanceVO -> {
             // 保存部署配置
             DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(new DevopsHzeroDeployConfigDTO(instanceVO.getValues(),
-                    JsonHelper.marshalByJackson(instanceVO.getDevopsServiceReqVO()),
-                    JsonHelper.marshalByJackson(instanceVO.getDevopsIngressVO())));
+                    instanceVO.getDevopsServiceReqVO() == null ? null : JsonHelper.marshalByJackson(instanceVO.getDevopsServiceReqVO()),
+                    instanceVO.getDevopsIngressVO() == null ? null : JsonHelper.marshalByJackson(instanceVO.getDevopsIngressVO())));
             // 保存部署记录详情
             DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseSave(new DevopsHzeroDeployDetailsDTO(deployRecordId,
                     devopsEnvironmentDTO.getId(),
