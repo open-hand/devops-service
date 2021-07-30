@@ -13,6 +13,6 @@ public interface DevopsHostUserPermissionMapper extends BaseMapper<DevopsHostUse
 
     List<Long> listUserIdsByHostId(@Param("hostId") Long hostId);
 
-    List<DevopsHostUserPermissionDTO> listUserHostPermissionByOption(@Param("hostId") Long hostId, @Param("searchParamMap") Map<String, Object> searchParamMap, @Param("paramList") List<String> paramList);
+    List<DevopsHostUserPermissionDTO> listUserHostPermissionByOption(@Param("hostId") Long hostId, @Param("searchParam") Map<String, Object> searchParamMap, @Param("params") List<String> paramList);
 
 }
