@@ -57,6 +57,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.Select;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -137,6 +138,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -510,19 +513,26 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withUpdaterInfo, @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage) {
+    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withCreatorInfo, @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage) {
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
         // 解析查询参数
         Page<DevopsHostVO> page;
+        Select<DevopsHostVO> select = null;
+        if (projectOwnerOrRoot) {
+            select = () -> devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
+        } else {
+            select = () -> devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
+        }
         if (doPage) {
-            page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), () -> devopsHostMapper.listByOptions(projectId, searchParam, hostStatus));
+            page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), select);
         } else {
             page = new Page<>();
-            List<DevopsHostVO> devopsHostVOS = devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
+            List<DevopsHostVO> devopsHostVOS = select.doSelect();
             page.setContent(devopsHostVOS);
         }
 
         // 分页查询
-        if (withUpdaterInfo) {
+        if (withCreatorInfo) {
             // 填充创建者用户信息
             fillCreatorInfo(page);
         }

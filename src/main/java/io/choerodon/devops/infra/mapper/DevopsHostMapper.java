@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.DevopsHostVO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.mybatis.common.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.DevopsHostVO;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * @author zmf
@@ -65,4 +66,6 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      * @return 主机
      */
     List<DevopsHostDTO> listByProject(@Param("projectIds") List<Long> projectIds);
+
+    List<DevopsHostVO> listMemberHostByOptions(@Param("projectId") Long projectId, @Param("searchParam") String searchParam, @Param("hostStatus") String hostStatus, @Param("userId") Long userId);
 }
