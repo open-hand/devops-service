@@ -124,8 +124,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     @Lazy
     private ClusterConnectionHandler clusterConnectionHandler;
-    @Autowired
-    private AppServiceInstanceMapper appServiceInstanceMapper;
+
     @Autowired
     @Lazy
     private DevopsEnvResourceService devopsEnvResourceService;
@@ -179,20 +178,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     @Lazy
     private DevopsDeployRecordService devopsDeployRecordService;
-    @Autowired
-    private DevopsProjectMapper devopsProjectMapper;
+
     @Autowired
     @Lazy
     private DevopsHarborUserService devopsHarborUserService;
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
-    @Autowired
-    private DevopsClusterMapper devopsClusterMapper;
-    @Autowired
-    private DevopsClusterResourceMapper devopsClusterResourceMapper;
-    @Autowired
-    private DevopsPrometheusMapper devopsPrometheusMapper;
+
     @Autowired
     @Lazy
     private DevopsIngressService devopsIngressService;
@@ -219,6 +212,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     @Lazy
     private WorkFlowServiceOperator workFlowServiceOperator;
+
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper;
+    @Autowired
+    private DevopsClusterResourceMapper devopsClusterResourceMapper;
+    @Autowired
+    private DevopsPrometheusMapper devopsPrometheusMapper;
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
