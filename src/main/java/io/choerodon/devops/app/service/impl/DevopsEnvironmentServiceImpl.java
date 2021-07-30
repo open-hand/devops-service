@@ -1147,7 +1147,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 }
             });
         }
-        return DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable);
+        return DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable, devopsEnvironmentDTO.getCreatedBy());
     }
 
     @Override

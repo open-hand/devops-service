@@ -523,8 +523,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         // 分页查询
         if (withUpdaterInfo) {
-            // 填充更新者用户信息
-            fillUpdaterInfo(page);
+            // 填充创建者用户信息
+            fillCreatorInfo(page);
         }
         return page;
     }
@@ -625,12 +625,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
         // 添加用户信息
         if (!page.isEmpty()) {
-            List<Long> userIds = page.getContent().stream().map(DevopsHostVO::getLastUpdatedBy).collect(Collectors.toList());
+            List<Long> userIds = page.getContent().stream().map(DevopsHostVO::getCreatedBy).collect(Collectors.toList());
             List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
             Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
             page.getContent().forEach(devopsHostVO -> {
-                if (userDTOMap.get(devopsHostVO.getLastUpdatedBy()) != null) {
-                    devopsHostVO.setUpdaterInfo(userDTOMap.get(devopsHostVO.getLastUpdatedBy()));
+                if (userDTOMap.get(devopsHostVO.getCreatedBy()) != null) {
+                    devopsHostVO.setCreatorInfo(userDTOMap.get(devopsHostVO.getCreatedBy()));
                 }
             });
         }
@@ -991,13 +991,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 }
             });
         }
-        Page<DevopsUserPermissionVO> devopsUserPermissionVOPage = DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable);
-        devopsUserPermissionVOPage.getContent().forEach(u -> {
-            if (u.getIamUserId().equals(devopsHostDTO.getCreatedBy())) {
-                u.setCreator(true);
-            }
-        });
-        return devopsUserPermissionVOPage;
+        return DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable, devopsHostDTO.getCreatedBy());
     }
 
     @Override
@@ -1234,10 +1228,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    private void fillUpdaterInfo(Page<DevopsHostVO> devopsHostVOS) {
-        List<Long> userIds = devopsHostVOS.getContent().stream().map(DevopsHostVO::getLastUpdatedBy).collect(Collectors.toList());
+    private void fillCreatorInfo(Page<DevopsHostVO> devopsHostVOS) {
+        List<Long> userIds = devopsHostVOS.getContent().stream().map(DevopsHostVO::getCreatedBy).collect(Collectors.toList());
         Map<Long, IamUserDTO> userInfo = baseServiceClientOperator.listUsersByIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, Functions.identity()));
-        devopsHostVOS.getContent().forEach(host -> host.setUpdaterInfo(userInfo.get(host.getLastUpdatedBy())));
+        devopsHostVOS.getContent().forEach(host -> host.setCreatorInfo(userInfo.get(host.getCreatedBy())));
     }
 
     private String generateRedisKey(Long projectId, Long hostId) {
