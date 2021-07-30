@@ -1,12 +1,13 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.enums.HostAuthType;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import java.util.Date;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.HostAuthType;
 
 /**
  * 主机配置
@@ -51,6 +52,9 @@ public class DevopsHostVO {
 
     @ApiModelProperty("是否跳过权限检验")
     private Boolean skipCheckPermission;
+
+    @ApiModelProperty("版本号")
+    private Long objectVersionNumber;
 
     @JsonIgnore
     private Long lastUpdatedBy;
@@ -151,5 +155,13 @@ public class DevopsHostVO {
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
         this.skipCheckPermission = skipCheckPermission;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
