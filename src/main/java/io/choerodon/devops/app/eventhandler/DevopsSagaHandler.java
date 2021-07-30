@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -793,7 +794,8 @@ public class DevopsSagaHandler {
                 V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
                 images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
             }
-            if (images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))) {
+            if (images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))
+                    && !DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
                 workFlowServiceOperator.approveUserTask(instanceE.getProjectId(),
                         devopsDeployRecordDTO.getBusinessKey(),
                         MiscConstants.WORKFLOW_ADMIN_NAME,
