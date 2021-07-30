@@ -78,6 +78,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private AppServiceService applicationService;

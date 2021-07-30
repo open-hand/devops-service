@@ -85,6 +85,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
@@ -120,8 +121,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsSecretService devopsSecretService;
     @Autowired
     private DevopsClusterService devopsClusterService;
-    @Autowired
-    private DevopsClusterProPermissionService devopsClusterProPermissionService;
     @Autowired
     private TransactionalProducer producer;
     @Autowired
@@ -169,8 +168,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsDaemonSetService devopsDaemonSetService;
     @Autowired
     private DevopsCronJobService devopsCronJobService;
-    @Autowired
-    private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Autowired
     private ChartResourceOperator chartResourceOperator;
