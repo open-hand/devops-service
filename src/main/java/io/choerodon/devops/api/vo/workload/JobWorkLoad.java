@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.workload;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
@@ -19,7 +20,7 @@ public class JobWorkLoad extends WorkLoad {
 
     private DevopsJobService devopsJobService;
 
-    public JobWorkLoad(WorkloadService workloadService, DevopsJobService devopsJobService) {
+    public JobWorkLoad(@Lazy WorkloadService workloadService, @Lazy DevopsJobService devopsJobService) {
         this.workloadService = workloadService;
         this.devopsJobService = devopsJobService;
     }
