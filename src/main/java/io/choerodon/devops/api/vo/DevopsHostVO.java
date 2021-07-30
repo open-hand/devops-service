@@ -44,8 +44,8 @@ public class DevopsHostVO {
     @ApiModelProperty("用户名")
     private String username;
 
-    @ApiModelProperty("更新者信息")
-    private IamUserDTO updaterInfo;
+    @ApiModelProperty("创建者信息")
+    private IamUserDTO creatorInfo;
 
     @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
@@ -57,7 +57,7 @@ public class DevopsHostVO {
     private Long objectVersionNumber;
 
     @JsonIgnore
-    private Long lastUpdatedBy;
+    private Long createdBy;
 
     private Boolean selected;
 
@@ -117,12 +117,12 @@ public class DevopsHostVO {
         this.sshPort = sshPort;
     }
 
-    public IamUserDTO getUpdaterInfo() {
-        return updaterInfo;
+    public IamUserDTO getCreatorInfo() {
+        return creatorInfo;
     }
 
-    public void setUpdaterInfo(IamUserDTO updaterInfo) {
-        this.updaterInfo = updaterInfo;
+    public void setCreatorInfo(IamUserDTO creatorInfo) {
+        this.creatorInfo = creatorInfo;
     }
 
     public Date getLastUpdateDate() {
@@ -133,12 +133,12 @@ public class DevopsHostVO {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public Long getLastUpdatedBy() {
-        return lastUpdatedBy;
+    public Long getCreatedBy() {
+        return createdBy;
     }
 
-    public void setLastUpdatedBy(Long lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 
     public Boolean getSelected() {

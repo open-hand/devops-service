@@ -39,7 +39,7 @@ public class DevopsUserPermissionVO extends DevopsUserVO {
         return devopsUserPermissionVO;
     }
 
-    public static Page<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, PageRequest pageable) {
+    public static Page<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, PageRequest pageable, Long creatorId) {
         List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(allProjectOwners);
         userPermissionVOS.addAll(allProjectMembers);
         if (userPermissionVOS.isEmpty()) {
@@ -53,6 +53,9 @@ public class DevopsUserPermissionVO extends DevopsUserVO {
                     List<RoleDTO> roleDTOS = new ArrayList<>();
                     entry.getValue().forEach(v -> roleDTOS.addAll(v.getRoles()));
                     userPermissionVO.setRoles(roleDTOS);
+                }
+                if (userPermissionVO.getIamUserId().equals(creatorId)) {
+                    userPermissionVO.setCreator(true);
                 }
                 resultPermissionVOs.add(userPermissionVO);
             }
