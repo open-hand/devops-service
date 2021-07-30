@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,4 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2021/7/28 9:59
  */
 public interface DevopsHzeroDeployDetailsMapper extends BaseMapper<DevopsHzeroDeployDetailsDTO> {
+
+    List<DevopsHzeroDeployDetailsDTO> listFailedOrCreatedByDeployRecordId(@Param("recordId") Long recordId);
 }
