@@ -38,7 +38,6 @@ import io.choerodon.devops.infra.dto.DeployDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
@@ -50,10 +49,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
-import io.choerodon.devops.infra.util.CiCdPipelineUtils;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -311,17 +307,14 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                                 deployResult,
                                 deployObjectName,
                                 deployObjectVersion));
-        // 添加用户信息
+
         if (CollectionUtils.isEmpty(deployRecordVOPage.getContent())) {
             return deployRecordVOPage;
         }
-        List<Long> uIds = deployRecordVOPage.getContent().stream().map(DeployRecordVO::getCreatedBy).collect(Collectors.toList());
-
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(uIds);
-
-        Map<Long, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
-
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+
+        // 添加用户信息
+        UserDTOFillUtil.fillUserInfo(deployRecordVOPage.getContent(), "createdBy", "executeUser");
 
         deployRecordVOPage.getContent().forEach(v -> {
             try {
@@ -329,12 +322,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             } catch (Exception e) {
                 LOGGER.info("deploy source is unknown ");
             }
-            IamUserDTO iamUserDTO = userMap.get(v.getCreatedBy());
-            if (iamUserDTO != null) {
-                v.setExecuteUser(iamUserDTO);
-            }
             v.setViewId(CiCdPipelineUtils.handleId(v.getId()));
-
 
             if (DeployModeEnum.ENV.value().equals(v.getDeployMode())) {
                 // 计算部署结果
