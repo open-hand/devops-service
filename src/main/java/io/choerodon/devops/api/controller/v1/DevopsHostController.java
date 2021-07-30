@@ -93,7 +93,7 @@ public class DevopsHostController {
                     @SortDefault(value = "id", direction = Sort.Direction.DESC)})
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "是否带有创建者信息")
-            @RequestParam(value = "withCreatorInfo", required = false, defaultValue = "false")
+            @RequestParam(value = "with_creator_info", required = false, defaultValue = "false")
                     Boolean withCreatorInfo,
             @ApiParam(value = "搜索参数")
             @RequestParam(value = "search_param", required = false) String searchParam,
