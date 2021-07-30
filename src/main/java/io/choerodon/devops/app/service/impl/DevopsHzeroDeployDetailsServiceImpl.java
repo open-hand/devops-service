@@ -63,7 +63,13 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
     }
 
     @Override
-    public List<DevopsHzeroDeployDetailsDTO> listFailedOrCreatedByDeployRecordId(Long recordId) {
-        return devopsHzeroDeployDetailsMapper.listFailedOrCreatedByDeployRecordId(recordId);
+    public List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(Long recordId) {
+        return devopsHzeroDeployDetailsMapper.listNotSuccessRecordId(recordId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
     }
 }

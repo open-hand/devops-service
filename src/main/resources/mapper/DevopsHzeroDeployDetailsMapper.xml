@@ -3,10 +3,10 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsHzeroDeployDetailsMapper">
 
 
-    <select id="listFailedOrCreatedByDeployRecordId"
+    <select id="listNotSuccessRecordId"
             resultType="io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO">
         SELECT *
         FROM devops_hzero_deploy_details dhdd
-        WHERE (dhdd.`status` = 'created' OR dhdd.`status` = 'failed') AND dhdd.deploy_record_id = #{recordId}
+        WHERE (dhdd.`status` != 'success') AND dhdd.deploy_record_id = #{recordId}
     </select>
 </mapper>

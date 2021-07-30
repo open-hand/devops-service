@@ -21,6 +21,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_hzero_deploy_details.groovy') {
             column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: '部署配置id') {
                 constraints(nullable: false)
             }
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'gitops操作记录 id')
+
             column(name: 'status', type: 'VARCHAR(32)', remarks: '部署状态') {
                 constraints(nullable: false)
             }

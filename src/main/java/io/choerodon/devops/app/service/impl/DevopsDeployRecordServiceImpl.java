@@ -402,7 +402,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         baseUpdate(devopsDeployRecordDTO);
         // 2. 更新部署明细
         // 2.1 查询失败或未执行的部署明细
-        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listFailedOrCreatedByDeployRecordId(recordId);
+        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listNotSuccessRecordId(recordId);
         // 2.2 更新记录
         if (CollectionUtils.isEmpty(devopsHzeroDeployDetailsDTOS)) {
             return;

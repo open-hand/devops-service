@@ -22,5 +22,7 @@ public interface DevopsHzeroDeployDetailsService {
 
     DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String instanceCode);
 
-    List<DevopsHzeroDeployDetailsDTO> listFailedOrCreatedByDeployRecordId(Long recordId);
+    List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(Long recordId);
+
+    void baseUpdate(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO);
 }

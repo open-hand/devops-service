@@ -10,13 +10,23 @@ package io.choerodon.devops.api.vo;
 public class PodReadyEventVO {
     private Long envId;
     private String instanceCode;
+    private Long commandId;
 
     public PodReadyEventVO() {
     }
 
-    public PodReadyEventVO(Long envId, String instanceCode) {
+    public PodReadyEventVO(Long envId, String instanceCode, Long commandId) {
         this.envId = envId;
         this.instanceCode = instanceCode;
+        this.commandId = commandId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 
     public Long getEnvId() {
