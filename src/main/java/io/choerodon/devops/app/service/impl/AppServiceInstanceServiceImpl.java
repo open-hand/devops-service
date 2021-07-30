@@ -2083,6 +2083,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         customUserDetails.setLanguage(BaseConstants.DEFAULT_LOCALE_STR);
 
         DetailsHelper.setCustomUserDetails(customUserDetails);
+        AppServiceInstanceVO instanceVO;
         if (appServiceInstanceDTO == null) {
             // 新建实例
             MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
@@ -2096,7 +2097,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
                     devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                     AppServiceInstanceSource.MARKET.getValue());
-            createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+
+            instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
         } else {
             // 更新实例
             MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
@@ -2110,9 +2112,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
                     devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                     AppServiceInstanceSource.MARKET.getValue());
-            createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+            instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
         }
-        devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.DEPLOYING);
+        // 更新状态以及操作记录
+        devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.DEPLOYING.value());
+        devopsHzeroDeployDetailsDTO.setCommandId(instanceVO.getCommandId());
+        devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
     }
 
     private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {

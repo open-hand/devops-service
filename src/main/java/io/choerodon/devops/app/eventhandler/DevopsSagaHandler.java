@@ -774,6 +774,11 @@ public class DevopsSagaHandler {
         PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryDeployingByEnvIdAndInstanceCode(podReadyEventVO.getEnvId(), podReadyEventVO.getInstanceCode());
         if (devopsHzeroDeployDetailsDTO != null) {
+            // pod的操作记录不是最新的则丢弃
+            if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
+                return;
+            }
+
             DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
             // 查询实例
             AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(podReadyEventVO.getInstanceCode(), podReadyEventVO.getEnvId());

@@ -57,6 +57,9 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
 
     @ApiModelProperty("部署顺序")
     private Long sequence;
+    @Encrypt
+    @ApiModelProperty("gitops 操作记录id")
+    private Long commandId;
 
     public DevopsHzeroDeployDetailsDTO() {
     }
@@ -70,6 +73,14 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
         this.status = status;
         this.instanceCode = instanceCode;
         this.sequence = sequence;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 
     public Long getId() {
