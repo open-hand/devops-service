@@ -179,51 +179,6 @@ public class DevopsHostController {
         return Results.success(devopsHostService.checkHostDelete(projectId, hostId));
     }
 
-    @ApiOperation("批量校准主机状态")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/batch_correct")
-    public ResponseEntity<Void> batchCorrect(@ApiParam(value = "项目id", required = true)
-                                             @PathVariable("project_id") Long projectId,
-                                             @ApiParam(value = "主机id集合", required = true)
-                                             @Encrypt @RequestBody Set<Long> hostIds) {
-        devopsHostService.asyncBatchCorrectStatus(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds), DetailsHelper.getUserDetails().getUserId());
-        return Results.success();
-    }
-
-    @ApiOperation("批量校准主机状态")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/batch_correct_with_progress")
-    public ResponseEntity<String> batchCorrectWithProgress(@ApiParam(value = "项目id", required = true)
-                                                           @PathVariable("project_id") Long projectId,
-                                                           @ApiParam(value = "主机id集合", required = true)
-                                                           @Encrypt @RequestBody Set<Long> hostIds) {
-        return ResponseEntity.ok(devopsHostService.asyncBatchCorrectStatusWithProgress(projectId, devopsHostService.batchSetStatusOperating(projectId, hostIds)));
-    }
-
-    @ApiOperation("获取批量校准主机状态")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/checking_progress")
-    public ResponseEntity<CheckingProgressVO> getCheckingProgress(@ApiParam(value = "项目id", required = true)
-                                                                  @PathVariable("project_id") Long projectId,
-                                                                  @RequestParam("correctKey") String correctKey) {
-        return ResponseEntity.ok(devopsHostService.getCheckingProgress(projectId, correctKey));
-    }
-
-    @ApiOperation("获取批量校准主机状态")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/paging_with_checking_status")
-    @CustomPageRequest
-    public ResponseEntity<Page<DevopsHostVO>> pagingWithCheckingStatus(@ApiParam(value = "项目id", required = true)
-                                                                       @PathVariable("project_id") Long projectId,
-                                                                       @SortDefault.SortDefaults({
-                                                                               @SortDefault(value = "jmeter_status", direction = Sort.Direction.DESC),
-                                                                               @SortDefault(value = "host_status", direction = Sort.Direction.DESC),
-                                                                               @SortDefault(value = "id", direction = Sort.Direction.DESC)}) PageRequest pageRequest,
-                                                                       @RequestParam(value = "correctKey", required = false) String correctKey,
-                                                                       @RequestParam(value = "search_param", required = false) String searchParam) {
-        return ResponseEntity.ok(devopsHostService.pagingWithCheckingStatus(projectId, pageRequest, correctKey, searchParam));
-    }
-
     @ApiOperation("获取java进程信息接口")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/java_process")
