@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -29,35 +28,6 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
 
     List<DevopsHostDTO> listByProjectIdAndIds(@Param("projectId") Long projectId,
                                               @Param("hostIds") Set<Long> hostIds);
-
-    /**
-     * 批量设置主机状态为处理中
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id数据
-     */
-    void batchSetStatusOperating(@Param("projectId") Long projectId,
-                                 @Param("hostIds") Set<Long> hostIds,
-                                 @Param("date") Date date,
-                                 @Param("updatedBy") Long updatedBy);
-
-    /**
-     * 批量设置主机状态为超时失败
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id数据
-     */
-    void batchSetStatusTimeoutFailed(@Param("projectId") Long projectId,
-                                     @Param("hostIds") Set<Long> hostIds,
-                                     @Param("isTestType") Boolean isTestType,
-                                     @Param("date") Date date);
-
-    List<DevopsHostVO> listBySearchParam(@Param("projectId") Long projectId,
-                                         @Param("searchParam") String searchParam);
-
-    List<DevopsHostVO> pagingWithCheckingStatus(@Param("projectId") Long projectId,
-                                                @Param("finalHostIds") Set<Long> finalHostIds,
-                                                @Param("searchParam") String searchParam);
 
     /**
      * 查询指定项目下的所有主机

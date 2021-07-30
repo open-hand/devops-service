@@ -40,56 +40,6 @@ public interface DevopsHostService {
     String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO);
 
     /**
-     * 批量设置主机状态为处理中
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id数据
-     * @return 返回要校准的主机数据
-     */
-    Set<Long> batchSetStatusOperating(Long projectId, Set<Long> hostIds);
-
-    /**
-     * 异步批量校准主机状态
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id
-     * @param userId    当前用户id
-     */
-    void asyncBatchCorrectStatus(Long projectId, Set<Long> hostIds, Long userId);
-
-    /**
-     * 异步批量校准主机状态
-     *
-     * @param hostIds 主机id
-     */
-    String asyncBatchCorrectStatusWithProgress(Long projectId, Set<Long> hostIds);
-
-    /**
-     * 异步批量更新超时的主机为失败
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id
-     */
-    void asyncBatchSetTimeoutHostFailed(Long projectId, Set<Long> hostIds);
-
-    /**
-     * 校正一个主机的状态
-     *
-     * @param projectId 项目id
-     * @param hostId    主机id
-     * @param updaterId 更新者的id
-     */
-    void correctStatus(Long projectId, Long hostId, Long updaterId);
-
-    /**
-     * 校正一个主机的状态
-     *
-     * @param projectId 项目id
-     * @param hostId    主机id
-     */
-    void correctStatus(Long projectId, String correctKey, Long hostId);
-
-    /**
      * 更新主机
      *
      * @param projectId                 项目id
@@ -194,10 +144,6 @@ public interface DevopsHostService {
      * @return true表示能删除
      */
     boolean checkHostDelete(Long projectId, Long hostId);
-
-    CheckingProgressVO getCheckingProgress(Long projectId, String correctKey);
-
-    Page<DevopsHostVO> pagingWithCheckingStatus(Long projectId, PageRequest pageRequest, String correctKey, String searchParam);
 
     /**
      * 查询主机信息
