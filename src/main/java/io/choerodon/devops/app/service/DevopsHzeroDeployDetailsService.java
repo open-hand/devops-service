@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 
@@ -19,4 +21,6 @@ public interface DevopsHzeroDeployDetailsService {
     void updateStatusById(Long id, HzeroDeployDetailsStatusEnum status);
 
     DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String instanceCode);
+
+    List<DevopsHzeroDeployDetailsDTO> listFailedOrCreatedByDeployRecordId(Long recordId);
 }

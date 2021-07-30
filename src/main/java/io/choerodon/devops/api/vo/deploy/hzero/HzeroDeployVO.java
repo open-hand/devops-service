@@ -19,7 +19,7 @@ public class HzeroDeployVO {
     @Encrypt
     private Long envId;
 
-    private List<HzeroInstanceVO> instanceList;
+    private List<DevopsHzeroDeployDetailsVO> deployDetailsVOList;
 
 
     public String getMktAppVersion() {
@@ -46,11 +46,11 @@ public class HzeroDeployVO {
         this.envId = envId;
     }
 
-    public List<HzeroInstanceVO> getInstanceList() {
-        return instanceList;
+    public List<DevopsHzeroDeployDetailsVO> getDeployDetailsVOList() {
+        return deployDetailsVOList;
     }
 
-    public void setInstanceList(List<HzeroInstanceVO> instanceList) {
-        this.instanceList = instanceList;
+    public void setDeployDetailsVOList(List<DevopsHzeroDeployDetailsVO> deployDetailsVOList) {
+        this.deployDetailsVOList = deployDetailsVOList;
     }
 }

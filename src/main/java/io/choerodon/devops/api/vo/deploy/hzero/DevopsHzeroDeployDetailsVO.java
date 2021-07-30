@@ -12,7 +12,9 @@ import io.choerodon.devops.api.vo.DevopsServiceReqVO;
  * @author wanghao
  * @since 2021/7/28 9:35
  */
-public class HzeroInstanceVO {
+public class DevopsHzeroDeployDetailsVO {
+
+    private Long id;
     @ApiModelProperty("实例code")
     private String instanceCode;
     @ApiModelProperty("部署配置")
@@ -28,6 +30,14 @@ public class HzeroInstanceVO {
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getSequence() {
         return sequence;

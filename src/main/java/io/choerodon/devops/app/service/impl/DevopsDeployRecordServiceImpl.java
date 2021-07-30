@@ -7,8 +7,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
@@ -28,26 +28,30 @@ import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.MarketUseRecordService;
+import io.choerodon.devops.api.vo.deploy.hzero.DevopsHzeroDeployDetailsVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DeployDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
-import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.UseRecordType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
+import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -62,12 +66,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
 
     private static final String UPDATE_DEPLOY_RECORD_STATUS_FAILED = "update.deploy.record.status.failed";
-
-    private static final String DEPLOY_STATUS = "deployStatus";
-    private static final String DEPLOY_TYPE = "deployType";
-    private static final String PIPELINE_ID = "pipelineId";
-    private static final String RUNNING = "running";
-    private static final String ENV_ID = "env";
+    private static final String ERROR_UPDATE_DEPLOY_RECORD_FAILED = "error.update.deploy.record.failed";
 
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
@@ -82,7 +81,14 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private MarketUseRecordService marketUseRecordService;
-
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    @Lazy
+    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+    @Autowired
+    @Lazy
+    private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
 
     @Override
     public Long saveRecord(Long projectId,
@@ -378,14 +384,64 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     @Transactional
-    public void updateResultById(Long deployRecordId, CommandStatus status) {
+    public void updateResultById(Long deployRecordId, DeployResultEnum status) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
-        devopsDeployRecordDTO.setDeployResult(status.getStatus());
+        devopsDeployRecordDTO.setDeployResult(status.value());
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, UPDATE_DEPLOY_RECORD_STATUS_FAILED);
     }
 
     @Override
     public DevopsDeployRecordDTO baseQueryById(Long deployRecordId) {
         return devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
+    }
+
+    @Override
+    @Transactional
+    public void stop(Long projectId, Long recordId) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
+        workFlowServiceOperator.stopInstance(projectId, devopsDeployRecordDTO.getBusinessKey());
+        updateResultById(recordId, DeployResultEnum.CANCELED);
+    }
+
+    @Override
+    @Transactional
+    public void retry(Long projectId, Long recordId, HzeroDeployVO hzeroDeployVO) {
+        // 1. 更新记录状态
+        String businessKey = GenerateUUID.generateUUID();
+        DevopsDeployRecordDTO devopsDeployRecordDTO = baseQueryById(recordId);
+        devopsDeployRecordDTO.setDeployResult(DeployResultEnum.OPERATING.value());
+        devopsDeployRecordDTO.setBusinessKey(businessKey);
+        baseUpdate(devopsDeployRecordDTO);
+        // 2. 更新部署明细
+        // 2.1 查询失败或未执行的部署明细
+        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listFailedOrCreatedByDeployRecordId(recordId);
+        // 2.2 更新记录
+        if (CollectionUtils.isEmpty(devopsHzeroDeployDetailsDTOS)) {
+            return;
+        }
+        List<DevopsHzeroDeployDetailsVO> deployDetailsVOList = hzeroDeployVO.getDeployDetailsVOList();
+        Map<Long, DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOMap = deployDetailsVOList.stream().collect(Collectors.toMap(DevopsHzeroDeployDetailsVO::getId, Function.identity()));
+        devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
+            // 2.3 更新部署配置
+            DevopsHzeroDeployDetailsVO devopsHzeroDeployDetailsVO = devopsHzeroDeployDetailsVOMap.get(devopsHzeroDeployDetailsDTO.getId());
+
+            devopsHzeroDeployConfigService.updateById(devopsHzeroDeployDetailsDTO.getId(),
+                    devopsHzeroDeployDetailsVO.getValue(),
+                    devopsHzeroDeployDetailsVO.getDevopsServiceReqVO(),
+                    devopsHzeroDeployDetailsVO.getDevopsIngressVO());
+            // 2.4 对于失败的记录更新记录状态为未执行
+            if (HzeroDeployDetailsStatusEnum.FAILED.value().equals(devopsHzeroDeployDetailsDTO.getStatus())) {
+                devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.CREATED);
+            }
+        });
+        // 启动流程实例
+        HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsDTOS);
+        workFlowServiceOperator.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(DevopsDeployRecordDTO devopsDeployRecordDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, ERROR_UPDATE_DEPLOY_RECORD_FAILED);
     }
 }

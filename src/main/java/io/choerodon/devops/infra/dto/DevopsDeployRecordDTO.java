@@ -34,7 +34,9 @@ public class DevopsDeployRecordDTO extends AuditDomain {
     private String deployPayloadName;
 
     private Date deployTime;
-
+    /**
+     * {@link io.choerodon.devops.infra.enums.deploy.DeployResultEnum}
+     */
     private String deployResult;
 
     private String deployObjectType;

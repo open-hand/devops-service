@@ -109,7 +109,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO,
                 businessKey);
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsList = new ArrayList<>();
-        hzeroDeployVO.getInstanceList().forEach(instanceVO -> {
+        hzeroDeployVO.getDeployDetailsVOList().forEach(instanceVO -> {
             // 保存部署配置
             DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(new DevopsHzeroDeployConfigDTO(instanceVO.getValue(),
                     instanceVO.getDevopsServiceReqVO() == null ? null : JsonHelper.marshalByJackson(instanceVO.getDevopsServiceReqVO()),

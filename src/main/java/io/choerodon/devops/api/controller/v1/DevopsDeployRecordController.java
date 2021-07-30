@@ -1,24 +1,20 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.Date;
-import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
-import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -70,5 +66,26 @@ public class DevopsDeployRecordController {
             @RequestParam("startTime") Date startTime,
             @RequestParam("endTime") Date endTime) {
         return ResponseEntity.ok(devopsDeployRecordService.countByDate(projectId, startTime, endTime));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "停止hzero部署")
+    @PutMapping("/{record_id}/stop")
+    public ResponseEntity<Void> stop(
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "record_id") Long recordId) {
+        devopsDeployRecordService.stop(projectId, recordId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "重试hzero部署")
+    @PostMapping("/{record_id}/retry")
+    public ResponseEntity<Void> retry(
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "record_id") Long recordId,
+            @RequestBody @Validated HzeroDeployVO hzeroDeployVO) {
+        devopsDeployRecordService.retry(projectId, recordId, hzeroDeployVO);
+        return ResponseEntity.noContent().build();
     }
 }

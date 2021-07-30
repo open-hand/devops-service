@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
@@ -11,11 +10,12 @@ import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
-import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -118,7 +118,24 @@ public interface DevopsDeployRecordService {
 
     DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId);
 
-    void updateResultById(Long deployRecordId, CommandStatus status);
+    void updateResultById(Long deployRecordId, DeployResultEnum status);
 
     DevopsDeployRecordDTO baseQueryById(Long deployRecordId);
+
+    /**
+     * 停止hzero部署
+     * @param projectId
+     * @param recordId
+     */
+    void stop(Long projectId, Long recordId);
+
+    /**
+     * 重试hzero部署
+     * @param projectId
+     * @param recordId
+     * @param hzeroDeployVO
+     */
+    void retry(Long projectId, Long recordId, HzeroDeployVO hzeroDeployVO);
+
+    void baseUpdate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 }
