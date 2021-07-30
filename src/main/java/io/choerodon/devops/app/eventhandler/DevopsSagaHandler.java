@@ -796,7 +796,7 @@ public class DevopsSagaHandler {
             }
             if (images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))
                     && !DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
-                workFlowServiceOperator.approveUserTask(instanceE.getProjectId(),
+                workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
                         devopsDeployRecordDTO.getBusinessKey(),
                         MiscConstants.WORKFLOW_ADMIN_NAME,
                         MiscConstants.WORKFLOW_ADMIN_ID,
