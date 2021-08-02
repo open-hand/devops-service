@@ -25,4 +25,12 @@ public interface DevopsHzeroDeployDetailsService {
     List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(Long recordId);
 
     void baseUpdate(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO);
+
+    /**
+     * 判断部署任务是否执行完成
+     * @param deployRecordId
+     * @return true：所有部署任务执行完成，false:还有未完成的部署任务
+     */
+    Boolean completed(Long deployRecordId);
+
 }

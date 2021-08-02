@@ -68,4 +68,13 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
     public void baseUpdate(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
     }
+
+    @Override
+    public Boolean completed(Long deployRecordId) {
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = new DevopsHzeroDeployDetailsDTO();
+        devopsHzeroDeployDetailsDTO.setDeployRecordId(deployRecordId);
+
+        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsMapper.select(devopsHzeroDeployDetailsDTO);
+        return devopsHzeroDeployDetailsDTOS.stream().anyMatch(v -> HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(v.getStatus()));
+    }
 }
