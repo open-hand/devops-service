@@ -947,7 +947,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             artifactId,
                             c7nNexusComponentDTO.getVersion()));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("decode failed", e);
         }
 
 
@@ -967,7 +967,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
 
         // 2.保存记录
-        String instanceName = jarDeploy.getName() != null ? c7nNexusComponentDTO.getName() : c7nNexusComponentDTO.getName();
+        String instanceName = jarDeploy.getName() != null ? jarDeploy.getName() : c7nNexusComponentDTO.getName();
 
         DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.queryByHostIdAndName(hostId, instanceName);
         if (devopsNormalInstanceDTO == null) {
@@ -1172,7 +1172,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO,
                     new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("decode failed", e);
         }
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 

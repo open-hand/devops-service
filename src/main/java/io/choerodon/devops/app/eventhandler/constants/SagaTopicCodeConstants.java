@@ -247,11 +247,6 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-batch-deployment";
 
     /**
-     * devops 主机部署
-     */
-    public static final String DEVOPS_HOST_DEPLOY = "devops-host-deploy";
-
-    /**
      * 创建集群
      */
     public static final String DEVOPS_INSTALL_K8S = "devops-install-k8s";

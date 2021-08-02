@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -28,8 +27,10 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.*;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
@@ -58,24 +59,6 @@ public class HarborServiceImpl implements HarborService {
 
     @Value("${services.harbor.delete.period.seconds: 20}")
     private Long seconds;
-
-    @Override
-    public User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String name) {
-        String pull = "";
-        if (!isPush) {
-            pull = "pull";
-        }
-        String userName = null;
-        if (ObjectUtils.isEmpty(name)) {
-            userName = String.format("%sUser%s%s", pull, projectDTO.getOrganizationId(), projectDTO.getId());
-        } else {
-            userName = name;
-        }
-        String userEmail = String.format("%s@harbor.com", userName);
-        String pwd = String.format("%sPWD", userName);
-        return new User(userName, userEmail, pwd, userName);
-    }
-
 
     @Override
     public List<HarborRepoConfigDTO> listAllCustomRepoByProject(Long projectId) {
@@ -152,7 +135,8 @@ public class HarborServiceImpl implements HarborService {
             try {
                 TimeUnit.SECONDS.sleep(seconds);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.error("Interrupted!", e);
+                Thread.currentThread().interrupt();
             }
 
         });
