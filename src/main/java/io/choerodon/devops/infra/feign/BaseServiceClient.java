@@ -1,23 +1,31 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.infra.dto.iam.*;
+import io.choerodon.devops.infra.dto.iam.ClientVO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.RoleDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.dto.iam.UserCountVO;
+import io.choerodon.devops.infra.dto.iam.UserProjectLabelVO;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import io.swagger.annotations.ApiOperation;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.Valid;
 
 /**
  * Created by younger on 2018/3/29.
