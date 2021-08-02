@@ -49,8 +49,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
     @Autowired
-    private PipelineStageRecordMapper pipelineStageRecordMapper;
-    @Autowired
     private UserAttrService userAttrService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -178,27 +176,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         CommonExAssertUtil.assertNotNull(userId, "error.user.get");
-        // 查出该用户待审批的流水线阶段(旧流水线)
-        List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
-        if (!CollectionUtils.isEmpty(pipelineRecordDTOList)) {
-            List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
-                    .filter(pipelineRecordDTO -> (pipelineRecordDTO.getRecordAudit() != null && pipelineRecordDTO.getRecordAudit().contains(String.valueOf(userId))) ||
-                            (pipelineRecordDTO.getStageAudit() != null && pipelineRecordDTO.getStageAudit().contains(String.valueOf(userId))) ||
-                            (pipelineRecordDTO.getTaskAudit() != null && pipelineRecordDTO.getTaskAudit().contains(String.valueOf(userId))))
-                    .collect(Collectors.toList());
-            pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
-                ApprovalVO approvalVO = new ApprovalVO()
-                        .setType(ApprovalTypeEnum.PIPELINE.getType())
-                        .setProjectId(pipelineRecordDTO.getProjectId())
-                        .setProjectName(projectNameMap.get(pipelineRecordDTO.getProjectId()).getName())
-                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
-                        .setPipelineId(pipelineRecordDTO.getPipelineId())
-                        .setPipelineRecordId(pipelineRecordDTO.getId())
-                        .setStageRecordId(pipelineRecordDTO.getStageRecordId())
-                        .setTaskRecordId(pipelineRecordDTO.getTaskRecordId());
-                approvalVOList.add(approvalVO);
-            });
-        }
 
         // 查处该用户待审批的流水线阶段(新流水线)
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
