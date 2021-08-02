@@ -7,6 +7,14 @@
             resultType="io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO">
         SELECT *
         FROM devops_hzero_deploy_details dhdd
-        WHERE (dhdd.`status` != 'success') AND dhdd.deploy_record_id = #{recordId}
+        WHERE dhdd.`status` != 'success' AND dhdd.deploy_record_id = #{recordId}
+    </select>
+    <select id="baseQueryDeployingByEnvIdAndInstanceCode"
+            resultType="io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO">
+        SELECT *
+        FROM devops_hzero_deploy_details dhdd
+        WHERE dhdd.`status` = 'deploying' AND dhdd.env_id = #{envId} AND dhdd.instance_code = #{instanceCode}
+        order by id desc
+        limit 1
     </select>
 </mapper>
