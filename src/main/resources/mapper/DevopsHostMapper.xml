@@ -56,7 +56,7 @@
             </if>
         </where>
         )
-                UNION ALL
+                UNION
                 (
                 SELECT dh.*
                 FROM devops_host dh
@@ -76,7 +76,7 @@
             </if>
         </where>
         )
-                UNION ALL
+                UNION
                 (
                 SELECT dh.*
                 FROM devops_host dh
