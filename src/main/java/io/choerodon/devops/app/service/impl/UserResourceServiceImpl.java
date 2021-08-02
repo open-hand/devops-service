@@ -54,60 +54,9 @@ public class UserResourceServiceImpl implements UserResourceService {
             return result;
         }
         List<Long> projectIds = projects.stream().map(ProjectDTO::getId).collect(Collectors.toList());
-
-        /*
-         *处理主机概览信息
-         */
-        List<DevopsHostDTO> hostDTOS = devopsHostMapper.listByProject(projectIds);
-        if (CollectionUtils.isNotEmpty(hostDTOS)) {
-            result.setHostTotal(hostDTOS.size());
-            List<GeneralResourceVO.ResourceGroup> resourceGroups = new ArrayList<>();
-            Map<Long, List<DevopsHostDTO>> projectMap = hostDTOS.stream().collect(Collectors
-                    .groupingBy(DevopsHostDTO::getProjectId));
-            for (Map.Entry<Long, List<DevopsHostDTO>> entry : projectMap.entrySet()) {
-                ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
-                        .findFirst().orElse(null);
-                if (project == null) {
-                    //理论是是不会为空的
-                    continue;
-                }
-                resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
-            }
-            result.setHostGroups(resourceGroups);
-        }
-
-        List<DevopsClusterDTO> clusterDTOS = devopsClusterMapper.listByProject(organizationId, projectIds);
-        if (CollectionUtils.isNotEmpty(clusterDTOS)) {
-            result.setClusterTotal(clusterDTOS.size());
-            List<GeneralResourceVO.ResourceGroup> resourceGroups = new ArrayList<>();
-            Map<Long, List<DevopsClusterDTO>> projectMap = clusterDTOS.stream().collect(Collectors.groupingBy(DevopsClusterDTO::getProjectId));
-            for (Map.Entry<Long, List<DevopsClusterDTO>> entry : projectMap.entrySet()) {
-                ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
-                        .findFirst().orElse(null);
-                if (project == null) {
-                    //理论是是不会为空的
-                    continue;
-                }
-                resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
-            }
-            result.setClusterGroups(resourceGroups);
-        }
-        List<DevopsEnvironmentDTO> environmentDTOS = devopsEnvironmentMapper.listByProject(projectIds);
-        if (CollectionUtils.isNotEmpty(environmentDTOS)) {
-            result.setEnvTotal(environmentDTOS.size());
-            List<GeneralResourceVO.ResourceGroup> resourceGroups = new ArrayList<>();
-            Map<Long, List<DevopsEnvironmentDTO>> projectMap = environmentDTOS.stream().collect(Collectors.groupingBy(DevopsEnvironmentDTO::getProjectId));
-            for (Map.Entry<Long, List<DevopsEnvironmentDTO>> entry : projectMap.entrySet()) {
-                ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
-                        .findFirst().orElse(null);
-                if (project == null) {
-                    //理论是是不会为空的
-                    continue;
-                }
-                resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
-            }
-            result.setEnvGroups(resourceGroups);
-        }
+        this.handleHost(projectIds, projects, result);
+        this.handleCluster(organizationId, projectIds, projects, result);
+        this.handleEnvironment(projectIds, projects, result);
         return result;
     }
 
@@ -157,9 +106,64 @@ public class UserResourceServiceImpl implements UserResourceService {
         if (userDetails == null) {
             throw new CommonException(BaseConstants.ErrorCode.NOT_LOGIN);
         }
-        List<ProjectDTO> projects = baseServiceClientOperator.listProjectsByUserId(organizationId,
+        return baseServiceClientOperator.listProjectsByUserId(organizationId,
                 userDetails.getUserId());
-        return projects;
+    }
 
+    private void handleHost(List<Long> projectIds,
+                            List<ProjectDTO> projects,
+                            GeneralResourceVO result) {
+        List<DevopsHostDTO> hostDTOS = devopsHostMapper.listByProject(projectIds);
+        if (CollectionUtils.isEmpty(hostDTOS)) {
+            return;
+        }
+        result.setHostTotal(hostDTOS.size());
+        List<GeneralResourceVO.ResourceGroup> resourceGroups = new ArrayList<>();
+        Map<Long, List<DevopsHostDTO>> projectMap = hostDTOS.stream().collect(Collectors
+                .groupingBy(DevopsHostDTO::getProjectId));
+        for (Map.Entry<Long, List<DevopsHostDTO>> entry : projectMap.entrySet()) {
+            ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
+                    .findFirst().orElse(null);
+            resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
+        }
+        result.setHostGroups(resourceGroups);
+    }
+
+    private void handleCluster(Long organizationId,
+                               List<Long> projectIds,
+                               List<ProjectDTO> projects,
+                               GeneralResourceVO result) {
+
+        List<DevopsClusterDTO> clusterDTOS = devopsClusterMapper.listByProject(organizationId, projectIds);
+        if (CollectionUtils.isEmpty(clusterDTOS)) {
+            return;
+        }
+        result.setClusterTotal(clusterDTOS.size());
+        List<GeneralResourceVO.ResourceGroup> resourceGroups = new ArrayList<>();
+        Map<Long, List<DevopsClusterDTO>> projectMap = clusterDTOS.stream().collect(Collectors.groupingBy(DevopsClusterDTO::getProjectId));
+        for (Map.Entry<Long, List<DevopsClusterDTO>> entry : projectMap.entrySet()) {
+            ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
+                    .findFirst().orElse(null);
+            resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
+        }
+        result.setClusterGroups(resourceGroups);
+    }
+
+    private void handleEnvironment(List<Long> projectIds,
+                                   List<ProjectDTO> projects,
+                                   GeneralResourceVO result) {
+        List<DevopsEnvironmentDTO> environmentDTOS = devopsEnvironmentMapper.listByProject(projectIds);
+        if (CollectionUtils.isEmpty(environmentDTOS)) {
+            return;
+        }
+        result.setEnvTotal(environmentDTOS.size());
+        List<GeneralResourceVO.ResourceGroup> resourceGroups = new ArrayList<>();
+        Map<Long, List<DevopsEnvironmentDTO>> projectMap = environmentDTOS.stream().collect(Collectors.groupingBy(DevopsEnvironmentDTO::getProjectId));
+        for (Map.Entry<Long, List<DevopsEnvironmentDTO>> entry : projectMap.entrySet()) {
+            ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
+                    .findFirst().orElse(null);
+            resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
+        }
+        result.setEnvGroups(resourceGroups);
     }
 }
