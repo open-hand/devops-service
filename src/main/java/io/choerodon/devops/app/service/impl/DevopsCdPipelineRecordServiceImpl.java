@@ -864,11 +864,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(cmds));
 
+        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.PIPELINE_CUSTOM_DEPLOY, hostId, cdJobRecordId),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
-        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+
     }
 
     private List<String> genCustomCommands(String value) {
