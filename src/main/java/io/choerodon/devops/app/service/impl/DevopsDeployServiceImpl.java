@@ -88,7 +88,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
     @Override
     @Transactional
-    public void deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO) {
+    public Long deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(hzeroDeployVO.getEnvId());
         MarketApplicationDTO marketApplicationDTO = marketServiceClientOperator.queryApplication(hzeroDeployVO.getMktAppId());
         // 保存部署记录
@@ -130,6 +130,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsList);
         // 启动流程实例
         workFlowServiceOperator.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
+
+        return deployRecordId;
     }
 
 }
