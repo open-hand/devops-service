@@ -427,7 +427,7 @@ public class SshUtil {
         try {
             ssh.disconnect();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("disconnect failed", e);
         }
     }
 
@@ -453,7 +453,7 @@ public class SshUtil {
                 try {
                     cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
                 } catch (ConnectionException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Pulling the image failed", e);
                 }
             } else {
                 break;

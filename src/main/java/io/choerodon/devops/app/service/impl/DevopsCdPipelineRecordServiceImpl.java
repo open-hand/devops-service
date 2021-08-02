@@ -400,7 +400,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         try {
             value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new CommonException(e);
         }
 
         Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
@@ -506,7 +506,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             artifactId,
                             c7nNexusComponentDTO.getVersion()));
         } catch (IOException e) {
-            LOGGER.error("decode failed", e);
+            throw new CommonException(e);
         }
 
 
@@ -733,7 +733,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO,
                     new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
         } catch (IOException e) {
-            LOGGER.error("decode failed", e);
+            throw new CommonException(e);
         }
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 

@@ -876,7 +876,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         try {
             currentDate = sdf.parse(currentDateStr);
         } catch (ParseException e) {
-            e.printStackTrace();
+            LOGGER.error("parse failed", e);
         }
         return devopsCiPipelineRecordMapper.queryNotSynchronizedRecord(new Date(System.currentTimeMillis() - statusUpdatePeriodMilliSeconds), currentDate);
     }
