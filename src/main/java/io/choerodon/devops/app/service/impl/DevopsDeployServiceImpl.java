@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sun.misc.BASE64Decoder;
 
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
@@ -28,9 +27,7 @@ import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -46,17 +43,6 @@ import io.choerodon.devops.infra.util.JsonHelper;
 public class DevopsDeployServiceImpl implements DevopsDeployService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployServiceImpl.class);
-    private static final BASE64Decoder decoder = new BASE64Decoder();
-
-    private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
-    private static final String ERROR_JAR_VERSION_NOT_FOUND = "error.jar.version.not.found";
-    private static final String ERROR_DEPLOY_JAR_FAILED = "error.deploy.jar.failed";
-
-
-    @Autowired
-    private RdupmClientOperator rdupmClientOperator;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired

@@ -22,14 +22,6 @@ public class WorkFlowServiceOperator {
     @Autowired
     private WorkFlowServiceClient workFlowServiceClient;
 
-    public String create(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
-        ResponseEntity<String> responseEntity = workFlowServiceClient.create(projectId, devopsPipelineDTO);
-        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.workflow.create");
-        }
-        return responseEntity.getBody();
-    }
-
     public Boolean approveUserTask(Long projectId, String businessKey) {
         ResponseEntity<Boolean> responseEntity = workFlowServiceClient.approveUserTask(projectId, businessKey);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
@@ -65,7 +57,7 @@ public class WorkFlowServiceOperator {
     public String createHzeroPipeline(Long projectId, HzeroDeployPipelineVO hzeroDeployPipelineVO) {
         ResponseEntity<String> responseEntity = workFlowServiceClient.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.workflow.create");
+            throw new CommonException("error.hzero.workflow.create");
         }
         return responseEntity.getBody();
     }

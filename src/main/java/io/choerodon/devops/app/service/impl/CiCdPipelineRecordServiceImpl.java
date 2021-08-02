@@ -36,7 +36,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService {
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(CiCdPipelineRecordServiceImpl.class);
 
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
@@ -184,7 +184,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         }
         List<DevopsPipelineRecordRelVO> devopsPipelineRecordRelVOS = ConvertUtils.convertList(select, this::relDtoToRelVO);
         CiCdPipelineUtils.recordListSort(devopsPipelineRecordRelVOS);
-        return devopsPipelineRecordRelVO.getId().compareTo(devopsPipelineRecordRelVOS.get(devopsPipelineRecordRelVOS.size() - 1).getId()) == 0 ? true : false;
+        return devopsPipelineRecordRelVO.getId().compareTo(devopsPipelineRecordRelVOS.get(devopsPipelineRecordRelVOS.size() - 1).getId()) == 0;
     }
 
     private void fillPipelineVO(String userName, List<StageRecordVO> stageRecordVOS, Date executeDate, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineRecordVO ciCdPipelineRecordVO) {
@@ -268,9 +268,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             devopsCdStageRecordDTOS.forEach(devopsCdStageRecordDTO -> {
                 devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CREATED.toValue());
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
-                devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
-                    devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CREATED.toValue());
-                });
+                devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CREATED.toValue()));
             });
         } else if (PipelineStatus.FAILED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
             firstStage = devopsCdStageRecordMapper.queryFirstStageByPipelineRecordIdAndStatus(cdPipelineRecordId, PipelineStatus.FAILED.toValue());
@@ -278,15 +276,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         } else {
             return;
         }
-
-        // 1.1 对于部署任务 校验环境权限
-//        if (checkEnvPermission && cdJobRecordDTO.getType().equals(JobTypeEnum.CD_DEPLOY.value())) {
-//            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobRecordDTO.getDeployInfoId());
-//            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCdEnvDeployInfoDTO.getEnvId());
-//            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-//            devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-//        }
-
         // 2. 根据装填获取DevopsPipelineDTO
 
         String businessKey = GenerateUUID.generateUUID();
@@ -404,9 +393,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
                 List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryJobWithStageRecordIdAndStatus(devopsCdStageRecordDTO.getId(), PipelineStatus.CREATED.toValue());
                 if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
-                    devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
-                        devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
-                    });
+                    devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.CANCELED.toValue()));
                 }
             });
         }
@@ -418,7 +405,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = new ArrayList<>();
         Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelService.pagingPipelineRel(pipelineId, pageable);
         if (Objects.isNull(devopsPipelineRecordRelDTOS) || CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS.getContent())) {
-            return null;
+            return new Page<>();
         }
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
         Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, this::dtoToVo);
@@ -506,8 +493,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     }
 
     private void assemblePage(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS, Page<CiCdPipelineRecordVO> ciCdPipelineRecordVO, Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS) {
-        //计算状态
-//        calculateRecordStatus(ciCdPipelineRecordVOS);
         ciCdPipelineRecordVO.setTotalElements(devopsPipelineRecordRelDTOS.getTotalElements());
         ciCdPipelineRecordVO.setSize(devopsPipelineRecordRelDTOS.getSize());
         ciCdPipelineRecordVO.setNumber(devopsPipelineRecordRelDTOS.getNumber());
@@ -516,22 +501,5 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         ciCdPipelineRecordVO = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, CiCdPipelineRecordVO.class);
         ciCdPipelineRecordVO.setContent(ciCdPipelineRecordVOS);
 
-    }
-
-    private void calculateRecordStatus(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS) {
-        if (CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
-            return;
-        }
-        ciCdPipelineRecordVOS.forEach(ciCdPipelineRecordVO -> {
-            if (JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCiStatus()) && JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCdStatus())) {
-                ciCdPipelineRecordVO.setStatus(JobStatusEnum.SUCCESS.value());
-            } else if (!JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCiStatus())) {
-                ciCdPipelineRecordVO.setStatus(ciCdPipelineRecordVO.getCiStatus());
-            } else if (JobStatusEnum.SUCCESS.value().equals(ciCdPipelineRecordVO.getCiStatus()) && JobStatusEnum.CREATED.value().equals(ciCdPipelineRecordVO.getCdStatus())) {
-                ciCdPipelineRecordVO.setStatus(JobStatusEnum.RUNNING.value());
-            } else {
-                ciCdPipelineRecordVO.setStatus(ciCdPipelineRecordVO.getCdStatus());
-            }
-        });
     }
 }

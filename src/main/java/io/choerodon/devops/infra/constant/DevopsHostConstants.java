@@ -9,6 +9,8 @@ package io.choerodon.devops.infra.constant;
  */
 public class DevopsHostConstants {
 
+    private DevopsHostConstants() {
+    }
 
     public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
@@ -21,15 +23,15 @@ public class DevopsHostConstants {
     public static final String MIDDLEWARE_INSTANCE = "host:%s:middleware:instances:%s";
     public static final String HOST_COMMANDS = "host:%s:commands";
 
-    public static String HOST_RESOURCE_INFO_KEY = "devops:host:%s:resourceInfo";
-    public static String HOST_JAVA_PROCESS_INFO_KEY = "devops:host:%s:javaProcess";
-    public static String HOST_DOCKER_PROCESS_INFO_KEY = "devops:host:%s:dockerProcess";
+    public static final String HOST_RESOURCE_INFO_KEY = "devops:host:%s:resourceInfo";
+    public static final String HOST_JAVA_PROCESS_INFO_KEY = "devops:host:%s:javaProcess";
+    public static final String HOST_DOCKER_PROCESS_INFO_KEY = "devops:host:%s:dockerProcess";
 
 
-    public static String ERROR_SAVE_APP_HOST_REL_FAILED = "error.save.app.host.rel.failed";
-    public static String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
+    public static final String ERROR_SAVE_APP_HOST_REL_FAILED = "error.save.app.host.rel.failed";
+    public static final String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
 
-    public static String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
+    public static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
 
 
 }

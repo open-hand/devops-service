@@ -47,11 +47,11 @@ public class CommandResultHandler implements HostMsgHandler {
 
     @PostConstruct
     void init() {
-        resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), (payload) -> {
+        resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), payload -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
             devopsNormalInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
         });
-        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), (payload) -> {
+        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), payload -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
             DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsNormalInstanceDTO.setStatus(processInfoVO.getStatus());
@@ -59,11 +59,11 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsNormalInstanceDTO.setPorts(processInfoVO.getPorts());
             devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
         });
-        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), (payload) -> {
+        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
         });
-        Consumer<String> dockerUpdateConsumer = (payload) -> {
+        Consumer<String> dockerUpdateConsumer = payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             // 更新状态和容器id
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));

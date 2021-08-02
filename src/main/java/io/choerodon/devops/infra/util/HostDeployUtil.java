@@ -25,6 +25,9 @@ public class HostDeployUtil {
 
     private static final String JAVA_DEPLOY_COMMAND_TEMPLATE;
 
+    private HostDeployUtil() {
+    }
+
     static {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/java_deploy.sh")) {
             JAVA_DEPLOY_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
@@ -41,7 +44,7 @@ public class HostDeployUtil {
                 values = s;
             }
         }
-        if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
+        if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
             throw new CommonException("error.instruction");
         }
 

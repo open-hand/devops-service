@@ -1,17 +1,19 @@
 package io.choerodon.devops.infra.handler;
 
-import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.util.LogUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.HOST_ID;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.TOKEN;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
+import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.util.LogUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
 public class HostConnectionHandler {
@@ -24,7 +26,6 @@ public class HostConnectionHandler {
     public boolean validConnectionParameter(HttpServletRequest request) {
 
         //校验ws连接参数是否正确
-        String key = request.getParameter(KEY);
         String hostId = request.getParameter(HOST_ID);
         String token = request.getParameter(TOKEN);
 

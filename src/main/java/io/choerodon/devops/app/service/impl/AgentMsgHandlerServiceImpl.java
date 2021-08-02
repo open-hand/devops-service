@@ -62,7 +62,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String METADATA = "metadata";
     private static final String SERVICE_KIND = "service";
     private static final String INGRESS_KIND = "ingress";
-    private static final String OWNER_REFERENCES = "ownerReferences";
     private static final String CONFIGMAP_KIND = "configmap";
     private static final String C7NHELMRELEASE_KIND = "c7nhelmrelease";
     private static final String CERTIFICATE_KIND = "certificate";
@@ -429,7 +428,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Failed to query effect command. instanceId: {}, releaseCommit: {}", instanceId, releaseCommit);
-                logger.debug("The ex is: {}", e);
+                logger.debug("The ex is:", e);
             } else if (logger.isInfoEnabled()) {
                 logger.info("Failed to query effect command. instanceId: {}, releaseCommit: {}, the exception class is {}", instanceId, releaseCommit, e.getClass());
             }
@@ -609,7 +608,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     break;
             }
         } catch (IOException e) {
-            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e);
+            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is", e);
         }
     }
 
@@ -1813,7 +1812,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             newDevopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
             devopsEnvCommandService.baseUpdate(newDevopsEnvCommandDTO);
         } catch (Exception e) {
-            logger.info("Exception occurred when calling handlerServiceCreateMessage(). It is: {}", e);
+            logger.info("Exception occurred when calling handlerServiceCreateMessage(). It is:", e);
         }
     }
 
