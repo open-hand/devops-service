@@ -222,7 +222,6 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
-            LOGGER.info(">>>>>>>>>errorMessage:{}>>>>>>>>>", e.getCause());
             devOpsAppImportPayload.setErrorMessage(getStackTrace(e));
             appServiceService.setAppErrStatus(JsonHelper.marshalByJackson(devOpsAppImportPayload), devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
             throw e;
@@ -345,7 +344,7 @@ public class DevopsSagaHandler {
             }
             LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
-            LOGGER.error("error create pipeline auto deploy instance {}", e);
+            LOGGER.error("error create pipeline auto deploy instance", e);
             String log = devopsCdJobRecordDTO.getLog();
             if (log != null) {
                 log = LogUtil.cutOutString(log + System.lineSeparator() + LogUtil.readContentOfThrowable(e), 2500);
@@ -354,7 +353,7 @@ public class DevopsSagaHandler {
             }
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, log);
             devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
 
             Long userId = GitUserNameUtil.getUserId();
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
@@ -587,8 +586,8 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void deleteEnv(String data) {
-        JsonObject JSONObject = gson.fromJson(data, JsonObject.class);
-        Long envId = JSONObject.get("envId").getAsLong();
+        JsonObject jsonObject = gson.fromJson(data, JsonObject.class);
+        Long envId = jsonObject.get("envId").getAsLong();
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
@@ -712,7 +711,7 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             maxRetryCount = 0,
             seq = 1)
-    public void handlePodReadyEventForHzeroDeploy(String data) {
+    public void handlePodReadyEvent(String data) {
         PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryDeployingByEnvIdAndInstanceCode(podReadyEventVO.getEnvId(), podReadyEventVO.getInstanceCode());
         if (devopsHzeroDeployDetailsDTO != null) {

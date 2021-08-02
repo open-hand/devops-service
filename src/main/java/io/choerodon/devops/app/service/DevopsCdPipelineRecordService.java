@@ -30,7 +30,7 @@ public interface DevopsCdPipelineRecordService {
      * @deprecated
      * 主机模式 镜像部署
      */
-    Boolean cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+//    Boolean cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     /**
      * @deprecated
@@ -39,7 +39,7 @@ public interface DevopsCdPipelineRecordService {
      * @param cdJobRecordId
      * @return
      */
-    Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+//    Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     /**
      * @deprecated
@@ -48,7 +48,7 @@ public interface DevopsCdPipelineRecordService {
      * @param cdJobRecordId
      * @return
      */
-    Boolean cdHostCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+//    Boolean cdHostCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
@@ -69,7 +69,7 @@ public interface DevopsCdPipelineRecordService {
     Page<DevopsCdPipelineRecordVO> pagingCdPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable);
 
 
-    void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo);
+    void updatePipelineStatusFailed(Long pipelineRecordId);
 
     DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long cdPipelineId);
 
