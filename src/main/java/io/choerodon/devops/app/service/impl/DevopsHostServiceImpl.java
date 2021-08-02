@@ -331,7 +331,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             } else {
                 // 项目成员且为主机创建者，展示权限管理tab和按钮
                 // 仅仅是项目成员，不展示权限管理tab和按钮
-                h.setShowPermission(h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()))
+                h.setShowPermission(h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()));
             }
         });
         return page;
@@ -658,6 +658,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long envId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(envId);
+        // 校验用户为项目所有者或者为主机创建者
+        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
@@ -714,6 +716,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        // 校验用户为项目所有者或者为主机创建者
+        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
 
         if (devopsHostDTO == null) {
             return;
@@ -744,6 +748,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public List<DevopsUserVO> listAllUserPermission(Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        // 校验用户为项目所有者或者为主机创建者
+        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(devopsHostDTO.getProjectId()) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
+
         return ConvertUtils.convertList(devopsHostUserPermissionService.baseListByHostId(hostId), DevopsUserVO.class);
     }
 
@@ -751,7 +759,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void updateHostUserPermission(Long projectId, DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO) {
         DevopsHostDTO preHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostPermissionUpdateVO.getHostId());
+
+        // 校验主机属于该项目
         CommonExAssertUtil.assertTrue(projectId.equals(preHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        // 校验用户为项目所有者或者为主机创建者
+        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId) || preHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
 
 
         List<Long> addIamUserIds = devopsHostPermissionUpdateVO.getUserIds();
@@ -799,6 +811,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        // 校验用户为项目所有者或者为主机创建者
+        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
+
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -836,8 +852,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         // 数据库中已被分配权限的
         List<Long> assigned = devopsHostUserPermissionService.listUserIdsByHostId(hostId);
-
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         // 过滤项目成员中的项目所有者和已被分配权限的(主机创建者默认有权限)
         List<IamUserDTO> members = allProjectMembers.stream()
