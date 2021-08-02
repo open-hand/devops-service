@@ -25,7 +25,7 @@ public class JarDeployVO {
     @ApiModelProperty("实例名")
     private String name;
     /**
-     *  部署对象id
+     * 部署对象id
      */
     @Encrypt
     private Long deployObjectId;
@@ -37,6 +37,7 @@ public class JarDeployVO {
     private ProdJarInfoVO prodJarInfoVO;
 
     public JarDeployVO() {
+        this.value = "";
     }
 
     public JarDeployVO(String sourceType, String value, ProdJarInfoVO prodJarInfoVO) {

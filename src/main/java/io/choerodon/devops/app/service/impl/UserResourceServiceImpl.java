@@ -1,5 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -17,15 +28,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import org.apache.commons.collections4.CollectionUtils;
-import org.hzero.core.base.BaseConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * 用户资源查询接口默认实现
