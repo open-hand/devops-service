@@ -124,6 +124,8 @@ public interface DevopsHostService {
      */
     boolean HostIdInstanceIdMatch(Long hostId, Long instanceId);
 
+    boolean HostIdDockerInstanceMatch(Long hostId, Long instanceId);
+
     /**
      * 分页查询主机
      *

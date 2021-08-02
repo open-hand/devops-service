@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
@@ -13,12 +12,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.UUIDUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -42,7 +38,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -295,6 +290,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public boolean HostIdInstanceIdMatch(Long hostId, Long instanceId) {
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+        return devopsNormalInstanceDTO != null && devopsNormalInstanceDTO.getHostId().equals(hostId);
+    }
+
+    @Override
+    public boolean HostIdDockerInstanceMatch(Long hostId, Long instanceId) {
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
         return devopsDockerInstanceDTO != null && devopsDockerInstanceDTO.getHostId().equals(hostId);
     }
@@ -424,7 +425,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void deleteDockerProcess(Long projectId, Long hostId, Long instanceId) {
-        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
+        devopsHostAdditionalCheckValidator.validHostIdAndDockerInstanceIdMatch(hostId, instanceId);
         DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
         if (dockerInstanceDTO.getContainerId() == null) {
             devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
@@ -458,7 +459,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void stopDockerProcess(Long projectId, Long hostId, Long instanceId) {
-        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
+        devopsHostAdditionalCheckValidator.validHostIdAndDockerInstanceIdMatch(hostId, instanceId);
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.STOP_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -487,7 +488,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void restartDockerProcess(Long projectId, Long hostId, Long instanceId) {
-        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
+        devopsHostAdditionalCheckValidator.validHostIdAndDockerInstanceIdMatch(hostId, instanceId);
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.RESTART_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -517,7 +518,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     @Transactional
     public void startDockerProcess(Long projectId, Long hostId, Long instanceId) {
-        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
+        devopsHostAdditionalCheckValidator.validHostIdAndDockerInstanceIdMatch(hostId, instanceId);
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.START_DOCKER.value());
         devopsHostCommandDTO.setHostId(hostId);
