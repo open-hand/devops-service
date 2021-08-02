@@ -23,7 +23,11 @@ public enum HostInstanceType {
     /**
      * 中间件MySQL
      */
-    MIDDLEWARE_MYSQL("middleware_mysql");
+    MIDDLEWARE_MYSQL("middleware_mysql"),
+    /**
+     * 自定义类型
+     */
+    CUSTOM("custom");
 
     private final String value;
 
