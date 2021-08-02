@@ -24,7 +24,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsDeployRecordService {
 
     /**
-     * @deprecated
      * @param projectId
      * @param type
      * @param deployId
