@@ -41,6 +41,8 @@ public interface DevopsCdPipelineRecordService {
 
     void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
+    void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+
     void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void update(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);

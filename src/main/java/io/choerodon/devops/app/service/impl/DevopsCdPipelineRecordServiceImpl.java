@@ -813,7 +813,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         .getBean(DevopsCdPipelineRecordService.class)
                         .pipelineDeployJar(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
             } else {
-                pipelineCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+                ApplicationContextHelper
+                        .getSpringFactory()
+                        .getBean(DevopsCdPipelineRecordService.class)
+                        .pipelineCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
             }
         } catch (Exception e) {
             LOGGER.error(" deploy failed!, error msg is", e);
@@ -826,45 +829,46 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    private void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         // todo 未完成
         LOGGER.info("========================================");
         LOGGER.info("start custom deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = queryById(pipelineRecordId);
+        // 0.1 查询部署信息
+        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+        String value = null;
         try {
-            // 0.1 查询部署信息
-            DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
-            CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-            String value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), StandardCharsets.UTF_8);
-
-            Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
-
-
-            DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-            devopsHostCommandDTO.setCommandType(HostCommandEnum.CUSTOM_DEPLOY.value());
-            devopsHostCommandDTO.setHostId(hostId);
-            devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
-            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
-            devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-            List<String> cmds = genCustomCommands(value);
-
-            // 3. 发送部署指令给agent
-            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-            hostAgentMsgVO.setHostId(String.valueOf(hostId));
-            hostAgentMsgVO.setType(HostCommandEnum.CUSTOM_DEPLOY.value());
-            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(cmds));
-
-            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                    String.format(DevopsHostConstants.PIPELINE_CUSTOM_DEPLOY, hostId, cdJobRecordId),
-                    JsonHelper.marshalByJackson(hostAgentMsgVO));
-
-            devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-        } catch (Exception e) {
-            jobFailed(pipelineRecordId, cdStageRecordId, cdJobRecordId);
-            workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
+            value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+
+
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.CUSTOM_DEPLOY.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+        List<String> cmds = genCustomCommands(value);
+
+        // 3. 发送部署指令给agent
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.CUSTOM_DEPLOY.value());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(cmds));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                String.format(DevopsHostConstants.PIPELINE_CUSTOM_DEPLOY, hostId, cdJobRecordId),
+                JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
     }
 
     private List<String> genCustomCommands(String value) {
