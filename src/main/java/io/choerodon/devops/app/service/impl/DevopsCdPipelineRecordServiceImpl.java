@@ -831,10 +831,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
-        // todo 未完成
         LOGGER.info("========================================");
         LOGGER.info("start custom deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = queryById(pipelineRecordId);
         // 0.1 查询部署信息
         DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
@@ -853,16 +851,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandDTO.setInstanceType(HostInstanceType.CUSTOM.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
-        List<String> cmds = genCustomCommands(value);
+        String commands = genCustomCommands(value);
 
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.CUSTOM_DEPLOY.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(cmds));
+        hostAgentMsgVO.setPayload(commands);
 
         devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
 
@@ -873,15 +872,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    private List<String> genCustomCommands(String value) {
+    private String genCustomCommands(String value) {
         String[] strings = value.split("\n");
-        List<String> commandToExecute = new ArrayList<>();
+        String commands = "";
         for (String s : strings) {
             if (s.length() > 0 && !s.contains("#")) {
-                commandToExecute.add(s);
+                commands = commands + s;
             }
         }
-        return commandToExecute;
+        return "#!/bin/bash\n" + commands;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
