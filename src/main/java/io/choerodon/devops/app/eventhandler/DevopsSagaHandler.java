@@ -799,15 +799,17 @@ public class DevopsSagaHandler {
                 V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
                 images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
             }
-            if (images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))
-                    && !DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
+            if (!images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))) {
+                return;
+            }
+
+            devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
+            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
                 workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
                         devopsDeployRecordDTO.getBusinessKey(),
                         MiscConstants.WORKFLOW_ADMIN_NAME,
                         MiscConstants.WORKFLOW_ADMIN_ID,
                         MiscConstants.WORKFLOW_ADMIN_ORG_ID);
-            } else {
-                return;
             }
         }
 
