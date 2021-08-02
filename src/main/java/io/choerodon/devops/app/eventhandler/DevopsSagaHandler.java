@@ -805,11 +805,19 @@ public class DevopsSagaHandler {
 
             devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
             if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
-                workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
-                        devopsDeployRecordDTO.getBusinessKey(),
-                        MiscConstants.WORKFLOW_ADMIN_NAME,
-                        MiscConstants.WORKFLOW_ADMIN_ID,
-                        MiscConstants.WORKFLOW_ADMIN_ORG_ID);
+                // 1. 后续还有任务则通知下一任务执行
+                // 2. 后续没有任务了，则更新部署记录状态为成功
+                if (Boolean.TRUE.equals(devopsHzeroDeployDetailsService.completed(devopsHzeroDeployDetailsDTO.getDeployRecordId()))) {
+                    devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.SUCCESS);
+                } else {
+                    workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
+                            devopsDeployRecordDTO.getBusinessKey(),
+                            MiscConstants.WORKFLOW_ADMIN_NAME,
+                            MiscConstants.WORKFLOW_ADMIN_ID,
+                            MiscConstants.WORKFLOW_ADMIN_ORG_ID);
+                }
+
+
             }
         }
 
