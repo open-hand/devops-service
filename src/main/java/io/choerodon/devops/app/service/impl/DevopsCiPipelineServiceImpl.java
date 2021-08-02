@@ -14,7 +14,6 @@ import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -666,95 +665,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         });
         return pipelinePage;
-
-//        // 封装流水线记录
-//        PageRequest cicdPipelineRel = new PageRequest(GitOpsConstants.FIRST_PAGE_INDEX, DEFAULT_PIPELINE_RECORD_SIZE, new Sort(new Sort.Order(Sort.Direction.DESC, DevopsPipelineRecordRelDTO.FIELD_ID)));
-//        //每条流水线默认展示5条记录
-//        pageAndSort.getContent().forEach(ciCdPipelineVO -> {
-//            List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS = new ArrayList<>();
-//            // 查询cicd关系表
-//            Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOPage = devopsPipelineRecordRelService.pagingPipelineRel(ciCdPipelineVO.getId(), cicdPipelineRel);
-//            if (!Objects.isNull(devopsPipelineRecordRelDTOPage)) {
-//                ciCdPipelineVO.setHasMoreRecords(devopsPipelineRecordRelDTOPage.getTotalElements() > DEFAULT_PIPELINE_RECORD_SIZE);
-//            }
-//
-//            if (!Objects.isNull(devopsPipelineRecordRelDTOPage) && !CollectionUtils.isEmpty(devopsPipelineRecordRelDTOPage.getContent())) {
-//                devopsPipelineRecordRelDTOPage.getContent().forEach(devopsPipelineRecordRelDTO -> {
-//                    CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
-//                    //查询ci记录
-//                    DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryByCiPipelineRecordId(devopsPipelineRecordRelDTO.getCiPipelineRecordId());
-//                    //查询cd记录
-//                    DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryByCdPipelineRecordId(devopsPipelineRecordRelDTO.getCdPipelineRecordId());
-//                    //cicd
-//                    if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO != null) {
-//                        List<StageRecordVO> stageRecordVOS = new ArrayList<>();
-//                        ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
-//                        ciCdPipelineRecordVO.setCiStatus(devopsCiPipelineRecordVO.getStatus());
-//                        ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
-//                        ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
-//                        ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
-//                        stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
-//
-//                        ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
-//                        ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
-//                        stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
-//                        ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
-//
-//                        //计算ciCdPipelineRecordVO的状态
-//                        CiCdPipelineUtils.calculateStatus(ciCdPipelineRecordVO, devopsCiPipelineRecordVO, devopsCdPipelineRecordVO);
-//                        ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
-//                        ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
-//
-//                        //cicd 如果是cicd并且此记录是第一条则跳过
-//                        if (!CollectionUtils.isEmpty(ciCdPipelineRecordVOS) && isFirstRecord(devopsPipelineRecordRelDTO)) {
-//                            CiCdPipelineUtils.recordListSort(ciCdPipelineRecordVOS);
-//                            ciCdPipelineRecordVOS.get(ciCdPipelineRecordVOS.size() - 1).setStageRecordVOS(null);
-//                        }
-//                    }
-//                    //纯ci
-//                    if (devopsCiPipelineRecordVO != null && devopsCdPipelineRecordVO == null) {
-//                        List<StageRecordVO> stageRecordVOS = new ArrayList<>();
-//                        ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
-//                        //收集这条ci流水线的所有stage
-//                        ciCdPipelineRecordVO.setCiStatus(devopsCiPipelineRecordVO.getStatus());
-//                        ciCdPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordVO.getCreatedDate());
-//                        ciCdPipelineRecordVO.setCiRecordId(devopsCiPipelineRecordVO.getId());
-//                        ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());
-//
-//                        stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
-//                        ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
-//                        CiCdPipelineUtils.calculateStatus(ciCdPipelineRecordVO, devopsCiPipelineRecordVO, devopsCdPipelineRecordVO);
-//                        ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
-//                    }
-//                    //纯cd
-//                    if (devopsCiPipelineRecordVO == null && devopsCdPipelineRecordVO != null) {
-//                        List<StageRecordVO> stageRecordVOS = new ArrayList<>();
-//                        ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
-//                        ciCdPipelineRecordVO.setCdStatus(devopsCdPipelineRecordVO.getStatus());
-//                        ciCdPipelineRecordVO.setCreatedDate(devopsCdPipelineRecordVO.getCreatedDate());
-//                        ciCdPipelineRecordVO.setCdRecordId(devopsCdPipelineRecordVO.getId());
-//                        ciCdPipelineRecordVO.setGitlabPipelineId(Objects.isNull(devopsCdPipelineRecordVO.getGitlabPipelineId()) ? null : devopsCdPipelineRecordVO.getGitlabPipelineId());
-//                        ciCdPipelineRecordVO.setDevopsCdPipelineDeatilVO(devopsCdPipelineRecordVO.getDevopsCdPipelineDeatilVO());
-//                        stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
-//                        ciCdPipelineRecordVO.setStageRecordVOS(stageRecordVOS);
-//                        CiCdPipelineUtils.calculateStatus(ciCdPipelineRecordVO, devopsCiPipelineRecordVO, devopsCdPipelineRecordVO);
-//                        ciCdPipelineRecordVOS.add(ciCdPipelineRecordVO);
-//                    }
-//                });
-//            }
-//            ciCdPipelineVO.setCiCdPipelineRecordVOS(ciCdPipelineRecordVOS);
-//            //将piplineRecord记录排序
-//            CiCdPipelineUtils.recordListSort(ciCdPipelineVO.getCiCdPipelineRecordVOS());
-//            //计算流水线上一次执行的状态和时间
-//            if (ciCdPipelineVO.getCiCdPipelineRecordVOS().size() > 0) {
-//                CiCdPipelineRecordVO lastCiCdPipelineRecordVO = ciCdPipelineVO.getCiCdPipelineRecordVOS().get(0);
-//                ciCdPipelineVO.setLatestExecuteStatus(lastCiCdPipelineRecordVO.getStatus());
-//                ciCdPipelineVO.setLatestExecuteDate(lastCiCdPipelineRecordVO.getCreatedDate());
-//                //填充显示编号
-//                CiCdPipelineUtils.fillViewId(ciCdPipelineVO.getCiCdPipelineRecordVOS());
-//            }
-//        });
-//        return pageAndSort;
     }
 
     private String calculateExecuteStatus(PipelineCompositeRecordVO pipelineCompositeRecordVO) {
@@ -769,26 +679,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return pipelineCompositeRecordVO.getCdStatus();
         }
         return null;
-    }
-
-    private boolean isFirstRecord(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
-        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
-        recordRelDTO.setPipelineId(devopsPipelineRecordRelDTO.getPipelineId());
-        List<DevopsPipelineRecordRelDTO> select = devopsPipelineRecordRelMapper.select(recordRelDTO);
-        if (select.size() == 1) {
-            return true;
-        }
-        List<DevopsPipelineRecordRelVO> devopsPipelineRecordRelVOS = ConvertUtils.convertList(select, this::relDtoToRelVO);
-        CiCdPipelineUtils.recordListSort(devopsPipelineRecordRelVOS);
-        return devopsPipelineRecordRelDTO.getId().compareTo(devopsPipelineRecordRelVOS.get(devopsPipelineRecordRelVOS.size() - 1).getId()) == 0;
-
-    }
-
-    private DevopsPipelineRecordRelVO relDtoToRelVO(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
-        DevopsPipelineRecordRelVO devopsPipelineRecordRelVO = new DevopsPipelineRecordRelVO();
-        BeanUtils.copyProperties(devopsPipelineRecordRelDTO, devopsPipelineRecordRelVO);
-        devopsPipelineRecordRelVO.setCreatedDate(devopsPipelineRecordRelDTO.getCreationDate());
-        return devopsPipelineRecordRelVO;
     }
 
     /**
@@ -1209,7 +1099,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private String secondsToMinute(float totalSeconds) {
         //秒转换为分
-        float num = (float) totalSeconds / (60);
+        float num = totalSeconds / (60);
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(num);
     }
@@ -1789,10 +1679,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         // 如果有job启用了缓存设置, 就创建缓存目录
         // 如果全部都是自定义任务, 这个map是空的
-        if (!CollectionUtils.isEmpty(gitlabCi.getJobs())) {
-            if (gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
-                beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
-            }
+        if (!CollectionUtils.isEmpty(gitlabCi.getJobs())
+                && gitlabCi.getJobs().values().stream().anyMatch(j -> j.getCache() != null)) {
+            beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
         }
         gitlabCi.setBeforeScript(beforeScripts);
     }
@@ -2001,15 +1890,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCdEnvDeployInfoDTO.setCreationDate(null);
         devopsCdEnvDeployInfoDTO.setLastUpdatedBy(null);
         devopsCdEnvDeployInfoDTO.setLastUpdateDate(null);
-    }
-
-    private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {
-        PipelineAppServiceDeployDTO appServiceDeployDTO = new PipelineAppServiceDeployDTO();
-        BeanUtils.copyProperties(appServiceDeployVO, appServiceDeployDTO);
-        if (appServiceDeployVO.getTriggerVersion() != null && !appServiceDeployVO.getTriggerVersion().isEmpty()) {
-            appServiceDeployDTO.setTriggerVersion(String.join(",", appServiceDeployVO.getTriggerVersion()));
-        }
-        return appServiceDeployDTO;
     }
 
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {

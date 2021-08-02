@@ -14,12 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1Pod;
-import io.reactivex.Emitter;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
@@ -49,6 +43,7 @@ import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
@@ -72,7 +67,7 @@ import io.choerodon.devops.infra.util.*;
 
 @Service
 public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineServiceImpl.class);
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -196,19 +191,19 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
             DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
             if (devopsCdPipelineRecordDTO == null) {
-                LOGGER.info("current pipeline have no match record.", pipelineAttr.getId());
-                DevopsCiPipelineRecordDTO record = new DevopsCiPipelineRecordDTO();
-                record.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
-                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(record);
+                LOGGER.info("current pipeline have no match ciPipelineRecordDTO.");
+                DevopsCiPipelineRecordDTO ciPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+                ciPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(ciPipelineRecordDTO);
                 sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(), MessageCodeConstants.PIPELINE_SUCCESS, devopsCiPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
                 return;
             }
             // 执行条件：cd流水线记录状态为pending
             if (PipelineStatus.CREATED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
                 LOGGER.info("current cd pipeline status is {}", devopsCdPipelineRecordDTO.getStatus());
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline start >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline start >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
                 executeCdPipeline(devopsCdPipelineRecordDTO.getId());
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>", pipelineAttr.getId(), status);
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>> exec cd pipeline success >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             }
 
         }
@@ -359,7 +354,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
 
     @Override
-    @Transactional
     public void triggerCdPipeline(Long projectId, String token, String commitSha, String ref, Boolean tag, Long gitlabPipelineId) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
@@ -466,7 +460,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         // 校验环境是否开启一键关闭自动部署
-        if (!checkAutoDeploy(devopsCdEnvDeployInfoDTO.getEnvId())) {
+        if (Boolean.FALSE.equals(checkAutoDeploy(devopsCdEnvDeployInfoDTO.getEnvId()))) {
             log.append("Environment automatic deployment has been turned off!").append(System.lineSeparator());
             devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
             devopsCdJobRecordService.updateLogById(jobRecordId, log);
@@ -547,18 +541,18 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         log.append("Deploying app instance...").append(System.lineSeparator());
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
 
-                        DevopsCdJobRecordDTO CdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+                        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
                         DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId(), true);
                         log.append("Deploy app success.").append(System.lineSeparator());
                         // 更新job状态为success
-                        CdJobRecordDTO.setCommandId(devopsEnvCommandDTO.getId());
-                        CdJobRecordDTO.setFinishedDate(new Date());
-                        if (CdJobRecordDTO.getStartedDate() != null) {
-                            CdJobRecordDTO.setDurationSeconds((new Date().getTime() - CdJobRecordDTO.getStartedDate().getTime()) / 1000);
+                        cdJobRecordDTO.setCommandId(devopsEnvCommandDTO.getId());
+                        cdJobRecordDTO.setFinishedDate(new Date());
+                        if (cdJobRecordDTO.getStartedDate() != null) {
+                            cdJobRecordDTO.setDurationSeconds((new Date().getTime() - cdJobRecordDTO.getStartedDate().getTime()) / 1000);
                         }
-                        CdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
-                        CdJobRecordDTO.setLog(log.toString());
-                        devopsCdJobRecordService.update(CdJobRecordDTO);
+                        cdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+                        cdJobRecordDTO.setLog(log.toString());
+                        devopsCdJobRecordService.update(cdJobRecordDTO);
                         return;
                     }
 
@@ -568,16 +562,16 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceServiceE.getCommit(), GITLAB_ADMIN_ID);
                     // 已经部署版本的commit
                     CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
-                    if (deploydCommit != null && currentCommit != null) {
+                    if (deploydCommit != null
+                            && currentCommit != null
+                            && currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
                         // 计算commitDate
                         // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
                         // 如果现在部署的版本落后于已经部署的版本则跳过
-                        if (currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
-                            log.append("Deploy version is behind to instance current version, skipped.").append(System.lineSeparator());
-                            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-                            devopsCdJobRecordService.updateLogById(jobRecordId, log);
-                            return;
-                        }
+                        log.append("Deploy version is behind to instance current version, skipped.").append(System.lineSeparator());
+                        devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
+                        devopsCdJobRecordService.updateLogById(jobRecordId, log);
+                        return;
                     }
                 }
             }
@@ -652,34 +646,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         return jobRecordDTO.getStatus();
     }
 
-    private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
-        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
-                .subscribe(new Observer<String>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        CustomContextUtil.setUserContext(loginName, userId, orgId);
-                        try {
-                            LOGGER.info(">>>>>>>>>>>>>>>>>>>approve user task.projectId: {}, businessKey:{} <<<<<<<<<<<<<<<", projectId, businessKey);
-                            workFlowServiceOperator.approveUserTask(projectId, businessKey);
-                        } catch (Exception e) {
-                            throw new CommonException(e);
-                        }
-                    }
-                });
-    }
-
     private DevopsCdJobRecordDTO getNextJob(Long stageRecordId, DevopsCdJobRecordDTO currentJob) {
         List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(stageRecordId);
         Optional<DevopsCdJobRecordDTO> optionalDevopsCdJobRecordDTO = devopsCdJobRecordDTOS.stream()
@@ -743,26 +709,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     public void createWorkFlow(Long projectId, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO, String loginName, Long userId, Long orgId) {
-
-//        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
-//                .subscribe(new Observer<String>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//                    }
-//
-//                    @Override
-//                    public void onNext(String s) {
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
         CustomContextUtil.setUserContext(loginName, userId, orgId);
         try {
             workFlowServiceOperator.createCiCdPipeline(projectId, devopsPipelineDTO);
@@ -802,7 +748,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 // 审核通过
                 // 判断是否是或签任务
                 if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 0) {
-                    approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
+                    workFlowServiceOperator.approveUserTask(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
+
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
@@ -820,7 +767,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     startNextTask(pipelineRecordId, stageRecordId, jobRecordId);
 
                 } else if (devopsCdJobRecordDTO.getCountersigned() != null && devopsCdJobRecordDTO.getCountersigned() == 1) {
-                    approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
+                    workFlowServiceOperator.approveUserTask(devopsCdPipelineRecordDTO.getProjectId(),
+                            devopsCdPipelineRecordDTO.getBusinessKey(),
+                            details.getUsername(),
+                            details.getUserId(),
+                            details.getOrganizationId());
                     // 更新审核状态为通过
                     devopsCdAuditRecordDTO.setStatus(AuditStatusEnum.PASSED.value());
                     devopsCdAuditRecordService.update(devopsCdAuditRecordDTO);
@@ -1229,7 +1180,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdJobRecordService.updateLogById(jobRecordId, logStB);
         if (Boolean.TRUE.equals(status)) {
             try {
-                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), "admin", 1L, 0L);
+                workFlowServiceOperator.approveUserTask(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), MiscConstants.WORKFLOW_ADMIN_NAME, MiscConstants.WORKFLOW_ADMIN_ID, MiscConstants.WORKFLOW_ADMIN_ORG_ID);
 
                 devopsCdJobRecordService.updateJobStatusSuccess(jobRecordId);
                 setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, true);
@@ -1280,8 +1231,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         && apiTestTaskRecordVO.getSuccessCount() != null
                         && apiTestTaskRecordVO.getFailCount() != null) {
                     LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, apiTestTaskRecordVO: {} <<<<<<<<<<<<<<<<<<<<", apiTestTaskRecordVO);
-                    double successCount = (double) apiTestTaskRecordVO.getSuccessCount();
-                    double failCount = (double) apiTestTaskRecordVO.getFailCount();
+                    double successCount = apiTestTaskRecordVO.getSuccessCount();
+                    double failCount = apiTestTaskRecordVO.getFailCount();
                     double successRate = (successCount / (successCount + failCount)) * 100;
                     successRate = (double) Math.round(successRate * 100) / 100;
 
@@ -1333,12 +1284,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     private void handlerJobSuccess(DevopsCdJobRecordDTO devopsCdJobRecordDTO, DevopsCdStageRecordDTO devopsCdStageRecordDTO, DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO) {
         try {
-            approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(),
+            workFlowServiceOperator.approveUserTask(devopsCdPipelineRecordDTO.getProjectId(),
                     devopsCdPipelineRecordDTO.getBusinessKey(),
-                    "admin",
-                    IamAdminIdHolder.getAdminId(),
-                    0L);
-
+                    MiscConstants.WORKFLOW_ADMIN_NAME,
+                    MiscConstants.WORKFLOW_ADMIN_ID,
+                    MiscConstants.WORKFLOW_ADMIN_ORG_ID);
             devopsCdJobRecordService.updateJobStatusSuccess(devopsCdJobRecordDTO.getId());
             setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
                     devopsCdStageRecordDTO.getId(),
@@ -1392,8 +1342,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
         if (Boolean.TRUE.equals(status)) {
             try {
-                approveWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey(), "admin", 1L, 0L);
-
+                workFlowServiceOperator.approveUserTask(devopsCdPipelineRecordDTO.getProjectId(),
+                        devopsCdPipelineRecordDTO.getBusinessKey(),
+                        MiscConstants.WORKFLOW_ADMIN_NAME,
+                        MiscConstants.WORKFLOW_ADMIN_ID,
+                        MiscConstants.WORKFLOW_ADMIN_ORG_ID);
                 devopsCdJobRecordService.updateJobStatusSuccess(jobRecordId);
                 setAppDeployStatus(pipelineRecordId, stageRecordId, jobRecordId, true);
             } catch (Exception e) {

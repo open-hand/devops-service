@@ -111,6 +111,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     }
 
     @Override
+    @Transactional
     public DevopsDeploymentVO createOrUpdateByGitOps(DevopsDeploymentVO devopsDeploymentVO, Long userId, String content) {
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentVO.getEnvId());
         //校验环境是否连接
@@ -193,8 +194,6 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             oldDevopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             devopsDeploymentMapper.updateByPrimaryKeySelective(oldDevopsDeploymentDTO);
         } else {
-
-            // todo devopsEnvironmentDTO是否需要判空处理，抛出异常还是打印日志？
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
 
             DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
@@ -213,10 +212,10 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     public void deleteByEnvIdAndName(Long envId, String name) {
         Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
         Assert.notNull(name, ResourceCheckConstant.ERROR_INSTANCE_NAME_IS_NULL);
-        DevopsDeploymentDTO record = new DevopsDeploymentDTO();
-        record.setName(name);
-        record.setEnvId(envId);
-        devopsDeploymentMapper.delete(record);
+        DevopsDeploymentDTO deploymentDTO = new DevopsDeploymentDTO();
+        deploymentDTO.setName(name);
+        deploymentDTO.setEnvId(envId);
+        devopsDeploymentMapper.delete(deploymentDTO);
     }
 
     @Override

@@ -211,6 +211,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
     }
 
     @Override
+    @Transactional
     public DevopsDaemonSetVO createOrUpdateByGitOps(DevopsDaemonSetVO devopsDaemonSetVO, Long userId, String content) {
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDaemonSetVO.getEnvId());
         //校验环境是否连接
