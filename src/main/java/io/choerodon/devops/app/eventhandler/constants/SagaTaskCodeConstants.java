@@ -267,12 +267,6 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-handle-batch-deployment";
 
-
-    /**
-     * devops 主机部署
-     */
-    public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
-
     /**
      * devops 删除habor镜像
      */

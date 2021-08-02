@@ -196,8 +196,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
-    @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
 
     @PostConstruct
@@ -650,8 +648,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
             } else {
-                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))
-                        || !pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
+                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
                     throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
                 }
             }

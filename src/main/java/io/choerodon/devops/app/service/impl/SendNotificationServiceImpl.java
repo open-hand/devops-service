@@ -121,9 +121,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     @Autowired
-    @Lazy
-    private PipelineRecordService pipelineRecordService;
-    @Autowired
     private HzeroMessageClientOperator messageClientOperator;
     @Autowired
     @Lazy
@@ -1366,12 +1363,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
         }
         messageClient.async().sendMessage(sender);
-    }
-
-    private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
-        PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
-        sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
     private void setParamsForUserInfo(Map<String, String> params) {

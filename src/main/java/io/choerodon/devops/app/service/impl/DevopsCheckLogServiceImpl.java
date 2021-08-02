@@ -19,8 +19,6 @@ import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
-import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
 
 
 @Service
@@ -33,14 +31,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
-    @Autowired
-    private PipelineTaskMapper pipelineTaskMapper;
-    @Autowired
-    private AppServiceVersionService appServiceVersionService;
-    @Autowired
-    private DevopsCdAuditService devopsCdAuditService;
-    @Autowired
-    private DevopsCdAuditRecordService devopsCdAuditRecordService;
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
@@ -80,20 +70,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
-                if ("0.21.1".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    pipelineTaskMapper.deletePipelineTask();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("0.23.0".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    appServiceVersionService.fixHarbor();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("0.23.3".equals(version)) {
-                    LOGGER.info("修复数据开始");
-                    devopsCdAuditService.fixProjectId();
-                    devopsCdAuditRecordService.fixProjectId();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("1.0.0".equals(version)) {
+                if ("1.0.0".equals(version)) {
                     LOGGER.info("修复数据开始!");
                     devopsBranchService.fixIssueId();
                     devopsGitlabCommitService.fixIssueId();

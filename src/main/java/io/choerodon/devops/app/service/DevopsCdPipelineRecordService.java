@@ -27,12 +27,27 @@ public interface DevopsCdPipelineRecordService {
     DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId, Boolean isRetry);
 
     /**
+     * @deprecated
      * 主机模式 镜像部署
      */
     Boolean cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
+    /**
+     * @deprecated
+     * @param pipelineRecordId
+     * @param cdStageRecordId
+     * @param cdJobRecordId
+     * @return
+     */
     Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
+    /**
+     * @deprecated
+     * @param pipelineRecordId
+     * @param cdStageRecordId
+     * @param cdJobRecordId
+     * @return
+     */
     Boolean cdHostCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
