@@ -68,12 +68,11 @@ public class DevopsDeployController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "hzero部署")
     @PostMapping("/hzero")
-    public ResponseEntity<Void> deployHzeroApplication(
+    public ResponseEntity<Long> deployHzeroApplication(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Validated HzeroDeployVO hzeroDeployVO) {
-        devopsDeployService.deployHzeroApplication(projectId, hzeroDeployVO);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(devopsDeployService.deployHzeroApplication(projectId, hzeroDeployVO));
     }
 
 }

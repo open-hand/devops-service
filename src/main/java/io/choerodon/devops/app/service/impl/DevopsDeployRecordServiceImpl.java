@@ -413,7 +413,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             // 2.3 更新部署配置
             DevopsHzeroDeployDetailsVO devopsHzeroDeployDetailsVO = devopsHzeroDeployDetailsVOMap.get(devopsHzeroDeployDetailsDTO.getId());
 
-            devopsHzeroDeployConfigService.updateById(devopsHzeroDeployDetailsDTO.getId(),
+            devopsHzeroDeployConfigService.updateById(devopsHzeroDeployDetailsDTO.getValueId(),
                     devopsHzeroDeployDetailsVO.getValue(),
                     devopsHzeroDeployDetailsVO.getDevopsServiceReqVO(),
                     devopsHzeroDeployDetailsVO.getDevopsIngressVO());

@@ -25,6 +25,6 @@ public interface DevopsDeployService {
      * @param projectId
      * @param hzeroDeployVO
      */
-    void deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO);
+    Long deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO);
 
 }

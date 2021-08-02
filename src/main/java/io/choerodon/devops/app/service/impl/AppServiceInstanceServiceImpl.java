@@ -2077,6 +2077,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
         DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
 
+        // 设置用户上下文
         CustomUserDetails customUserDetails = new CustomUserDetails("default", "default");
         customUserDetails.setUserId(devopsHzeroDeployDetailsDTO.getCreatedBy());
         customUserDetails.setOrganizationId(BaseConstants.DEFAULT_TENANT_ID);
@@ -2103,7 +2104,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             commandId = instanceVO.getCommandId();
         } else {
             // 更新实例
-
             if (devopsHzeroDeployDetailsDTO.getMktDeployObjectId().equals(appServiceInstanceDTO.getAppServiceVersionId())
                     && baseQueryValueByInstanceId(appServiceInstanceDTO.getId()).equals(devopsHzeroDeployConfigDTO.getValue())) {
                 // 版本和配置相同则走重新部署的逻辑
