@@ -55,11 +55,7 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
         Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
         Assert.notNull(instanceCode, ResourceCheckConstant.ERROR_INSTANCE_CODE_IS_NULL);
 
-        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = new DevopsHzeroDeployDetailsDTO();
-        devopsHzeroDeployDetailsDTO.setEnvId(envId);
-        devopsHzeroDeployDetailsDTO.setInstanceCode(instanceCode);
-        devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.DEPLOYING.value());
-        return devopsHzeroDeployDetailsMapper.selectOne(devopsHzeroDeployDetailsDTO);
+        return devopsHzeroDeployDetailsMapper.baseQueryDeployingByEnvIdAndInstanceCode(envId, instanceCode);
     }
 
     @Override

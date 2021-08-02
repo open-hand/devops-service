@@ -2084,6 +2084,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         DetailsHelper.setCustomUserDetails(customUserDetails);
         AppServiceInstanceVO instanceVO;
+        Long commandId = null;
         if (appServiceInstanceDTO == null) {
             // 新建实例
             MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
@@ -2099,24 +2100,37 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     AppServiceInstanceSource.MARKET.getValue());
 
             instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+            commandId = instanceVO.getCommandId();
         } else {
             // 更新实例
-            MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
-                    appServiceInstanceDTO.getId(),
-                    devopsHzeroDeployDetailsDTO.getMktServiceId(),
-                    devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
-                    devopsHzeroDeployConfigDTO.getValue(),
-                    devopsHzeroDeployDetailsDTO.getInstanceCode(),
-                    CommandType.UPDATE.getType(),
-                    devopsHzeroDeployDetailsDTO.getEnvId(),
-                    devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
-                    devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
-                    AppServiceInstanceSource.MARKET.getValue());
-            instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+
+            if (devopsHzeroDeployDetailsDTO.getMktDeployObjectId().equals(appServiceInstanceDTO.getAppServiceVersionId())
+                    && baseQueryValueByInstanceId(appServiceInstanceDTO.getId()).equals(devopsHzeroDeployConfigDTO.getValue())) {
+                // 版本和配置相同则走重新部署的逻辑
+                DevopsEnvCommandDTO devopsEnvCommandDTO = restartInstance(projectId,
+                        appServiceInstanceDTO.getId(),
+                        false);
+                commandId = devopsEnvCommandDTO.getId();
+            } else {
+                MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
+                        appServiceInstanceDTO.getId(),
+                        devopsHzeroDeployDetailsDTO.getMktServiceId(),
+                        devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
+                        devopsHzeroDeployConfigDTO.getValue(),
+                        devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                        CommandType.UPDATE.getType(),
+                        devopsHzeroDeployDetailsDTO.getEnvId(),
+                        devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
+                        devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
+                        AppServiceInstanceSource.MARKET.getValue());
+                instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+                commandId = instanceVO.getCommandId();
+            }
+
         }
         // 更新状态以及操作记录
         devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.DEPLOYING.value());
-        devopsHzeroDeployDetailsDTO.setCommandId(instanceVO.getCommandId());
+        devopsHzeroDeployDetailsDTO.setCommandId(commandId);
         devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
     }
 

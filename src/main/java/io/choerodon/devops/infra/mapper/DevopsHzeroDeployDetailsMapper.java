@@ -17,4 +17,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsHzeroDeployDetailsMapper extends BaseMapper<DevopsHzeroDeployDetailsDTO> {
 
     List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(@Param("recordId") Long recordId);
+
+    DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(@Param("envId") Long envId,
+                                                                         @Param("instanceCode") String instanceCode);
 }
