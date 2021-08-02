@@ -8,7 +8,6 @@ import static io.choerodon.devops.infra.enums.host.HostCommandEnum.DEPLOY_MIDDLE
 import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_MYSQL;
 import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_REDIS;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -19,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import net.schmizz.sshj.SSHClient;
 import org.apache.commons.io.IOUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -34,7 +32,6 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -244,7 +241,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareRedisHostDeployVO.getName(),
                 middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
                 null,
-                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+                deploySourceVO);
 
         // 保存中间件信息
         DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
@@ -339,7 +336,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareMySqlHostDeployVO.getName(),
                 middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
                 null,
-                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+                deploySourceVO);
 
         // 保存中间件信息
         DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,

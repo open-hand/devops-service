@@ -825,7 +825,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     appServiceDTO.getName(),
                     appServiceVersionDTO.getVersion(),
                     appServiceInstanceDTO.getCode(),
-                    new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()), DetailsHelper.getUserDetails().getUserId());
+                    new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
@@ -1017,7 +1017,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 marketServiceVO.getMarketServiceName(),
                 chartVersion,
                 appServiceInstanceDTO.getCode(),
-                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+                deploySourceVO);
     }
 
     @Override
@@ -1237,7 +1237,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode(),
-                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()), DetailsHelper.getUserDetails().getUserId());
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
@@ -1367,7 +1367,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode(),
-                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()), DetailsHelper.getUserDetails().getUserId());
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
@@ -1874,7 +1874,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceDTO.getName(),
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode(),
-                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()), DetailsHelper.getUserDetails().getUserId());
+                new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());

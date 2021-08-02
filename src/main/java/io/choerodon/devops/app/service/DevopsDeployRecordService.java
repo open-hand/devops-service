@@ -36,10 +36,9 @@ public interface DevopsDeployRecordService {
      * @param deployVersion
      * @param instanceName
      * @param deploySourceVO
-     * @param userId
      * @return
      */
-    Long saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName, DeploySourceVO deploySourceVO, Long userId);
+    Long saveRecord(Long projectId, DeployType type, Long deployId, DeployModeEnum deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, DeployObjectTypeEnum deployObjectType, String deployObjectName, String deployVersion, String instanceName, DeploySourceVO deploySourceVO);
 
     Long saveDeployRecord(Long projectId,
                           DeployType type,

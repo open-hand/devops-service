@@ -608,7 +608,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, log.toString());
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
         }
     }
 
@@ -637,7 +637,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             LOGGER.info(">>>>>>> setAppDeployStatus, update status to failed, pipelineStatus is :{}<<<<<<<<<<<", devopsCdPipelineRecordDTO.getStatus());
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, null);
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
     }
@@ -1072,7 +1072,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             // 更新记录状态为失败
             devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
         }
 
 
@@ -1190,7 +1190,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, null);
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
             workFlowServiceOperator.stopInstance(devopsCdPipelineRecordDTO.getProjectId(), devopsCdPipelineRecordDTO.getBusinessKey());
         }
 

@@ -249,7 +249,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
                 deployObjectName,
                 deployVersion,
                 null,
-                deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+                deploySourceVO);
 
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
