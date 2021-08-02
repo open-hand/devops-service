@@ -2,14 +2,14 @@ package io.choerodon.devops.api.validator;
 
 import java.util.regex.Pattern;
 
-import io.choerodon.devops.api.vo.DevopsHostCreateRequestVO;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.api.vo.DevopsHostCreateRequestVO;
 import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 
 /**
@@ -52,5 +52,9 @@ public class DevopsHostAdditionalCheckValidator {
 
     public void validHostIdAndInstanceIdMatch(Long hostId, Long instanceId) {
         CommonExAssertUtil.assertTrue(devopsHostService.HostIdInstanceIdMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
+    }
+
+    public void validHostIdAndDockerInstanceIdMatch(Long hostId, Long instanceId) {
+        CommonExAssertUtil.assertTrue(devopsHostService.HostIdDockerInstanceMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
     }
 }
