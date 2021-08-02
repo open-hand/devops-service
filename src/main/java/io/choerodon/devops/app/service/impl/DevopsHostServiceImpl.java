@@ -68,11 +68,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
-    /**
-     * 主机状态处于处理中的超时时长
-     */
-    private static final long OPERATING_TIMEOUT = 300L * 1000;
-    private static final String CHECKING_HOST = "checking";
     private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
     private static final String HOST_UNINSTALL_SHELL = "ps aux|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;

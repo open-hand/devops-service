@@ -1,6 +1,14 @@
 package io.choerodon.devops.api.validator;
 
+import java.util.*;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.annotation.WillDeleted;
@@ -10,13 +18,6 @@ import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.yaml.snakeyaml.Yaml;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * @author zmf
@@ -27,7 +28,7 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
-    private static final String ERROR_STEP_SEQUENCE_NULl = "error.step.sequence.null";
+    private static final String ERROR_STEP_SEQUENCE_IS_NULL = "error.step.sequence.null";
     private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
     private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "error.maven.repository.type.null";
     private static final String ERROR_MAVEN_REPO_TYPE_INVALID = "error.maven.repository.type.invalid";
@@ -115,7 +116,7 @@ public class DevopsCiPipelineAdditionalValidator {
      */
     public static void validConfigSequence(@Nullable Long sequence, String templateName, List<Long> existedSequences) {
         if (sequence == null) {
-            throw new CommonException(ERROR_STEP_SEQUENCE_NULl, templateName);
+            throw new CommonException(ERROR_STEP_SEQUENCE_IS_NULL, templateName);
         }
         if (existedSequences.contains(sequence)) {
             throw new CommonException(ERROR_STEP_SEQUENCE_DUPLICATED, templateName);
@@ -173,11 +174,10 @@ public class DevopsCiPipelineAdditionalValidator {
         }
 
         // 校验用户直接粘贴的maven的settings文件的内容
-        if (!StringUtils.isEmpty(config.getMavenSettings())) {
+        if (!StringUtils.isEmpty(config.getMavenSettings())
+                && !MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
             // 如果不符合xml格式，抛异常
-            if (!MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
                 throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
-            }
         }
     }
 

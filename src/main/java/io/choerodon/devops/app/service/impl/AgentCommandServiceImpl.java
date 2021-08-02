@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONArray;
 import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
 import org.hzero.websocket.constant.WebSocketConstant;
@@ -266,7 +265,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 envCode,
                 envId));
         msg.setType(HelmType.RESOURCE_STATUS_SYNC.toValue());
-        msg.setPayload(JSONArray.toJSONString(commands));
+        msg.setPayload(JsonHelper.marshalByJackson(commands));
         sendToWebSocket(clusterId, msg);
     }
 
@@ -375,7 +374,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 AgentMsgVO msg = new AgentMsgVO();
                 msg.setKey(String.format("cluster:%d",
                         key));
-                msg.setPayload(JSONArray.toJSONString(value));
+                msg.setPayload(JsonHelper.marshalByJackson(value));
                 msg.setType(HelmType.TEST_STATUS.toValue());
                 sendToWebSocket(key, msg);
             }

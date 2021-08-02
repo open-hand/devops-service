@@ -1,16 +1,17 @@
 package io.choerodon.devops.infra.util;
 
-import io.choerodon.asgard.common.ApplicationContextHelper;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.choerodon.asgard.common.ApplicationContextHelper;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 
 /**
  * 〈功能简述〉
@@ -21,6 +22,9 @@ import java.util.stream.Collectors;
  */
 public class UserDTOFillUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserDTOFillUtil.class);
+
+    private UserDTOFillUtil() {
+    }
 
     /**
      * 填充IamUserDTO

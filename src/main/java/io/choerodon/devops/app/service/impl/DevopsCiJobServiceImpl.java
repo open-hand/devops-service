@@ -5,12 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
-import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -32,7 +26,6 @@ import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
@@ -83,10 +76,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
                                   DevopsCiJobRecordService devopsCiJobRecordService,
-                                  FileClient fileClient,
                                   AppServiceMapper appServiceMapper,
                                   CheckGitlabAccessLevelService checkGitlabAccessLevelService,
-                                  BaseServiceClientOperator baseServiceClientOperator,
                                   DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
                                   DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
@@ -170,7 +161,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
         Response<Void> execute = sonarClient.getUser().execute();
         if (!Objects.isNull(execute.errorBody())) {
-            LOGGER.error("test connect response code :{},error messsage:{}", execute.code(), execute.errorBody().toString());
+            LOGGER.error("test connect response code :{},error messsage:{}", execute.code(), execute.errorBody());
             return false;
         } else {
             return true;

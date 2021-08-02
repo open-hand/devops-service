@@ -184,9 +184,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         if (!CollectionUtils.isEmpty(jobRecordIds)) {
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
             //筛选一下删除了流水线的
-            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> {
-                return !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()));
-            }).collect(Collectors.toList());
+            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()))).collect(Collectors.toList());
             devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
                         .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
@@ -224,10 +222,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
                 .filter(distinctByKey(LatestAppServiceVO::getId)).limit(10)
                 .collect(Collectors.toList());
-
-//        int end = Math.min(latestAppServiceVOListWithoutRepeatService.size(), 10);
-//
-//        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOListWithoutRepeatService.subList(0, end);
 
         Set<Long> appServiceIds = latestTenAppServiceList.stream().map(LatestAppServiceVO::getId).collect(Collectors.toSet());
         Map<Long, AppServiceDTO> appServiceDTOMap = appServiceMapper.listAppServiceByIds(appServiceIds, null, null).stream().collect(Collectors.toMap(AppServiceDTO::getId, v -> v));

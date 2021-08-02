@@ -25,7 +25,6 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
-import io.choerodon.devops.api.vo.market.JarSourceConfig;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
@@ -53,7 +52,6 @@ import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsHostAppInstanceRelMapper;
 import io.choerodon.devops.infra.mapper.DevopsNormalInstanceMapper;
 import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -73,7 +71,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
     private static final String ERROR_JAR_VERSION_NOT_FOUND = "error.jar.version.not.found";
-    private static final String ERROR_DEPLOY_JAR_FAILED = "error.deploy.jar.failed";
 
     @Autowired
     private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
@@ -95,8 +92,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
     private AppServiceService appServiceService;
-    @Autowired
-    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
     @Autowired
     private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
 
@@ -122,7 +117,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         } catch (IOException e) {
             LOGGER.info("decode values failed!!!!. {}", jarDeployVO.getValue());
         }
-        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
+        List<AppServiceDTO> appServiceDTOList;
         String deployObjectName = null;
         String deployVersion = null;
         // 0.1 查询部署信息
@@ -161,7 +156,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
             appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, jarReleaseConfigVO.getGroupId(), jarReleaseConfigVO.getArtifactId());
 
-            JarSourceConfig jarSourceConfig = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getJarSource(), JarSourceConfig.class);
             deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
             deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
 
@@ -258,7 +252,9 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
 
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+        }
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsNormalInstanceDTO.getId()),

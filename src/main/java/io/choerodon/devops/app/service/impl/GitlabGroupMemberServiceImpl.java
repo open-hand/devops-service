@@ -305,10 +305,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 gitlabServiceClientOperator.deleteProjectMember(app.getGitlabProjectId(), gitlabUserId);
             }
         });
-
-//        appServiceUserPermissionService.baseDeleteByUserIdAndAppIds(
-//                applicationDTOS.stream().map(AppServiceDTO::getId).collect(Collectors.toList()),
-//                userId);
     }
 
     /**
@@ -471,9 +467,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, GitlabGroupType.CLUSTER_GITOPS);
                 }
             }
-
-            // 为当前项目下所有跳过权限检查的应用加上gitlab用户权限
-//            addRoleForSkipPermissionAppService(resourceId, gitlabUserId);
             // 为当前项目下所有跳过权限检查的环境库加上gitlab用户权限
             addRoleForSkipPermissionEnvironment(resourceId, gitlabUserId);
         } else if (AccessLevel.OWNER.equals(accessLevel)) {
@@ -523,15 +516,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     private void deletePermissionUserRelation(Long projectId, Long userId) {
-        // 查出项目下不跳过权限的所有应用服务
-//        List<Long> appServiceIdsWithNoSkipCheck = applicationService.baseListByProjectIdWithNoSkipCheck(projectId)
-//                .stream().map(AppServiceDTO::getId)
-//                .collect(Collectors.toList());
-
-//        if (!CollectionUtils.isEmpty(appServiceIdsWithNoSkipCheck)) {
-//            appServiceUserPermissionService.batchDelete(appServiceIdsWithNoSkipCheck, userId);
-//        }
-
         // 查出项目下不跳过权限的所有环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
         devopsEnvironmentDTO.setProjectId(projectId);

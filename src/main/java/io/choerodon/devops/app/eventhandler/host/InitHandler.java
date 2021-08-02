@@ -1,20 +1,21 @@
 package io.choerodon.devops.app.eventhandler.host;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.InitInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -46,7 +47,6 @@ public class InitHandler implements HostMsgHandler {
             Map<Object, Object> processInfoMap = dockerProcessInfos.stream().collect(Collectors.toMap(DockerProcessInfoVO::getContainerId, Function.identity()));
             redisTemplate.opsForHash().putAll(String.format(DevopsHostConstants.HOST_DOCKER_PROCESS_INFO_KEY, hostId), processInfoMap);
         }
-        // todo 初始化资源使用率
 
     }
 
