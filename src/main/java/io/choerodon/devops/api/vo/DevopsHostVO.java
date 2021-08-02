@@ -61,6 +61,9 @@ public class DevopsHostVO {
 
     private Boolean selected;
 
+    @ApiModelProperty("是否展示权限管理tab和按钮")
+    private Boolean showPermission;
+
     public Long getId() {
         return id;
     }
@@ -163,5 +166,13 @@ public class DevopsHostVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Boolean getShowPermission() {
+        return showPermission;
+    }
+
+    public void setShowPermission(Boolean showPermission) {
+        this.showPermission = showPermission;
     }
 }

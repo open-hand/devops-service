@@ -324,6 +324,16 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             // 填充创建者用户信息
             fillCreatorInfo(page);
         }
+        page.getContent().forEach(h -> {
+            // 如果是项目所有者或者root，展示权限管理tab和按钮
+            if (projectOwnerOrRoot) {
+                h.setShowPermission(true);
+            } else {
+                // 项目成员且为主机创建者，展示权限管理tab和按钮
+                // 仅仅是项目成员，不展示权限管理tab和按钮
+                h.setShowPermission(h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()))
+            }
+        });
         return page;
     }
 
