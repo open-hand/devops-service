@@ -259,7 +259,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withSourceId(projectId)
-                        .withRefType("project")
+                        .withRefType(PROJECT)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH),
                 builder -> builder
                         .withPayloadAndSerialize(branchSagaPayLoad)
@@ -317,13 +317,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
         } catch (GitlabAccessInvalidException e) {
-            return null;
+            return new Page<>();
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         if (applicationDTO == null) {
-            return null;
+            return new Page<>();
         }
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -538,7 +538,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             try {
                 checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
             } catch (GitlabAccessInvalidException e) {
-                return null;
+                return new Page<>();
             }
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -555,7 +555,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
         } catch (GitlabAccessInvalidException e) {
-            return null;
+            return new Page<>();
         }
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         return ConvertUtils.convertList(gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()), TagVO.class);
@@ -776,7 +776,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void checkBranchName(Long projectId, Long applicationId, String branchName) {
-        if (!isBranchNameUnique(projectId, applicationId, branchName)) {
+        if (Boolean.FALSE.equals(isBranchNameUnique(projectId, applicationId, branchName))) {
             throw new CommonException("error.branch.exist");
         }
     }
@@ -819,7 +819,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void handleTag(Git git, String sshKey, PushWebHookVO pushWebHookVO,
                            DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
-        if (tagNotExist) {
+        if (Boolean.TRUE.equals(tagNotExist)) {
             GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             if (getDevopsSyncTag(pushWebHookVO)) {
                 GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
@@ -840,10 +840,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .queryCompareResult(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
         compareResultDTO.getDiffs().forEach(t -> {
             if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
-                if (t.getDeletedFile()) {
+                if (Boolean.TRUE.equals(t.getDeletedFile())) {
                     // t.getNewPath() 而不是t.getOldPath()，这里能用是因为删除的文件的两个的值一致
                     deletedFiles.add(t.getNewPath());
-                } else if (t.getRenamedFile()) {
+                } else if (Boolean.TRUE.equals(t.getRenamedFile())) {
                     deletedFiles.add(t.getOldPath());
                     operationFiles.add(t.getNewPath());
                 } else {
@@ -918,36 +918,31 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     throw new GitOpsExplainException(GitOpsObjectError.FILE_NOT_YAML.getError(), filePath);
                 }
 
-                JSONObject JSONObject = new JSONObject((Map<String, Object>) data);
-                if (JSONObject.get("kind") == null) {
+                JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+                if (jsonObject.get("kind") == null) {
                     throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
                 }
 
 
                 // 之前都是对数据进行校验的阶段
-                String type = JSONObject.get("kind").toString();
+                String type = jsonObject.get("kind").toString();
 
                 // 处理当前资源的处理逻辑
                 ConvertK8sObjectService currentHandler;
                 if (ResourceType.PERSISTENT_VOLUME_CLAIM.getType().equals(type)
-                        && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(JSONObject, filePath))) {
+                        && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(jsonObject, filePath))) {
                     // 0.20版本之前被作为自定义资源解析的PVC仍然作为自定义资源看待
                     currentHandler = converters.get(ResourceType.MISSTYPE.getType());
                 } else {
                     currentHandler = converters.get(type);
                     if (currentHandler == null) {
-                        // 跳过不解析的资源
-//                        if (GitOpsConstants.IGNORE_RESOURCES.contains(type)) {
-//                            break;
-//                        }
-
                         // 准备默认处理方式，用户环境默认处理方式是作为自定义资源处理，
                         // 系统环境的默认处理方式是抛出异常以表示不支持
                         currentHandler = converters.get(ResourceType.MISSTYPE.getType());
                     }
                 }
 
-                Object resource = currentHandler.serializableObject(JSONObject.toJSONString(), filePath, objectPath, envId);
+                Object resource = currentHandler.serializableObject(jsonObject.toJSONString(), filePath, objectPath, envId);
                 resourceContainer.computeIfAbsent(resource.getClass(), t -> new ArrayList<>());
 
                 // 校验参数
@@ -1040,7 +1035,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         IamUserDTO authorUser = baseServiceClientOperator.queryUserByUserId(authorUserId);
         if (authorUser != null) {
             AuthorVO authorVO = new AuthorVO();
-            authorVO.setUsername(authorUser.getLdap() ? authorUser.getLoginName() : authorUser.getEmail());
+            authorVO.setUsername(Boolean.TRUE.equals(authorUser.getLdap()) ? authorUser.getLoginName() : authorUser.getEmail());
             authorVO.setName(authorUser.getRealName());
             authorVO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
             authorVO.setWebUrl(authorUser.getImageUrl());
@@ -1049,7 +1044,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         IamUserDTO assigneeUser = baseServiceClientOperator.queryUserByUserId(assigneeId);
         if (assigneeUser != null) {
             AssigneeVO assigneeVO = new AssigneeVO();
-            if (assigneeUser.getLdap()) {
+            if (Boolean.TRUE.equals(assigneeUser.getLdap())) {
                 assigneeVO.setUsername(assigneeUser.getLdap() ? assigneeUser.getLoginName() : assigneeUser.getEmail());
             } else {
                 assigneeVO.setUsername(assigneeUser.getEmail());
@@ -1069,7 +1064,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String createUserName = null;
         String createUserRealName = null;
         if (userDTO != null) {
-            if (userDTO.getLdap()) {
+            if (Boolean.TRUE.equals(userDTO.getLdap())) {
                 createUserName = userDTO.getLoginName();
             } else {
                 createUserName = userDTO.getEmail();

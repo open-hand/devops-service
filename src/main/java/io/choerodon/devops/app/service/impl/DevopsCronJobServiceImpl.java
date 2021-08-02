@@ -170,6 +170,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
     }
 
     @Override
+    @Transactional
     public DevopsCronjobVO createOrUpdateByGitOps(DevopsCronjobVO devopsCronJobVO, Long userId, String content) {
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsCronJobVO.getEnvId());
         //校验环境是否连接

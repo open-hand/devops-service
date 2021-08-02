@@ -166,6 +166,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     }
 
     @Override
+    @Transactional
     public DevopsStatefulSetVO createOrUpdateByGitOps(DevopsStatefulSetVO devopsStatefulSetVO, Long userId, String content) {
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsStatefulSetVO.getEnvId());
         //校验环境是否连接

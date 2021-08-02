@@ -166,6 +166,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
     }
 
     @Override
+    @Transactional
     public DevopsJobVO createOrUpdateByGitOps(DevopsJobVO devopsJobVO, Long userId, String content) {
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsJobVO.getEnvId());
         //校验环境是否连接
