@@ -585,11 +585,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private AppServiceDTO getAppServiceDTO(CiCdPipelineVO ciCdPipelineVO) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
-        if (!Objects.isNull(appServiceDTO)) {
-            ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
-            ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
-            ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.service.null");
         }
+        ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
+        ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
+        ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
         return appServiceDTO;
     }
 

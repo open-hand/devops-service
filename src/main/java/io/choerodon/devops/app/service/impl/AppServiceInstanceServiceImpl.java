@@ -1264,7 +1264,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String serviceName = null;
         String serviceCode = null;
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(0L, appServiceDeployVO.getMarketDeployObjectId());
-        if (Objects.isNull(marketServiceDeployObjectVO)) {
+        if (!Objects.isNull(marketServiceDeployObjectVO)) {
             serviceName = marketServiceDeployObjectVO.getDevopsAppServiceName();
             serviceCode = marketServiceDeployObjectVO.getDevopsAppServiceCode();
         }
