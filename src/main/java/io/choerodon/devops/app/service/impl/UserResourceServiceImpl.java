@@ -123,7 +123,7 @@ public class UserResourceServiceImpl implements UserResourceService {
                 .groupingBy(DevopsHostDTO::getProjectId));
         for (Map.Entry<Long, List<DevopsHostDTO>> entry : projectMap.entrySet()) {
             ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
-                    .findFirst().orElse(null);
+                    .findFirst().orElseThrow(() -> new CommonException(BaseConstants.ErrorCode.DATA_INVALID));
             resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
         }
         result.setHostGroups(resourceGroups);
@@ -143,7 +143,7 @@ public class UserResourceServiceImpl implements UserResourceService {
         Map<Long, List<DevopsClusterDTO>> projectMap = clusterDTOS.stream().collect(Collectors.groupingBy(DevopsClusterDTO::getProjectId));
         for (Map.Entry<Long, List<DevopsClusterDTO>> entry : projectMap.entrySet()) {
             ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
-                    .findFirst().orElse(null);
+                    .findFirst().orElseThrow(() -> new CommonException(BaseConstants.ErrorCode.DATA_INVALID));
             resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
         }
         result.setClusterGroups(resourceGroups);
@@ -161,7 +161,7 @@ public class UserResourceServiceImpl implements UserResourceService {
         Map<Long, List<DevopsEnvironmentDTO>> projectMap = environmentDTOS.stream().collect(Collectors.groupingBy(DevopsEnvironmentDTO::getProjectId));
         for (Map.Entry<Long, List<DevopsEnvironmentDTO>> entry : projectMap.entrySet()) {
             ProjectDTO project = projects.stream().filter(item -> Objects.equals(entry.getKey(), item.getId()))
-                    .findFirst().orElse(null);
+                    .findFirst().orElseThrow(() -> new CommonException(BaseConstants.ErrorCode.DATA_INVALID));
             resourceGroups.add(new GeneralResourceVO.ResourceGroup(project.getName(), entry.getValue().size(), true));
         }
         result.setEnvGroups(resourceGroups);
