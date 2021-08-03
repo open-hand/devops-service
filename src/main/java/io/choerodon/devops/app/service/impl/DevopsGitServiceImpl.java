@@ -391,27 +391,25 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Map<Long, ProjectDTO> finalProjectDTOMap = projectDTOMap;
         devopsBranchVOPageInfo.setContent(devopsBranchDTOPageInfo.getContent().stream().map(t -> {
             List<IssueDTO> issueDTOList = new ArrayList<>();
-            if (!CollectionUtils.isEmpty(finalIssues)) {
-                if (!CollectionUtils.isEmpty(mappedIssueIds.get(t.getId()))) {
-                    mappedIssueIds.get(t.getId()).forEach(i -> {
-                        IssueDTO issueDTO = finalIssues.get(i);
-                        if (issueDTO != null) {
-                            ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
-                            if (!Objects.isNull(dto)) {
-                                if (dto.getId().longValue() == projectId.longValue()) {
-                                    issueDTO.setProjectName("(本项目)" + dto.getName());
-                                    issueDTO.setProjectId(dto.getId());
-                                    issueDTO.setProjectCode(dto.getCode());
-                                } else {
-                                    issueDTO.setProjectName(dto.getName());
-                                    issueDTO.setProjectId(dto.getId());
-                                    issueDTO.setProjectCode(dto.getCode());
-                                }
+            if (!CollectionUtils.isEmpty(finalIssues) && !CollectionUtils.isEmpty(mappedIssueIds.get(t.getId()))) {
+                mappedIssueIds.get(t.getId()).forEach(i -> {
+                    IssueDTO issueDTO = finalIssues.get(i);
+                    if (issueDTO != null) {
+                        ProjectDTO dto = finalProjectDTOMap.get(issueDTO.getProjectId());
+                        if (!Objects.isNull(dto)) {
+                            if (dto.getId().longValue() == projectId.longValue()) {
+                                issueDTO.setProjectName("(本项目)" + dto.getName());
+                                issueDTO.setProjectId(dto.getId());
+                                issueDTO.setProjectCode(dto.getCode());
+                            } else {
+                                issueDTO.setProjectName(dto.getName());
+                                issueDTO.setProjectId(dto.getId());
+                                issueDTO.setProjectCode(dto.getCode());
                             }
-                            issueDTOList.add(issueDTO);
                         }
-                    });
-                }
+                        issueDTOList.add(issueDTO);
+                    }
+                });
             }
 
             Long createUserId = createrIamUserIdAndGitlabUserIdMap.get(t.getUserId());
@@ -555,7 +553,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
         } catch (GitlabAccessInvalidException e) {
-            return new Page<>();
+            return new ArrayList<>();
         }
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         return ConvertUtils.convertList(gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()), TagVO.class);
@@ -679,7 +677,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         try {
             //更新本地库到最新提交
-            Git git = handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
+            Git git = handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa());
             LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
             tagNotExist = getDevopsSyncTag(pushWebHookVO);
@@ -1150,7 +1148,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     }
 
-    private Git handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
+    private Git handDevopsEnvGitRepository(String path, String url, String envIdRsa) {
         File file = new File(path);
         if (!file.exists()) {
             return gitUtil.cloneBySsh(path, url, envIdRsa);
@@ -1182,9 +1180,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchIdWithIssueId(appServiceId, branchId);
-        if (devopsBranchDTO != null) {
-            CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
+        if (devopsBranchDTO == null) {
+            return;
         }
+        CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
         // 移除分支关联关系
         devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId(), issueId);
 
