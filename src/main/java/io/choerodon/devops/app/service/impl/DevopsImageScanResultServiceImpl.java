@@ -1,9 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,12 +161,12 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         }
     }
 
-    private void securityMonitor(Integer integer, SecurityConditionConfigVO securityConditionConfigVO) {
+    private static void securityMonitor(Integer integer, SecurityConditionConfigVO securityConditionConfigVO) {
         if (StringUtils.equalsIgnoreCase("<=", securityConditionConfigVO.getSymbol())) {
-            if (!(integer.intValue() <= securityConditionConfigVO.getCondition().intValue())) {
-                LOGGER.info("loophole count:{},security control:{}", integer.intValue(), securityConditionConfigVO.getCondition().intValue());
+            if (integer > securityConditionConfigVO.getCondition()) {
+                LOGGER.info("loophole count:{},security control:{}", integer, securityConditionConfigVO.getCondition());
                 throw new DevopsCiInvalidException("Does not meet the security control conditions," + securityConditionConfigVO.getLevel()
-                        + " loophole count:" + integer.intValue());
+                        + " loophole count:" + integer);
             }
         }
     }
