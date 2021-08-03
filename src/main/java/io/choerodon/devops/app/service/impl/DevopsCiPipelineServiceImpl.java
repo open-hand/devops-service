@@ -26,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.*;
@@ -139,6 +140,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     @Lazy
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    @Autowired
+    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -518,8 +521,34 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (devopsDeployValueDTO != null) {
             devopsCdEnvDeployInfoVO.setValue(Base64Util.getBase64EncodedString(devopsDeployValueDTO.getValue()));
         }
+        //判断当前用户是不是有环境的权限
+        //环境为项目下所有成员都有权限
+        devopsCdJobVO.setEdit(isEditCdJob(devopsEnvironmentDTO, devopsCdJobVO));
         // 加密json中主键
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(devopsCdEnvDeployInfoVO)));
+    }
+
+    private boolean isEditCdJob(DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsCdJobVO devopsCdJobVO) {
+        if (devopsEnvironmentDTO.getSkipCheckPermission()) {
+            return Boolean.TRUE;
+        }
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), devopsCdJobVO.getProjectId())) {
+            return Boolean.TRUE;
+        }
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobVO.getProjectId());
+        if (baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), projectDTO.getOrganizationId()) || userDetails.getAdmin()) {
+            return Boolean.TRUE;
+        }
+        DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+        devopsEnvUserPermissionDTO.setEnvId(devopsEnvironmentDTO.getId());
+        devopsEnvUserPermissionDTO.setIamUserId(userDetails.getUserId());
+        List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDTO);
+        if (!CollectionUtils.isEmpty(devopsEnvUserPermissionDTOS)) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
     }
 
     private List<DevopsCiStageVO> handleCiStage(Long pipelineId) {
