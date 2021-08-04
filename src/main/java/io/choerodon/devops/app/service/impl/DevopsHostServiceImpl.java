@@ -306,7 +306,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         } else {
             select = () -> devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
         }
-        if (doPage) {
+        if (doPage != null && doPage) {
             page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), select);
         } else {
             page = new Page<>();

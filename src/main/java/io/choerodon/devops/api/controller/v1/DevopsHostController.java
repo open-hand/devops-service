@@ -21,7 +21,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
@@ -89,7 +88,7 @@ public class DevopsHostController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @SortDefault.SortDefaults({
-                    @SortDefault(value = "host_status", direction = Sort.Direction.DESC),
+                    @SortDefault(value = "host_status", direction = Sort.Direction.ASC),
                     @SortDefault(value = "id", direction = Sort.Direction.DESC)})
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "是否带有创建者信息")
