@@ -84,7 +84,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
     }
     changeSet(author: 'wanghao', id: '2021-7-28-add-column') {
         addColumn(tableName: 'devops_deploy_record') {
-            column(name: 'business_key', type: 'VARCHAR(255)', remarks: '流程实例关联业务key', afterColumn: 'mkt_app_version_id')
+            column(name: 'business_key', type: 'VARCHAR(255)', remarks: '流程实例关联业务key')
         }
     }
 

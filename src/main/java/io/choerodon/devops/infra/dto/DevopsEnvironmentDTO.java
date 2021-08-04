@@ -1,12 +1,14 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.List;
+import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.persistence.*;
-import java.util.List;
 
 /**
  * if (!isSynchro) {
@@ -30,7 +32,7 @@ public class DevopsEnvironmentDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-//    @Encrypt(DevopsEnvironmentDTO.ENCRYPT_KEY)
+    @Encrypt
     private Long id;
     private Long projectId;
     private Long clusterId;

@@ -30,7 +30,9 @@ import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.hzero.DevopsHzeroDeployDetailsVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
@@ -46,6 +48,7 @@ import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
@@ -85,6 +88,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Autowired
     @Lazy
     private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     @Override
     public Long saveRecord(Long projectId,
@@ -429,5 +434,32 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, ERROR_UPDATE_DEPLOY_RECORD_FAILED);
+    }
+
+    @Override
+    public HzeroDeployRecordVO queryHzeroDetailsById(Long projectId, Long recordId) {
+        HzeroDeployRecordVO hzeroDeployRecordVO = new HzeroDeployRecordVO();
+
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsDeployRecordDTO.getDeployPayloadId());
+
+        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listByDeployRecordId(recordId);
+        List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS = ConvertUtils.convertList(devopsHzeroDeployDetailsDTOS, DevopsHzeroDeployDetailsVO.class);
+
+        // 添加市场服务名和版本
+        devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
+            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, devopsHzeroDeployDetailsVO.getMktDeployObjectId());
+            devopsHzeroDeployDetailsVO.setMktServiceName(marketServiceDeployObjectVO.getMarketServiceName());
+            devopsHzeroDeployDetailsVO.setMktServiceVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
+        });
+
+        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, devopsHzeroDeployDetailsDTOS.get(0).getMktDeployObjectId());
+        hzeroDeployRecordVO.setEnvironmentDTO(devopsEnvironmentDTO);
+        hzeroDeployRecordVO.setMktApplication(marketServiceDeployObjectVO.getMarketAppName());
+        hzeroDeployRecordVO.setMktAppVersion(marketServiceDeployObjectVO.getMarketAppVersion());
+        hzeroDeployRecordVO.setDeployDetailsVOList(devopsHzeroDeployDetailsVOS);
+
+        return hzeroDeployRecordVO;
     }
 }

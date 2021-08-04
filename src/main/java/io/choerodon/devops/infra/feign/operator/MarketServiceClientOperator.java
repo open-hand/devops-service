@@ -17,6 +17,7 @@ import io.choerodon.devops.api.vo.market.MarketAppSubscribeRelVO;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
+import io.choerodon.devops.infra.dto.market.MarketAppVersionDTO;
 import io.choerodon.devops.infra.dto.market.MarketApplicationDTO;
 import io.choerodon.devops.infra.dto.market.MarketChartValueDTO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
@@ -108,5 +109,9 @@ public class MarketServiceClientOperator {
 
     public MarketApplicationDTO queryApplication(Long applicationId) {
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryApplication(applicationId), MarketApplicationDTO.class);
+    }
+
+    public MarketAppVersionDTO queryAppVersionById(Long applicationId, Long appVersionId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryAppVersionById(applicationId, appVersionId), MarketAppVersionDTO.class);
     }
 }

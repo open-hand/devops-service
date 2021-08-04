@@ -24,6 +24,8 @@ public interface DevopsHzeroDeployDetailsService {
 
     List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(Long recordId);
 
+    List<DevopsHzeroDeployDetailsDTO> listByDeployRecordId(Long deployRecordId);
+
     void baseUpdate(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO);
 
     /**

@@ -27,9 +27,29 @@ public class DevopsHzeroDeployDetailsVO {
     @ApiModelProperty("部署顺序")
     private Long sequence;
 
+    private String mktServiceName;
+
+    private String mktServiceVersion;
+
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 
+
+    public String getMktServiceName() {
+        return mktServiceName;
+    }
+
+    public void setMktServiceName(String mktServiceName) {
+        this.mktServiceName = mktServiceName;
+    }
+
+    public String getMktServiceVersion() {
+        return mktServiceVersion;
+    }
+
+    public void setMktServiceVersion(String mktServiceVersion) {
+        this.mktServiceVersion = mktServiceVersion;
+    }
 
     public Long getId() {
         return id;

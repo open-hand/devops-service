@@ -84,4 +84,9 @@ public class MarketServiceClientFallback implements MarketServiceClient {
     public ResponseEntity<String> queryApplication(Long applicationId) {
         throw new CommonException("error.query.market.app");
     }
+
+    @Override
+    public ResponseEntity<String> queryAppVersionById(Long applicationId, Long appVersionId) {
+        throw new CommonException("error.query.market.app.version");
+    }
 }
