@@ -14,6 +14,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -87,5 +88,14 @@ public class DevopsDeployRecordController {
             @RequestBody @Validated HzeroDeployVO hzeroDeployVO) {
         devopsDeployRecordService.retry(projectId, recordId, hzeroDeployVO);
         return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询部署记录")
+    @GetMapping("/{record_id}")
+    public ResponseEntity<HzeroDeployRecordVO> queryHzeroDetailsById(
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "record_id") Long recordId) {
+        return ResponseEntity.ok(devopsDeployRecordService.queryHzeroDetailsById(projectId, recordId));
     }
 }

@@ -53,4 +53,10 @@ public class ResourceCheckConstant {
     public static final String ERROR_CONTAINER_NAME_IS_NULL = "error.container.name.is.null";
     public static final String ERROR_JAR_NAME_IS_NULL = "error.jar.name.is.null";
     public static final String ERROR_SOURCE_TYPE_IS_NULL = "error.source.type.is.null";
+
+
+    // deploy
+    public static final String ERROR_DEPLOY_RECORD_ID_IS_NULL = "error.deploy.record.id.is.null";
+
+
 }

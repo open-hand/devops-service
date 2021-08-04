@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.enums.DeployType;
@@ -136,4 +137,6 @@ public interface DevopsDeployRecordService {
     void retry(Long projectId, Long recordId, HzeroDeployVO hzeroDeployVO);
 
     void baseUpdate(DevopsDeployRecordDTO devopsDeployRecordDTO);
+
+    HzeroDeployRecordVO queryHzeroDetailsById(Long projectId, Long recordId);
 }

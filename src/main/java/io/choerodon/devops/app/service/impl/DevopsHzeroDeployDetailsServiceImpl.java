@@ -64,6 +64,14 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
     }
 
     @Override
+    public List<DevopsHzeroDeployDetailsDTO> listByDeployRecordId(Long deployRecordId) {
+        Assert.notNull(deployRecordId, ResourceCheckConstant.ERROR_DEPLOY_RECORD_ID_IS_NULL);
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = new DevopsHzeroDeployDetailsDTO();
+        devopsHzeroDeployDetailsDTO.setDeployRecordId(deployRecordId);
+        return devopsHzeroDeployDetailsMapper.select(devopsHzeroDeployDetailsDTO);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
