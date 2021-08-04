@@ -4,17 +4,18 @@
     <select id="listByOptions" resultType="io.choerodon.devops.api.vo.DevopsHostVO">
         SELECT dh.*
         FROM devops_host dh
-                WHERE 1 = 1
-        <if test="projectId != null">
-            AND dh.project_id = #{projectId}
-        </if>
-        <if test="searchParam != null">
-            and (dh.name LIKE CONCAT(CONCAT('%', #{searchParam}), '%')
-                    OR dh.host_ip LIKE CONCAT(CONCAT('%', #{searchParam}), '%'))
-        </if>
-        <if test='hostStatus != null'>
-            AND dh.host_status = #{hostStatus}
-        </if>
+        <where>
+            <if test="projectId != null">
+                dh.project_id = #{projectId}
+            </if>
+            <if test="searchParam != null">
+                and (dh.name LIKE CONCAT(CONCAT('%', #{searchParam}), '%')
+                        OR dh.host_ip LIKE CONCAT(CONCAT('%', #{searchParam}), '%'))
+            </if>
+            <if test='hostStatus != null'>
+                AND dh.host_status = #{hostStatus}
+            </if>
+        </where>
     </select>
 
     <select id="listByProjectIdAndIds" resultType="io.choerodon.devops.infra.dto.DevopsHostDTO">
