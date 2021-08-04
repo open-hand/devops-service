@@ -620,6 +620,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
         ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
         ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
+        ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
         return appServiceDTO;
     }
 
@@ -928,8 +929,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS.getContent())) {
             return new Page<>();
         }
-        Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = handPipelineRecord(devopsPipelineRecordRelDTOS);
-        return cdPipelineRecordVOS;
+        return handPipelineRecord(devopsPipelineRecordRelDTOS);
     }
 
     private Page<CiCdPipelineRecordVO> handPipelineRecord(Page<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS) {
@@ -1023,8 +1023,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS.getContent())) {
             return new Page<>();
         }
-        Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = handPipelineRecord(devopsPipelineRecordRelDTOS);
-        return cdPipelineRecordVOS;
+        return handPipelineRecord(devopsPipelineRecordRelDTOS);
     }
 
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
