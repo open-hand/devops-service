@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,9 +18,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.GitPlatformType;
-import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -456,29 +453,6 @@ public class AppServiceController {
     }
 
 
-//    /**
-//     * 项目下查询已经启用有版本未发布的服务
-//     *
-//     * @param projectId 项目id
-//     * @param pageable  分页参数
-//     * @param params    查询参数
-//     * @return Page
-//     */
-//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-//    @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的服务")
-//    @CustomPageRequest
-//    @PostMapping(value = "/page_unPublish")
-//    public ResponseEntity<Page<AppServiceReqVO>> pageByActiveAndPubAndVersion(
-//            @ApiParam(value = "项目 ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "分页参数")
-//            @ApiIgnore PageRequest pageable,
-//            @ApiParam(value = "查询参数")
-//            @RequestBody(required = false) String params) {
-//        return Optional.ofNullable(applicationServiceService.pageByActiveAndPubAndVersion(projectId, pageable, params))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
-//    }
 
     /**
      * 校验chart仓库配置信息是否正确
