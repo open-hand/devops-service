@@ -157,5 +157,5 @@ public interface MarketServiceClient {
     @GetMapping("/v1/applications/{application_id}/app_versions/{app_version_id}")
     ResponseEntity<String> queryAppVersionById(
             @Encrypt @PathVariable(value = "application_id") Long applicationId,
-            @Encrypt @PathVariable(value = "app_version_id") Long appVersionId)
+            @Encrypt @PathVariable(value = "app_version_id") Long appVersionId);
 }
