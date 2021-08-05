@@ -88,7 +88,7 @@ public class AppServiceInstanceController {
             @RequestBody @Valid MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
         marketInstanceCreationRequestVO.setCommandType(CommandType.CREATE.getType());
         marketInstanceCreationRequestVO.setSource(AppServiceInstanceSource.MARKET.getValue());
-        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -104,7 +104,7 @@ public class AppServiceInstanceController {
         marketInstanceCreationRequestVO.setCommandType(CommandType.UPDATE.getType());
         marketInstanceCreationRequestVO.setInstanceId(instanceId);
         marketInstanceCreationRequestVO.setSource(AppServiceInstanceSource.MARKET.getValue());
-        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO,true));
     }
 
     /**

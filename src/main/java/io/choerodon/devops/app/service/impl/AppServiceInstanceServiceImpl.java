@@ -861,7 +861,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
             description = "Devops创建市场实例", inputSchemaClass = MarketInstanceSagaPayload.class)
     @Override
-    public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO) {
+    public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO, Boolean saveRecord) {
         // 查询环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
         CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", appServiceDeployVO.getEnvironmentId());
@@ -954,7 +954,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
 
             // 插入部署记录
-            saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
+            if (Boolean.TRUE.equals(saveRecord)) {
+                saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
+            }
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(appServiceVersionDTO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
@@ -2100,7 +2102,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                     AppServiceInstanceSource.MARKET.getValue());
 
-            instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+            instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
             commandId = instanceVO.getCommandId();
         } else {
             // 更新实例
@@ -2123,7 +2125,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
                         devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                         AppServiceInstanceSource.MARKET.getValue());
-                instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO);
+                instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
                 commandId = instanceVO.getCommandId();
             }
 

@@ -85,7 +85,7 @@ public interface AppServiceInstanceService {
      * @param marketInstanceCreationRequestVO 请求参数
      * @return 实例信息
      */
-    AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO);
+    AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO, Boolean saveRecord);
 
     /**
      * 部署应用,GitOps
