@@ -13,7 +13,6 @@ import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -154,15 +153,6 @@ public interface DevopsHostService {
      * @return
      */
     DevopsHostDTO baseQuery(Long hostId);
-
-
-    /**
-     * 更新主机状态
-     *
-     * @param hostId
-     * @param status
-     */
-    void baseUpdateHostStatus(Long hostId, DevopsHostStatus status);
 
     /**
      * 查询主机下所有java进程信息

@@ -16,6 +16,7 @@ public class DevopsHostConstants {
 
     public static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
     // ws
+    public static final String HOST_SESSION = "host-sessions-cache";
     public static final String GROUP = "host:";
     public static final String DOCKER_INSTANCE = "host:%s:docker:instances:%s";
     public static final String JAVA_INSTANCE = "host:%s:java:instances:%s";
