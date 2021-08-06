@@ -928,6 +928,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             // 插入部署记录
             if (Boolean.TRUE.equals(saveRecord)) {
+                appServiceInstanceDTO.setApplicationType(appServiceDeployVO.getApplicationType());
                 saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
             }
             //如果是市场部署将部署人员添加为应用的订阅人员
@@ -957,6 +958,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             chartVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
             marketServiceDeployObjectVO.setDevopsAppServiceVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
             marketServiceDeployObjectVO.setMarketChartRepository(String.format(MIDDLEWARE_CHART_REPO_TEMPLATE, gateway));
+        } else if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceDeployVO.getSource()) && StringUtils.equalsIgnoreCase(appServiceDeployVO.getApplicationType(), AppSourceType.HZERO.getValue())) {
+            chartVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
         } else {
             chartVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
         }
@@ -1048,6 +1051,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
             deploySourceType = AppSourceType.PLATFORM_PRESET.getValue();
             deployType = DeployType.BASE_COMPONENT;
+        } else if (StringUtils.equalsIgnoreCase(appServiceInstanceDTO.getApplicationType(), AppSourceType.HZERO.getValue())) {
+            deploySourceType = AppSourceType.HZERO.getValue();
+            deployType = DeployType.MANUAL;
         } else {
             deploySourceType = AppSourceType.MARKET.getValue();
             deployType = DeployType.MANUAL;

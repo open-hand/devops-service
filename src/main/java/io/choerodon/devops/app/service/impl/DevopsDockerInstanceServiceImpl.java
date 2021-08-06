@@ -117,7 +117,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(dockerDeployVO.getSourceType());
         deploySourceVO.setProjectName(projectDTO.getName());
-        if (AppSourceType.MARKET.getValue().equals(dockerDeployVO.getSourceType())) {
+        if (AppSourceType.MARKET.getValue().equals(dockerDeployVO.getSourceType())
+                || AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType())) {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(dockerDeployVO.getDeployObjectId()));
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
                 throw new CommonException("error.harbor.deploy.object.not.exist");
@@ -131,9 +132,15 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                     marketHarborConfigVO.getToken());
             dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
             dockerDeployDTO.setImage(marketServiceDeployObjectVO.getMarketDockerImageUrl());
-            //部署对象的名称
-            deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
-            deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
+            if (AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType())) {
+                deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();
+                deployVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
+            } else {
+                //部署对象的名称
+                deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
+                deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
+            }
+
 
             deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
             deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
@@ -155,29 +162,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
             appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
             serviceName = appServiceDTO == null ? null : appServiceDTO.getName();
-        } else if (AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType())) {
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(dockerDeployVO.getDeployObjectId()));
-            if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
-                throw new CommonException("error.harbor.deploy.object.not.exist");
-            }
-            appServiceId = marketServiceDeployObjectVO.getMarketServiceId();
-
-            MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
-
-            DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO(marketHarborConfigVO.getRepoUrl(),
-                    marketHarborConfigVO.getRobotName(),
-                    marketHarborConfigVO.getToken());
-            dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
-            dockerDeployDTO.setImage(marketServiceDeployObjectVO.getMarketDockerImageUrl());
-            //部署对象的名称
-            deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
-            deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
-
-            deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
-            deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
-            //如果是市场部署将部署人员添加为应用的订阅人员
-            marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
-
         }
 
         // 2.保存记录
