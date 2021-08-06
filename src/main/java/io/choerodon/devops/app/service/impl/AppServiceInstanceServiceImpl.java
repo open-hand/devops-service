@@ -872,14 +872,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //4.获得市场服务
         MarketServiceVO marketServiceVO;
+        //5.获得市场部署对象
+        MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectId, appServiceDeployVO.getMarketDeployObjectId());
+
+        String appServiceCode;
+        String appServiceName;
         if (AppSourceType.HZERO.getValue().equals(appServiceDeployVO.getApplicationType())) {
             marketServiceVO = getMarketServiceVO(projectId, appServiceDeployVO.getHzeroServiceVersionId(), appServiceDeployVO.getMarketDeployObjectId());
+            appServiceCode = marketServiceDeployObjectVO.getMarketSourceCode();
+            appServiceName = marketServiceDeployObjectVO.getMarketServiceName();
         } else {
+            appServiceCode = marketServiceDeployObjectVO.getDevopsAppServiceCode();
+            appServiceName = marketServiceDeployObjectVO.getDevopsAppServiceName();
             marketServiceVO = getMarketServiceVO(projectId, appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getMarketDeployObjectId());
         }
 
-        //5.获得市场部署对象
-        MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectId, appServiceDeployVO.getMarketDeployObjectId());
 
         //6.如果是跟新校验前后的版本属于同一个服务在同一个应用版本下
         if (UPDATE.equals(appServiceDeployVO.getCommandType())) {
@@ -912,12 +919,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             //存储数据
             // 创建关联关系
             String source;
+
+            appServiceInstanceDTO.setApplicationType(appServiceDeployVO.getApplicationType());
             if (StringUtils.equalsIgnoreCase(appServiceInstanceDTO.getApplicationType(), AppSourceType.HZERO.getValue())) {
                 source = AppSourceType.HZERO.getValue();
             } else {
                 source = AppSourceType.MARKET.getValue();
             }
-            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId(), source, marketServiceDeployObjectVO.getDevopsAppServiceCode(), marketServiceDeployObjectVO.getDevopsAppServiceName());
+
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId(), source, appServiceCode, appServiceName);
             if (appServiceDeployVO.getCommandType().equals(CREATE)) {
                 appServiceInstanceDTO.setCode(code);
                 appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
@@ -934,7 +944,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             // 插入部署记录
             if (Boolean.TRUE.equals(saveRecord)) {
-                appServiceInstanceDTO.setApplicationType(appServiceDeployVO.getApplicationType());
                 saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
             }
             //如果是市场部署将部署人员添加为应用的订阅人员
