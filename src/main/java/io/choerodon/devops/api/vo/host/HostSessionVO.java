@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.host;
 
+import java.io.Serializable;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -7,7 +9,7 @@ package io.choerodon.devops.api.vo.host;
  * @author wanghao
  * @since 2021/8/6 14:03
  */
-public class HostSessionVO {
+public class HostSessionVO implements Serializable {
     private Long hostId;
 
     private String webSocketSessionId;
