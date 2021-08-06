@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo.workload;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 @Component
 public class DaemonSetWorkLoad extends WorkLoad {
 
-    public DaemonSetWorkLoad(WorkloadService workloadService, DevopsDaemonSetService devopsDaemonSetService) {
+    public DaemonSetWorkLoad(@Lazy WorkloadService workloadService, @Lazy DevopsDaemonSetService devopsDaemonSetService) {
         this.workloadService = workloadService;
         this.devopsDaemonSetService = devopsDaemonSetService;
     }
