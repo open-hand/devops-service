@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -2098,7 +2099,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         //项目的来源处理：来源是这样的  如果是项目发布的  那么显示组织/项目   如果是中间件之类的就显示平台预置的
         Map<Long, MarketServiceVO> finalLongMarketServiceVOMap = longMarketServiceVOMap;
         appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
-            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)) {
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)
+                    || org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.HZERO.getValue())) {
                 //根据市场服务id查询已发布部署对象
                 handMarketAppService(finalLongMarketServiceVOMap, appServiceRepVO);
             } else {

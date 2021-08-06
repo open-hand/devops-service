@@ -141,7 +141,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
             }
 
-
+            serviceName = marketServiceDeployObjectVO.getMarketServiceName();
             deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
             deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
             //如果是市场部署将部署人员添加为应用的订阅人员
