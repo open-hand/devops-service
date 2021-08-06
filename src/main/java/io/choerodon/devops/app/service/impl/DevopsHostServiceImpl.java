@@ -129,6 +129,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private PermissionHelper permissionHelper;
     @Autowired
+    @Lazy
     private HostConnectionHandler hostConnectionHandler;
 
     @Transactional(rollbackFor = Exception.class)
