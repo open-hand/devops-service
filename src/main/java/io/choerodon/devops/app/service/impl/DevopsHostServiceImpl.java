@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import net.schmizz.sshj.SSHClient;
@@ -49,6 +48,7 @@ import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -99,8 +99,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private DevopsCdJobMapper devopsCdJobMapper;
-    @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
@@ -130,6 +128,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private UserAttrService userAttrService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private HostConnectionHandler hostConnectionHandler;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -317,9 +317,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         // 分页查询
         if (withCreatorInfo) {
             // 填充创建者用户信息
-            fillCreatorInfo(page);
+            UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creatorInfo");
         }
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
         page.getContent().forEach(h -> {
+            h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue());
             // 如果是项目所有者或者root，展示权限管理tab和按钮
             if (projectOwnerOrRoot) {
                 h.setShowPermission(true);
@@ -348,17 +350,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public DevopsHostDTO baseQuery(Long hostId) {
         return devopsHostMapper.selectByPrimaryKey(hostId);
-    }
-
-    @Override
-    @Transactional
-    public void baseUpdateHostStatus(Long hostId, DevopsHostStatus status) {
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        // 更新主机连接状态
-        if (devopsHostDTO != null) {
-            devopsHostDTO.setHostStatus(status.getValue());
-        }
-        devopsHostMapper.updateByPrimaryKeySelective(devopsHostDTO);
     }
 
     @Override
@@ -948,12 +939,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             });
             hostInstances.addAll(devopsDockerInstanceVOS);
         }
-    }
-
-    private void fillCreatorInfo(Page<DevopsHostVO> devopsHostVOS) {
-        List<Long> userIds = devopsHostVOS.getContent().stream().map(DevopsHostVO::getCreatedBy).collect(Collectors.toList());
-        Map<Long, IamUserDTO> userInfo = baseServiceClientOperator.listUsersByIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, Functions.identity()));
-        devopsHostVOS.getContent().forEach(host -> host.setCreatorInfo(userInfo.get(host.getCreatedBy())));
     }
 
     private String generateRedisKey(Long projectId, Long hostId) {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.PostConstruct;
 
 import org.hzero.websocket.constant.WebSocketConstant;
@@ -20,6 +21,7 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.host.HostMsgVO;
+import io.choerodon.devops.api.vo.host.HostSessionVO;
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.eventhandler.host.HostMsgHandler;
@@ -27,7 +29,6 @@ import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.infra.constant.DevOpsWebSocketConstants;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
 
@@ -71,8 +72,14 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         // 就是agent连接时应该传入的group参数，形如  front_agent:clusterId:21
         String hostId = WebSocketTool.getHostId(session);
+        HostSessionVO hostSessionVO = new HostSessionVO();
 
-        devopsHostService.baseUpdateHostStatus(Long.parseLong(hostId), DevopsHostStatus.CONNECTED);
+        hostSessionVO.setWebSocketSessionId(session.getId());
+        hostSessionVO.setHostId(Long.parseLong(hostId));
+        hostSessionVO.setVersion(WebSocketTool.getVersion(session));
+        hostSessionVO.setRegisterKey(WebSocketTool.getGroup(session));
+        redisTemplate.opsForHash().put(DevopsHostConstants.HOST_SESSION, hostSessionVO.getRegisterKey(), hostSessionVO);
+
         MsgVO msgVO = new MsgVO();
         // 版本不一致，需要升级
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
@@ -114,11 +121,37 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String registerKey = WebSocketTool.getGroup(session);
         String hostId = WebSocketTool.getHostId(session);
 
-        devopsHostService.baseUpdateHostStatus(Long.parseLong(hostId), DevopsHostStatus.DISCONNECT);
+        removeRedisValueByRegisterKeyAndSessionId(registerKey, session.getId(), hostId);
 
         WebSocketTool.closeSessionQuietly(session);
+    }
+
+    private void removeRedisValueByRegisterKeyAndSessionId(String registerKey, String sessionId, Object clusterId) {
+        Object registerKeyValue = redisTemplate.opsForHash().get(DevopsHostConstants.HOST_SESSION, registerKey);
+        removeRedisValueByRegisterKeyAndSessionId(registerKey, sessionId, registerKeyValue, clusterId);
+    }
+
+    private void removeRedisValueByRegisterKeyAndSessionId(String registerKey, String sessionId, Object registerKeyValue, Object clusterId) {
+        if (registerKeyValue != null) {
+            if (registerKeyValue instanceof HostSessionVO) {
+                HostSessionVO hostSessionVO = (HostSessionVO) registerKeyValue;
+                // 只有这个registerKey的值中webSocketSessionId和当前sessionId一致时才删除key，避免旧的超时的连接
+                // 误将新连接的key删掉（两者是同一个key）
+                if (Objects.equals(sessionId, hostSessionVO.getWebSocketSessionId())) {
+                    //移除关联关系
+                    redisTemplate.opsForHash().delete(DevopsHostConstants.HOST_SESSION, registerKey);
+                } else {
+                    LOGGER.info("This is an elder session whose registerKey value was updated by a new session. the session cluster id is {}", clusterId);
+                }
+            } else {
+                // 这个逻辑不应该进的
+                LOGGER.warn("Value of register key is not of Class 'io.choerodon.devops.api.vo.hostSessionVO', and its real class is {}", registerKeyValue.getClass());
+                redisTemplate.opsForHash().delete(DevopsHostConstants.HOST_SESSION, registerKey);
+            }
+        }
     }
 
     @Override
