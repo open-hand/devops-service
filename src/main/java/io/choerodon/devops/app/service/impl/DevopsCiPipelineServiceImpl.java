@@ -591,7 +591,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 pipelineVO.setLatestExecuteStatus(latestExecuteStatus);
                 pipelineVO.setLatestExecuteDate(pipelineCompositeRecordVO.getCreationDate());
             } else {
-                pipelineVO.setLatestExecuteStatus(PipelineStatus.SUCCESS.toValue());
+                pipelineVO.setLatestExecuteStatus(PipelineStatus.SKIPPED.toValue());
                 pipelineVO.setLatestExecuteDate(pipelineVO.getCreationDate());
             }
 
