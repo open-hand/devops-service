@@ -87,6 +87,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
         devopsEnvAppServiceDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
         devopsEnvAppServiceDTO.setEnvId(Objects.requireNonNull(envId));
+        devopsEnvAppServiceDTO.setSource(source);
         // 如果没有，插入
         if (devopsEnvAppServiceMapper.selectCount(devopsEnvAppServiceDTO) == 0) {
             devopsEnvAppServiceDTO.setSource(source);

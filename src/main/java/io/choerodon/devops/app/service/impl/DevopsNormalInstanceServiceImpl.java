@@ -155,6 +155,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
             mavenRepoDTOList.add(nexusMavenRepoDTO);
 
+
             appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, jarReleaseConfigVO.getGroupId(), jarReleaseConfigVO.getArtifactId());
 
             deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
