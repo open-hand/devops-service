@@ -82,7 +82,16 @@ public class AppServiceInstanceDTO extends AuditDomain {
     private Integer isEnabled;
     @Transient
     private String appServiceCode;
+    @Transient
+    private String applicationType;
 
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
+    }
 
     public Long getEffectCommandId() {
         return effectCommandId;
