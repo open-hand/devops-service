@@ -911,7 +911,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (!appServiceDeployVO.getNotChanged()) {
             //存储数据
             // 创建关联关系
-            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId(), ApplicationCenterEnum.MARKET.value, marketServiceDeployObjectVO.getDevopsAppServiceCode(), marketServiceDeployObjectVO.getDevopsAppServiceName());
+            String source;
+            if (StringUtils.equalsIgnoreCase(appServiceInstanceDTO.getApplicationType(), AppSourceType.HZERO.getValue())) {
+                source = AppSourceType.HZERO.getValue();
+            } else {
+                source = AppSourceType.MARKET.getValue();
+            }
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId(), source, marketServiceDeployObjectVO.getDevopsAppServiceCode(), marketServiceDeployObjectVO.getDevopsAppServiceName());
             if (appServiceDeployVO.getCommandType().equals(CREATE)) {
                 appServiceInstanceDTO.setCode(code);
                 appServiceInstanceDTO.setId(baseCreate(appServiceInstanceDTO).getId());
