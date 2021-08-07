@@ -2148,7 +2148,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         if (!Objects.isNull(serviceVO)) {
             appServiceRepVO.setServiceName(serviceVO.getMarketServiceName());
-
+            appServiceRepVO.setServiceCode(serviceVO.getMarketServiceCode());
             //看看是不是预置的
             List<MarketCategoryVO> marketCategoryVOS = serviceVO.getMarketCategoryVOS().stream().filter(MarketCategoryVO::getBuiltIn).collect(toList());
             appServiceRepVO.setBuiltIn(Boolean.FALSE);
@@ -2175,7 +2175,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private Map<Long, MarketServiceVO> queryMarketDeployObj(Long projectId, Page<AppServiceRepVO> appServiceRepVOS) {
-        List<AppServiceRepVO> serviceRepVOS = appServiceRepVOS.getContent().stream().filter(appServiceRepVO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)).collect(toList());
+        List<AppServiceRepVO> serviceRepVOS = appServiceRepVOS.getContent().stream().filter(appServiceRepVO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)
+                || org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.HZERO.getValue())).collect(toList());
         Map<Long, MarketServiceVO> longMarketServiceVOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(serviceRepVOS)) {
             Set<Long> marketServiceIds = serviceRepVOS.stream().map(AppServiceRepVO::getId).collect(toSet());
