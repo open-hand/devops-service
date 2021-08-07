@@ -15,6 +15,9 @@ public class MarketServiceVO {
     @ApiModelProperty("市场服务名称")
     private String marketServiceName;
 
+    @ApiModelProperty("市场服务名称")
+    private String marketServiceCode;
+
     @ApiModelProperty("应用的名称")
     private String marketAppName;
 
@@ -47,6 +50,14 @@ public class MarketServiceVO {
 
     @ApiModelProperty("应用来源")
     private String sourceName;
+
+    public String getMarketServiceCode() {
+        return marketServiceCode;
+    }
+
+    public void setMarketServiceCode(String marketServiceCode) {
+        this.marketServiceCode = marketServiceCode;
+    }
 
     public String getSourceName() {
         return sourceName;
