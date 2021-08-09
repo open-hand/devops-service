@@ -328,7 +328,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             }
             v.setViewId(CiCdPipelineUtils.handleId(v.getId()));
 
-            if (DeployModeEnum.ENV.value().equals(v.getDeployMode())) {
+            if (DeployModeEnum.ENV.value().equals(v.getDeployMode()) && !DeployType.HZERO.getType().equals(v.getDeployType())) {
                 // 计算部署结果
                 v.setDeployResult(v.getCommandStatus());
 
