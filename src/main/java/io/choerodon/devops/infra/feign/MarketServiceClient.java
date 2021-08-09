@@ -158,4 +158,8 @@ public interface MarketServiceClient {
     ResponseEntity<String> queryAppVersionById(
             @Encrypt @PathVariable(value = "application_id") Long applicationId,
             @Encrypt @PathVariable(value = "app_version_id") Long appVersionId);
+
+    @ApiOperation(value = "查询hzero应用类型  （供部署使用）")
+    @GetMapping("/v1/market/application/hzero/type")
+    ResponseEntity<String> queryHzeroAppType(@RequestParam(value = "application_id") Long applicationId);
 }

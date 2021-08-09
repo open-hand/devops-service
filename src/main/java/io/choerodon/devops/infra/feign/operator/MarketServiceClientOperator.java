@@ -114,4 +114,8 @@ public class MarketServiceClientOperator {
     public MarketAppVersionDTO queryAppVersionById(Long applicationId, Long appVersionId) {
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryAppVersionById(applicationId, appVersionId), MarketAppVersionDTO.class);
     }
+
+    public String queryHzeroAppType(Long marketAppId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryHzeroAppType(marketAppId), String.class);
+    }
 }
