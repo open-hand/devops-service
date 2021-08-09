@@ -1294,7 +1294,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
             String serviceCode = appServiceDTO.getCode();
             String serviceName = appServiceDTO.getName();
-            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId(), appSourceType.value, serviceCode, serviceName);
+            devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceInstanceDTO.getAppServiceId(), devopsEnvironmentDTO.getId(), appSourceType.value(), serviceCode, serviceName);
         }
 
 
@@ -1932,7 +1932,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
         String serviceCode = appServiceDTO.getCode();
         String serviceName = appServiceDTO.getName();
-        devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId(), appSourceType.value, serviceCode, serviceName);
+        devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getAppServiceId(), appServiceDeployVO.getEnvironmentId(), appSourceType.value(), serviceCode, serviceName);
 
         //插入部署记录
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),

@@ -2099,8 +2099,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         //项目的来源处理：来源是这样的  如果是项目发布的  那么显示组织/项目   如果是中间件之类的就显示平台预置的
         Map<Long, MarketServiceVO> finalLongMarketServiceVOMap = longMarketServiceVOMap;
         appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
-            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)
-                    || org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.HZERO.getValue())) {
+            if (isMarketOrHzero(appServiceRepVO)) {
                 //根据市场服务id查询已发布部署对象
                 handMarketAppService(finalLongMarketServiceVOMap, appServiceRepVO);
             } else {
@@ -2108,6 +2107,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 handNormalAppService(appServiceRepVO);
             }
         });
+    }
+
+    private boolean isMarketOrHzero(AppServiceRepVO appServiceRepVO) {
+        return org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value())
+                || org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.HZERO.getValue());
     }
 
     private void handNormalAppService(AppServiceRepVO appServiceRepVO) {
@@ -2175,8 +2179,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private Map<Long, MarketServiceVO> queryMarketDeployObj(Long projectId, Page<AppServiceRepVO> appServiceRepVOS) {
-        List<AppServiceRepVO> serviceRepVOS = appServiceRepVOS.getContent().stream().filter(appServiceRepVO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value)
-                || org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.HZERO.getValue())).collect(toList());
+        List<AppServiceRepVO> serviceRepVOS = appServiceRepVOS.getContent().stream().filter(appServiceRepVO -> isMarketOrHzero(appServiceRepVO)).collect(toList());
         Map<Long, MarketServiceVO> longMarketServiceVOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(serviceRepVOS)) {
             Set<Long> marketServiceIds = serviceRepVOS.stream().map(AppServiceRepVO::getId).collect(toSet());

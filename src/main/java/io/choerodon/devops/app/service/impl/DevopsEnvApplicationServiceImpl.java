@@ -68,7 +68,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
                     if (!Objects.isNull(appServiceDTO)) {
                         boolean isProjectAppService = projectId.equals(appServiceDTO.getProjectId());
                         ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
-                        createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId(), appSourceType.value, appServiceDTO.getCode(), appServiceDTO.getName());
+                        createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId(), appSourceType.value(), appServiceDTO.getCode(), appServiceDTO.getName());
                     }
                 })
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
@@ -221,7 +221,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
                 AppServiceInstanceDTO instanceDTO = appServiceInstanceDTOS.stream().sorted(Comparator.comparing(AppServiceInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
                 if (StringUtils.equalsIgnoreCase(instanceDTO.getSource(), AppSourceType.MARKET.getValue())) {
                     //查询市场服务,
-                    devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.MARKET.value);
+                    devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.MARKET.value());
                     List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.queryDeployObjectByMarketServiceId(0l, devopsEnvAppServiceDTO.getAppServiceId());
                     if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOS)) {
                         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.get(0);
@@ -257,7 +257,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         }
         //环境与应用服务在一个项目下，则认为是本项目部署
         if (devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId())) {
-            devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.PROJECT.value);
+            devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.PROJECT.value());
             devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
             devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
             devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
@@ -268,7 +268,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         appServiceShareRuleDTO.setAppServiceId(devopsEnvAppServiceDTO.getAppServiceId());
         List<AppServiceShareRuleDTO> appServiceShareRuleDTOS = appServiceShareRuleMapper.select(appServiceShareRuleDTO);
         if (!CollectionUtils.isEmpty(appServiceShareRuleDTOS)) {
-            devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.SHARE.value);
+            devopsEnvAppServiceDTO.setSource(ApplicationCenterEnum.SHARE.value());
             devopsEnvAppServiceDTO.setServiceCode(appServiceDTO.getCode());
             devopsEnvAppServiceDTO.setServiceName(appServiceDTO.getName());
             devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
