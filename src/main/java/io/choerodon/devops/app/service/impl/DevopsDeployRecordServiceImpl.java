@@ -412,20 +412,29 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             return;
         }
         List<DevopsHzeroDeployDetailsVO> deployDetailsVOList = hzeroDeployVO.getDeployDetailsVOList();
-        Map<Long, DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOMap = deployDetailsVOList.stream().collect(Collectors.toMap(DevopsHzeroDeployDetailsVO::getId, Function.identity()));
-        devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
-            // 2.3 更新部署配置
-            DevopsHzeroDeployDetailsVO devopsHzeroDeployDetailsVO = devopsHzeroDeployDetailsVOMap.get(devopsHzeroDeployDetailsDTO.getId());
 
-            devopsHzeroDeployConfigService.updateById(devopsHzeroDeployDetailsDTO.getValueId(),
-                    devopsHzeroDeployDetailsVO.getValue(),
-                    devopsHzeroDeployDetailsVO.getDevopsServiceReqVO(),
-                    devopsHzeroDeployDetailsVO.getDevopsIngressVO());
-            // 2.4 对于失败的记录更新记录状态为未执行
-            if (HzeroDeployDetailsStatusEnum.FAILED.value().equals(devopsHzeroDeployDetailsDTO.getStatus())) {
+        if (CollectionUtils.isEmpty(deployDetailsVOList)) {
+            devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
+                // 2.4 对于未成功的记录更新状态为未执行
                 devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.CREATED);
-            }
-        });
+            });
+        } else {
+            Map<Long, DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOMap = deployDetailsVOList.stream().collect(Collectors.toMap(DevopsHzeroDeployDetailsVO::getId, Function.identity()));
+            devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
+                // 2.3 更新部署配置
+                DevopsHzeroDeployDetailsVO devopsHzeroDeployDetailsVO = devopsHzeroDeployDetailsVOMap.get(devopsHzeroDeployDetailsDTO.getId());
+                if (devopsHzeroDeployDetailsVO != null) {
+                    devopsHzeroDeployConfigService.updateById(devopsHzeroDeployDetailsDTO.getValueId(),
+                            devopsHzeroDeployDetailsVO.getValue(),
+                            devopsHzeroDeployDetailsVO.getDevopsServiceReqVO(),
+                            devopsHzeroDeployDetailsVO.getDevopsIngressVO());
+                }
+                // 2.4 对于未成功的记录更新状态为未执行
+                devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.CREATED);
+
+            });
+        }
+
         // 启动流程实例
         HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsDTOS);
         workFlowServiceOperator.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
