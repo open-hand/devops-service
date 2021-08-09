@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DeployDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
@@ -447,11 +448,18 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listByDeployRecordId(recordId);
         List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS = ConvertUtils.convertList(devopsHzeroDeployDetailsDTOS, DevopsHzeroDeployDetailsVO.class);
 
-        // 添加市场服务名和版本
+
         devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, devopsHzeroDeployDetailsVO.getMktDeployObjectId());
+            // 添加市场服务名和版本
             devopsHzeroDeployDetailsVO.setMktServiceName(marketServiceDeployObjectVO.getMarketServiceName());
             devopsHzeroDeployDetailsVO.setMktServiceVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
+            // 添加values
+            DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsVO.getValueId());
+            if (devopsHzeroDeployConfigDTO != null) {
+                devopsHzeroDeployDetailsVO.setValue(devopsHzeroDeployConfigDTO.getValue());
+            }
+
         });
 
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, devopsHzeroDeployDetailsDTOS.get(0).getMktDeployObjectId());
