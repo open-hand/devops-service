@@ -19,9 +19,19 @@ public class HzeroDeployRecordVO {
 
     private String mktAppVersion;
 
+    private String type;
+
 
     private List<DevopsHzeroDeployDetailsVO> deployDetailsVOList;
 
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getMktApplication() {
         return mktApplication;
