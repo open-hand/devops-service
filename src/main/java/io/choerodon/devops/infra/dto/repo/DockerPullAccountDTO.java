@@ -32,23 +32,26 @@ public class DockerPullAccountDTO {
         return harborUrl;
     }
 
-    public void setHarborUrl(String harborUrl) {
+    public DockerPullAccountDTO setHarborUrl(String harborUrl) {
         this.harborUrl = harborUrl;
+        return this;
     }
 
     public String getPullAccount() {
         return pullAccount;
     }
 
-    public void setPullAccount(String pullAccount) {
+    public DockerPullAccountDTO setPullAccount(String pullAccount) {
         this.pullAccount = pullAccount;
+        return this;
     }
 
     public String getPullPassword() {
         return pullPassword;
     }
 
-    public void setPullPassword(String pullPassword) {
+    public DockerPullAccountDTO setPullPassword(String pullPassword) {
         this.pullPassword = pullPassword;
+        return this;
     }
 }

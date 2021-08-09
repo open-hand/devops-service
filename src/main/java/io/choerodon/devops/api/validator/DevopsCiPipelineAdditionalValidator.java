@@ -37,7 +37,7 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final String ERROR_MAVEN_REPO_URL_EMPTY = "error.maven.repository.url.empty";
     private static final String ERROR_MAVEN_REPO_URL_INVALID = "error.maven.repository.url.invalid";
     private static final String ERROR_MAVEN_REPO_USERNAME_EMPTY = "error.maven.repository.username.empty";
-    private static final String ERROR_MAVEN_REPO_PASSWORD_EMPTY = "error.maven.repository.password.empty";
+    private static final String ERROR_MAVEN_REPO_PSW_EMPTY = "error.maven.repository.password.empty";
     private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
     private static final String ERROR_CUSTOM_JOB_STAGE_NOT_MATCH = "error.custom.job.stage.not.match";
     private static final String ERROR_JOB_NAME_NOT_UNIQUE = "error.job.name.not.unique";
@@ -162,7 +162,7 @@ public class DevopsCiPipelineAdditionalValidator {
                         throw new CommonException(ERROR_MAVEN_REPO_USERNAME_EMPTY);
                     }
                     if (StringUtils.isEmpty(repo.getPassword())) {
-                        throw new CommonException(ERROR_MAVEN_REPO_PASSWORD_EMPTY);
+                        throw new CommonException(ERROR_MAVEN_REPO_PSW_EMPTY);
                     }
                 }
             });
