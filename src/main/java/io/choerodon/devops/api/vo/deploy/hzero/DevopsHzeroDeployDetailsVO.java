@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.deploy.hzero;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
@@ -17,6 +18,9 @@ public class DevopsHzeroDeployDetailsVO {
     private Long id;
     @ApiModelProperty("实例code")
     private String instanceCode;
+    @ApiModelProperty("部署配置id")
+    @Encrypt
+    private Long valueId;
     @ApiModelProperty("部署配置")
     private String value;
     @ApiModelProperty("市场服务id")
@@ -34,6 +38,13 @@ public class DevopsHzeroDeployDetailsVO {
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
+    }
 
     public String getMktServiceName() {
         return mktServiceName;
