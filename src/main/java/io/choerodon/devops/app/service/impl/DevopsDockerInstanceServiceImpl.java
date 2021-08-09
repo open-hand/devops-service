@@ -114,7 +114,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         String deployVersion = null;
         Long appServiceId = null;
         String serviceName = null;
-        DockerDeployDTO dockerDeployDTO = null;
+        DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
 
         DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
 
@@ -122,7 +122,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectId, dockerDeployVO);
             MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
             DockerPullAccountDTO dockerPullAccountDTO = initDockerPullAccountDTO(marketHarborConfigVO);
-            dockerDeployDTO = initMarketDockerDeployDTO(dockerDeployVO, dockerPullAccountDTO, marketServiceDeployObjectVO);
+            dockerDeployDTO = initMarketDockerDeployDTO(dockerDeployDTO, dockerPullAccountDTO, marketServiceDeployObjectVO);
             appServiceId = marketServiceDeployObjectVO.getMarketServiceId();
             if (AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType())) {
                 deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();
@@ -138,7 +138,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
         } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
             HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
-            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployVO, imageTagVo);
+            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
 
             deployVersion = dockerDeployVO.getImageInfo().getTag();
             deployObjectName = dockerDeployVO.getImageInfo().getImageName();
@@ -199,15 +199,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         return imageTagVo;
     }
 
-    private DockerDeployDTO initProjectDockerDeployDTO(DockerDeployVO dockerDeployVO, HarborC7nRepoImageTagVo imageTagVo) {
-        DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
+    private DockerDeployDTO initProjectDockerDeployDTO(DockerDeployDTO dockerDeployDTO, HarborC7nRepoImageTagVo imageTagVo) {
+
         dockerDeployDTO.setDockerPullAccountDTO(ConvertUtils.convertObject(imageTagVo, DockerPullAccountDTO.class));
         dockerDeployDTO.setImage(imageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", ""));
         return dockerDeployDTO;
     }
 
-    private DockerDeployDTO initMarketDockerDeployDTO(DockerDeployVO dockerDeployVO, DockerPullAccountDTO dockerPullAccountDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
-        DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
+    private DockerDeployDTO initMarketDockerDeployDTO(DockerDeployDTO dockerDeployDTO, DockerPullAccountDTO dockerPullAccountDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
         dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
         dockerDeployDTO.setImage(marketServiceDeployObjectVO.getMarketDockerImageUrl());
         return dockerDeployDTO;

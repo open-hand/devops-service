@@ -529,6 +529,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private boolean isEditCdJob(DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsCdJobVO devopsCdJobVO) {
+        if (Objects.isNull(devopsEnvironmentDTO)) {
+            return Boolean.FALSE;
+        }
         if (devopsEnvironmentDTO.getSkipCheckPermission()) {
             return Boolean.TRUE;
         }
