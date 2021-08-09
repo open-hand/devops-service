@@ -49,7 +49,7 @@ public class IamUserDTO extends AuditDomain {
     public static final String FIELD_LOCKED = "locked";
     public static final String FIELD_LDAP = "ldap";
     public static final String FIELD_LOCKED_UNTIL_AT = "lockedUntilAt";
-    public static final String FIELD_PASSWORD_ATTEMPT = "passwordAttempt";
+    public static final String FIELD_PSW_ATTEMPT = "passwordAttempt";
     public static final String FIELD_ADMIN = "admin";
     public static final String FIELD_COMPANY_NAME = "companyName";
     public static final String FIELD_BIRTHDAY = "birthday";

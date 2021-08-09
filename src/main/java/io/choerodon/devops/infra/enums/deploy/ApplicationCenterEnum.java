@@ -8,7 +8,7 @@ public enum ApplicationCenterEnum {
     SHARE("share"),
     PROJECT("project"),
     MARKET("market");
-    public String value;
+    private String value;
 
     ApplicationCenterEnum(String value) {
         this.value = value;

@@ -513,7 +513,7 @@ public class DevopsSagaHandler {
                 try {
                     sw.close();
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    LOGGER.error("error.sw.close", e1);
                 }
             }
             if (pw != null) {

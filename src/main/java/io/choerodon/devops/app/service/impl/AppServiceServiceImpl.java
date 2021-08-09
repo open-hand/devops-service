@@ -2299,7 +2299,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         for (File listFile : listFiles) {
             if (listFile.isDirectory()) {
                 //修改他的名字为new code
-                listFile.renameTo(new File(applicationDir + File.separator + newCode));
+                boolean renameTo = listFile.renameTo(new File(applicationDir + File.separator + newCode));
+                if (!renameTo) {
+                    LOGGER.error("error.rename.fail");
+                }
             }
         }
     }
