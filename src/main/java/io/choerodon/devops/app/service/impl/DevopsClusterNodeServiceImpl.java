@@ -393,8 +393,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (e instanceof TransportException) {
                 LOGGER.info(">>>>>>>>> [install k8s] clusterId {} : ssh connection disconnect ,host: [ {} ] <<<<<<<<<", devopsClusterInstallPayload.getClusterId(), ssh.getRemoteHostname());
             } else {
-                LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install ,error: {}<<<<<<<<<", devopsClusterInstallPayload.getClusterId(), e.getMessage());
-                e.printStackTrace();
+                LOGGER.error(">>>>>>>>> [install k8s] clusterId {} :failed to install ,error: {}<<<<<<<<<", devopsClusterInstallPayload.getClusterId(), e);
             }
         } finally {
             devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
@@ -762,7 +761,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                     record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                             .appendErrorMsg(e.getMessage());
                     devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-                    e.printStackTrace();
+                    LOGGER.error("update fail", e);
                 } finally {
                     devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
                     devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);

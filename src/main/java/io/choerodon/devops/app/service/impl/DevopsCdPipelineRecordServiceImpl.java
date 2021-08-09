@@ -343,7 +343,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
             ssh.disconnect();
         } catch (IOException e) {
-            LOGGER.error("error close ssh",e);
+            LOGGER.error("error close ssh", e);
         }
     }
 
@@ -1067,7 +1067,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
         } catch (IOException e) {
             index = false;
-            e.printStackTrace();
+            LOGGER.error("error ssh connect", e);
         } finally {
             closeSsh(ssh, session);
         }
