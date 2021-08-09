@@ -12,7 +12,7 @@ public class DevopsAnsibleCommandConstants {
     /**
      * 密码模式 节点名称 主机 端口 用户 登录密码
      */
-    public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
+    public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PSW_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
 
     /**
      * 密钥模式 节点名称 主机 端口 用户 密钥文件路径

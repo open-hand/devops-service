@@ -208,11 +208,11 @@ public class GitlabCiUtil {
      * @return sonar命令
      */
     public static String renderSonarCommand(String sonarUrl, String sonarUsername, String sonarPassword, Boolean skipTests) {
-        return String.format(SONAR_USER_PASSWORD_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, skipTests);
+        return String.format(SONAR_USER_PSW_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, skipTests);
     }
 
     public static String renderSonarScannerCommand(String sonarUrl, String sonarUsername, String sonarPassword, String sources) {
-        return String.format(SONAR_USER_PASSWORD_SONAR_SCANNNER_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, sources);
+        return String.format(SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, sources);
     }
 
     /**
