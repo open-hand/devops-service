@@ -419,7 +419,7 @@ public class SshUtil {
             }
             ssh.disconnect();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("close ssh", e);
         }
     }
 

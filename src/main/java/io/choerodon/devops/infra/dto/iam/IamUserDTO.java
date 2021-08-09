@@ -31,44 +31,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ApiModel("用户")
 public class IamUserDTO extends AuditDomain {
 
-    public static final String FIELD_ID = "id";
-    public static final String FIELD_LOGIN_NAME = "loginName";
-    public static final String FIELD_EMAIL = "email";
-    public static final String FIELD_ORGANIZATION_ID = "organizationId";
-    public static final String FIELD_PASSWORD = "password";
-    public static final String FIELD_REAL_NAME = "realName";
-    public static final String FIELD_PHONE = "phone";
-    public static final String FIELD_INTERNATIONAL_TEL_CODE = "internationalTelCode";
-    public static final String FIELD_IMAGE_URL = "imageUrl";
-    public static final String FIELD_PROFILE_PHOTO = "profilePhoto";
-    public static final String FIELD_LANGUAGE = "language";
-    public static final String FIELD_TIME_ZONE = "timeZone";
-    public static final String FIELD_LAST_PASSWORD_UPDATED_AT = "lastPasswordUpdatedAt";
-    public static final String FIELD_LAST_LOGIN_AT = "lastLoginAt";
-    public static final String FIELD_ENABLED = "enabled";
-    public static final String FIELD_LOCKED = "locked";
-    public static final String FIELD_LDAP = "ldap";
-    public static final String FIELD_LOCKED_UNTIL_AT = "lockedUntilAt";
-    public static final String FIELD_PSW_ATTEMPT = "passwordAttempt";
-    public static final String FIELD_ADMIN = "admin";
-    public static final String FIELD_COMPANY_NAME = "companyName";
-    public static final String FIELD_BIRTHDAY = "birthday";
-    public static final String FIELD_NICKNAME = "nickname";
-    public static final String FIELD_GENDER = "gender";
-    public static final String FIELD_COUNTRY_ID = "countryId";
-    public static final String FIELD_ORGION_ID = "regionId";
-    public static final String FIELD_ADDRESS_DETAIL = "addressDetail";
-    public static final String FIELD_START_DATE_ACTIVE = "startDateActive";
-    public static final String FIELD_END_DATE_ACTIVE = "endDateActive";
-    public static final String FIELD_PHONE_CHECK_FLAG = "phoneCheckFlag";
-    public static final String FIELD_EMAIL_CHECK_FLAG = "emailCheckFlag";
-    public static final String FIELD_DEFAULT_ROLE_ID = "defaultRoleId";
-    public static final String FIELD_USER_TYPE = "userType";
-
-    public static final String DEFAULT_LANGUAGE = "zh_CN";
-    public static final String DEFAULT_TIME_ZONE = "GMT+8";
-
-    public static final String DEFAULT_USER_TYPE = "P";
 
     @Encrypt
     @Id
