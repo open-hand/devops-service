@@ -32,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.utils.PageUtils;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.*;
@@ -301,18 +302,33 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
         // 解析查询参数
         Page<DevopsHostVO> page;
+        List<DevopsHostVO> devopsHostVOList = null;
         Select<DevopsHostVO> select = null;
         if (projectOwnerOrRoot) {
-            select = () -> devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
+            devopsHostVOList = devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
         } else {
-            select = () -> devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
+            devopsHostVOList = devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
         }
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+        devopsHostVOList = devopsHostVOList.stream()
+                .peek(h -> h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue()))
+                .sorted(Comparator.comparing(DevopsHostVO::getHostStatus))
+                .peek(h -> {
+                    // 如果是项目所有者或者root，展示权限管理tab和按钮
+                    if (projectOwnerOrRoot) {
+                        h.setShowPermission(true);
+                    } else {
+                        // 项目成员且为主机创建者，展示权限管理tab和按钮
+                        // 仅仅是项目成员，不展示权限管理tab和按钮
+                        h.setShowPermission(h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()));
+                    }
+                }).collect(Collectors.toList());
+
         if (doPage != null && doPage) {
-            page = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageRequest), select);
+            page = PageUtils.createPageFromList(devopsHostVOList, pageRequest);
         } else {
             page = new Page<>();
-            List<DevopsHostVO> devopsHostVOS = select.doSelect();
-            page.setContent(devopsHostVOS);
+            page.setContent(devopsHostVOList);
         }
 
         // 分页查询
@@ -320,18 +336,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             // 填充创建者用户信息
             UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creatorInfo");
         }
-        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
-        page.getContent().forEach(h -> {
-            h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue());
-            // 如果是项目所有者或者root，展示权限管理tab和按钮
-            if (projectOwnerOrRoot) {
-                h.setShowPermission(true);
-            } else {
-                // 项目成员且为主机创建者，展示权限管理tab和按钮
-                // 仅仅是项目成员，不展示权限管理tab和按钮
-                h.setShowPermission(h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()));
-            }
-        });
         return page;
     }
 
