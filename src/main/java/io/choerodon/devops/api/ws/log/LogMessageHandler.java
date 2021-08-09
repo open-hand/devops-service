@@ -21,8 +21,8 @@ import io.choerodon.devops.api.ws.WebSocketTool;
  */
 @Component
 public class LogMessageHandler {
-    public static String VIEW_LOG = "viewLog";
-    public static String DOWNLOAD_LOG = "downloadLog";
+    public static final String VIEW_LOG = "viewLog";
+    public static final String DOWNLOAD_LOG = "downloadLog";
     private static final Logger LOGGER = LoggerFactory.getLogger(LogMessageHandler.class);
     private static final String AGENT_LOG = "AgentLog";
 

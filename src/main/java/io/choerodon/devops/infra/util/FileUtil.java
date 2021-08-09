@@ -768,7 +768,7 @@ public class FileUtil {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("unpack error", e);
         }
     }
 

@@ -49,7 +49,7 @@ public class MessageCodeConstants {
      */
     public static final String SERVICE_CREATION_FAILURE = "SERVICEFAILURE";
     public static final String RESOURCE_DELETE_CONFIRMATION = "RESOURCEDELETECONFIRMATION";
-    public static final String GITLAB_PWD = "GITLABPASSWORD";
+    public static final String GITLAB_PSW = "GITLABPASSWORD";
     public static final String INVITE_USER = "INVITEUSER";
     /**
      * 删除应用服务

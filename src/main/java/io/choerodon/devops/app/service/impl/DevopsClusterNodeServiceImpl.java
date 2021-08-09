@@ -213,7 +213,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.INNER.getType())) {// 设置所有节点
                 if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
-                    k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
+                    k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PSW_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                             .append(System.lineSeparator());
                 } else {
                     k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())))

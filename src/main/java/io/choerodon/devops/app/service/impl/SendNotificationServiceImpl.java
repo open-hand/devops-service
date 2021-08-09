@@ -933,9 +933,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             .put("gitlabPassword", Objects.requireNonNull(password))
                             .build();
 
-                    sendOrganizationNotices(MessageCodeConstants.GITLAB_PWD, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, organizationId);
+                    sendOrganizationNotices(MessageCodeConstants.GITLAB_PSW, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, organizationId);
                 },
-                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", MessageCodeConstants.GITLAB_PWD, ex));
+                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", MessageCodeConstants.GITLAB_PSW, ex));
     }
 
     private static Map<String, String> constructParamsForEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {

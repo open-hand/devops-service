@@ -430,15 +430,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsCdPipelineRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         // 更新流水线记录信息
         devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);
-
+        CustomUserDetails details = DetailsHelper.getUserDetails();
         try {
-            CustomUserDetails details = DetailsHelper.getUserDetails();
             // 执行流水线
             createWorkFlow(devopsCdPipelineRecordDTO.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
             // 更新流水线执行状态
             updateFirstStage(devopsCdPipelineRecordDTO.getId());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("create WorkFlow error", e);
             sendFailedSiteMessage(devopsCdPipelineRecordDTO.getId(), GitUserNameUtil.getUserId());
             devopsCdPipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
             devopsCdPipelineRecordService.update(devopsCdPipelineRecordDTO);

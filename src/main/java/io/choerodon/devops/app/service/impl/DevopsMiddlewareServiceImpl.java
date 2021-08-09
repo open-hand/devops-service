@@ -440,7 +440,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             // 如果内网端口不存在，使用公网端口
             Integer port = hostDTO.getSshPort();
             if (HostAuthType.ACCOUNTPASSWORD.value().equals(hostDTO.getAuthType())) {
-                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, ip, ip, port, hostDTO.getUsername(), hostDTO.getPassword()))
+                middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PSW_TYPE, ip, ip, port, hostDTO.getUsername(), hostDTO.getPassword()))
                         .append(System.lineSeparator());
             } else {
                 middlewareInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, ip, ip, port, hostDTO.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, hostDTO.getName())))

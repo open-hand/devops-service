@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MiddlewareAppServiceName {
-    public static Map<String, String> MIDDLE_APP_SERVICE_NAME_MAP;
+    public static final Map<String, String> MIDDLE_APP_SERVICE_NAME_MAP;
 
     /**
      * 中间件名称映射

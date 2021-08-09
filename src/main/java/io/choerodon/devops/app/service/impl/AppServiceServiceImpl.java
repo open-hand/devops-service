@@ -1658,7 +1658,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             date = dateFormat.parse(str);
         } catch (ParseException e) {
-            e.printStackTrace();
+            LOGGER.error("parse error", e);
             return str;
         }
         Calendar cal = Calendar.getInstance();
