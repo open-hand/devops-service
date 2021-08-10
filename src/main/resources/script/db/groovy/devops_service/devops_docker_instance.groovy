@@ -17,9 +17,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_docker_instance.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'ports', type: 'BIGINT UNSIGNED', remarks: '端口映射列表') {
-                constraints(nullable: false)
-            }
+            column(name: 'ports', type: 'VARCHAR(128)', remarks: '端口映射列表')
+
             column(name: 'status', type: 'VARCHAR(20)', remarks: '容器状态')
             column(name: 'source_type', type: 'VARCHAR(20)', remarks: '部署来源') {
                 constraints(nullable: false)
