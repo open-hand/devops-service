@@ -90,7 +90,8 @@ public class MarketInstanceCreationRequestVO {
                                            Long environmentId,
                                            DevopsServiceReqVO devopsServiceReqVO,
                                            DevopsIngressVO devopsIngressVO,
-                                           String source) {
+                                           String source,
+                                           String applicationType) {
         this.instanceId = instanceId;
         this.marketAppServiceId = marketAppServiceId;
         this.marketDeployObjectId = marketDeployObjectId;
@@ -101,6 +102,7 @@ public class MarketInstanceCreationRequestVO {
         this.devopsServiceReqVO = devopsServiceReqVO;
         this.devopsIngressVO = devopsIngressVO;
         this.source = source;
+        this.applicationType = applicationType;
     }
 
     public Long getHzeroAppId() {
