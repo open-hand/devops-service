@@ -62,7 +62,7 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建应用服务")
     @PostMapping
-    public ResponseEntity<AppServiceRepVO> create(
+    public ResponseEntity<AppServiceRepVO> creatstatefulSetWorkLoade(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
