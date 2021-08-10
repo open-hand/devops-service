@@ -31,12 +31,26 @@ public class DevopsHzeroDeployDetailsVO {
     @ApiModelProperty("部署顺序")
     private Long sequence;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum}
+     */
+    @ApiModelProperty("部署状态")
+    private String status;
+
     private String mktServiceName;
 
     private String mktServiceVersion;
 
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Long getValueId() {
         return valueId;
