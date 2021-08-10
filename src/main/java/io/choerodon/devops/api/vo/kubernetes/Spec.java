@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.vo.kubernetes;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
 
 public class Spec {
     @ApiModelProperty("这个实例所属的应用服务id/选填，由猪齿鱼前端页面创建的实例应该有这个值，便于网络选择此实例进行管理。被用于实例的label: choerodon.io/app-service-id")
@@ -28,6 +28,28 @@ public class Spec {
     private String chartVersion;
     @ApiModelProperty("部署配置内容")
     private String values;
+
+    @ApiModelProperty("1.1版本新增,解决agent部署自定义资源丢失精度问题")
+    private String v1CommandId;
+    @ApiModelProperty("1.1版本新增,解决agent部署自定义资源丢失精度问题")
+    private String v1AppServiceId;
+
+
+    public String getV1CommandId() {
+        return v1CommandId;
+    }
+
+    public void setV1CommandId(String v1CommandId) {
+        this.v1CommandId = v1CommandId;
+    }
+
+    public String getV1AppServiceId() {
+        return v1AppServiceId;
+    }
+
+    public void setV1AppServiceId(String v1AppServiceId) {
+        this.v1AppServiceId = v1AppServiceId;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

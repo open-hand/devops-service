@@ -57,7 +57,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME = "choerodon.io/parent-workload-name";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT = "choerodon.io/parent-workload";
     private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
-    private static final String CHOERODON_IO_COMMAND = "choeroodn.io/command";
+    private static final String CHOERODON_IO_V1_COMMAND = "choerodon.io/v1-command";
     private static final String PENDING = "Pending";
     private static final String METADATA = "metadata";
     private static final String SERVICE_KIND = "service";
@@ -255,7 +255,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 .withRefType("")
                                 .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
                         builder -> builder
-                                .withPayloadAndSerialize(new PodReadyEventVO(envId, releaseName, TypeUtil.objToLong(labels.get(CHOERODON_IO_COMMAND))))
+                                .withPayloadAndSerialize(new PodReadyEventVO(envId, releaseName, TypeUtil.objToLong(labels.get(CHOERODON_IO_V1_COMMAND))))
                                 .withRefId(""));
             }
         } else {
