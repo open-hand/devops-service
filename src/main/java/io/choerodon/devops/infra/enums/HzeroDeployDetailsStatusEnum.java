@@ -24,7 +24,12 @@ public enum HzeroDeployDetailsStatusEnum {
     /**
      * 部署失败
      */
-    FAILED("failed");
+    FAILED("failed"),
+
+    /**
+     * 已取消
+     */
+    CANCELED("canceled");
 
     private String value;
 
