@@ -717,6 +717,7 @@ public class DevopsSagaHandler {
         if (devopsHzeroDeployDetailsDTO != null) {
             // pod的操作记录不是最新的则丢弃
             if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
+                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
                 return;
             }
 
@@ -730,17 +731,20 @@ public class DevopsSagaHandler {
             List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
 
             if (CollectionUtils.isEmpty(podResourceDetailsDTOS)) {
+                LOGGER.info(">>>>>>>>>>>>>>>podResourceDetailsDTOS is empty, skip<<<<<<<<<<<<<<<<<");
                 return;
             }
-            if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
-                return;
-            }
+//            if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
+//                LOGGER.info(">>>>>>>>>>>>>>>pod not all ready, skip<<<<<<<<<<<<<<<<<");
+//                return;
+//            }
             List<String> images = new ArrayList<>();
             for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
                 V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
                 images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
             }
             if (!images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))) {
+                LOGGER.info(">>>>>>>>>>>>>>>pod not all ready, skip<<<<<<<<<<<<<<<<<");
                 return;
             }
 
