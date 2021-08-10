@@ -9,9 +9,21 @@ package io.choerodon.devops.infra.enums;
  */
 public enum HzeroDeployDetailsStatusEnum {
 
+    /**
+     * 未执行
+     */
     CREATED("created"),
+    /**
+     * 部署中
+     */
     DEPLOYING("deploying"),
+    /**
+     * 部署成功
+     */
     SUCCESS("success"),
+    /**
+     * 部署失败
+     */
     FAILED("failed");
 
     private String value;
