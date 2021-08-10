@@ -716,10 +716,10 @@ public class DevopsSagaHandler {
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryDeployingByEnvIdAndInstanceCode(podReadyEventVO.getEnvId(), podReadyEventVO.getInstanceCode());
         if (devopsHzeroDeployDetailsDTO != null) {
             // pod的操作记录不是最新的则丢弃
-            if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
-                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
-                return;
-            }
+//            if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
+//                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
+//                return;
+//            }
 
             DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
             // 查询实例
@@ -734,10 +734,10 @@ public class DevopsSagaHandler {
                 LOGGER.info(">>>>>>>>>>>>>>>podResourceDetailsDTOS is empty, skip<<<<<<<<<<<<<<<<<");
                 return;
             }
-//            if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
-//                LOGGER.info(">>>>>>>>>>>>>>>pod not all ready, skip<<<<<<<<<<<<<<<<<");
-//                return;
-//            }
+            if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
+                LOGGER.info(">>>>>>>>>>>>>>>pod not all ready, skip<<<<<<<<<<<<<<<<<");
+                return;
+            }
             List<String> images = new ArrayList<>();
             for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
                 V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
