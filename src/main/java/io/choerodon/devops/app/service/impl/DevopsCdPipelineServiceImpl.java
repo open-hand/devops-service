@@ -541,7 +541,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
 
                         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId(), true);
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(devopsCdEnvDeployInfoDTO.getProjectId(), preInstance.getId(), true, true);
                         log.append("Deploy app success.").append(System.lineSeparator());
                         // 更新job状态为success
                         cdJobRecordDTO.setCommandId(devopsEnvCommandDTO.getId());

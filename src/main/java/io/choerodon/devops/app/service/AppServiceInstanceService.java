@@ -148,7 +148,7 @@ public interface AppServiceInstanceService {
      * @param projectId  项目id
      * @param instanceId 实例id
      */
-    DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline);
+    DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean saveRecord);
 
     /**
      * 实例删除
