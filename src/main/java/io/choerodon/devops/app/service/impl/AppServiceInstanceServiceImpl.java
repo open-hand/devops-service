@@ -1388,12 +1388,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline) {
+    public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean saveRecord) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
         if (AppServiceInstanceSource.NORMAL.getValue().equals(appServiceInstanceDTO.getSource())) {
             return doRestartNormalInstance(projectId, appServiceInstanceDTO, isFromPipeline);
         } else {
-            return doRestartMarketInstance(projectId, appServiceInstanceDTO);
+            return doRestartMarketInstance(projectId, appServiceInstanceDTO, saveRecord);
         }
     }
 
@@ -1471,7 +1471,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     }
 
-    private DevopsEnvCommandDTO doRestartMarketInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO) {
+    private DevopsEnvCommandDTO doRestartMarketInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO, Boolean saveRecord) {
         // 查询市场应用服务, 确认存在
         Long instanceId = appServiceInstanceDTO.getId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
@@ -1513,7 +1513,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceDeployVO.setSource(AppServiceInstanceSource.MARKET.getValue());
         }
         //插入部署记录
-        saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
+        if (Boolean.TRUE.equals(saveRecord)) {
+            saveDeployRecord(marketServiceVO, appServiceInstanceDTO, devopsEnvironmentDTO, devopsEnvCommandDTO.getId(), chartVersion);
+        }
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
@@ -2181,6 +2183,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 // 版本和配置相同则走重新部署的逻辑
                 DevopsEnvCommandDTO devopsEnvCommandDTO = restartInstance(projectId,
                         appServiceInstanceDTO.getId(),
+                        false,
                         false);
                 commandId = devopsEnvCommandDTO.getId();
             } else {
