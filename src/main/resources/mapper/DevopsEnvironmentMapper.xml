@@ -139,10 +139,10 @@
 	     ins.STATUS AS ins_status,
 	     ins.source AS source,
 	     env.cluster_id AS cluster_id,
-	      (SELECT (1)
+	      (SELECT count(1)
 	        FROM devops_env_pod dp
 	        WHERE dp.namespace = env.CODE AND dp.env_id = ins.env_id ) AS pod_count,
-	      (SELECT (1)
+	      (SELECT count(1)
             FROM devops_env_pod dp
             WHERE
 	            dp.namespace = env.CODE
