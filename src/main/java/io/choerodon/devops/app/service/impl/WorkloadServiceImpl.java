@@ -7,6 +7,7 @@ import java.util.*;
 
 import com.google.common.collect.Iterables;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -57,24 +58,31 @@ public class WorkloadServiceImpl implements WorkloadService {
     private DevopsEnvCommandService devopsEnvCommandService;
 
     @Autowired
+    @Lazy
     private DevopsDeploymentService devopsDeploymentService;
 
     @Autowired
+    @Lazy
     private DevopsStatefulSetService devopsStatefulSetService;
 
     @Autowired
+    @Lazy
     private DevopsJobService devopsJobService;
 
     @Autowired
+    @Lazy
     private DevopsDaemonSetService devopsDaemonSetService;
 
     @Autowired
+    @Lazy
     private DevopsCronJobService devopsCronJobService;
 
     @Autowired
+    @Lazy
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
 
     @Autowired
+    @Lazy
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     @Autowired
