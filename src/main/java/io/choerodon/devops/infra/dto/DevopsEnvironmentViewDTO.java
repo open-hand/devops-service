@@ -18,17 +18,6 @@ public class DevopsEnvironmentViewDTO {
     private String code;
     private List<DevopsApplicationViewDTO> apps;
 
-    @ApiModelProperty("实例id")
-    private Long instanceId;
-
-    public Long getInstanceId() {
-        return instanceId;
-    }
-
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
-    }
-
     public Long getId() {
         return id;
     }

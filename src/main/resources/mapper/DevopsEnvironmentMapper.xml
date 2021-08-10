@@ -4,7 +4,6 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper">
     <resultMap id="instanceEnvTree" type="io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO">
         <id property="id" column="env_id"/>
-        <id property="instanceId" column="ins_id"/>
         <result property="name" column="env_name"/>
         <result property="code" column="env_code"/>
         <result property="clusterId" column="cluster_id"/>
@@ -128,35 +127,50 @@
 
 
     <select id="listAllInstanceEnvTree" resultMap="instanceEnvTree">
-        SELECT any_value(env.id)                                                                as env_id,
-               any_value(env.name)                                                              as env_name,
-               any_value(env.code)                                                              as env_code,
-               any_value(env_app.app_service_id)                                                as app_service_id,
-               any_value(app.name)                                                              as app_name,
-               any_value(app.project_id)                                                        as app_project_id,
-               any_value(ins.id)                                                                as ins_id,
-               any_value(ins.code)                                                              as ins_code,
-               any_value(ins.status)                                                            as ins_status,
-               any_value(ins.source)                                                            as source,
-               any_value(env.cluster_id)                                                        as cluster_id,
-               SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
-               SUM(CASE
-                       WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
-                            env.id = ins.env_id THEN 1
-                       ELSE 0 END)                                                              AS pod_running_count
-        FROM devops_env env
-                     LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
-                     LEFT JOIN devops_app_service app
-                ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
-                     LEFT JOIN devops_app_service_instance ins ON env_app.app_service_id = ins.app_service_id
-                AND env.id = ins.env_id AND ins.status != 'deleted'
-                     LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
-        WHERE env.project_id = #{projectId}
-          AND env.is_active = TRUE
-          AND env.is_failed = FALSE
-          AND env.is_synchro = TRUE
-          AND env.type = 'user'
-        GROUP BY env.name, app.id, ins.id
+      SELECT
+	       env.id AS env_id,
+	       env.NAME AS env_name,
+	       app.id AS app_service_id,
+	       app.NAME AS app_name,
+	       ins.id AS ins_id,
+	       ins.CODE AS ins_code,
+	       ins.STATUS AS ins_status,
+	       ins.source  AS source,
+	         env.cluster_id AS cluster_id,
+           	(SELECT
+             	count( 1 )
+              FROM
+             	devops_env_pod dp
+             WHERE
+             	dp.instance_id = ins.id
+             	AND dp.namespace = env.CODE
+             	AND env.id = ins.env_id
+             	) pod_count,
+             	(SELECT
+             	count( 1 )
+             FROM
+             	devops_env_pod dp
+             WHERE
+             	dp.instance_id = ins.id
+             	AND dp.`status` = 'Running'
+             	AND dp.is_ready = TRUE
+             	AND dp.namespace = env.CODE
+             	AND env.id = ins.env_id
+             	) pod_running_count
+       FROM
+       	devops_env env
+       	LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
+       	LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
+       	AND ( app.is_active = TRUE OR app.is_active IS NULL )
+       	LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
+       	AND env.id = ins.env_id
+       	AND ins.STATUS != 'deleted'
+       WHERE
+            env.project_id = #{projectId,jdbcType=BIGINT}
+            AND env.is_active = TRUE
+            AND env.is_failed = FALSE
+            AND env.is_synchro = TRUE
+            AND env.type = 'user'
     </select>
 
     <select id="listMemberInstanceEnvTree" resultMap="instanceEnvTree">
