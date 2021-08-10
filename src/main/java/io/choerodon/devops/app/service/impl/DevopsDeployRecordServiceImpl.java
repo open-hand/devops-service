@@ -393,6 +393,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
         workFlowServiceOperator.stopInstance(projectId, devopsDeployRecordDTO.getBusinessKey());
         updateResultById(recordId, DeployResultEnum.CANCELED);
+        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listNotSuccessRecordId(recordId);
+
+        devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.CANCELED));
     }
 
     @Override
