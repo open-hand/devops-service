@@ -4,6 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper">
     <resultMap id="instanceEnvTree" type="io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO">
         <id property="id" column="env_id"/>
+        <id property="instanceId" column="ins_id"/>
         <result property="name" column="env_name"/>
         <result property="code" column="env_code"/>
         <result property="clusterId" column="cluster_id"/>
