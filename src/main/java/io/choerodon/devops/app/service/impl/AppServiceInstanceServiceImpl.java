@@ -2344,6 +2344,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         c7nHelmRelease.getSpec().setCommandId(commandId);
         c7nHelmRelease.getSpec().setSource(source);
         c7nHelmRelease.getSpec().setMarketDeployObjectId(marketServiceVersionId);
+        c7nHelmRelease.getSpec().setV1CommandId(String.valueOf(commandId));
+        c7nHelmRelease.getSpec().setV1AppServiceId(String.valueOf(appServiceId));
         // 密钥名称不为空且来源是MARKET
         if (!StringUtils.isEmpty(secretName) && AppServiceInstanceSource.MARKET.getValue().equals(source)) {
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
