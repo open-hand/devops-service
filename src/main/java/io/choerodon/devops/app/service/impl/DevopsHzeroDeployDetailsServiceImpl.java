@@ -83,6 +83,6 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
         devopsHzeroDeployDetailsDTO.setDeployRecordId(deployRecordId);
 
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsMapper.select(devopsHzeroDeployDetailsDTO);
-        return devopsHzeroDeployDetailsDTOS.stream().anyMatch(v -> HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(v.getStatus()));
+        return devopsHzeroDeployDetailsDTOS.stream().allMatch(v -> HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(v.getStatus()));
     }
 }
