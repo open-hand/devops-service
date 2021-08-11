@@ -878,14 +878,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         String appServiceCode;
         String appServiceName;
+        marketServiceVO = getMarketServiceVO(projectId, appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getMarketDeployObjectId());
         if (AppSourceType.HZERO.getValue().equals(appServiceDeployVO.getApplicationType())) {
-            marketServiceVO = getMarketServiceVO(projectId, appServiceDeployVO.getHzeroServiceVersionId(), appServiceDeployVO.getMarketDeployObjectId());
             appServiceCode = marketServiceVO.getMarketServiceCode();
             appServiceName = marketServiceVO.getMarketServiceName();
         } else {
             appServiceCode = marketServiceDeployObjectVO.getDevopsAppServiceCode();
             appServiceName = marketServiceDeployObjectVO.getDevopsAppServiceName();
-            marketServiceVO = getMarketServiceVO(projectId, appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getMarketDeployObjectId());
         }
 
 
@@ -2176,7 +2175,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     AppServiceInstanceSource.MARKET.getValue(),
                     AppSourceType.HZERO.getValue());
 
-            marketInstanceCreationRequestVO.setHzeroServiceVersionId(devopsHzeroDeployDetailsDTO.getMktServiceId());
+            marketInstanceCreationRequestVO.setMarketAppServiceId(devopsHzeroDeployDetailsDTO.getMktServiceId());
             instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
             commandId = instanceVO.getCommandId();
         } else {
@@ -2202,7 +2201,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                         AppServiceInstanceSource.MARKET.getValue(),
                         AppSourceType.HZERO.getValue());
-                marketInstanceCreationRequestVO.setHzeroServiceVersionId(devopsHzeroDeployDetailsDTO.getMktServiceId());
+                marketInstanceCreationRequestVO.setMarketAppServiceId(devopsHzeroDeployDetailsDTO.getMktServiceId());
                 instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
                 commandId = instanceVO.getCommandId();
             }
