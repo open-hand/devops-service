@@ -140,8 +140,14 @@
 	     ins.source AS source,
 	     env.cluster_id AS cluster_id,
 	      (SELECT count(1)
-	        FROM devops_env_pod dp
-	        WHERE dp.namespace = env.CODE AND dp.env_id = ins.env_id AND  dp.instance_id=ins.id) AS pod_count,
+	       FROM
+              devops_env_pod dp
+           JOIN   devops_app_service_instance dasi On dasi.id = dp.instance_id
+
+	       WHERE
+                  dp.namespace = env.CODE
+           AND    dp.env_id = ins.env_id
+           AND    dp.instance_id=ins.id) AS pod_count,
 	      (SELECT count(1)
             FROM devops_env_pod dp
             WHERE
@@ -167,23 +173,34 @@
     </select>
 
     <select id="listMemberInstanceEnvTree" resultMap="instanceEnvTree">
-        (SELECT any_value(env.id)                                                                as env_id,
-                any_value(env.name)                                                              as env_name,
-                any_value(env.code)                                                              as env_code,
-                any_value(env_app.app_service_id)                                                as app_service_id,
-                any_value(app.name)                                                              as app_name,
-                any_value(app.project_id)                                                        as app_project_id,
-                any_value(ins.id)                                                                as ins_id,
-                any_value(ins.code)                                                              as ins_code,
-                any_value(ins.status)                                                            as ins_status,
-                any_value(ins.source)                                                            as source,
-                any_value(env.cluster_id)                                                        as cluster_id,
-                SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
-                SUM(CASE
-                        WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
-                             env.id = ins.env_id THEN 1
-                        ELSE 0 END)                                                              AS pod_running_count
-         FROM devops_env env
+        (SELECT env.id                                                               as env_id,
+                env.name                                                             as env_name,
+                env.code                                                             as env_code,
+                env_app.app_service_id                                               as app_service_id,
+                app.name                                                             as app_name,
+                app.project_id                                                       as app_project_id,
+                ins.id                                                               as ins_id,
+                ins.code                                                             as ins_code,
+                ins.status                                                           as ins_status,
+                ins.source                                                           as source,
+                env.cluster_id                                                       as cluster_id,
+                (SELECT count(1)
+                FROM
+                       devops_env_pod dp
+                JOIN   devops_app_service_instance dasi On dasi.id = dp.instance_id
+
+                WHERE
+                       dp.namespace = env.CODE
+                AND    dp.env_id = ins.env_id
+                AND    dp.instance_id=ins.id)                                       AS pod_count,
+                (SELECT count(1)
+                FROM   devops_env_pod dp
+                WHERE
+                       dp.namespace = env.CODE
+                AND    dp.env_id = ins.env_id
+                AND    dp.is_ready = TRUE
+                AND    dp.`status` = 'Running' AND  dp.instance_id=ins.id)          AS pod_running_count
+                 FROM devops_env env
                       LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
                       LEFT JOIN devops_app_service app
                  ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
@@ -196,27 +213,37 @@
            AND env.is_synchro = TRUE
            AND env.is_active = TRUE
            AND env.is_failed = FALSE
-           AND env.type = 'user'
-         GROUP BY env.name, app.id, ins.id)
+           AND env.type = 'user')
 
         UNION ALL
         (
-                SELECT any_value(env.id)                                                                as env_id,
-                       any_value(env.name)                                                              as env_name,
-                       any_value(env.code)                                                              as env_code,
-                       any_value(env_app.app_service_id)                                                as app_service_id,
-                       any_value(app.name)                                                              as app_name,
-                       any_value(app.project_id)                                                        as app_project_id,
-                       any_value(ins.id)                                                                as ins_id,
-                       any_value(ins.code)                                                              as ins_code,
-                       any_value(ins.status)                                                            as ins_status,
-                       any_value(ins.source)                                                            as source,
-                       any_value(env.cluster_id)                                                        as cluster_id,
-                       SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
-                       SUM(CASE
-                               WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
-                                    env.id = ins.env_id THEN 1
-                               ELSE 0 END)                                                              AS pod_running_count
+                SELECT env.id                                                               as env_id,
+                       env.name                                                             as env_name,
+                       env.code                                                             as env_code,
+                       env_app.app_service_id                                               as app_service_id,
+                       app.name                                                             as app_name,
+                       app.project_id                                                       as app_project_id,
+                       ins.id                                                               as ins_id,
+                       ins.code                                                             as ins_code,
+                       ins.status                                                           as ins_status,
+                       ins.source                                                           as source,
+                       env.cluster_id                                                       as cluster_id,
+                       (SELECT count(1)
+                       FROM
+                       devops_env_pod dp
+                       JOIN   devops_app_service_instance dasi On dasi.id = dp.instance_id
+
+                       WHERE
+                       dp.namespace = env.CODE
+                       AND    dp.env_id = ins.env_id
+                       AND    dp.instance_id=ins.id)                                       AS pod_count,
+                       (SELECT count(1)
+                       FROM   devops_env_pod dp
+                       WHERE
+                       dp.namespace = env.CODE
+                       AND    dp.env_id = ins.env_id
+                       AND    dp.is_ready = TRUE
+                       AND    dp.`status` = 'Running' AND  dp.instance_id=ins.id)          AS pod_running_count
 
                 FROM devops_env env
                              LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
@@ -233,7 +260,6 @@
                   AND env.is_failed = FALSE
                   AND env.is_synchro = TRUE
                   AND deup.iam_user_id = #{memberId}
-                GROUP BY env.name, app.id, ins.id
                 )
     </select>
 
