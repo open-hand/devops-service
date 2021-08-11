@@ -51,6 +51,17 @@ public class MarketServiceVO {
     @ApiModelProperty("应用来源")
     private String sourceName;
 
+    @ApiModelProperty("该市场服务属于hzero的类型还是market的类型")
+    private String applicationType;
+
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
+    }
+
     public String getMarketServiceCode() {
         return marketServiceCode;
     }

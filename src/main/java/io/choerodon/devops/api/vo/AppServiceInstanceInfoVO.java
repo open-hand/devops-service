@@ -66,7 +66,7 @@ public class AppServiceInstanceInfoVO {
     private String effectCommandVersion;
     @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
     private String effectCommandStatus;
-    
+
     @ApiModelProperty("应用市场所属的实例部署的当前版本是否可用, 如果被删除就是false/只有市场实例需要")
     private Boolean currentVersionAvailable;
     @ApiModelProperty("应用市场所属的实例是否有更新版本可以升级，如果有是true/只有市场实例需要")
@@ -81,6 +81,17 @@ public class AppServiceInstanceInfoVO {
      * {@link io.choerodon.devops.infra.enums.AppServiceInstanceSource}
      */
     private String source;
+
+    @ApiModelProperty("具体应用属于hzero还是市场")
+    private String applicationType;
+
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
+    }
 
     public Long getEffectCommandId() {
         return effectCommandId;
