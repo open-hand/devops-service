@@ -879,8 +879,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String appServiceName;
         if (AppSourceType.HZERO.getValue().equals(appServiceDeployVO.getApplicationType())) {
             marketServiceVO = getMarketServiceVO(projectId, appServiceDeployVO.getHzeroServiceVersionId(), appServiceDeployVO.getMarketDeployObjectId());
-            appServiceCode = marketServiceDeployObjectVO.getMarketSourceCode();
-            appServiceName = marketServiceDeployObjectVO.getMarketServiceName();
+            appServiceCode = marketServiceVO.getMarketServiceCode();
+            appServiceName = marketServiceVO.getMarketServiceName();
         } else {
             appServiceCode = marketServiceDeployObjectVO.getDevopsAppServiceCode();
             appServiceName = marketServiceDeployObjectVO.getDevopsAppServiceName();
