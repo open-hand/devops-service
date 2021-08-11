@@ -141,14 +141,14 @@
 	     env.cluster_id AS cluster_id,
 	      (SELECT count(1)
 	        FROM devops_env_pod dp
-	        WHERE dp.namespace = env.CODE AND dp.env_id = ins.env_id ) AS pod_count,
+	        WHERE dp.namespace = env.CODE AND dp.env_id = ins.env_id AND  dp.instance_id=ins.id) AS pod_count,
 	      (SELECT count(1)
             FROM devops_env_pod dp
             WHERE
 	            dp.namespace = env.CODE
 	        AND dp.env_id = ins.env_id
 	        AND dp.is_ready = TRUE
-	        AND dp.`status` = 'Running') AS pod_running_count
+	        AND dp.`status` = 'Running' AND  dp.instance_id=ins.id) AS pod_running_count
        FROM
        	   devops_env env
        LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
