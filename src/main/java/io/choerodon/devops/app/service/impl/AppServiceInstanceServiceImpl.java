@@ -404,7 +404,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
         // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
         if (devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(appServiceVersionId)) {
-            instanceValueVO.setYaml(lastVersionValue);
+            instanceValueVO.setYaml(yaml);
         } else {
             // 将新的版本的values和上次部署的变化值进行合并
             instanceValueVO.setYaml(getReplaceResult(appServiceVersionService.baseQueryValue(appServiceVersionId), lastDeltaValues).getYaml());
