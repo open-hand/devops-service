@@ -26,14 +26,6 @@ public class MarketInstanceCreationRequestVO {
     @ApiModelProperty("市场市场服务版本id")
     private Long marketDeployObjectId;
 
-    @ApiModelProperty("Hzero服务id")
-    @Encrypt
-    private Long hzeroAppId;
-
-    @ApiModelProperty("Hzero版本id")
-    @Encrypt
-    private Long hzeroServiceVersionId;
-
     @ApiModelProperty("应用类型:market hzero")
     private String applicationType;
 
@@ -105,21 +97,6 @@ public class MarketInstanceCreationRequestVO {
         this.applicationType = applicationType;
     }
 
-    public Long getHzeroAppId() {
-        return hzeroAppId;
-    }
-
-    public void setHzeroAppId(Long hzeroAppId) {
-        this.hzeroAppId = hzeroAppId;
-    }
-
-    public Long getHzeroServiceVersionId() {
-        return hzeroServiceVersionId;
-    }
-
-    public void setHzeroServiceVersionId(Long hzeroServiceVersionId) {
-        this.hzeroServiceVersionId = hzeroServiceVersionId;
-    }
 
     public String getApplicationType() {
         return applicationType;
