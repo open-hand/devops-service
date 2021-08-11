@@ -90,6 +90,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     @Autowired
+    @Lazy
     private Map<String, WorkLoad> workLoadMap;
 
     static {
