@@ -400,14 +400,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 Objects.requireNonNull(yaml))
                 .getDeltaYaml();
 
-        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
-        String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(appServiceVersionId) ? lastVersionValue : appServiceVersionService.baseQueryValue(appServiceVersionId);
-
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
-
-        // 将新的版本的values和上次部署的变化值进行合并
-        instanceValueVO.setYaml(getReplaceResult(newVersionValue, lastDeltaValues).getYaml());
+        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
+        if (devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(appServiceVersionId)) {
+            instanceValueVO.setYaml(yaml);
+        } else {
+            // 将新的版本的values和上次部署的变化值进行合并
+            instanceValueVO.setYaml(getReplaceResult(appServiceVersionService.baseQueryValue(appServiceVersionId), lastDeltaValues).getYaml());
+        }
         return instanceValueVO;
     }
 
@@ -425,14 +426,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 Objects.requireNonNull(yaml))
                 .getDeltaYaml();
 
-        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
-        String newVersionValue = devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(marketDeployObjectId) ? lastVersionValue : marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue();
-
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
+        // 新的版本的values值, 如果新版本id和上个版本id一致，就用之前查询的
 
-        // 将新的版本的values和上次部署的变化值进行合并
-        instanceValueVO.setYaml(getReplaceResult(newVersionValue, lastDeltaValues).getYaml());
+        if (devopsEnvCommandDTO.getObjectVersionId() != null && devopsEnvCommandDTO.getObjectVersionId().equals(marketDeployObjectId)) {
+            instanceValueVO.setYaml(yaml);
+
+        } else {
+            // 将新的版本的values和上次部署的变化值进行合并
+            instanceValueVO.setYaml(getReplaceResult(marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue(), lastDeltaValues).getYaml());
+        }
+
+
+
+
         return instanceValueVO;
     }
 
