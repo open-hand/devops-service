@@ -43,18 +43,22 @@ public class WorkloadServiceImpl implements WorkloadService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Autowired
+    @Lazy
     private PermissionHelper permissionHelper;
 
     @Autowired
+    @Lazy
     private UserAttrService userAttrService;
 
     @Autowired
+    @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
 
     @Autowired
+    @Lazy
     private DevopsEnvCommandService devopsEnvCommandService;
 
     @Autowired
