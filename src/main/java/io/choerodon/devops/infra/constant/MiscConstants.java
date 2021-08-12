@@ -46,6 +46,11 @@ public final class MiscConstants {
     public static final String APP_INSTANCE_DELETE_REDIS_KEY = "devops-service:appInstances:%s:delete";
 
     /**
+     * 同步hzero部署状态的锁
+     */
+    public static final String HZERO_DEPLOY_STATUS_SYNC_REDIS_KEY = "devops-service:hzeroDeploy:sync";
+
+    /**
      * 用户同步失败的文件存放的桶名称
      * https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
      */

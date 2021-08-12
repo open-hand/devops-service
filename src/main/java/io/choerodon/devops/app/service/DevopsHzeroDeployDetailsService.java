@@ -35,4 +35,7 @@ public interface DevopsHzeroDeployDetailsService {
      */
     Boolean completed(Long deployRecordId);
 
+    List<DevopsHzeroDeployDetailsDTO> listDeployingByDate(String date);
+
+    void updateStatusToFailed(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO);
 }
