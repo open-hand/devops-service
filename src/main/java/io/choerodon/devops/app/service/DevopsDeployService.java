@@ -27,4 +27,7 @@ public interface DevopsDeployService {
      */
     Long deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO);
 
+
+    void updateStatus();
+
 }

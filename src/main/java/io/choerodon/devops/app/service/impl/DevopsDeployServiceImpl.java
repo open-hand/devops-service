@@ -1,11 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,6 +23,7 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
@@ -43,6 +50,8 @@ import io.choerodon.devops.infra.util.JsonHelper;
 public class DevopsDeployServiceImpl implements DevopsDeployService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployServiceImpl.class);
+    public static final int THIRTY_MINUTE_MILLISECONDS = 30 * 60 * 1000;
+
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
@@ -59,6 +68,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
@@ -119,5 +130,24 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
         return deployRecordId;
     }
+
+    @Override
+    public void updateStatus() {
+        // 添加redis锁，防止多个pod并发更新状态
+        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(MiscConstants.HZERO_DEPLOY_STATUS_SYNC_REDIS_KEY, "lock", 3, TimeUnit.MINUTES))) {
+            return;
+        }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
+
+        // 获取三分钟以前的时间
+        Date threeMinutesBefore = new Date(System.currentTimeMillis() - THIRTY_MINUTE_MILLISECONDS);
+        String date = simpleDateFormat.format(threeMinutesBefore);
+
+        List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listDeployingByDate(date);
+
+        devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> devopsHzeroDeployDetailsService.updateStatusToFailed(devopsHzeroDeployDetailsDTO));
+    }
+
+
 
 }

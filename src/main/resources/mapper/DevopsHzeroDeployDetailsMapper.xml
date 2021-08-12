@@ -17,4 +17,10 @@
         order by id desc
         limit 1
     </select>
+    <select id="listDeployingByDate"
+            resultType="io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO">
+        SELECT *
+        FROM devops_hzero_deploy_details dhdd
+        WHERE dhdd.`status` = 'deploying' AND  dhdd.last_update_date <![CDATA[<=]]> #{beforeDate})
+    </select>
 </mapper>

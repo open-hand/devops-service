@@ -2,15 +2,23 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsHzeroDeployDetailsService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsHzeroDeployDetailsMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -24,11 +32,18 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDetailsService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHzeroDeployDetailsServiceImpl.class);
+
     private static final String ERROR_SAVE_DEPLOY_DETAILS_FAILED = "error.save.deploy.details.failed";
     private static final String ERROR_UPDATE_DEPLOY_DETAILS_FAILED = "error.update.deploy.details.failed";
 
     @Autowired
     private DevopsHzeroDeployDetailsMapper devopsHzeroDeployDetailsMapper;
+    @Autowired
+    @Lazy
+    private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -85,4 +100,28 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsMapper.select(devopsHzeroDeployDetailsDTO);
         return devopsHzeroDeployDetailsDTOS.stream().allMatch(v -> HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(v.getStatus()));
     }
+
+    @Override
+    public List<DevopsHzeroDeployDetailsDTO> listDeployingByDate(String date) {
+        return devopsHzeroDeployDetailsMapper.listDeployingByDate(date);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatusToFailed(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
+        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+
+        // 1. 更新记录状态为失败
+        updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
+        // 2. 更新部署记录状态为失败
+        devopsDeployRecordService.updateResultById(devopsDeployRecordDTO.getId(), DeployResultEnum.FAILED);
+
+        // 3. 停止工作流
+        try {
+            workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
+        } catch (Exception e) {
+            LOGGER.error(">>>>>>>>>>>>>>>Stop workflow instance failed, deployRecordId: {}<<<<<<<<<<<<<", devopsHzeroDeployDetailsDTO.getDeployRecordId());
+        }
+    }
+
 }
