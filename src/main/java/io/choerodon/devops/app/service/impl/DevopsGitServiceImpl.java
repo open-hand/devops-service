@@ -239,9 +239,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
-
-        checkBranchName(projectId, appServiceId, devopsBranchVO.getBranchName());
-
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchDTO.setUserId(gitLabUser);
         devopsBranchDTO.setAppServiceId(appServiceId);
