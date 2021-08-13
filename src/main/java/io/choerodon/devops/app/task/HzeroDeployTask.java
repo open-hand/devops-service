@@ -20,9 +20,9 @@ public class HzeroDeployTask {
     private DevopsDeployService devopsDeployService;
 
     /**
-     * 更新hzero部署状态， 10 分钟执行一次
+     * 更新hzero部署状态， 3 分钟执行一次
      */
-    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "0 0/3 * * * ?")
     public void updateStatus(){
         devopsDeployService.updateStatus();
     }

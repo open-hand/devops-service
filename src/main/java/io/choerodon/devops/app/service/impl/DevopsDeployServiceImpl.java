@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
@@ -34,6 +35,7 @@ import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.util.GenerateUUID;
@@ -70,6 +72,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
 
     @Override
     public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
@@ -145,7 +149,27 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
 
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listDeployingByDate(date);
 
-        devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> devopsHzeroDeployDetailsService.updateStatusToFailed(devopsHzeroDeployDetailsDTO));
+        devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
+            // 1. 查询Pod是否全部启动成功
+            if (Boolean.TRUE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
+                    devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                    devopsHzeroDeployDetailsDTO.getCommandId()))) {
+                devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
+
+                DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+                if (Boolean.TRUE.equals(devopsHzeroDeployDetailsService.completed(devopsHzeroDeployDetailsDTO.getDeployRecordId()))) {
+                    devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.SUCCESS);
+                } else {
+                    workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
+                            devopsDeployRecordDTO.getBusinessKey(),
+                            MiscConstants.WORKFLOW_ADMIN_NAME,
+                            MiscConstants.WORKFLOW_ADMIN_ID,
+                            MiscConstants.WORKFLOW_ADMIN_ORG_ID);
+                }
+            } else {
+                devopsHzeroDeployDetailsService.updateStatusToFailed(devopsHzeroDeployDetailsDTO);
+            }
+        });
     }
 
 

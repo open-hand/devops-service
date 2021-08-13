@@ -2183,7 +2183,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     AppServiceInstanceSource.MARKET.getValue(),
                     AppSourceType.HZERO.getValue());
 
-            marketInstanceCreationRequestVO.setMarketAppServiceId(devopsHzeroDeployDetailsDTO.getMktServiceId());
             instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
             commandId = instanceVO.getCommandId();
         } else {
@@ -2209,7 +2208,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                         AppServiceInstanceSource.MARKET.getValue(),
                         AppSourceType.HZERO.getValue());
-                marketInstanceCreationRequestVO.setMarketAppServiceId(devopsHzeroDeployDetailsDTO.getMktServiceId());
                 instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
                 commandId = instanceVO.getCommandId();
             }
