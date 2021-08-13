@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
@@ -75,4 +77,13 @@ public interface DevopsEnvPodService {
     boolean checkLogAndExecPermission(Long projectId, Long clusterId, String envCode, Long userId, String podName);
 
     Page<DevopsEnvPodVO> pageByKind(Long projectId, Long envId, String kind, String name, PageRequest pageable, String searchParam);
+
+    /**
+     * 校验实例下POD状态是否全部成功启动，如果传了commandId, 则要求Pod标签中的commandId必须大于等于commandId
+     * @param envId
+     * @param instanceCode
+     * @param commandId
+     * @return
+     */
+    boolean checkInstancePodStatusAllReadyWithCommandId(Long envId, String instanceCode, @Nullable Long commandId);
 }

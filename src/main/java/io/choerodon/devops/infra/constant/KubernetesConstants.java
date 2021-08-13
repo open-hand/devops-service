@@ -9,6 +9,8 @@ public class KubernetesConstants {
     }
 
     public static final String CHOERODON_IO_RESOURCE = "choerodon.io/resource";
+    public static final String CHOERODON_IO_V1_COMMAND = "choerodon.io/v1-command";
+
     public static final String METADATA = "metadata";
     public static final String CUSTOM = "custom";
     public static final String LABELS = "labels";

@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -22,6 +23,7 @@ import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
@@ -39,7 +41,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     private static JSON json = new JSON();
-    private final Logger logger = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
 
     private static final String ERROR_DELETE_POD_FAILED = "error.delete.pod.failed";
 
@@ -121,7 +123,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             }
             devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
-            logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
+            LOGGER.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
         }
     }
 
@@ -340,19 +342,19 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     public boolean checkLogAndExecPermission(Long projectId, Long clusterId, String envCode, Long userId, String podName) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, envCode);
         if (devopsEnvironmentDTO == null) {
-            logger.info("The env with clusterId {} and envCode {} doesn't exist", clusterId, envCode);
+            LOGGER.info("The env with clusterId {} and envCode {} doesn't exist", clusterId, envCode);
             return false;
         }
 
         if (!devopsEnvironmentDTO.getProjectId().equals(projectId)) {
-            logger.info("The provided project id {} doesn't equal to env's {}", projectId, devopsEnvironmentDTO.getProjectId());
+            LOGGER.info("The provided project id {} doesn't equal to env's {}", projectId, devopsEnvironmentDTO.getProjectId());
             return false;
         }
 
         Long envId = devopsEnvironmentDTO.getId();
         // 校验用户有环境的权限
         if (!devopsEnvUserPermissionService.userFromWebsocketHasPermission(userId, devopsEnvironmentDTO)) {
-            logger.info("User {} is not permitted to the env with id {}", userId, envId);
+            LOGGER.info("User {} is not permitted to the env with id {}", userId, envId);
             return false;
         }
 
@@ -397,6 +399,43 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         return devopsEnvPodVOPageInfo;
     }
 
+    @Override
+    public boolean checkInstancePodStatusAllReadyWithCommandId(Long envId, String instanceCode, Long commandId) {
+        // 查询实例
+        AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(instanceCode, envId);
+        // 查询部署版本
+
+        // 查询当前实例运行时pod metadata
+        List<PodResourceDetailsDTO> podResourceDetailsDTOS = queryResourceDetailsByInstanceId(instanceE.getId());
+
+        if (CollectionUtils.isEmpty(podResourceDetailsDTOS)) {
+            LOGGER.info(">>>>>>[checkPodStatus]envId: {}, instanceCode: {},podResourceDetailsDTOS is empty<<<<<<<<<", envId, instanceCode);
+            return false;
+        }
+        for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
+            V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
+
+            // 校验是否所有pod都启动成功
+            if (Boolean.FALSE.equals(podResourceDetailsDTO.getReady())) {
+                LOGGER.info(">>>>>>>[checkPodStatus]envId: {}, instanceCode: {},pod：{} not ready<<<<<<<<<", envId, instanceCode, podInfo.getMetadata().getName());
+                return false;
+            }
+
+            // commandId不为null,则还要判断pod的command标签
+            if (commandId != null) {
+                String podCommandId = podInfo.getMetadata().getLabels().get(KubernetesConstants.CHOERODON_IO_V1_COMMAND);
+                if (podCommandId == null) {
+                    LOGGER.info(">>>>>>>>[checkPodStatus]envId: {}, instanceCode: {},pod:{} Command not Found <<<<<<<<<", envId, instanceCode, podInfo.getMetadata().getName());
+                    return false;
+                } else if (Long.parseLong(podCommandId) < commandId) {
+                    LOGGER.info(">>>>>>>>[checkPodStatus]envId: {}, instanceCode: {},pod:{} Command before require commandId <<<<<<<", envId, instanceCode, podInfo.getMetadata().getName());
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private void fillContainers(Long envId, DevopsEnvPodVO devopsEnvPodVO) {
         //解析pod的yaml内容获取container的信息
 
@@ -430,7 +469,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             devopsEnvPodVO.setIp(pod.getStatus().getPodIP());
             devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
-            logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
+            LOGGER.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
         }
 
     }

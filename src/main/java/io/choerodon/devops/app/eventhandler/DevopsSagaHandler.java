@@ -6,15 +6,14 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Objects;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -46,7 +44,9 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.LogUtil;
 
 
 /**
@@ -720,33 +720,13 @@ public class DevopsSagaHandler {
                 LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
                 return;
             }
+            if (Boolean.FALSE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(podReadyEventVO.getEnvId(),
+                    podReadyEventVO.getInstanceCode(),
+                    devopsHzeroDeployDetailsDTO.getCommandId()))) {
+                return;
+            }
 
             DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
-            // 查询实例
-            AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(podReadyEventVO.getInstanceCode(), podReadyEventVO.getEnvId());
-            // 查询部署版本
-
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO.getMktDeployObjectId());
-            // 查询当前实例运行时pod metadata
-            List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
-
-            if (CollectionUtils.isEmpty(podResourceDetailsDTOS)) {
-                LOGGER.info(">>>>>>>>>>>>>>>podResourceDetailsDTOS is empty, skip<<<<<<<<<<<<<<<<<");
-                return;
-            }
-            if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
-                LOGGER.info(">>>>>>>>>>>>>>>pod not all ready, skip<<<<<<<<<<<<<<<<<");
-                return;
-            }
-            List<String> images = new ArrayList<>();
-            for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
-                V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
-                images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
-            }
-            if (!images.stream().allMatch(v -> marketServiceDeployObjectVO.getMarketDockerImageUrl().equals(v))) {
-                LOGGER.info(">>>>>>>>>>>>>>>pod not all ready, skip<<<<<<<<<<<<<<<<<");
-                return;
-            }
 
             devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
             if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
