@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.workload;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
@@ -16,14 +17,12 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 public class CronJobWorkLoad extends WorkLoad {
 
 
+    @Autowired
     private WorkloadService workloadService;
 
+    @Autowired
     private DevopsCronJobService devopsCronJobService;
 
-    public CronJobWorkLoad(WorkloadService workloadService, DevopsCronJobService devopsCronJobService) {
-        this.workloadService = workloadService;
-        this.devopsCronJobService = devopsCronJobService;
-    }
 
 
     @Override

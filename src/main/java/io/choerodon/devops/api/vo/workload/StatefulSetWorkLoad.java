@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.workload;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -17,14 +18,12 @@ import io.choerodon.devops.infra.dto.DevopsStatefulSetDTO;
 public class StatefulSetWorkLoad extends WorkLoad {
 
 
+    @Autowired
     private WorkloadService workloadService;
 
+    @Autowired
     private DevopsStatefulSetService devopsStatefulSetService;
 
-    public StatefulSetWorkLoad(@Lazy WorkloadService workloadService, @Lazy DevopsStatefulSetService devopsStatefulSetService) {
-        this.workloadService = workloadService;
-        this.devopsStatefulSetService = devopsStatefulSetService;
-    }
 
 
 
