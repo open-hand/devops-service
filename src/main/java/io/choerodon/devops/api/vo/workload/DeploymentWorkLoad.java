@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.workload;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -17,14 +18,12 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 public class DeploymentWorkLoad extends WorkLoad {
 
 
+    @Autowired
     private WorkloadService workloadService;
 
+    @Autowired
     private DevopsDeploymentService devopsDeploymentService;
 
-    public DeploymentWorkLoad(@Lazy WorkloadService workloadService,@Lazy DevopsDeploymentService devopsDeploymentService) {
-        this.workloadService = workloadService;
-        this.devopsDeploymentService = devopsDeploymentService;
-    }
 
 
     @Override

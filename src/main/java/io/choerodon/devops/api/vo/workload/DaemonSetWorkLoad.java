@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.workload;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -16,14 +17,10 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 @Component
 public class DaemonSetWorkLoad extends WorkLoad {
 
-    public DaemonSetWorkLoad(@Lazy WorkloadService workloadService, @Lazy DevopsDaemonSetService devopsDaemonSetService) {
-        this.workloadService = workloadService;
-        this.devopsDaemonSetService = devopsDaemonSetService;
-    }
-
+    @Autowired
     private WorkloadService workloadService;
 
-
+    @Autowired
     private DevopsDaemonSetService devopsDaemonSetService;
 
     @Override
