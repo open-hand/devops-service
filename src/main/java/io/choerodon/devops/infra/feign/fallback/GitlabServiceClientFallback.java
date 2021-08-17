@@ -191,7 +191,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId) {
+    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Integer page, Integer perPage) {
         throw new CommonException("error.group.listProjects");
     }
 
@@ -497,5 +497,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<List<GroupDTO>> listGroupsWithParam(Integer userId, GroupFilter groupFilter) {
         throw new CommonException("error.query.groups");
+    }
+
+    @Override
+    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, GroupProjectsFilter filter) {
+        throw new CommonException("error.query.projects");
     }
 }

@@ -1164,4 +1164,10 @@ public class GitlabServiceClientOperator {
     public List<GroupDTO> listGroupsWithParam(GroupFilter groupFilter, Integer userId) {
         return gitlabServiceClient.listGroupsWithParam(userId, groupFilter).getBody();
     }
+
+    public List<GitlabProjectDTO> listProject(Integer groupId,
+                                      Integer userId,
+                                              GroupProjectsFilter filter) {
+        return gitlabServiceClient.listProjects(groupId, userId, filter).getBody();
+    }
 }

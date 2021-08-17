@@ -37,6 +37,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.utils.PageUtils;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -1244,5 +1245,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         groupFilter.setSearch(search);
 
         return gitlabServiceClientOperator.listGroupsWithParam(groupFilter, TypeUtil.objToInteger(GitUserNameUtil.getUserId()));
+    }
+
+    @Override
+    public Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest) {
+
+        GroupProjectsFilter groupProjectsFilter = new GroupProjectsFilter();
+        groupProjectsFilter.setOwned(true);
+        groupProjectsFilter.setPage(pageRequest.getPage());
+        groupProjectsFilter.setPerPage(pageRequest.getSize());
+        groupProjectsFilter.setSearch(search);
+
+
+        List<GitlabProjectDTO> gitlabProjectDTOS = gitlabServiceClientOperator.listProject(gitlabGroupId,
+                TypeUtil.objToInteger(GitUserNameUtil.getUserId()),
+                groupProjectsFilter);
+        return PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
     }
 }
