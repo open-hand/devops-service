@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
@@ -44,10 +46,7 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
-import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.gitlab.CompareResultDTO;
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -138,6 +137,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     private DevopsIssueRelService devopsIssueRelService;
+    @Autowired
+    @Lazy
+    private DevopsProjectService devopsProjectService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -1228,5 +1230,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } else {
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    public List<GroupDTO> listOwnedGroupExpectCurrent(Long projectId, String search) {
+        // 查询当前group的id
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+
+        // 查询是owner权限的group列表
+        GroupFilter groupFilter = new GroupFilter();
+        groupFilter.setOwned(true);
+        groupFilter.setSkipGroups(Collections.singletonList(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId())));
+        groupFilter.setSearch(search);
+
+        return gitlabServiceClientOperator.listGroupsWithParam(groupFilter, TypeUtil.objToInteger(GitUserNameUtil.getUserId()));
     }
 }
