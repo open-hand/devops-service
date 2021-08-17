@@ -1160,4 +1160,8 @@ public class GitlabServiceClientOperator {
     public List<Note> listByMergeRequestIid(Integer gitlabProjectId, Integer mrIiD) {
         return gitlabServiceClient.listByMergeRequestIid(gitlabProjectId, mrIiD).getBody();
     }
+
+    public List<GroupDTO> listGroupsWithParam(GroupFilter groupFilter, Integer userId) {
+        return gitlabServiceClient.listGroupsWithParam(userId, groupFilter).getBody();
+    }
 }

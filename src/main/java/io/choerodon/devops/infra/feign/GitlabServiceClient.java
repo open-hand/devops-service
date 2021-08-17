@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -689,4 +688,10 @@ public interface GitlabServiceClient {
             @RequestParam Integer projectId,
             @ApiParam(value = "MR Iid", required = true)
             @RequestParam Integer iid);
+
+    @ApiOperation(value = "查询有权限的所有组")
+    @PostMapping("/v1/groups/{userId}")
+    ResponseEntity<List<GroupDTO>> listGroupsWithParam(
+            @PathVariable(value = "userId") Integer userId,
+            @RequestBody GroupFilter groupFilter);
 }

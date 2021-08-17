@@ -6,6 +6,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
@@ -227,4 +228,7 @@ public interface DevopsGitService {
      * @return 所有的issueId
      */
     List<IssueIdAndBranchIdsVO> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
+
+    List<GroupDTO> listOwnedGroupExpectCurrent(Long projectId, String search);
+
 }
