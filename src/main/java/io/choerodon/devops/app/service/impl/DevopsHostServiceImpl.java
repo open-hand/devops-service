@@ -53,7 +53,6 @@ import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.Select;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -302,8 +301,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
         // 解析查询参数
         Page<DevopsHostVO> page;
-        List<DevopsHostVO> devopsHostVOList = null;
-        Select<DevopsHostVO> select = null;
+        List<DevopsHostVO> devopsHostVOList;
         if (projectOwnerOrRoot) {
             devopsHostVOList = devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
         } else {
