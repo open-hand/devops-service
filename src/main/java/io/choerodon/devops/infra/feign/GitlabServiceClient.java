@@ -123,7 +123,9 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/groups/{groupId}/projects/event")
     ResponseEntity<List<GitlabProjectDTO>> listProjects(@PathVariable("groupId") Integer groupId,
-                                                        @RequestParam(value = "userId", required = false) Integer userId);
+                                                        @RequestParam(value = "userId", required = false) Integer userId,
+                                                        @RequestParam(value = "page", required = false) Integer page,
+                                                        @RequestParam(value = "perPage", required = false) Integer perPage);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId);
@@ -694,4 +696,13 @@ public interface GitlabServiceClient {
     ResponseEntity<List<GroupDTO>> listGroupsWithParam(
             @PathVariable(value = "userId") Integer userId,
             @RequestBody GroupFilter groupFilter);
+
+    @ApiOperation(value = "获取项目列表")
+    @PostMapping(value = "/v1/group/{groupId}/projects")
+    ResponseEntity<List<GitlabProjectDTO>> listProjects(
+            @ApiParam(value = "组ID", required = true)
+            @PathVariable Integer groupId,
+            @ApiParam(value = "userId")
+            @RequestParam(required = false) Integer userId,
+            @RequestBody GroupProjectsFilter filter);
 }

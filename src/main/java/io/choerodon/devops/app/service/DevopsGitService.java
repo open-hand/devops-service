@@ -6,6 +6,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -231,4 +232,5 @@ public interface DevopsGitService {
 
     List<GroupDTO> listOwnedGroupExpectCurrent(Long projectId, String search);
 
+    Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest);
 }
