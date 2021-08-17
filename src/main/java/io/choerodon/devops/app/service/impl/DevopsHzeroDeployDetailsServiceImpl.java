@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,9 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
     public void updateStatusById(Long id, HzeroDeployDetailsStatusEnum status) {
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsMapper.selectByPrimaryKey(id);
         devopsHzeroDeployDetailsDTO.setStatus(status.value());
+        if (Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.SUCCESS.value()) || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.FAILED.value())) {
+            devopsHzeroDeployDetailsDTO.setEndTime(new Date());
+        }
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
     }
 

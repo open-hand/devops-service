@@ -12,6 +12,8 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
+import java.util.Date;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -60,6 +62,12 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
     @Encrypt
     @ApiModelProperty("gitops 操作记录id")
     private Long commandId;
+
+    @ApiModelProperty("开始部署时间")
+    private Date startTime;
+
+    @ApiModelProperty("结束部署时间")
+    private Date endTime;
 
     public DevopsHzeroDeployDetailsDTO() {
     }
@@ -153,5 +161,21 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
 
     public void setSequence(Long sequence) {
         this.sequence = sequence;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 }

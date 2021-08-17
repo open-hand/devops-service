@@ -6,6 +6,8 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 
+import java.util.Date;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -36,6 +38,12 @@ public class DevopsHzeroDeployDetailsVO {
      */
     @ApiModelProperty("部署状态")
     private String status;
+
+    @ApiModelProperty("开始部署时间")
+    private Date startTime;
+
+    @ApiModelProperty("结束部署时间")
+    private Date endTime;
 
     private String mktServiceName;
 
@@ -138,5 +146,21 @@ public class DevopsHzeroDeployDetailsVO {
 
     public void setMktDeployObjectId(Long mktDeployObjectId) {
         this.mktDeployObjectId = mktDeployObjectId;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 }

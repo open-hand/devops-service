@@ -47,4 +47,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_hzero_deploy_details.groovy') {
         }
 
     }
+
+    changeSet(author: 'sy', id: '2021-08-17-add-column') {
+        addColumn(tableName: 'devops_hzero_deploy_details') {
+            column(name: 'start_time', type: 'DATETIME', remarks: '开始部署时间', afterColumn: 'sequence')
+        }
+        addColumn(tableName: 'devops_hzero_deploy_details') {
+            column(name: 'end_time', type: 'DATETIME', remarks: '结束部署时间', afterColumn: 'sequence')
+        }
+    }
 }
