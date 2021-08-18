@@ -36,6 +36,9 @@ public class DevopsDeployAppCenterHostDTO {
     @ApiModelProperty(name = "操作类型")
     private String operationType;
 
+    @ApiModelProperty(name = "jar类型")
+    private String jarSource;
+
     @ApiModelProperty(name = "chart/jar/docker")
     private String rdupmType;
 
@@ -102,5 +105,13 @@ public class DevopsDeployAppCenterHostDTO {
 
     public void setRdupmType(String rdupmType) {
         this.rdupmType = rdupmType;
+    }
+
+    public String getJarSource() {
+        return jarSource;
+    }
+
+    public void setJarSource(String jarSource) {
+        this.jarSource = jarSource;
     }
 }
