@@ -28,7 +28,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
  */
 @Service
 public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevelService {
-
+    private final static String EMPTY_GITLAB_ACCESS_LEVEL = "error.empty.gitlab.access.level";
     @Autowired
     private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
@@ -44,7 +44,7 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
 
             List<MemberPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.selfPrivilege(projectDTO.getOrganizationId(), projectId, Collections.singleton(appServiceId)).getBody();
             if (CollectionUtils.isEmpty(viewDTOList) || viewDTOList.get(0).getAccessLevel() == null) {
-                throw new CommonException("error.empty.gitlab.access.level");
+                throw new CommonException(EMPTY_GITLAB_ACCESS_LEVEL);
             }
             Optional<Integer> max = viewDTOList.stream().map(MemberPrivilegeViewDTO::getAccessLevel).collect(Collectors.toSet()).stream().max(Integer::compare);
             if (max.isPresent()) {
@@ -52,6 +52,8 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
                 if (maxAccessLevel <= appServiceEvent.getAccessLevel()) {
                     throw new GitlabAccessInvalidException("error.gitlab.access.level", AccessLevel.getAccessLevelName(maxAccessLevel));
                 }
+            } else {
+                throw new CommonException(EMPTY_GITLAB_ACCESS_LEVEL);
             }
         }
     }
