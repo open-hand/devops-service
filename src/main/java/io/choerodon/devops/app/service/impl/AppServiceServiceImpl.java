@@ -3148,7 +3148,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceDTO.setProjectId(projectId);
             appServiceDTO.setActive(true);
             appServiceDTO.setSynchro(false);
-            appServiceDTO.setType(NORMAL);
+            appServiceDTO.setType(appServiceTransferVO.getType());
             appServiceTransferVO.setAppServiceId(baseCreate(appServiceDTO).getId());
         });
 
@@ -3181,7 +3181,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 3. 添加webhook
         setProjectHook(appServiceDTO, appServiceTransferVO.getGitlabProjectId(), token, userId);
         // 4. 创建应用服务
-        appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
+        appServiceDTO.setGitlabProjectId(appServiceTransferVO.getGitlabProjectId());
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         appServiceDTO.setActive(true);
