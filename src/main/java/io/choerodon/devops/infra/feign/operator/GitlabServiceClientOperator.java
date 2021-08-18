@@ -1166,7 +1166,7 @@ public class GitlabServiceClientOperator {
     }
 
     public List<GitlabProjectDTO> listProject(Integer groupId,
-                                      Integer userId,
+                                              Integer userId,
                                               GroupProjectsFilter filter) {
         return gitlabServiceClient.listProjects(groupId, userId, filter).getBody();
     }
