@@ -164,7 +164,7 @@
         </choose>
         <include refid="sqlparam"/>
         <if test="version != null and version != ''">
-            AND dav.version = #{version}
+            AND dav.version LIKE CONCAT('%', #{version}, '%')
         </if>
         )) tmp
         <choose>
