@@ -705,7 +705,7 @@ public interface GitlabServiceClient {
             @RequestBody GroupProjectsFilter filter);
 
     @ApiParam(value = "迁移应用服务")
-    @GetMapping(value = "/v1/projects/{projectId}")
+    @PutMapping(value = "/v1/projects/{projectId}/transfer")
     ResponseEntity<GitlabProjectDTO> transferProject(
             @ApiParam(value = "用户id", required = true)
             @PathVariable(value = "projectId") Integer projectId,
