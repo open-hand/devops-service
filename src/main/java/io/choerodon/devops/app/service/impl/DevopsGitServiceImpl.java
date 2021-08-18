@@ -1243,8 +1243,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         groupFilter.setOwned(true);
         groupFilter.setSkipGroups(Collections.singletonList(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId())));
         groupFilter.setSearch(search);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
-        return gitlabServiceClientOperator.listGroupsWithParam(groupFilter, TypeUtil.objToInteger(GitUserNameUtil.getUserId()));
+        return gitlabServiceClientOperator.listGroupsWithParam(groupFilter, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
     }
 
     @Override
@@ -1255,10 +1256,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         groupProjectsFilter.setPage(pageRequest.getPage());
         groupProjectsFilter.setPerPage(pageRequest.getSize());
         groupProjectsFilter.setSearch(search);
-
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
         List<GitlabProjectDTO> gitlabProjectDTOS = gitlabServiceClientOperator.listProject(gitlabGroupId,
-                TypeUtil.objToInteger(GitUserNameUtil.getUserId()),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
                 groupProjectsFilter);
         return PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
     }

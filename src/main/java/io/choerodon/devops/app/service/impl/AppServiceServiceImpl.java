@@ -3160,15 +3160,17 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void createAppServiceForTransfer(AppServiceTransferVO appServiceTransferVO) {
-        Integer userId = TypeUtil.objToInteger(GitUserNameUtil.getUserId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
+        Integer userId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
         String token = GenerateUUID.generateUUID();
 
         AppServiceDTO appServiceDTO = baseQuery(appServiceTransferVO.getAppServiceId());
 
+
         // 1. 迁移gitlab代码库
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
                 appServiceTransferVO.getGitlabGroupId(),
-                TypeUtil.objToInteger(GitUserNameUtil.getUserId()));
+                userId);
 
         // 2. 设置token等变量（创建或更新）
         List<CiVariableVO> variables = new ArrayList<>();
