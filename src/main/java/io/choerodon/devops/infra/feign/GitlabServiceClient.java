@@ -700,10 +700,8 @@ public interface GitlabServiceClient {
     @ApiOperation(value = "获取项目列表")
     @PostMapping(value = "/v1/group/{groupId}/projects")
     ResponseEntity<List<GitlabProjectDTO>> listProjects(
-            @ApiParam(value = "组ID", required = true)
             @PathVariable(value = "groupId") Integer groupId,
-            @ApiParam(value = "userId")
-            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "userId") Integer userId,
             @RequestBody GroupProjectsFilter filter);
 
     @ApiParam(value = "迁移应用服务")
