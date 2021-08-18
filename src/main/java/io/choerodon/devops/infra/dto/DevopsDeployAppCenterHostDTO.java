@@ -7,15 +7,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * devops部署应用表
+ * devops主机部署应用表
  */
-@Table(name = "devops_deploy_app_center")
+@Table(name = "devops_deploy_app_center_host")
 @ModifyAudit
 @VersionAudit
-public class DevopsDeployAppCenterDTO extends AuditDomain {
+public class DevopsDeployAppCenterHostDTO {
     @Id
     private Long id;
 
@@ -31,10 +30,7 @@ public class DevopsDeployAppCenterDTO extends AuditDomain {
     @ApiModelProperty(name = "部署对象id")
     private Long objectId;
 
-    @ApiModelProperty(name = "Id")
-    private Long envId;
-
-    @ApiModelProperty(name = "Id")
+    @ApiModelProperty(name = "hostId")
     private Long hostId;
 
     @ApiModelProperty(name = "操作类型")
@@ -82,14 +78,6 @@ public class DevopsDeployAppCenterDTO extends AuditDomain {
 
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
-    }
-
-    public Long getEnvId() {
-        return envId;
-    }
-
-    public void setEnvId(Long envId) {
-        this.envId = envId;
     }
 
     public Long getHostId() {
