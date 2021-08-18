@@ -63,8 +63,6 @@ public class AppCenterServiceImpl implements AppCenterService {
                 detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
             }
-        } else {
-            // todo 部署组部署
         }
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
         detailVO.setEnvCode(environmentDTO.getCode());
