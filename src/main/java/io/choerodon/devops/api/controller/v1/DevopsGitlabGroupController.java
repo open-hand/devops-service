@@ -38,14 +38,14 @@ public class DevopsGitlabGroupController {
     public ResponseEntity<List<GroupDTO>> listOwnedGroupExpectCurrent(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "搜索参数", required = false)
-            @RequestParam(value = "search") String search) {
+            @ApiParam(value = "搜索参数")
+            @RequestParam(value = "search", required = false) String search) {
         return ResponseEntity.ok(devopsGitService.listOwnedGroupExpectCurrent(projectId, search));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询用户是owner角色的项目列表")
-    @GetMapping(value = "/{gitlab_group_id}/projects/owned_expect_current")
+    @GetMapping(value = "/{gitlab_group_id}/projects")
     @CustomPageRequest
     public ResponseEntity<Page<GitlabProjectDTO>> listOwnedProjectByGroupId(
             @ApiParam(value = "项目 ID", required = true)
