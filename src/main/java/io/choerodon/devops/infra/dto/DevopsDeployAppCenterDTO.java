@@ -12,10 +12,10 @@ import io.choerodon.mybatis.domain.AuditDomain;
 /**
  * devops部署应用表
  */
-@Table(name = "devops_deploy_application")
+@Table(name = "devops_deploy_app_center")
 @ModifyAudit
 @VersionAudit
-public class DevopsDeployApplicationDTO extends AuditDomain {
+public class DevopsDeployAppCenterDTO extends AuditDomain {
     @Id
     private Long id;
 

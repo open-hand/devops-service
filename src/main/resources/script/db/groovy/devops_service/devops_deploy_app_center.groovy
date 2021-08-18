@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_deploy_application.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center.groovy') {
     changeSet(author: 'lihao', id: '2021-08-17-create-table') {
-        createTable(tableName: "devops_deploy_application", remarks: 'devops部署应用表') {
+        createTable(tableName: "devops_deploy_app_center", remarks: 'devops部署应用表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -40,18 +40,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_application.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        addUniqueConstraint(tableName: 'devops_deploy_application',
+        addUniqueConstraint(tableName: 'devops_deploy_app_center',
                 constraintName: 'uk_env_id_host_id_name', columnNames: 'env_id,host_id,name')
-        addUniqueConstraint(tableName: 'devops_deploy_application',
+        addUniqueConstraint(tableName: 'devops_deploy_app_center',
                 constraintName: 'uk_env_id_host_id_code', columnNames: 'env_id,host_id,code')
 
-        createIndex(indexName: "idx_env_id", tableName: "devops_deploy_application") {
+        createIndex(indexName: "idx_env_id", tableName: "devops_deploy_app_center") {
             column(name: "env_id")
         }
-        createIndex(indexName: "idx_host_id", tableName: "devops_deploy_application") {
+        createIndex(indexName: "idx_host_id", tableName: "devops_deploy_app_center") {
             column(name: "host_id")
         }
-        createIndex(indexName: "idx_project_id", tableName: "devops_deploy_application") {
+        createIndex(indexName: "idx_project_id", tableName: "devops_deploy_app_center") {
             column(name: "project_id")
         }
     }
