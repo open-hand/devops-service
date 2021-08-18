@@ -47,4 +47,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_host.groovy') {
             column(name: "project_id")
         }
     }
+    changeSet(author: 'scp', id: '2021-8-18-add-column') {
+        addColumn(tableName: 'devops_deploy_app_center_host') {
+            column(name: 'jar_source', type: 'VARCHAR(40)', remarks: 'chart包来源,normal(项目服务)/localhost(共享)/market/hzero JarSourceEnum')
+        }
+    }
 }

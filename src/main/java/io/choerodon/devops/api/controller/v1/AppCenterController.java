@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.AppCenterDetailVO;
+import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
 import io.choerodon.devops.app.service.AppCenterService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -25,9 +25,9 @@ public class AppCenterController {
     private AppCenterService appCenterService;
 
     @ApiOperation("根据应用id查询应用详情")
-    @GetMapping("/app_detail")
+    @GetMapping("/app_detail_env")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    public ResponseEntity<AppCenterDetailVO> appCenterDetail(
+    public ResponseEntity<AppCenterEnvDetailVO> appCenterDetail(
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @RequestParam("app_center_id") Long appCenterId) {

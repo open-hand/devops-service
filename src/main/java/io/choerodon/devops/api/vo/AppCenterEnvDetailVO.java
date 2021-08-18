@@ -11,7 +11,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @Date: Created in 2021/8/18
  * @Modified By:
  */
-public class AppCenterDetailVO {
+public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("应用中心 应用id")
     private Long appCenterId;
@@ -21,12 +21,14 @@ public class AppCenterDetailVO {
     private String envName;
     @ApiModelProperty("部署方式")
     private String deployWay;
+    @ApiModelProperty("chart来源")
+    private String chartSource;
+    @ApiModelProperty("chart来源")
+    private String chartSourceValue;
     @ApiModelProperty("chart来源，应用服务名称")
     private String appServiceName;
     @ApiModelProperty("chart来源，应用服务code")
     private String appServiceCode;
-    @ApiModelProperty("chart来源，服务来源")
-    private String appServiceSource;
     @ApiModelProperty("chart状态")
     private String objectStatus;
 
@@ -90,14 +92,6 @@ public class AppCenterDetailVO {
         this.appServiceCode = appServiceCode;
     }
 
-    public String getAppServiceSource() {
-        return appServiceSource;
-    }
-
-    public void setAppServiceSource(String appServiceSource) {
-        this.appServiceSource = appServiceSource;
-    }
-
     public String getObjectStatus() {
         return objectStatus;
     }
@@ -144,5 +138,21 @@ public class AppCenterDetailVO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getChartSource() {
+        return chartSource;
+    }
+
+    public void setChartSource(String chartSource) {
+        this.chartSource = chartSource;
+    }
+
+    public String getChartSourceValue() {
+        return chartSourceValue;
+    }
+
+    public void setChartSourceValue(String chartSourceValue) {
+        this.chartSourceValue = chartSourceValue;
     }
 }

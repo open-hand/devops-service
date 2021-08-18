@@ -37,6 +37,9 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @ApiModelProperty(name = "操作类型")
     private String operationType;
 
+    @ApiModelProperty(name = "chart来源")
+    private String chartSource;
+
     @ApiModelProperty(name = "chart/jar/docker")
     private String rdupmType;
 
@@ -103,5 +106,13 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
 
     public void setRdupmType(String rdupmType) {
         this.rdupmType = rdupmType;
+    }
+
+    public String getChartSource() {
+        return chartSource;
+    }
+
+    public void setChartSource(String chartSource) {
+        this.chartSource = chartSource;
     }
 }

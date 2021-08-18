@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.AppCenterDetailVO;
+import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
 
 /**
  * @Author: scp
@@ -10,5 +10,5 @@ import io.choerodon.devops.api.vo.AppCenterDetailVO;
  */
 public interface AppCenterService {
 
-    AppCenterDetailVO appCenterDetail(Long projectId, Long appCenterId);
+    AppCenterEnvDetailVO appCenterDetail(Long projectId, Long appCenterId);
 }
