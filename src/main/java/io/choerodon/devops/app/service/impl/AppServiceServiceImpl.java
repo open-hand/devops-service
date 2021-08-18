@@ -138,6 +138,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String APPSERVICE = "app-service";
     private static final String APP = "app";
     public static final String SOURCE_CODE_BUCKET_NAME = "market-source-code-bucket";
+    public static final String GITLAB_VARIABLE_TOKEN = "Token";
+    public static final String GITLAB_VARIABLE_TRIVY_INSECURE = "TRIVY_INSECURE";
 
     /**
      * CI 文件模板
@@ -3106,6 +3108,102 @@ public class AppServiceServiceImpl implements AppServiceService {
             return new HashSet<>();
         }
         return viewDTOList.get(0).getAppServiceIds();
+    }
+
+    @Override
+    @Transactional
+    public void batchTransfer(Long projectId, List<AppServiceTransferVO> appServiceTransferVOList) {
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, appServiceTransferVOList.size());
+
+        // 权限校验
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        boolean isGitlabRoot = false;
+        if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
+            // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+            isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
+        if (!isGitlabRoot) {
+            // 查询创建应用所在的gitlab应用组 用户权限
+            MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+            }
+        }
+
+        appServiceTransferVOList.forEach(appServiceTransferVO -> {
+            ApplicationValidator.checkApplicationService(appServiceTransferVO.getCode());
+            // 校验名称唯一性
+            checkName(projectId, appServiceTransferVO.getName());
+            // 校验code唯一性
+            checkCode(projectId, appServiceTransferVO.getCode());
+            AppServiceDTO appServiceDTO = new AppServiceDTO();
+            appServiceDTO.setProjectId(projectId);
+            appServiceDTO.setCode(appServiceTransferVO.getCode());
+            appServiceDTO.setName(appServiceTransferVO.getName());
+            appServiceDTO.setToken(GenerateUUID.generateUUID());
+            appServiceDTO.setProjectId(projectId);
+            appServiceDTO.setActive(true);
+            appServiceDTO.setSynchro(false);
+            appServiceDTO.setType(NORMAL);
+            appServiceTransferVO.setAppServiceId(baseCreate(appServiceDTO).getId());
+        });
+
+        appServiceTransferVOList.forEach(appServiceTransferVO -> transferAppService(projectId,
+                devopsProjectDTO.getDevopsAppGroupId(),
+                appServiceTransferVO));
+    }
+
+
+    @Override
+    public void createAppServiceForTransfer(AppServiceTransferVO appServiceTransferVO) {
+        Integer userId = TypeUtil.objToInteger(GitUserNameUtil.getUserId());
+        String token = GenerateUUID.generateUUID();
+
+        AppServiceDTO appServiceDTO = baseQuery(appServiceTransferVO.getAppServiceId());
+
+        // 1. 迁移gitlab代码库
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
+                appServiceTransferVO.getGitlabGroupId(),
+                TypeUtil.objToInteger(GitUserNameUtil.getUserId()));
+
+        // 2. 设置token等变量（创建或更新）
+        List<CiVariableVO> variables = new ArrayList<>();
+        variables.add(new CiVariableVO(GITLAB_VARIABLE_TOKEN, token));
+        variables.add(new CiVariableVO(GITLAB_VARIABLE_TRIVY_INSECURE, "true"));
+        gitlabServiceClientOperator.batchSaveProjectVariable(appServiceTransferVO.getGitlabProjectId(), userId, variables);
+
+        // 3. 添加webhook
+        setProjectHook(appServiceDTO, appServiceTransferVO.getGitlabProjectId(), token, userId);
+        // 4. 创建应用服务
+        appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
+        appServiceDTO.setSynchro(true);
+        appServiceDTO.setFailed(false);
+        appServiceDTO.setActive(true);
+        baseUpdate(appServiceDTO);
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+            description = "迁移应用服务",
+            inputSchemaClass = AppServiceTransferVO.class)
+    public void transferAppService(Long projectId, Long gitlabGroupId, AppServiceTransferVO appServiceTransferVO) {
+        appServiceTransferVO.setProjectId(projectId);
+        appServiceTransferVO.setGitlabGroupId(TypeUtil.objToInteger(gitlabGroupId));
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withRefId(TypeUtil.objToString(appServiceTransferVO.getGitlabProjectId()))
+                        .withSourceId(projectId)
+                        .withPayloadAndSerialize(appServiceTransferVO)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE),
+                builder -> {
+                });
     }
 
     @Override

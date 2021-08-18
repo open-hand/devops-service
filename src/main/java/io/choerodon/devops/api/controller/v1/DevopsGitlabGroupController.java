@@ -39,7 +39,7 @@ public class DevopsGitlabGroupController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "搜索参数", required = false)
-            @RequestParam(value = "search", required = false) String search) {
+            @RequestParam(value = "search") String search) {
         return ResponseEntity.ok(devopsGitService.listOwnedGroupExpectCurrent(projectId, search));
     }
 

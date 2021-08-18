@@ -11,6 +11,14 @@ public class CiVariableVO {
     private String key;
     private String value;
 
+    public CiVariableVO() {
+    }
+
+    public CiVariableVO(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
     public String getKey() {
         return this.key;
     }
