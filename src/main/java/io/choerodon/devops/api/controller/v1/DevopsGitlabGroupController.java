@@ -50,7 +50,7 @@ public class DevopsGitlabGroupController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "gitlab_group_id") Integer gitlabGroupId,
-            @ApiParam(value = "搜索参数", required = false)
+            @ApiParam(value = "搜索参数")
             @RequestParam(value = "search", required = false) String search,
             @ApiIgnore PageRequest pageRequest) {
         return ResponseEntity.ok(devopsGitService.listOwnedProjectByGroupId(projectId, gitlabGroupId, search, pageRequest));
