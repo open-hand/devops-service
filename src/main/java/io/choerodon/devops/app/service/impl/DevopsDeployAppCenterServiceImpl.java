@@ -1,14 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
+import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
-import io.choerodon.devops.app.service.AppCenterService;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
@@ -21,15 +19,28 @@ import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.util.UserDTOFillUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /**
- * @Author: scp
- * @Description:
- * @Date: Created in 2021/8/18
- * @Modified By:
- */
+ * @Author: shanyu
+ * @DateTime: 2021-08-18 15:28
+ **/
 @Service
-public class AppCenterServiceImpl implements AppCenterService {
+public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterService {
+
+    @Autowired
+    DevopsDeployAppCenterEnvMapper devopsDeployAppCenterEnvMapper;
+    @Autowired
+    DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private DevopsDeployAppCenterEnvMapper appCenterEnvMapper;
     @Autowired
@@ -42,6 +53,22 @@ public class AppCenterServiceImpl implements AppCenterService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+
+    @Override
+    public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable) {
+        Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = PageHelper.doPageAndSort(pageable, () -> devopsDeployAppCenterEnvMapper.listAppFromEnv(projectId, envId, name, rdupmType, operationType));
+        List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList = devopsDeployAppCenterVOS.getContent();
+        if (CollectionUtils.isEmpty(devopsDeployAppCenterVOList)) {
+            return devopsDeployAppCenterVOS;
+        }
+        devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
+            DevopsEnvironmentDTO devopsEnvAppServiceDTO = new DevopsEnvironmentDTO();
+            devopsEnvAppServiceDTO.setId(devopsDeployAppCenterVO.getEnvId());
+            devopsDeployAppCenterVO.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO).getName());
+        });
+        UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "iamUserDTO");
+        return devopsDeployAppCenterVOS;
+    }
 
     @Override
     public AppCenterEnvDetailVO appCenterDetail(Long projectId, Long appCenterId) {
@@ -74,4 +101,5 @@ public class AppCenterServiceImpl implements AppCenterService {
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
     }
+
 }

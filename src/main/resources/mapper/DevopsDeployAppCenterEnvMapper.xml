@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper">
+
+    <select id="listAppFromEnv" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT
+            *
+        FROM
+            devops_deploy_app_center_env
+        WHERE
+            project_id = #{projectId, jdbcType=BIGINT}
+            <if test="envId != null and envId !=0">
+                AND  env_id = #{envId, jdbcType=BIGINT}
+            </if>
+            <if test="name != null and name != ''">
+                AND  name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="rdupmType != null and rdupmType !=''">
+                AND  rdupm_type = #{rdupmType, jdbcType=VARCHAR}
+            </if>
+            <if test="operationType != null and operationType !=''">
+                AND  operation_type = #{operationType, jdbcType=VARCHAR}
+            </if>
+        ORDER BY
+            id DESC
+    </select>
 </mapper>
