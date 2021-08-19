@@ -20,13 +20,13 @@ public interface DevopsDeployAppCenterService {
      */
     Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable);
 
-    AppCenterEnvDetailVO chartAppDetail(Long projectId, Long appCenterId);
+    AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId);
 
-    List<InstanceEventVO> chartAppEvent(Long projectId, Long appCenterId);
+    List<InstanceEventVO> envChartAppEvent(Long projectId, Long appCenterId);
 
-    Page<DevopsEnvPodVO> chartAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
+    Page<DevopsEnvPodVO> envChartAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
 
-    DevopsEnvResourceVO chartAppRelease(Long projectId, Long appCenterId);
+    DevopsEnvResourceVO envChartAppRelease(Long projectId, Long appCenterId);
 
-    Page<DevopsServiceVO> chartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
+    Page<DevopsServiceVO> envChartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
 }
