@@ -1,24 +1,25 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
-import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
-import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @Author: shanyu
@@ -52,13 +53,72 @@ public class DevopsDeployAppCenterController {
         return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, name, rdupmType, operationType, pageable));
     }
 
-    @ApiOperation("根据应用id查询应用详情")
-    @GetMapping("/app_detail_env")
+    @ApiOperation("根据应用id查询chart——应用详情")
+    @GetMapping("/{app_center_id}/chart_detail")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    public ResponseEntity<AppCenterEnvDetailVO> appCenterDetail(
+    public ResponseEntity<AppCenterEnvDetailVO> chartAppDetail(
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
+            @Encrypt
+            @PathVariable("app_center_id") Long appCenterId) {
+        return Results.success(devopsDeployAppCenterService.chartAppDetail(projectId, appCenterId));
+    }
+
+    @ApiOperation("根据应用id查询chart——应用事件")
+    @GetMapping("/${app_center_id}/chart_event")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    public ResponseEntity<List<InstanceEventVO>> chartAppEvent(
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用中心 应用Id")
+            @Encrypt
             @RequestParam("app_center_id") Long appCenterId) {
-        return Results.success(devopsDeployAppCenterService.appCenterDetail(projectId, appCenterId));
+        return Results.success(devopsDeployAppCenterService.chartAppEvent(projectId, appCenterId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("根据应用id查询chart——Pod详情")
+    @CustomPageRequest
+    @PostMapping(value = "/${app_center_id}/chart_pods_page")
+    public ResponseEntity<Page<DevopsEnvPodVO>> chartAppPodsPage(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "应用中心 应用Id")
+            @Encrypt
+            @RequestParam("app_center_id") Long appCenterId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Results.success(devopsDeployAppCenterService.chartAppPodsPage(
+                projectId, appCenterId, pageRequest, searchParam));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping(value = "/${app_center_id}/chart_resources")
+    public ResponseEntity<DevopsEnvResourceVO> chartRelease(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用中心 应用Id")
+            @Encrypt
+            @RequestParam("app_center_id") Long appCenterId) {
+        return Results.success(devopsDeployAppCenterService.chartAppRelease(projectId, appCenterId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据应用id查询chart——资源配置")
+    @CustomPageRequest
+    @PostMapping(value = "/${app_center_id}/chart_service")
+    public ResponseEntity<Page<DevopsServiceVO>> chartService(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用中心 应用Id")
+            @Encrypt
+            @RequestParam("app_center_id") Long appCenterId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Results.success(devopsDeployAppCenterService.chartService(projectId, appCenterId, pageRequest, searchParam));
     }
 }

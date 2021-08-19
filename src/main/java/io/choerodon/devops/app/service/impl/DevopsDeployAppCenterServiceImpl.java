@@ -1,13 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
-import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
@@ -23,12 +26,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
 
 /**
  * @Author: shanyu
@@ -53,6 +50,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private DevopsEnvResourceService devopsEnvResourceService;
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private DevopsServiceService devopsServiceService;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable) {
@@ -71,7 +76,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public AppCenterEnvDetailVO appCenterDetail(Long projectId, Long appCenterId) {
+    public AppCenterEnvDetailVO chartAppDetail(Long projectId, Long appCenterId) {
         AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         BeanUtils.copyProperties(centerEnvDTO, detailVO);
@@ -102,4 +107,42 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return detailVO;
     }
 
+    @Override
+    public List<InstanceEventVO> chartAppEvent(Long projectId, Long appCenterId) {
+        DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+            return devopsEnvResourceService.listInstancePodEvent(centerEnvDTO.getObjectId());
+        }
+        return null;
+    }
+
+    @Override
+    public Page<DevopsEnvPodVO> chartAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
+        DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+            AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
+            return devopsEnvPodService.pageByOptions(
+                    projectId, instanceDTO.getEnvId(), instanceDTO.getAppServiceId(), centerEnvDTO.getObjectId(), pageRequest, searchParam);
+        }
+        return null;
+    }
+
+    @Override
+    public DevopsEnvResourceVO chartAppRelease(Long projectId, Long appCenterId) {
+        DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+            return appServiceInstanceService.listResourcesInHelmRelease(centerEnvDTO.getObjectId());
+        }
+        return null;
+    }
+
+    @Override
+    public Page<DevopsServiceVO> chartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
+        DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+            AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
+            return devopsServiceService.pageByInstance(projectId, instanceDTO.getEnvId(), centerEnvDTO.getObjectId(), pageRequest, instanceDTO.getAppServiceId(), searchParam);
+        }
+        return null;
+    }
 }
