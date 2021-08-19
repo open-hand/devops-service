@@ -20,7 +20,7 @@ import io.choerodon.swagger.annotation.Permission;
  */
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_center")
-public class AppCenterController {
+public class DevopsDeployAppCenterController {
     @Autowired
     private AppCenterService appCenterService;
 
