@@ -503,4 +503,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, GroupProjectsFilter filter) {
         throw new CommonException("error.query.projects");
     }
+
+    @Override
+    public ResponseEntity<GitlabProjectDTO> transferProject(Integer projectId, Integer userId, Integer groupId) {
+        throw new CommonException("error.transfer.projects");
+    }
 }

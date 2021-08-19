@@ -1166,8 +1166,12 @@ public class GitlabServiceClientOperator {
     }
 
     public List<GitlabProjectDTO> listProject(Integer groupId,
-                                      Integer userId,
+                                              Integer userId,
                                               GroupProjectsFilter filter) {
         return gitlabServiceClient.listProjects(groupId, userId, filter).getBody();
+    }
+
+    public GitlabProjectDTO transferProject(Integer gitlabProjectId, Integer gitlabGroupId, Integer userId) {
+        return gitlabServiceClient.transferProject(gitlabProjectId, userId, gitlabGroupId).getBody();
     }
 }

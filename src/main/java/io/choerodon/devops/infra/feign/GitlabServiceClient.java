@@ -698,11 +698,19 @@ public interface GitlabServiceClient {
             @RequestBody GroupFilter groupFilter);
 
     @ApiOperation(value = "获取项目列表")
-    @PostMapping(value = "/v1/group/{groupId}/projects")
+    @PostMapping(value = "/v1/groups/{groupId}/projects")
     ResponseEntity<List<GitlabProjectDTO>> listProjects(
-            @ApiParam(value = "组ID", required = true)
-            @PathVariable Integer groupId,
-            @ApiParam(value = "userId")
-            @RequestParam(required = false) Integer userId,
+            @PathVariable(value = "groupId") Integer groupId,
+            @RequestParam(value = "userId") Integer userId,
             @RequestBody GroupProjectsFilter filter);
+
+    @ApiParam(value = "迁移应用服务")
+    @PutMapping(value = "/v1/projects/{projectId}/transfer")
+    ResponseEntity<GitlabProjectDTO> transferProject(
+            @ApiParam(value = "用户id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "新的groupId")
+            @RequestParam(value = "groupId") Integer groupId);
 }

@@ -10,12 +10,12 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * devops部署应用表
+ * devops 部署组实例表
  */
-@Table(name = "devops_deploy_app_center")
 @ModifyAudit
 @VersionAudit
-public class DevopsDeployAppCenterDTO extends AuditDomain {
+@Table(name = "devops_deploy_group")
+public class DevopsDeployGroupDTO extends AuditDomain {
     @Id
     private Long id;
 
@@ -28,21 +28,14 @@ public class DevopsDeployAppCenterDTO extends AuditDomain {
     @ApiModelProperty(name = "项目id")
     private Long projectId;
 
-    @ApiModelProperty(name = "部署对象id")
-    private Long objectId;
-
     @ApiModelProperty(name = "Id")
     private Long envId;
 
-    @ApiModelProperty(name = "Id")
-    private Long hostId;
+    @ApiModelProperty(name = "应用配置")
+    private String appConfig;
 
-    @ApiModelProperty(name = "操作类型")
-    private String operationType;
-
-    @ApiModelProperty(name = "chart/jar/docker")
-    private String rdupmType;
-
+    @ApiModelProperty(name = "容器配置")
+    private String containerConfig;
 
     public Long getId() {
         return id;
@@ -76,14 +69,6 @@ public class DevopsDeployAppCenterDTO extends AuditDomain {
         this.projectId = projectId;
     }
 
-    public Long getObjectId() {
-        return objectId;
-    }
-
-    public void setObjectId(Long objectId) {
-        this.objectId = objectId;
-    }
-
     public Long getEnvId() {
         return envId;
     }
@@ -92,27 +77,19 @@ public class DevopsDeployAppCenterDTO extends AuditDomain {
         this.envId = envId;
     }
 
-    public Long getHostId() {
-        return hostId;
+    public String getAppConfig() {
+        return appConfig;
     }
 
-    public void setHostId(Long hostId) {
-        this.hostId = hostId;
+    public void setAppConfig(String appConfig) {
+        this.appConfig = appConfig;
     }
 
-    public String getOperationType() {
-        return operationType;
+    public String getContainerConfig() {
+        return containerConfig;
     }
 
-    public void setOperationType(String operationType) {
-        this.operationType = operationType;
-    }
-
-    public String getRdupmType() {
-        return rdupmType;
-    }
-
-    public void setRdupmType(String rdupmType) {
-        this.rdupmType = rdupmType;
+    public void setContainerConfig(String containerConfig) {
+        this.containerConfig = containerConfig;
     }
 }

@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_host.groovy') {
     changeSet(author: 'lihao', id: '2021-08-17-create-table') {
-        createTable(tableName: "devops_deploy_app_center", remarks: 'devops部署应用表') {
+        createTable(tableName: "devops_deploy_app_center_host", remarks: 'devops主机部署应用表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -18,18 +18,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center.groovy') {
             column(name: 'object_id', type: 'BIGINT UNSIGNED', remarks: '部署对象id') {
                 constraints(nullable: false)
             }
-
-            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: 'env Id') {
-                constraints(nullable: true)
-            }
             column(name: 'host_id', type: 'BIGINT UNSIGNED', remarks: 'host Id') {
-                constraints(nullable: true)
+                constraints(nullable: false)
             }
-
             column(name: 'operation_type', type: 'VARCHAR(32)', remarks: '操作类型') {
                 constraints(nullable: false)
             }
-            column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 chart/jar/docker') {
+            column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 jar') {
                 constraints(nullable: false)
             }
 
@@ -40,19 +35,21 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        addUniqueConstraint(tableName: 'devops_deploy_app_center',
-                constraintName: 'uk_env_id_host_id_name', columnNames: 'env_id,host_id,name')
-        addUniqueConstraint(tableName: 'devops_deploy_app_center',
-                constraintName: 'uk_env_id_host_id_code', columnNames: 'env_id,host_id,code')
+        addUniqueConstraint(tableName: 'devops_deploy_app_center_host',
+                constraintName: 'uk_host_id_name', columnNames: 'host_id,name')
+        addUniqueConstraint(tableName: 'devops_deploy_app_center_host',
+                constraintName: 'uk_host_id_code', columnNames: 'host_id,code')
 
-        createIndex(indexName: "idx_env_id", tableName: "devops_deploy_app_center") {
-            column(name: "env_id")
-        }
-        createIndex(indexName: "idx_host_id", tableName: "devops_deploy_app_center") {
+        createIndex(indexName: "idx_host_id", tableName: "devops_deploy_app_center_host") {
             column(name: "host_id")
         }
-        createIndex(indexName: "idx_project_id", tableName: "devops_deploy_app_center") {
+        createIndex(indexName: "idx_project_id", tableName: "devops_deploy_app_center_host") {
             column(name: "project_id")
+        }
+    }
+    changeSet(author: 'scp', id: '2021-8-18-add-column') {
+        addColumn(tableName: 'devops_deploy_app_center_host') {
+            column(name: 'jar_source', type: 'VARCHAR(40)', remarks: 'chart包来源,normal(项目服务)/localhost(共享)/market/hzero JarSourceEnum')
         }
     }
 }
