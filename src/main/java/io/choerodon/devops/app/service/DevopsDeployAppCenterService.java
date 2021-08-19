@@ -1,8 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
-import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -19,5 +20,13 @@ public interface DevopsDeployAppCenterService {
      */
     Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable);
 
-    AppCenterEnvDetailVO appCenterDetail(Long projectId, Long appCenterId);
+    AppCenterEnvDetailVO chartAppDetail(Long projectId, Long appCenterId);
+
+    List<InstanceEventVO> chartAppEvent(Long projectId, Long appCenterId);
+
+    Page<DevopsEnvPodVO> chartAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
+
+    DevopsEnvResourceVO chartAppRelease(Long projectId, Long appCenterId);
+
+    Page<DevopsServiceVO> chartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
 }
