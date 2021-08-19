@@ -4,20 +4,7 @@
 
     <select id="listAppFromEnv" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
         SELECT
-            id,
-            name,
-            code,
-            project_id,
-            object_id,
-            env_id,
-            operation_type,
-            rdupm_type,
-            chart_source as source,
-            object_version_number,
-            created_by,
-            creation_date,
-            last_updated_by,
-            last_update_date
+            *
         FROM
             devops_deploy_app_center_env
         WHERE
@@ -30,6 +17,9 @@
             </if>
             <if test="rdupmType != null and rdupmType !=''">
                 AND  rdupm_type = #{rdupmType, jdbcType=VARCHAR}
+            </if>
+            <if test="operationType != null and operationType !=''">
+                AND  operation_type = #{operationType, jdbcType=VARCHAR}
             </if>
         ORDER BY
             id DESC

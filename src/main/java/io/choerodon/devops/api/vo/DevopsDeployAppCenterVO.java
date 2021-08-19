@@ -47,7 +47,7 @@ public class DevopsDeployAppCenterVO {
     private String envName;
 
     @ApiModelProperty("制品来源")
-    private String source;
+    private String chartSource;
 
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
@@ -146,12 +146,12 @@ public class DevopsDeployAppCenterVO {
         this.envName = envName;
     }
 
-    public String getSource() {
-        return source;
+    public String getChartSource() {
+        return chartSource;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setChartSource(String chartSource) {
+        this.chartSource = chartSource;
     }
 
     public Long getObjectVersionNumber() {

@@ -39,16 +39,15 @@ public class DevopsDeployAppCenterController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用")
-    @GetMapping("/list")
+    @GetMapping("/page_by_env")
     public ResponseEntity<Page<DevopsDeployAppCenterVO>> listApp(
             @PathVariable("project_id") Long projectId,
             @Encrypt @RequestParam(value = "envId", required = false) Long envId,
-            @Encrypt @RequestParam(value = "hostId", required = false) Long hostId,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "rdupmType", required = false) String rdupmType,
-            @RequestParam(value = "pattern", required = false) String pattern,
+            @RequestParam(value = "operationType", required = false) String operationType,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, hostId, name, rdupmType, pattern, pageable));
+        return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, name, rdupmType, operationType, pageable));
     }
 }

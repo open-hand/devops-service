@@ -16,5 +16,6 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
     List<DevopsDeployAppCenterVO> listAppFromEnv(@Param("projectId") Long projectId,
                                                  @Param("envId") Long envId,
                                                  @Param("name") String name,
-                                                 @Param("rdupmType") String rdupmType);
+                                                 @Param("rdupmType") String rdupmType,
+                                                 @Param("operationType") String operationType);
 }
