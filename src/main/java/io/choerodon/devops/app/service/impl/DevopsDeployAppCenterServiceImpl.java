@@ -76,7 +76,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public AppCenterEnvDetailVO chartAppDetail(Long projectId, Long appCenterId) {
+    public AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId) {
         AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         BeanUtils.copyProperties(centerEnvDTO, detailVO);
@@ -108,7 +108,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public List<InstanceEventVO> chartAppEvent(Long projectId, Long appCenterId) {
+    public List<InstanceEventVO> envChartAppEvent(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
             return devopsEnvResourceService.listInstancePodEvent(centerEnvDTO.getObjectId());
@@ -117,7 +117,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public Page<DevopsEnvPodVO> chartAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
+    public Page<DevopsEnvPodVO> envChartAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
             AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
@@ -128,7 +128,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public DevopsEnvResourceVO chartAppRelease(Long projectId, Long appCenterId) {
+    public DevopsEnvResourceVO envChartAppRelease(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
             return appServiceInstanceService.listResourcesInHelmRelease(centerEnvDTO.getObjectId());
@@ -137,7 +137,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public Page<DevopsServiceVO> chartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
+    public Page<DevopsServiceVO> envChartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
             AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
