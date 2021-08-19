@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -14,7 +15,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @Table(name = "devops_deploy_app_center_host")
 @ModifyAudit
 @VersionAudit
-public class DevopsDeployAppCenterHostDTO {
+public class DevopsDeployAppCenterHostDTO extends AuditDomain {
     @Id
     private Long id;
 
