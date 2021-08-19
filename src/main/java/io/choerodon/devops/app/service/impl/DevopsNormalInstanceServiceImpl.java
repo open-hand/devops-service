@@ -115,12 +115,11 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         try {
             jarDeployVO.setValue(new String(decoder.decodeBuffer(jarDeployVO.getValue()), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            LOGGER.info("decode values failed!!!!. {}", jarDeployVO.getValue());
+            throw new CommonException("decode.values.failed", e);
         }
         List<AppServiceDTO> appServiceDTOList;
         String deployObjectName = null;
         String deployVersion = null;
-        // 0.1 查询部署信息
 
         // 0.3 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
@@ -196,10 +195,10 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
 
         // 2.保存记录
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = queryByHostIdAndName(hostId, jarDeployVO.getName());
+        DevopsNormalInstanceDTO devopsNormalInstanceDTO = queryByHostIdAndName(hostId, jarDeployVO.getAppCode());
         if (devopsNormalInstanceDTO == null) {
             devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
-                    jarDeployVO.getName(),
+                    jarDeployVO.getAppCode(),
                     jarDeployVO.getSourceType(),
                     HostResourceType.JAVA_PROCESS.value());
 
@@ -224,7 +223,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
-                jarDeployVO.getName(),
+                jarDeployVO.getAppCode(),
                 deployObjectName,
                 String.valueOf(devopsNormalInstanceDTO.getId()),
                 HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()),

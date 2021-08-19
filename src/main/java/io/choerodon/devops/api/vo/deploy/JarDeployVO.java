@@ -22,6 +22,12 @@ public class JarDeployVO {
     @ApiModelProperty("部署来源")
     private String sourceType;
 
+    @ApiModelProperty("应用名")
+    private String appName;
+
+    @ApiModelProperty("应用编码")
+    private String appCode;
+
     @ApiModelProperty("实例名")
     private String name;
     /**
@@ -52,6 +58,22 @@ public class JarDeployVO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public String getValue() {

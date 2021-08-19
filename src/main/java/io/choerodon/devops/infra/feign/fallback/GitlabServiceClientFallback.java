@@ -495,14 +495,15 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<GroupDTO>> listGroupsWithParam(Integer userId, GroupFilter groupFilter) {
-        throw new CommonException("error.query.groups");
+    public ResponseEntity<List<GroupDTO>> listGroupsWithParam(Integer userId, Boolean owned, String search, List<Integer> skipGroups) {
+        throw new CommonException("error.query.group");
     }
 
     @Override
-    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, GroupProjectsFilter filter) {
-        throw new CommonException("error.query.projects");
+    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Boolean owned, String search, Integer page, Integer perPage) {
+        throw new CommonException("error.query.group.project");
     }
+
 
     @Override
     public ResponseEntity<GitlabProjectDTO> transferProject(Integer projectId, Integer userId, Integer groupId) {

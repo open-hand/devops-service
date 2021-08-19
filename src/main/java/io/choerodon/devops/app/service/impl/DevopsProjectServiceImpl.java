@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -205,6 +202,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Override
     public List<GitlabProjectSimple> queryGitlabGroups(List<Long> projectIds) {
        return devopsProjectMapper.selectByProjectIds(projectIds);
+    }
+
+    @Override
+    public List<DevopsProjectDTO> listExistGroup(Set<Integer> groupIds) {
+        return devopsProjectMapper.listExistGroup(groupIds);
     }
 
     private UserVO userDTOTOVO(IamUserDTO iamUserDTOList) {
