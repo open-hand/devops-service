@@ -43,14 +43,11 @@ public class DevopsDeployAppCenterVO {
     @ApiModelProperty("部署制品类型")
     private String rdupmType;
 
-    @ApiModelProperty("部署方式")
-    private String pattern;
-
     @ApiModelProperty("环境名称")
     private String envName;
 
-    @ApiModelProperty("主机地址")
-    private String hostIp;
+    @ApiModelProperty("制品来源")
+    private String source;
 
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
@@ -62,10 +59,10 @@ public class DevopsDeployAppCenterVO {
     private Date lastUpdateDate;
 
     @ApiModelProperty("创建者用户名")
-    private String createdBy;
+    private Long createdBy;
 
     @ApiModelProperty("最近更新者用户名")
-    private String lastUpdatedBy;
+    private Long lastUpdatedBy;
 
     private IamUserDTO iamUserDTO;
 
@@ -141,14 +138,6 @@ public class DevopsDeployAppCenterVO {
         this.rdupmType = rdupmType;
     }
 
-    public String getPattern() {
-        return pattern;
-    }
-
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
-    }
-
     public String getEnvName() {
         return envName;
     }
@@ -157,12 +146,12 @@ public class DevopsDeployAppCenterVO {
         this.envName = envName;
     }
 
-    public String getHostIp() {
-        return hostIp;
+    public String getSource() {
+        return source;
     }
 
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public Long getObjectVersionNumber() {
@@ -189,19 +178,19 @@ public class DevopsDeployAppCenterVO {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public String getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public String getLastUpdatedBy() {
+    public Long getLastUpdatedBy() {
         return lastUpdatedBy;
     }
 
-    public void setLastUpdatedBy(String lastUpdatedBy) {
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 

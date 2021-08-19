@@ -4,19 +4,32 @@
 
     <select id="listAppFromEnv" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
         SELECT
-            *
+            id,
+            name,
+            code,
+            project_id,
+            object_id,
+            env_id,
+            operation_type,
+            rdupm_type,
+            chart_source as source,
+            object_version_number,
+            created_by,
+            creation_date,
+            last_updated_by,
+            last_update_date
         FROM
-            devops_deploy_app_center_env ddace
+            devops_deploy_app_center_env
         WHERE
-            ddace.project_id = #{projectId, jdbcType=BIGINT}
+            project_id = #{projectId, jdbcType=BIGINT}
             <if test="envId != null and envId !=0">
-                AND  ddace.env_id = #{envId, jdbcType=BIGINT}
+                AND  env_id = #{envId, jdbcType=BIGINT}
             </if>
             <if test="name != null and name != ''">
-                AND  ddace.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                AND  name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
             </if>
             <if test="rdupmType != null and rdupmType !=''">
-                AND  ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
+                AND  rdupm_type = #{rdupmType, jdbcType=VARCHAR}
             </if>
         ORDER BY
             id DESC

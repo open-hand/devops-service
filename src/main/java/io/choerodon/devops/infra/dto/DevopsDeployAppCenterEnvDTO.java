@@ -39,6 +39,9 @@ public class DevopsDeployAppCenterEnvDTO {
     @ApiModelProperty("部署制品类型")
     private String rdupmType;
 
+    @ApiModelProperty("制品来源")
+    private String chartSource;
+
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
 
@@ -116,6 +119,14 @@ public class DevopsDeployAppCenterEnvDTO {
 
     public void setRdupmType(String rdupmType) {
         this.rdupmType = rdupmType;
+    }
+
+    public String getChartSource() {
+        return chartSource;
+    }
+
+    public void setChartSource(String chartSource) {
+        this.chartSource = chartSource;
     }
 
     public Long getObjectVersionNumber() {

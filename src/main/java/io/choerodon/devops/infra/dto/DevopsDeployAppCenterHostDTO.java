@@ -39,6 +39,9 @@ public class DevopsDeployAppCenterHostDTO {
     @ApiModelProperty("部署制品类型")
     private String rdupmType;
 
+    @ApiModelProperty("制品来源")
+    private String jarSource;
+
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
 
@@ -116,6 +119,14 @@ public class DevopsDeployAppCenterHostDTO {
 
     public void setRdupmType(String rdupmType) {
         this.rdupmType = rdupmType;
+    }
+
+    public String getJarSource() {
+        return jarSource;
+    }
+
+    public void setJarSource(String jarSource) {
+        this.jarSource = jarSource;
     }
 
     public Long getObjectVersionNumber() {
