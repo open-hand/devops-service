@@ -26,6 +26,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -57,6 +58,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable) {
         Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = PageHelper.doPageAndSort(pageable, () -> devopsDeployAppCenterEnvMapper.listAppFromEnv(projectId, envId, name, rdupmType, operationType));
         List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList = devopsDeployAppCenterVOS.getContent();
+        if (CollectionUtils.isEmpty(devopsDeployAppCenterVOList)) {
+            return devopsDeployAppCenterVOS;
+        }
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
             DevopsEnvironmentDTO devopsEnvAppServiceDTO = new DevopsEnvironmentDTO();
             devopsEnvAppServiceDTO.setId(devopsDeployAppCenterVO.getEnvId());
