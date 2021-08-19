@@ -55,8 +55,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable) {
-        Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = PageHelper.doPageAndSort(pageable, () -> listAppFromEnv(projectId, envId, name, rdupmType, operationType));
-        UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOS.getContent(), "createdBy", "iamUserDTO");
+        Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = PageHelper.doPageAndSort(pageable, () -> devopsDeployAppCenterEnvMapper.listAppFromEnv(projectId, envId, name, rdupmType, operationType));
+        List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList = devopsDeployAppCenterVOS.getContent();
+        devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
+            DevopsEnvironmentDTO devopsEnvAppServiceDTO = new DevopsEnvironmentDTO();
+            devopsEnvAppServiceDTO.setId(devopsDeployAppCenterVO.getEnvId());
+            devopsDeployAppCenterVO.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO).getName());
+        });
+        UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "iamUserDTO");
         return devopsDeployAppCenterVOS;
     }
 
@@ -90,16 +96,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setChartSourceValue(AppCenterChartSourceEnum.valueOf(centerEnvDTO.getChartSource()).getValue());
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
-    }
-
-    private List<DevopsDeployAppCenterVO> listAppFromEnv(Long projectId, Long envId, String name, String rdupmType, String operationType) {
-        List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList = devopsDeployAppCenterEnvMapper.listAppFromEnv(projectId, envId, name, rdupmType, operationType);
-         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
-            DevopsEnvironmentDTO devopsEnvAppServiceDTO = new DevopsEnvironmentDTO();
-            devopsEnvAppServiceDTO.setId(devopsDeployAppCenterVO.getEnvId());
-            devopsDeployAppCenterVO.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO).getName());
-        });
-        return devopsDeployAppCenterVOList;
     }
 
 }
