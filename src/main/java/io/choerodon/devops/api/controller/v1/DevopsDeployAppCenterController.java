@@ -65,7 +65,7 @@ public class DevopsDeployAppCenterController {
     }
 
     @ApiOperation("根据应用id查询chart——应用事件")
-    @GetMapping("/${app_center_id}/env_chart_event")
+    @GetMapping("/{app_center_id}/env_chart_event")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<List<InstanceEventVO>> envChartAppEvent(
             @PathVariable("project_id") Long projectId,
@@ -78,7 +78,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("根据应用id查询chart——Pod详情")
     @CustomPageRequest
-    @PostMapping(value = "/${app_center_id}/env_chart_pods_page")
+    @PostMapping(value = "/{app_center_id}/env_chart_pods_page")
     public ResponseEntity<Page<DevopsEnvPodVO>> envChartAppPodsPage(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -94,7 +94,7 @@ public class DevopsDeployAppCenterController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping(value = "/${app_center_id}/env_chart_resources")
+    @GetMapping(value = "/{app_center_id}/env_chart_resources")
     public ResponseEntity<DevopsEnvResourceVO> chartRelease(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -107,7 +107,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据应用id查询chart——资源配置")
     @CustomPageRequest
-    @PostMapping(value = "/${app_center_id}/env_chart_service")
+    @PostMapping(value = "/{app_center_id}/env_chart_service")
     public ResponseEntity<Page<DevopsServiceVO>> envChartService(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,

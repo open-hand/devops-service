@@ -17,6 +17,7 @@ import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AppCenterChartSourceEnum;
+import io.choerodon.devops.infra.enums.AppCenterDeployObjectEnum;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -83,6 +84,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setAppCenterId(appCenterId);
         detailVO.setDeployWay(AppCenterDeployWayEnum.CONTAINER.getValue());
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+            detailVO.setDeployObject(AppCenterDeployObjectEnum.CHART.getCode());
             AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(instanceDTO.getStatus());
             if (centerEnvDTO.getChartSource().equals(AppCenterChartSourceEnum.NORMAL.getValue()) ||
@@ -95,6 +97,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
             }
+        } else {
+            detailVO.setDeployObject(AppCenterDeployObjectEnum.DEPLOY_GROUP.getCode());
         }
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
         detailVO.setEnvCode(environmentDTO.getCode());

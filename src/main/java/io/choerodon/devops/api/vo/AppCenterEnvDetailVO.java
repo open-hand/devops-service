@@ -21,6 +21,8 @@ public class AppCenterEnvDetailVO {
     private String envName;
     @ApiModelProperty("部署方式")
     private String deployWay;
+    @ApiModelProperty("部署对象")
+    private String deployObject;
     @ApiModelProperty("chart来源")
     private String chartSource;
     @ApiModelProperty("chart来源")
@@ -154,5 +156,13 @@ public class AppCenterEnvDetailVO {
 
     public void setChartSourceValue(String chartSourceValue) {
         this.chartSourceValue = chartSourceValue;
+    }
+
+    public String getDeployObject() {
+        return deployObject;
+    }
+
+    public void setDeployObject(String deployObject) {
+        this.deployObject = deployObject;
     }
 }
