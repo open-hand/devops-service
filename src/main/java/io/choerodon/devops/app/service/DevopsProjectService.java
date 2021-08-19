@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
@@ -77,4 +77,6 @@ public interface DevopsProjectService {
     List<DevopsProjectDTO> listAll();
 
     List<GitlabProjectSimple> queryGitlabGroups(List<Long> projectIds);
+
+    List<DevopsProjectDTO> listExistGroup(Set<Integer> groupIds);
 }

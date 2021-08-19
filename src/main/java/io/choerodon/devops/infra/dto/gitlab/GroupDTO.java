@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto.gitlab;
 
+import java.util.Objects;
+
 import io.choerodon.devops.infra.enums.Visibility;
 
 /**
@@ -18,6 +20,15 @@ public class GroupDTO {
     private Integer parentId;
     private Integer sharedRunnersMinutesLimit;
 
+    private Boolean bindFlag;
+
+    public Boolean getBindFlag() {
+        return bindFlag;
+    }
+
+    public void setBindFlag(Boolean bindFlag) {
+        this.bindFlag = bindFlag;
+    }
 
     public Integer getId() {
         return id;
@@ -105,6 +116,19 @@ public class GroupDTO {
 
     public void setSharedRunnersMinutesLimit(Integer sharedRunnersMinutesLimit) {
         this.sharedRunnersMinutesLimit = sharedRunnersMinutesLimit;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GroupDTO groupDTO = (GroupDTO) o;
+        return id.equals(groupDTO.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override

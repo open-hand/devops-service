@@ -693,16 +693,23 @@ public interface GitlabServiceClient {
 
     @ApiOperation(value = "查询有权限的所有组")
     @PostMapping("/v1/groups/{userId}")
-    ResponseEntity<List<GroupDTO>> listGroupsWithParam(
-            @PathVariable(value = "userId") Integer userId,
-            @RequestBody GroupFilter groupFilter);
+    ResponseEntity<List<GroupDTO>> listGroupsWithParam(@ApiParam(value = "userId")
+                                     @PathVariable(value = "userId") Integer userId,
+                                     @RequestParam(value = "owned", required = false) Boolean owned,
+                                     @RequestParam(value = "search", required = false) String search,
+                                     @RequestBody List<Integer> skipGroups);
 
     @ApiOperation(value = "获取项目列表")
-    @PostMapping(value = "/v1/groups/{groupId}/projects")
+    @GetMapping(value = "/v1/groups/{groupId}/projects")
     ResponseEntity<List<GitlabProjectDTO>> listProjects(
+            @ApiParam(value = "组ID", required = true)
             @PathVariable(value = "groupId") Integer groupId,
-            @RequestParam(value = "userId") Integer userId,
-            @RequestBody GroupProjectsFilter filter);
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "owned", required = false) Boolean owned,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "perPage", required = false) Integer perPage);
 
     @ApiParam(value = "迁移应用服务")
     @PutMapping(value = "/v1/projects/{projectId}/transfer")

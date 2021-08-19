@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -18,4 +19,6 @@ public interface DevopsProjectMapper extends BaseMapper<DevopsProjectDTO> {
     DevopsProjectDTO queryByGitlabGroupId(@Param("gitlabGroupId") Integer gitlabGroupId);
 
     List<GitlabProjectSimple> selectByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+    List<DevopsProjectDTO> listExistGroup(@Param("groupIds") Set<Integer> groupIds);
 }
