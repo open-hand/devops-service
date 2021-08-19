@@ -3,12 +3,14 @@ package io.choerodon.devops.api.controller.v1;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
 import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -49,5 +51,15 @@ public class DevopsDeployAppCenterController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
         return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, name, rdupmType, operationType, pageable));
+    }
+
+    @ApiOperation("根据应用id查询应用详情")
+    @GetMapping("/app_detail_env")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    public ResponseEntity<AppCenterEnvDetailVO> appCenterDetail(
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用中心 应用Id")
+            @RequestParam("app_center_id") Long appCenterId) {
+        return Results.success(devopsDeployAppCenterService.appCenterDetail(projectId, appCenterId));
     }
 }

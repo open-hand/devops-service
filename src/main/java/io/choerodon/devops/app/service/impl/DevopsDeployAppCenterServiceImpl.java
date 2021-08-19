@@ -1,14 +1,29 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
 import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.AppCenterChartSourceEnum;
+import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
+import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +40,56 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     DevopsDeployAppCenterEnvMapper devopsDeployAppCenterEnvMapper;
     @Autowired
     DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private DevopsDeployAppCenterEnvMapper appCenterEnvMapper;
+    @Autowired
+    private AppServiceInstanceService instanceService;
+    @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
+    private DevopsEnvironmentService environmentService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable) {
         Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = PageHelper.doPageAndSort(pageable, () -> listAppFromEnv(projectId, envId, name, rdupmType, operationType));
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOS.getContent(), "createdBy", "iamUserDTO");
         return devopsDeployAppCenterVOS;
+    }
+
+    @Override
+    public AppCenterEnvDetailVO appCenterDetail(Long projectId, Long appCenterId) {
+        AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
+        DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        BeanUtils.copyProperties(centerEnvDTO, detailVO);
+        detailVO.setAppCenterId(appCenterId);
+        detailVO.setDeployWay(AppCenterDeployWayEnum.CONTAINER.getValue());
+        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+            AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
+            detailVO.setObjectStatus(instanceDTO.getStatus());
+            if (centerEnvDTO.getChartSource().equals(AppCenterChartSourceEnum.NORMAL.getValue()) ||
+                    centerEnvDTO.getChartSource().equals(AppCenterChartSourceEnum.SHARE.getValue())) {
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(instanceDTO.getAppServiceId());
+                detailVO.setAppServiceCode(appServiceDTO.getCode());
+                detailVO.setAppServiceName(appServiceDTO.getName());
+            } else {
+                MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, instanceDTO.getAppServiceId());
+                detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
+                detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
+            }
+        }
+        DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
+        detailVO.setEnvCode(environmentDTO.getCode());
+        detailVO.setEnvName(environmentDTO.getName());
+        IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy());
+        detailVO.setUserId(userDTO.getId());
+        BeanUtils.copyProperties(userDTO, detailVO);
+        detailVO.setChartSourceValue(AppCenterChartSourceEnum.valueOf(centerEnvDTO.getChartSource()).getValue());
+        detailVO.setChartSource(centerEnvDTO.getChartSource());
+        return detailVO;
     }
 
     private List<DevopsDeployAppCenterVO> listAppFromEnv(Long projectId, Long envId, String name, String rdupmType, String operationType) {

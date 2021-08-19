@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
 import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -17,4 +18,6 @@ public interface DevopsDeployAppCenterService {
      * @return 应用服务列表
      */
     Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable);
+
+    AppCenterEnvDetailVO appCenterDetail(Long projectId, Long appCenterId);
 }
