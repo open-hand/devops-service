@@ -17,5 +17,6 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
                                                  @Param("envId") Long envId,
                                                  @Param("name") String name,
                                                  @Param("rdupmType") String rdupmType,
-                                                 @Param("operationType") String operationType);
+                                                 @Param("operationType") String operationType,
+                                                 @Param("params") String params);
 }

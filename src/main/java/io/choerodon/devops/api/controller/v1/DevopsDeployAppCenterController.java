@@ -48,9 +48,10 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "rdupmType", required = false) String rdupmType,
             @RequestParam(value = "operationType", required = false) String operationType,
+            @RequestParam(value = "params", required = false) String params,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, name, rdupmType, operationType, pageable));
+        return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, name, rdupmType, operationType, params, pageable));
     }
 
     @ApiOperation("根据应用id查询chart——应用详情")
@@ -65,7 +66,7 @@ public class DevopsDeployAppCenterController {
     }
 
     @ApiOperation("根据应用id查询chart——应用事件")
-    @GetMapping("/${app_center_id}/chart_event")
+    @GetMapping("/{app_center_id}/chart_event")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<List<InstanceEventVO>> chartAppEvent(
             @PathVariable("project_id") Long projectId,
@@ -78,7 +79,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation("根据应用id查询chart——Pod详情")
     @CustomPageRequest
-    @PostMapping(value = "/${app_center_id}/chart_pods_page")
+    @PostMapping(value = "/{app_center_id}/chart_pods_page")
     public ResponseEntity<Page<DevopsEnvPodVO>> chartAppPodsPage(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -94,7 +95,7 @@ public class DevopsDeployAppCenterController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping(value = "/${app_center_id}/chart_resources")
+    @GetMapping(value = "/{app_center_id}/chart_resources")
     public ResponseEntity<DevopsEnvResourceVO> chartRelease(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -107,7 +108,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据应用id查询chart——资源配置")
     @CustomPageRequest
-    @PostMapping(value = "/${app_center_id}/chart_service")
+    @PostMapping(value = "/{app_center_id}/chart_service")
     public ResponseEntity<Page<DevopsServiceVO>> chartService(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,

@@ -21,6 +21,11 @@
             <if test="operationType != null and operationType !=''">
                 AND  operation_type = #{operationType, jdbcType=VARCHAR}
             </if>
+            <if test="params != null and params != ''">
+                AND(name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                OR rdupm_type LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                OR operation_type LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%'))
+            </if>
         ORDER BY
             id DESC
     </select>
