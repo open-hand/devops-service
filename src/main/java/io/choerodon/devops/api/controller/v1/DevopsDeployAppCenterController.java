@@ -48,9 +48,10 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "rdupmType", required = false) String rdupmType,
             @RequestParam(value = "operationType", required = false) String operationType,
+            @RequestParam(value = "params", required = false) String params,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, name, rdupmType, operationType, pageable));
+        return ResponseEntity.ok(devopsDeployAppCenterService.listApp(projectId, envId, name, rdupmType, operationType, params, pageable));
     }
 
     @ApiOperation("根据应用id查询环境部署——应用详情（chart包和部署组）")

@@ -18,7 +18,7 @@ public interface DevopsDeployAppCenterService {
      * @param envId 环境id
      * @return 应用服务列表
      */
-    Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, PageRequest pageable);
+    Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable);
 
     AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId);
 
