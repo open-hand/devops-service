@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import io.choerodon.devops.infra.enums.AppStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -473,7 +474,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             }
 
         });
-
+        //添加是否实例存在字段的值
+        batchSetAppStatus(devopsHzeroDeployDetailsVOS, devopsHzeroDeployDetailsDTOS.get(0).getEnvId());
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, devopsHzeroDeployDetailsDTOS.get(0).getMktDeployObjectId());
         hzeroDeployRecordVO.setEnvironmentDTO(devopsEnvironmentDTO);
         hzeroDeployRecordVO.setMktApplication(marketServiceDeployObjectVO.getMarketAppName());
@@ -482,5 +484,18 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         hzeroDeployRecordVO.setType(marketServiceClientOperator.queryHzeroAppType(marketServiceDeployObjectVO.getMarketAppId()));
 
         return hzeroDeployRecordVO;
+    }
+
+    private void batchSetAppStatus(List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS, Long envId) {
+        List<String> devopsHzeroDeployDetailsVOCodes = devopsHzeroDeployDetailsVOS.stream().map(DevopsHzeroDeployDetailsVO::getInstanceCode).collect(Collectors.toList());
+        List<String> appServiceInstanceVOCodes = appServiceInstanceService.listInstanceCodeByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
+        devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
+            if (!CollectionUtils.isEmpty(appServiceInstanceVOCodes) && appServiceInstanceVOCodes.contains(devopsHzeroDeployDetailsVO.getInstanceCode())) {
+                devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.EXIST.getStatus());
+            } else {
+                String appStatus = devopsHzeroDeployDetailsVO.getStatus().equals(HzeroDeployDetailsStatusEnum.SUCCESS.value()) ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus();
+                devopsHzeroDeployDetailsVO.setAppStatus(appStatus);
+            }
+        });
     }
 }

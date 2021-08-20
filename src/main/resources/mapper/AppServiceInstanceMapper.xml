@@ -667,4 +667,15 @@
         left join devops_app_service_version dasv on dasi.app_service_version_id = dasv.id
         where dasi.app_service_id = #{appServiceId} and dasi.env_id = #{envId};
     </select>
+
+    <select id="listInstanceCodeByDeployDetailsCode" resultType="java.lang.String">
+        SELECT
+            code
+        FROM devops_app_service_instance
+        WHERE env_id = #{envId}
+        AND code IN
+        <foreach collection="codes" item="code" separator="," open="(" close=")">
+            #{codes}
+        </foreach>
+    </select>
 </mapper>
