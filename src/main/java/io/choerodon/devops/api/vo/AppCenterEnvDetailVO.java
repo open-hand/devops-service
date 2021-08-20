@@ -5,6 +5,8 @@ import java.util.Date;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 /**
  * @Author: scp
  * @Description:
@@ -31,18 +33,20 @@ public class AppCenterEnvDetailVO {
     private String appServiceCode;
     @ApiModelProperty("chart状态")
     private String objectStatus;
-
-    @ApiModelProperty("创建者 Id")
-    private Long userId;
-    @ApiModelProperty("登录名")
-    private String loginName;
-    @ApiModelProperty("用户名")
-    private String realName;
-    @ApiModelProperty("头像")
-    private String imageUrl;
+    @ApiModelProperty("实例的所有pod数量")
+    private Long podCount;
+    @ApiModelProperty("实例的运行中的pod的数量")
+    private Long podRunningCount;
+    @Encrypt
+    @ApiModelProperty("当前实例生效的commandId/可能为null")
+    private Long effectCommandId;
+    private IamUserDTO iamUserDTO;
 
     @ApiModelProperty("创建时间")
     private Date creationDate;
+
+    @ApiModelProperty(name = "chart/jar/docker")
+    private String rdupmType;
 
     public Long getAppCenterId() {
         return appCenterId;
@@ -100,38 +104,6 @@ public class AppCenterEnvDetailVO {
         this.objectStatus = objectStatus;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getLoginName() {
-        return loginName;
-    }
-
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
-    }
-
-    public String getRealName() {
-        return realName;
-    }
-
-    public void setRealName(String realName) {
-        this.realName = realName;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
     public Date getCreationDate() {
         return creationDate;
     }
@@ -154,5 +126,45 @@ public class AppCenterEnvDetailVO {
 
     public void setDeployObject(String deployObject) {
         this.deployObject = deployObject;
+    }
+
+    public IamUserDTO getIamUserDTO() {
+        return iamUserDTO;
+    }
+
+    public void setIamUserDTO(IamUserDTO iamUserDTO) {
+        this.iamUserDTO = iamUserDTO;
+    }
+
+    public String getRdupmType() {
+        return rdupmType;
+    }
+
+    public void setRdupmType(String rdupmType) {
+        this.rdupmType = rdupmType;
+    }
+
+    public Long getPodCount() {
+        return podCount;
+    }
+
+    public void setPodCount(Long podCount) {
+        this.podCount = podCount;
+    }
+
+    public Long getPodRunningCount() {
+        return podRunningCount;
+    }
+
+    public void setPodRunningCount(Long podRunningCount) {
+        this.podRunningCount = podRunningCount;
+    }
+
+    public Long getEffectCommandId() {
+        return effectCommandId;
+    }
+
+    public void setEffectCommandId(Long effectCommandId) {
+        this.effectCommandId = effectCommandId;
     }
 }

@@ -11,17 +11,13 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.AppCenterChartSourceEnum;
-import io.choerodon.devops.infra.enums.AppCenterDeployObjectEnum;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
@@ -59,6 +55,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsServiceService devopsServiceService;
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable) {
@@ -84,29 +82,28 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         BeanUtils.copyProperties(centerEnvDTO, detailVO);
         detailVO.setAppCenterId(appCenterId);
         detailVO.setDeployWay(AppCenterDeployWayEnum.CONTAINER.getValue());
+        detailVO.setRdupmType(centerEnvDTO.getRdupmType());
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
-            detailVO.setDeployObject(AppCenterDeployObjectEnum.CHART.getCode());
-            AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
-            detailVO.setObjectStatus(instanceDTO.getStatus());
+            AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(centerEnvDTO.getObjectId());
+            detailVO.setObjectStatus(appServiceInstanceInfoDTO.getStatus());
+            detailVO.setPodCount(appServiceInstanceInfoDTO.getPodCount());
+            detailVO.setPodRunningCount(appServiceInstanceInfoDTO.getPodRunningCount());
+            detailVO.setEffectCommandId(appServiceInstanceInfoDTO.getEffectCommandId());
             if (centerEnvDTO.getChartSource().equals(AppCenterChartSourceEnum.NORMAL.getValue()) ||
                     centerEnvDTO.getChartSource().equals(AppCenterChartSourceEnum.SHARE.getValue())) {
-                AppServiceDTO appServiceDTO = appServiceService.baseQuery(instanceDTO.getAppServiceId());
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
                 detailVO.setAppServiceCode(appServiceDTO.getCode());
                 detailVO.setAppServiceName(appServiceDTO.getName());
             } else {
-                MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, instanceDTO.getAppServiceId());
+                MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceInstanceInfoDTO.getAppServiceId());
                 detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
             }
-        } else {
-            detailVO.setDeployObject(AppCenterDeployObjectEnum.DEPLOY_GROUP.getCode());
         }
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
         detailVO.setEnvCode(environmentDTO.getCode());
         detailVO.setEnvName(environmentDTO.getName());
-        IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy());
-        detailVO.setUserId(userDTO.getId());
-        BeanUtils.copyProperties(userDTO, detailVO);
+        detailVO.setIamUserDTO(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
     }
