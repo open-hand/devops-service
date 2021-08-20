@@ -4,6 +4,7 @@ import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
 import io.choerodon.devops.app.service.DevopsDeployGroupService;
 import io.choerodon.devops.infra.dto.DevopsDeployGroupDTO;
 import io.choerodon.devops.infra.mapper.DevopsDeployGroupMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         if (ObjectUtils.isEmpty(devopsDeployGroupDTO)) {
             return devopsDeployGroupVO;
         }
-        BeanUtils.copyProperties(devopsDeployGroupDTO, devopsDeployGroupVO);
+        ConvertUtils.convertObject(devopsDeployGroupDTO, DevopsDeployGroupVO.class);
         return devopsDeployGroupVO;
     }
 }
