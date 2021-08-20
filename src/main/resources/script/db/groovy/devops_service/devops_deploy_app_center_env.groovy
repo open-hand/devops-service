@@ -50,7 +50,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_env.groovy') {
     }
     changeSet(author: 'scp', id: '2021-8-18-add-column') {
         addColumn(tableName: 'devops_deploy_app_center_env') {
-            column(name: 'chart_source', type: 'VARCHAR(40)', remarks: 'chart包来源,normal(项目服务)/share(共享)/market/hzero ChartSourceEnum')
+            column(name: 'chart_source', type: 'VARCHAR(40)', remarks: 'chart包来源,normal(项目服务)/share(共享)/market/hzero ChartSourceEnum',afterColumn: 'rdupm_type'){
+                constraints(nullable: false)
+            }
         }
     }
 }

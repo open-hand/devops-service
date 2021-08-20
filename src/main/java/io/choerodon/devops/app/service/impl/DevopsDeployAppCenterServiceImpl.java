@@ -106,7 +106,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy());
         detailVO.setUserId(userDTO.getId());
         BeanUtils.copyProperties(userDTO, detailVO);
-        detailVO.setChartSourceValue(AppCenterChartSourceEnum.valueOf(centerEnvDTO.getChartSource()).getValue());
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
     }
