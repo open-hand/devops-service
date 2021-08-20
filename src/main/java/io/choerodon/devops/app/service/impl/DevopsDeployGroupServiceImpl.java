@@ -95,7 +95,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     }
 
     @Override
-    public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {
+    public DevopsDeployGroupDTO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsDeployGroupVO.getEnvId());
         devopsDeployGroupVO.setProjectId(projectId);
         // 校验配置
@@ -126,9 +126,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         workloadBaseCreateOrUpdateVO.setOperateType(operateType);
         workloadBaseCreateOrUpdateVO.setContent(deployment);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
+        return devopsDeployGroupDTO;
     }
 
-    @Override
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {
         V1beta2Deployment deployment = new V1beta2Deployment();
         try {
