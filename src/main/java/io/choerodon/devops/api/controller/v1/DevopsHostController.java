@@ -22,10 +22,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
-import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
-import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
-import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
+import io.choerodon.devops.api.vo.host.*;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -344,6 +341,23 @@ public class DevopsHostController {
             @RequestParam(value = "params", required = false) String params,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
         return ResponseEntity.ok(devopsHostService.queryInstanceList(projectId, hostId, appServiceId, pageRequest, name, type, status, params));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询主机下的应用实例")
+    @GetMapping("/apps/paging")
+    @CustomPageRequest
+    public ResponseEntity<Page<DevopsHostAppVO>> pagingAppByHost(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机", required = true)
+            @RequestParam(value = "host_id", required = false) Long hostId,
+            @RequestParam(value = "rdupmType", required = false) String rdupmType,
+            @RequestParam(value = "operationType", required = false) String operationType,
+            @RequestParam(value = "params", required = false) String params,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
+        return ResponseEntity.ok(devopsHostService.pagingAppByHost(projectId, hostId, pageRequest, rdupmType, operationType, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

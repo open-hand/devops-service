@@ -8,10 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
-import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
-import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
-import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
+import io.choerodon.devops.api.vo.host.*;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -301,4 +298,5 @@ public interface DevopsHostService {
      */
     Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params);
 
+    Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params);
 }
