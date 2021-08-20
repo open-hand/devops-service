@@ -55,16 +55,15 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private DevopsEnvResourceService devopsEnvResourceService;
-    @Autowired
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
 
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(instanceId);
-        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS =
-                devopsEnvResourceService.baseListByInstanceId(instanceId);
+        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = baseListByInstanceId(instanceId);
         DevopsEnvResourceVO devopsEnvResourceDTO = new DevopsEnvResourceVO();
         if (devopsEnvResourceDTOS == null) {
             return devopsEnvResourceDTO;
@@ -79,6 +78,29 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 }
         );
         return devopsEnvResourceDTO;
+    }
+
+    @Override
+    public DevopsEnvResourceVO listResourcesByDeploymentId(Long deploymentId) {
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(deploymentId);
+        DevopsEnvResourceVO devopsEnvResourceVO = new DevopsEnvResourceVO();
+        if (devopsDeploymentDTO == null) {
+            return devopsEnvResourceVO;
+        }
+        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = baseListByEnvAndType(devopsDeploymentDTO.getEnvId(), null);
+        if (devopsEnvResourceDTOS == null) {
+            return devopsEnvResourceVO;
+        }
+        // 关联资源
+        devopsEnvResourceDTOS.forEach(envResourceDTO -> {
+                    DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baesQueryByMessageId(envResourceDTO.getResourceDetailId());
+                    if (isReleaseGenerated(envResourceDetailDTO.getMessage())) {
+                        dealWithResource(envResourceDetailDTO, envResourceDTO, devopsEnvResourceVO, devopsDeploymentDTO.getEnvId());
+                    }
+                }
+        );
+
+        return devopsEnvResourceVO;
     }
 
     /**

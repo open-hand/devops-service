@@ -116,6 +116,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
             return devopsEnvResourceService.listInstancePodEvent(centerEnvDTO.getObjectId());
+        } else {
+            // 部署组应用事件查询 todo scp
         }
         return null;
     }
@@ -127,6 +129,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
             return devopsEnvPodService.pageByOptions(
                     projectId, instanceDTO.getEnvId(), instanceDTO.getAppServiceId(), centerEnvDTO.getObjectId(), pageRequest, searchParam);
+        } else {
+            // 部署组pod详情查询 todo scp
         }
         return null;
     }
@@ -136,8 +140,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
             return appServiceInstanceService.listResourcesInHelmRelease(centerEnvDTO.getObjectId());
+        } else {
+            return devopsEnvResourceService.listResourcesByDeploymentId(centerEnvDTO.getObjectId());
         }
-        return null;
     }
 
     @Override
