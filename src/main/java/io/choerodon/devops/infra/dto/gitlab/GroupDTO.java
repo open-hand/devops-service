@@ -20,13 +20,13 @@ public class GroupDTO {
     private Integer parentId;
     private Integer sharedRunnersMinutesLimit;
 
-    private Boolean bindFlag;
+    private boolean bindFlag = false;
 
-    public Boolean getBindFlag() {
+    public boolean getBindFlag() {
         return bindFlag;
     }
 
-    public void setBindFlag(Boolean bindFlag) {
+    public void setBindFlag(boolean bindFlag) {
         this.bindFlag = bindFlag;
     }
 
