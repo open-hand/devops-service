@@ -25,8 +25,6 @@ public class AppCenterEnvDetailVO {
     private String deployObject;
     @ApiModelProperty("chart来源")
     private String chartSource;
-    @ApiModelProperty("chart来源")
-    private String chartSourceValue;
     @ApiModelProperty("chart来源，应用服务名称")
     private String appServiceName;
     @ApiModelProperty("chart来源，应用服务code")
@@ -148,14 +146,6 @@ public class AppCenterEnvDetailVO {
 
     public void setChartSource(String chartSource) {
         this.chartSource = chartSource;
-    }
-
-    public String getChartSourceValue() {
-        return chartSourceValue;
-    }
-
-    public void setChartSourceValue(String chartSourceValue) {
-        this.chartSourceValue = chartSourceValue;
     }
 
     public String getDeployObject() {
