@@ -45,6 +45,12 @@ public class DevopsHzeroDeployDetailsVO {
     @ApiModelProperty("结束部署时间")
     private Date endTime;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppStatus}
+     */
+    @ApiModelProperty("实例状态")
+    private String appStatus;
+
     private String mktServiceName;
 
     private String mktServiceVersion;
@@ -162,5 +168,13 @@ public class DevopsHzeroDeployDetailsVO {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    public String getAppStatus() {
+        return appStatus;
+    }
+
+    public void setAppStatus(String appStatus) {
+        this.appStatus = appStatus;
     }
 }

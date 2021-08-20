@@ -146,4 +146,11 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
      * @return 实例列表
      */
     List<ApplicationInstanceInfoVO> listAppInstanceByAppSvcIdAndEnvId(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+
+    /**
+     * 通过code查询AppServiceInstanceDTO的code集合
+     * @param codes
+     * @return code列表
+     */
+    List<String> listInstanceCodeByDeployDetailsCode(@Param("codes") List<String> codes);
 }

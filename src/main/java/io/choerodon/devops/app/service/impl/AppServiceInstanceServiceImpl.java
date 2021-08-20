@@ -2220,6 +2220,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
     }
 
+    @Override
+    public List<String> listInstanceCodeByDeployDetailsCode(List<String> codes) {
+        return appServiceInstanceMapper.listInstanceCodeByDeployDetailsCode(codes);
+    }
+
     private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {
 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
