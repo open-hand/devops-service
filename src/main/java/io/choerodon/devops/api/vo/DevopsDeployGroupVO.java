@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -27,10 +29,11 @@ public class DevopsDeployGroupVO {
     private Long envId;
 
     @ApiModelProperty(name = "应用配置")
-    private String appConfig;
+    private DevopsDeployGroupAppConfigVO appConfig;
 
     @ApiModelProperty(name = "容器配置")
-    private String containerConfig;
+    private List<DevopsDeployGroupContainerConfigVO> containerConfig;
+
 
     public Long getId() {
         return id;
@@ -72,19 +75,19 @@ public class DevopsDeployGroupVO {
         this.envId = envId;
     }
 
-    public String getAppConfig() {
+    public DevopsDeployGroupAppConfigVO getAppConfig() {
         return appConfig;
     }
 
-    public void setAppConfig(String appConfig) {
+    public void setAppConfig(DevopsDeployGroupAppConfigVO appConfig) {
         this.appConfig = appConfig;
     }
 
-    public String getContainerConfig() {
+    public List<DevopsDeployGroupContainerConfigVO> getContainerConfig() {
         return containerConfig;
     }
 
-    public void setContainerConfig(String containerConfig) {
+    public void setContainerConfig(List<DevopsDeployGroupContainerConfigVO> containerConfig) {
         this.containerConfig = containerConfig;
     }
 }

@@ -439,8 +439,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
 
-
-
         return instanceValueVO;
     }
 
@@ -2517,7 +2515,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 // 测试应用的secret是没有环境id的，此处环境id只是暂存，之后不使用，考虑后续版本删除此字段
                 devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), appServiceDTO.getProjectId(), devopsConfigDTO.getType());
                 devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
-                agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
+                agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO);
 
                 // 更新列表
                 if (existedConfigs != null) {
@@ -2533,7 +2531,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 }
                 // 无论是否修改，都通知agent创建secret，保证secret存在
                 // 解决secret在Kubernetes集群中被删除而猪齿鱼无法感知的问题
-                agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
+                agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO);
                 secretCode = devopsRegistrySecretDTO.getSecretCode();
             }
         }
@@ -2561,11 +2559,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             configVO.setPassword(marketHarborConfigVO.getToken());
             devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), marketServiceDeployObjectVO.getHarborConfigId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), secretCode, gson.toJson(configVO), projectId, DevopsRegistryRepoType.MARKET_REPO.getType());
             devopsRegistrySecretService.createIfNonInDb(devopsRegistrySecretDTO);
-            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
+            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO);
         }
         // 市场服务的harbor config不会更新，所以这里的secret也不考虑更新
         secretCode = devopsRegistrySecretDTO.getSecretCode();
-        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), gson.fromJson(devopsRegistrySecretDTO.getSecretDetail(), ConfigVO.class), UPDATE);
+        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), gson.fromJson(devopsRegistrySecretDTO.getSecretDetail(), ConfigVO.class));
         return secretCode;
     }
 
