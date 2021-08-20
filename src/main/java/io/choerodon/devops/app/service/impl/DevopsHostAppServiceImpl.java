@@ -3,8 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
@@ -32,9 +30,9 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
@@ -45,14 +43,15 @@ import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
-import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsNormalInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
 import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -65,15 +64,15 @@ import io.choerodon.devops.infra.util.MapperUtil;
  * @Date 2021/7/1 9:25
  */
 @Service
-public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceService {
+public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsNormalInstanceServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostAppServiceImpl.class);
 
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
     private static final String ERROR_JAR_VERSION_NOT_FOUND = "error.jar.version.not.found";
 
     @Autowired
-    private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+    private DevopsHostAppMapper devopsHostAppMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -153,15 +152,15 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             nexusMavenRepoDTO.setNePullUserId(marketMavenConfigVO.getPullUserName());
             nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
             mavenRepoDTOList.add(nexusMavenRepoDTO);
-            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
-                AppServiceDTO appServiceDTO = new AppServiceDTO();
-                appServiceDTO.setId(marketServiceDeployObjectVO.getMarketServiceId());
-                appServiceDTO.setName(marketServiceDeployObjectVO.getMarketServiceName());
-                appServiceDTOList = Arrays.asList(appServiceDTO);
-            } else {
-                appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, jarReleaseConfigVO.getGroupId(), jarReleaseConfigVO.getArtifactId());
+//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
+//                AppServiceDTO appServiceDTO = new AppServiceDTO();
+//                appServiceDTO.setId(marketServiceDeployObjectVO.getMarketServiceId());
+//                appServiceDTO.setName(marketServiceDeployObjectVO.getMarketServiceName());
+//                appServiceDTOList = Arrays.asList(appServiceDTO);
+//            } else {
+//                appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, jarReleaseConfigVO.getGroupId(), jarReleaseConfigVO.getArtifactId());
 
-            }
+//            }
 
             deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
             deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
@@ -179,7 +178,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
 
-            appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, groupId, artifactId);
+//            appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, groupId, artifactId);
 
         }
         if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
@@ -195,45 +194,48 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
 
         // 2.保存记录
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = queryByHostIdAndName(hostId, jarDeployVO.getAppCode());
-        if (devopsNormalInstanceDTO == null) {
-            devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
+        DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndName(hostId, jarDeployVO.getAppCode());
+        if (devopsHostAppDTO == null) {
+            devopsHostAppDTO = new DevopsHostAppDTO(hostId,
                     jarDeployVO.getAppCode(),
                     jarDeployVO.getSourceType(),
-                    HostResourceType.JAVA_PROCESS.value());
+                    RdupmTypeEnum.JAR.value(),
+                    OperationTypeEnum.CREATE_APP.value());
 
-            MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
+            MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
-        } else {
-            // 删除原有应用关联关系
-            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsNormalInstanceDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
         }
-        // 有关联的应用，则保存关联关系
-        if (!CollectionUtils.isEmpty(appServiceDTOList)) {
-            Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-            Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
-            Long instanceId = devopsNormalInstanceDTO.getId();
-            appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
-                    hostId,
-                    appId,
-                    jarDeployVO.getSourceType(),
-                    instanceId,
-                    HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
-        }
+        // todo 新应用中心，不需要这块儿逻辑，先注释
+//        else {
+//            // 删除原有应用关联关系
+//            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsHostAppDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
+//        }
+//        // 有关联的应用，则保存关联关系
+//        if (!CollectionUtils.isEmpty(appServiceDTOList)) {
+//            Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+//            Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
+//            Long instanceId = devopsHostAppDTO.getId();
+//            appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
+//                    hostId,
+//                    appId,
+//                    jarDeployVO.getSourceType(),
+//                    instanceId,
+//                    HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
+//        }
 
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
                 jarDeployVO.getAppCode(),
                 deployObjectName,
-                String.valueOf(devopsNormalInstanceDTO.getId()),
-                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()),
-                devopsNormalInstanceDTO.getPid());
+                String.valueOf(devopsHostAppDTO.getId()),
+                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsHostAppDTO.getId()),
+                devopsHostAppDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(devopsNormalInstanceDTO.getId());
+        devopsHostCommandDTO.setInstanceId(devopsHostAppDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -264,7 +266,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         }
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsNormalInstanceDTO.getId()),
+                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
 
@@ -272,34 +274,34 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
 
     @Override
-    public List<DevopsNormalInstanceDTO> listByHostId(Long hostId) {
+    public List<DevopsHostAppDTO> listByHostId(Long hostId) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        return devopsNormalInstanceMapper.listByHostId(hostId);
+        return devopsHostAppMapper.listByHostId(hostId);
     }
 
     @Override
     @Transactional
-    public void baseUpdate(DevopsNormalInstanceDTO devopsNormalInstanceDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, ERROR_UPDATE_JAVA_INSTANCE_FAILED);
+    public void baseUpdate(DevopsHostAppDTO devopsHostAppDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHostAppMapper, devopsHostAppDTO, ERROR_UPDATE_JAVA_INSTANCE_FAILED);
     }
 
     @Override
     @Transactional
     public void baseDelete(Long instanceId) {
-        devopsNormalInstanceMapper.deleteByPrimaryKey(instanceId);
+        devopsHostAppMapper.deleteByPrimaryKey(instanceId);
     }
 
     @Override
-    public DevopsNormalInstanceDTO baseQuery(Long instanceId) {
-        return devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+    public DevopsHostAppDTO baseQuery(Long instanceId) {
+        return devopsHostAppMapper.selectByPrimaryKey(instanceId);
     }
 
     @Override
-    public DevopsNormalInstanceDTO queryByHostIdAndName(Long hostId, String name) {
+    public DevopsHostAppDTO queryByHostIdAndName(Long hostId, String name) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
         Assert.notNull(name, ResourceCheckConstant.ERROR_JAR_NAME_IS_NULL);
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId, name);
-        return devopsNormalInstanceMapper.selectOne(devopsNormalInstanceDTO);
+        DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(hostId, name);
+        return devopsHostAppMapper.selectOne(devopsHostAppDTO);
     }
 
     private String getDownloadUrl(JarReleaseConfigVO jarReleaseConfigVO) {

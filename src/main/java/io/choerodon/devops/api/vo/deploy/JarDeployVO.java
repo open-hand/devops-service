@@ -19,6 +19,9 @@ public class JarDeployVO {
     @ApiModelProperty("主机id")
     private Long hostId;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppSourceType}
+     */
     @ApiModelProperty("部署来源")
     private String sourceType;
 
@@ -27,9 +30,6 @@ public class JarDeployVO {
 
     @ApiModelProperty("应用编码")
     private String appCode;
-
-    @ApiModelProperty("实例名")
-    private String name;
     /**
      * 部署对象id
      */
@@ -50,14 +50,6 @@ public class JarDeployVO {
         this.sourceType = sourceType;
         this.value = value;
         this.prodJarInfoVO = prodJarInfoVO;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getAppName() {
