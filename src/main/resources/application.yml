@@ -207,6 +207,9 @@ devops:
   proxy:
     # 过滤器拦截的uri前缀
     uriPrefix: ${NEXUS_PROXY_URIPREFIX:/rdupm/v1/nexus/proxy}
+  #jar的运行镜像
+  jar:
+    image: registry.cn-shanghai.aliyuncs.com/c7n/javabase:jdk8u282-b08
 # websocket的最大缓冲区大小，单位字节byte
 websocket:
   buffer:

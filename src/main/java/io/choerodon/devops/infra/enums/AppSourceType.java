@@ -30,7 +30,11 @@ public enum AppSourceType {
     /**
      * hzero应用
      */
-    HZERO("hzero");
+    HZERO("hzero"),
+    /**
+     * upload
+     */
+    UPLOAD("upload");
 
     private String value;
 

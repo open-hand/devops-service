@@ -237,8 +237,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-
-    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type) {
+    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO) {
         AgentMsgVO msg = new AgentMsgVO();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
         secretPayLoad.setEmail(configVO.getEmail());

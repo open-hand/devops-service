@@ -656,7 +656,6 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     private Quantity convertResource(String resourceString) {
-
         return new Quantity(convertResourceToDigits(resourceString), Quantity.Format.BINARY_SI);
     }
 
