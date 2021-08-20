@@ -49,8 +49,10 @@ public class DevopsHostAppDTO extends AuditDomain {
      */
     @ApiModelProperty("操作类型")
     private String operationType;
+    @ApiModelProperty("来源配置")
+    private String sourceConfig;
     @ApiModelProperty("部署配置")
-    private String deployConfig;
+    private String deployValue;
 
 
     public DevopsHostAppDTO() {
@@ -61,12 +63,22 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.name = name;
     }
 
-    public DevopsHostAppDTO(Long hostId, String name, String sourceType, String rdupmType, String operationType) {
+    public DevopsHostAppDTO(Long hostId, String name, String sourceType, String rdupmType, String operationType, String sourceConfig, String deployValue) {
         this.hostId = hostId;
         this.name = name;
         this.sourceType = sourceType;
         this.rdupmType = rdupmType;
         this.operationType = operationType;
+        this.sourceConfig = sourceConfig;
+        this.deployValue = deployValue;
+    }
+
+    public String getDeployValue() {
+        return deployValue;
+    }
+
+    public void setDeployValue(String deployValue) {
+        this.deployValue = deployValue;
     }
 
     public Long getProjectId() {
@@ -93,12 +105,12 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.operationType = operationType;
     }
 
-    public String getDeployConfig() {
-        return deployConfig;
+    public String getSourceConfig() {
+        return sourceConfig;
     }
 
-    public void setDeployConfig(String deployConfig) {
-        this.deployConfig = deployConfig;
+    public void setSourceConfig(String sourceConfig) {
+        this.sourceConfig = sourceConfig;
     }
 
     public String getRdupmType() {

@@ -30,6 +30,10 @@ public class JarDeployVO {
 
     @ApiModelProperty("应用编码")
     private String appCode;
+
+    @ApiModelProperty("来源配置")
+    private String sourceConfig;
+
     /**
      * 部署对象id
      */
@@ -50,6 +54,14 @@ public class JarDeployVO {
         this.sourceType = sourceType;
         this.value = value;
         this.prodJarInfoVO = prodJarInfoVO;
+    }
+
+    public String getSourceConfig() {
+        return sourceConfig;
+    }
+
+    public void setSourceConfig(String sourceConfig) {
+        this.sourceConfig = sourceConfig;
     }
 
     public String getAppName() {

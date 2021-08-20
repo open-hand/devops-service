@@ -111,9 +111,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         deploySourceVO.setProjectName(projectDTO.getName());
 
         deploySourceVO.setDeployObjectId(jarDeployVO.getDeployObjectId());
+        String encodeValue = jarDeployVO.getValue();
 
         try {
-            jarDeployVO.setValue(new String(decoder.decodeBuffer(jarDeployVO.getValue()), StandardCharsets.UTF_8));
+            jarDeployVO.setValue(new String(decoder.decodeBuffer(encodeValue), StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new CommonException("decode.values.failed", e);
         }
@@ -201,7 +202,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     jarDeployVO.getAppCode(),
                     jarDeployVO.getSourceType(),
                     RdupmTypeEnum.JAR.value(),
-                    OperationTypeEnum.CREATE_APP.value());
+                    OperationTypeEnum.CREATE_APP.value(),
+                    jarDeployVO.getSourceConfig(),
+                    encodeValue);
 
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 

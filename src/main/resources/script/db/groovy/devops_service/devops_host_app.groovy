@@ -24,7 +24,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
             column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 jar') {
                 constraints(nullable: false)
             }
-            column(name: 'deploy_config', type: 'VARCHAR(512)', remarks: '部署配置') {
+            column(name: 'source_type', type: 'VARCHAR(32)', remarks: '部署来源') {
+                constraints(nullable: false)
+            }
+            column(name: 'source_config', type: 'VARCHAR(512)', remarks: '部署来源配置') {
+                constraints(nullable: false)
+            }
+
+            column(name: 'deploy_value', type: 'VARCHAR(512)', remarks: '部署命令') {
                 constraints(nullable: false)
             }
 

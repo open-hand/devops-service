@@ -527,12 +527,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String instanceName = jarDeploy.getName() != null ? jarDeploy.getName() : c7nNexusComponentDTO.getName();
 
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndName(hostId, instanceName);
+        // todo
         if (devopsHostAppDTO == null) {
             devopsHostAppDTO = new DevopsHostAppDTO(hostId,
                     instanceName,
                     AppSourceType.CURRENT_PROJECT.getValue(),
                     RdupmTypeEnum.JAR.value(),
-                    OperationTypeEnum.PIPELINE_DEPLOY.value());
+                    OperationTypeEnum.PIPELINE_DEPLOY.value(),
+                    jobRecordDTO.getMetadata(),
+                    jarDeploy.getValue());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         } else {
