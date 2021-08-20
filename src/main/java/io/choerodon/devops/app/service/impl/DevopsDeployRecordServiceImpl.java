@@ -488,9 +488,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     private void batchSetAppStatus(List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS, Long envId) {
         List<String> devopsHzeroDeployDetailsVOCodes = devopsHzeroDeployDetailsVOS.stream().map(DevopsHzeroDeployDetailsVO::getInstanceCode).collect(Collectors.toList());
-        List<String> AppServiceInstanceVOCodes = appServiceInstanceService.listInstanceCodeByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
+        List<String> appServiceInstanceVOCodes = appServiceInstanceService.listInstanceCodeByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
         devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
-            if (!CollectionUtils.isEmpty(AppServiceInstanceVOCodes) && AppServiceInstanceVOCodes.contains(devopsHzeroDeployDetailsVO.getInstanceCode())) {
+            if (!CollectionUtils.isEmpty(appServiceInstanceVOCodes) && appServiceInstanceVOCodes.contains(devopsHzeroDeployDetailsVO.getInstanceCode())) {
                 devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.EXIST.getStatus());
             } else {
                 String appStatus = devopsHzeroDeployDetailsVO.getStatus().equals(HzeroDeployDetailsStatusEnum.SUCCESS.value()) ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus();
