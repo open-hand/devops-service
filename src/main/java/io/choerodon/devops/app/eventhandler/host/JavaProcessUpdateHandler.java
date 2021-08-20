@@ -1,21 +1,21 @@
 package io.choerodon.devops.app.eventhandler.host;
 
-import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
-import io.choerodon.devops.api.vo.host.JavaProcessUpdatePayload;
-import io.choerodon.devops.app.service.DevopsNormalInstanceService;
-import io.choerodon.devops.infra.dto.DevopsNormalInstanceDTO;
-import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
-import io.choerodon.devops.infra.util.JsonHelper;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
+import io.choerodon.devops.api.vo.host.JavaProcessUpdatePayload;
+import io.choerodon.devops.app.service.DevopsHostAppService;
+import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
+import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * 〈功能简述〉
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class JavaProcessUpdateHandler implements HostMsgHandler {
 
     @Autowired
-    private DevopsNormalInstanceService devopsNormalInstanceService;
+    private DevopsHostAppService devopsHostAppService;
 
     @Override
     @Transactional
@@ -36,21 +36,21 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
 
 
         JavaProcessUpdatePayload javaProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, JavaProcessUpdatePayload.class);
-        List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOList = devopsNormalInstanceService.listByHostId(Long.valueOf(hostId));
-        if (CollectionUtils.isEmpty(devopsNormalInstanceDTOList)) {
+        List<DevopsHostAppDTO> devopsHostAppDTOList = devopsHostAppService.listByHostId(Long.valueOf(hostId));
+        if (CollectionUtils.isEmpty(devopsHostAppDTOList)) {
             return;
         }
-        Map<Long, DevopsNormalInstanceDTO> devopsJavaInstanceDTOMap = devopsNormalInstanceDTOList.stream().collect(Collectors.toMap(DevopsNormalInstanceDTO::getId, Function.identity()));
+        Map<Long, DevopsHostAppDTO> devopsJavaInstanceDTOMap = devopsHostAppDTOList.stream().collect(Collectors.toMap(DevopsHostAppDTO::getId, Function.identity()));
 
         // 处理更新的数据
         List<JavaProcessInfoVO> updateProcessInfos = javaProcessUpdatePayload.getUpdateProcessInfos();
         if (!CollectionUtils.isEmpty(updateProcessInfos)) {
             updateProcessInfos.forEach(updateProcessInfo -> {
-                DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
-                if (devopsNormalInstanceDTO != null) {
-                    devopsNormalInstanceDTO.setStatus(updateProcessInfo.getStatus());
-                    devopsNormalInstanceDTO.setPorts(updateProcessInfo.getPorts());
-                    devopsNormalInstanceService.baseUpdate(devopsNormalInstanceDTO);
+                DevopsHostAppDTO devopsHostAppDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
+                if (devopsHostAppDTO != null) {
+                    devopsHostAppDTO.setStatus(updateProcessInfo.getStatus());
+                    devopsHostAppDTO.setPorts(updateProcessInfo.getPorts());
+                    devopsHostAppService.baseUpdate(devopsHostAppDTO);
                 }
             });
         }

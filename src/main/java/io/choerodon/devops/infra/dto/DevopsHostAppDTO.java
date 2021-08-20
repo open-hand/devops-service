@@ -18,18 +18,22 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author wanghao
  * @Date 2021/7/1 9:22
  */
-@Table(name = "devops_normal_instance")
+@Table(name = "devops_host_app")
 @ModifyAudit
 @VersionAudit
-public class DevopsNormalInstanceDTO extends AuditDomain {
+public class DevopsHostAppDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @ApiModelProperty("项目id")
+    private Long projectId;
     @ApiModelProperty("主机id")
     private Long hostId;
-    @ApiModelProperty("部署包名称")
+    @ApiModelProperty("应用名称")
     private String name;
+    @ApiModelProperty("应用编码")
+    private String code;
     @ApiModelProperty("进程id")
     private String pid;
     @ApiModelProperty("占用端口")
@@ -38,30 +42,71 @@ public class DevopsNormalInstanceDTO extends AuditDomain {
     private String sourceType;
     @ApiModelProperty("进程状态")
     private String status;
-    @ApiModelProperty("实例类型")
-    private String instanceType;
+    @ApiModelProperty("制品类型")
+    private String rdupmType;
+    /**
+     * {@link io.choerodon.devops.infra.enums.deploy.OperationTypeEnum}
+     */
+    @ApiModelProperty("操作类型")
+    private String operationType;
+    @ApiModelProperty("部署配置")
+    private String deployConfig;
 
-    public DevopsNormalInstanceDTO() {
+
+    public DevopsHostAppDTO() {
     }
 
-    public DevopsNormalInstanceDTO(Long hostId, String name) {
+    public DevopsHostAppDTO(Long hostId, String name) {
         this.hostId = hostId;
         this.name = name;
     }
 
-    public DevopsNormalInstanceDTO(Long hostId, String name, String sourceType, String instanceType) {
+    public DevopsHostAppDTO(Long hostId, String name, String sourceType, String rdupmType, String operationType) {
         this.hostId = hostId;
         this.name = name;
         this.sourceType = sourceType;
-        this.instanceType = instanceType;
+        this.rdupmType = rdupmType;
+        this.operationType = operationType;
     }
 
-    public String getInstanceType() {
-        return instanceType;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setInstanceType(String instanceType) {
-        this.instanceType = instanceType;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
+    }
+
+    public String getDeployConfig() {
+        return deployConfig;
+    }
+
+    public void setDeployConfig(String deployConfig) {
+        this.deployConfig = deployConfig;
+    }
+
+    public String getRdupmType() {
+        return rdupmType;
+    }
+
+    public void setRdupmType(String rdupmType) {
+        this.rdupmType = rdupmType;
     }
 
     public String getStatus() {

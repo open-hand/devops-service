@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostAppMapper">
+
+    <select id="listByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppDTO">
+        select *
+        from devops_host_app dha
+        where dha.host_id = #{hostId}
+        order by dha.creation_date desc
+    </select>
+
+    <delete id="deleteByHostId">
+        DELETE FROM devops_host_app WHERE host_id = #{hostId}
+    </delete>
+</mapper>
