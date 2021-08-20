@@ -3,7 +3,9 @@ package io.choerodon.devops.api.vo.host;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -40,9 +42,17 @@ public class DevopsHostAppVO {
     @ApiModelProperty("来源配置")
     private String sourceConfig;
     @ApiModelProperty("部署配置")
-    private String deployValue;
+    private String value;
     @ApiModelProperty("主机名称")
     private String hostName;
+
+    /**
+     * 部署对象id
+     */
+    @Encrypt
+    private Long deployObjectId;
+
+    private ProdJarInfoVO prodJarInfoVO;
 
     private Date creationDate;
     private Long createdBy;
@@ -196,12 +206,12 @@ public class DevopsHostAppVO {
         this.sourceConfig = sourceConfig;
     }
 
-    public String getDeployValue() {
-        return deployValue;
+    public String getValue() {
+        return value;
     }
 
-    public void setDeployValue(String deployValue) {
-        this.deployValue = deployValue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
 }

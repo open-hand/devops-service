@@ -31,7 +31,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'deploy_value', type: 'VARCHAR(512)', remarks: '部署命令') {
+            column(name: 'value', type: 'VARCHAR(512)', remarks: '部署命令') {
                 constraints(nullable: false)
             }
 

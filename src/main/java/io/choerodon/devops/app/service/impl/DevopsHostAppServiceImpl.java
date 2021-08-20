@@ -203,7 +203,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     jarDeployVO.getSourceType(),
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.CREATE_APP.value(),
-                    jarDeployVO.getSourceConfig(),
+                    calculateSourceConfig(jarDeployVO),
                     encodeValue);
 
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
@@ -272,7 +272,18 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+    }
 
+    private String calculateSourceConfig(JarDeployVO jarDeployVO) {
+
+        if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())) {
+            return JsonHelper.marshalByJackson(jarDeployVO.getProdJarInfoVO());
+        } else if (AppSourceType.MARKET.getValue().equals(jarDeployVO.getSourceType())
+                || AppSourceType.HZERO.getValue().equals(jarDeployVO.getSourceType())) {
+            return JsonHelper.marshalByJackson(jarDeployVO.getDeployObjectId());
+        } else {
+            return null;
+        }
 
     }
 

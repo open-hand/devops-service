@@ -52,7 +52,7 @@ public class DevopsHostAppDTO extends AuditDomain {
     @ApiModelProperty("来源配置")
     private String sourceConfig;
     @ApiModelProperty("部署配置")
-    private String deployValue;
+    private String value;
 
 
     public DevopsHostAppDTO() {
@@ -63,22 +63,22 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.name = name;
     }
 
-    public DevopsHostAppDTO(Long hostId, String name, String sourceType, String rdupmType, String operationType, String sourceConfig, String deployValue) {
+    public DevopsHostAppDTO(Long hostId, String name, String sourceType, String rdupmType, String operationType, String sourceConfig, String value) {
         this.hostId = hostId;
         this.name = name;
         this.sourceType = sourceType;
         this.rdupmType = rdupmType;
         this.operationType = operationType;
         this.sourceConfig = sourceConfig;
-        this.deployValue = deployValue;
+        this.value = value;
     }
 
-    public String getDeployValue() {
-        return deployValue;
+    public String getValue() {
+        return value;
     }
 
-    public void setDeployValue(String deployValue) {
-        this.deployValue = deployValue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public Long getProjectId() {
