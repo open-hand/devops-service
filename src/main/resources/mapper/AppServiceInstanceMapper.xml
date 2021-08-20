@@ -678,4 +678,12 @@
             #{codes}
         </foreach>
     </select>
+
+    <select id="queryInstanceStatusByEnvIdAndCode" resultType="java.lang.String">
+        SELECT
+            status
+        FROM devops_app_service_instance
+        WHERE env_id = #{envId}
+        AND code = #{code}
+    </select>
 </mapper>
