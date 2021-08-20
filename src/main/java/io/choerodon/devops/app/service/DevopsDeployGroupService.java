@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
-import io.choerodon.devops.infra.dto.DevopsDeployGroupDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
  * @Author: shanyu
@@ -28,5 +25,5 @@ public interface DevopsDeployGroupService {
      * @param operateType         操作类型
      * @return
      */
-    DevopsDeployGroupDTO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType);
+    void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType);
 }

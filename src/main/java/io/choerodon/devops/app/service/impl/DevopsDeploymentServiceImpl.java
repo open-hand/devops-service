@@ -20,6 +20,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
+import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -42,6 +43,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, ChartResourceOperatorService {
+    public static final String EXTRA_INFO_KEY_APP_CONFIG = "appConfig";
+    public static final String EXTRA_INFO_KEY_CONTAINER_CONFIG = "containerConfig";
+    public static final String EXTRA_INFO_KEY_SOURCE_TYPE = "sourceType";
+
+
     @Autowired
     private DevopsDeploymentMapper devopsDeploymentMapper;
     @Autowired
@@ -228,5 +234,10 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     public ResourceType getType() {
         return ResourceType.DEPLOYMENT;
+    }
+
+    @Override
+    public DevopsDeployGroupVO queryDeployGroupInfoById(Long id) {
+        return devopsDeploymentMapper.queryDeployGroupInfoById(id);
     }
 }

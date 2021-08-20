@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Map;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
@@ -13,7 +15,7 @@ public interface WorkloadService {
 
     void delete(Long projectId, Long id, ResourceType resourceType);
 
-    void updateDeployment(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId);
+    void updateDeployment(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId, Map<String, Object> extraInfo);
 
     void updateStatefulSet(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId);
 

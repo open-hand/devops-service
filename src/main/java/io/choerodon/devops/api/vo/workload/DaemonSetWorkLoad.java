@@ -1,7 +1,8 @@
 package io.choerodon.devops.api.vo.workload;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
@@ -24,13 +25,13 @@ public class DaemonSetWorkLoad extends WorkLoad {
     private DevopsDaemonSetService devopsDaemonSetService;
 
     @Override
-    public Long createWorkload(String name, Long projectId, Long envId, Long commandId) {
+    public Long createWorkload(String name, Long projectId, Long envId, Long commandId, Map<String, Object> extraInfo) {
         DevopsDaemonSetDTO devopsDaemonSetDTO = new DevopsDaemonSetDTO(name, projectId, envId, commandId);
         return devopsDaemonSetService.baseCreate(devopsDaemonSetDTO);
     }
 
     @Override
-    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId, Map<String, Object> extraInfo) {
         workloadService.updateDaemonSet(devopsEnvCommandDTO, newName, resourceId);
     }
 

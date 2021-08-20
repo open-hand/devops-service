@@ -1,12 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
@@ -16,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
@@ -32,18 +29,21 @@ import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsDeployGroupMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MavenUtil;
@@ -81,48 +81,29 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     @Autowired
     private WorkloadService workloadService;
     @Autowired
-    DevopsDeployGroupMapper devopsDeployGroupMapper;
-    @Autowired
     private AppServiceService appServiceService;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private HarborService harborService;
     @Autowired
-    private DevopsRegistrySecretService devopsRegistrySecretService;
+    private DevopsDeploymentService devopsDeploymentService;
 
     @Override
     public DevopsDeployGroupVO appConfigDetail(Long projectId, Long devopsConfigGroupId) {
-        DevopsDeployGroupVO devopsDeployGroupVO = new DevopsDeployGroupVO();
-        DevopsDeployGroupDTO devopsDeployGroupDTO = devopsDeployGroupMapper.queryById(projectId, devopsConfigGroupId);
-        if (ObjectUtils.isEmpty(devopsDeployGroupDTO)) {
-            return devopsDeployGroupVO;
-        }
-        ConvertUtils.convertObject(devopsDeployGroupDTO, DevopsDeployGroupVO.class);
+        DevopsDeployGroupVO devopsDeployGroupVO = devopsDeploymentService.queryDeployGroupInfoById(devopsConfigGroupId);
+        devopsDeployGroupVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeployGroupVO.getAppConfigJson(), DevopsDeployGroupAppConfigVO.class));
+        devopsDeployGroupVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeployGroupVO.getContainerConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+        }));
         return devopsDeployGroupVO;
     }
 
     @Override
-    public DevopsDeployGroupDTO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {
+    public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsDeployGroupVO.getEnvId());
         devopsDeployGroupVO.setProjectId(projectId);
         // 校验配置
         validateConfig(devopsDeployGroupVO);
-        DevopsDeployGroupDTO devopsDeployGroupDTO;
-        switch (operateType) {
-            case CREATE_TYPE:
-                // 插入记录
-                devopsDeployGroupDTO = ConvertUtils.convertObject(devopsDeployGroupVO, DevopsDeployGroupDTO.class);
-                devopsDeployGroupMapper.insert(devopsDeployGroupDTO);
-                break;
-            case UPDATE_TYPE:
-                // 更新记录
-                devopsDeployGroupDTO = ConvertUtils.convertObject(devopsDeployGroupVO, DevopsDeployGroupDTO.class);
-                devopsDeployGroupMapper.updateByPrimaryKeySelective(devopsDeployGroupDTO);
-                break;
-            default:
-                throw new CommonException("error.unsupported.operate.type");
-        }
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsDeployGroupVO.getProjectId());
 
@@ -133,8 +114,13 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvId()));
         workloadBaseCreateOrUpdateVO.setOperateType(operateType);
         workloadBaseCreateOrUpdateVO.setContent(deployment);
+        Map<String, Object> extraInfo = new HashMap<>();
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getContainerConfig()));
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP);
+
+        workloadBaseCreateOrUpdateVO.setExtraConfig(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
-        return devopsDeployGroupDTO;
     }
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {

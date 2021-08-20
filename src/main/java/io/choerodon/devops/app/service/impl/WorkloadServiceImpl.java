@@ -23,6 +23,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -147,7 +148,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             // 前面对资源进行了数量校验，因此只会循环一次，resourceFilePath也只会被设置一次
             resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
             objects.add(datas);
-            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), FileUtil.getYaml().dump(data), kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId());
+            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), FileUtil.getYaml().dump(data), kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId(), workloadBaseVO.getExtraInfo());
         }
 
         if (CREATE_TYPE.equals(workloadBaseVO.getOperateType())) {
@@ -239,7 +240,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE_TYPE, id, null);
+        handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE_TYPE, id, null, null);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
@@ -299,11 +300,11 @@ public class WorkloadServiceImpl implements WorkloadService {
         return decryptedWorkloadBaseVO;
     }
 
-    private void handleWorkLoad(Long projectId, Long envId, String content, String kind, String name, String operateType, Long resourceId, Long userId) {
+    private void handleWorkLoad(Long projectId, Long envId, String content, String kind, String name, String operateType, Long resourceId, Long userId, Map<String, Object> extraInfo) {
         if (CREATE_TYPE.equals(operateType)) {
-            createWorkload(projectId, envId, content, kind, operateType, name, userId);
+            createWorkload(projectId, envId, content, kind, operateType, name, userId, extraInfo);
         } else if (UPDATE_TYPE.equals(operateType)) {
-            updateWorkLoad(kind, name, content, resourceId, userId);
+            updateWorkLoad(kind, name, content, resourceId, userId, extraInfo);
         } else {
             //自定义资源关联command
             DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(kind, DELETE_TYPE, userId);
@@ -340,7 +341,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         workLoad.checkWorkloadExist(envId, name);
     }
 
-    private void createWorkload(Long projectId, Long envId, String content, String resourceType, String operateType, String name, Long userId) {
+    private void createWorkload(Long projectId, Long envId, String content, String resourceType, String operateType, String name, Long userId, Map<String, Object> extraInfo) {
         //校验新增的类型是否已存在
         checkWorkloadExist(resourceType, envId, name);
 
@@ -349,18 +350,18 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         Long workLoadId = null;
         WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(resourceType) + WORK_LOAD);
-        workLoadId = workLoad.createWorkload(name, projectId, envId, devopsEnvCommandDTO.getId());
+        workLoadId = workLoad.createWorkload(name, projectId, envId, devopsEnvCommandDTO.getId(), extraInfo);
         devopsWorkloadResourceContentService.create(resourceType, workLoadId, content);
 
         devopsEnvCommandDTO.setObjectId(workLoadId);
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
     }
 
-    private void updateWorkLoad(String resourceType, String name, String content, Long resourceId, Long userId) {
+    private void updateWorkLoad(String resourceType, String name, String content, Long resourceId, Long userId, Map<String, Object> extraInfo) {
         //自定义资源关联command
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, UPDATE_TYPE, userId);
         WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(resourceType) + WORK_LOAD);
-        workLoad.updateWorkLoad(devopsEnvCommandDTO, name, resourceId);
+        workLoad.updateWorkLoad(devopsEnvCommandDTO, name, resourceId, extraInfo);
         devopsWorkloadResourceContentService.update(resourceType, resourceId, content);
     }
 
@@ -381,18 +382,22 @@ public class WorkloadServiceImpl implements WorkloadService {
         }
     }
 
-    public void updateDeployment(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+    @Override
+    public void updateDeployment(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId, Map<String, Object> extraInfo) {
         DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(resourceId);
         checkMetadataInfo(newName, devopsDeploymentDTO.getName());
         devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
-        //更新资源关联的最新command
+        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get("sourceType"))) {
+            devopsDeploymentDTO.setAppConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG));
+            devopsDeploymentDTO.setContainerConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG));
+        }
         devopsDeploymentDTO.setCommandId(devopsEnvCommandDTO.getId());
         devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
     }
 
-
+    @Override
     public void updateStatefulSet(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
         DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.selectByPrimaryKey(resourceId);
         checkMetadataInfo(newName, devopsStatefulSetDTO.getName());
@@ -404,7 +409,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsStatefulSetService.baseUpdate(devopsStatefulSetDTO);
     }
 
-
+    @Override
     public void updateJob(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
         DevopsJobDTO devopsJobDTO = devopsJobService.selectByPrimaryKey(resourceId);
         checkMetadataInfo(newName, devopsJobDTO.getName());
@@ -416,6 +421,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsJobService.baseUpdate(devopsJobDTO);
     }
 
+    @Override
     public void updateDaemonSet(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
         DevopsDaemonSetDTO daemonSetDTO = devopsDaemonSetService.selectByPrimaryKey(resourceId);
         checkMetadataInfo(newName, daemonSetDTO.getName());
@@ -427,6 +433,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsDaemonSetService.baseUpdate(daemonSetDTO);
     }
 
+    @Override
     public void updateCronJob(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
         DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.selectByPrimaryKey(resourceId);
         checkMetadataInfo(newName, devopsCronJobDTO.getName());

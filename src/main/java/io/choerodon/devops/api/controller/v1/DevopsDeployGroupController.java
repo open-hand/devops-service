@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
 import io.choerodon.devops.app.service.DevopsDeployGroupService;
-import io.choerodon.devops.infra.dto.DevopsDeployGroupDTO;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -37,13 +36,14 @@ public class DevopsDeployGroupController {
     @ApiOperation("创建或更新部署组应用")
     @PostMapping("create_or_update")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    public ResponseEntity<DevopsDeployGroupDTO> createOrUpdate(
+    public ResponseEntity<Void> createOrUpdate(
             @PathVariable("project_id") Long projectId,
             @ApiParam("操作类型")
             @RequestParam("type") String type,
             @ApiParam(value = "部署组信息")
             @RequestBody DevopsDeployGroupVO devopsDeployGroupVO
     ) {
-        return Results.success(devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type));
+        devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type);
+        return Results.success();
     }
 }
