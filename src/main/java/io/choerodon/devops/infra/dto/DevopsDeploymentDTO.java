@@ -30,8 +30,14 @@ public class DevopsDeploymentDTO extends AuditDomain {
     private Long envId;
     @ApiModelProperty("commandId")
     private Long commandId;
-    @ApiModelProperty("所属实例id")
+    @ApiModelProperty("所属对象id chart产生的appServiceInstanceId/部署组产生的应用Id")
     private Long instanceId;
+    @ApiModelProperty("appConfig")
+    private String appConfig;
+    @ApiModelProperty("containerConfig")
+    private String containerConfig;
+    @ApiModelProperty("来源类型 chart/工作负载/部署组")
+    private String sourceType;
 
     @Transient
     private String content;
@@ -39,11 +45,12 @@ public class DevopsDeploymentDTO extends AuditDomain {
     public DevopsDeploymentDTO() {
     }
 
-    public DevopsDeploymentDTO(String name, Long projectId, Long envId, Long commandId) {
+    public DevopsDeploymentDTO(String name, Long projectId, Long envId, Long commandId, String sourceType) {
         this.name = name;
         this.projectId = projectId;
         this.envId = envId;
         this.commandId = commandId;
+        this.sourceType = sourceType;
     }
 
     public Long getId() {
@@ -100,5 +107,29 @@ public class DevopsDeploymentDTO extends AuditDomain {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getAppConfig() {
+        return appConfig;
+    }
+
+    public void setAppConfig(String appConfig) {
+        this.appConfig = appConfig;
+    }
+
+    public String getContainerConfig() {
+        return containerConfig;
+    }
+
+    public void setContainerConfig(String containerConfig) {
+        this.containerConfig = containerConfig;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 }

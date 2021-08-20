@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Map;
+
 import io.swagger.annotations.ApiModelProperty;
 
 public class WorkloadBaseVO {
@@ -13,6 +15,8 @@ public class WorkloadBaseVO {
     private String operateType;
     @ApiModelProperty("资源id")
     private Long resourceId;
+    @ApiModelProperty("额外信息，比如会用来保存部署组的应用配置、容器配置信息")
+    private Map<String, Object> extraInfo;
 
     public String getName() {
         return name;
@@ -52,5 +56,13 @@ public class WorkloadBaseVO {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public Map<String, Object> getExtraInfo() {
+        return extraInfo;
+    }
+
+    public void setExtraInfo(Map<String, Object> extraInfo) {
+        this.extraInfo = extraInfo;
     }
 }

@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.workload;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -25,13 +27,13 @@ public class JobWorkLoad extends WorkLoad {
 
 
     @Override
-    public Long createWorkload(String name, Long projectId, Long envId, Long commandId) {
+    public Long createWorkload(String name, Long projectId, Long envId, Long commandId, Map<String, Object> extraInfo) {
         DevopsJobDTO devopsJobDTO = new DevopsJobDTO(name, projectId, envId, commandId);
         return devopsJobService.baseCreate(devopsJobDTO);
     }
 
     @Override
-    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId, Map<String, Object> extraInfo) {
         workloadService.updateJob(devopsEnvCommandDTO, newName, resourceId);
     }
 

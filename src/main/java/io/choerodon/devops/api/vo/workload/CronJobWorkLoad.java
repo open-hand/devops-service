@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.vo.workload;
 
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,15 +26,14 @@ public class CronJobWorkLoad extends WorkLoad {
     private DevopsCronJobService devopsCronJobService;
 
 
-
     @Override
-    public Long createWorkload(String name, Long projectId, Long envId, Long commandId) {
+    public Long createWorkload(String name, Long projectId, Long envId, Long commandId, Map<String, Object> extraInfo) {
         DevopsCronJobDTO devopsCronJobDTO = new DevopsCronJobDTO(name, projectId, envId, commandId);
         return devopsCronJobService.baseCreate(devopsCronJobDTO);
     }
 
     @Override
-    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId, Map<String, Object> extraInfo) {
         workloadService.updateCronJob(devopsEnvCommandDTO, newName, resourceId);
     }
 

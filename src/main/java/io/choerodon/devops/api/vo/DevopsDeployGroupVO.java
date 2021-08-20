@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -33,6 +34,11 @@ public class DevopsDeployGroupVO {
 
     @ApiModelProperty(name = "容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
+
+    @JsonIgnore
+    private String appConfigJson;
+    @JsonIgnore
+    private String containerConfigJson;
 
 
     public Long getId() {
@@ -89,5 +95,21 @@ public class DevopsDeployGroupVO {
 
     public void setContainerConfig(List<DevopsDeployGroupContainerConfigVO> containerConfig) {
         this.containerConfig = containerConfig;
+    }
+
+    public String getAppConfigJson() {
+        return appConfigJson;
+    }
+
+    public void setAppConfigJson(String appConfigJson) {
+        this.appConfigJson = appConfigJson;
+    }
+
+    public String getContainerConfigJson() {
+        return containerConfigJson;
+    }
+
+    public void setContainerConfigJson(String containerConfigJson) {
+        this.containerConfigJson = containerConfigJson;
     }
 }
