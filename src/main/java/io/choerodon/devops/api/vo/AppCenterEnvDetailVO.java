@@ -37,7 +37,7 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty("登录名")
     private String loginName;
     @ApiModelProperty("用户名")
-    private String userName;
+    private String realName;
     @ApiModelProperty("头像")
     private String imageUrl;
 
@@ -116,12 +116,12 @@ public class AppCenterEnvDetailVO {
         this.loginName = loginName;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getRealName() {
+        return realName;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 
     public String getImageUrl() {

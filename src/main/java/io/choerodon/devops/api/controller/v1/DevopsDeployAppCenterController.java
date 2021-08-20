@@ -72,7 +72,7 @@ public class DevopsDeployAppCenterController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
-            @RequestParam("app_center_id") Long appCenterId) {
+            @PathVariable("app_center_id") Long appCenterId) {
         return Results.success(devopsDeployAppCenterService.envAppEvent(projectId, appCenterId));
     }
 
@@ -87,7 +87,7 @@ public class DevopsDeployAppCenterController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
-            @RequestParam("app_center_id") Long appCenterId,
+            @PathVariable("app_center_id") Long appCenterId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Results.success(devopsDeployAppCenterService.envAppPodsPage(
@@ -102,7 +102,7 @@ public class DevopsDeployAppCenterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
-            @RequestParam("app_center_id") Long appCenterId) {
+            @PathVariable("app_center_id") Long appCenterId) {
         return Results.success(devopsDeployAppCenterService.envAppRelease(projectId, appCenterId));
     }
 
@@ -115,7 +115,7 @@ public class DevopsDeployAppCenterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
-            @RequestParam("app_center_id") Long appCenterId,
+            @PathVariable("app_center_id") Long appCenterId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
