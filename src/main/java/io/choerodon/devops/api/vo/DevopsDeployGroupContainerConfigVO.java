@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 
 public class DevopsDeployGroupContainerConfigVO {
@@ -11,7 +10,7 @@ public class DevopsDeployGroupContainerConfigVO {
     private String sourceType;
     private String jarFileDownloadUrl;
     private JarDeployVO jarDeployVO;
-    private DockerDeployVO dockerDeployVO;
+    private DevopsDeployGroupDockerConfigVO dockerDeployVO;
     private String requestCpu;
     private String requestMemory;
     private String limitCpu;
@@ -59,11 +58,11 @@ public class DevopsDeployGroupContainerConfigVO {
         this.jarDeployVO = jarDeployVO;
     }
 
-    public DockerDeployVO getDockerDeployVO() {
+    public DevopsDeployGroupDockerConfigVO getDockerDeployVO() {
         return dockerDeployVO;
     }
 
-    public void setDockerDeployVO(DockerDeployVO dockerDeployVO) {
+    public void setDockerDeployVO(DevopsDeployGroupDockerConfigVO dockerDeployVO) {
         this.dockerDeployVO = dockerDeployVO;
     }
 

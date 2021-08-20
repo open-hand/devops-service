@@ -10,6 +10,8 @@ import java.util.*;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,12 +31,8 @@ import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
-import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.app.service.DevopsDeployGroupService;
-import io.choerodon.devops.app.service.PermissionHelper;
-import io.choerodon.devops.app.service.WorkloadService;
-import io.choerodon.devops.infra.dto.DevopsDeployGroupDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
@@ -58,7 +56,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
  **/
 @Service
 public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployGroupServiceImpl.class);
 
+    private static final String AUTH_TYPE = "pull";
     private static final String WGET_COMMAND_TEMPLATE = "wget %s -o /choerodon/%s";
     private static final String WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE = "wget --user=%s --password=%s %s -o /choerodon/%s";
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
@@ -82,6 +82,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private WorkloadService workloadService;
     @Autowired
     DevopsDeployGroupMapper devopsDeployGroupMapper;
+    @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
+    @Autowired
+    private HarborService harborService;
+    @Autowired
+    private DevopsRegistrySecretService devopsRegistrySecretService;
 
     @Override
     public DevopsDeployGroupVO appConfigDetail(Long projectId, Long devopsConfigGroupId) {
@@ -386,19 +394,20 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      * @return
      */
     private V1Container processImageConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, List<V1LocalObjectReference> imagePullSecrets) {
-        DockerDeployVO dockerDeployVO = devopsDeployGroupContainerConfigVO.getDockerDeployVO();
+        DevopsDeployGroupDockerConfigVO dockerDeployVO = devopsDeployGroupContainerConfigVO.getDockerDeployVO();
 
-        DockerPullAccountDTO pullAccountDTO = createPullSecret(projectDTO, dockerDeployVO);
-        ConfigVO configVO = new ConfigVO();
-        configVO.setUrl(pullAccountDTO.getHarborUrl());
-        configVO.setUserName(pullAccountDTO.getPullAccount());
-        configVO.setPassword(pullAccountDTO.getPullPassword());
-        String imagePullSecretName = "secret-" + devopsDeployGroupContainerConfigVO.getName();
-
-        V1LocalObjectReference v1LocalObjectReference = new V1LocalObjectReference();
-        v1LocalObjectReference.setName(imagePullSecretName);
-        imagePullSecrets.add(v1LocalObjectReference);
-        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), imagePullSecretName, configVO);
+        DockerPullAccountDTO pullAccountDTO = createPullAccount(projectDTO, devopsEnvironmentDTO, dockerDeployVO);
+        if (pullAccountDTO != null) {
+            ConfigVO configVO = new ConfigVO();
+            configVO.setUrl(pullAccountDTO.getHarborUrl());
+            configVO.setUserName(pullAccountDTO.getPullAccount());
+            configVO.setPassword(pullAccountDTO.getPullPassword());
+            String imagePullSecretName = "secret-" + devopsDeployGroupContainerConfigVO.getName();
+            V1LocalObjectReference v1LocalObjectReference = new V1LocalObjectReference();
+            v1LocalObjectReference.setName(imagePullSecretName);
+            imagePullSecrets.add(v1LocalObjectReference);
+            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), imagePullSecretName, configVO);
+        }
 
         v1Container.setName(devopsDeployGroupContainerConfigVO.getName());
         v1Container.setImage(dockerDeployVO.getImageInfo().getImageName() + ":" + dockerDeployVO.getImageInfo().getTag());
@@ -461,7 +470,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return jarPullInfoDTO;
     }
 
-    private DockerPullAccountDTO createPullSecret(ProjectDTO projectDTO, DockerDeployVO dockerDeployVO) {
+    private DockerPullAccountDTO createPullAccount(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupDockerConfigVO dockerDeployVO) {
         DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
         if (isMarketOrHzero(dockerDeployVO)) {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectDTO.getId(), dockerDeployVO);
@@ -469,6 +478,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             dockerPullAccountDTO = initDockerPullAccountDTO(marketHarborConfigVO);
         } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
             dockerPullAccountDTO = ConvertUtils.convertObject(getHarborC7nRepoImageTagVo(dockerDeployVO), DockerPullAccountDTO.class);
+        } else if (AppSourceType.SHARE.getValue().equals(dockerDeployVO.getSourceType())) {
+            dockerPullAccountDTO = getShareServiceDockerPullAccount(dockerDeployVO, devopsEnvironmentDTO);
         }
         return dockerPullAccountDTO;
     }
@@ -480,6 +491,38 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
         return imageTagVo;
     }
+
+    private DockerPullAccountDTO getShareServiceDockerPullAccount(DevopsDeployGroupDockerConfigVO dockerConfigVO, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(dockerConfigVO.getAppServiceId());
+
+        String secretCode;
+        //如果应用绑定了私有镜像库,则处理secret
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(dockerConfigVO.getAppServiceVersionId());
+
+        DevopsConfigDTO devopsConfigDTO;
+        if (appServiceVersionDTO.getHarborConfigId() != null) {
+            devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
+                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), AUTH_TYPE);
+        } else {
+            //查询harbor的用户名密码
+            devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
+                    appServiceDTO.getId(), AUTH_TYPE);
+        }
+        LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), dockerConfigVO.getAppServiceVersionId(), devopsConfigDTO.getId());
+
+        ConfigVO configVO = JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        if (configVO.getPrivate() != null && configVO.getPrivate()) {
+            LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), dockerConfigVO.getAppServiceVersionId());
+            DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
+            dockerPullAccountDTO.setHarborUrl(configVO.getUrl());
+            dockerPullAccountDTO.setPullAccount(configVO.getUserName());
+            dockerPullAccountDTO.setPullPassword(configVO.getPassword());
+            return dockerPullAccountDTO;
+        } else {
+            return null;
+        }
+    }
+
 
     private DockerPullAccountDTO initDockerPullAccountDTO(MarketHarborConfigVO marketHarborConfigVO) {
         return new DockerPullAccountDTO()
