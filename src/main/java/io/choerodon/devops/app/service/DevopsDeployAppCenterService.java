@@ -22,11 +22,11 @@ public interface DevopsDeployAppCenterService {
 
     AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId);
 
-    List<InstanceEventVO> envChartAppEvent(Long projectId, Long appCenterId);
+    List<InstanceEventVO> envAppEvent(Long projectId, Long appCenterId);
 
-    Page<DevopsEnvPodVO> envChartAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
+    Page<DevopsEnvPodVO> envAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
 
-    DevopsEnvResourceVO envChartAppRelease(Long projectId, Long appCenterId);
+    DevopsEnvResourceVO envAppRelease(Long projectId, Long appCenterId);
 
     Page<DevopsServiceVO> envChartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
 }

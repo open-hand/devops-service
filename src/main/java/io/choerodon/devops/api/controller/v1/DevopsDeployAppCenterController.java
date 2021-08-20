@@ -65,22 +65,22 @@ public class DevopsDeployAppCenterController {
         return Results.success(devopsDeployAppCenterService.envAppDetail(projectId, appCenterId));
     }
 
-    @ApiOperation("根据应用id查询chart——应用事件")
-    @GetMapping("/{app_center_id}/env_chart_event")
+    @ApiOperation("根据应用id查询环境部署（chart包和部署组）——应用事件")
+    @GetMapping("/{app_center_id}/env_event")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    public ResponseEntity<List<InstanceEventVO>> envChartAppEvent(
+    public ResponseEntity<List<InstanceEventVO>> envAppEvent(
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
             @RequestParam("app_center_id") Long appCenterId) {
-        return Results.success(devopsDeployAppCenterService.envChartAppEvent(projectId, appCenterId));
+        return Results.success(devopsDeployAppCenterService.envAppEvent(projectId, appCenterId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation("根据应用id查询chart——Pod详情")
+    @ApiOperation("根据应用id查询环境部署（chart包和部署组）——Pod详情")
     @CustomPageRequest
-    @PostMapping(value = "/{app_center_id}/env_chart_pods_page")
-    public ResponseEntity<Page<DevopsEnvPodVO>> envChartAppPodsPage(
+    @PostMapping(value = "/{app_center_id}/env_pods_page")
+    public ResponseEntity<Page<DevopsEnvPodVO>> envAppPodsPage(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -90,19 +90,20 @@ public class DevopsDeployAppCenterController {
             @RequestParam("app_center_id") Long appCenterId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Results.success(devopsDeployAppCenterService.envChartAppPodsPage(
+        return Results.success(devopsDeployAppCenterService.envAppPodsPage(
                 projectId, appCenterId, pageRequest, searchParam));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping(value = "/{app_center_id}/env_chart_resources")
-    public ResponseEntity<DevopsEnvResourceVO> chartRelease(
+    @ApiOperation("根据应用id查询环境部署（chart包和部署组）——运行详情")
+    @GetMapping(value = "/{app_center_id}/env_resources")
+    public ResponseEntity<DevopsEnvResourceVO> envAppRelease(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
             @RequestParam("app_center_id") Long appCenterId) {
-        return Results.success(devopsDeployAppCenterService.envChartAppRelease(projectId, appCenterId));
+        return Results.success(devopsDeployAppCenterService.envAppRelease(projectId, appCenterId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
