@@ -71,6 +71,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             DevopsEnvironmentDTO devopsEnvAppServiceDTO = new DevopsEnvironmentDTO();
             devopsEnvAppServiceDTO.setId(devopsDeployAppCenterVO.getEnvId());
             devopsDeployAppCenterVO.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO).getName());
+            devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "iamUserDTO");
         return devopsDeployAppCenterVOS;
