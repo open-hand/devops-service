@@ -475,7 +475,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
         });
         //添加是否实例存在字段的值
-        batchSetAppStatus(devopsHzeroDeployDetailsVOS);
+        batchSetAppStatus(devopsHzeroDeployDetailsVOS, devopsHzeroDeployDetailsDTOS.get(0).getEnvId());
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, devopsHzeroDeployDetailsDTOS.get(0).getMktDeployObjectId());
         hzeroDeployRecordVO.setEnvironmentDTO(devopsEnvironmentDTO);
         hzeroDeployRecordVO.setMktApplication(marketServiceDeployObjectVO.getMarketAppName());
@@ -486,9 +486,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         return hzeroDeployRecordVO;
     }
 
-    private void batchSetAppStatus(List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS) {
+    private void batchSetAppStatus(List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS, Long envId) {
         List<String> devopsHzeroDeployDetailsVOCodes = devopsHzeroDeployDetailsVOS.stream().map(DevopsHzeroDeployDetailsVO::getInstanceCode).collect(Collectors.toList());
-        List<String> AppServiceInstanceVOCodes = appServiceInstanceService.listInstanceCodeByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes);
+        List<String> AppServiceInstanceVOCodes = appServiceInstanceService.listInstanceCodeByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
         devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
             if (!CollectionUtils.isEmpty(AppServiceInstanceVOCodes) && AppServiceInstanceVOCodes.contains(devopsHzeroDeployDetailsVO.getInstanceCode())) {
                 devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.EXIST.getStatus());

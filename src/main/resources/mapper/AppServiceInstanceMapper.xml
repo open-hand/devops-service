@@ -672,7 +672,8 @@
         SELECT
             code
         FROM devops_app_service_instance
-        WHERE code IN
+        WHERE env_id = #{envId}
+        AND code IN
         <foreach collection="codes" item="code" separator="," open="(" close=")">
             #{codes}
         </foreach>

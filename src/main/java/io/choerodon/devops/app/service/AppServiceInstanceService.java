@@ -425,7 +425,8 @@ public interface AppServiceInstanceService {
     /**
      * 通过code查询AppServiceInstanceDTO的code集合
      * @param codes
+     * @param envId
      * @return code列表
      */
-    List<String> listInstanceCodeByDeployDetailsCode(List<String> codes);
+    List<String> listInstanceCodeByDeployDetailsCode(List<String> codes, Long envId);
 }
