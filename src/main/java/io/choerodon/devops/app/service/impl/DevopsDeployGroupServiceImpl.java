@@ -225,7 +225,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             String type = devopsDeployGroupContainerConfigVO.getType();
             V1Container v1Container = getBaseContainerConfig(devopsDeployGroupContainerConfigVO);
             switch (type) {
-                case "image":
+                case "docker":
                     // docker需要创建secret
                     containers.add(processImageConfig(projectDTO, devopsEnvironmentDTO, devopsDeployGroupContainerConfigVO, v1Container, imagePullSecrets));
                     break;
