@@ -77,6 +77,12 @@ class DevopsDeployGroupServiceImplSpec extends Specification {
         deployGroupContainerConfigVO1.setRequestMemory("200")
         deployGroupContainerConfigVO1.setLimitMemory("200")
         deployGroupContainerConfigVO1.setType("docker")
+
+        def envs=new HashMap<String,String>()
+        envs.put("env-app-name",deployGroupVO.getName())
+        envs.put("env-app-code",deployGroupVO.getCode())
+        deployGroupContainerConfigVO1.setEnvs(envs)
+
         def deployGroupDockerConfigVO=new DevopsDeployGroupDockerConfigVO()
         def imageInfo=new ProdImageInfoVO()
         deployGroupDockerConfigVO.setSourceType("CURRENT_PROJECT")
@@ -85,6 +91,8 @@ class DevopsDeployGroupServiceImplSpec extends Specification {
         imageInfo.setRepoType("DEFAULT_REPO")
         imageInfo.setImageName("log-test")
         imageInfo.setTag("2021.8.11-103036-master")
+
+        deployGroupContainerConfigVO1.setDockerDeployVO(deployGroupDockerConfigVO)
 
         deployGroupVO.setAppConfig(appConfig)
         deployGroupVO.setContainerConfig(containerConfigList)

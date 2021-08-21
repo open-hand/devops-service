@@ -16,7 +16,6 @@ public class DevopsDeployGroupContainerConfigVO {
     private String limitCpu;
     private String limitMemory;
     private Map<String, String> envs;
-    private Map<String, Integer> resources;
 
     public String getName() {
         return name;
@@ -104,13 +103,5 @@ public class DevopsDeployGroupContainerConfigVO {
 
     public void setEnvs(Map<String, String> envs) {
         this.envs = envs;
-    }
-
-    public Map<String, Integer> getResources() {
-        return resources;
-    }
-
-    public void setResources(Map<String, Integer> resources) {
-        this.resources = resources;
     }
 }
