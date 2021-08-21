@@ -117,7 +117,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
     @PostConstruct
     void init() {
-        liquibaseExecutor.execute()
+//        liquibaseExecutor.execute()
         setTestRestTemplateJWT()
     }
 
