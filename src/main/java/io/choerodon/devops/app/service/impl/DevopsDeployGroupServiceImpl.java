@@ -40,6 +40,7 @@ import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -114,6 +115,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             devopsDeployAppCenterEnvDTO.setEnvId(devopsDeployAppCenterEnvDTO.getEnvId());
             devopsDeployAppCenterEnvDTO.setName(devopsDeployAppCenterEnvDTO.getName());
             devopsDeployAppCenterEnvDTO.setCode(devopsDeployGroupVO.getCode());
+            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.DEPLOYMENT.value());
             devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
         } else {
             // 更新应用记录
@@ -139,6 +141,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         workloadBaseCreateOrUpdateVO.setExtraConfig(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
 
+        // 更新关联的对象id
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.queryByInstanceIdAndSourceType(devopsDeployGroupVO.getInstanceId(), DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
             devopsDeployAppCenterEnvDTO.setObjectId(devopsDeploymentDTO.getId());

@@ -60,7 +60,7 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty("创建时间")
     private Date creationDate;
 
-    @ApiModelProperty(name = "chart/jar/docker")
+    @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
 
     public Long getAppServiceId() {
