@@ -2,7 +2,10 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
@@ -17,10 +20,12 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
@@ -52,10 +57,9 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
-import io.choerodon.devops.infra.util.HostDeployUtil;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.MavenUtil;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -324,6 +328,27 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         Assert.notNull(name, ResourceCheckConstant.ERROR_JAR_NAME_IS_NULL);
         DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(hostId, name);
         return devopsHostAppMapper.selectOne(devopsHostAppDTO);
+    }
+
+    @Override
+    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params) {
+        Page<DevopsHostAppVO> page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listByOptions(hostId, rdupmType, operationType, params));
+
+        if (CollectionUtils.isEmpty(page.getContent())) {
+            return page;
+        }
+        UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
+        page.getContent().forEach(devopsHostAppVO -> {
+            if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
+                devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
+            } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
+                    || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
+                devopsHostAppVO.setDeployObjectId(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), Long.class));
+            } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
+                devopsHostAppVO.setJarFileUrl(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), String.class));
+            }
+        });
+        return page;
     }
 
 }
