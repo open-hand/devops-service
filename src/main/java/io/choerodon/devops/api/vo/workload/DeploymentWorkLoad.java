@@ -38,7 +38,10 @@ public class DeploymentWorkLoad extends WorkLoad {
         if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
             devopsDeploymentDTO.setAppConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG));
             devopsDeploymentDTO.setContainerConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG));
-            devopsDeploymentDTO.setInstanceId((Long) extraInfo.get("appId"));
+            devopsDeploymentDTO.setInstanceId((Long) extraInfo.get(DevopsDeploymentServiceImpl.INSTANCE_ID));
+            devopsDeploymentDTO.setSourceType(DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
+        } else {
+            devopsDeploymentDTO.setSourceType(DeploymentSourceTypeEnums.WORKLOAD.getType());
         }
         return devopsDeploymentService.baseCreate(devopsDeploymentDTO);
     }

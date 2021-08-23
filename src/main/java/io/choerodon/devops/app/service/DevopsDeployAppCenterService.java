@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -29,4 +30,18 @@ public interface DevopsDeployAppCenterService {
     DevopsEnvResourceVO envAppRelease(Long projectId, Long appCenterId);
 
     Page<DevopsServiceVO> envChartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam);
+
+    /**
+     * 创建应用
+     *
+     * @param devopsDeployAppCenterEnvDTO
+     */
+    void baseCreate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
+
+    /**
+     * 更新应用
+     *
+     * @param devopsDeployAppCenterEnvDTO
+     */
+    void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
 }

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -29,10 +30,8 @@ import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.devops.infra.dto.DevopsConfigDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
@@ -88,6 +87,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private HarborService harborService;
     @Autowired
     private DevopsDeploymentService devopsDeploymentService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Override
     public DevopsDeployGroupVO appConfigDetail(Long projectId, Long devopsConfigGroupId) {
@@ -98,12 +99,27 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return devopsDeployGroupVO;
     }
 
+    @Transactional
     @Override
     public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsDeployGroupVO.getEnvId());
         devopsDeployGroupVO.setProjectId(projectId);
         // 校验配置
         validateConfig(devopsDeployGroupVO);
+
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+        if (MiscConstants.CREATE_TYPE.equals(operateType)) {
+            // 插入应用记录
+            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
+            devopsDeployAppCenterEnvDTO.setEnvId(devopsDeployAppCenterEnvDTO.getEnvId());
+            devopsDeployAppCenterEnvDTO.setName(devopsDeployAppCenterEnvDTO.getName());
+            devopsDeployAppCenterEnvDTO.setCode(devopsDeployGroupVO.getCode());
+            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
+        } else {
+            // 更新应用记录
+            devopsDeployAppCenterEnvDTO.setId(devopsDeployGroupVO.getInstanceId());
+            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+        }
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsDeployGroupVO.getProjectId());
 
@@ -118,9 +134,16 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getContainerConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP);
+        extraInfo.put(DevopsDeploymentServiceImpl.INSTANCE_ID, devopsDeployAppCenterEnvDTO.getId());
 
         workloadBaseCreateOrUpdateVO.setExtraConfig(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
+
+        if (MiscConstants.CREATE_TYPE.equals(operateType)) {
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.queryByInstanceIdAndSourceType(devopsDeployGroupVO.getInstanceId(), DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
+            devopsDeployAppCenterEnvDTO.setObjectId(devopsDeploymentDTO.getId());
+            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+        }
     }
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {

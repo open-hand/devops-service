@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -20,6 +21,7 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -149,5 +151,17 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             return devopsServiceService.pageByInstance(projectId, instanceDTO.getEnvId(), centerEnvDTO.getObjectId(), pageRequest, instanceDTO.getAppServiceId(), searchParam);
         }
         return null;
+    }
+
+    @Transactional
+    @Override
+    public void baseCreate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "error.env.app.center.insert");
+    }
+
+    @Transactional
+    @Override
+    public void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO,"error.env.app.center.update");
     }
 }

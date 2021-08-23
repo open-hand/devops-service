@@ -38,4 +38,9 @@
         JOIN devops_deploy_app_center_env ddace ON ddace.id = ddp.instance_id
         WHERE ddp.id=#{id}
     </select>
+
+    <select id="queryByInstanceIdAndSourceType" resultType="io.choerodon.devops.infra.dto.DevopsDeploymentDTO">
+        SELECT * FROM devops_deployment
+        WHERE instance_id=#{instanceId} and source_type=#{sourceType}
+    </select>
 </mapper>

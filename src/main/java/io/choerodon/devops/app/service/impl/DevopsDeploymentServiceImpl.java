@@ -46,6 +46,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     public static final String EXTRA_INFO_KEY_APP_CONFIG = "appConfig";
     public static final String EXTRA_INFO_KEY_CONTAINER_CONFIG = "containerConfig";
     public static final String EXTRA_INFO_KEY_SOURCE_TYPE = "sourceType";
+    public static final String INSTANCE_ID = "instanceId";
 
 
     @Autowired
@@ -239,5 +240,10 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     public DevopsDeployGroupVO queryDeployGroupInfoById(Long id) {
         return devopsDeploymentMapper.queryDeployGroupInfoById(id);
+    }
+
+    @Override
+    public DevopsDeploymentDTO queryByInstanceIdAndSourceType(Long instanceId, String type) {
+        return devopsDeploymentMapper.queryByInstanceIdAndSourceType(instanceId, type);
     }
 }
