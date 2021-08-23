@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -61,6 +63,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsServiceService devopsServiceService;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable) {
@@ -103,9 +107,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
             }
         }
+        // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
         detailVO.setEnvCode(environmentDTO.getCode());
         detailVO.setEnvName(environmentDTO.getName());
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        detailVO.setEnvActive(environmentDTO.getActive());
+        detailVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
+
         detailVO.setIamUserDTO(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;

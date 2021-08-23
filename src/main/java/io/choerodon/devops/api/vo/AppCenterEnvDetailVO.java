@@ -63,6 +63,8 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
     private String commandVersion;
+    private Boolean envActive;
+    private Boolean envConnected;
 
 
     public Long getAppServiceId() {
@@ -231,5 +233,21 @@ public class AppCenterEnvDetailVO {
 
     public void setCommandVersion(String commandVersion) {
         this.commandVersion = commandVersion;
+    }
+
+    public Boolean getEnvActive() {
+        return envActive;
+    }
+
+    public void setEnvActive(Boolean envActive) {
+        this.envActive = envActive;
+    }
+
+    public Boolean getEnvConnected() {
+        return envConnected;
+    }
+
+    public void setEnvConnected(Boolean envConnected) {
+        this.envConnected = envConnected;
     }
 }
