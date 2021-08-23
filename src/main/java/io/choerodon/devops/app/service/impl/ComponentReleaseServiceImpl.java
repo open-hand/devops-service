@@ -337,7 +337,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
     private AppServiceInstanceDTO initApplicationInstanceDTO(Long systemEnvId, @Nullable Long instanceId, CommandType commandType) {
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
-        appServiceInstanceDTO.setSource(AppServiceInstanceSource.NORMAL.getValue());
+        appServiceInstanceDTO.setSource(AppCenterChartSourceEnum.NORMAL.getValue());
         appServiceInstanceDTO.setEnvId(systemEnvId);
         appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
         if (CommandType.UPDATE == commandType) {

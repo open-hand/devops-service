@@ -72,6 +72,16 @@ public class AppServiceDeployVO {
     @NotBlank(message = "error.app.instance.code.null")
     private String appCode;
 
+    @ApiModelProperty("服务来源")
+    private String appServiceSource;
+
+    public String getAppServiceSource() {
+        return appServiceSource;
+    }
+
+    public void setAppServiceSource(String appServiceSource) {
+        this.appServiceSource = appServiceSource;
+    }
 
     public Long getAppServiceVersionId() {
         return appServiceVersionId;
