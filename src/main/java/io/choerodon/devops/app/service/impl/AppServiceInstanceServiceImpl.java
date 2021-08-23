@@ -249,7 +249,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getClusterId()));
 
         // 为市场实例填充版本信息
-        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoDTO.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
+        if (isMarket(appServiceInstanceInfoDTO.getSource()) || isMarket(appServiceInstanceInfoDTO.getSource())) {
             fillInformationForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         }
 
@@ -266,7 +266,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
         if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
             // 如果是中间件，直接以应用版本作为生效版本
-            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
+            if (isMiddleware(appServiceInstanceInfoDTO.getSource())) {
                 appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketServiceVersion());
             } else {
                 appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
@@ -278,7 +278,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         if (versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()) != null) {
             // 如果是中间件，直接以应用版本作为生效版本
-            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoDTO.getSource())) {
+            if (isMiddleware(appServiceInstanceInfoDTO.getSource())) {
                 appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getMarketServiceVersion());
             } else {
                 appServiceInstanceInfoVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
@@ -311,7 +311,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 收集ids
         pageInfo.getContent().forEach(ins -> {
-            if (AppServiceInstanceSource.MARKET.getValue().equals(ins.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(ins.getSource())) {
+            if (isMarket(ins.getSource()) || isMiddleware(ins.getSource())) {
                 marketInstanceCommandVersionIds.add(ins.getCommandVersionId());
             }
             appServiceIds.add(ins.getAppServiceId());
@@ -334,10 +334,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
 
                     // 为应用市场实例填充版本信息
-                    if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceInfoVO.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoVO.getSource())) {
+                    if (isMarket(appServiceInstanceInfoVO.getSource()) || isMiddleware(appServiceInstanceInfoVO.getSource())) {
                         if (deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId()) != null) {
                             MarketServiceDeployObjectVO deployObject = deployObjects.get(appServiceInstanceInfoVO.getCommandVersionId());
-                            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceInfoVO.getSource())) {
+                            if (isMiddleware(appServiceInstanceInfoVO.getSource())) {
                                 appServiceInstanceInfoVO.setCommandVersion(deployObject.getMarketServiceVersion());
                             } else {
                                 appServiceInstanceInfoVO.setCommandVersion(deployObject.getDevopsAppServiceVersion());
@@ -920,7 +920,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //8.获取市场部署实例时授权secret的code
         String secretCode = null;
-        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceDeployVO.getSource())) {
+        if (isMarket(appServiceDeployVO.getSource())) {
             secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, marketServiceDeployObjectVO);
         }
 
@@ -982,17 +982,36 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             sendCreateOrUpdateInstanceSaga(devopsEnvironmentDTO, instanceSagaPayload);
         }
 
+        // 创建应用中心的应用
+        if (appServiceDeployVO.getCommandType().equals(CREATE)) {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+            devopsDeployAppCenterEnvDTO.setName(code);
+            devopsDeployAppCenterEnvDTO.setCode(code);
+            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
+            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
+            devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
+            if (isMiddleware(appServiceDeployVO.getSource())) {
+                devopsDeployAppCenterEnvDTO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
+            }
+            devopsDeployAppCenterEnvDTO.setChartSource(AppCenterChartSourceEnum.NORMAL.getValue());
+            devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
+            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
+        } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
+            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+        }
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
     }
 
-    private String getChartVersion(MarketInstanceCreationRequestVO appServiceDeployVO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+    private String getChartVersion(MarketInstanceCreationRequestVO appServiceDeployVO, MarketServiceDeployObjectVO
+            marketServiceDeployObjectVO) {
         String chartVersion;
-        if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceDeployVO.getSource())) {
+        if (isMiddleware(appServiceDeployVO.getSource())) {
             chartVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
             marketServiceDeployObjectVO.setDevopsAppServiceVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
             marketServiceDeployObjectVO.setMarketChartRepository(String.format(MIDDLEWARE_CHART_REPO_TEMPLATE, gateway));
-        } else if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceDeployVO.getSource()) && StringUtils.equalsIgnoreCase(appServiceDeployVO.getApplicationType(), AppSourceType.HZERO.getValue())) {
+        } else if (isMarket(appServiceDeployVO.getSource()) && StringUtils.equalsIgnoreCase(appServiceDeployVO.getApplicationType(), AppSourceType.HZERO.getValue())) {
             chartVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
         } else {
             chartVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
@@ -1000,7 +1019,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return chartVersion;
     }
 
-    private void sendCreateOrUpdateInstanceSaga(DevopsEnvironmentDTO devopsEnvironmentDTO, MarketInstanceSagaPayload instanceSagaPayload) {
+    private void sendCreateOrUpdateInstanceSaga(DevopsEnvironmentDTO
+                                                        devopsEnvironmentDTO, MarketInstanceSagaPayload instanceSagaPayload) {
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
@@ -1013,7 +1033,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 
-    private MarketInstanceSagaPayload initMarketInstanceSagaPayload(MarketInstanceCreationRequestVO appServiceDeployVO, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO, AppServiceInstanceDTO appServiceInstanceDTO, String secretCode) {
+    private MarketInstanceSagaPayload initMarketInstanceSagaPayload(MarketInstanceCreationRequestVO
+                                                                            appServiceDeployVO, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO
+                                                                            userAttrDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO, AppServiceInstanceDTO
+                                                                            appServiceInstanceDTO, String secretCode) {
         MarketInstanceSagaPayload instanceSagaPayload = new MarketInstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId());
         instanceSagaPayload.setMarketServiceDeployObjectVO(marketServiceDeployObjectVO);
         instanceSagaPayload.setMarketInstanceCreationRequestVO(appServiceDeployVO);
@@ -1023,7 +1046,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return instanceSagaPayload;
     }
 
-    private String getUpdateInstanceCode(MarketInstanceCreationRequestVO appServiceDeployVO, DevopsEnvironmentDTO devopsEnvironmentDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
+    private String getUpdateInstanceCode(MarketInstanceCreationRequestVO appServiceDeployVO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
         String code;
         code = appServiceInstanceDTO.getCode();
         //更新实例的时候校验gitops库文件是否存在,处理部署实例时，由于没有创gitops文件导致的部署失败
@@ -1039,7 +1063,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return code;
     }
 
-    private String getCreateInstanceCode(MarketInstanceCreationRequestVO appServiceDeployVO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+    private String getCreateInstanceCode(MarketInstanceCreationRequestVO
+                                                 appServiceDeployVO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
         String code;
         if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
             code = String.format(INSTANCE_NAME_TEMPLATE, marketServiceDeployObjectVO.getDevopsAppServiceCode(), GenerateUUID.generateUUID().substring(0, 5));
@@ -1079,10 +1104,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvironmentDTO;
     }
 
-    private void saveDeployRecord(MarketServiceVO marketServiceVO, AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, Long commandId, String chartVersion) {
+    private void saveDeployRecord(MarketServiceVO marketServiceVO, AppServiceInstanceDTO
+            appServiceInstanceDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, Long commandId, String chartVersion) {
         String deploySourceType;
         DeployType deployType;
-        if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
+        if (isMiddleware(appServiceInstanceDTO.getSource())) {
             deploySourceType = AppSourceType.PLATFORM_PRESET.getValue();
             deployType = DeployType.BASE_COMPONENT;
         } else if (StringUtils.equalsIgnoreCase(appServiceInstanceDTO.getApplicationType(), AppSourceType.HZERO.getValue())) {
@@ -1337,7 +1363,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public AppServiceInstanceVO createOrUpdateMarketInstanceByGitOps(MarketInstanceCreationRequestVO appServiceDeployVO, Long userId) {
+    public AppServiceInstanceVO createOrUpdateMarketInstanceByGitOps(MarketInstanceCreationRequestVO
+                                                                             appServiceDeployVO, Long userId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
@@ -1383,7 +1410,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<RunningInstanceVO> listRunningInstance(Long projectId, Long appServiceId, Long appServiceVersionId, Long envId) {
+    public List<RunningInstanceVO> listRunningInstance(Long projectId, Long appServiceId, Long
+            appServiceVersionId, Long envId) {
         return ConvertUtils.convertList(appServiceInstanceMapper.listApplicationInstanceCode(
                 projectId, envId, appServiceVersionId, appServiceId), RunningInstanceVO.class);
     }
@@ -1407,7 +1435,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean saveRecord) {
+    public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean
+            saveRecord) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
         if (AppServiceInstanceSource.NORMAL.getValue().equals(appServiceInstanceDTO.getSource())) {
             return doRestartNormalInstance(projectId, appServiceInstanceDTO, isFromPipeline);
@@ -1416,7 +1445,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
     }
 
-    private DevopsEnvCommandDTO doRestartNormalInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO, boolean isFromPipeline) {
+    private DevopsEnvCommandDTO doRestartNormalInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO,
+                                                        boolean isFromPipeline) {
         Long instanceId = appServiceInstanceDTO.getId();
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
@@ -1490,7 +1520,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     }
 
-    private DevopsEnvCommandDTO doRestartMarketInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO, Boolean saveRecord) {
+    private DevopsEnvCommandDTO doRestartMarketInstance(Long projectId, AppServiceInstanceDTO
+            appServiceInstanceDTO, Boolean saveRecord) {
         // 查询市场应用服务, 确认存在
         Long instanceId = appServiceInstanceDTO.getId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, appServiceInstanceDTO.getEnvId());
@@ -1515,14 +1546,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //获取授权secret
         String secretCode = null;
-        if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource())) {
+        if (isMarket(appServiceInstanceDTO.getSource())) {
             secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersion);
         }
 
         MarketInstanceCreationRequestVO appServiceDeployVO = new MarketInstanceCreationRequestVO();
         // 兼容中间件
         String chartVersion;
-        if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
+        if (isMiddleware(appServiceInstanceDTO.getSource())) {
             chartVersion = appServiceVersion.getMarketServiceVersion();
             appServiceVersion.setDevopsAppServiceVersion(appServiceVersion.getMarketServiceVersion());
             appServiceVersion.setMarketChartRepository(String.format(MIDDLEWARE_CHART_REPO_TEMPLATE, gateway));
@@ -1817,7 +1848,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<AppServiceInstanceOverViewDTO> baseListApplicationInstanceOverView(Long projectId, Long appServiceId, List<Long> envIds) {
+    public List<AppServiceInstanceOverViewDTO> baseListApplicationInstanceOverView(Long projectId, Long
+            appServiceId, List<Long> envIds) {
         if (envIds != null && envIds.isEmpty()) {
             envIds = null;
         }
@@ -1830,7 +1862,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<DeployDTO> baseListDeployTime(Long projectId, Long envId, Long[] appServiceIds, Date startTime, Date endTime) {
+    public List<DeployDTO> baseListDeployTime(Long projectId, Long envId, Long[] appServiceIds, Date startTime, Date
+            endTime) {
         return appServiceInstanceMapper
                 .listDeployTime(projectId, envId, appServiceIds, new java.sql.Date(startTime.getTime()),
                         new java.sql.Date(endTime.getTime()));
@@ -1845,7 +1878,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public Page<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageable, Long[] envIds, Long appServiceId,
+    public Page<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageable, Long[] envIds, Long
+            appServiceId,
                                                         Date startTime, Date endTime) {
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                 appServiceInstanceMapper
@@ -1854,7 +1888,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public Page<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageable, Long envId, Long[] appServiceIds,
+    public Page<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageable, Long envId, Long[]
+            appServiceIds,
                                                    Date startTime, Date endTime) {
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                 appServiceInstanceMapper
@@ -1906,7 +1941,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceMapper.countInstanceByCondition(envId, status, appServiceId);
     }
 
-    private InstanceSagaPayload processSingleOfBatch(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO, AppServiceDeployVO appServiceDeployVO, Map<Long, List<Pair<Long, String>>> envSecrets) {
+    private InstanceSagaPayload processSingleOfBatch(Long projectId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, UserAttrDTO userAttrDTO, AppServiceDeployVO
+                                                             appServiceDeployVO, Map<Long, List<Pair<Long, String>>> envSecrets) {
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -1969,6 +2006,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceInstanceDTO.getCode(),
                 new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
+        // 创建应用中心应用
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
         devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getInstanceName());
         devopsDeployAppCenterEnvDTO.setCode(appServiceDeployVO.getInstanceName());
@@ -2386,7 +2424,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         c7nHelmRelease.getSpec().setV1CommandId(String.valueOf(commandId));
         c7nHelmRelease.getSpec().setV1AppServiceId(String.valueOf(appServiceId));
         // 密钥名称不为空且来源是MARKET
-        if (!StringUtils.isEmpty(secretName) && AppServiceInstanceSource.MARKET.getValue().equals(source)) {
+        if (!StringUtils.isEmpty(secretName) && isMarket(source)) {
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
         }
 
@@ -2456,7 +2494,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvCommandDTO;
     }
 
-    private DevopsEnvCommandDTO initMarketInstanceDevopsEnvCommandDTO(MarketInstanceCreationRequestVO appServiceDeployVO) {
+    private DevopsEnvCommandDTO initMarketInstanceDevopsEnvCommandDTO(MarketInstanceCreationRequestVO
+                                                                              appServiceDeployVO) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         switch (appServiceDeployVO.getCommandType()) {
             case CREATE:
@@ -2491,7 +2530,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @return secret的code(如果需要)
      */
     @Nullable
-    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO) {
         return getSecret(appServiceDTO, appServiceVersionId, devopsEnvironmentDTO, null);
     }
 
@@ -2507,7 +2547,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @return secret的code(如果需要)
      */
     @Nullable
-    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO devopsEnvironmentDTO, @Nullable List<Pair<Long, String>> existedConfigs) {
+    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, @Nullable List<Pair<Long, String>> existedConfigs) {
         LOGGER.debug("Get secret for app service with id {} and code {} and version id: {}", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
@@ -2575,7 +2616,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return secretCode;
     }
 
-    private String makeMarketSecret(Long projectId, DevopsEnvironmentDTO devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+    private String makeMarketSecret(Long projectId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
         // 先处理chart的认证信息
         sendChartMuseumAuthForMarket(devopsEnvironmentDTO.getClusterId(), marketServiceDeployObjectVO.getMarketChartConfigVO());
         // 处理镜像的认证
@@ -2623,7 +2665,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param appServiceDTO        应用服务
      * @param appServiceVersionDTO 应用服务版本
      */
-    private void sendChartMuseumAuthentication(Long clusterId, AppServiceDTO appServiceDTO, AppServiceVersionDTO appServiceVersionDTO) {
+    private void sendChartMuseumAuthentication(Long clusterId, AppServiceDTO appServiceDTO, AppServiceVersionDTO
+            appServiceVersionDTO) {
         if (appServiceVersionDTO.getHelmConfigId() != null) {
             // 查询chart配置
             DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, "chart", null);
@@ -2653,7 +2696,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param daemonSetName    the name of daemonSet
      * @return the pods
      */
-    private List<DevopsEnvPodVO> filterPodsAssociatedWithDaemonSet(List<DevopsEnvPodVO> devopsEnvPodDTOS, String daemonSetName) {
+    private List<DevopsEnvPodVO> filterPodsAssociatedWithDaemonSet(List<DevopsEnvPodVO> devopsEnvPodDTOS, String
+            daemonSetName) {
         return devopsEnvPodDTOS
                 .stream()
                 .filter(
@@ -2669,7 +2713,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param statefulSetName  the name of statefulSet
      * @return the pods
      */
-    private List<DevopsEnvPodVO> filterPodsAssociatedWithStatefulSet(List<DevopsEnvPodVO> devopsEnvPodDTOS, String statefulSetName) {
+    private List<DevopsEnvPodVO> filterPodsAssociatedWithStatefulSet
+    (List<DevopsEnvPodVO> devopsEnvPodDTOS, String statefulSetName) {
         // statefulSet名称逻辑和daemonSet一致
         return filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, statefulSetName);
     }
@@ -2712,7 +2757,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param deploymentName   the name of deployment
      * @return the pods
      */
-    private List<DevopsEnvPodVO> filterPodsAssociated(List<DevopsEnvPodVO> devopsEnvPodDTOS, String deploymentName) {
+    private List<DevopsEnvPodVO> filterPodsAssociated(List<DevopsEnvPodVO> devopsEnvPodDTOS, String
+            deploymentName) {
         return devopsEnvPodDTOS.stream().filter(devopsEnvPodDTO -> {
                     String podName = devopsEnvPodDTO.getName();
                     String controllerNameFromPod = podName.substring(0,
@@ -2720,5 +2766,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     return deploymentName.equals(controllerNameFromPod);
                 }
         ).collect(Collectors.toList());
+    }
+
+    private boolean isMiddleware(String source) {
+        return AppServiceInstanceSource.MIDDLEWARE.getValue().equals(source);
+    }
+
+    private boolean isMarket(String source) {
+        return AppServiceInstanceSource.MARKET.getValue().equals(source);
     }
 }
