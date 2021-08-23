@@ -1171,10 +1171,8 @@ public class GitlabServiceClientOperator {
     public List<GitlabProjectDTO> listProject(Integer groupId,
                                               Integer userId,
                                               Boolean owned,
-                                              String search,
-                                              Integer page,
-                                              Integer perPage) {
-        return gitlabServiceClient.listProjects(groupId, userId, owned, search, page, perPage).getBody();
+                                              String search) {
+        return gitlabServiceClient.listProjects(groupId, userId, owned, search).getBody();
     }
 
     public GitlabProjectDTO transferProject(Integer gitlabProjectId, Integer gitlabGroupId, Integer userId) {
