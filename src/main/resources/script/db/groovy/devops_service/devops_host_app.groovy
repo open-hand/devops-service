@@ -40,10 +40,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
 
             column(name: 'ports', type: 'VARCHAR(128)', remarks: '占用端口')
 
-            column(name: 'source_type', type: 'VARCHAR(32)', remarks: '部署来源') {
-                constraints(nullable: false)
-            }
-
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
