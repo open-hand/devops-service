@@ -162,6 +162,11 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     @Override
     public void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO,"error.env.app.center.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "error.env.app.center.update");
+    }
+
+    @Override
+    public DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode) {
+        return devopsDeployAppCenterEnvMapper.queryByEnvIdAndCode(environmentId, appCode);
     }
 }

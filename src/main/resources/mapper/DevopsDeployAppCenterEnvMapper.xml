@@ -27,4 +27,11 @@
         ORDER BY
             id DESC
     </select>
+
+    <select id="queryByEnvIdAndCode" resultType="io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO">
+        SELECT id, object_version_number
+        FROM devops_deploy_app_center_env
+        WHERE env_id = #{environmentId}
+          AND code = #{appCode}
+    </select>
 </mapper>
