@@ -735,8 +735,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
-        appServiceDeployVO.setInstanceName(appServiceDeployVO.getAppCode());
-
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
 
         // 自动部署传入的项目id是空的, 不用校验
@@ -1970,6 +1968,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceVersionDTO.getVersion(),
                 appServiceInstanceDTO.getCode(),
                 new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
+
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getInstanceName());
+        devopsDeployAppCenterEnvDTO.setCode(appServiceDeployVO.getInstanceName());
+        devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
+        devopsDeployAppCenterEnvDTO.setProjectId(projectId);
+        devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
+        devopsDeployAppCenterEnvDTO.setOperationType(OperationTypeEnum.BATCH_DEPLOY.value());
+        devopsDeployAppCenterEnvDTO.setChartSource(AppCenterChartSourceEnum.NORMAL.getValue());
+        devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
+        devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
 
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
