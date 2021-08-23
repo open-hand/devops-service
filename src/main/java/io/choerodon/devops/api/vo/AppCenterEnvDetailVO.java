@@ -17,6 +17,12 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("应用中心 应用id")
     private Long appCenterId;
+    @Encrypt
+    @ApiModelProperty("应用服务Id")
+    private Long appServiceId;
+    @Encrypt
+    @ApiModelProperty("应用服务版本Id")
+    private Long appServiceVersionId;
     @ApiModelProperty("环境code")
     private String envCode;
     @ApiModelProperty("环境名称")
@@ -40,6 +46,12 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("当前实例生效的commandId/可能为null")
     private Long effectCommandId;
+    @ApiModelProperty(value = "集群id", hidden = true)
+    @Encrypt
+    private Long clusterId;
+    @Encrypt
+    @ApiModelProperty("实例最新的command的版本id")
+    private Long commandVersionId;
     private IamUserDTO iamUserDTO;
 
     @ApiModelProperty("创建时间")
@@ -47,6 +59,38 @@ public class AppCenterEnvDetailVO {
 
     @ApiModelProperty(name = "chart/jar/docker")
     private String rdupmType;
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public Long getAppServiceVersionId() {
+        return appServiceVersionId;
+    }
+
+    public void setAppServiceVersionId(Long appServiceVersionId) {
+        this.appServiceVersionId = appServiceVersionId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
+    }
 
     public Long getAppCenterId() {
         return appCenterId;
