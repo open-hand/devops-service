@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
@@ -16,6 +17,7 @@ public class DevopsDeployGroupContainerConfigVO {
     private String limitCpu;
     private String limitMemory;
     private Map<String, String> envs;
+    private List<Map<String, String>> ports;
 
     public String getName() {
         return name;
@@ -103,5 +105,13 @@ public class DevopsDeployGroupContainerConfigVO {
 
     public void setEnvs(Map<String, String> envs) {
         this.envs = envs;
+    }
+
+    public List<Map<String, String>> getPorts() {
+        return ports;
+    }
+
+    public void setPorts(List<Map<String, String>> ports) {
+        this.ports = ports;
     }
 }

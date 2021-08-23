@@ -355,6 +355,18 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
         v1Container.setResources(resourceRequirements);
 
+        // 设置端口
+        List<V1ContainerPort> containerPortList = new ArrayList<>();
+
+        devopsDeployGroupContainerConfigVO.getPorts().forEach(port -> {
+            V1ContainerPort v1ContainerPort = new V1ContainerPort();
+            v1ContainerPort.setName(port.get("name"));
+            v1ContainerPort.setProtocol(port.get("protocol"));
+            v1ContainerPort.setContainerPort(Integer.valueOf(port.get("containerPort")));
+            containerPortList.add(v1ContainerPort);
+        });
+        v1Container.setPorts(containerPortList);
+
         return v1Container;
     }
 
