@@ -556,7 +556,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
         }
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
+        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 instanceName,
                 c7nNexusComponentDTO.getName(),
                 String.valueOf(devopsHostAppDTO.getId()),
