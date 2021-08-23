@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 /**
  * Created by younger on 2018/4/25.
@@ -346,5 +349,17 @@ public class K8sUtil {
      */
     public static <T> T deserialize(String jsonString, Class<T> destK8sResource) {
         return json.deserialize(jsonString, destK8sResource);
+    }
+
+    public static <T> Yaml getYamlObject(Tag tag, Boolean isTag, T t) {
+        SkipNullRepresenterUtil skipNullRepresenter = null;
+        if (isTag) {
+            skipNullRepresenter = new SkipNullRepresenterUtil();
+            skipNullRepresenter.addClassTag(t.getClass(), tag);
+        }
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        return skipNullRepresenter == null ? new Yaml(options) : new Yaml(skipNullRepresenter, options);
     }
 }
