@@ -209,7 +209,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 2.保存记录
         DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndName(hostId, jarDeployVO.getAppCode());
         if (devopsHostAppDTO == null) {
-            devopsHostAppDTO = new DevopsHostAppDTO(hostId,
+            devopsHostAppDTO = new DevopsHostAppDTO(projectId,
+                    hostId,
                     jarDeployVO.getAppCode(),
                     jarDeployVO.getSourceType(),
                     RdupmTypeEnum.JAR.value(),
