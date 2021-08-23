@@ -35,6 +35,14 @@ public class DevopsDeployGroupVO {
     @ApiModelProperty(name = "容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
 
+    @Encrypt
+    @ApiModelProperty(name = "关联的应用中心的id")
+    private Long instanceId;
+
+    private Long objectVersionNumber;
+
+    private Long instanceObjectVersionNumber;
+
     @JsonIgnore
     private String appConfigJson;
     @JsonIgnore
@@ -111,5 +119,29 @@ public class DevopsDeployGroupVO {
 
     public void setContainerConfigJson(String containerConfigJson) {
         this.containerConfigJson = containerConfigJson;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getInstanceObjectVersionNumber() {
+        return instanceObjectVersionNumber;
+    }
+
+    public void setInstanceObjectVersionNumber(Long instanceObjectVersionNumber) {
+        this.instanceObjectVersionNumber = instanceObjectVersionNumber;
     }
 }
