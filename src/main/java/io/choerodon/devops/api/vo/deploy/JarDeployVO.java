@@ -44,6 +44,8 @@ public class JarDeployVO {
     @NotNull(message = "error.value.is.null")
     private String value;
 
+    private String jarFileUrl;
+
     private ProdJarInfoVO prodJarInfoVO;
 
     public JarDeployVO() {
@@ -54,6 +56,14 @@ public class JarDeployVO {
         this.sourceType = sourceType;
         this.value = value;
         this.prodJarInfoVO = prodJarInfoVO;
+    }
+
+    public String getJarFileUrl() {
+        return jarFileUrl;
+    }
+
+    public void setJarFileUrl(String jarFileUrl) {
+        this.jarFileUrl = jarFileUrl;
     }
 
     public String getSourceConfig() {

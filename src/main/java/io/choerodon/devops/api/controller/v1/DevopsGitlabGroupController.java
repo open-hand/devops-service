@@ -38,8 +38,8 @@ public class DevopsGitlabGroupController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "搜索参数")
-            @RequestParam(value = "search", required = false) String search) {
-        return ResponseEntity.ok(devopsGitService.listOwnedGroupExpectCurrent(projectId, search));
+            @RequestParam(value = "params", required = false) String params) {
+        return ResponseEntity.ok(devopsGitService.listOwnedGroupExpectCurrent(projectId, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -51,8 +51,8 @@ public class DevopsGitlabGroupController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "gitlab_group_id") Integer gitlabGroupId,
             @ApiParam(value = "搜索参数")
-            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "params", required = false) String params,
             @ApiIgnore PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsGitService.listOwnedProjectByGroupId(projectId, gitlabGroupId, search, pageRequest));
+        return ResponseEntity.ok(devopsGitService.listOwnedProjectByGroupId(projectId, gitlabGroupId, params, pageRequest));
     }
 }
