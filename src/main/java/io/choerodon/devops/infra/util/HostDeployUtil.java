@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
+import io.choerodon.devops.infra.enums.AppSourceType;
 
 /**
  * 〈功能简述〉
@@ -63,9 +64,16 @@ public class HostDeployUtil {
 
         // 2.2
         params.put("{{ JAR_NAME }}", jarPathAndName);
-        params.put("{{ USER_ID }}", jarPullInfoDTO.getPullUserId());
-        params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
-        params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
+        if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
+            params.put("{{ USER_ID }}", "none");
+            params.put("{{ PASSWORD }}", "none");
+            params.put("{{ DOWNLOAD_URL }}", jarDeployVO.getJarFileUrl());
+        } else {
+            params.put("{{ USER_ID }}", jarPullInfoDTO.getPullUserId());
+            params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
+            params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
+        }
+
 
         // 2.3
         String[] strings = jarDeployVO.getValue().split("\n");
