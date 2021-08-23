@@ -62,6 +62,8 @@ public class AppCenterEnvDetailVO {
 
     @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
+    private String commandVersion;
+
 
     public Long getAppServiceId() {
         return appServiceId;
@@ -221,5 +223,13 @@ public class AppCenterEnvDetailVO {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
     }
 }
