@@ -10,8 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
  * @Date 2021/7/1 10:24
  */
 public class JavaDeployDTO {
-    @ApiModelProperty("jar包下载信息")
-    private JarPullInfoDTO jarPullInfoDTO;
     @ApiModelProperty("jar包名称")
     private String jarName;
     @ApiModelProperty("实例名称")
@@ -23,9 +21,8 @@ public class JavaDeployDTO {
     @ApiModelProperty("部署jar命令")
     private String cmd;
 
-    public JavaDeployDTO(JarPullInfoDTO jarPullInfoDTO, String name, String jarName, String instanceId, String cmd,String pid) {
+    public JavaDeployDTO(String name, String jarName, String instanceId, String cmd,String pid) {
         this.name = name;
-        this.jarPullInfoDTO = jarPullInfoDTO;
         this.jarName = jarName;
         this.instanceId = instanceId;
         this.cmd = cmd;
@@ -62,14 +59,6 @@ public class JavaDeployDTO {
 
     public void setCmd(String cmd) {
         this.cmd = cmd;
-    }
-
-    public JarPullInfoDTO getJarPullInfoDTO() {
-        return jarPullInfoDTO;
-    }
-
-    public void setJarPullInfoDTO(JarPullInfoDTO jarPullInfoDTO) {
-        this.jarPullInfoDTO = jarPullInfoDTO;
     }
 
     public String getName() {

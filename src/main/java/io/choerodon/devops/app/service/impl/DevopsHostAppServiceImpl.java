@@ -125,6 +125,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 0.3 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
+        JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
 
@@ -169,7 +170,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
-        } else {
+
+            // 添加jar包下载信息
+            jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
+            jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
+            jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
+        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())){
             // 0.2 从制品库获取仓库信息
             Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
             String groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
@@ -181,7 +187,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             deployVersion = nexusComponentDTOList.get(0).getVersion();
 
 //            appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, groupId, artifactId);
-
+            // 添加jar包下载信息
+            jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
+            jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
+            jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
         }
         if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
             throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
@@ -190,10 +199,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             throw new CommonException("error.get.maven.config");
         }
 
-        JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
-        jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
-        jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
-        jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
+
+
 
         // 2.保存记录
         DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndName(hostId, jarDeployVO.getAppCode());
@@ -228,7 +235,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 //        }
 
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
+        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),
                 deployObjectName,
                 String.valueOf(devopsHostAppDTO.getId()),
