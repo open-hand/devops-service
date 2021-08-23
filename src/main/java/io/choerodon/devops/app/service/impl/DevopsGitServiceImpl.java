@@ -1310,6 +1310,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         Page<GitlabProjectDTO> pageFromList = PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
         pageFromList.setTotalElements(totalElements);
+        pageFromList.setContent(gitlabProjectDTOS);
         return pageFromList;
     }
 }
