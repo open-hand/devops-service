@@ -1285,9 +1285,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<GitlabProjectDTO> gitlabProjectDTOS = gitlabServiceClientOperator.listProject(gitlabGroupId,
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
                 true,
-                search,
-                pageRequest.getPage(),
-                pageRequest.getSize());
+                search);
         return PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
     }
 }

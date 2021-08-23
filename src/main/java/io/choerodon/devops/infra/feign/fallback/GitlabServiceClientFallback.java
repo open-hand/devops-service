@@ -500,7 +500,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Boolean owned, String search, Integer page, Integer perPage) {
+    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Boolean owned, String search) {
         throw new CommonException("error.query.group.project");
     }
 
