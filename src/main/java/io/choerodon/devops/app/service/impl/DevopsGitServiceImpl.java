@@ -1304,7 +1304,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize()) + 1;
             }
         }
-        
+
 
         Page<GitlabProjectDTO> pageFromList = new Page<>();
         pageFromList.setTotalElements(totalElements);
