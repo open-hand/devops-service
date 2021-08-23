@@ -9,9 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CustomPageObject;
 import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -44,7 +45,7 @@ public class DevopsGitlabGroupController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询用户是owner角色的项目列表")
     @GetMapping(value = "/{gitlab_group_id}/projects")
-    public ResponseEntity<CustomPageObject> listOwnedProjectByGroupId(
+    public ResponseEntity<Page<GitlabProjectDTO>> listOwnedProjectByGroupId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "项目 ID", required = true)
