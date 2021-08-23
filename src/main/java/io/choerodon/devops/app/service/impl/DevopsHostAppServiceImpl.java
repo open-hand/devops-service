@@ -281,10 +281,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else if (AppSourceType.MARKET.getValue().equals(jarDeployVO.getSourceType())
                 || AppSourceType.HZERO.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getDeployObjectId());
-        } else {
-            return null;
+        } else if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())){
+            return jarDeployVO.getJarFileUrl();
         }
-
+        return null;
     }
 
 
