@@ -211,6 +211,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Lazy
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
+    @Lazy
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Autowired
