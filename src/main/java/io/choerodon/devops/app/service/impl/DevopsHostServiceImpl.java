@@ -864,18 +864,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
 
-    @Override
-    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params) {
-        Page<DevopsHostAppVO> page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listByOptions(hostId, rdupmType, operationType, params));
-
-        if (CollectionUtils.isEmpty(page.getContent())) {
-            return page;
-        }
-        UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
-
-        return page;
-    }
-
     private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {
         if (!CollectionUtils.isEmpty(devopsNormalInstances)) {
             List<Long> normalInstanceIds = devopsNormalInstances.stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toList());

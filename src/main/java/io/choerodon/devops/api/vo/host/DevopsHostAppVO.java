@@ -54,6 +54,8 @@ public class DevopsHostAppVO {
 
     private ProdJarInfoVO prodJarInfoVO;
 
+    private String jarFileUrl;
+
     private Date creationDate;
     private Long createdBy;
     private Date lastUpdateDate;
@@ -61,6 +63,30 @@ public class DevopsHostAppVO {
     private Long objectVersionNumber;
 
     private IamUserDTO creator;
+
+    public String getJarFileUrl() {
+        return jarFileUrl;
+    }
+
+    public void setJarFileUrl(String jarFileUrl) {
+        this.jarFileUrl = jarFileUrl;
+    }
+
+    public Long getDeployObjectId() {
+        return deployObjectId;
+    }
+
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
+    }
+
+    public ProdJarInfoVO getProdJarInfoVO() {
+        return prodJarInfoVO;
+    }
+
+    public void setProdJarInfoVO(ProdJarInfoVO prodJarInfoVO) {
+        this.prodJarInfoVO = prodJarInfoVO;
+    }
 
     public Date getCreationDate() {
         return creationDate;

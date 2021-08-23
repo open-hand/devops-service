@@ -298,5 +298,4 @@ public interface DevopsHostService {
      */
     Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params);
 
-    Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params);
 }
