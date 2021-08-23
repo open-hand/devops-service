@@ -2761,7 +2761,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId, String source) {
         String type = null;
         if (appServiceProjectId == null) {
-            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(source)) {
+            if (AppCenterChartSourceEnum.MIDDLEWARE.getValue().equals(source)) {
                 return AppServiceType.MIDDLEWARE_SERVICE.getType();
             } else {
                 return AppServiceType.MARKET_SERVICE.getType();
