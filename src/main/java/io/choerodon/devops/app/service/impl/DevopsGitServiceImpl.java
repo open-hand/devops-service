@@ -1300,9 +1300,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     pageRequest.getPage() + 1,
                     pageRequest.getSize());
             if (CollectionUtils.isEmpty(nextProjects)) {
-                totalElements = ((pageRequest.getPage() + 2) * pageRequest.getSize());
+                totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize());
             } else {
-                totalElements = ((pageRequest.getPage() + 2) * pageRequest.getSize()) + 1;
+                totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize()) + 1;
             }
         }
 
