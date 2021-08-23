@@ -69,10 +69,7 @@ import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
+import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -213,6 +210,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     @Lazy
     private WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
@@ -736,6 +735,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
+        appServiceDeployVO.setInstanceName(appServiceDeployVO.getAppCode());
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
 
@@ -859,7 +859,22 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         }
 
-
+        if (CREATE.equals(appServiceDeployVO.getType())) {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+            devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
+            devopsDeployAppCenterEnvDTO.setCode(appServiceDeployVO.getAppCode());
+            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
+            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
+            devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
+            devopsDeployAppCenterEnvDTO.setOperationType(isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value());
+            devopsDeployAppCenterEnvDTO.setChartSource(AppCenterChartSourceEnum.NORMAL.getValue());
+            devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
+            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
+        } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getAppCode());
+            devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
+            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+        }
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
     }
 

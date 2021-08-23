@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
                                                  @Param("rdupmType") String rdupmType,
                                                  @Param("operationType") String operationType,
                                                  @Param("params") String params);
+
+    DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(@Param("environmentId") Long environmentId, @Param("appCode") String appCode);
 }

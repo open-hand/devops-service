@@ -44,4 +44,6 @@ public interface DevopsDeployAppCenterService {
      * @param devopsDeployAppCenterEnvDTO
      */
     void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
+
+    DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode);
 }
