@@ -8,6 +8,21 @@ package io.choerodon.devops.infra.enums.deploy;
  * @since 2021/8/20 11:28
  */
 public enum RdupmTypeEnum {
+    /**
+     * chart包
+     */
+    CHART("chart"),
+    /**
+     * deployment
+     */
+    DEPLOYMENT("deployment"),
+    /**
+     * docker镜像
+     */
+    DOCKER("docker"),
+    /**
+     * jar包
+     */
     JAR("jar");
 
     private String value;
@@ -15,6 +30,7 @@ public enum RdupmTypeEnum {
     RdupmTypeEnum(String value) {
         this.value = value;
     }
+
     public String value() {
         return this.value;
     }
