@@ -37,6 +37,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.utils.PageUtils;
 import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -1277,7 +1278,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public CustomPageObject listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest) {
+    public Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest) {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
@@ -1291,8 +1292,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         customPageObject.setPage(pageRequest.getPage());
         customPageObject.setSize(pageRequest.getSize());
         customPageObject.setHasPrevious(pageRequest.getPage() > 0);
+
+        int totalElements = 0;
         if (gitlabProjectDTOS.size() < pageRequest.getSize()) {
             customPageObject.setHasNext(false);
+            totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize()) + gitlabProjectDTOS.size();
         } else {
             List<GitlabProjectDTO> nextProjects = gitlabServiceClientOperator.listProject(gitlabGroupId,
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
@@ -1301,12 +1305,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     pageRequest.getPage() + 1,
                     pageRequest.getSize());
             if (CollectionUtils.isEmpty(nextProjects)) {
+                totalElements = ((pageRequest.getPage() + 2) * pageRequest.getSize());
                 customPageObject.setHasNext(false);
             } else {
-                customPageObject.setHasNext(true);
+                totalElements = ((pageRequest.getPage() + 2) * pageRequest.getSize()) + 1;
             }
         }
 
-        return customPageObject;
+
+
+        Page<GitlabProjectDTO> pageFromList = PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
+        pageFromList.setTotalElements(totalElements);
+        return pageFromList;
     }
 }
