@@ -12,6 +12,10 @@ public enum AppCenterChartSourceEnum {
      */
     MARKET("market"),
     /**
+     * 中间件,中间件在devops中的逻辑和市场应用大多都类似
+     */
+    MIDDLEWARE("middleware"),
+    /**
      * 应用服务来自共享
      */
     SHARE("share"),

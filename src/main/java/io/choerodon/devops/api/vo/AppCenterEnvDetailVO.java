@@ -18,6 +18,9 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty("应用中心 应用id")
     private Long appCenterId;
     @Encrypt
+    @ApiModelProperty("实例Id")
+    private Long instanceId;
+    @Encrypt
     @ApiModelProperty("应用服务Id")
     private Long appServiceId;
     @Encrypt
@@ -210,5 +213,13 @@ public class AppCenterEnvDetailVO {
 
     public void setEffectCommandId(Long effectCommandId) {
         this.effectCommandId = effectCommandId;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 }
