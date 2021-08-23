@@ -25,7 +25,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_env.groovy') {
             column(name: 'operation_type', type: 'VARCHAR(32)', remarks: '操作类型') {
                 constraints(nullable: false)
             }
-            column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 chart/jar/docker') {
+            column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 chart/deployment') {
                 constraints(nullable: false)
             }
 

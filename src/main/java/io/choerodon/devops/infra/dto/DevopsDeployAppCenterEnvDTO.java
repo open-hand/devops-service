@@ -40,7 +40,7 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @ApiModelProperty(name = "chart来源")
     private String chartSource;
 
-    @ApiModelProperty(name = "chart/jar/docker")
+    @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
 
 
