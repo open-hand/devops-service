@@ -733,7 +733,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvUserPermissionService.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentDTO.getId());
 
         //校验环境是否连接
-        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
+//        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -2015,5 +2015,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         envAutoDeployVO.setAutoDeployStatus(devopsEnvironmentDTO.getAutoDeploy());
         return envAutoDeployVO;
+    }
+
+    @Override
+    public DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId) {
+        // 查询环境
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        // 校验环境和项目匹配
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        return devopsEnvironmentDTO;
     }
 }

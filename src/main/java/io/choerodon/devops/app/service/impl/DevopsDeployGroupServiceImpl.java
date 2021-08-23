@@ -1,10 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
@@ -16,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -33,10 +35,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
-import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
-import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
-import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
+import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
@@ -44,10 +43,7 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MavenUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 
 
 /**
@@ -57,6 +53,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployGroupServiceImpl.class);
+    private static final String DEPLOYMENT_TAG = "!!io.kubernetes.client.models.V1beta2Deployment";
 
     private static final String AUTH_TYPE = "pull";
     private static final String WGET_COMMAND_TEMPLATE = "wget %s -o /choerodon/%s";
@@ -90,6 +87,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     @Override
     public DevopsDeployGroupVO appConfigDetail(Long projectId, Long devopsConfigGroupId) {
@@ -103,31 +104,21 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     @Transactional
     @Override
     public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsDeployGroupVO.getEnvId());
-        devopsDeployGroupVO.setProjectId(projectId);
-        // 校验配置
-        validateConfig(devopsDeployGroupVO);
+        //1. 查询校验环境
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvId());
 
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-        if (MiscConstants.CREATE_TYPE.equals(operateType)) {
-            // 插入应用记录
-            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
-            devopsDeployAppCenterEnvDTO.setEnvId(devopsDeployAppCenterEnvDTO.getEnvId());
-            devopsDeployAppCenterEnvDTO.setName(devopsDeployAppCenterEnvDTO.getName());
-            devopsDeployAppCenterEnvDTO.setCode(devopsDeployGroupVO.getCode());
-            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.DEPLOYMENT.value());
-            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
-        } else {
-            // 更新应用记录
-            devopsDeployAppCenterEnvDTO.setId(devopsDeployGroupVO.getInstanceId());
-            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
-        }
+        // 2.校验用户是否拥有环境权限
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        devopsDeployGroupVO.setProjectId(projectId);
+        // 3.校验配置
+        validateConfig(devopsDeployGroupVO);
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsDeployGroupVO.getProjectId());
 
-        // 生成deployment
+        // 4.生成deployment
         String deployment = buildDeploymentYaml(projectDTO, devopsEnvironmentDTO, devopsDeployGroupVO);
-        // 创建deployment
+        // 5.创建deployment
         WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO = new WorkloadBaseCreateOrUpdateVO();
         workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvId()));
         workloadBaseCreateOrUpdateVO.setOperateType(operateType);
@@ -136,21 +127,34 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getContainerConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP);
-        extraInfo.put(DevopsDeploymentServiceImpl.INSTANCE_ID, devopsDeployAppCenterEnvDTO.getId());
+        extraInfo.put(DevopsDeploymentServiceImpl.INSTANCE_ID, devopsDeployGroupVO.getId());
 
         workloadBaseCreateOrUpdateVO.setExtraConfig(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
 
         // 更新关联的对象id
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.queryByInstanceIdAndSourceType(devopsDeployGroupVO.getInstanceId(), DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
+            // 插入应用记录
+            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
+            devopsDeployAppCenterEnvDTO.setEnvId(devopsDeployGroupVO.getEnvId());
+            devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getName());
+            devopsDeployAppCenterEnvDTO.setCode(devopsDeployGroupVO.getCode());
+            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.DEPLOYMENT.value());
             devopsDeployAppCenterEnvDTO.setObjectId(devopsDeploymentDTO.getId());
+            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+        } else {
+            // 更新应用记录
+            devopsDeployAppCenterEnvDTO.setId(devopsDeployGroupVO.getInstanceId());
             devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
     }
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {
         V1beta2Deployment deployment = new V1beta2Deployment();
+        deployment.setKind(DEPLOYMENT.getType());
+        deployment.setApiVersion("apps/v1");
         try {
             // 构建deployment相关配置
             addAppConfig(projectDTO, devopsEnvironmentDTO, devopsDeployGroupVO, deployment);
@@ -159,8 +163,13 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         } catch (IOException e) {
             throw new CommonException("error.parse.config", e.getMessage());
         }
-        Yaml yaml = new Yaml();
-        return yaml.dump(deployment);
+        JSON json = new JSON();
+        String jsonStr = json.serialize(deployment);
+        try {
+            return JsonYamlConversionUtil.json2yaml(jsonStr);
+        } catch (IOException e) {
+            throw new CommonException("error.dump.deployment.to.yaml", e);
+        }
     }
 
     private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
@@ -188,8 +197,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxSurge()));
         }
         if (devopsDeployGroupAppConfigVO.getMaxUnavailable() != null) {
-            rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxUnavailable()));
+            rollingUpdate.setMaxUnavailable(new IntOrString(devopsDeployGroupAppConfigVO.getMaxUnavailable()));
         }
+        v1beta2DeploymentStrategy.setRollingUpdate(rollingUpdate);
         v1beta2DeploymentSpec.setStrategy(v1beta2DeploymentStrategy);
 
         // 设置dns策略
@@ -232,9 +242,20 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             v1PodSpec.setHostAliases(hostAliasList);
         }
 
+        Map<String, String> matchLabels = new HashMap<>();
+        matchLabels.put("code", devopsDeployGroupVO.getCode());
+
+        // 设置pod labels
         V1PodTemplateSpec v1PodTemplateSpec = new V1PodTemplateSpec();
+        V1ObjectMeta templatePodMetadata = new V1ObjectMeta();
+        templatePodMetadata.setLabels(matchLabels);
+        v1PodTemplateSpec.setMetadata(templatePodMetadata);
         v1PodTemplateSpec.setSpec(v1PodSpec);
         v1beta2DeploymentSpec.setTemplate(v1PodTemplateSpec);
+        // 设置pod selector
+        V1LabelSelector selector = new V1LabelSelector();
+        selector.setMatchLabels(matchLabels);
+        v1beta2DeploymentSpec.setSelector(selector);
 
         deployment.metadata(metadata).spec(v1beta2DeploymentSpec);
 
@@ -286,16 +307,15 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             initContainers.add(v1InitContainer);
 
             v1PodSpec.setInitContainers(initContainers);
+
+            // 设置卷挂载
+            List<V1Volume> v1VolumeList = new ArrayList<>();
+            V1Volume v1Volume = new V1Volume();
+            v1Volume.setName("jar");
+            v1Volume.setEmptyDir(new V1EmptyDirVolumeSource());
+            v1VolumeList.add(v1Volume);
+            v1PodSpec.setVolumes(v1VolumeList);
         }
-
-        // 设置卷挂载
-        List<V1Volume> v1VolumeList = new ArrayList<>();
-        V1Volume v1Volume = new V1Volume();
-        v1Volume.setName("jar");
-        v1Volume.setEmptyDir(new V1EmptyDirVolumeSource());
-        v1VolumeList.add(v1Volume);
-
-        v1PodSpec.setVolumes(v1VolumeList);
 
         // 设置镜像拉取secret
         v1PodSpec.setImagePullSecrets(imagePullSecrets);
@@ -340,18 +360,18 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         V1ResourceRequirements resourceRequirements = new V1ResourceRequirements();
         Map<String, Quantity> requests = new HashMap<>();
         if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
-            requests.put("cpu", new Quantity(new BigDecimal(devopsDeployGroupContainerConfigVO.getRequestCpu()), Quantity.Format.BINARY_SI));
+            requests.put("cpu", new Quantity(convertCpuResource(devopsDeployGroupContainerConfigVO.getRequestCpu()), Quantity.Format.BINARY_SI));
         }
         if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
-            requests.put("memory", new Quantity(new BigDecimal(devopsDeployGroupContainerConfigVO.getRequestMemory()), Quantity.Format.BINARY_SI));
+            requests.put("memory", new Quantity(convertMemoryResource(devopsDeployGroupContainerConfigVO.getRequestMemory()), Quantity.Format.BINARY_SI));
         }
 
         Map<String, Quantity> limits = new HashMap<>();
         if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
-            limits.put("cpu", new Quantity(new BigDecimal(devopsDeployGroupContainerConfigVO.getLimitCpu()), Quantity.Format.BINARY_SI));
+            limits.put("cpu", new Quantity(convertCpuResource(devopsDeployGroupContainerConfigVO.getLimitCpu()), Quantity.Format.BINARY_SI));
         }
         if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
-            limits.put("memory", new Quantity(new BigDecimal(devopsDeployGroupContainerConfigVO.getLimitMemory()), Quantity.Format.BINARY_SI));
+            limits.put("memory", new Quantity(convertMemoryResource(devopsDeployGroupContainerConfigVO.getLimitMemory()), Quantity.Format.BINARY_SI));
         }
         resourceRequirements.setLimits(limits);
         resourceRequirements.setRequests(requests);
@@ -359,16 +379,18 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         v1Container.setResources(resourceRequirements);
 
         // 设置端口
-        List<V1ContainerPort> containerPortList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(devopsDeployGroupContainerConfigVO.getPorts())) {
+            List<V1ContainerPort> containerPortList = new ArrayList<>();
 
-        devopsDeployGroupContainerConfigVO.getPorts().forEach(port -> {
-            V1ContainerPort v1ContainerPort = new V1ContainerPort();
-            v1ContainerPort.setName(port.get("name"));
-            v1ContainerPort.setProtocol(port.get("protocol"));
-            v1ContainerPort.setContainerPort(Integer.valueOf(port.get("containerPort")));
-            containerPortList.add(v1ContainerPort);
-        });
-        v1Container.setPorts(containerPortList);
+            devopsDeployGroupContainerConfigVO.getPorts().forEach(port -> {
+                V1ContainerPort v1ContainerPort = new V1ContainerPort();
+                v1ContainerPort.setName(port.get("name"));
+                v1ContainerPort.setProtocol(port.get("protocol"));
+                v1ContainerPort.setContainerPort(Integer.valueOf(port.get("containerPort")));
+                containerPortList.add(v1ContainerPort);
+            });
+            v1Container.setPorts(containerPortList);
+        }
 
         return v1Container;
     }
@@ -420,9 +442,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private V1Container processImageConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, List<V1LocalObjectReference> imagePullSecrets) {
         DevopsDeployGroupDockerConfigVO dockerDeployVO = devopsDeployGroupContainerConfigVO.getDockerDeployVO();
 
-        DockerPullAccountDTO pullAccountDTO = createPullAccount(projectDTO, devopsEnvironmentDTO, dockerDeployVO);
-        if (pullAccountDTO != null) {
+        DockerDeployDTO dockerDeployDTO = createDockerDeployDTO(projectDTO, devopsEnvironmentDTO, dockerDeployVO);
+        if (dockerDeployDTO != null) {
             ConfigVO configVO = new ConfigVO();
+            DockerPullAccountDTO pullAccountDTO = dockerDeployDTO.getDockerPullAccountDTO();
             configVO.setUrl(pullAccountDTO.getHarborUrl());
             configVO.setUserName(pullAccountDTO.getPullAccount());
             configVO.setPassword(pullAccountDTO.getPullPassword());
@@ -434,7 +457,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
 
         v1Container.setName(devopsDeployGroupContainerConfigVO.getName());
-        v1Container.setImage(dockerDeployVO.getImageInfo().getImageName() + ":" + dockerDeployVO.getImageInfo().getTag());
+        v1Container.setImage(dockerDeployDTO.getImage());
         v1Container.setImagePullPolicy(IF_NOT_PRESENT);
         return v1Container;
     }
@@ -494,18 +517,31 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return jarPullInfoDTO;
     }
 
-    private DockerPullAccountDTO createPullAccount(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupDockerConfigVO dockerDeployVO) {
+    private DockerDeployDTO createDockerDeployDTO(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupDockerConfigVO dockerDeployVO) {
+        DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
         DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
         if (isMarketOrHzero(dockerDeployVO)) {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectDTO.getId(), dockerDeployVO);
             MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
             dockerPullAccountDTO = initDockerPullAccountDTO(marketHarborConfigVO);
+            dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
+            dockerDeployDTO.setImage(marketServiceDeployObjectVO.getMarketDockerImageUrl());
         } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
-            dockerPullAccountDTO = ConvertUtils.convertObject(getHarborC7nRepoImageTagVo(dockerDeployVO), DockerPullAccountDTO.class);
+            HarborC7nRepoImageTagVo harborC7nRepoImageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
+            dockerPullAccountDTO.setPullAccount(harborC7nRepoImageTagVo.getPullAccount());
+            dockerPullAccountDTO.setPullPassword(harborC7nRepoImageTagVo.getPullPassword());
+            dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
+            dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
         } else if (AppSourceType.SHARE.getValue().equals(dockerDeployVO.getSourceType())) {
-            dockerPullAccountDTO = getShareServiceDockerPullAccount(dockerDeployVO, devopsEnvironmentDTO);
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(dockerDeployVO.getAppServiceId());
+            //如果应用绑定了私有镜像库,则处理secret
+            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(dockerDeployVO.getAppServiceVersionId());
+            dockerPullAccountDTO = getShareServiceDockerPullAccount(appServiceDTO, appServiceVersionDTO);
+            dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
+            dockerDeployDTO.setImage(appServiceVersionDTO.getImage());
         }
-        return dockerPullAccountDTO;
+
+        return dockerDeployDTO;
     }
 
     private HarborC7nRepoImageTagVo getHarborC7nRepoImageTagVo(DockerDeployVO dockerDeployVO) {
@@ -516,13 +552,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return imageTagVo;
     }
 
-    private DockerPullAccountDTO getShareServiceDockerPullAccount(DevopsDeployGroupDockerConfigVO dockerConfigVO, DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        AppServiceDTO appServiceDTO = appServiceService.baseQuery(dockerConfigVO.getAppServiceId());
-
-        String secretCode;
-        //如果应用绑定了私有镜像库,则处理secret
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(dockerConfigVO.getAppServiceVersionId());
-
+    private DockerPullAccountDTO getShareServiceDockerPullAccount(AppServiceDTO appServiceDTO, AppServiceVersionDTO appServiceVersionDTO) {
         DevopsConfigDTO devopsConfigDTO;
         if (appServiceVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
@@ -532,11 +562,11 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
                     appServiceDTO.getId(), AUTH_TYPE);
         }
-        LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), dockerConfigVO.getAppServiceVersionId(), devopsConfigDTO.getId());
+        LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionDTO.getId(), devopsConfigDTO.getId());
 
         ConfigVO configVO = JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), ConfigVO.class);
         if (configVO.getPrivate() != null && configVO.getPrivate()) {
-            LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), dockerConfigVO.getAppServiceVersionId());
+            LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionDTO.getId());
             DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
             dockerPullAccountDTO.setHarborUrl(configVO.getUrl());
             dockerPullAccountDTO.setPullAccount(configVO.getUserName());
@@ -566,6 +596,30 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             throw new CommonException("error.harbor.deploy.object.not.exist");
         }
         return marketServiceDeployObjectVO;
+    }
+
+    /**
+     * 前端界面展示的CPU单位是m，比如填写100，就是100m。
+     * 由于这里序列化不容易添加单位，就直接用小数来表示CPU核数。
+     * 具体可参考 https://kubernetes.io/zh/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu
+     *
+     * @param cpu
+     * @return
+     */
+    private BigDecimal convertCpuResource(String cpu) {
+        return new BigDecimal(cpu).divide(new BigDecimal(1000));
+    }
+
+    /**
+     * 前端界面展示的MEMORY单位是Mi，比如填写100，就是100Mi。
+     * 由于这里序列化不容易添加单位，就直接用数字来表示内存大小，1Mi=1024*1024 100Mi=100*1024*1024
+     * 具体可参考 https://kubernetes.io/zh/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory
+     *
+     * @param memory
+     * @return
+     */
+    private BigDecimal convertMemoryResource(String memory) {
+        return new BigDecimal(Long.parseLong(memory) * 1024 * 1024);
     }
 
 }

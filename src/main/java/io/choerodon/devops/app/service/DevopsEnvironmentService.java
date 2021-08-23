@@ -376,4 +376,6 @@ public interface DevopsEnvironmentService {
     void updateAutoDeploy(Long projectId, @Nullable Long envId, @Nullable Boolean isAutoDeploy);
 
     EnvAutoDeployVO queryAutoDeploy(Long projectId, @Nullable Long envId);
+
+    DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId);
 }
