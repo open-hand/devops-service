@@ -529,7 +529,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndName(hostId, instanceName);
         // todo
         if (devopsHostAppDTO == null) {
-            devopsHostAppDTO = new DevopsHostAppDTO(hostId,
+            devopsHostAppDTO = new DevopsHostAppDTO(null
+                    ,hostId,
                     instanceName,
                     AppSourceType.CURRENT_PROJECT.getValue(),
                     RdupmTypeEnum.JAR.value(),

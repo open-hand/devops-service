@@ -1288,14 +1288,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 search,
                 pageRequest.getPage(),
                 pageRequest.getSize());
-        CustomPageObject customPageObject = new CustomPageObject();
-        customPageObject.setPage(pageRequest.getPage());
-        customPageObject.setSize(pageRequest.getSize());
-        customPageObject.setHasPrevious(pageRequest.getPage() > 0);
 
         int totalElements = 0;
         if (gitlabProjectDTOS.size() < pageRequest.getSize()) {
-            customPageObject.setHasNext(false);
             totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize()) + gitlabProjectDTOS.size();
         } else {
             List<GitlabProjectDTO> nextProjects = gitlabServiceClientOperator.listProject(gitlabGroupId,
@@ -1306,7 +1301,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     pageRequest.getSize());
             if (CollectionUtils.isEmpty(nextProjects)) {
                 totalElements = ((pageRequest.getPage() + 2) * pageRequest.getSize());
-                customPageObject.setHasNext(false);
             } else {
                 totalElements = ((pageRequest.getPage() + 2) * pageRequest.getSize()) + 1;
             }

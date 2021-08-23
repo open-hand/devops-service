@@ -63,7 +63,8 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.name = name;
     }
 
-    public DevopsHostAppDTO(Long hostId, String name, String sourceType, String rdupmType, String operationType, String sourceConfig, String value) {
+    public DevopsHostAppDTO(Long projectId, Long hostId, String name, String sourceType, String rdupmType, String operationType, String sourceConfig, String value) {
+        this.projectId = projectId;
         this.hostId = hostId;
         this.name = name;
         this.sourceType = sourceType;
