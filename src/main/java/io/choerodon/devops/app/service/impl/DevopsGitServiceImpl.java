@@ -37,7 +37,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.core.utils.PageUtils;
 import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -1291,7 +1290,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         int totalElements = 0;
         if (gitlabProjectDTOS.size() < pageRequest.getSize()) {
-            totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize()) + gitlabProjectDTOS.size();
+            totalElements = (pageRequest.getPage() * pageRequest.getSize()) + gitlabProjectDTOS.size();
         } else {
             List<GitlabProjectDTO> nextProjects = gitlabServiceClientOperator.listProject(gitlabGroupId,
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
@@ -1305,12 +1304,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize()) + 1;
             }
         }
+        
 
-
-
-        Page<GitlabProjectDTO> pageFromList = PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
+        Page<GitlabProjectDTO> pageFromList = new Page<>();
         pageFromList.setTotalElements(totalElements);
         pageFromList.setContent(gitlabProjectDTOS);
+        pageFromList.setSize(pageRequest.getSize());
+        pageFromList.setNumber(pageRequest.getPage());
         return pageFromList;
     }
 }
