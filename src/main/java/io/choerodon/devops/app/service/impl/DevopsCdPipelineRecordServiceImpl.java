@@ -532,6 +532,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppDTO = new DevopsHostAppDTO(null
                     ,hostId,
                     instanceName,
+                    null,
                     AppSourceType.CURRENT_PROJECT.getValue(),
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.PIPELINE_DEPLOY.value(),
