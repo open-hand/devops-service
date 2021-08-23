@@ -37,9 +37,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.core.utils.PageUtils;
-import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.MergeRequestVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
@@ -1278,14 +1277,36 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest) {
+    public CustomPageObject listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest) {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
         List<GitlabProjectDTO> gitlabProjectDTOS = gitlabServiceClientOperator.listProject(gitlabGroupId,
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
                 true,
-                search);
-        return PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
+                search,
+                pageRequest.getPage(),
+                pageRequest.getSize());
+        CustomPageObject customPageObject = new CustomPageObject();
+        customPageObject.setPage(pageRequest.getPage());
+        customPageObject.setSize(pageRequest.getSize());
+        customPageObject.setHasPrevious(pageRequest.getPage() > 0);
+        if (gitlabProjectDTOS.size() < pageRequest.getSize()) {
+            customPageObject.setHasNext(false);
+        } else {
+            List<GitlabProjectDTO> nextProjects = gitlabServiceClientOperator.listProject(gitlabGroupId,
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                    true,
+                    search,
+                    pageRequest.getPage() + 1,
+                    pageRequest.getSize());
+            if (CollectionUtils.isEmpty(nextProjects)) {
+                customPageObject.setHasNext(false);
+            } else {
+                customPageObject.setHasNext(true);
+            }
+        }
+
+        return customPageObject;
     }
 }
