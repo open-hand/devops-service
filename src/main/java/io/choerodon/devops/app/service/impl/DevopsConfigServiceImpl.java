@@ -332,9 +332,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (!usernameEmpty && !passwordEmpty) {
                 configVO.setUserName(configVO.getUserName());
                 configVO.setPassword(configVO.getPassword());
-                configVO.setPrivate(Boolean.TRUE);
+                configVO.setIsPrivate(Boolean.TRUE);
             } else {
-                configVO.setPrivate(Boolean.FALSE);
+                configVO.setIsPrivate(Boolean.FALSE);
             }
 
             // 用户名和密码要么都为空, 要么都有值

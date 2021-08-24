@@ -77,7 +77,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
             if (!StringUtils.isEmpty(servicesHelmUserName) && !StringUtils.isEmpty(servicesHelmPassword)) {
                 chartConfig.setUserName(servicesHelmUserName);
                 chartConfig.setPassword(servicesHelmPassword);
-                chartConfig.setPrivate(Boolean.TRUE);
+                chartConfig.setIsPrivate(Boolean.TRUE);
             }
             initConfig(chartConfig, DEFAULT_CHART_NAME, ProjectConfigType.CHART.getType());
 

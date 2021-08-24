@@ -60,6 +60,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
 
     private static final String IF_NOT_PRESENT = "IfNotPresent";
+    private static final String VOLUME_MOUNt_NAME = "jar";
 
     @Value("${devops.jar.image}")
     private String jarImage;
@@ -268,6 +269,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         List<V1Container> containers = new ArrayList<>();
         boolean hasJarRdupm = false;
         List<String> initContainerCommands = new ArrayList<>();
+        initContainerCommands.add("/bin/bash");
+        initContainerCommands.add("-c");
+        StringBuilder wgetCommandSB = new StringBuilder();
+
         List<V1LocalObjectReference> imagePullSecrets = new ArrayList<>();
         for (DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO : devopsDeployGroupContainerConfigVOS) {
             String type = devopsDeployGroupContainerConfigVO.getType();
@@ -280,12 +285,13 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 case "jar":
                     hasJarRdupm = true;
                     // jar需要设置init-container
-                    containers.add(processJarConfig(projectDTO, devopsDeployGroupContainerConfigVO, v1Container, initContainerCommands));
+                    containers.add(processJarConfig(projectDTO, devopsDeployGroupContainerConfigVO, v1Container, wgetCommandSB));
                     break;
                 default:
                     throw new CommonException("error.unsupported.rdupm.type");
             }
         }
+        initContainerCommands.add(wgetCommandSB.toString());
         V1PodSpec v1PodSpec = deployment.getSpec().getTemplate().getSpec();
         // 设置jar和镜像容器
         v1PodSpec.setContainers(containers);
@@ -301,7 +307,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             List<V1VolumeMount> v1VolumeMountList = new ArrayList<>();
             V1VolumeMount v1VolumeMount = new V1VolumeMount();
             v1VolumeMount.setMountPath("/choerodon");
-            v1VolumeMount.setName("jar");
+            v1VolumeMount.setName(VOLUME_MOUNt_NAME);
             v1VolumeMountList.add(v1VolumeMount);
             v1InitContainer.setVolumeMounts(v1VolumeMountList);
 
@@ -312,7 +318,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             // 设置卷挂载
             List<V1Volume> v1VolumeList = new ArrayList<>();
             V1Volume v1Volume = new V1Volume();
-            v1Volume.setName("jar");
+            v1Volume.setName(VOLUME_MOUNt_NAME);
             v1Volume.setEmptyDir(new V1EmptyDirVolumeSource());
             v1VolumeList.add(v1Volume);
             v1PodSpec.setVolumes(v1VolumeList);
@@ -401,18 +407,17 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      *
      * @param devopsDeployGroupContainerConfigVO
      * @param v1Container
-     * @param initContainerCommands
+     * @param wgetCommandSB
      * @return
      */
-    V1Container processJarConfig(ProjectDTO projectDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, List<String> initContainerCommands) {
-        initContainerCommands.add("mkdir /choerodon && chown -R www-data:www-data /choerodon");
+    V1Container processJarConfig(ProjectDTO projectDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, StringBuilder wgetCommandSB) {
         // 处理用户上传的jar
         if (AppSourceType.UPLOAD.getValue().equals(devopsDeployGroupContainerConfigVO.getSourceType())) {
-            initContainerCommands.add(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarFileDownloadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar"));
+            wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarFileDownloadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
         } else {
             // 制品库中的jar
             JarPullInfoDTO jarPullInfoDTO = getJarPullInfo(projectDTO, devopsDeployGroupContainerConfigVO.getJarDeployVO());
-            initContainerCommands.add(String.format(WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE, jarPullInfoDTO.getPullUserId(), jarPullInfoDTO.getPullUserPassword(), jarPullInfoDTO.getDownloadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar"));
+            wgetCommandSB.append(String.format(WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE, jarPullInfoDTO.getPullUserId(), jarPullInfoDTO.getPullUserPassword(), jarPullInfoDTO.getDownloadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
         }
         List<String> commands = new ArrayList<>();
         commands.add("/bin/bash");
@@ -427,6 +432,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         List<V1VolumeMount> v1VolumeMountList = new ArrayList<>();
         V1VolumeMount v1VolumeMount = new V1VolumeMount();
         v1VolumeMount.setMountPath("/choerodon");
+        v1VolumeMount.setName(VOLUME_MOUNt_NAME);
         v1VolumeMountList.add(v1VolumeMount);
         v1Container.setVolumeMounts(v1VolumeMountList);
 
@@ -445,9 +451,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         DevopsDeployGroupDockerConfigVO dockerDeployVO = devopsDeployGroupContainerConfigVO.getDockerDeployVO();
 
         DockerDeployDTO dockerDeployDTO = createDockerDeployDTO(projectDTO, devopsEnvironmentDTO, dockerDeployVO);
-        if (dockerDeployDTO != null) {
+        DockerPullAccountDTO pullAccountDTO = dockerDeployDTO.getDockerPullAccountDTO();
+        if (pullAccountDTO != null) {
             ConfigVO configVO = new ConfigVO();
-            DockerPullAccountDTO pullAccountDTO = dockerDeployDTO.getDockerPullAccountDTO();
             configVO.setUrl(pullAccountDTO.getHarborUrl());
             configVO.setUserName(pullAccountDTO.getPullAccount());
             configVO.setPassword(pullAccountDTO.getPullPassword());
@@ -567,7 +573,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionDTO.getId(), devopsConfigDTO.getId());
 
         ConfigVO configVO = JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), ConfigVO.class);
-        if (configVO.getPrivate() != null && configVO.getPrivate()) {
+        if (configVO.getIsPrivate() != null && configVO.getIsPrivate()) {
             LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionDTO.getId());
             DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
             dockerPullAccountDTO.setHarborUrl(configVO.getUrl());
