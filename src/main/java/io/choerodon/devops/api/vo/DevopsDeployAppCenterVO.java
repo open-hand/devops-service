@@ -67,7 +67,7 @@ public class DevopsDeployAppCenterVO {
     @ApiModelProperty("最近更新者用户名")
     private Long lastUpdatedBy;
 
-    private IamUserDTO iamUserDTO;
+    private IamUserDTO creator;
 
     public Long getId() {
         return id;
@@ -205,12 +205,12 @@ public class DevopsDeployAppCenterVO {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    public IamUserDTO getIamUserDTO() {
-        return iamUserDTO;
+    public IamUserDTO getCreator() {
+        return creator;
     }
 
-    public void setIamUserDTO(IamUserDTO iamUserDTO) {
-        this.iamUserDTO = iamUserDTO;
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
     }
 }
 

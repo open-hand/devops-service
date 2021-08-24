@@ -79,7 +79,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             devopsDeployAppCenterVO.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO).getName());
             devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
         });
-        UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "iamUserDTO");
+        UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;
     }
 
