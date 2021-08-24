@@ -126,8 +126,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         Map<String, Object> extraInfo = new HashMap<>();
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getContainerConfig()));
-        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP);
-        extraInfo.put(DevopsDeploymentServiceImpl.INSTANCE_ID, devopsDeployGroupVO.getId());
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
 
         workloadBaseCreateOrUpdateVO.setExtraConfig(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
@@ -135,7 +134,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 更新关联的对象id
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
-            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.queryByInstanceIdAndSourceType(devopsDeployGroupVO.getInstanceId(), DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getName());
             // 插入应用记录
             devopsDeployAppCenterEnvDTO.setProjectId(projectId);
             devopsDeployAppCenterEnvDTO.setEnvId(devopsDeployGroupVO.getEnvId());
@@ -143,7 +142,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             devopsDeployAppCenterEnvDTO.setCode(devopsDeployGroupVO.getCode());
             devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.DEPLOYMENT.value());
             devopsDeployAppCenterEnvDTO.setObjectId(devopsDeploymentDTO.getId());
-            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
+
+            devopsDeploymentDTO.setInstanceId(devopsDeployAppCenterEnvDTO.getId());
+            devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         } else {
             // 更新应用记录
             devopsDeployAppCenterEnvDTO.setId(devopsDeployGroupVO.getInstanceId());

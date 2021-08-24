@@ -36,7 +36,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     private static final String METADATA = "metadata";
     private static final String KIND = "kind";
     private static final String MASTER = "master";
-    private static final String WORK_LOAD = "Workload";
+    private static final String WORK_LOAD = "WorkLoad";
 
     private static final Map<String, String> RESOURCE_FILE_TEMPLATE_PATH_MAP;
 
@@ -297,6 +297,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         WorkloadBaseVO decryptedWorkloadBaseVO = ConvertUtils.convertObject(workloadBaseCreateOrUpdateVO, WorkloadBaseVO.class);
         decryptedWorkloadBaseVO.setEnvId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getEnvId()));
         decryptedWorkloadBaseVO.setResourceId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getResourceId()));
+        decryptedWorkloadBaseVO.setExtraInfo(workloadBaseCreateOrUpdateVO.getExtraConfig());
         return decryptedWorkloadBaseVO;
     }
 
