@@ -230,6 +230,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         devopsPipelineDTO.setPipelineName(devopsCdPipelineRecordDTO.getPipelineName());
         devopsPipelineDTO.setBusinessKey(devopsCdPipelineRecordDTO.getBusinessKey());
+        devopsPipelineDTO.setPipelineId(devopsCdPipelineRecordDTO.getPipelineId());
 
         // 2.
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
