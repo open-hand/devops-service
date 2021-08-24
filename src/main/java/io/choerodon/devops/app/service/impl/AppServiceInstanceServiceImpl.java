@@ -1987,17 +1987,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
         // 创建应用中心应用
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-        devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getInstanceName());
-        devopsDeployAppCenterEnvDTO.setCode(appServiceDeployVO.getInstanceName());
-        devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
-        devopsDeployAppCenterEnvDTO.setProjectId(projectId);
-        devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
-        devopsDeployAppCenterEnvDTO.setOperationType(OperationTypeEnum.BATCH_DEPLOY.value());
-        devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
-        devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
-        devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
-
+        devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getInstanceName(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), OperationTypeEnum.BATCH_DEPLOY.value(), AppSourceType.NORMAL.getValue(), RdupmTypeEnum.CHART.value());
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
         appServiceDeployVO.setInstanceName(code);

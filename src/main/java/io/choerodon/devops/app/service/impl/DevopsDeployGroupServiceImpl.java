@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -132,23 +133,16 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
 
         // 更新关联的对象id
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getName());
             // 插入应用记录
-            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
-            devopsDeployAppCenterEnvDTO.setEnvId(devopsDeployGroupVO.getEnvId());
-            devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getName());
-            devopsDeployAppCenterEnvDTO.setCode(devopsDeployGroupVO.getCode());
-            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.DEPLOYMENT.value());
-            devopsDeployAppCenterEnvDTO.setObjectId(devopsDeploymentDTO.getId());
-            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(devopsDeployGroupVO.getName(), devopsDeployGroupVO.getCode(), projectId, devopsDeploymentDTO.getId(), devopsDeployGroupVO.getEnvId(), OperationTypeEnum.CREATE_APP.value(), "", RdupmTypeEnum.DEPLOYMENT.value());
 
             devopsDeploymentDTO.setInstanceId(devopsDeployAppCenterEnvDTO.getId());
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         } else {
             // 更新应用记录
-            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getCode());
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getCode());
             devopsDeployAppCenterEnvDTO.setId(devopsDeployGroupVO.getInstanceId());
             devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
