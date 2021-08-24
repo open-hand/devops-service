@@ -180,12 +180,20 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         }
     }
 
-
     @Override
     public List<InstanceEventVO> listInstancePodEvent(Long instanceId) {
+        return listEventByObjectId(instanceId, ObjectType.INSTANCE);
+    }
+
+    @Override
+    public List<InstanceEventVO> listDeploymentPodEvent(Long deploymentId) {
+        return listEventByObjectId(deploymentId, ObjectType.DEPLOYMENT);
+    }
+
+    private List<InstanceEventVO> listEventByObjectId(Long objectId, ObjectType objectType) {
         List<InstanceEventVO> instanceEventVOS = new ArrayList<>();
         List<DevopsEnvCommandDTO> devopsEnvCommandDTOS = devopsEnvCommandService
-                .baseListInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
+                .baseListInstanceCommand(objectType.getType(), objectId);
         List<Long> userIds = devopsEnvCommandDTOS.stream().filter(devopsEnvCommandDTO -> devopsEnvCommandDTO.getCreatedBy() != 0).map(DevopsEnvCommandDTO::getCreatedBy).collect(Collectors.toList());
         List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(userIds);
 
