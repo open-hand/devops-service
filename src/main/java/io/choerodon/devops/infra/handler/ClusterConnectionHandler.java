@@ -41,7 +41,7 @@ public class ClusterConnectionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterConnectionHandler.class);
 
     private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
-    @Value("${localhost.test}")
+    @Value("${localhost.test:false}")
     private Boolean localTest;
 
     @Value("${agent.version}")
