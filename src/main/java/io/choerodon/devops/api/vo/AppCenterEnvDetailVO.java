@@ -17,6 +17,9 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("应用中心 应用id")
     private Long appCenterId;
+    private String name;
+    private String code;
+
     @Encrypt
     @ApiModelProperty("实例Id")
     private Long instanceId;
@@ -55,6 +58,7 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("实例最新的command的版本id")
     private Long commandVersionId;
+    private String versionName;
     private IamUserDTO iamUserDTO;
 
     @ApiModelProperty("创建时间")
@@ -249,5 +253,29 @@ public class AppCenterEnvDetailVO {
 
     public void setEnvConnected(Boolean envConnected) {
         this.envConnected = envConnected;
+    }
+
+    public String getVersionName() {
+        return versionName;
+    }
+
+    public void setVersionName(String versionName) {
+        this.versionName = versionName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }
