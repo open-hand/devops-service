@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -355,7 +356,17 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public DevopsHostAppVO queryAppById(Long projectId, Long id) {
-        return devopsHostAppMapper.queryAppById(id);
+        DevopsHostAppVO devopsHostAppVO = devopsHostAppMapper.queryAppById(id);
+        if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
+            devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
+        } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
+                || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
+            devopsHostAppVO.setDeployObjectId(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), Long.class));
+        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
+            devopsHostAppVO.setJarFileUrl(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), String.class));
+        }
+        devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
+        return devopsHostAppVO;
     }
 
 }
