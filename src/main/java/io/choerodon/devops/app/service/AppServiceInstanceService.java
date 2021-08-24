@@ -437,8 +437,4 @@ public interface AppServiceInstanceService {
      * @return 状态
      */
     String queryInstanceStatusByEnvIdAndCode(String code, Long envId);
-
-    void insertEnvRecordData(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType);
-
-    void insertHostRecordData(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType);
 }

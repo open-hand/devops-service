@@ -8,8 +8,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
-import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +33,7 @@ import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
+import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.util.GenerateUUID;
@@ -76,6 +72,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Override
     public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
@@ -127,7 +125,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     instanceVO.getInstanceCode(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
-            appServiceInstanceService.insertEnvRecordData(instanceVO.getMktServiceName(), instanceVO.getInstanceCode(), projectId, instanceVO.getMktDeployObjectId(),
+            devopsDeployAppCenterService.baseCreate(instanceVO.getMktServiceName(), instanceVO.getInstanceCode(), projectId, instanceVO.getMktDeployObjectId(),
                     devopsHzeroDeployDetailsDTO.getEnvId(), OperationTypeEnum.HZERO.value(), AppSourceType.HZERO.getValue(), RdupmTypeEnum.CHART.value());
         });
 
