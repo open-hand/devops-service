@@ -1624,6 +1624,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
             devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
             appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+            devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), appServiceInstanceDTO.getId(), RdupmTypeEnum.CHART.value());
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -1640,6 +1641,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
                 devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
                 appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+                devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), appServiceInstanceDTO.getId(), RdupmTypeEnum.CHART.value());
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
@@ -1703,6 +1705,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+        devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), instanceId, RdupmTypeEnum.CHART.value());
 
         // 删除prometheus的相关信息
         if ("prometheus-operator".equals(instanceDTO.getComponentChartName())) {
