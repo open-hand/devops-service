@@ -14,9 +14,9 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.AppCenterChartSourceEnum;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -96,8 +96,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             detailVO.setObjectStatus(appServiceInstanceInfoDTO.getStatus());
             BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO);
             detailVO.setInstanceId(centerEnvDTO.getObjectId());
-            if (centerEnvDTO.getChartSource().equals(AppCenterChartSourceEnum.NORMAL.getValue()) ||
-                    centerEnvDTO.getChartSource().equals(AppCenterChartSourceEnum.SHARE.getValue())) {
+            if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) ||
+                    centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
                 detailVO.setAppServiceCode(appServiceDTO.getCode());
                 detailVO.setAppServiceName(appServiceDTO.getName());

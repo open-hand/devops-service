@@ -26,7 +26,7 @@ import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.infra.enums.AppCenterChartSourceEnum;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -87,7 +87,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
         marketInstanceCreationRequestVO.setCommandType(CommandType.CREATE.getType());
-        marketInstanceCreationRequestVO.setSource(AppCenterChartSourceEnum.MARKET.getValue());
+        marketInstanceCreationRequestVO.setSource(AppSourceType.MARKET.getValue());
         return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true));
     }
 
@@ -103,7 +103,7 @@ public class AppServiceInstanceController {
             @RequestBody MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
         marketInstanceCreationRequestVO.setCommandType(CommandType.UPDATE.getType());
         marketInstanceCreationRequestVO.setInstanceId(instanceId);
-        marketInstanceCreationRequestVO.setSource(AppCenterChartSourceEnum.MARKET.getValue());
+        marketInstanceCreationRequestVO.setSource(AppSourceType.MARKET.getValue());
         return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true));
     }
 

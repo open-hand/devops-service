@@ -866,7 +866,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsDeployAppCenterEnvDTO.setProjectId(projectId);
             devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
             devopsDeployAppCenterEnvDTO.setOperationType(isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value());
-            devopsDeployAppCenterEnvDTO.setChartSource(AppCenterChartSourceEnum.NORMAL.getValue());
+            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
             devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
             devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
         } else {
@@ -994,7 +994,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (isMiddleware(appServiceDeployVO.getSource())) {
                 devopsDeployAppCenterEnvDTO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
             }
-            devopsDeployAppCenterEnvDTO.setChartSource(AppCenterChartSourceEnum.NORMAL.getValue());
+            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
             devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
             devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
         } else {
@@ -1439,7 +1439,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean
             saveRecord) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
-        if (AppCenterChartSourceEnum.NORMAL.getValue().equals(appServiceInstanceDTO.getSource())) {
+        if (AppSourceType.NORMAL.getValue().equals(appServiceInstanceDTO.getSource())) {
             return doRestartNormalInstance(projectId, appServiceInstanceDTO, isFromPipeline);
         } else {
             return doRestartMarketInstance(projectId, appServiceInstanceDTO, saveRecord);
@@ -1558,10 +1558,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             chartVersion = appServiceVersion.getMarketServiceVersion();
             appServiceVersion.setDevopsAppServiceVersion(appServiceVersion.getMarketServiceVersion());
             appServiceVersion.setMarketChartRepository(String.format(MIDDLEWARE_CHART_REPO_TEMPLATE, gateway));
-            appServiceDeployVO.setSource(AppCenterChartSourceEnum.MIDDLEWARE.getValue());
+            appServiceDeployVO.setSource(AppSourceType.MIDDLEWARE.getValue());
         } else {
             chartVersion = appServiceVersion.getDevopsAppServiceVersion();
-            appServiceDeployVO.setSource(AppCenterChartSourceEnum.MARKET.getValue());
+            appServiceDeployVO.setSource(AppSourceType.MARKET.getValue());
         }
         //插入部署记录
         if (Boolean.TRUE.equals(saveRecord)) {
@@ -2015,7 +2015,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsDeployAppCenterEnvDTO.setProjectId(projectId);
         devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
         devopsDeployAppCenterEnvDTO.setOperationType(OperationTypeEnum.BATCH_DEPLOY.value());
-        devopsDeployAppCenterEnvDTO.setChartSource(AppCenterChartSourceEnum.NORMAL.getValue());
+        devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
         devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
         devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
 
@@ -2241,7 +2241,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsHzeroDeployDetailsDTO.getEnvId(),
                     devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
                     devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
-                    AppCenterChartSourceEnum.MARKET.getValue(),
+                    AppSourceType.MARKET.getValue(),
                     AppSourceType.HZERO.getValue());
 
             instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
@@ -2267,7 +2267,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         devopsHzeroDeployDetailsDTO.getEnvId(),
                         devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
                         devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
-                        AppCenterChartSourceEnum.MARKET.getValue(),
+                        AppSourceType.MARKET.getValue(),
                         AppSourceType.HZERO.getValue());
                 instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
                 commandId = instanceVO.getCommandId();
@@ -2380,7 +2380,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         c7nHelmRelease.getSpec().setChartName(appServiceCode);
         c7nHelmRelease.getSpec().setChartVersion(version);
         c7nHelmRelease.getSpec().setCommandId(commandId);
-        c7nHelmRelease.getSpec().setSource(AppCenterChartSourceEnum.NORMAL.getValue());
+        c7nHelmRelease.getSpec().setSource(AppSourceType.NORMAL.getValue());
         c7nHelmRelease.getSpec().setV1CommandId(String.valueOf(commandId));
         c7nHelmRelease.getSpec().setV1AppServiceId(String.valueOf(appServiceId));
 
@@ -2451,7 +2451,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
         appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
         appServiceInstanceDTO.setValueId(appServiceDeployVO.getValueId());
-        appServiceInstanceDTO.setSource(AppCenterChartSourceEnum.NORMAL.getValue());
+        appServiceInstanceDTO.setSource(AppSourceType.NORMAL.getValue());
         if (appServiceDeployVO.getType().equals(UPDATE)) {
             AppServiceInstanceDTO oldAppServiceInstanceDTO = baseQuery(
                     appServiceDeployVO.getInstanceId());
@@ -2770,10 +2770,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     private boolean isMiddleware(String source) {
-        return AppCenterChartSourceEnum.MIDDLEWARE.getValue().equals(source);
+        return AppSourceType.MIDDLEWARE.getValue().equals(source);
     }
 
     private boolean isMarket(String source) {
-        return AppCenterChartSourceEnum.MARKET.getValue().equals(source);
+        return AppSourceType.MARKET.getValue().equals(source);
     }
 }
