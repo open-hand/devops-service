@@ -47,6 +47,8 @@ public class DevopsHostAppVO {
     private String hostName;
     @ApiModelProperty("应用实例id")
     private Long id;
+    @ApiModelProperty("部署方式")
+    private String deployWay;
 
     /**
      * 部署对象id
@@ -248,5 +250,13 @@ public class DevopsHostAppVO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getDeployWay() {
+        return deployWay;
+    }
+
+    public void setDeployWay(String deployWay) {
+        this.deployWay = deployWay;
     }
 }
