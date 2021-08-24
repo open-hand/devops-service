@@ -733,7 +733,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvUserPermissionService.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentDTO.getId());
 
         //校验环境是否连接
-//        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
