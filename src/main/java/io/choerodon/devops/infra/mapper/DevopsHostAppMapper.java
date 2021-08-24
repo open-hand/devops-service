@@ -31,5 +31,5 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
      * @param id
      * @return DevopsHostAppVO
      */
-    DevopsHostAppVO detailAppById(@Param("id") Long id);
+    DevopsHostAppVO queryAppById(@Param("id") Long id);
 }

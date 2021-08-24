@@ -46,6 +46,6 @@ public interface DevopsHostAppService {
      * @param id
      * @return DevopsHostAppVO
      */
-    DevopsHostAppVO detailAppById(Long projectId, Long id);
+    DevopsHostAppVO queryAppById(Long projectId, Long id);
 
 }

@@ -50,13 +50,12 @@ public class DevopsHostAppController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询主机下的应用实例详情")
-    @GetMapping("/apps/{id}")
-    @CustomPageRequest
-    public ResponseEntity<DevopsHostAppVO> detailAppById(
+    @GetMapping("/apps/{app_id}")
+    public ResponseEntity<DevopsHostAppVO> queryAppById(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
-            @PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok(devopsHostAppService.detailAppById(projectId, id));
+            @PathVariable(value = "app_id") Long id) {
+        return ResponseEntity.ok(devopsHostAppService.queryAppById(projectId, id));
     }
 }
