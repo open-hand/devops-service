@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,6 +127,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     instanceVO.getInstanceCode(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
+            appServiceInstanceService.insertEnvRecordData(instanceVO.getMktServiceName(), instanceVO.getInstanceCode(), projectId, instanceVO.getMktDeployObjectId(),
+                    devopsHzeroDeployDetailsDTO.getEnvId(), OperationTypeEnum.HZERO.value(), AppSourceType.HZERO.getValue(), RdupmTypeEnum.CHART.value());
         });
 
         // 构建工作流部署对象
