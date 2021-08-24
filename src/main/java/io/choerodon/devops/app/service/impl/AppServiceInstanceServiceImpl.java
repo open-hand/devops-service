@@ -1929,7 +1929,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO) {
         DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
         if (devopsProjectDTO.getHarborProjectIsPrivate()) {
-            configVO.setPrivate(true);
+            configVO.setIsPrivate(true);
             HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
             configVO.setUserName(harborUserDTO.getHarborProjectUserName());
             configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
@@ -2570,7 +2570,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is not null. And the config id is {}...", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId, devopsConfigDTO.getId());
 
         ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-        if (configVO.getPrivate() != null && configVO.getPrivate()) {
+        if (configVO.getIsPrivate() != null && configVO.getIsPrivate()) {
             LOGGER.debug("Docker config for app service with id {} and code {} and version id: {} is private.", appServiceDTO.getId(), appServiceDTO.getCode(), appServiceVersionId);
 
             DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByClusterIdAndNamespace(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId(), appServiceDTO.getProjectId());
@@ -2673,7 +2673,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, "chart", null);
             ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
             // 如果是私有的, 发送认证信息给agent
-            if (Boolean.TRUE.equals(helmConfig.getPrivate())) {
+            if (Boolean.TRUE.equals(helmConfig.getIsPrivate())) {
                 agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);
             }
         }
