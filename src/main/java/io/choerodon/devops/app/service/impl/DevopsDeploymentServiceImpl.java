@@ -25,8 +25,10 @@ import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -55,6 +57,8 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     private static JSON json = new JSON();
 
@@ -228,6 +232,10 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(id);
+        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
+            devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
+        }
         devopsDeploymentMapper.deleteByPrimaryKey(id);
         devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
     }
