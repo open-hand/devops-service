@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.AppCenterChartSourceEnum;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -139,7 +139,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             return devopsEnvPodService.pageByOptions(
                     projectId, instanceDTO.getEnvId(), instanceDTO.getAppServiceId(), centerEnvDTO.getObjectId(), pageRequest, searchParam);
         } else {
-            // 部署组pod详情查询 todo scp
+            devopsEnvPodService.pageByKind(projectId, centerEnvDTO.getEnvId(), ResourceType.DEPLOYMENT.getType(), centerEnvDTO.getCode(), pageRequest, searchParam);
         }
         return null;
     }
