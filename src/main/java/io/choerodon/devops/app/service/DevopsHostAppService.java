@@ -40,4 +40,12 @@ public interface DevopsHostAppService {
 
     Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params);
 
+    /**
+     * 查询主机下的应用实例详情
+     * @param projectId
+     * @param id
+     * @return DevopsHostAppVO
+     */
+    DevopsHostAppVO queryAppById(Long projectId, Long id);
+
 }

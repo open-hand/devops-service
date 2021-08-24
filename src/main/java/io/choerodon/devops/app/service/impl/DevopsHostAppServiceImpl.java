@@ -353,4 +353,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         return page;
     }
 
+    @Override
+    public DevopsHostAppVO queryAppById(Long projectId, Long id) {
+        return devopsHostAppMapper.queryAppById(id);
+    }
+
 }

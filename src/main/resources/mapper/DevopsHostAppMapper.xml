@@ -33,4 +33,11 @@
     <delete id="deleteByHostId">
         DELETE FROM devops_host_app WHERE host_id = #{hostId}
     </delete>
+
+    <select id="queryAppById" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+        select dha.*, dh.name as host_name
+        from devops_host_app dha
+        left join devops_host dh ON dh.id = dha.host_id
+        where dha.id = #{id}
+    </select>
 </mapper>
