@@ -53,11 +53,10 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployGroupServiceImpl.class);
-    private static final String DEPLOYMENT_TAG = "!!io.kubernetes.client.models.V1beta2Deployment";
 
     private static final String AUTH_TYPE = "pull";
-    private static final String WGET_COMMAND_TEMPLATE = "wget %s -o /choerodon/%s";
-    private static final String WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE = "wget --user=%s --password=%s %s -o /choerodon/%s";
+    private static final String WGET_COMMAND_TEMPLATE = "wget %s -O /choerodon/%s";
+    private static final String WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE = "wget --user=%s --password=%s %s -O /choerodon/%s";
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
 
     private static final String IF_NOT_PRESENT = "IfNotPresent";
@@ -406,6 +405,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      * @return
      */
     V1Container processJarConfig(ProjectDTO projectDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, List<String> initContainerCommands) {
+        initContainerCommands.add("mkdir /choerodon && chown -R www-data:www-data /choerodon");
         // 处理用户上传的jar
         if (AppSourceType.UPLOAD.getValue().equals(devopsDeployGroupContainerConfigVO.getSourceType())) {
             initContainerCommands.add(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarFileDownloadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar"));

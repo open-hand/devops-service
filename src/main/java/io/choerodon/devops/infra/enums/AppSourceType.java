@@ -17,7 +17,7 @@ public enum AppSourceType {
      */
     CURRENT_PROJECT("currentProject"),
     /**
-     * 应用服务来自本项目 （应用中心chart包部署、部署组部署会用上）
+     * 应用服务来自本项目 （应用中心chart包部署）
      */
     NORMAL("normal"),
     /**
