@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
@@ -341,22 +342,26 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return page;
         }
         UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
-        page.getContent().forEach(devopsHostAppVO -> {
-            if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
-                devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
-            } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
-                    || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
-                devopsHostAppVO.setDeployObjectId(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), Long.class));
-            } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
-                devopsHostAppVO.setJarFileUrl(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), String.class));
-            }
-        });
+        page.getContent().forEach(this::compoundDevopsHostAppVO);
         return page;
     }
 
     @Override
     public DevopsHostAppVO queryAppById(Long projectId, Long id) {
         DevopsHostAppVO devopsHostAppVO = devopsHostAppMapper.queryAppById(id);
+        if (ObjectUtils.isEmpty(devopsHostAppVO)) {
+            return devopsHostAppVO;
+        }
+        List<DevopsHostAppVO> devopsHostAppVOS = new ArrayList<>();
+        devopsHostAppVOS.add(devopsHostAppVO);
+        UserDTOFillUtil.fillUserInfo(devopsHostAppVOS, "createdBy", "creator");
+        devopsHostAppVO = devopsHostAppVOS.get(0);
+        compoundDevopsHostAppVO(devopsHostAppVO);
+        devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
+        return devopsHostAppVO;
+    }
+
+    private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {
         if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
         } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
@@ -365,8 +370,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
             devopsHostAppVO.setJarFileUrl(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), String.class));
         }
-        devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
-        return devopsHostAppVO;
     }
 
 }
