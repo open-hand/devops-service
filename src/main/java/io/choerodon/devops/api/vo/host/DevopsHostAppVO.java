@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -72,6 +73,17 @@ public class DevopsHostAppVO {
     private Date lastUpdateDate;
     private Long lastUpdatedBy;
     private Long objectVersionNumber;
+
+    @ApiModelProperty("操作命令")
+    private DevopsHostCommandDTO devopsHostCommandDTO;
+
+    public DevopsHostCommandDTO getDevopsHostCommandDTO() {
+        return devopsHostCommandDTO;
+    }
+
+    public void setDevopsHostCommandDTO(DevopsHostCommandDTO devopsHostCommandDTO) {
+        this.devopsHostCommandDTO = devopsHostCommandDTO;
+    }
 
     public String getGroupId() {
         return groupId;
