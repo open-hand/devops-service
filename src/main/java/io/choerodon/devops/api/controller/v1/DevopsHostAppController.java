@@ -47,4 +47,16 @@ public class DevopsHostAppController {
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
         return ResponseEntity.ok(devopsHostAppService.pagingAppByHost(projectId, hostId, pageRequest, rdupmType, operationType, params));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询主机下的应用实例详情")
+    @GetMapping("/apps/{id}")
+    @CustomPageRequest
+    public ResponseEntity<DevopsHostAppVO> detailAppById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(devopsHostAppService.detailAppById(projectId, id));
+    }
 }

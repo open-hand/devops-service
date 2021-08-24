@@ -25,4 +25,11 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                                         @Param("rdupmType") String rdupmType,
                                         @Param("operationType") String operationType,
                                         @Param("params") String params);
+
+    /**
+     * 查询主机下的应用实例详情
+     * @param id
+     * @return DevopsHostAppVO
+     */
+    DevopsHostAppVO detailAppById(@Param("id") Long id);
 }

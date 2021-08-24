@@ -45,6 +45,8 @@ public class DevopsHostAppVO {
     private String value;
     @ApiModelProperty("主机名称")
     private String hostName;
+    @ApiModelProperty("应用实例id")
+    private Long id;
 
     /**
      * 部署对象id
@@ -240,4 +242,11 @@ public class DevopsHostAppVO {
         this.value = value;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
