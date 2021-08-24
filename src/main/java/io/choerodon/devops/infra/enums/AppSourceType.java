@@ -5,36 +5,46 @@ package io.choerodon.devops.infra.enums;
  */
 public enum AppSourceType {
     /**
-     * 应用服务来来自市场
-     */
-    MARKET("market"),
-    /**
-     * 应用服务来自共享
-     */
-    SHARE("share"),
-
-    /**
-     * 未知部署来源
-     */
-    UNKNOWN("unknown"),
-
-    /**
-     * 应用服务来自本项目
-     */
-    CURRENT_PROJECT("currentProject"),
-
-    /**
      * 平台预置
      */
     PLATFORM_PRESET("platformPreset"),
     /**
-     * hzero应用
+     * 未知部署来源
+     */
+    UNKNOWN("unknown"),
+    /**
+     * 项目制品库(应用中心部署组部署会用上)
+     */
+    CURRENT_PROJECT("currentProject"),
+    /**
+     * 应用服务来自本项目 （应用中心chart包部署、部署组部署会用上）
+     */
+    NORMAL("normal"),
+    /**
+     * 应用服务来来自市场（应用中心chart包部署、部署组部署会用上）
+     */
+    MARKET("market"),
+    /**
+     * 应用服务来自共享（应用中心chart包部署、部署组部署会用上）
+     */
+    SHARE("share"),
+    /**
+     * hzero应用（应用中心chart包部署、部署组部署会用上）
      */
     HZERO("hzero"),
     /**
-     * upload
+     * 上传（应用中心部署组部署会用上）
      */
-    UPLOAD("upload");
+    UPLOAD("upload"),
+
+    /**
+     * 自定义来源 （应用中心部署组部署会用上）
+     */
+    CUSTOM("custom"),
+    /**
+     * 中间件,中间件在devops中的逻辑和市场应用大多都类似 （应用中心chart包部署会用上）
+     */
+    MIDDLEWARE("middleware");
 
     private String value;
 
