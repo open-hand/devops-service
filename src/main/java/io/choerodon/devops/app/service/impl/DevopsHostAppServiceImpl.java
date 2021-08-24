@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -45,6 +44,7 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
+import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -59,6 +59,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -100,6 +101,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private AppServiceService appServiceService;
     @Autowired
     private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
+    @Autowired
+    private DevopsHostCommandMapper devopsHostCommandMapper;
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
@@ -370,6 +373,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostAppVO = devopsHostAppVOS.get(0);
         compoundDevopsHostAppVO(devopsHostAppVO);
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
+        devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getId()));
         return devopsHostAppVO;
     }
 
