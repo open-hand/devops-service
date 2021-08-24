@@ -131,6 +131,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
+        String groupId = null;
+        String artifactId = null;
+        String version = null;
+
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
 
@@ -151,6 +155,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             nNexusComponentDTO.setGroup(jarReleaseConfigVO.getGroupId());
             nNexusComponentDTO.setDownloadUrl(MavenUtil.getDownloadUrl(jarReleaseConfigVO));
             nexusComponentDTOList.add(nNexusComponentDTO);
+
+            groupId = jarReleaseConfigVO.getGroupId();
+            artifactId = jarReleaseConfigVO.getArtifactId();
+            version = jarReleaseConfigVO.getVersion();
 
             jarDeployVO.setProdJarInfoVO(new ProdJarInfoVO(jarReleaseConfigVO.getGroupId(),
                     jarReleaseConfigVO.getArtifactId(),
@@ -176,6 +184,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
+
+
             // 添加jar包下载信息
             jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
             jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
@@ -183,9 +193,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())){
             // 0.2 从制品库获取仓库信息
             Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
-            String groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
-            String artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
-            String version = jarDeployVO.getProdJarInfoVO().getVersion();
+            groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
+            artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
+            version = jarDeployVO.getProdJarInfoVO().getVersion();
             nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
@@ -218,8 +228,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.CREATE_APP.value(),
                     calculateSourceConfig(jarDeployVO),
-                    encodeValue);
-
+                    encodeValue,
+                    groupId,
+                    artifactId,
+                    version);
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         }

@@ -60,11 +60,42 @@ public class DevopsHostAppVO {
 
     private String jarFileUrl;
 
+    @ApiModelProperty("groupId")
+    private String groupId;
+    @ApiModelProperty("artifactId")
+    private String artifactId;
+    @ApiModelProperty("version")
+    private String version;
+
     private Date creationDate;
     private Long createdBy;
     private Date lastUpdateDate;
     private Long lastUpdatedBy;
     private Long objectVersionNumber;
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     private IamUserDTO creator;
 
