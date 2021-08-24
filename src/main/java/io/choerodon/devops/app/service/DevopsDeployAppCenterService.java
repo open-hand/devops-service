@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterHostDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -46,4 +47,11 @@ public interface DevopsDeployAppCenterService {
     void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
 
     DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode);
+
+    /**
+     * 创建主机应用
+     *
+     * @param devopsDeployAppCenterHostDTO
+     */
+    void baseHostCreate(DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO);
 }

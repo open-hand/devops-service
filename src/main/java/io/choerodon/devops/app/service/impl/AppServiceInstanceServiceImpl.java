@@ -981,6 +981,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             MarketInstanceSagaPayload instanceSagaPayload = initMarketInstanceSagaPayload(appServiceDeployVO, devopsEnvironmentDTO, userAttrDTO, marketServiceDeployObjectVO, appServiceInstanceDTO, secretCode);
             // 发送asgard
             sendCreateOrUpdateInstanceSaga(devopsEnvironmentDTO, instanceSagaPayload);
+            // 插入环境记录数据
+            insertEnvRecordData(appServiceName, appServiceCode, projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getCommandType(), source, RdupmTypeEnum.CHART.value());
         }
 
         // 创建应用中心的应用
@@ -2775,5 +2777,33 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private boolean isMarket(String source) {
         return AppSourceType.MARKET.getValue().equals(source);
+    }
+
+    @Override
+    public void insertEnvRecordData(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setName(name);
+        devopsDeployAppCenterEnvDTO.setCode(code);
+        devopsDeployAppCenterEnvDTO.setProjectId(projectId);
+        devopsDeployAppCenterEnvDTO.setObjectId(objectId);
+        devopsDeployAppCenterEnvDTO.setEnvId(envId);
+        devopsDeployAppCenterEnvDTO.setOperationType(operationType);
+        devopsDeployAppCenterEnvDTO.setChartSource(chartSource);
+        devopsDeployAppCenterEnvDTO.setRdupmType(rdupmType);
+        devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
+    }
+
+    @Override
+    public void insertHostRecordData(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType) {
+        DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO = new DevopsDeployAppCenterHostDTO();
+        devopsDeployAppCenterHostDTO.setName(name);
+        devopsDeployAppCenterHostDTO.setCode(code);
+        devopsDeployAppCenterHostDTO.setProjectId(projectId);
+        devopsDeployAppCenterHostDTO.setObjectId(objectId);
+        devopsDeployAppCenterHostDTO.setHostId(hostId);
+        devopsDeployAppCenterHostDTO.setOperationType(operationType);
+        devopsDeployAppCenterHostDTO.setJarSource(jarSource);
+        devopsDeployAppCenterHostDTO.setRdupmType(rdupmType);
+        devopsDeployAppCenterService.baseHostCreate(devopsDeployAppCenterHostDTO);
     }
 }

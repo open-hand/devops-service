@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterHostMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -63,6 +64,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsServiceService devopsServiceService;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private DevopsDeployAppCenterHostMapper devopsDeployAppCenterHostMapper;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
 
@@ -177,5 +180,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode) {
         return devopsDeployAppCenterEnvMapper.queryByEnvIdAndCode(environmentId, appCode);
+    }
+
+    @Override
+    public void baseHostCreate(DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterHostMapper, devopsDeployAppCenterHostDTO, "error.host.app.center.insert");
     }
 }

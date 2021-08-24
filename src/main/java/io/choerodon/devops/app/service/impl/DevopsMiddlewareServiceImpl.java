@@ -170,7 +170,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareMySqlEnvDeployVO.setValues(generateMysqlStandaloneValues(middlewareMySqlEnvDeployVO));
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareMySqlEnvDeployVO, MarketInstanceCreationRequestVO.class);
-        return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
+        AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
+        appServiceInstanceService.insertEnvRecordData(middlewareServiceReleaseInfo.getMarketServiceName(), middlewareServiceReleaseInfo.getDevopsAppServiceCode(), projectId, marketInstanceCreationRequestVO.getInstanceId(),
+                marketInstanceCreationRequestVO.getEnvironmentId(), marketInstanceCreationRequestVO.getCommandType(), marketInstanceCreationRequestVO.getSource(), marketInstanceCreationRequestVO.getApplicationType());
+        return appServiceInstanceVO;
     }
 
     @Override
@@ -381,6 +384,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + devopsHostDTOForConnection.getId(),
                     String.format(DevopsHostConstants.MIDDLEWARE_INSTANCE, devopsHostDTOForConnection.getId(), devopsMiddlewareDTO.getId()),
                     JsonHelper.marshalByJackson(hostAgentMsgVO));
+            appServiceInstanceService.insertEnvRecordData(middlewareServiceReleaseInfo.getMarketServiceName(), middlewareServiceReleaseInfo.getDevopsAppServiceCode(), projectId, marketInstanceCreationRequestVO.getInstanceId(),
+                    marketInstanceCreationRequestVO.getEnvironmentId(), marketInstanceCreationRequestVO.getCommandType(), marketInstanceCreationRequestVO.getSource(), marketInstanceCreationRequestVO.getApplicationType());
             LOGGER.info("deploy Middleware MySQL,mode:{} version:{} projectId:{}", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), projectId);
         } catch (Exception e) {
             devopsDeployRecordService.updateRecord(recordId, CommandStatus.FAILED.getStatus(), e.getMessage());
