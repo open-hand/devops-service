@@ -13,6 +13,7 @@ import io.choerodon.devops.app.service.impl.DevopsDeploymentServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 
 /**
  * Created by wangxiang on 2021/7/14

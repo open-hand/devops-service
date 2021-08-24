@@ -198,9 +198,6 @@ public class WorkloadServiceImpl implements WorkloadService {
                 if (devopsDeploymentDTO == null) {
                     return;
                 }
-                if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
-                    devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
-                }
                 envId = devopsDeploymentDTO.getEnvId();
                 resourceName = devopsDeploymentDTO.getName();
                 break;
