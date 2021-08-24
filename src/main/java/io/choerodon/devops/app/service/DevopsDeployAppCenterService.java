@@ -48,7 +48,7 @@ public interface DevopsDeployAppCenterService {
      */
     void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
 
-    void baseCreate(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType);
+    DevopsDeployAppCenterEnvDTO baseCreate(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType);
 
     DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode);
 

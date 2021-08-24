@@ -179,7 +179,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     @Transactional
-    public void baseCreate(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType) {
+    public DevopsDeployAppCenterEnvDTO baseCreate(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
         devopsDeployAppCenterEnvDTO.setName(name);
         devopsDeployAppCenterEnvDTO.setCode(code);
@@ -190,6 +190,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         devopsDeployAppCenterEnvDTO.setChartSource(chartSource);
         devopsDeployAppCenterEnvDTO.setRdupmType(rdupmType);
         baseCreate(devopsDeployAppCenterEnvDTO);
+        return devopsDeployAppCenterEnvDTO;
     }
 
     @Override
