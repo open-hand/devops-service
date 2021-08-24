@@ -538,7 +538,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.PIPELINE_DEPLOY.value(),
                     jobRecordDTO.getMetadata(),
-                    jarDeploy.getValue());
+                    jarDeploy.getValue(),
+                    null,
+                    null,
+                    null);
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         } else {
