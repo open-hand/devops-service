@@ -19,6 +19,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -103,7 +104,7 @@ public class DevopsProjectController {
      *
      * @param projectId 项目id
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "查询项目gitlab group信息")
     @PostMapping("/gitlab_groups")
     public ResponseEntity<List<GitlabProjectSimple>> queryGitlabGroups(
@@ -114,4 +115,16 @@ public class DevopsProjectController {
         return new ResponseEntity<>(devopsProjectService.queryGitlabGroups(projectIds), HttpStatus.OK);
 
     }
+
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询项目gitlab group信息")
+    @GetMapping
+    public ResponseEntity<Long> queryDevopsProject(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return new ResponseEntity<>(devopsProjectService.queryDevopsProject(projectId), HttpStatus.OK);
+
+    }
+
 }

@@ -201,7 +201,19 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     @Override
     public List<GitlabProjectSimple> queryGitlabGroups(List<Long> projectIds) {
-       return devopsProjectMapper.selectByProjectIds(projectIds);
+        return devopsProjectMapper.selectByProjectIds(projectIds);
+    }
+
+    @Override
+    public Long queryDevopsProject(Long projectId) {
+        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
+        devopsProjectDTO.setDevopsAppGroupId(projectId);
+        DevopsProjectDTO projectDTO = devopsProjectMapper.selectOne(devopsProjectDTO);
+        if (Objects.isNull(projectDTO)) {
+            return projectDTO.getDevopsAppGroupId();
+        } else {
+            return null;
+        }
     }
 
     @Override

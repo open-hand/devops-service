@@ -79,4 +79,6 @@ public interface DevopsProjectService {
     List<GitlabProjectSimple> queryGitlabGroups(List<Long> projectIds);
 
     List<DevopsProjectDTO> listExistGroup(Set<Integer> groupIds);
+
+    Long queryDevopsProject(Long projectId);
 }
