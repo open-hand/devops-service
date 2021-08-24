@@ -2,9 +2,12 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterHostDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -45,5 +48,16 @@ public interface DevopsDeployAppCenterService {
      */
     void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
 
+    void baseCreate(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType);
+
     DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode);
+
+    /**
+     * 创建主机应用
+     *
+     * @param devopsDeployAppCenterHostDTO
+     */
+    void baseHostCreate(DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO);
+
+    void baseHostCreate(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType);
 }

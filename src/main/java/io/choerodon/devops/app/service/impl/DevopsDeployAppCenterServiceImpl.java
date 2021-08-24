@@ -23,6 +23,7 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
+import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterHostMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
@@ -63,6 +64,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsServiceService devopsServiceService;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private DevopsDeployAppCenterHostMapper devopsDeployAppCenterHostMapper;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
 
@@ -175,7 +178,41 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
+    @Transactional
+    public void baseCreate(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setName(name);
+        devopsDeployAppCenterEnvDTO.setCode(code);
+        devopsDeployAppCenterEnvDTO.setProjectId(projectId);
+        devopsDeployAppCenterEnvDTO.setObjectId(objectId);
+        devopsDeployAppCenterEnvDTO.setEnvId(envId);
+        devopsDeployAppCenterEnvDTO.setOperationType(operationType);
+        devopsDeployAppCenterEnvDTO.setChartSource(chartSource);
+        devopsDeployAppCenterEnvDTO.setRdupmType(rdupmType);
+        baseCreate(devopsDeployAppCenterEnvDTO);
+    }
+
+    @Override
     public DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode) {
         return devopsDeployAppCenterEnvMapper.queryByEnvIdAndCode(environmentId, appCode);
+    }
+
+    @Override
+    public void baseHostCreate(DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterHostMapper, devopsDeployAppCenterHostDTO, "error.host.app.center.insert");
+    }
+
+    @Override
+    public void baseHostCreate(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType) {
+        DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO = new DevopsDeployAppCenterHostDTO();
+        devopsDeployAppCenterHostDTO.setName(name);
+        devopsDeployAppCenterHostDTO.setCode(code);
+        devopsDeployAppCenterHostDTO.setProjectId(projectId);
+        devopsDeployAppCenterHostDTO.setObjectId(objectId);
+        devopsDeployAppCenterHostDTO.setHostId(hostId);
+        devopsDeployAppCenterHostDTO.setOperationType(operationType);
+        devopsDeployAppCenterHostDTO.setJarSource(jarSource);
+        devopsDeployAppCenterHostDTO.setRdupmType(rdupmType);
+        baseHostCreate(devopsDeployAppCenterHostDTO);
     }
 }

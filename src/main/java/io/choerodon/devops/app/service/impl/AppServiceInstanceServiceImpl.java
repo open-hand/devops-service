@@ -855,24 +855,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
+            if (CREATE.equals(appServiceDeployVO.getType())) {
+                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), AppSourceType.NORMAL.getValue(), RdupmTypeEnum.CHART.value());
+            } else {
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getAppCode());
+                devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
+                devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+            }
 
-        }
-
-        if (CREATE.equals(appServiceDeployVO.getType())) {
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-            devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
-            devopsDeployAppCenterEnvDTO.setCode(appServiceDeployVO.getAppCode());
-            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
-            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
-            devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
-            devopsDeployAppCenterEnvDTO.setOperationType(isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value());
-            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
-            devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
-            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
-        } else {
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getAppCode());
-            devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
-            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
     }
@@ -981,25 +971,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             MarketInstanceSagaPayload instanceSagaPayload = initMarketInstanceSagaPayload(appServiceDeployVO, devopsEnvironmentDTO, userAttrDTO, marketServiceDeployObjectVO, appServiceInstanceDTO, secretCode);
             // 发送asgard
             sendCreateOrUpdateInstanceSaga(devopsEnvironmentDTO, instanceSagaPayload);
-        }
-
-        // 创建应用中心的应用
-        if (appServiceDeployVO.getCommandType().equals(CREATE)) {
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-            devopsDeployAppCenterEnvDTO.setName(code);
-            devopsDeployAppCenterEnvDTO.setCode(code);
-            devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
-            devopsDeployAppCenterEnvDTO.setProjectId(projectId);
-            devopsDeployAppCenterEnvDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
-            if (isMiddleware(appServiceDeployVO.getSource())) {
-                devopsDeployAppCenterEnvDTO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
+            // 创建应用中心的应用
+            if (appServiceDeployVO.getCommandType().equals(CREATE)) {
+                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isMiddleware(appServiceDeployVO.getSource()) ? OperationTypeEnum.BASE_COMPONENT.value() : OperationTypeEnum.CREATE_APP.value(), source, RdupmTypeEnum.CHART.value());
+            } else {
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
+                devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
+                devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
             }
-            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
-            devopsDeployAppCenterEnvDTO.setObjectId(appServiceInstanceDTO.getId());
-            devopsDeployAppCenterService.baseCreate(devopsDeployAppCenterEnvDTO);
-        } else {
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
-            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);

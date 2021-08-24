@@ -129,6 +129,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private KeySocketSendHelper webSocketHelper;
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -155,6 +157,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class);
+        marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
 
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
@@ -170,6 +173,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareMySqlEnvDeployVO.setValues(generateMysqlStandaloneValues(middlewareMySqlEnvDeployVO));
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareMySqlEnvDeployVO, MarketInstanceCreationRequestVO.class);
+        marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
+
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
 
@@ -269,7 +274,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             devopsHostCommandDTO.setInstanceType(MIDDLEWARE_REDIS.value());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
+            devopsDeployAppCenterService.baseHostCreate(middlewareServiceReleaseInfo.getDevopsAppServiceName(), middlewareServiceReleaseInfo.getDevopsAppServiceCode(), projectId,
+                    middlewareServiceReleaseInfo.getDevopsAppServiceId(), devopsHostCommandDTO.getHostId(), devopsHostCommandDTO.getCommandType(), AppSourceType.MIDDLEWARE.getValue(), devopsHostCommandDTO.getInstanceType());
 
             MiddlewareDeployVO middlewareDeployVO = new MiddlewareDeployVO();
             middlewareDeployVO.setMiddlewareType(REDIS.getType());
@@ -381,6 +387,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + devopsHostDTOForConnection.getId(),
                     String.format(DevopsHostConstants.MIDDLEWARE_INSTANCE, devopsHostDTOForConnection.getId(), devopsMiddlewareDTO.getId()),
                     JsonHelper.marshalByJackson(hostAgentMsgVO));
+            devopsDeployAppCenterService.baseHostCreate(middlewareServiceReleaseInfo.getMarketServiceName(), middlewareServiceReleaseInfo.getDevopsAppServiceCode(), projectId, devopsHostCommandDTO.getInstanceId(),
+                    devopsHostCommandDTO.getHostId(), devopsHostCommandDTO.getCommandType(), AppSourceType.MIDDLEWARE.getValue(), devopsHostCommandDTO.getInstanceType());
             LOGGER.info("deploy Middleware MySQL,mode:{} version:{} projectId:{}", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), projectId);
         } catch (Exception e) {
             devopsDeployRecordService.updateRecord(recordId, CommandStatus.FAILED.getStatus(), e.getMessage());

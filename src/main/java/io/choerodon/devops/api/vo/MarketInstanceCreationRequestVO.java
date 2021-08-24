@@ -70,6 +70,16 @@ public class MarketInstanceCreationRequestVO {
      */
     private String source;
 
+    @ApiModelProperty("应用中心应用名称")
+    @Size(min = 1, max = 64, message = "error.env.app.center.name.length")
+    @NotBlank(message = "error.app.instance.name.null")
+    private String appName;
+
+    @ApiModelProperty("应用中心应用code，同时也作为实例名称")
+    @Size(min = 1, max = 64, message = "error.env.app.center.code.length")
+    @NotBlank(message = "error.app.instance.code.null")
+    private String appCode;
+
     public MarketInstanceCreationRequestVO() {
     }
 
@@ -209,5 +219,21 @@ public class MarketInstanceCreationRequestVO {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 }

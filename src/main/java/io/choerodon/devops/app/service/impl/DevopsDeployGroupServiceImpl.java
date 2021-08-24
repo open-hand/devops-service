@@ -148,6 +148,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         } else {
             // 更新应用记录
+            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getCode());
             devopsDeployAppCenterEnvDTO.setId(devopsDeployGroupVO.getInstanceId());
             devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
