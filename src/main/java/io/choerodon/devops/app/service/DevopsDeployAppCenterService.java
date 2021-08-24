@@ -59,5 +59,14 @@ public interface DevopsDeployAppCenterService {
      */
     void baseHostCreate(DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO);
 
+    /**
+     * 根据环境id、关联对象类型、关联对象id删除记录
+     *
+     * @param envId
+     * @param objectId
+     * @param rdupmType
+     */
+    void deleteByEnvIdAndObjectIdAndRdupmType(Long envId, Long objectId, String rdupmType);
+
     void baseHostCreate(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType);
 }

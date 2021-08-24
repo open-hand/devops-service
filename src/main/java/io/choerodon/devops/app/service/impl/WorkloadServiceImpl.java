@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -93,6 +94,9 @@ public class WorkloadServiceImpl implements WorkloadService {
     @Autowired
     @Lazy
     private Map<String, WorkLoad> workLoadMap;
+
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     static {
         Map<String, String> filePathMap = new HashMap<>();
@@ -193,6 +197,9 @@ public class WorkloadServiceImpl implements WorkloadService {
                 DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(id);
                 if (devopsDeploymentDTO == null) {
                     return;
+                }
+                if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
+                    devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
                 }
                 envId = devopsDeploymentDTO.getEnvId();
                 resourceName = devopsDeploymentDTO.getName();

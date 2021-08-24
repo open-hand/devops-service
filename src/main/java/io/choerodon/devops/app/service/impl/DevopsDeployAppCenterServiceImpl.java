@@ -216,4 +216,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         devopsDeployAppCenterHostDTO.setRdupmType(rdupmType);
         baseHostCreate(devopsDeployAppCenterHostDTO);
     }
+
+    @Override
+    @Transactional
+    public void deleteByEnvIdAndObjectIdAndRdupmType(Long envId, Long objectId, String rdupmType) {
+        devopsDeployAppCenterEnvMapper.deleteByEnvIdAndObjectIdAndRdupmType(envId, objectId, rdupmType);
+    }
 }
