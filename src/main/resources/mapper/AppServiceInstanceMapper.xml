@@ -675,7 +675,7 @@
         WHERE env_id = #{envId}
         AND code IN
         <foreach collection="codes" item="code" separator="," open="(" close=")">
-            #{codes}
+            #{code}
         </foreach>
     </select>
 
