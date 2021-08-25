@@ -1,6 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.service.impl.AppServiceInstanceServiceImpl.isMiddleware;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
@@ -108,6 +116,24 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceInstanceInfoDTO.getAppServiceId());
                 detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
+
+                Set<Long> deployObjectIds = new HashSet<>();
+                deployObjectIds.add(appServiceInstanceInfoDTO.getCommandVersionId());
+                // 这个id可能为空
+                if (appServiceInstanceInfoDTO.getEffectCommandVersionId() != null) {
+                    deployObjectIds.add(appServiceInstanceInfoDTO.getEffectCommandVersionId());
+                }
+                Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
+                if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
+                    // 如果是中间件，直接以应用版本作为生效版本
+                    if (isMiddleware(appServiceInstanceInfoDTO.getSource())) {
+                        detailVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketServiceVersion());
+                    } else {
+                        detailVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
+                    }
+                } else {
+                    detailVO.setCommandVersion("版本已被删除");
+                }
             }
         }
         // 环境信息查询

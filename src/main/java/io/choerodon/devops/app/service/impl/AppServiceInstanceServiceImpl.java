@@ -250,7 +250,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getClusterId()));
 
         // 为市场实例填充版本信息
-        if (isMarket(appServiceInstanceInfoDTO.getSource()) || isMarket(appServiceInstanceInfoDTO.getSource())) {
+        if (isMarket(appServiceInstanceInfoDTO.getSource()) || isMiddleware(appServiceInstanceInfoDTO.getSource())) {
             fillInformationForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         }
 
@@ -2746,11 +2746,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         ).collect(Collectors.toList());
     }
 
-    private boolean isMiddleware(String source) {
+    public static boolean isMiddleware(String source) {
         return AppSourceType.MIDDLEWARE.getValue().equals(source);
     }
 
-    private boolean isMarket(String source) {
+    public static boolean isMarket(String source) {
         return AppSourceType.MARKET.getValue().equals(source);
     }
 }
