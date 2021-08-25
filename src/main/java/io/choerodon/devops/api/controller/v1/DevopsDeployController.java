@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -60,7 +61,8 @@ public class DevopsDeployController {
     public ResponseEntity<Void> deployJavaInstance(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody @Validated JarDeployVO jarDeployVO) {
+            @Encrypt @RequestBody @Validated JarDeployVO jarDeployVO) {
+
         devopsNormalInstanceService.deployJavaInstance(projectId, jarDeployVO);
         return ResponseEntity.noContent().build();
     }

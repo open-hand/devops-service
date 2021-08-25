@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DeployConfigMapper">
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="io.choerodon.devops.infra.dto.DeployConfigDTO">
+        <result column="id" property="id" jdbcType="DECIMAL"/>
+        <result column="project_id" property="projectId" jdbcType="DECIMAL"/>
+        <result column="deploy_record_id" property="deployRecordId" jdbcType="DECIMAL"/>
+        <result column="host_id" property="hostId" jdbcType="DECIMAL"/>
+        <result column="deploy_object_key" property="deployObjectKey" jdbcType="VARCHAR"/>
+        <result column="instance_name" property="instanceName" jdbcType="VARCHAR"/>
+        <result column="config_id" property="configId" jdbcType="DECIMAL"/>
+        <result column="mount_path" property="mountPath" jdbcType="VARCHAR"/>
+        <result column="config_group" property="configGroup" jdbcType="VARCHAR"/>
+        <result column="config_code" property="configCode" jdbcType="VARCHAR"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+    </resultMap>
+
+
+</mapper>

@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.vo.deploy.ConfigSettingVO;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -94,6 +95,8 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     private AppServiceService appServiceService;
     @Autowired
     private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
+    @Autowired
+    private DeployConfigService deployConfigService;
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
@@ -101,8 +104,6 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
     @Transactional
     public void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-
-
         Long hostId = jarDeployVO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
 
@@ -125,9 +126,12 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         // 0.3 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
+
+        // 标识部署对象
+        String deployObjectKey;
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
-
+            deployObjectKey = String.valueOf(jarDeployVO.getDeployObjectId());
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
@@ -182,6 +186,13 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
 
             appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, groupId, artifactId);
 
+            deployObjectKey = new StringBuilder()
+                    .append(nexusRepoId)
+                    .append(BaseConstants.Symbol.COLON)
+                    .append(groupId)
+                    .append(BaseConstants.Symbol.COLON)
+                    .append(artifactId)
+                    .toString();
         }
         if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
             throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
@@ -239,7 +250,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
         // 保存执行记录
-        devopsDeployRecordService.saveRecord(
+        Long devopsDeployRecordId = devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
                 null,
@@ -253,12 +264,16 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
                 null,
                 deploySourceVO);
 
+        // 保存用户设置部署配置文件
+        deployConfigService.saveConfigSetting(projectId, devopsDeployRecordId, deployObjectKey, jarDeployVO);
+
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setConfigSetting(deployConfigService.doCreateConfigSetting(projectId, jarDeployVO));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -267,10 +282,7 @@ public class DevopsNormalInstanceServiceImpl implements DevopsNormalInstanceServ
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsNormalInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
-
-
     }
-
 
     @Override
     public List<DevopsNormalInstanceDTO> listByHostId(Long hostId) {
