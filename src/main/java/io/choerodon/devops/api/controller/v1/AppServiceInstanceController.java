@@ -29,6 +29,7 @@ import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -88,6 +89,7 @@ public class AppServiceInstanceController {
             @RequestBody @Valid MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
         marketInstanceCreationRequestVO.setCommandType(CommandType.CREATE.getType());
         marketInstanceCreationRequestVO.setSource(AppSourceType.MARKET.getValue());
+        marketInstanceCreationRequestVO.setOperationType(OperationTypeEnum.CREATE_APP.value());
         return ResponseEntity.ok(appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true));
     }
 

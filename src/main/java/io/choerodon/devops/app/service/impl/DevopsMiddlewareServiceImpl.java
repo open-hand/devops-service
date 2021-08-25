@@ -50,6 +50,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -158,6 +159,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class);
         marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
+        marketInstanceCreationRequestVO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
 
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
@@ -174,6 +176,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareMySqlEnvDeployVO, MarketInstanceCreationRequestVO.class);
         marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
+        marketInstanceCreationRequestVO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
 
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
