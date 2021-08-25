@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.List;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -15,10 +17,14 @@ public class DevopsDeployGroupVO {
     @ApiModelProperty(name = "id")
     private Long id;
 
-    @ApiModelProperty(name = "name")
+    @ApiModelProperty("应用中心应用名称")
+    @Size(min = 1, max = 64, message = "error.env.app.center.name.length")
+    @NotBlank(message = "error.app.instance.name.null")
     private String name;
 
-    @ApiModelProperty(name = "code")
+    @ApiModelProperty("应用中心应用code，同时也作为实例名称")
+    @Size(min = 1, max = 64, message = "error.env.app.center.code.length")
+    @NotBlank(message = "error.app.instance.code.null")
     private String code;
 
     @Encrypt

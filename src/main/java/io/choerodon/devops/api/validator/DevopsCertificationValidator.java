@@ -1,12 +1,11 @@
 package io.choerodon.devops.api.validator;
 
-import java.util.regex.Pattern;
-
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.CertificationService;
+import io.choerodon.devops.infra.util.K8sUtil;
 
 /**
  * Creator: Runge
@@ -16,7 +15,6 @@ import io.choerodon.devops.app.service.CertificationService;
  */
 @Component
 public class DevopsCertificationValidator {
-    private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
 
     private final CertificationService certificationService;
 
@@ -35,7 +33,7 @@ public class DevopsCertificationValidator {
     }
 
     private void checkCertificationName(String name) {
-        if (!Pattern.matches(NAME_PATTERN, name)) {
+        if (!K8sUtil.NAME_PATTERN.matcher(name).matches()) {
             throw new CommonException("error.certification.name.illegal");
         }
     }
