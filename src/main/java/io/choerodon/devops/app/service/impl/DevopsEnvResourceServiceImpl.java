@@ -142,7 +142,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                         devopsEnvResourceDetailDTO.getMessage(),
                         V1beta2Deployment.class);
 
-                addDeploymentToResource(devopsEnvResourceVO, v1beta2Deployment);
+                addDeploymentToResource(devopsEnvResourceVO, v1beta2Deployment, devopsEnvResourceDTO.getInstanceId());
                 break;
             case SERVICE:
                 V1Service v1Service = json.deserialize(devopsEnvResourceDetailDTO.getMessage(),
@@ -343,7 +343,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2Deployment    deployment对象
      */
-    public void addDeploymentToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2Deployment v1beta2Deployment) {
+    public void addDeploymentToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2Deployment v1beta2Deployment, Long instanceId) {
         DeploymentVO deploymentVO = new DeploymentVO();
         deploymentVO.setName(v1beta2Deployment.getMetadata().getName());
         deploymentVO.setDesired(TypeUtil.objToLong(v1beta2Deployment.getSpec().getReplicas()));
@@ -352,6 +352,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         deploymentVO.setAvailable(TypeUtil.objToLong(v1beta2Deployment.getStatus().getAvailableReplicas()));
         deploymentVO.setAge(v1beta2Deployment.getMetadata().getCreationTimestamp().toString());
         deploymentVO.setLabels(v1beta2Deployment.getSpec().getSelector().getMatchLabels());
+        deploymentVO.setInstanceId(instanceId);
         List<Integer> portRes = new ArrayList<>();
         for (V1Container container : v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers()) {
             List<V1ContainerPort> ports = container.getPorts();
