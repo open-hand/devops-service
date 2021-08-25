@@ -174,7 +174,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
         // 设置名称、labels、annotations
         V1ObjectMeta metadata = new V1ObjectMeta();
-        metadata.setName(devopsDeployGroupVO.getName());
+        metadata.setName(devopsDeployGroupVO.getCode());
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getLabels())) {
             metadata.setLabels(devopsDeployGroupAppConfigVO.getLabels());
         }
