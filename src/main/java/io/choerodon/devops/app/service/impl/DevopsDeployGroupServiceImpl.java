@@ -144,7 +144,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         } else {
             // 更新应用记录
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getCode());
-            devopsDeployAppCenterEnvDTO.setId(devopsDeployGroupVO.getInstanceId());
+            devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getName());
             devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
     }
@@ -331,7 +331,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      *
      * @param devopsDeployGroupVO
      */
-    void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO) {
+    private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO) {
         DevopsDeployGroupAppConfigVO appConfig = devopsDeployGroupVO.getAppConfig();
 
         appConfig.getLabels().forEach((key, value) -> {
@@ -379,23 +379,24 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 }
             }
 
-            containerConfig.getPorts().forEach(portInfo -> {
-                String name = portInfo.get("name");
-                String port = portInfo.get("port");
-                String namePort = name + port;
-                if (existPorts.contains(namePort)) {
-                    throw new CommonException("error.container.port.exist");
-                }
-                existPorts.add(namePort);
-                if (name.length() > 40) {
-                    throw new CommonException("error.container.port.name.length");
-                }
-                if (Integer.parseInt(port) < 1 || Integer.parseInt(port) > 65535) {
-                    throw new CommonException("error.container.port.range");
-                }
-            });
+            if (!CollectionUtils.isEmpty(containerConfig.getPorts())) {
+                containerConfig.getPorts().forEach(portInfo -> {
+                    String name = portInfo.get("name");
+                    String port = portInfo.get("port");
+                    String namePort = name + port;
+                    if (existPorts.contains(namePort)) {
+                        throw new CommonException("error.container.port.exist");
+                    }
+                    existPorts.add(namePort);
+                    if (name.length() > 40) {
+                        throw new CommonException("error.container.port.name.length");
+                    }
+                    if (Integer.parseInt(port) < 1 || Integer.parseInt(port) > 65535) {
+                        throw new CommonException("error.container.port.range");
+                    }
+                });
+            }
         });
-
     }
 
 
