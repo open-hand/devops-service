@@ -38,7 +38,9 @@
         SELECT * from devops_env_resource der
         LEFT JOIN devops_app_service_instance dai
         on der.instance_id = dai.id where dai.env_id = #{envId}
+        <if test="type != null">
         AND der.kind = #{type}
+        </if>
     </select>
 
     <select id="queryLatestJob" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">

@@ -60,9 +60,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
-import io.choerodon.devops.infra.enums.deploy.DockerInstanceStatusEnum;
+import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
@@ -174,13 +172,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
-    private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+    private DevopsHostAppMapper devopsHostAppMapper;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
     @Autowired
-    private DevopsNormalInstanceService devopsNormalInstanceService;
+    private DevopsHostAppService devopsHostAppService;
     @Autowired
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
@@ -232,6 +230,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         devopsPipelineDTO.setPipelineName(devopsCdPipelineRecordDTO.getPipelineName());
         devopsPipelineDTO.setBusinessKey(devopsCdPipelineRecordDTO.getBusinessKey());
+        devopsPipelineDTO.setPipelineId(devopsCdPipelineRecordDTO.getPipelineId());
 
         // 2.
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
@@ -528,24 +527,33 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 2.保存记录
         String instanceName = jarDeploy.getName() != null ? jarDeploy.getName() : c7nNexusComponentDTO.getName();
 
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceService.queryByHostIdAndName(hostId, instanceName);
-        if (devopsNormalInstanceDTO == null) {
-            devopsNormalInstanceDTO = new DevopsNormalInstanceDTO(hostId,
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndName(hostId, instanceName);
+        // todo
+        if (devopsHostAppDTO == null) {
+            devopsHostAppDTO = new DevopsHostAppDTO(null
+                    ,hostId,
                     instanceName,
+                    null,
                     AppSourceType.CURRENT_PROJECT.getValue(),
-                    HostResourceType.JAVA_PROCESS.value());
-            MapperUtil.resultJudgedInsertSelective(devopsNormalInstanceMapper, devopsNormalInstanceDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
+                    RdupmTypeEnum.JAR.value(),
+                    OperationTypeEnum.PIPELINE_DEPLOY.value(),
+                    jobRecordDTO.getMetadata(),
+                    jarDeploy.getValue(),
+                    null,
+                    null,
+                    null);
+            MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
         } else {
             // 删除原有应用关联关系
-            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsNormalInstanceDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
+            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsHostAppDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
         }
         // 有关联的应用，则保存关联关系
         List<AppServiceDTO> appServiceDTOList = applicationService.listByProjectIdAndGAV(projectId, groupId, artifactId);
         if (!CollectionUtils.isEmpty(appServiceDTOList)) {
             Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
             Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
-            Long instanceId = devopsNormalInstanceDTO.getId();
+            Long instanceId = devopsHostAppDTO.getId();
             appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
                     hostId,
                     appId,
@@ -554,12 +562,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
         }
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(jarPullInfoDTO,
+        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 instanceName,
                 c7nNexusComponentDTO.getName(),
-                String.valueOf(devopsNormalInstanceDTO.getId()),
-                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsNormalInstanceDTO.getId()),
-                devopsNormalInstanceDTO.getPid());
+                String.valueOf(devopsHostAppDTO.getId()),
+                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsHostAppDTO.getId()),
+                devopsHostAppDTO.getPid());
 
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -567,7 +575,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(devopsNormalInstanceDTO.getId());
+        devopsHostCommandDTO.setInstanceId(devopsHostAppDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -598,7 +606,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsNormalInstanceDTO.getId()),
+                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
     }

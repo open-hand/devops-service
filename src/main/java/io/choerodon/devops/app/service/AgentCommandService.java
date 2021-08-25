@@ -53,7 +53,7 @@ public interface AgentCommandService {
 
     void operatePodCount(String kind, String deployment, String namespace, Long clusterId, Long count);
 
-    void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type);
+    void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO);
 
     void gitopsSyncCommandStatus(Long clusterId, String envCode, Long envId, List<Command> commands);
 

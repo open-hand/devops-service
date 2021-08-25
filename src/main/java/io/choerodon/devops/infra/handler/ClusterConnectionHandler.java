@@ -41,6 +41,9 @@ public class ClusterConnectionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterConnectionHandler.class);
 
     private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
+    @Value("${local.test:false}")
+    private Boolean localTest;
+
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
@@ -60,6 +63,10 @@ public class ClusterConnectionHandler {
      * @param clusterId 环境ID
      */
     public void checkEnvConnection(Long clusterId) {
+        // 这里加判断为方便本地调试，没有其他用途
+        if (localTest) {
+            return;
+        }
         if (!getEnvConnectionStatus(clusterId)) {
             throw new CommonException("error.env.disconnect");
         }

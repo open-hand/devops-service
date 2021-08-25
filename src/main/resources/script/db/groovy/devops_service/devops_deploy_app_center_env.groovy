@@ -25,7 +25,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_env.groovy') {
             column(name: 'operation_type', type: 'VARCHAR(32)', remarks: '操作类型') {
                 constraints(nullable: false)
             }
-            column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 chart/jar/docker') {
+            column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 chart/deployment') {
                 constraints(nullable: false)
             }
 
@@ -46,6 +46,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_env.groovy') {
         }
         createIndex(indexName: "idx_project_id", tableName: "devops_deploy_app_center_env") {
             column(name: "project_id")
+        }
+    }
+    changeSet(author: 'scp', id: '2021-8-18-add-column') {
+        addColumn(tableName: 'devops_deploy_app_center_env') {
+            column(name: 'chart_source', type: 'VARCHAR(40)', remarks: 'chart包来源,normal(项目服务)/share(共享)/market/hzero ChartSourceEnum',afterColumn: 'rdupm_type'){
+                constraints(nullable: false)
+            }
         }
     }
 }

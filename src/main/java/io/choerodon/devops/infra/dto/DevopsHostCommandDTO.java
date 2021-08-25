@@ -6,6 +6,7 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -28,7 +29,7 @@ public class DevopsHostCommandDTO extends AuditDomain {
     @ApiModelProperty("操作主机id")
     private Long hostId;
     /**
-     * {@link io.choerodon.devops.infra.enums.host.HostResourceType}
+     * {@link HostResourceType}
      */
     @ApiModelProperty("实例类型,docker、jar")
     private String instanceType;

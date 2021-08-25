@@ -2016,4 +2016,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         envAutoDeployVO.setAutoDeployStatus(devopsEnvironmentDTO.getAutoDeploy());
         return envAutoDeployVO;
     }
+
+    @Override
+    public DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId) {
+        // 查询环境
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        // 校验环境和项目匹配
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        return devopsEnvironmentDTO;
+    }
 }

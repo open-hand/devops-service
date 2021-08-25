@@ -193,7 +193,7 @@ public class HarborServiceImpl implements HarborService {
             }
         }
         configVO.setProject(harborRepoConfig.getRepoName());
-        configVO.setPrivate(Boolean.TRUE.toString().equals(harborRepoConfig.getIsPrivate()));
+        configVO.setIsPrivate(Boolean.TRUE.toString().equals(harborRepoConfig.getIsPrivate()));
 
         devopsHarborConfig.setConfig(gson.toJson(configVO));
         devopsHarborConfig.setType(harborRepoDTO.getRepoType());

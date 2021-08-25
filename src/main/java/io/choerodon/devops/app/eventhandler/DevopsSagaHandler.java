@@ -748,4 +748,24 @@ public class DevopsSagaHandler {
 
     }
 
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+            description = "处理应用服务迁移",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handleTransferAppService(String data) {
+
+        AppServiceTransferVO appServiceTransferVO = JsonHelper.unmarshalByJackson(data, AppServiceTransferVO.class);
+
+        try {
+            appServiceService.createAppServiceForTransfer(appServiceTransferVO);
+        } catch (Exception e) {
+            appServiceService.setAppErrStatus(data, appServiceTransferVO.getProjectId(), appServiceTransferVO.getAppServiceId());
+            throw e;
+        }
+
+    }
+
 }

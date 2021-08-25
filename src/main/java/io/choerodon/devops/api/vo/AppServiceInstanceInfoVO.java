@@ -78,7 +78,7 @@ public class AppServiceInstanceInfoVO {
     private Long clusterId;
 
     /**
-     * {@link io.choerodon.devops.infra.enums.AppServiceInstanceSource}
+     * {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
     private String source;
 

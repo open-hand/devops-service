@@ -15,7 +15,6 @@ import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -38,23 +37,22 @@ public class DevopsGitlabGroupController {
     public ResponseEntity<List<GroupDTO>> listOwnedGroupExpectCurrent(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "搜索参数", required = false)
-            @RequestParam(value = "search", required = false) String search) {
-        return ResponseEntity.ok(devopsGitService.listOwnedGroupExpectCurrent(projectId, search));
+            @ApiParam(value = "搜索参数")
+            @RequestParam(value = "params", required = false) String params) {
+        return ResponseEntity.ok(devopsGitService.listOwnedGroupExpectCurrent(projectId, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询用户是owner角色的项目列表")
-    @GetMapping(value = "/{gitlab_group_id}/projects/owned_expect_current")
-    @CustomPageRequest
+    @GetMapping(value = "/{gitlab_group_id}/projects")
     public ResponseEntity<Page<GitlabProjectDTO>> listOwnedProjectByGroupId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "gitlab_group_id") Integer gitlabGroupId,
-            @ApiParam(value = "搜索参数", required = false)
-            @RequestParam(value = "search", required = false) String search,
+            @ApiParam(value = "搜索参数")
+            @RequestParam(value = "params", required = false) String params,
             @ApiIgnore PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsGitService.listOwnedProjectByGroupId(projectId, gitlabGroupId, search, pageRequest));
+        return ResponseEntity.ok(devopsGitService.listOwnedProjectByGroupId(projectId, gitlabGroupId, params, pageRequest));
     }
 }

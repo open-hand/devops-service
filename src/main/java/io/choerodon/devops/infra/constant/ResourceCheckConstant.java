@@ -58,5 +58,8 @@ public class ResourceCheckConstant {
     // deploy
     public static final String ERROR_DEPLOY_RECORD_ID_IS_NULL = "error.deploy.record.id.is.null";
 
+    // app
+    public static final String ERROR_APP_CODE_IS_NULL = "error.app.code.is.null";
+
 
 }

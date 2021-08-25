@@ -1,8 +1,9 @@
 package io.choerodon.devops.api.vo.workload;
 
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
@@ -25,15 +26,13 @@ public class StatefulSetWorkLoad extends WorkLoad {
     private DevopsStatefulSetService devopsStatefulSetService;
 
 
-
-
     @Override
-    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId) {
+    public void updateWorkLoad(DevopsEnvCommandDTO devopsEnvCommandDTO, String newName, Long resourceId, Map<String, Object> extraInfo) {
         workloadService.updateStatefulSet(devopsEnvCommandDTO, newName, resourceId);
     }
 
     @Override
-    public Long createWorkload(String name, Long projectId, Long envId, Long commandId) {
+    public Long createWorkload(String name, Long projectId, Long envId, Long commandId, Map<String, Object> extraInfo) {
         DevopsStatefulSetDTO devopsStatefulSetDTO = new DevopsStatefulSetDTO(name, projectId, envId, commandId);
         return devopsStatefulSetService.baseCreate(devopsStatefulSetDTO);
     }

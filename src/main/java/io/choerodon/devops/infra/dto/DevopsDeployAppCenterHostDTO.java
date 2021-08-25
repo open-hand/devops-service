@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -7,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * devops主机部署应用表
@@ -14,8 +17,9 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @Table(name = "devops_deploy_app_center_host")
 @ModifyAudit
 @VersionAudit
-public class DevopsDeployAppCenterHostDTO {
+public class DevopsDeployAppCenterHostDTO extends AuditDomain {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty(name = "name")
@@ -36,9 +40,11 @@ public class DevopsDeployAppCenterHostDTO {
     @ApiModelProperty(name = "操作类型")
     private String operationType;
 
-    @ApiModelProperty(name = "chart/jar/docker")
-    private String rdupmType;
+    @ApiModelProperty(name = "jar类型")
+    private String jarSource;
 
+    @ApiModelProperty(name = "jar/docker")
+    private String rdupmType;
 
     public Long getId() {
         return id;
@@ -102,5 +108,13 @@ public class DevopsDeployAppCenterHostDTO {
 
     public void setRdupmType(String rdupmType) {
         this.rdupmType = rdupmType;
+    }
+
+    public String getJarSource() {
+        return jarSource;
+    }
+
+    public void setJarSource(String jarSource) {
+        this.jarSource = jarSource;
     }
 }

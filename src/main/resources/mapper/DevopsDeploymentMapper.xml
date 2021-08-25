@@ -28,4 +28,19 @@
         </where>
     </select>
 
+    <select id="queryDeployGroupInfoById" resultType="io.choerodon.devops.api.vo.DevopsDeployGroupVO">
+        SELECT ddace.name AS name,
+               ddp.name AS code,
+        ddp.app_config AS appConfigJson,
+        ddp.container_config AS containerConfigJson,
+        ddp.env_id AS envId
+        FROM devops_deployment ddp
+        JOIN devops_deploy_app_center_env ddace ON ddace.id = ddp.instance_id
+        WHERE ddp.id=#{id}
+    </select>
+
+    <select id="queryByInstanceIdAndSourceType" resultType="io.choerodon.devops.infra.dto.DevopsDeploymentDTO">
+        SELECT * FROM devops_deployment
+        WHERE instance_id=#{instanceId} and source_type=#{sourceType}
+    </select>
 </mapper>

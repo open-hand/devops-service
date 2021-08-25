@@ -650,13 +650,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
         // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
+        // 1ki=1024
+        // 1Mi=1024*1024
         size = (long) (size * Math.pow(1024, (double) level + 2));
 
         return new BigDecimal(size);
     }
 
     private Quantity convertResource(String resourceString) {
-
         return new Quantity(convertResourceToDigits(resourceString), Quantity.Format.BINARY_SI);
     }
 

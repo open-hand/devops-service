@@ -37,9 +37,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.core.utils.PageUtils;
-import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.MergeRequestVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
@@ -1235,31 +1234,83 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public List<GroupDTO> listOwnedGroupExpectCurrent(Long projectId, String search) {
+
+        if (org.apache.commons.lang3.StringUtils.isEmpty(search)) {
+            return new ArrayList<>();
+        }
         // 查询当前group的id
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
 
         // 查询是owner权限的group列表
-        GroupFilter groupFilter = new GroupFilter();
-        groupFilter.setOwned(true);
-        groupFilter.setSkipGroups(Collections.singletonList(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId())));
-        groupFilter.setSearch(search);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
-        return gitlabServiceClientOperator.listGroupsWithParam(groupFilter, TypeUtil.objToInteger(GitUserNameUtil.getUserId()));
+        List<GroupDTO> groupDTOS = gitlabServiceClientOperator.listGroupsWithParam(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                true,
+                search,
+                Collections.singletonList(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId())));
+
+        if (CollectionUtils.isEmpty(groupDTOS)) {
+            return new ArrayList<>();
+        }
+        Set<Integer> groupIds = groupDTOS.stream().map(GroupDTO::getId).collect(Collectors.toSet());
+
+        List<DevopsProjectDTO> devopsProjectDTOS = devopsProjectService.listExistGroup(groupIds);
+        if (!CollectionUtils.isEmpty(devopsProjectDTOS)) {
+            Map<Long, GroupDTO> groupDTOMap = groupDTOS.stream()
+                    .distinct()
+                    .collect(Collectors.toMap(v -> TypeUtil.objToLong(v.getId()), Function.identity()));
+            devopsProjectDTOS.forEach(devopsProjectDTO1 -> {
+
+                if(groupDTOMap.get(devopsProjectDTO1.getDevopsAppGroupId()) != null) {
+                    groupDTOMap.get(devopsProjectDTO1.getDevopsAppGroupId()).setBindFlag(true);
+                }
+                if (groupDTOMap.get(devopsProjectDTO1.getDevopsEnvGroupId()) != null) {
+                    groupDTOMap.get(devopsProjectDTO1.getDevopsEnvGroupId()).setBindFlag(true);
+                }
+                if (groupDTOMap.get(devopsProjectDTO1.getDevopsClusterEnvGroupId()) != null) {
+                    groupDTOMap.get(devopsProjectDTO1.getDevopsClusterEnvGroupId()).setBindFlag(true);
+                }
+                });
+            }
+
+        return groupDTOS;
     }
 
     @Override
     public Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest) {
 
-        GroupProjectsFilter groupProjectsFilter = new GroupProjectsFilter();
-        groupProjectsFilter.setOwned(true);
-        groupProjectsFilter.setPage(pageRequest.getPage());
-        groupProjectsFilter.setPerPage(pageRequest.getSize());
-        groupProjectsFilter.setSearch(search);
-
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
         List<GitlabProjectDTO> gitlabProjectDTOS = gitlabServiceClientOperator.listProject(gitlabGroupId,
-                TypeUtil.objToInteger(GitUserNameUtil.getUserId()),
-                groupProjectsFilter);
-        return PageUtils.createPageFromList(gitlabProjectDTOS, pageRequest);
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                true,
+                search,
+                pageRequest.getPage(),
+                pageRequest.getSize());
+
+        int totalElements = 0;
+        if (gitlabProjectDTOS.size() < pageRequest.getSize()) {
+            totalElements = (pageRequest.getPage() * pageRequest.getSize()) + gitlabProjectDTOS.size();
+        } else {
+            List<GitlabProjectDTO> nextProjects = gitlabServiceClientOperator.listProject(gitlabGroupId,
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                    true,
+                    search,
+                    pageRequest.getPage() + 1,
+                    pageRequest.getSize());
+            if (CollectionUtils.isEmpty(nextProjects)) {
+                totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize());
+            } else {
+                totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize()) + 1;
+            }
+        }
+
+
+        Page<GitlabProjectDTO> pageFromList = new Page<>();
+        pageFromList.setTotalElements(totalElements);
+        pageFromList.setContent(gitlabProjectDTOS);
+        pageFromList.setSize(pageRequest.getSize());
+        pageFromList.setNumber(pageRequest.getPage());
+        return pageFromList;
     }
 }

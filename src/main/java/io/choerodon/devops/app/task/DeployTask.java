@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
 
-//@ConditionalOnProperty(value = "local.test",havingValue = "false",matchIfMissing = true)
+@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
 @Component
 public class DeployTask {
     @Autowired
@@ -17,7 +17,7 @@ public class DeployTask {
      * 定时更新中间件的安装状态,每3分钟执行一次
      */
     @Scheduled(cron = "0 0/3 * * * ?")
-    public void updateStatus(){
+    public void updateStatus() {
         devopsMiddlewareService.updateMiddlewareStatus();
     }
 }

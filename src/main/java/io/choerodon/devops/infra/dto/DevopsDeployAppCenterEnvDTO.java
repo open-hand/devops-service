@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -17,6 +19,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty(name = "name")
@@ -37,7 +40,10 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @ApiModelProperty(name = "操作类型")
     private String operationType;
 
-    @ApiModelProperty(name = "chart/jar/docker")
+    @ApiModelProperty(name = "chart来源")
+    private String chartSource;
+
+    @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
 
 
@@ -103,5 +109,13 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
 
     public void setRdupmType(String rdupmType) {
         this.rdupmType = rdupmType;
+    }
+
+    public String getChartSource() {
+        return chartSource;
+    }
+
+    public void setChartSource(String chartSource) {
+        this.chartSource = chartSource;
     }
 }

@@ -311,6 +311,11 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY = "devops-pod-ready-handler-for-hzero-deploy";
 
+    /**
+     * 迁移应用服务
+     */
+    public static final String DEVOPS_TRANSFER_APP_SERVICE = "devops-transfer-app-service";
+
     private SagaTaskCodeConstants() {
     }
 }

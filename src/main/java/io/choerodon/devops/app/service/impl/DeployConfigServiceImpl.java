@@ -44,7 +44,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
                     .setDeployRecordId(devopsDeployRecordId)
                     .setHostId(jarDeployVO.getHostId())
                     .setDeployObjectKey(deployObjectKey)
-                    .setInstanceName(jarDeployVO.getName())
+                    .setInstanceName(jarDeployVO.getAppCode())
                     .setMountPath(configSetting.getMountPath())
                     .setConfigId(configSetting.getConfigId())
                     .setConfigGroup(configSetting.getConfigGroup())
@@ -71,7 +71,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
 
         nacosListenConfigs.forEach(nacosListenConfig -> {
             nacosListenConfig.setMountPaths(configMountPathMap.get(nacosListenConfig.getConfigId()));
-            nacosListenConfig.setInstanceName(jarDeployVO.getName());
+            nacosListenConfig.setInstanceName(jarDeployVO.getAppCode());
         });
         return JsonHelper.marshalByJackson(nacosListenConfigs);
     }

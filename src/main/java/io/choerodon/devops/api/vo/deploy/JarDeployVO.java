@@ -21,11 +21,21 @@ public class JarDeployVO {
     @ApiModelProperty("主机id")
     private Long hostId;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppSourceType}
+     */
     @ApiModelProperty("部署来源")
     private String sourceType;
 
-    @ApiModelProperty("实例名")
-    private String name;
+    @ApiModelProperty("应用名")
+    private String appName;
+
+    @ApiModelProperty("应用编码")
+    private String appCode;
+
+    @ApiModelProperty("来源配置")
+    private String sourceConfig;
+
     /**
      * 部署对象id
      */
@@ -35,6 +45,8 @@ public class JarDeployVO {
     @ApiModelProperty("部署values")
     @NotNull(message = "error.value.is.null")
     private String value;
+
+    private String jarFileUrl;
 
     private ProdJarInfoVO prodJarInfoVO;
 
@@ -51,12 +63,36 @@ public class JarDeployVO {
         this.prodJarInfoVO = prodJarInfoVO;
     }
 
-    public String getName() {
-        return name;
+    public String getJarFileUrl() {
+        return jarFileUrl;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setJarFileUrl(String jarFileUrl) {
+        this.jarFileUrl = jarFileUrl;
+    }
+
+    public String getSourceConfig() {
+        return sourceConfig;
+    }
+
+    public void setSourceConfig(String sourceConfig) {
+        this.sourceConfig = sourceConfig;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public String getValue() {

@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsWorkloadResourceContentService;
@@ -23,6 +24,7 @@ public class DevopsWorkloadResourceContentServiceImpl implements DevopsWorkloadR
     }
 
     @Override
+    @Transactional
     public void create(String type, Long workLoadId, String content) {
         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = new DevopsWorkloadResourceContentDTO(workLoadId, type, content);
         MapperUtil.resultJudgedInsert(devopsWorkloadResourceContentMapper, devopsWorkloadResourceContentDTO, "error.workload.resource.create");

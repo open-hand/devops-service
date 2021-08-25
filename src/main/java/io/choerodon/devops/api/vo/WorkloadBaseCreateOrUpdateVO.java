@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -14,6 +15,8 @@ public class WorkloadBaseCreateOrUpdateVO {
     private String operateType;
     @ApiModelProperty("资源id")
     private String resourceId;
+    @ApiModelProperty("额外信息，比如会用来保存部署组的应用配置、容器配置信息")
+    private Map<String, Object> extraConfig;
 
     public String getEnvId() {
         return envId;
@@ -45,5 +48,13 @@ public class WorkloadBaseCreateOrUpdateVO {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public Map<String, Object> getExtraConfig() {
+        return extraConfig;
+    }
+
+    public void setExtraConfig(Map<String, Object> extraConfig) {
+        this.extraConfig = extraConfig;
     }
 }

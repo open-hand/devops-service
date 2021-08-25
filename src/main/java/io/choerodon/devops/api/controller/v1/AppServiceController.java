@@ -864,6 +864,18 @@ public class AppServiceController {
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
         return ResponseEntity.ok(applicationServiceService.queryHostAppServices(projectId, type, hostId, params, pageRequest));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "批量迁移平台gitlab代码库")
+    @PutMapping("/batch_transfer")
+    public ResponseEntity<Void> batchTransfer(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody List<AppServiceTransferVO> appServiceTransferVOList
+            ) {
+        applicationServiceService.batchTransfer(projectId, appServiceTransferVOList);
+        return ResponseEntity.noContent().build();
+    }
 }
 
 

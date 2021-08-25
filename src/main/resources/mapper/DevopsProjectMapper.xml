@@ -24,4 +24,23 @@
             #{projectId}
         </foreach>
     </select>
+    <select id="listExistGroup" resultType="io.choerodon.devops.infra.dto.DevopsProjectDTO">
+        SELECT *
+        FROM devops_project dp
+        WHERE
+        dp.devops_app_group_id IN
+        <foreach collection="groupIds" item="id" open="(" close=")" index="i" separator=",">
+            #{id}
+        </foreach>
+        OR
+        dp.devops_env_group_id IN
+        <foreach collection="groupIds" item="id" open="(" close=")" index="i" separator=",">
+            #{id}
+        </foreach>
+        OR
+        dp.devops_cluster_env_group_id in
+        <foreach collection="groupIds" item="id" open="(" close=")" index="i" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

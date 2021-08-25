@@ -23,12 +23,28 @@ public interface DevopsEnvResourceService {
     DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);
 
     /**
+     * deploymnet 资源展示
+     *
+     * @param deploymentId
+     * @return
+     */
+    DevopsEnvResourceVO listResourcesByDeploymentId(Long deploymentId);
+
+    /**
      * 获取部署实例Event事件
      *
      * @param instanceId
      * @return
      */
     List<InstanceEventVO> listInstancePodEvent(Long instanceId);
+
+    /**
+     * 获取部署组实例Event事件
+     *
+     * @param instanceId
+     * @return
+     */
+    List<InstanceEventVO> listDeploymentPodEvent(Long instanceId);
 
     void baseCreate(DevopsEnvResourceDTO devopsEnvResourceDTO);
 

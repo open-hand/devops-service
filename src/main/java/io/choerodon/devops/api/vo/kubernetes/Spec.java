@@ -8,7 +8,7 @@ public class Spec {
     @ApiModelProperty("这个实例所属的应用服务id/选填，由猪齿鱼前端页面创建的实例应该有这个值，便于网络选择此实例进行管理。被用于实例的label: choerodon.io/app-service-id")
     private Long appServiceId;
     /**
-     * {@link io.choerodon.devops.infra.enums.AppServiceInstanceSource}
+     * {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
     @ApiModelProperty("这个实例的来源/选填，默认为normal")
     private String source;

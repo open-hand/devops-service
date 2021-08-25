@@ -20,12 +20,15 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
+import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -42,12 +45,20 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, ChartResourceOperatorService {
+    public static final String EXTRA_INFO_KEY_APP_CONFIG = "appConfig";
+    public static final String EXTRA_INFO_KEY_CONTAINER_CONFIG = "containerConfig";
+    public static final String EXTRA_INFO_KEY_SOURCE_TYPE = "sourceType";
+    public static final String INSTANCE_ID = "instanceId";
+
+
     @Autowired
     private DevopsDeploymentMapper devopsDeploymentMapper;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     private static JSON json = new JSON();
 
@@ -221,6 +232,10 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(id);
+        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
+            devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
+        }
         devopsDeploymentMapper.deleteByPrimaryKey(id);
         devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
     }
@@ -228,5 +243,15 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     public ResourceType getType() {
         return ResourceType.DEPLOYMENT;
+    }
+
+    @Override
+    public DevopsDeployGroupVO queryDeployGroupInfoById(Long id) {
+        return devopsDeploymentMapper.queryDeployGroupInfoById(id);
+    }
+
+    @Override
+    public DevopsDeploymentDTO queryByInstanceIdAndSourceType(Long instanceId, String type) {
+        return devopsDeploymentMapper.queryByInstanceIdAndSourceType(instanceId, type);
     }
 }

@@ -109,7 +109,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     @Lazy
-    private DevopsNormalInstanceService devopsNormalInstanceService;
+    private DevopsHostAppService devopsHostAppService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
@@ -117,7 +117,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
-    private DevopsNormalInstanceMapper devopsNormalInstanceMapper;
+    private DevopsHostAppMapper devopsHostAppMapper;
     @Autowired
     private SshUtil sshUtil;
     @Autowired
@@ -209,7 +209,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsHostMapper.deleteByPrimaryKey(hostId);
             devopsDockerInstanceMapper.deleteByHostId(hostId);
             devopsHostCommandMapper.deleteByHostId(hostId);
-            devopsNormalInstanceMapper.deleteByHostId(hostId);
+            devopsHostAppMapper.deleteByHostId(hostId);
         } catch (Exception exception) {
             throw new CommonException("falied to delete host");
         }
@@ -286,8 +286,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public boolean HostIdInstanceIdMatch(Long hostId, Long instanceId) {
-        DevopsNormalInstanceDTO devopsNormalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
-        return devopsNormalInstanceDTO != null && devopsNormalInstanceDTO.getHostId().equals(hostId);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(instanceId);
+        return devopsHostAppDTO != null && devopsHostAppDTO.getHostId().equals(hostId);
     }
 
     @Override
@@ -357,12 +357,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     public List<DevopsJavaInstanceVO> listJavaProcessInfo(Long projectId, Long hostId) {
-        List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOList = devopsNormalInstanceService.listByHostId(hostId);
-        if (CollectionUtils.isEmpty(devopsNormalInstanceDTOList)) {
+        List<DevopsHostAppDTO> devopsHostAppDTOList = devopsHostAppService.listByHostId(hostId);
+        if (CollectionUtils.isEmpty(devopsHostAppDTOList)) {
             return new ArrayList<>();
         }
 
-        List<DevopsJavaInstanceVO> devopsJavaInstanceVOS = ConvertUtils.convertList(devopsNormalInstanceDTOList, DevopsJavaInstanceVO.class);
+        List<DevopsJavaInstanceVO> devopsJavaInstanceVOS = ConvertUtils.convertList(devopsHostAppDTOList, DevopsJavaInstanceVO.class);
 
         UserDTOFillUtil.fillUserInfo(devopsJavaInstanceVOS, "createdBy", "deployer");
         return devopsJavaInstanceVOS;
@@ -392,9 +392,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Transactional
     public void deleteJavaProcess(Long projectId, Long hostId, Long instanceId) {
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
-        DevopsNormalInstanceDTO normalInstanceDTO = devopsNormalInstanceMapper.selectByPrimaryKey(instanceId);
+        DevopsHostAppDTO normalInstanceDTO = devopsHostAppMapper.selectByPrimaryKey(instanceId);
         if (normalInstanceDTO.getPid() == null) {
-            devopsNormalInstanceMapper.deleteByPrimaryKey(instanceId);
+            devopsHostAppMapper.deleteByPrimaryKey(instanceId);
             return;
         }
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -867,8 +867,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {
         if (!CollectionUtils.isEmpty(devopsNormalInstances)) {
             List<Long> normalInstanceIds = devopsNormalInstances.stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toList());
-            List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
-            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class);
+            List<DevopsHostAppDTO> devopsHostAppDTOS = devopsHostAppMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
+            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsHostAppDTOS, DevopsNormalInstanceVO.class);
             devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
                 devopsNormalInstanceVO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
                 //加上操作状态
@@ -904,8 +904,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         List<DevopsHostAppInstanceRelDTO> normalHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> !StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(normalHostInstances)) {
             List<Long> normalInstanceIds = normalHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
-            List<DevopsNormalInstanceDTO> devopsNormalInstanceDTOS = devopsNormalInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
-            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsNormalInstanceDTOS, DevopsNormalInstanceVO.class);
+            List<DevopsHostAppDTO> devopsHostAppDTOS = devopsHostAppMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
+            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsHostAppDTOS, DevopsNormalInstanceVO.class);
             devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
                 devopsNormalInstanceVO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
                 //加上操作状态
