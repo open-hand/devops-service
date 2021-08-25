@@ -209,7 +209,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
         devopsProjectDTO.setIamProjectId(projectId);
         DevopsProjectDTO projectDTO = devopsProjectMapper.selectOne(devopsProjectDTO);
-        if (Objects.isNull(projectDTO)) {
+        if (!Objects.isNull(projectDTO)) {
             return projectDTO.getDevopsAppGroupId();
         } else {
             return null;
