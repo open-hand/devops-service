@@ -55,6 +55,7 @@ public class DevopsHostAppController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
+            @Encrypt
             @PathVariable(value = "app_id") Long id) {
         return ResponseEntity.ok(devopsHostAppService.queryAppById(projectId, id));
     }
