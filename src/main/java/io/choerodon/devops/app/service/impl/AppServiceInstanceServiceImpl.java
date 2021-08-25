@@ -1990,7 +1990,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
         // 创建应用中心应用
-        devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getInstanceName(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), OperationTypeEnum.BATCH_DEPLOY.value(), AppSourceType.NORMAL.getValue(), RdupmTypeEnum.CHART.value());
+        devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getInstanceName(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), OperationTypeEnum.BATCH_DEPLOY.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
         appServiceDeployVO.setInstanceName(code);
