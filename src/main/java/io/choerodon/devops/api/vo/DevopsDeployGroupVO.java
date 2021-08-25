@@ -14,7 +14,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  **/
 public class DevopsDeployGroupVO {
     @Encrypt
-    @ApiModelProperty(name = "id")
+    @ApiModelProperty(name = "id,也就是deployment的id")
     private Long id;
 
     @ApiModelProperty("应用中心应用名称")

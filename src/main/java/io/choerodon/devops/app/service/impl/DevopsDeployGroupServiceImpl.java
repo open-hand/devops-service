@@ -74,8 +74,6 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private PermissionHelper permissionHelper;
-    @Autowired
     private AgentCommandService agentCommandService;
     @Autowired
     private WorkloadService workloadService;
@@ -125,12 +123,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvId()));
         workloadBaseCreateOrUpdateVO.setOperateType(operateType);
         workloadBaseCreateOrUpdateVO.setContent(deployment);
+        workloadBaseCreateOrUpdateVO.setResourceId(String.valueOf(devopsDeployGroupVO.getId()));
+        workloadBaseCreateOrUpdateVO.setToDecrypt(false);
         Map<String, Object> extraInfo = new HashMap<>();
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getContainerConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
 
-        workloadBaseCreateOrUpdateVO.setExtraConfig(extraInfo);
+        workloadBaseCreateOrUpdateVO.setExtraInfo(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
 
         // 更新关联的对象id
