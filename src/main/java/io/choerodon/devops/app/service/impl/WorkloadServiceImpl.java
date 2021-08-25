@@ -25,7 +25,6 @@ import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
-import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -299,9 +298,13 @@ public class WorkloadServiceImpl implements WorkloadService {
     private WorkloadBaseVO processKeyEncrypt(WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO) {
         // TODO 待hzero兼容 ModelAttribute 注解后删除
         WorkloadBaseVO decryptedWorkloadBaseVO = ConvertUtils.convertObject(workloadBaseCreateOrUpdateVO, WorkloadBaseVO.class);
-        decryptedWorkloadBaseVO.setEnvId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getEnvId()));
-        decryptedWorkloadBaseVO.setResourceId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getResourceId()));
-        decryptedWorkloadBaseVO.setExtraInfo(workloadBaseCreateOrUpdateVO.getExtraConfig());
+        if (workloadBaseCreateOrUpdateVO.getToDecrypt()) {
+            decryptedWorkloadBaseVO.setEnvId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getEnvId()));
+            decryptedWorkloadBaseVO.setResourceId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getResourceId()));
+        } else {
+            decryptedWorkloadBaseVO.setEnvId(Long.parseLong(workloadBaseCreateOrUpdateVO.getEnvId()));
+            decryptedWorkloadBaseVO.setResourceId(Long.parseLong(workloadBaseCreateOrUpdateVO.getResourceId()));
+        }
         return decryptedWorkloadBaseVO;
     }
 
