@@ -123,7 +123,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvId()));
         workloadBaseCreateOrUpdateVO.setOperateType(operateType);
         workloadBaseCreateOrUpdateVO.setContent(deployment);
-        workloadBaseCreateOrUpdateVO.setResourceId(String.valueOf(devopsDeployGroupVO.getId()));
+        if (devopsDeployGroupVO.getId() != null) {
+            workloadBaseCreateOrUpdateVO.setResourceId(String.valueOf(devopsDeployGroupVO.getId()));
+        }
         workloadBaseCreateOrUpdateVO.setToDecrypt(false);
         Map<String, Object> extraInfo = new HashMap<>();
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
