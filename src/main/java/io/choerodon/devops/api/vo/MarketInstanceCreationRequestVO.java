@@ -80,6 +80,10 @@ public class MarketInstanceCreationRequestVO {
     @NotBlank(message = "error.app.instance.code.null")
     private String appCode;
 
+    @JsonIgnore
+    @ApiModelProperty("操作类型 hzero/base_component/create_app")
+    private String operationType;
+
     public MarketInstanceCreationRequestVO() {
     }
 
@@ -93,7 +97,8 @@ public class MarketInstanceCreationRequestVO {
                                            DevopsServiceReqVO devopsServiceReqVO,
                                            DevopsIngressVO devopsIngressVO,
                                            String source,
-                                           String applicationType) {
+                                           String applicationType,
+                                           String operationType) {
         this.instanceId = instanceId;
         this.marketAppServiceId = marketAppServiceId;
         this.marketDeployObjectId = marketDeployObjectId;
@@ -105,6 +110,7 @@ public class MarketInstanceCreationRequestVO {
         this.devopsIngressVO = devopsIngressVO;
         this.source = source;
         this.applicationType = applicationType;
+        this.operationType=operationType;
     }
 
 
@@ -235,5 +241,13 @@ public class MarketInstanceCreationRequestVO {
 
     public void setAppCode(String appCode) {
         this.appCode = appCode;
+    }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
     }
 }

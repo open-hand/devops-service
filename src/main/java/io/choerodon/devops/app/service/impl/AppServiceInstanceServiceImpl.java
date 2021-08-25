@@ -856,7 +856,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
             if (CREATE.equals(appServiceDeployVO.getType())) {
-                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), AppSourceType.NORMAL.getValue(), RdupmTypeEnum.CHART.value());
+                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
             } else {
                 DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getAppCode());
                 devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
@@ -973,7 +973,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             sendCreateOrUpdateInstanceSaga(devopsEnvironmentDTO, instanceSagaPayload);
             // 创建应用中心的应用
             if (appServiceDeployVO.getCommandType().equals(CREATE)) {
-                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isMiddleware(appServiceDeployVO.getSource()) ? OperationTypeEnum.BASE_COMPONENT.value() : OperationTypeEnum.CREATE_APP.value(), source, RdupmTypeEnum.CHART.value());
+                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getOperationType(), source, RdupmTypeEnum.CHART.value());
             } else {
                 DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
                 devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
@@ -2214,7 +2214,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
                     devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                     AppSourceType.MARKET.getValue(),
-                    AppSourceType.HZERO.getValue());
+                    AppSourceType.HZERO.getValue(),
+                    OperationTypeEnum.HZERO.value());
             marketInstanceCreationRequestVO.setAppCode(devopsHzeroDeployDetailsDTO.getInstanceCode());
             marketInstanceCreationRequestVO.setAppName(devopsHzeroDeployDetailsDTO.getInstanceCode());
             instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
@@ -2241,7 +2242,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
                         devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
                         AppSourceType.MARKET.getValue(),
-                        AppSourceType.HZERO.getValue());
+                        AppSourceType.HZERO.getValue(),
+                        OperationTypeEnum.HZERO.value());
                 marketInstanceCreationRequestVO.setAppCode(devopsHzeroDeployDetailsDTO.getInstanceCode());
                 marketInstanceCreationRequestVO.setAppName(devopsHzeroDeployDetailsDTO.getInstanceCode());
                 instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
