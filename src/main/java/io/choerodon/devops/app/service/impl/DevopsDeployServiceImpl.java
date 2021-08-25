@@ -125,8 +125,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     instanceVO.getInstanceCode(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
-            devopsDeployAppCenterService.baseCreate(instanceVO.getMktServiceName(), instanceVO.getInstanceCode(), projectId, instanceVO.getMktDeployObjectId(),
-                    devopsHzeroDeployDetailsDTO.getEnvId(), OperationTypeEnum.HZERO.value(), AppSourceType.HZERO.getValue(), RdupmTypeEnum.CHART.value());
+
         });
 
         // 构建工作流部署对象
