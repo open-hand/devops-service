@@ -59,6 +59,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private static final String WGET_COMMAND_TEMPLATE = "wget %s -O /choerodon/%s";
     private static final String WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE = "wget --user=%s --password=%s %s -O /choerodon/%s";
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
+    private static final String SEPARATOR = ";";
 
     private static final String IF_NOT_PRESENT = "IfNotPresent";
     private static final String VOLUME_MOUNt_NAME = "jar";
@@ -204,10 +205,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         v1PodSpec.setDnsPolicy(devopsDeployGroupAppConfigVO.getDnsPolicy());
         V1PodDNSConfig v1PodDNSConfig = new V1PodDNSConfig();
         if (!StringUtils.isEmpty(devopsDeployGroupAppConfigVO.getNameServers())) {
-            v1PodDNSConfig.setNameservers(Arrays.asList(devopsDeployGroupAppConfigVO.getNameServers().split(",")));
+            v1PodDNSConfig.setNameservers(Arrays.asList(devopsDeployGroupAppConfigVO.getNameServers().split(SEPARATOR)));
         }
         if (!StringUtils.isEmpty(devopsDeployGroupAppConfigVO.getSearches())) {
-            v1PodDNSConfig.setSearches(Arrays.asList(devopsDeployGroupAppConfigVO.getSearches().split(",")));
+            v1PodDNSConfig.setSearches(Arrays.asList(devopsDeployGroupAppConfigVO.getSearches().split(SEPARATOR)));
         }
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getOptions())) {
             List<V1PodDNSConfigOption> v1PodDNSConfigOptionList = new ArrayList<>();
@@ -233,7 +234,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             hostAliasMap.forEach((ip, hostNames) -> {
                 V1HostAlias hostAlias = new V1HostAlias();
                 hostAlias.setIp(ip);
-                hostAlias.setHostnames(Arrays.asList(hostNames.split(",")));
+                hostAlias.setHostnames(Arrays.asList(hostNames.split(SEPARATOR)));
                 hostAliasList.add(hostAlias);
             });
             v1PodSpec.setHostAliases(hostAliasList);
@@ -331,7 +332,71 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      * @param devopsDeployGroupVO
      */
     void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO) {
-        // todo 校验配置
+        DevopsDeployGroupAppConfigVO appConfig = devopsDeployGroupVO.getAppConfig();
+
+        appConfig.getLabels().forEach((key, value) -> {
+            if (!K8sUtil.LABEL_NAME_PATTERN.matcher(key).matches()) {
+                throw new CommonException("error.app.config.label.name.illegal");
+            }
+        });
+
+        appConfig.getAnnotations().forEach((key, value) -> {
+            if (!K8sUtil.ANNOTATION_NAME_PATTERN.matcher(key).matches()) {
+                throw new CommonException("error.app.config.annotation.name.illegal");
+            }
+        });
+
+        if (appConfig.getNameServers().split(SEPARATOR).length > 3) {
+            throw new CommonException("error.app.config.nameservers.length");
+        }
+
+        if (appConfig.getSearches().split(SEPARATOR).length > 6) {
+            throw new CommonException("error.app.config.searches.length");
+        }
+
+        List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOList = devopsDeployGroupVO.getContainerConfig();
+
+        List<String> existPorts = new ArrayList<>();
+        devopsDeployGroupContainerConfigVOList.forEach(containerConfig -> {
+
+            if (containerConfig.getName().length() > 64) {
+                throw new CommonException("error.container.config.name.length");
+            }
+
+            if (!K8sUtil.NAME_PATTERN.matcher(containerConfig.getName()).matches()) {
+                throw new CommonException("error.container.config.name.illegal");
+            }
+
+            if (!StringUtils.isEmpty(containerConfig.getRequestCpu()) && !StringUtils.isEmpty(containerConfig.getLimitCpu())) {
+                if (Integer.parseInt(containerConfig.getRequestCpu()) > Integer.parseInt(containerConfig.getLimitCpu())) {
+                    throw new CommonException("error.container.config.cpu.request.more.than.limit");
+                }
+            }
+
+            if (!StringUtils.isEmpty(containerConfig.getRequestMemory()) && !StringUtils.isEmpty(containerConfig.getLimitMemory())) {
+                if (Integer.parseInt(containerConfig.getRequestMemory()) > Integer.parseInt(containerConfig.getLimitMemory())) {
+                    throw new CommonException("error.container.config.memory.request.more.than.limit");
+                }
+            }
+
+            containerConfig.getPorts().forEach(portInfo -> {
+                String name = portInfo.get("name");
+                String port = portInfo.get("port");
+                String namePort = name + port;
+                if (existPorts.contains(namePort)) {
+                    throw new CommonException("error.container.port.exist");
+                }
+                existPorts.add(namePort);
+                if (name.length() > 40) {
+                    throw new CommonException("error.container.port.name.length");
+                }
+                if (Integer.parseInt(port) < 1 || Integer.parseInt(port) > 65535) {
+                    throw new CommonException("error.container.port.range");
+                }
+            });
+
+        });
+
     }
 
 

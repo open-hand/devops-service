@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
@@ -23,6 +24,31 @@ public class K8sUtil {
     private static final String EXIT_CODE = "ExitCode:";
     private static final String NONE_LABEL = "<none>";
     private static final JSON json = new JSON();
+    /**
+     * 名称正则
+     */
+    public static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*");
+
+    /**
+     * Host的正则
+     */
+    public static final Pattern HOST_PATTERN = Pattern.compile("^(\\*\\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
+
+    /**
+     * 子域名正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
+     */
+    public static final Pattern SUB_DOMAIN_PATTERN = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
+
+    /**
+     * Annotation的name正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
+     */
+    public static final Pattern ANNOTATION_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
+
+    /**
+     * Label的name正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
+     */
+    public static final Pattern LABEL_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
+
 
     private K8sUtil() {
     }
