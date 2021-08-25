@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo.deploy.hzero;
 
+import java.util.Date;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
-
-import java.util.Date;
 
 /**
  * 〈功能简述〉
@@ -50,6 +50,9 @@ public class DevopsHzeroDeployDetailsVO {
      */
     @ApiModelProperty("实例状态")
     private String appStatus;
+    @Encrypt
+    @ApiModelProperty("应用id")
+    private Long appId;
 
     private String mktServiceName;
 
@@ -57,6 +60,14 @@ public class DevopsHzeroDeployDetailsVO {
 
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public String getStatus() {
         return status;

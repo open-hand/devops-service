@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import io.choerodon.devops.infra.enums.AppStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,16 +35,10 @@ import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DeployDTO;
-import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
-import io.choerodon.devops.infra.enums.AppSourceType;
-import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
-import io.choerodon.devops.infra.enums.UseRecordType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
@@ -92,6 +85,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Override
     public Long saveRecord(Long projectId,
@@ -492,6 +487,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
             if (!CollectionUtils.isEmpty(appServiceInstanceVOCodes) && appServiceInstanceVOCodes.contains(devopsHzeroDeployDetailsVO.getInstanceCode())) {
                 devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.EXIST.getStatus());
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(envId, devopsHzeroDeployDetailsVO.getInstanceCode());
+                if (devopsDeployAppCenterEnvDTO != null) {
+                    devopsHzeroDeployDetailsVO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+                }
+
             } else {
                 String appStatus = devopsHzeroDeployDetailsVO.getStatus().equals(HzeroDeployDetailsStatusEnum.SUCCESS.value()) ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus();
                 devopsHzeroDeployDetailsVO.setAppStatus(appStatus);
