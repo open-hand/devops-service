@@ -60,7 +60,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
     }
 
     changeSet(author: 'wanghao', id: '2021-08-24-add-column') {
-        addColumn(tableName: 'devops_app_service') {
+        addColumn(tableName: 'devops_host_app') {
             column(name: 'group_id', type:  'varchar(512)', remarks: 'groupId', afterColumn: 'ports')
             column(name: 'artifact_id', type:  'varchar(512)', remarks: 'artifactId', afterColumn: 'group_id')
             column(name: 'version', type:  'varchar(512)', remarks: 'version', afterColumn: 'artifact_id')
