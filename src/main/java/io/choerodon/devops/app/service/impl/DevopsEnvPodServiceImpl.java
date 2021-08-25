@@ -283,7 +283,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         List<DevopsEnvResourceDTO> devopsEnvResourceDTOList = devopsEnvResourceService.listEnvResourceByOptions(envId, ResourceType.POD.getType(), podNames);
         Set<Long> resourceDetailIds = devopsEnvResourceDTOList.stream().map(DevopsEnvResourceDTO::getResourceDetailId).collect(Collectors.toSet());
         Map<String, DevopsEnvResourceDTO> devopsEnvResourceMap = listToMap(devopsEnvResourceDTOList);
-        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByMessageIds(resourceDetailIds);
+        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByResourceDetailsIds(resourceDetailIds);
         Map<Long, DevopsEnvResourceDetailDTO> devopsEnvResourceDetailMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
         devopsEnvPodInfoVOList.forEach(devopsEnvPodInfoVO -> {
@@ -434,6 +434,11 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             }
         }
         return true;
+    }
+
+    @Override
+    public List<DevopsEnvPodVO> listWorkloadPod(String ownerKind, String ownerName) {
+        return devopsEnvPodMapper.listWorkloadPod(ownerKind, ownerName);
     }
 
     private void fillContainers(Long envId, DevopsEnvPodVO devopsEnvPodVO) {

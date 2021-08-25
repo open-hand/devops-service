@@ -16,6 +16,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.WorkloadBaseVO;
 import io.choerodon.devops.api.vo.workload.WorkLoad;

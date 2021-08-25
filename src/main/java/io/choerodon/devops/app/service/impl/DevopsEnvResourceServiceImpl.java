@@ -58,7 +58,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private DevopsWorkloadResourceContentService devopsWorkloadResourceContentService;
     @Autowired
     private DevopsDeploymentService devopsDeploymentService;
-
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
@@ -71,7 +72,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
         // 关联资源
         devopsEnvResourceDTOS.forEach(envResourceDTO -> {
-                    DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baesQueryByMessageId(envResourceDTO.getResourceDetailId());
+            DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(envResourceDTO.getResourceDetailId());
                     if (isReleaseGenerated(envResourceDetailDTO.getMessage())) {
                         dealWithResource(envResourceDetailDTO, envResourceDTO, devopsEnvResourceDTO, appServiceInstanceDTO.getEnvId());
                     }
@@ -82,23 +83,23 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public DevopsEnvResourceVO listResourcesByDeploymentId(Long deploymentId) {
-        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(deploymentId);
+        DevopsDeploymentVO devopsDeploymentVO = devopsDeploymentService.queryByDeploymentIdWithResourceDetail(deploymentId);
         DevopsEnvResourceVO devopsEnvResourceVO = new DevopsEnvResourceVO();
-        if (devopsDeploymentDTO == null) {
+        if (devopsDeploymentVO == null) {
             return devopsEnvResourceVO;
         }
-        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = baseListByEnvAndType(devopsDeploymentDTO.getEnvId(), null);
-        if (devopsEnvResourceDTOS == null) {
-            return devopsEnvResourceVO;
-        }
-        // 关联资源
-        devopsEnvResourceDTOS.forEach(envResourceDTO -> {
-                    DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baesQueryByMessageId(envResourceDTO.getResourceDetailId());
-                    if (isReleaseGenerated(envResourceDetailDTO.getMessage())) {
-                        dealWithResource(envResourceDetailDTO, envResourceDTO, devopsEnvResourceVO, devopsDeploymentDTO.getEnvId());
-                    }
-                }
-        );
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(devopsDeploymentVO.getResourceDetailId());
+
+        // 获取相关的pod
+        List<DevopsEnvPodVO> devopsEnvPodVOs = devopsEnvPodService.listWorkloadPod(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getName());
+
+        V1beta2Deployment v1beta2Deployment = json.deserialize(
+                devopsEnvResourceDetailDTO.getMessage(),
+                V1beta2Deployment.class);
+
+        addDeploymentToResource(devopsEnvResourceVO, v1beta2Deployment, deploymentId);
+
+        devopsEnvResourceVO.getDeploymentVOS().forEach(deploymentVO -> deploymentVO.setDevopsEnvPodVOS(devopsEnvPodVOs));
 
         return devopsEnvResourceVO;
     }
@@ -237,7 +238,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             for (int i = 0; i < jobs.size(); i++) {
                 DevopsEnvResourceDTO job = jobs.get(i);
                 DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO =
-                        devopsEnvResourceDetailService.baesQueryByMessageId(
+                        devopsEnvResourceDetailService.baseQueryByResourceDetailId(
                                 job.getResourceDetailId());
                 V1Job v1Job = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Job.class);
                 if (podEventVOS.size() < 4) {
@@ -601,7 +602,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         for (int i = 0; i < jobs.size(); i++) {
             DevopsEnvResourceDTO job = jobs.get(i);
             DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO =
-                    devopsEnvResourceDetailService.baesQueryByMessageId(
+                    devopsEnvResourceDetailService.baseQueryByResourceDetailId(
                             job.getResourceDetailId());
             V1Job v1Job = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Job.class);
             if (podEventVOS.size() < 4) {

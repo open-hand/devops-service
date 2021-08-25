@@ -75,7 +75,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
         }
         Set<Long> detailsIds = devopsStatefulSetVOPage.getContent().stream().map(DevopsStatefulSetVO::getResourceDetailId)
                 .collect(Collectors.toSet());
-        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByMessageIds(detailsIds);
+        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByResourceDetailsIds(detailsIds);
         Map<Long, DevopsEnvResourceDetailDTO> detailDTOMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
         return ConvertUtils.convertPage(devopsStatefulSetVOPage, v -> {
