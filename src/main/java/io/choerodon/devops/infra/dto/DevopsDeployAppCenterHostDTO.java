@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -17,6 +19,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 public class DevopsDeployAppCenterHostDTO extends AuditDomain {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty(name = "name")
