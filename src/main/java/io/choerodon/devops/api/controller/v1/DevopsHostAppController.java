@@ -58,4 +58,18 @@ public class DevopsHostAppController {
             @PathVariable(value = "app_id") Long id) {
         return ResponseEntity.ok(devopsHostAppService.queryAppById(projectId, id));
     }
+
+    @ApiOperation("删除主机应用")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping("/{host_id}/apps/{app_id}")
+    public ResponseEntity<Void> deleteById(@ApiParam(value = "项目id", required = true)
+                                           @PathVariable("project_id") Long projectId,
+                                           @ApiParam(value = "主机id", required = true)
+                                           @Encrypt
+                                           @PathVariable("host_id") Long hostId,
+                                           @Encrypt
+                                           @PathVariable("app_id") Long appId) {
+        devopsHostAppService.deleteById(projectId, hostId, appId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -48,4 +48,11 @@ public interface DevopsHostAppService {
      */
     DevopsHostAppVO queryAppById(Long projectId, Long id);
 
+    /**
+     * 删除主机应用
+     * @param projectId
+     * @param appId
+     * @param hostId
+     */
+    void deleteById(Long projectId, Long hostId, Long appId);
 }

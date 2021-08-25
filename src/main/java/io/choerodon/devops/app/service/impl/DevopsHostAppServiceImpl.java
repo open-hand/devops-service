@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -25,10 +24,12 @@ import sun.misc.BASE64Decoder;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
+import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
@@ -79,6 +80,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
     private static final String ERROR_JAR_VERSION_NOT_FOUND = "error.jar.version.not.found";
 
+    @Lazy
+    @Autowired
+    private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
     @Autowired
     private DevopsHostAppMapper devopsHostAppMapper;
     @Autowired
@@ -379,6 +383,38 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
         devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getId()));
         return devopsHostAppVO;
+    }
+
+    @Override
+    public void deleteById(Long projectId, Long hostId, Long appId) {
+        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
+        if (devopsHostAppDTO.getPid() == null) {
+            devopsHostAppMapper.deleteByPrimaryKey(appId);
+            return;
+        }
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(appId);
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+
+        JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
+        javaProcessInfoVO.setInstanceId(String.valueOf(appId));
+        javaProcessInfoVO.setPid(devopsHostAppDTO.getPid());
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
     }
 
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {
