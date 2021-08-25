@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.infra.dto.PodResourceDetailsDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -42,4 +43,6 @@ public interface DevopsEnvPodMapper extends BaseMapper<DevopsEnvPodDTO> {
                                         @Param("name") String name,
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("params") List<String> params);
+
+    List<DevopsEnvPodVO> listWorkloadPod(@Param("ownerKind") String ownerKind, @Param("ownerName") String ownerName);
 }

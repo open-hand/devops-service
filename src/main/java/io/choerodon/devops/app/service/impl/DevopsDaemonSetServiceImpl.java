@@ -73,7 +73,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
         }
         Set<Long> detailsIds = devopsDaemonSetVOPage.getContent().stream().map(DevopsDaemonSetVO::getResourceDetailId)
                 .collect(Collectors.toSet());
-        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByMessageIds(detailsIds);
+        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByResourceDetailsIds(detailsIds);
         Map<Long, DevopsEnvResourceDetailDTO> detailDTOMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
         return ConvertUtils.convertPage(devopsDaemonSetVOPage, v -> {

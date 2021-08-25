@@ -12,5 +12,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Created by younger on 2018/4/24.
  */
 public interface DevopsEnvResourceDetailMapper extends BaseMapper<DevopsEnvResourceDetailDTO> {
-    List<DevopsEnvResourceDetailDTO> listByMessageIds(@Param("resourceDetailIds") Set<Long> resourceDetailIds);
+    List<DevopsEnvResourceDetailDTO> listByResourceDetailIds(@Param("resourceDetailIds") Set<Long> resourceDetailIds);
 }

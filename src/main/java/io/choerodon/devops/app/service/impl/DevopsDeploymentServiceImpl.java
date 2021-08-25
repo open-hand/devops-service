@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
 import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
+import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
@@ -31,6 +33,7 @@ import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
+import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -156,7 +159,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         }
         Set<Long> detailsIds = devopsDeploymentDTOPage.getContent().stream().map(DevopsDeploymentVO::getResourceDetailId)
                 .collect(Collectors.toSet());
-        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByMessageIds(detailsIds);
+        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByResourceDetailsIds(detailsIds);
         Map<Long, DevopsEnvResourceDetailDTO> detailDTOMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
         deploymentVOPage = ConvertUtils.convertPage(devopsDeploymentDTOPage, v -> {
@@ -253,5 +256,21 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     public DevopsDeploymentDTO queryByInstanceIdAndSourceType(Long instanceId, String type) {
         return devopsDeploymentMapper.queryByInstanceIdAndSourceType(instanceId, type);
+    }
+
+    @Override
+    public DevopsDeploymentVO queryByDeploymentIdWithResourceDetail(Long deploymentId) {
+        return devopsDeploymentMapper.queryByDeploymentIdWithResourceDetail(deploymentId);
+    }
+
+    @Override
+    public InstanceControllerDetailVO getInstanceResourceDetailYaml(Long deploymentId) {
+        DevopsDeploymentVO deploymentVO = queryByDeploymentIdWithResourceDetail(deploymentId);
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(deploymentVO.getResourceDetailId());
+        try {
+            return new InstanceControllerDetailVO(deploymentId, JsonYamlConversionUtil.json2yaml(devopsEnvResourceDetailDTO.getMessage()));
+        } catch (IOException e) {
+            throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, devopsEnvResourceDetailDTO.getMessage());
+        }
     }
 }

@@ -43,4 +43,18 @@
         SELECT * FROM devops_deployment
         WHERE instance_id=#{instanceId} and source_type=#{sourceType}
     </select>
+
+    <select id="queryByDeploymentIdWithResourceDetail" resultType="io.choerodon.devops.api.vo.DevopsDeploymentVO">
+        select dd.*,
+        der.id        as env_resource_id,
+        der.resource_detail_id,
+        deco.command_type,
+        deco.`status` AS command_status,
+        deco.error
+        from devops_deployment dd
+        left join devops_env_resource der
+        on (dd.env_id = der.env_id and dd.name = der.name and der.kind = 'Deployment')
+        left join devops_env_command deco ON (deco.id = dd.command_id)
+        WHERE dd.id=#{deploymentId}
+    </select>
 </mapper>

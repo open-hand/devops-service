@@ -73,7 +73,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
         }
         Set<Long> detailsIds = devopsCronjobVOPage.getContent().stream().map(DevopsCronjobVO::getResourceDetailId)
                 .collect(Collectors.toSet());
-        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByMessageIds(detailsIds);
+        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByResourceDetailsIds(detailsIds);
         Map<Long, DevopsEnvResourceDetailDTO> detailDTOMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
 
         return ConvertUtils.convertPage(devopsCronjobVOPage, v -> {

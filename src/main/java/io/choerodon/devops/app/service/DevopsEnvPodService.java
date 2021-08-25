@@ -86,4 +86,6 @@ public interface DevopsEnvPodService {
      * @return
      */
     boolean checkInstancePodStatusAllReadyWithCommandId(Long envId, String instanceCode, @Nullable Long commandId);
+
+    List<DevopsEnvPodVO> listWorkloadPod(String ownerKind,String ownerName);
 }

@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
+import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
 import io.choerodon.devops.app.service.WorkloadService;
@@ -69,6 +71,25 @@ public class DevopsDeploymentController {
             @RequestParam(value = "from_instance", required = false) Boolean fromInstance
     ) {
         return ResponseEntity.ok(devopsDeploymentService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));
+    }
+
+    /**
+     * 根据deploymentId获取更多部署详情(Yaml格式)
+     *
+     * @param projectId    项目id
+     * @param deploymentId deployment id
+     * @return 部署详情
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据deploymentId获取更多部署详情(Yaml格式)")
+    @GetMapping(value = "/{deployment_id}/detail_yaml")
+    public ResponseEntity<InstanceControllerDetailVO> getDeploymentDetailsYamlByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "deployment_id") Long deploymentId) {
+        return new ResponseEntity<>(devopsDeploymentService.getInstanceResourceDetailYaml(deploymentId), HttpStatus.OK);
     }
 
 }

@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
 public interface DevopsEnvResourceDetailService {
     DevopsEnvResourceDetailDTO baseCreate(DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO);
 
-    DevopsEnvResourceDetailDTO baesQueryByMessageId(Long messageId);
+    DevopsEnvResourceDetailDTO baseQueryByResourceDetailId(Long resourceDetailId);
 
     void baseUpdate(DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO);
 
@@ -22,5 +22,5 @@ public interface DevopsEnvResourceDetailService {
      * @param resourceDetailIds
      * @return
      */
-    List<DevopsEnvResourceDetailDTO> listByMessageIds(Set<Long> resourceDetailIds);
+    List<DevopsEnvResourceDetailDTO> listByResourceDetailsIds(Set<Long> resourceDetailIds);
 }
