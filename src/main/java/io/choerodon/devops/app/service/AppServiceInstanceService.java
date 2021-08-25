@@ -428,7 +428,7 @@ public interface AppServiceInstanceService {
      * @param envId
      * @return code列表
      */
-    List<String> listInstanceCodeByDeployDetailsCode(List<String> codes, Long envId);
+    List<AppServiceInstanceDTO> listInstanceByDeployDetailsCode(List<String> codes, Long envId);
 
     /**
      * 通过code和envId查询AppServiceInstanceDTO的status

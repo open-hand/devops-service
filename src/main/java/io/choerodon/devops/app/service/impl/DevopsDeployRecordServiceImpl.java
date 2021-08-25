@@ -483,19 +483,24 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     private void batchSetAppStatus(List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS, Long envId) {
         List<String> devopsHzeroDeployDetailsVOCodes = devopsHzeroDeployDetailsVOS.stream().map(DevopsHzeroDeployDetailsVO::getInstanceCode).collect(Collectors.toList());
-        List<String> appServiceInstanceVOCodes = appServiceInstanceService.listInstanceCodeByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
-        devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
-            if (!CollectionUtils.isEmpty(appServiceInstanceVOCodes) && appServiceInstanceVOCodes.contains(devopsHzeroDeployDetailsVO.getInstanceCode())) {
-                devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.EXIST.getStatus());
-                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(envId, devopsHzeroDeployDetailsVO.getInstanceCode());
-                if (devopsDeployAppCenterEnvDTO != null) {
-                    devopsHzeroDeployDetailsVO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.listInstanceByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
+        if (CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
+            devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.NOT_EXIST.getStatus()));
+        } else {
+            Map<String, AppServiceInstanceDTO> appServiceInstanceDTOMap = appServiceInstanceDTOS.stream().collect(Collectors.toMap(AppServiceInstanceDTO::getCode, Function.identity()));
+            devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceDTOMap.get(devopsHzeroDeployDetailsVO.getInstanceCode());
+                if (appServiceInstanceDTO != null) {
+                    devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.EXIST.getStatus());
+                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(envId, devopsHzeroDeployDetailsVO.getInstanceCode());
+                    if (devopsDeployAppCenterEnvDTO != null) {
+                        devopsHzeroDeployDetailsVO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+                    }
+                } else {
+                    devopsHzeroDeployDetailsVO.setAppStatus(HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(devopsHzeroDeployDetailsVO.getStatus())
+                            ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus());
                 }
-
-            } else {
-                String appStatus = devopsHzeroDeployDetailsVO.getStatus().equals(HzeroDeployDetailsStatusEnum.SUCCESS.value()) ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus();
-                devopsHzeroDeployDetailsVO.setAppStatus(appStatus);
-            }
-        });
+            });
+        }
     }
 }

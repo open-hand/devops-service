@@ -1,16 +1,17 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
-import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.mybatis.common.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-
-import javax.annotation.Nullable;
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
+import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.mybatis.common.BaseMapper;
 
 
 /**
@@ -153,7 +154,7 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
      * @param envId
      * @return code列表
      */
-    List<String> listInstanceCodeByDeployDetailsCode(@Param("codes") List<String> codes,
+    List<AppServiceInstanceDTO> listInstanceByDeployDetailsCode(@Param("codes") List<String> codes,
                                                      @Param("envId") Long envId);
 
     /**

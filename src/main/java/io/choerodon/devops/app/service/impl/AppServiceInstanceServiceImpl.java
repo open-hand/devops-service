@@ -2257,8 +2257,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<String> listInstanceCodeByDeployDetailsCode(List<String> codes, Long envId) {
-        return appServiceInstanceMapper.listInstanceCodeByDeployDetailsCode(codes, envId);
+    public List<AppServiceInstanceDTO> listInstanceByDeployDetailsCode(List<String> codes, Long envId) {
+        return appServiceInstanceMapper.listInstanceByDeployDetailsCode(codes, envId);
     }
 
     @Override
