@@ -346,11 +346,11 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
         });
 
-        if (appConfig.getNameServers().split(SEPARATOR).length > 3) {
+        if (!StringUtils.isEmpty(appConfig.getNameServers()) && appConfig.getNameServers().split(SEPARATOR).length > 3) {
             throw new CommonException("error.app.config.nameservers.length");
         }
 
-        if (appConfig.getSearches().split(SEPARATOR).length > 6) {
+        if (!StringUtils.isEmpty(appConfig.getSearches()) && appConfig.getSearches().split(SEPARATOR).length > 6) {
             throw new CommonException("error.app.config.searches.length");
         }
 
@@ -394,7 +394,6 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                     throw new CommonException("error.container.port.range");
                 }
             });
-
         });
 
     }
