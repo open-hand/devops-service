@@ -302,8 +302,12 @@ public class WorkloadServiceImpl implements WorkloadService {
             decryptedWorkloadBaseVO.setEnvId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getEnvId()));
             decryptedWorkloadBaseVO.setResourceId(KeyDecryptHelper.decryptValue(workloadBaseCreateOrUpdateVO.getResourceId()));
         } else {
+            // 如果是部署组调用，将会进入此分支
             decryptedWorkloadBaseVO.setEnvId(Long.parseLong(workloadBaseCreateOrUpdateVO.getEnvId()));
-            decryptedWorkloadBaseVO.setResourceId(Long.parseLong(workloadBaseCreateOrUpdateVO.getResourceId()));
+            // 创建操作时，resourceId不存在；更新操作时，resourceId存在
+            if (!StringUtils.isEmpty(workloadBaseCreateOrUpdateVO.getResourceId())) {
+                decryptedWorkloadBaseVO.setResourceId(Long.parseLong(workloadBaseCreateOrUpdateVO.getResourceId()));
+            }
         }
         return decryptedWorkloadBaseVO;
     }
