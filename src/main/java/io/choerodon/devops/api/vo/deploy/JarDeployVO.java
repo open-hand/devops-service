@@ -7,6 +7,8 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 
+import java.util.List;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -47,6 +49,9 @@ public class JarDeployVO {
     private String jarFileUrl;
 
     private ProdJarInfoVO prodJarInfoVO;
+
+    @ApiModelProperty("部署配置文件列表")
+    private List<ConfigSettingVO> configSettingVOS;
 
     public JarDeployVO() {
         this.value = "";
@@ -130,5 +135,11 @@ public class JarDeployVO {
         this.sourceType = sourceType;
     }
 
+    public List<ConfigSettingVO> getConfigSettingVOS() {
+        return configSettingVOS;
+    }
 
+    public void setConfigSettingVOS(List<ConfigSettingVO> configSettingVOS) {
+        this.configSettingVOS = configSettingVOS;
+    }
 }

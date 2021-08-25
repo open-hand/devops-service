@@ -45,7 +45,6 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -99,9 +98,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
-    private AppServiceService appServiceService;
-    @Autowired
-    private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
+    private DeployConfigService deployConfigService;
     @Autowired
     private DevopsHostCommandMapper devopsHostCommandMapper;
 
@@ -111,8 +108,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Transactional
     public void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-
-
         Long hostId = jarDeployVO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
 
@@ -135,6 +130,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 0.3 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
+
+        // 标识部署对象
+        String deployObjectKey = null;
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
         String groupId = null;
         String artifactId = null;
@@ -142,7 +140,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
-
+            deployObjectKey = String.valueOf(jarDeployVO.getDeployObjectId());
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
@@ -189,8 +187,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
 
-
-
             // 添加jar包下载信息
             jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
             jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
@@ -206,6 +202,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
 
+            deployObjectKey = new StringBuilder()
+                    .append(nexusRepoId)
+                    .append(BaseConstants.Symbol.COLON)
+                    .append(groupId)
+                    .append(BaseConstants.Symbol.COLON)
+                    .append(artifactId)
+                    .toString();
 //            appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, groupId, artifactId);
             // 添加jar包下载信息
             jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
@@ -218,9 +221,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
             throw new CommonException("error.get.maven.config");
         }
-
-
-
 
         // 2.保存记录
         DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndName(hostId, jarDeployVO.getAppCode());
@@ -275,7 +275,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
         // 保存执行记录
-        devopsDeployRecordService.saveRecord(
+        Long devopsDeployRecordId = devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
                 null,
@@ -289,12 +289,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 null,
                 deploySourceVO);
 
+        // 保存用户设置部署配置文件
+        deployConfigService.saveConfigSetting(projectId, devopsDeployRecordId, deployObjectKey, jarDeployVO);
+
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setConfigSetting(deployConfigService.doCreateConfigSetting(projectId, jarDeployVO));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -317,7 +321,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
         return null;
     }
-
 
     @Override
     public List<DevopsHostAppDTO> listByHostId(Long hostId) {
