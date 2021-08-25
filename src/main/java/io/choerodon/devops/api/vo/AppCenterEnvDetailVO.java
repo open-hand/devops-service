@@ -59,7 +59,7 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty("实例最新的command的版本id")
     private Long commandVersionId;
     private String versionName;
-    private IamUserDTO iamUserDTO;
+    private IamUserDTO creator;
 
     @ApiModelProperty("创建时间")
     private Date creationDate;
@@ -183,12 +183,12 @@ public class AppCenterEnvDetailVO {
         this.deployObject = deployObject;
     }
 
-    public IamUserDTO getIamUserDTO() {
-        return iamUserDTO;
+    public IamUserDTO getCreator() {
+        return creator;
     }
 
-    public void setIamUserDTO(IamUserDTO iamUserDTO) {
-        this.iamUserDTO = iamUserDTO;
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
     }
 
     public String getRdupmType() {
