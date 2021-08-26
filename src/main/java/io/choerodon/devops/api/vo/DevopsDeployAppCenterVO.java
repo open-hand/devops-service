@@ -52,6 +52,9 @@ public class DevopsDeployAppCenterVO {
     @ApiModelProperty("应用状态")
     private String status;
 
+    private Boolean envActive;
+    private Boolean envConnected;
+
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
 
@@ -211,6 +214,22 @@ public class DevopsDeployAppCenterVO {
 
     public void setCreator(IamUserDTO creator) {
         this.creator = creator;
+    }
+
+    public Boolean getEnvActive() {
+        return envActive;
+    }
+
+    public void setEnvActive(Boolean envActive) {
+        this.envActive = envActive;
+    }
+
+    public Boolean getEnvConnected() {
+        return envConnected;
+    }
+
+    public void setEnvConnected(Boolean envConnected) {
+        this.envConnected = envConnected;
     }
 }
 
