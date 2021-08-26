@@ -46,7 +46,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterService {
 
-    private static final String POD_RUNNING_STATUS = "running";
+    private static final String POD_RUNNING_STATUS = "Running";
 
     @Autowired
     DevopsDeployAppCenterEnvMapper devopsDeployAppCenterEnvMapper;
