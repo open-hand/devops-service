@@ -13,7 +13,7 @@ import io.choerodon.devops.app.service.impl.DevopsDeploymentServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
-import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
+import io.choerodon.devops.infra.enums.InstanceStatus;
 
 /**
  * Created by wangxiang on 2021/7/14
@@ -35,7 +35,7 @@ public class DeploymentWorkLoad extends WorkLoad {
 
     @Override
     public Long createWorkload(String name, Long projectId, Long envId, Long commandId, Map<String, Object> extraInfo) {
-        DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO(name, projectId, envId, commandId, (String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE));
+        DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO(name, projectId, envId, commandId, (String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE), InstanceStatus.OPERATING.getStatus());
         if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
             devopsDeploymentDTO.setAppConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG));
             devopsDeploymentDTO.setContainerConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG));

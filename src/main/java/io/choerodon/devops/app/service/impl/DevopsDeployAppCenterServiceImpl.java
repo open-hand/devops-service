@@ -82,6 +82,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable) {
@@ -98,7 +100,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
             devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
             devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
-            devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
+            if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
+            } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
+                devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
+
+            }
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;

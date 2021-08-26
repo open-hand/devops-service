@@ -41,8 +41,8 @@ public class DevopsHostAppController {
             @Encrypt
             @ApiParam(value = "主机", required = true)
             @RequestParam(value = "host_id", required = false) Long hostId,
-            @RequestParam(value = "rdupmType", required = false) String rdupmType,
-            @RequestParam(value = "operationType", required = false) String operationType,
+            @RequestParam(value = "rdupm_type", required = false) String rdupmType,
+            @RequestParam(value = "operation_type", required = false) String operationType,
             @RequestParam(value = "params", required = false) String params,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
         return ResponseEntity.ok(devopsHostAppService.pagingAppByHost(projectId, hostId, pageRequest, rdupmType, operationType, params));
