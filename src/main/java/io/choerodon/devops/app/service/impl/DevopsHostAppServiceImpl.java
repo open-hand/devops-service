@@ -366,7 +366,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return page;
         }
         UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
-        page.getContent().forEach(this::compoundDevopsHostAppVO);
+        page.getContent().forEach(devopsHostAppVO -> {
+            compoundDevopsHostAppVO(devopsHostAppVO);
+            devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId()));
+        });
         return page;
     }
 
