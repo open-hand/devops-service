@@ -46,9 +46,9 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty("chart状态")
     private String objectStatus;
     @ApiModelProperty("实例的所有pod数量")
-    private Long podCount;
+    private Integer podCount;
     @ApiModelProperty("实例的运行中的pod的数量")
-    private Long podRunningCount;
+    private Integer podRunningCount;
     @Encrypt
     @ApiModelProperty("当前实例生效的commandId/可能为null")
     private Long effectCommandId;
@@ -199,19 +199,19 @@ public class AppCenterEnvDetailVO {
         this.rdupmType = rdupmType;
     }
 
-    public Long getPodCount() {
+    public Integer getPodCount() {
         return podCount;
     }
 
-    public void setPodCount(Long podCount) {
+    public void setPodCount(Integer podCount) {
         this.podCount = podCount;
     }
 
-    public Long getPodRunningCount() {
+    public Integer getPodRunningCount() {
         return podRunningCount;
     }
 
-    public void setPodRunningCount(Long podRunningCount) {
+    public void setPodRunningCount(Integer podRunningCount) {
         this.podRunningCount = podRunningCount;
     }
 

@@ -78,6 +78,8 @@ public interface DevopsEnvPodService {
 
     Page<DevopsEnvPodVO> pageByKind(Long projectId, Long envId, String kind, String name, PageRequest pageable, String searchParam);
 
+    List<DevopsEnvPodDTO> listPodByKind(Long envId, String kind, String name);
+
     /**
      * 校验实例下POD状态是否全部成功启动，如果传了commandId, 则要求Pod标签中的commandId必须大于等于commandId
      * @param envId

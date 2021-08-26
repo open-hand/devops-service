@@ -400,6 +400,11 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
+    public List<DevopsEnvPodDTO> listPodByKind(Long envId, String kind, String name) {
+        return devopsEnvPodMapper.listPodByKind(envId, kind, name, null, null);
+    }
+
+    @Override
     public boolean checkInstancePodStatusAllReadyWithCommandId(Long envId, String instanceCode, Long commandId) {
         // 查询实例
         AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(instanceCode, envId);
