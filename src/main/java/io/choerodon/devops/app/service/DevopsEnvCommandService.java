@@ -57,6 +57,8 @@ public interface DevopsEnvCommandService {
     @Nullable
     DevopsEnvCommandDTO queryByInstanceIdAndCommitSha(Long instanceId, String sha);
 
+    DevopsEnvCommandDTO queryByWorkloadTypeAndObjectIdAndCommitSha(String type, Long objectId, String sha);
+
     /**
      * 将之前的操作中的资源更新为成功
      *
