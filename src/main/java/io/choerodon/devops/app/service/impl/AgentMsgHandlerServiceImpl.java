@@ -573,6 +573,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     handleUpdatePvMsg(key, clusterId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
                 case DEPLOYMENT:
+                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
+                    // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
+                    if (deploymentDTO != null && DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
+                        V1beta2Deployment v1beta2Deployment = K8sUtil.deserialize(msg, V1beta2Deployment.class);
+                        deploymentDTO.setStatus(v1beta2Deployment.getSpec().getReplicas() == 0 ? InstanceStatus.STOPPED.getStatus() : InstanceStatus.RUNNING.getStatus());
+                        devopsDeploymentService.baseUpdate(deploymentDTO);
+                    }
+                    break;
                 case JOB:
                 case DAEMONSET:
                 case CRON_JOB:
@@ -1182,6 +1191,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             syncPersistentVolumeClaim(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
                         case DEPLOYMENT:
+                            syncDeployment(objects[0], envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
                         case JOB:
                         case DAEMONSET:
                         case CRON_JOB:
@@ -1193,6 +1204,36 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             break;
                     }
                 });
+    }
+
+    private void syncDeployment(String type, Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
+
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, objects[1]);
+        if (devopsDeploymentDTO == null) {
+            logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
+        Long resourceId = devopsDeploymentDTO.getId();
+        Long commandId = devopsDeploymentDTO.getCommandId();
+
+        if (resourceId == null || commandId == null) {
+            logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
+
+        devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndResourceId(envId, resourceId, type);
+        if (Boolean.FALSE.equals(updateEnvCommandStatus(resourceCommitVO, commandId, devopsEnvFileResourceDTO,
+                objects[0], objects[1], CommandStatus.SUCCESS.getStatus(), envFileErrorFiles))) {
+            // 更新状态为failed
+            devopsDeploymentDTO.setStatus(InstanceStatus.FAILED.getStatus());
+            devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
+        } else {
+            // 更新生效commandId
+            devopsDeploymentDTO.setEffectCommandId(commandId);
+            devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
+        }
     }
 
     private void syncPersistentVolume(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {

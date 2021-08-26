@@ -30,6 +30,8 @@ public class DevopsDeploymentDTO extends AuditDomain {
     private Long envId;
     @ApiModelProperty("commandId")
     private Long commandId;
+    @ApiModelProperty("effectCommandId")
+    private Long effectCommandId;
     @ApiModelProperty("所属对象id chart产生的appServiceInstanceId/部署组产生的应用Id")
     private Long instanceId;
     @ApiModelProperty("appConfig")
@@ -38,6 +40,8 @@ public class DevopsDeploymentDTO extends AuditDomain {
     private String containerConfig;
     @ApiModelProperty("来源类型 chart/工作负载/部署组")
     private String sourceType;
+    @ApiModelProperty("实例状态")
+    private String status;
 
     @Transient
     private String content;
@@ -45,12 +49,29 @@ public class DevopsDeploymentDTO extends AuditDomain {
     public DevopsDeploymentDTO() {
     }
 
-    public DevopsDeploymentDTO(String name, Long projectId, Long envId, Long commandId, String sourceType) {
+    public DevopsDeploymentDTO(String name, Long projectId, Long envId, Long commandId, String sourceType, String status) {
         this.name = name;
         this.projectId = projectId;
         this.envId = envId;
         this.commandId = commandId;
         this.sourceType = sourceType;
+        this.status = status;
+    }
+
+    public Long getEffectCommandId() {
+        return effectCommandId;
+    }
+
+    public void setEffectCommandId(Long effectCommandId) {
+        this.effectCommandId = effectCommandId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Long getId() {

@@ -86,7 +86,7 @@ public interface DevopsEnvResourceService {
 
     List<PodEventVO> listPodEventBycommandId(Long commandId);
 
-    String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType pod);
+    String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType resourceType);
 
     Object queryDetailsByKindAndName(Long envId, String kind, String name);
 
