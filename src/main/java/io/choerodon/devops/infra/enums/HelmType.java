@@ -44,6 +44,7 @@ public enum HelmType {
     RESOURCE_SYNC("resource_sync"),
     HELM_JOB_EVENT("helm_job_event"),
     HELM_POD_EVENT("helm_pod_event"),
+    WORKLOAD_POD_EVENT("workload_pod_event"),
     GIT_OPS_SYNC_EVENT("git_ops_sync_event"),
     RESOURCE_STATUS_SYNC_EVENT("resource_status_sync_event"),
     RESOURCE_STATUS_SYNC("resource_status_sync"),

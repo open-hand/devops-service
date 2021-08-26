@@ -239,6 +239,10 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                 agentMsgHandlerService.helmPodEvent(
                         msg.getPayload());
                 break;
+            case WORKLOAD_POD_EVENT:
+                agentMsgHandlerService.workloadPodEvent(
+                        msg.getPayload());
+                break;
             // Agent解析GitOps后发送
             case GIT_OPS_SYNC_EVENT:
                 agentMsgHandlerService.gitOpsSyncEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
