@@ -3172,7 +3172,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 0. 如果修改了服务编码，则先修改原仓库编码
         GitlabProjectDTO oldProjectDTO = gitlabServiceClientOperator.queryProjectById(appServiceTransferVO.getGitlabProjectId());
         if (!Objects.equals(oldProjectDTO.getName(), appServiceTransferVO.getCode())) {
-            gitlabServiceClientOperator.updateProject(userId, appServiceTransferVO.getGitlabProjectId(), appServiceTransferVO.getCode());
+            gitlabServiceClientOperator.updateNameAndPath(userId, appServiceTransferVO.getGitlabProjectId(), appServiceTransferVO.getCode());
         }
 
         // 1. 迁移gitlab代码库

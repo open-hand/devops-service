@@ -1181,10 +1181,10 @@ public class GitlabServiceClientOperator {
         return gitlabServiceClient.transferProject(gitlabProjectId, userId, gitlabGroupId).getBody();
     }
 
-    public void updateProject(Integer userId, Integer projectId, String newName) {
+    public void updateNameAndPath(Integer userId, Integer projectId, String newName) {
         CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
         CommonExAssertUtil.assertNotNull(newName, "error.ci.newName.null");
         CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
-        gitlabServiceClient.updateName(projectId, userId, newName);
+        gitlabServiceClient.updateNameAndPath(projectId, userId, newName);
     }
 }

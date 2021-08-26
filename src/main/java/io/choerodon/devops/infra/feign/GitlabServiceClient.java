@@ -683,8 +683,8 @@ public interface GitlabServiceClient {
             @ApiParam(value = "项目信息", required = true)
             @RequestBody Project project);
 
-    @PutMapping("/v1/projects/{projectId}/name")
-    ResponseEntity<Project> updateName(
+    @PutMapping("/v1/projects/{projectId}/name_and_path")
+    ResponseEntity<Project> updateNameAndPath(
             @PathVariable Integer projectId,
             @ApiParam(value = "用户Id", required = true)
             @RequestParam Integer userId,
