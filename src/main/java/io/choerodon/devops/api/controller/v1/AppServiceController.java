@@ -871,7 +871,7 @@ public class AppServiceController {
     public ResponseEntity<Void> batchTransfer(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody List<AppServiceTransferVO> appServiceTransferVOList
+            @RequestBody @Validated List<AppServiceTransferVO> appServiceTransferVOList
             ) {
         applicationServiceService.batchTransfer(projectId, appServiceTransferVOList);
         return ResponseEntity.noContent().build();

@@ -1,6 +1,9 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * 〈功能简述〉
@@ -11,9 +14,12 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class AppServiceTransferVO {
     @ApiModelProperty("应用服务名称")
+    @NotNull(message = "error.app.name.null")
+    @Length(message = "error.app.service.name.length", min = 1, max = 40)
     private String name;
 
     @ApiModelProperty("应用服务code")
+    @NotNull(message = "error.app.code.null")
     private String code;
 
     @ApiModelProperty("应用服务的类型")
