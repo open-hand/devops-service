@@ -1234,9 +1234,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             // 更新状态为failed
             devopsDeploymentDTO.setStatus(InstanceStatus.FAILED.getStatus());
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
-        } else {
-            // 更新生效commandId
-            devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         }
     }
 
