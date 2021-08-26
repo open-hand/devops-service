@@ -1180,4 +1180,11 @@ public class GitlabServiceClientOperator {
     public GitlabProjectDTO transferProject(Integer gitlabProjectId, Integer gitlabGroupId, Integer userId) {
         return gitlabServiceClient.transferProject(gitlabProjectId, userId, gitlabGroupId).getBody();
     }
+
+    public void updateProject(Integer userId, Integer projectId, String newName) {
+        CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(newName, "error.ci.newName.null");
+        CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
+        gitlabServiceClient.updateName(projectId, userId, newName);
+    }
 }

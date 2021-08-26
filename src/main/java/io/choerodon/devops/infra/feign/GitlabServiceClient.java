@@ -683,6 +683,13 @@ public interface GitlabServiceClient {
             @ApiParam(value = "项目信息", required = true)
             @RequestBody Project project);
 
+    @PutMapping("/v1/projects/{projectId}/name")
+    ResponseEntity<Project> updateName(
+            @PathVariable Integer projectId,
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam Integer userId,
+            @RequestParam String name);
+
     @ApiOperation(value = "查询MR下的note列表")
     @GetMapping("/v1/notes/on_merge_request")
     ResponseEntity<List<Note>> listByMergeRequestIid(
