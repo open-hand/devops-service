@@ -69,6 +69,7 @@ public class CiCdPipelineVO {
     private Boolean edit;
     private List<Long> pipelineUserRels;
     private Date lastUpdateDate;
+    private Date creationDate;
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
@@ -77,6 +78,14 @@ public class CiCdPipelineVO {
     private String envName;
     //流程耗时
     private Long time;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 
     public String getAppServiceType() {
         return appServiceType;

@@ -968,7 +968,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             File applicationWorkDir = new File(applicationWorkPath);
             Git git;
             DevopsAppTemplateDTO appTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(devOpsAppServiceImportPayload.getDevopsAppTemplateId());
+            String oldAppServiceCode = appTemplateDTO.getCode();
             if (appTemplateDTO.getType().equals("P")) {
+                // 预定义模块旧服务code是{{service.code}} 会覆盖新服务code 处理为空
+                oldAppServiceCode = null;
                 ClassPathResource cpr = new ClassPathResource(String.format("/app-template/%s", appTemplateDTO.getCode()) + ".zip");
                 File zipFile = null;
                 try {
@@ -988,7 +991,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 String pullToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, gitlabAdminDTO);
                 git = gitUtil.cloneRepository(applicationWorkDir, appTemplateDTO.getGitlabUrl(), pullToken);
             }
-            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationWorkPath, appTemplateDTO.getCode(), devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
+            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationWorkPath, oldAppServiceCode, devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
                     + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");

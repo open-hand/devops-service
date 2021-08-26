@@ -274,7 +274,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CI_PIPELINE_CREATE);
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
@@ -322,6 +322,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void saveCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
                 DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
                 devopsCiStageDTO.setCiPipelineId(ciCdPipelineDTO.getId());
@@ -340,7 +341,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
             });
             // 保存ci配置文件
-            saveCiContent(projectId, ciCdPipelineDTO.getId(), ciCdPipelineVO);
+            saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
 
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
@@ -695,6 +696,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 String latestExecuteStatus = calculateExecuteStatus(pipelineCompositeRecordVO);
                 pipelineVO.setLatestExecuteStatus(latestExecuteStatus);
                 pipelineVO.setLatestExecuteDate(pipelineCompositeRecordVO.getCreationDate());
+            } else {
+                pipelineVO.setLatestExecuteStatus(PipelineStatus.SKIPPED.toValue());
+                pipelineVO.setLatestExecuteDate(pipelineVO.getCreationDate());
             }
 
         });
@@ -1298,7 +1302,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
             }
         });
-        saveCiContent(projectId, ciCdPipelineDTO.getId(), ciCdPipelineVO);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
 
         // 新增ci阶段，需要初始化gitlab-ci.yaml
         if (initCiFileFlag) {
@@ -1325,8 +1330,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    private void saveCiContent(final Long projectId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
-        GitlabCi gitlabCi = buildGitLabCiObject(projectId, ciCdPipelineVO);
+    private void saveCiContent(final Long projectId, final Long organizationId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
+        GitlabCi gitlabCi = buildGitLabCiObject(projectId, organizationId, ciCdPipelineVO);
         StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
 
         // 拼接自定义job
@@ -1356,7 +1361,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @param ciCdPipelineVO 流水线数据
      * @return 构建完的CI文件对象
      */
-    private GitlabCi buildGitLabCiObject(final Long projectId, CiCdPipelineVO ciCdPipelineVO) {
+    private GitlabCi buildGitLabCiObject(final Long projectId, final Long organizationId, CiCdPipelineVO ciCdPipelineVO) {
         // 对阶段排序
         List<String> stages = ciCdPipelineVO.getDevopsCiStageVOS().stream()
                 .sorted(Comparator.comparing(DevopsCiStageVO::getSequence))
@@ -1367,7 +1372,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
         gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineVO.getImage()) ? defaultCiImage : ciCdPipelineVO.getImage());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         gitlabCi.setStages(stages);
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
@@ -1386,7 +1390,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     //增加services
                     CiJobServices ciJobServices = buildServices(job);
                     ciJob.setServices(Objects.isNull(ciJobServices) ? null : ArrayUtil.singleAsList(ciJobServices));
-                    ciJob.setScript(buildScript(Objects.requireNonNull(projectDTO.getOrganizationId()), projectId, job));
+                    ciJob.setScript(buildScript(Objects.requireNonNull(organizationId), projectId, job));
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
                     gitlabCi.addJob(job.getName(), ciJob);
