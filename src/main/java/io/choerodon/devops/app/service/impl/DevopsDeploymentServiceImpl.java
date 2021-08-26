@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
@@ -269,6 +270,17 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(deploymentVO.getResourceDetailId());
         try {
             return new InstanceControllerDetailVO(deploymentId, JsonYamlConversionUtil.json2yaml(devopsEnvResourceDetailDTO.getMessage()));
+        } catch (IOException e) {
+            throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, devopsEnvResourceDetailDTO.getMessage());
+        }
+    }
+
+    @Override
+    public InstanceControllerDetailVO getInstanceResourceDetailJson(Long deploymentId) {
+        DevopsDeploymentVO deploymentVO = queryByDeploymentIdWithResourceDetail(deploymentId);
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(deploymentVO.getResourceDetailId());
+        try {
+            return new InstanceControllerDetailVO(deploymentId, new ObjectMapper().readTree(devopsEnvResourceDetailDTO.getMessage()));
         } catch (IOException e) {
             throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, devopsEnvResourceDetailDTO.getMessage());
         }
