@@ -5,7 +5,7 @@
         SELECT *
         FROM devops_deploy_app_center_env
                 WHERE project_id = #{projectId, jdbcType=BIGINT}
-        <if test="envId != null and envId != 0">
+        <if test="envId != null">
             AND env_id = #{envId, jdbcType=BIGINT}
         </if>
         <if test="name != null and name != ''">

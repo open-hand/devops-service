@@ -628,4 +628,13 @@
         </foreach>
     </select>
 
+    <select id="batchQueryByIds" resultMap="envWithInstanceResultMap">
+        SELECT
+            *
+        FROM devops_env
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

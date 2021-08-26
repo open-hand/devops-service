@@ -122,4 +122,12 @@ public interface DevopsEnvironmentMapper extends BaseMapper<DevopsEnvironmentDTO
      * @return 环境
      */
     List<DevopsEnvironmentDTO> listByProject(@Param("projectIds") List<Long> projectIds);
+
+    /**
+     *
+     * 通过envId集合，批量查出环境信息
+     * @param ids
+     * @Return DevopsEnvironmentDTO集合
+     */
+    List<DevopsEnvironmentDTO> batchQueryByIds(@Param("ids") List<Long> ids);
 }

@@ -2026,4 +2026,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;
     }
+
+    @Override
+    public List<DevopsEnvironmentDTO> batchQueryByIds(List<Long> ids) {
+        return devopsEnvironmentMapper.batchQueryByIds(ids);
+    }
 }
