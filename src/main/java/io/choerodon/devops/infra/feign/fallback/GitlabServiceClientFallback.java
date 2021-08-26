@@ -509,4 +509,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<GitlabProjectDTO> transferProject(Integer projectId, Integer userId, Integer groupId) {
         throw new CommonException("error.transfer.projects");
     }
+
+    @Override
+    public ResponseEntity<Project> updateName(Integer projectId, Integer userId, String name) {
+        throw new CommonException("error.project.name.update");
+    }
 }
