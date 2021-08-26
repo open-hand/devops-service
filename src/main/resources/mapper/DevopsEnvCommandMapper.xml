@@ -230,9 +230,10 @@
     </update>
 
     <select id="queryWorkloadEffectCommandId" resultType="java.lang.Long">
-        SELECT id
+        SELECT max(id)
         FROM devops_env_command
         WHERE object_id = #{workloadId}
           AND object = #{workloadType}
+        AND status='success'
     </select>
 </mapper>
