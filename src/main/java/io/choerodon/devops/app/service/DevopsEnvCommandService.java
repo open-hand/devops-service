@@ -67,4 +67,12 @@ public interface DevopsEnvCommandService {
      * @param beforeDate 截止日期
      */
     void updateOperatingToSuccessBeforeDate(ObjectType objectType, Long objectId, Date beforeDate);
+
+    /**
+     * 查询工作负载的最新生效commandId
+     * @param workloadType
+     * @param workloadId
+     * @return
+     */
+    Long  queryWorkloadEffectCommandId(String workloadType, Long workloadId);
 }

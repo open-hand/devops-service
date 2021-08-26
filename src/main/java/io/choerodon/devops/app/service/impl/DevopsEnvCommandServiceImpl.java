@@ -172,4 +172,9 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
         CommonExAssertUtil.assertNotNull(beforeDate, "error.before.date.null");
         devopsEnvCommandMapper.updateOperatingToSuccessBeforeDate(objectType.getType(), objectId, beforeDate);
     }
+
+    @Override
+    public Long queryWorkloadEffectCommandId(String workloadType, Long workloadId) {
+        return devopsEnvCommandMapper.queryWorkloadEffectCommandId(workloadType, workloadId);
+    }
 }

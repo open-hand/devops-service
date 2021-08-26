@@ -228,4 +228,11 @@
         AND status = 'operating'
         AND creation_date <![CDATA[<]]> #{beforeTime}
     </update>
+
+    <select id="queryWorkloadEffectCommandId" resultType="java.lang.Long">
+        SELECT id
+        FROM devops_env_command
+        WHERE object_id = #{workloadId}
+          AND object = #{workloadType}
+    </select>
 </mapper>
