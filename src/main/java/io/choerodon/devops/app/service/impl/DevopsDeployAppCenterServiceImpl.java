@@ -23,9 +23,9 @@ import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
-import io.choerodon.devops.infra.enums.AppCenterRdupmTypeEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -33,6 +33,7 @@ import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterHostMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -44,6 +45,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  **/
 @Service
 public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterService {
+
+    private static final String POD_RUNNING_STATUS = "running";
 
     @Autowired
     DevopsDeployAppCenterEnvMapper devopsDeployAppCenterEnvMapper;
@@ -98,13 +101,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId) {
-        AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
-        BeanUtils.copyProperties(centerEnvDTO, detailVO);
+        AppCenterEnvDetailVO detailVO = ConvertUtils.convertObject(centerEnvDTO, AppCenterEnvDetailVO.class);
         detailVO.setAppCenterId(appCenterId);
         detailVO.setDeployWay(AppCenterDeployWayEnum.CONTAINER.getValue());
         detailVO.setRdupmType(centerEnvDTO.getRdupmType());
-        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+        if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(appServiceInstanceInfoDTO.getStatus());
             BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO);
@@ -137,6 +139,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                     detailVO.setCommandVersion("版本已被删除");
                 }
             }
+            // 添加pod运行统计
+            List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(centerEnvDTO.getObjectId());
+            calculatePodStatus(devopsEnvPodDTOS, detailVO);
+        } else if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.DEPLOYMENT.value())){
+            // 添加pod运行统计
+            List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(centerEnvDTO.getEnvId(), ResourceType.DEPLOYMENT.getType(), centerEnvDTO.getCode());
+            calculatePodStatus(devopsEnvPodDTOS, detailVO);
+
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
@@ -151,10 +161,19 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return detailVO;
     }
 
+    private void calculatePodStatus(List<DevopsEnvPodDTO> devopsEnvPodDTOS, AppCenterEnvDetailVO detailVO) {
+        if (CollectionUtils.isEmpty(devopsEnvPodDTOS)) {
+            detailVO.setPodRunningCount(devopsEnvPodDTOS.size());
+        } else {
+            detailVO.setPodRunningCount((int) devopsEnvPodDTOS.stream().filter(v -> Boolean.TRUE.equals(v.getReady()) && POD_RUNNING_STATUS.equals(v.getStatus())).count());
+        }
+        detailVO.setPodCount(devopsEnvPodDTOS.size());
+    }
+
     @Override
     public List<InstanceEventVO> envAppEvent(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
-        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+        if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             return devopsEnvResourceService.listInstancePodEvent(centerEnvDTO.getObjectId());
         } else {
             return devopsEnvResourceService.listDeploymentPodEvent(centerEnvDTO.getObjectId());
@@ -164,7 +183,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public Page<DevopsEnvPodVO> envAppPodsPage(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
-        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+        if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
             return devopsEnvPodService.pageByOptions(
                     projectId, instanceDTO.getEnvId(), instanceDTO.getAppServiceId(), centerEnvDTO.getObjectId(), pageRequest, searchParam);
@@ -176,7 +195,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public DevopsEnvResourceVO envAppRelease(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
-        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+        if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             return appServiceInstanceService.listResourcesInHelmRelease(centerEnvDTO.getObjectId());
         } else {
             return devopsEnvResourceService.listResourcesByDeploymentId(centerEnvDTO.getObjectId());
@@ -186,11 +205,11 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public Page<DevopsServiceVO> envChartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
-        if (centerEnvDTO.getRdupmType().equals(AppCenterRdupmTypeEnum.CHART.getType())) {
+        if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
             return devopsServiceService.pageByInstance(projectId, instanceDTO.getEnvId(), centerEnvDTO.getObjectId(), pageRequest, instanceDTO.getAppServiceId(), searchParam);
         }
-        return null;
+        return new Page<>();
     }
 
     @Transactional
