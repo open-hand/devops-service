@@ -578,8 +578,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
                     if (deploymentDTO != null && DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
                         V1beta2Deployment v1beta2Deployment = K8sUtil.deserialize(msg, V1beta2Deployment.class);
-                        deploymentDTO.setStatus(v1beta2Deployment.getSpec().getReplicas() == 0 ? InstanceStatus.STOPPED.getStatus() : InstanceStatus.RUNNING.getStatus());
-                        devopsDeploymentService.baseUpdate(deploymentDTO);
+                        if (v1beta2Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
+                            deploymentDTO.setStatus(InstanceStatus.STOPPED.getStatus());
+                            devopsDeploymentService.baseUpdate(deploymentDTO);
+                        } else if (v1beta2Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
+                            deploymentDTO.setStatus(InstanceStatus.RUNNING.getStatus());
+                            devopsDeploymentService.baseUpdate(deploymentDTO);
+                        }
                     }
                     break;
                 case JOB:
