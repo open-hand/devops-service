@@ -1098,7 +1098,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             event.getInvolvedObject().setName(
                     event.getInvolvedObject().getName()
                             .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
-            insertDevopsCommandEvent(event, ResourceType.JOB.getType());
+            insertDevopsCommandEvent(event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
         }
     }
 
@@ -1106,14 +1106,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void helmPodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
-        insertDevopsCommandEvent(event, ResourceType.POD.getType());
+        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.HELM);
     }
 
     @Transactional
     @Override
     public void workloadPodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
-        insertDevopsCommandEvent(event, ResourceType.POD.getType());
+        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.WORKLOAD);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = READ_COMMITTED)
@@ -1615,7 +1615,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodService.baseCreate(devopsEnvPodDTO);
     }
 
-    private void insertDevopsCommandEvent(Event event, String type) {
+    private void insertDevopsCommandEvent(Event event, String type, PodSourceEnums source) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
                 .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
 
@@ -1631,7 +1631,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 return;
             }
 
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.queryByInstanceIdAndCommitSha(devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
+            DevopsEnvCommandDTO devopsEnvCommandDTO;
+            if (PodSourceEnums.HELM.equals(source)) {
+                devopsEnvCommandDTO = devopsEnvCommandService.queryByInstanceIdAndCommitSha(devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
+            } else {
+                DevopsEnvPodDTO devopsEnvPodDTO = devopsEnvPodService.baseQueryByEnvIdAndName(devopsEnvResourceDTO.getEnvId(), devopsEnvResourceDTO.getName());
+                Long workloadId = workloadService.getWorkloadId(devopsEnvResourceDTO.getEnvId(), devopsEnvPodDTO.getOwnerRefName(), devopsEnvPodDTO.getOwnerRefKind());
+                devopsEnvCommandDTO = devopsEnvCommandService.queryByWorkloadTypeAndObjectIdAndCommitSha(devopsEnvPodDTO.getOwnerRefKind(), workloadId, event.getCommitSha());
+            }
             if (devopsEnvCommandDTO == null) {
                 logger.info("InsertCommandEvent: EnvCommand is not found. InstanceId={}, commitSha={}", devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
                 return;
