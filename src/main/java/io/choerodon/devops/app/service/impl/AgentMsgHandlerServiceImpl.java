@@ -1109,6 +1109,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         insertDevopsCommandEvent(event, ResourceType.POD.getType());
     }
 
+    @Transactional
+    @Override
+    public void workloadPodEvent(String msg) {
+        Event event = JSONArray.parseObject(msg, Event.class);
+        insertDevopsCommandEvent(event, ResourceType.POD.getType());
+    }
+
     @Transactional(rollbackFor = Exception.class, isolation = READ_COMMITTED)
     @Override
     public void gitOpsSyncEvent(String key, String msg, Long clusterId) {
