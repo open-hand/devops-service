@@ -267,12 +267,6 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-handle-batch-deployment";
 
-
-    /**
-     * devops 主机部署
-     */
-    public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
-
     /**
      * devops 删除habor镜像
      */
@@ -313,15 +307,14 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
 
     /**
-     * 部署redis
+     * 删除应用模板
      */
-    public static final String DEVOPS_DEPLOY_REDIS="deploy-redis";
+    public static final String DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY = "devops-pod-ready-handler-for-hzero-deploy";
 
     /**
-     * 部署mysql
+     * 迁移应用服务
      */
-    public static final String DEVOPS_DEPLOY_MYSQL="deploy-mysql";
-
+    public static final String DEVOPS_TRANSFER_APP_SERVICE = "devops-transfer-app-service";
 
     private SagaTaskCodeConstants() {
     }

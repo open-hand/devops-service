@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.List;
+import java.util.Objects;
+import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.persistence.*;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Creator: Runge
@@ -36,6 +37,8 @@ public class DevopsIngressDTO extends AuditDomain {
     private Boolean isUsable;
     private String status;
     private Long certId;
+    @ApiModelProperty("如果ingress由helm实例产生，此字段为helm实例id")
+    private Long instanceId;
 
     @Transient
     private String envName;
@@ -253,5 +256,13 @@ public class DevopsIngressDTO extends AuditDomain {
     @Override
     public int hashCode() {
         return Objects.hash(id, projectId, envId, name, domain);
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 }

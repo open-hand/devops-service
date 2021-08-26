@@ -49,4 +49,10 @@
             #{ingressId}
         </foreach>
     </delete>
+
+    <delete id="deleteByIngressId">
+        DELETE
+        FROM devops_ingress_path
+        WHERE ingress_id = #{ingressId}
+    </delete>
 </mapper>

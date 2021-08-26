@@ -149,10 +149,32 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
+    public DevopsEnvCommandDTO queryByWorkloadTypeAndObjectIdAndCommitSha(String type, Long objectId, String sha) {
+        DevopsEnvCommandDTO condition = new DevopsEnvCommandDTO();
+        condition.setObjectId(Objects.requireNonNull(objectId));
+        condition.setSha(Objects.requireNonNull(sha));
+        condition.setObject(type.toLowerCase());
+        List<DevopsEnvCommandDTO> devopsEnvCommandDTOS = devopsEnvCommandMapper.select(condition);
+        if (CollectionUtils.isEmpty(devopsEnvCommandDTOS)) {
+            return null;
+        } else {
+            if (devopsEnvCommandDTOS.size() > 1) {
+                LOGGER.info("Unexpected multi-record for commands with workload {} and instanceId {} and sha {}", type, objectId, sha);
+            }
+            return devopsEnvCommandDTOS.get(0);
+        }
+    }
+
+    @Override
     public void updateOperatingToSuccessBeforeDate(ObjectType objectType, Long objectId, Date beforeDate) {
         CommonExAssertUtil.assertNotNull(objectType, "error.object.type.null");
         CommonExAssertUtil.assertNotNull(objectId, "error.object.id.null");
         CommonExAssertUtil.assertNotNull(beforeDate, "error.before.date.null");
         devopsEnvCommandMapper.updateOperatingToSuccessBeforeDate(objectType.getType(), objectId, beforeDate);
+    }
+
+    @Override
+    public Long queryWorkloadEffectCommandId(String workloadType, Long workloadId) {
+        return devopsEnvCommandMapper.queryWorkloadEffectCommandId(workloadType, workloadId);
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsMiddlewareService;
-import io.choerodon.devops.infra.enums.AppServiceInstanceSource;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -32,7 +32,7 @@ public class DevopsMiddlewareController {
     public ResponseEntity<AppServiceInstanceVO> envDeployForRedis(@PathVariable("project_id") Long projectId,
                                                                   @RequestBody @Valid MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
         middlewareRedisEnvDeployVO.setCommandType(CommandType.CREATE.getType());
-        middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
+        middlewareRedisEnvDeployVO.setSource(AppSourceType.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.envDeployForRedis(projectId, middlewareRedisEnvDeployVO));
     }
 
@@ -61,7 +61,7 @@ public class DevopsMiddlewareController {
                                                                     @RequestBody MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
         middlewareRedisEnvDeployVO.setCommandType(CommandType.UPDATE.getType());
         middlewareRedisEnvDeployVO.setInstanceId(instanceId);
-        middlewareRedisEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
+        middlewareRedisEnvDeployVO.setSource(AppSourceType.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.updateRedisInstance(projectId, middlewareRedisEnvDeployVO));
     }
 
@@ -88,7 +88,7 @@ public class DevopsMiddlewareController {
     public ResponseEntity<AppServiceInstanceVO> envDeployForMySql(@PathVariable("project_id") Long projectId,
                                                                   @RequestBody @Valid MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO) {
         middlewareMySqlEnvDeployVO.setCommandType(CommandType.CREATE.getType());
-        middlewareMySqlEnvDeployVO.setSource(AppServiceInstanceSource.MIDDLEWARE.getValue());
+        middlewareMySqlEnvDeployVO.setSource(AppSourceType.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.envDeployForMySql(projectId, middlewareMySqlEnvDeployVO));
     }
 

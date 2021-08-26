@@ -5,8 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
+import io.choerodon.devops.infra.util.CustomContextUtil;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -18,14 +22,6 @@ public class WorkFlowServiceOperator {
     @Autowired
     private WorkFlowServiceClient workFlowServiceClient;
 
-    public String create(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
-        ResponseEntity<String> responseEntity = workFlowServiceClient.create(projectId, devopsPipelineDTO);
-        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.workflow.create");
-        }
-        return responseEntity.getBody();
-    }
-
     public Boolean approveUserTask(Long projectId, String businessKey) {
         ResponseEntity<Boolean> responseEntity = workFlowServiceClient.approveUserTask(projectId, businessKey);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
@@ -33,6 +29,15 @@ public class WorkFlowServiceOperator {
         }
         return responseEntity.getBody();
     }
+
+    public void approveUserTask(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        CustomContextUtil.setUserContext(loginName, userId, orgId);
+        approveUserTask(projectId, businessKey);
+        // 复位用户上下文
+        CustomContextUtil.setUserContext(userDetails);
+    }
+
 
     public void stopInstance(Long projectId, String businessKey) {
         ResponseEntity<Void> responseEntity = workFlowServiceClient.stopInstance(projectId, businessKey);
@@ -45,6 +50,14 @@ public class WorkFlowServiceOperator {
         ResponseEntity<String> responseEntity = workFlowServiceClient.createCiCdPipeline(projectId, devopsPipelineDTO);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.create");
+        }
+        return responseEntity.getBody();
+    }
+
+    public String createHzeroPipeline(Long projectId, HzeroDeployPipelineVO hzeroDeployPipelineVO) {
+        ResponseEntity<String> responseEntity = workFlowServiceClient.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.hzero.workflow.create");
         }
         return responseEntity.getBody();
     }

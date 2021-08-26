@@ -2,7 +2,6 @@ package io.choerodon.devops.api.validator;
 
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import javax.annotation.Nullable;
 
 import org.springframework.util.CollectionUtils;
@@ -12,30 +11,15 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.K8sUtil;
 
 /**
  * Created by Zenger on 2018/4/26.
  */
 public class DevopsIngressValidator {
 
-    //ingress name
-    private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
     // ingress subdomain
     private static final String SUB_PATH_PATTERN = "^/(\\S)*$";
-    /**
-     * Host的正则
-     */
-    private static final Pattern HOST_PATTERN = Pattern.compile("^(\\*\\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
-
-    /**
-     * 子域名正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
-     */
-    private static final Pattern SUB_DOMAIN_PATTERN = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
-
-    /**
-     * Annotation的name正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
-     */
-    private static final Pattern ANNOTATION_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
 
     private DevopsIngressValidator() {
     }
@@ -44,7 +28,7 @@ public class DevopsIngressValidator {
      * 参数校验
      */
     public static void checkIngressName(String name) {
-        if (!Pattern.matches(NAME_PATTERN, name)) {
+        if (!K8sUtil.NAME_PATTERN.matcher(name).matches()) {
             throw new CommonException("error.ingress.name.notMatch");
         }
     }
@@ -60,7 +44,7 @@ public class DevopsIngressValidator {
 
     public static void checkHost(String host) {
         if (StringUtils.isEmpty(host)
-                || !HOST_PATTERN.matcher(host).matches()) {
+                || !K8sUtil.HOST_PATTERN.matcher(host).matches()) {
             throw new CommonException("error.ingress.host.format");
         }
     }
@@ -117,13 +101,13 @@ public class DevopsIngressValidator {
                 if (parts[0].length() > 253) {
                     throw new CommonException("error.ingress.annotation.key.sub.domain.part.too.long", key);
                 }
-                if (!SUB_DOMAIN_PATTERN.matcher(parts[0]).matches()) {
+                if (!K8sUtil.SUB_DOMAIN_PATTERN.matcher(parts[0]).matches()) {
                     throw new CommonException("error.ingress.annotation.key.sub.domain.part.invalid", key);
                 }
                 if (parts[1].length() > 63) {
                     throw new CommonException("error.ingress.annotation.key.name.part.too.long", key);
                 }
-                if (!ANNOTATION_NAME_PATTERN.matcher(parts[1]).matches()) {
+                if (!K8sUtil.ANNOTATION_NAME_PATTERN.matcher(parts[1]).matches()) {
                     throw new CommonException("error.ingress.annotation.key.name.part.invalid", key);
                 }
             } else {
@@ -131,7 +115,7 @@ public class DevopsIngressValidator {
                 if (key.length() > 63) {
                     throw new CommonException("error.ingress.annotation.key.name.part.too.long", key);
                 }
-                if (!ANNOTATION_NAME_PATTERN.matcher(key).matches()) {
+                if (!K8sUtil.ANNOTATION_NAME_PATTERN.matcher(key).matches()) {
                     throw new CommonException("error.ingress.annotation.key.name.part.invalid", key);
                 }
             }
@@ -165,13 +149,13 @@ public class DevopsIngressValidator {
                 if (parts[0].length() > 253) {
                     throw new GitOpsExplainException("error.ingress.annotation.key.sub.domain.part.too.long", filePath, new Object[]{key});
                 }
-                if (!SUB_DOMAIN_PATTERN.matcher(parts[0]).matches()) {
+                if (!K8sUtil.SUB_DOMAIN_PATTERN.matcher(parts[0]).matches()) {
                     throw new GitOpsExplainException("error.ingress.annotation.key.sub.domain.part.invalid", filePath, new Object[]{key});
                 }
                 if (parts[1].length() > 63) {
                     throw new GitOpsExplainException("error.ingress.annotation.key.name.part.too.long", filePath, new Object[]{key});
                 }
-                if (!ANNOTATION_NAME_PATTERN.matcher(parts[1]).matches()) {
+                if (!K8sUtil.ANNOTATION_NAME_PATTERN.matcher(parts[1]).matches()) {
                     throw new GitOpsExplainException("error.ingress.annotation.key.name.part.invalid", filePath, new Object[]{key});
                 }
             }

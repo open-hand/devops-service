@@ -133,7 +133,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         LOGGER.info("groupPath:{},adminId:{}", group.getPath(), GitUserNameUtil.getAdminId());
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
         if (groupDTO == null) {
-            groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            //admin创建组
+            groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
         }
         LOGGER.info("groupDTO:{}", groupDTO);
 

@@ -3,10 +3,13 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * Created by younger on 2018/4/25.
  */
 public class DeploymentVO {
+    private Long id;
     private String name;
     private Long desired;
     private Long current;
@@ -16,6 +19,24 @@ public class DeploymentVO {
     private List<Integer> ports;
     private Map<String, String> labels;
     private List<DevopsEnvPodVO> devopsEnvPodVOS;
+    @Encrypt
+    private Long instanceId;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
 
     public String getName() {
         return name;

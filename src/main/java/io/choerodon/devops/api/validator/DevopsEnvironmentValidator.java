@@ -1,14 +1,16 @@
 package io.choerodon.devops.api.validator;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsCdEnvDeployInfoService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.infra.enums.InstanceStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 /**
  * Creator: Runge
@@ -19,6 +21,7 @@ import org.springframework.util.CollectionUtils;
 @Component
 public class DevopsEnvironmentValidator {
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsIngressService devopsIngressService;

@@ -12,6 +12,15 @@ public class DevopsResourceBasicInfoVO {
     private Long id;
     private String name;
     private String status;
+    private Long instanceId;
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
 
     public String getStatus() {
         return status;

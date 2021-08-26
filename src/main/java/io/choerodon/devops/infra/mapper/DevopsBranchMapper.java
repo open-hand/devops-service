@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -41,7 +42,11 @@ public interface DevopsBranchMapper extends BaseMapper<DevopsBranchDTO> {
 
     DevopsBranchDTO queryByAppAndBranchNameWithIssueIds(@Param("appServiceId") Long appServiceId, @Param("branchName") String branchName);
 
+    DevopsBranchDTO queryByAppAndBranchIdWithIssueId(@Param("appServiceId") Long appServiceId, @Param("branchId") Long branchId);
+
     List<DevopsBranchDTO> listByCommitIds(@Param("commitIds") List<Long> commitIds);
+
+    List<Long> listExistBranchIds(@Param("branchIds") Set<Long> branchIds);
 
     List<DevopsBranchDTO> listByIds(@Param("branchIds") List<Long> branchIds);
 }

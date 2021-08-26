@@ -17,6 +17,8 @@ import io.choerodon.devops.api.vo.market.MarketAppSubscribeRelVO;
 import io.choerodon.devops.api.vo.market.MarketAppUseRecordDTO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
+import io.choerodon.devops.infra.dto.market.MarketAppVersionDTO;
+import io.choerodon.devops.infra.dto.market.MarketApplicationDTO;
 import io.choerodon.devops.infra.dto.market.MarketChartValueDTO;
 import io.choerodon.devops.infra.feign.MarketServiceClient;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
@@ -92,6 +94,28 @@ public class MarketServiceClientOperator {
     }
 
     public MarketServiceDeployObjectVO getMiddlewareServiceReleaseInfo(String appName, String mode, String version) {
-        return FeignClientUtils.doRequest(() -> marketServiceClient.getMiddlewareServiceReleaseInfo(appName, mode, version),MarketServiceDeployObjectVO.class);
+        return FeignClientUtils.doRequest(() -> marketServiceClient.getMiddlewareServiceReleaseInfo(appName, mode, version), MarketServiceDeployObjectVO.class);
+    }
+
+    public List<MarketServiceDeployObjectVO> queryDeployObjectByMarketServiceId(Long projectId, Long marketServiceId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryDeployObjectByMarketServiceId(projectId, marketServiceId), new TypeReference<List<MarketServiceDeployObjectVO>>() {
+        });
+    }
+
+    public List<MarketServiceVO> queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(Long projectId, Set<Long> marketServiceIds) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(projectId, marketServiceIds), new TypeReference<List<MarketServiceVO>>() {
+        });
+    }
+
+    public MarketApplicationDTO queryApplication(Long applicationId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryApplication(applicationId), MarketApplicationDTO.class);
+    }
+
+    public MarketAppVersionDTO queryAppVersionById(Long applicationId, Long appVersionId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryAppVersionById(applicationId, appVersionId), MarketAppVersionDTO.class);
+    }
+
+    public String queryHzeroAppType(Long marketAppId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryHzeroAppType(marketAppId), String.class);
     }
 }

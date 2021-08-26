@@ -34,7 +34,7 @@ public class HarborCustomRepo extends AuditDomain {
     public static final String FIELD_REPO_NAME = "repoName";
     public static final String FIELD_REPO_URL = "repoUrl";
     public static final String FIELD_LOGIN_NAME = "loginName";
-    public static final String FIELD_PASSWORD = "password";
+    public static final String FIELD_PSW = "password";
     public static final String FIELD_EMAIL = "email";
     public static final String FIELD_DESCRIPTION = "description";
     public static final String FIELD_PUBLIC_FLAG = "publicFlag";

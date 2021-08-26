@@ -3,7 +3,8 @@ package io.choerodon.devops.app.eventhandler.payload;
 public class OperationPodPayload {
 
     private String namespace;
-    private String deploymentName;
+    private String kind;
+    private String name;
     private Long count;
 
     public String getNamespace() {
@@ -14,19 +15,27 @@ public class OperationPodPayload {
         this.namespace = namespace;
     }
 
-    public String getDeploymentName() {
-        return deploymentName;
-    }
-
-    public void setDeploymentName(String deploymentName) {
-        this.deploymentName = deploymentName;
-    }
-
     public Long getCount() {
         return count;
     }
 
     public void setCount(Long count) {
         this.count = count;
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

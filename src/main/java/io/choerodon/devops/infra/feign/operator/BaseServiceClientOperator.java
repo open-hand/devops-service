@@ -1,18 +1,41 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCollapser;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.utils.FeignClientUtils;
+import io.choerodon.devops.api.vo.OrgAdministratorVO;
+import io.choerodon.devops.api.vo.ResourceLimitVO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
+import io.choerodon.devops.infra.dto.iam.ClientVO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.RoleDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.dto.iam.UserCountVO;
+import io.choerodon.devops.infra.dto.iam.UserProjectLabelVO;
+import io.choerodon.devops.infra.enums.LabelType;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.util.FeignParamUtils;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,20 +46,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.utils.FeignClientUtils;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
-import io.choerodon.devops.api.vo.ResourceLimitVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
-import io.choerodon.devops.infra.dto.iam.*;
-import io.choerodon.devops.infra.enums.LabelType;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
-import io.choerodon.devops.infra.util.FeignParamUtils;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -568,5 +579,22 @@ public class BaseServiceClientOperator {
     public Set<Long> listProjectIdsInOrg(Long tenantId) {
         return FeignClientUtils.doRequest(() -> baseServiceClient.listProjectIdsInOrg(tenantId), new TypeReference<Set<Long>>() {
         });
+    }
+
+    /**
+     * 查询组织下指定角色的项目列表
+     *
+     * @param tenantId
+     * @param userId
+     * @return
+     */
+    public List<ProjectDTO> listProjectsByUserId(Long tenantId, Long userId) {
+        try {
+            ResponseEntity<List<ProjectDTO>> resp = baseServiceClient.listProjectsByUserId(tenantId, userId);
+            return resp == null ? null : resp.getBody();
+        } catch (Exception ex) {
+            LOGGER.info("Exception occurred when querying project by userId {} and organization id {}", userId, tenantId);
+            return new ArrayList<>();
+        }
     }
 }

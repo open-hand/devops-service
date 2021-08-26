@@ -1,54 +1,31 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
-import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
-import io.choerodon.devops.api.vo.iam.ResourceVO;
-import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
-import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
-import io.choerodon.devops.api.vo.sonar.*;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.RoleDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
-import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
-import io.choerodon.devops.infra.feign.RdupmClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.*;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -70,6 +47,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -77,27 +55,55 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
+import io.choerodon.devops.api.vo.iam.ResourceVO;
+import io.choerodon.devops.api.vo.market.MarketCategoryVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.market.MarketServiceVO;
+import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
+import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
+import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
+import io.choerodon.devops.infra.feign.RdupmClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.*;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 /**
@@ -129,10 +135,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String TEMP_MODAL = "\\?version=";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
-    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
     private static final String APPSERVICE = "app-service";
     private static final String APP = "app";
     public static final String SOURCE_CODE_BUCKET_NAME = "market-source-code-bucket";
+    public static final String GITLAB_VARIABLE_TOKEN = "Token";
+    public static final String GITLAB_VARIABLE_TRIVY_INSECURE = "TRIVY_INSECURE";
 
     /**
      * CI 文件模板
@@ -228,6 +235,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsAppTemplateMapper devopsAppTemplateMapper;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private DevopsEnvApplicationService devopsEnvApplicationService;
+    @Autowired
+    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -527,9 +540,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (!usernameEmpty && !passwordEmpty) {
                 configVO.setUserName(configVO.getUserName());
                 configVO.setPassword(configVO.getPassword());
-                configVO.setPrivate(Boolean.TRUE);
+                configVO.setIsPrivate(Boolean.TRUE);
             } else {
-                configVO.setPrivate(Boolean.FALSE);
+                configVO.setIsPrivate(Boolean.FALSE);
             }
 
             // 用户名和密码要么都为空, 要么都有值
@@ -878,8 +891,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
 
-        // 为项目下的成员分配对于此gitlab项目的权限
-//        operateGitlabMemberPermission(devOpsAppServicePayload);
         if (devOpsAppServicePayload.getTemplateAppServiceId() != null && devOpsAppServicePayload.getTemplateAppServiceVersionId() != null) {
             LOGGER.info("The current app service id is {} and the service code is {}", appServiceDTO.getId(), appServiceDTO.getCode());
             LOGGER.info("The template app service id is not null: {}, start to clone template repository", devOpsAppServicePayload.getTemplateAppServiceId());
@@ -916,9 +927,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             checkGitlabProjectIdNotUsedBefore(gitlabProjectDO.getId());
         }
         devOpsAppServiceImportPayload.setGitlabProjectId(gitlabProjectDO.getId());
-
-        // 为项目下的成员分配对于此gitlab项目的权限
-//        operateGitlabMemberPermission(devOpsAppServiceImportPayload);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServiceImportPayload.getUserId()));
 
@@ -1150,7 +1158,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
             return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
         } catch (CommonException e) {
-//            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
             throw new DevopsCiInvalidException(e.getCode(), e, e.getParameters());
         }
     }
@@ -1185,17 +1192,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                               String params) {
         return ConvertUtils.convertPage(basePageByActiveAndPubAndHasVersion(projectId, true, pageable, params), AppServiceReqVO.class);
     }
-
-//    @Override
-//    public List<AppServiceUserPermissionRespVO> listAllUserPermission(Long appServiceId) {
-//        List<Long> userIds = appServiceUserPermissionService.baseListByAppId(appServiceId).stream().map(AppServiceUserRelDTO::getIamUserId)
-//                .collect(Collectors.toList());
-//        List<IamUserDTO> userEList = baseServiceClientOperator.listUsersByIds(userIds);
-//        List<AppServiceUserPermissionRespVO> resultList = new ArrayList<>();
-//        userEList.forEach(
-//                e -> resultList.add(new AppServiceUserPermissionRespVO(e.getId(), e.getLoginName(), e.getRealName())));
-//        return resultList;
-//    }
 
     @Override
     public Boolean validateRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String
@@ -1667,7 +1663,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             date = dateFormat.parse(str);
         } catch (ParseException e) {
-            e.printStackTrace();
+            LOGGER.error("parse error", e);
             return str;
         }
         Calendar cal = Calendar.getInstance();
@@ -1895,45 +1891,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, PageRequest pageable) {
-        List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(allProjectOwners);
-        userPermissionVOS.addAll(allProjectMembers);
-        if (userPermissionVOS.isEmpty()) {
-            return ConvertUtils.convertPage(new Page<>(), DevopsUserPermissionVO.class);
-        } else {
-            List<DevopsUserPermissionVO> resultPermissionVOs = new ArrayList<>();
-            Map<Long, List<DevopsUserPermissionVO>> maps = userPermissionVOS.stream().collect(Collectors.groupingBy(DevopsUserPermissionVO::getIamUserId));
-            for (Map.Entry<Long, List<DevopsUserPermissionVO>> entry : maps.entrySet()) {
-                DevopsUserPermissionVO userPermissionVO = entry.getValue().get(0);
-                if (entry.getValue().size() > 1) {
-                    List<RoleDTO> roleDTOS = new ArrayList<>();
-                    entry.getValue().forEach(v -> roleDTOS.addAll(v.getRoles()));
-                    userPermissionVO.setRoles(roleDTOS);
-                }
-                resultPermissionVOs.add(userPermissionVO);
-            }
-            resultPermissionVOs = PageRequestUtil.sortUserPermission(resultPermissionVOs, pageable.getSort());
-            return PageInfoUtil.createPageFromList(new ArrayList<>(resultPermissionVOs), pageable);
-        }
-    }
-
-    @Override
-    public DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner) {
-        DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
-        devopsUserPermissionVO.setIamUserId(iamUserDTO.getId());
-        if (iamUserDTO.getLdap()) {
-            devopsUserPermissionVO.setLoginName(iamUserDTO.getLoginName());
-        } else {
-            devopsUserPermissionVO.setLoginName(iamUserDTO.getEmail());
-        }
-        devopsUserPermissionVO.setRealName(iamUserDTO.getRealName());
-        devopsUserPermissionVO.setRoles(iamUserDTO.getRoles());
-        devopsUserPermissionVO.setCreationDate(iamUserDTO.getCreationDate());
-        devopsUserPermissionVO.setGitlabProjectOwner(isGitlabProjectOwner);
-        return devopsUserPermissionVO;
-    }
-
-    @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params).stream()
                 .filter(ProjectDTO::getEnabled)
@@ -2075,7 +2032,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<ResourceVO> listResourceByIds(List<Long> projectIds) {
         List<ResourceVO> resourceVOList;
         if (CollectionUtils.isEmpty(projectIds)) {
-            return null;
+            return new ArrayList<>();
         } else {
             resourceVOList = new ArrayList<>();
             projectIds.forEach(t -> {
@@ -2118,6 +2075,178 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         return new ArrayList<>();
     }
+
+    @Override
+    public Long countAppCountByOptions(Long projectId) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        int selectCount = appServiceMapper.selectCount(appServiceDTO);
+        return Long.valueOf(selectCount);
+    }
+
+    @Override
+    public Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest) {
+        //查询应用服务  env为0查询所有环境关联的应用服务，
+        Page<AppServiceRepVO> appServiceRepVOS = PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.queryApplicationCenter(projectId, envId, type, params));
+        List<AppServiceRepVO> appServiceRepVOSContent = appServiceRepVOS.getContent();
+        if (CollectionUtils.isEmpty(appServiceRepVOSContent)) {
+            return appServiceRepVOS;
+        }
+        // 处理应用服务的来源 仓库地址 版本等等的信息
+        handAppServices(projectId, appServiceRepVOS);
+        return appServiceRepVOS;
+    }
+
+    private void handAppServices(Long projectId, Page<AppServiceRepVO> appServiceRepVOS) {
+        //筛出应用市场的服务，查询市场服务  应用市场类型的marketServiceId
+        Map<Long, MarketServiceVO> longMarketServiceVOMap = queryMarketDeployObj(projectId, appServiceRepVOS);
+        //处理最新版本,仓库地址
+        //项目的来源处理：来源是这样的  如果是项目发布的  那么显示组织/项目   如果是中间件之类的就显示平台预置的
+        Map<Long, MarketServiceVO> finalLongMarketServiceVOMap = longMarketServiceVOMap;
+        appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
+            if (isMarketOrHzero(appServiceRepVO)) {
+                //根据市场服务id查询已发布部署对象
+                handMarketAppService(finalLongMarketServiceVOMap, appServiceRepVO);
+            } else {
+                //共享与本项目
+                handNormalAppService(appServiceRepVO);
+            }
+        });
+    }
+
+    private boolean isMarketOrHzero(AppServiceRepVO appServiceRepVO) {
+        return org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), ApplicationCenterEnum.MARKET.value())
+                || org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.HZERO.getValue());
+    }
+
+    private void handNormalAppService(AppServiceRepVO appServiceRepVO) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
+        if (!Objects.isNull(appServiceDTO)) {
+            ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(appServiceDTO.getProjectId());
+            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+            if (!Objects.isNull(info)) {
+                initApplicationParams(info, appServiceDTO, urlSlash);
+                appServiceRepVO.setRepoUrl(appServiceDTO.getRepoUrl());
+            }
+            //判断是不是共享的应用服务 如果是要返回项目的来源
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(appServiceRepVO.getEnvId());
+            if (!Objects.isNull(devopsEnvironmentDTO)
+                    && !devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId())) {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                appServiceRepVO.setShareProjectName(projectDTO.getName());
+            }
+            if (StringUtils.isEmpty(appServiceRepVO.getServiceName())) {
+                appServiceRepVO.setServiceName(appServiceDTO.getName());
+            }
+            if (StringUtils.isEmpty(appServiceRepVO.getServiceCode())) {
+                appServiceRepVO.setServiceCode(appServiceDTO.getCode());
+            }
+        }
+
+        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+        appServiceVersionDTO.setAppServiceId(appServiceRepVO.getId());
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+            List<AppServiceVersionDTO> serviceVersionDTOS = appServiceVersionDTOS.stream().sorted(comparing(AppServiceVersionDTO::getId).reversed()).collect(toList());
+            appServiceRepVO.setLatestVersion(serviceVersionDTOS.get(0).getVersion());
+        }
+    }
+
+    private void handMarketAppService(Map<Long, MarketServiceVO> finalLongMarketServiceVOMap, AppServiceRepVO appServiceRepVO) {
+        MarketServiceVO serviceVO = finalLongMarketServiceVOMap.get(appServiceRepVO.getId());
+
+        if (!Objects.isNull(serviceVO)) {
+            appServiceRepVO.setServiceName(serviceVO.getMarketServiceName());
+            appServiceRepVO.setServiceCode(serviceVO.getMarketServiceCode());
+            //看看是不是预置的
+            List<MarketCategoryVO> marketCategoryVOS = serviceVO.getMarketCategoryVOS().stream().filter(MarketCategoryVO::getBuiltIn).collect(toList());
+            appServiceRepVO.setBuiltIn(Boolean.FALSE);
+            if (!CollectionUtils.isEmpty(marketCategoryVOS)) {
+                appServiceRepVO.setBuiltIn(Boolean.TRUE);
+            }
+            //过滤出已发布的最新的版本
+            if (!CollectionUtils.isEmpty(serviceVO.getMarketServiceDeployObjectVOS())) {
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = serviceVO.getMarketServiceDeployObjectVOS().stream().sorted(comparing(MarketServiceDeployObjectVO::getId).reversed()).collect(toList()).get(0);
+                appServiceRepVO.setLatestVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
+                if (!appServiceRepVO.getBuiltIn()) {
+                    //如果是项目发布的  那么显示组织/项目
+                    appServiceMapper.selectByPrimaryKey(appServiceRepVO.getId());
+                    appServiceRepVO.setSourceView(serviceVO.getSourceName());
+                }
+                //还需要版本的id,
+                appServiceRepVO.setMarketServiceDeployObjectVO(marketServiceDeployObjectVO);
+                if (Objects.isNull(appServiceRepVO.getServiceName())) {
+                    appServiceRepVO.setServiceName(serviceVO.getMarketServiceName());
+                }
+            }
+
+        }
+    }
+
+    private Map<Long, MarketServiceVO> queryMarketDeployObj(Long projectId, Page<AppServiceRepVO> appServiceRepVOS) {
+        List<AppServiceRepVO> serviceRepVOS = appServiceRepVOS.getContent().stream().filter(appServiceRepVO -> isMarketOrHzero(appServiceRepVO)).collect(toList());
+        Map<Long, MarketServiceVO> longMarketServiceVOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(serviceRepVOS)) {
+            Set<Long> marketServiceIds = serviceRepVOS.stream().map(AppServiceRepVO::getId).collect(toSet());
+            List<MarketServiceVO> marketServiceVOs = marketServiceClientOperator.queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(projectId, marketServiceIds);
+            if (!CollectionUtils.isEmpty(marketServiceVOs)) {
+                longMarketServiceVOMap = marketServiceVOs.stream().collect(toMap(MarketServiceVO::getId, Function.identity()));
+            }
+        }
+        return longMarketServiceVOMap;
+    }
+
+    @Override
+    public List<DevopsEnvironmentRepVO> listEnvByAppServiceId(Long projectId, Long appServiceId) {
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
+        devopsEnvAppServiceDTO.setAppServiceId(appServiceId);
+        List<DevopsEnvAppServiceDTO> devopsEnvAppServiceDTOS = devopsEnvAppServiceMapper.select(devopsEnvAppServiceDTO);
+        if (!CollectionUtils.isEmpty(devopsEnvAppServiceDTOS)) {
+            Set<Long> envIds = devopsEnvAppServiceDTOS.stream().map(DevopsEnvAppServiceDTO::getEnvId).collect(toSet());
+            List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(envIds));
+            return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Boolean checkDeleteEnvApp(Long appServiceId, Long envId) {
+        return devopsEnvApplicationService.checkCanDelete(appServiceId, envId);
+    }
+
+    @Override
+    public List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId) {
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(groupId, ResourceCheckConstant.ERROR_APP_GROUP_ID_IS_NULL);
+        Assert.notNull(artifactId, ResourceCheckConstant.ERROR_APP_ARTIFACT_ID_IS_NULL);
+
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        appServiceDTO.setGroupId(groupId);
+        appServiceDTO.setArtifactId(artifactId);
+        return appServiceMapper.select(appServiceDTO);
+    }
+
+    @Override
+    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, String params, PageRequest pageRequest) {
+        //查询有主机部署的应用服务
+        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(type, "project")) {
+            type = AppSourceType.CURRENT_PROJECT.getValue();
+        }
+        String finalType = type;
+        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId, params));
+        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
+            return new Page<>();
+        }
+        handAppServices(projectId, serviceRepVOPage);
+        serviceRepVOPage.getContent().forEach(appServiceRepVO -> {
+            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.CURRENT_PROJECT.getValue())) {
+                appServiceRepVO.setSource("project");
+            }
+        });
+        return serviceRepVOPage;
+    }
+
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
@@ -2178,7 +2307,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         for (File listFile : listFiles) {
             if (listFile.isDirectory()) {
                 //修改他的名字为new code
-                listFile.renameTo(new File(applicationDir + File.separator + newCode));
+                boolean renameTo = listFile.renameTo(new File(applicationDir + File.separator + newCode));
+                if (!renameTo) {
+                    LOGGER.error("error.rename.fail");
+                }
             }
         }
     }
@@ -2388,20 +2520,20 @@ public class AppServiceServiceImpl implements AppServiceService {
     private void getRate(SonarContentVO sonarContentVO, List<Facet> facets) {
         sonarContentVO.setRate("A");
         facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> facet.getValues().forEach(value -> {
-            if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
-                if (sonarContentVO.getRate().equals("A")) {
-                    sonarContentVO.setRate("B");
-                }
+            if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1
+                    && sonarContentVO.getRate().equals("A")) {
+                sonarContentVO.setRate("B");
             }
-            if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
-                if (!sonarContentVO.getRate().equals("D") && !sonarContentVO.getRate().equals("E")) {
-                    sonarContentVO.setRate("C");
-                }
+            if (value.getVal().equals(Rate.MAJOR.getRate())
+                    && value.getCount() >= 1
+                    && !sonarContentVO.getRate().equals("D")
+                    && !sonarContentVO.getRate().equals("E")) {
+                sonarContentVO.setRate("C");
             }
-            if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
-                if (!sonarContentVO.getRate().equals("E")) {
-                    sonarContentVO.setRate("D");
-                }
+            if (value.getVal().equals(Rate.CRITICAL.getRate())
+                    && value.getCount() >= 1
+                    && !sonarContentVO.getRate().equals("E")) {
+                sonarContentVO.setRate("D");
             }
             if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
                 sonarContentVO.setRate("E");
@@ -2632,7 +2764,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public String checkAppServiceType(Long projectId, @Nullable Long appServiceProjectId, String source) {
         String type = null;
         if (appServiceProjectId == null) {
-            if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(source)) {
+            if (AppSourceType.MIDDLEWARE.getValue().equals(source)) {
                 return AppServiceType.MIDDLEWARE_SERVICE.getType();
             } else {
                 return AppServiceType.MARKET_SERVICE.getType();
@@ -2967,9 +3099,116 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Set<Long> getMemberAppServiceIds(Long organizationId, Long projectId, Long userId) {
         List<RepositoryPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.listRepositoriesByPrivilege(organizationId, projectId, Collections.singleton(userId)).getBody();
         if (CollectionUtils.isEmpty(viewDTOList)) {
-            return null;
+            return new HashSet<>();
         }
         return viewDTOList.get(0).getAppServiceIds();
+    }
+
+    @Override
+    public Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer accessLevel) {
+        List<RepositoryPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.listRepositoriesByAccessLevel(organizationId, projectId, accessLevel, Collections.singleton(userId)).getBody();
+        if (CollectionUtils.isEmpty(viewDTOList)) {
+            return new HashSet<>();
+        }
+        return viewDTOList.get(0).getAppServiceIds();
+    }
+
+    @Override
+    @Transactional
+    public void batchTransfer(Long projectId, List<AppServiceTransferVO> appServiceTransferVOList) {
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, appServiceTransferVOList.size());
+
+        // 权限校验
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        boolean isGitlabRoot = false;
+        if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
+            // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+            isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
+        if (!isGitlabRoot) {
+            // 查询创建应用所在的gitlab应用组 用户权限
+            MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+            }
+        }
+
+        appServiceTransferVOList.forEach(appServiceTransferVO -> {
+            ApplicationValidator.checkApplicationService(appServiceTransferVO.getCode());
+            // 校验名称唯一性
+            checkName(projectId, appServiceTransferVO.getName());
+            // 校验code唯一性
+            checkCode(projectId, appServiceTransferVO.getCode());
+            AppServiceDTO appServiceDTO = new AppServiceDTO();
+            appServiceDTO.setProjectId(projectId);
+            appServiceDTO.setCode(appServiceTransferVO.getCode());
+            appServiceDTO.setName(appServiceTransferVO.getName());
+            appServiceDTO.setToken(GenerateUUID.generateUUID());
+            appServiceDTO.setProjectId(projectId);
+            appServiceDTO.setActive(true);
+            appServiceDTO.setSynchro(false);
+            appServiceDTO.setType(appServiceTransferVO.getType());
+            appServiceTransferVO.setAppServiceId(baseCreate(appServiceDTO).getId());
+        });
+
+        appServiceTransferVOList.forEach(appServiceTransferVO -> transferAppService(projectId,
+                devopsProjectDTO.getDevopsAppGroupId(),
+                appServiceTransferVO));
+    }
+
+
+    @Override
+    public void createAppServiceForTransfer(AppServiceTransferVO appServiceTransferVO) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
+        Integer userId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
+        String token = GenerateUUID.generateUUID();
+
+        AppServiceDTO appServiceDTO = baseQuery(appServiceTransferVO.getAppServiceId());
+
+
+        // 1. 迁移gitlab代码库
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
+                appServiceTransferVO.getGitlabGroupId(),
+                userId);
+
+        // 2. 设置token等变量（创建或更新）
+        List<CiVariableVO> variables = new ArrayList<>();
+        variables.add(new CiVariableVO(GITLAB_VARIABLE_TOKEN, token));
+        variables.add(new CiVariableVO(GITLAB_VARIABLE_TRIVY_INSECURE, "true"));
+        gitlabServiceClientOperator.batchSaveProjectVariable(appServiceTransferVO.getGitlabProjectId(), userId, variables);
+
+        // 3. 添加webhook
+        setProjectHook(appServiceDTO, appServiceTransferVO.getGitlabProjectId(), token, userId);
+        // 4. 创建应用服务
+        appServiceDTO.setGitlabProjectId(appServiceTransferVO.getGitlabProjectId());
+        appServiceDTO.setSynchro(true);
+        appServiceDTO.setFailed(false);
+        appServiceDTO.setActive(true);
+        baseUpdate(appServiceDTO);
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+            description = "迁移应用服务",
+            inputSchemaClass = AppServiceTransferVO.class)
+    public void transferAppService(Long projectId, Long gitlabGroupId, AppServiceTransferVO appServiceTransferVO) {
+        appServiceTransferVO.setProjectId(projectId);
+        appServiceTransferVO.setGitlabGroupId(TypeUtil.objToInteger(gitlabGroupId));
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withRefId(TypeUtil.objToString(appServiceTransferVO.getGitlabProjectId()))
+                        .withSourceId(projectId)
+                        .withPayloadAndSerialize(appServiceTransferVO)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE),
+                builder -> {
+                });
     }
 
     @Override

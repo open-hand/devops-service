@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
+import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
+
 public interface DevopsIssueRelService {
     /**
      * 添加关联关系
@@ -47,11 +50,32 @@ public interface DevopsIssueRelService {
     void deleteRelationByObjectAndObjectIdAndIssueId(String object, Long objectId, Long issueId);
 
     /**
-     * @param object    对象类型 branch/object
+     * 列举出关联对象id和issueIds的map关系图
+     *
+     * @param object    对象类型 commit/branch
      * @param objectIds 对象id
-     * @return key:objectId value: issueIds
+     * @return key: objectId value: issueIds
      */
     Map<Long, List<Long>> listMappedIssueIdsByObjectTypeAndObjectId(String object, Set<Long> objectIds);
+
+    /**
+     * 列出关联了敏捷问题的commitId或branchId
+     *
+     * @param object
+     * @param issueId
+     * @return
+     */
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId);
+
+    /**
+     * 列出关联了敏捷问题的commitId或branchId
+     *
+     * @param object   关联对象
+     * @param issueIds 敏捷问题ids
+     */
+    List<IssueIdAndBranchIdsVO> listObjectIdsByIssueIdsAndObjectType(String object, Set<Long> issueIds);
+
+    List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds);
 
     void fixBranchInfo();
 

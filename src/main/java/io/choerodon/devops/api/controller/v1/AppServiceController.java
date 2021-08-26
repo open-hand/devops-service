@@ -62,7 +62,7 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建应用服务")
     @PostMapping
-    public ResponseEntity<AppServiceRepVO> create(
+    public ResponseEntity<AppServiceRepVO> creatstatefulSetWorkLoade(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
@@ -453,29 +453,6 @@ public class AppServiceController {
     }
 
 
-//    /**
-//     * 项目下查询已经启用有版本未发布的服务
-//     *
-//     * @param projectId 项目id
-//     * @param pageable  分页参数
-//     * @param params    查询参数
-//     * @return Page
-//     */
-//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-//    @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的服务")
-//    @CustomPageRequest
-//    @PostMapping(value = "/page_unPublish")
-//    public ResponseEntity<Page<AppServiceReqVO>> pageByActiveAndPubAndVersion(
-//            @ApiParam(value = "项目 ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "分页参数")
-//            @ApiIgnore PageRequest pageable,
-//            @ApiParam(value = "查询参数")
-//            @RequestBody(required = false) String params) {
-//        return Optional.ofNullable(applicationServiceService.pageByActiveAndPubAndVersion(projectId, pageable, params))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
-//    }
 
     /**
      * 校验chart仓库配置信息是否正确
@@ -821,5 +798,84 @@ public class AppServiceController {
             @RequestBody(required = false) String params) {
         return ResponseEntity.ok(applicationServiceService.pageAppServiceToCreateCiPipeline(projectId, pageRequest, params));
     }
+
+
+    /**
+     * 获取项目下应用服务的数量
+     *
+     * @return 环应用服务的数量
+     */
+    @ApiOperation("获取项目下应用服务的数量")
+    @Permission(permissionWithin = true)
+    @GetMapping("/count_by_options")
+    public ResponseEntity<Long> countAppCountByOptions(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId) {
+        return new ResponseEntity<>(applicationServiceService.countAppCountByOptions(projectId), HttpStatus.OK);
+    }
+
+    /**
+     * @param envId  为null代表查全部环境
+     * @param type   ,项目下应用project,市场应用market 共享 share 全部 all
+     * @param params
+     * @return
+     */
+    @ApiOperation("应用中心")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center")
+    @CustomPageRequest
+    public ResponseEntity<Page<AppServiceRepVO>> applicationCenter(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "envId", required = false) Long envId,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "params", required = false) String params,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
+        return ResponseEntity.ok(applicationServiceService.applicationCenter(projectId, envId, type, params, pageRequest));
+    }
+
+    @ApiOperation("查询应用服务所关联的环境列表")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center/envs/by_app_id")
+    public ResponseEntity<List<DevopsEnvironmentRepVO>> listEnvByAppServiceId(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "appServiceId") Long appServiceId) {
+        return ResponseEntity.ok(applicationServiceService.listEnvByAppServiceId(projectId, appServiceId));
+    }
+
+    @ApiOperation("检查是否可以删除关联")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app_center/env_app")
+    public ResponseEntity<Boolean> checkDeleteEnvApp(
+            @Encrypt @RequestParam(value = "appServiceId") Long appServiceId,
+            @Encrypt @RequestParam(value = "envId") Long envId) {
+        return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "有主机部署的应用服务")
+    @GetMapping("/app_center/host/app/list")
+    @CustomPageRequest
+    public ResponseEntity<Page<AppServiceRepVO>> queryHostAppServices(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "hostId", required = false) Long hostId,
+            @RequestParam(value = "params", required = false) String params,
+            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
+        return ResponseEntity.ok(applicationServiceService.queryHostAppServices(projectId, type, hostId, params, pageRequest));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "批量迁移平台gitlab代码库")
+    @PutMapping("/batch_transfer")
+    public ResponseEntity<Void> batchTransfer(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody List<AppServiceTransferVO> appServiceTransferVOList
+            ) {
+        applicationServiceService.batchTransfer(projectId, appServiceTransferVOList);
+        return ResponseEntity.noContent().build();
+    }
 }
+
 

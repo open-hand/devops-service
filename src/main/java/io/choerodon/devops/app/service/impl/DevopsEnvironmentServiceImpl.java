@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,6 +123,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvCommitService devopsEnvCommitService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper;
@@ -193,8 +195,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-    @Autowired
-    private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
 
@@ -648,8 +648,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
             } else {
-                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))
-                        || !pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
+                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
                     throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
                 }
             }
@@ -717,7 +716,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvResourceCountVO queryEnvResourceCount(Long environmentId) {
-        return devopsEnvironmentMapper.queryEnvResourceCount(environmentId);
+        DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(environmentId);
+        Long workloadCount = devopsEnvResourceCountVO.getCronJobCount() +
+                devopsEnvResourceCountVO.getDaemonSetCount() +
+                devopsEnvResourceCountVO.getDeploymentCount() +
+                devopsEnvResourceCountVO.getJobCount() +
+                devopsEnvResourceCountVO.getStatefulSetCount();
+        devopsEnvResourceCountVO.setWorkloadCount(workloadCount);
+        return devopsEnvResourceCountVO;
     }
 
 
@@ -1117,9 +1123,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 根据搜索参数查询所有的项目所有者
         List<DevopsUserPermissionVO> projectOwners = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue()),
-                iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, true));
+                iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, true));
         List<DevopsUserPermissionVO> projectMembers = ConvertUtils.convertList(baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue()),
-                iamUserDTO -> appServiceService.iamUserTOUserPermissionVO(iamUserDTO, false));
+                iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, false));
         if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
@@ -1138,11 +1144,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 }
             });
         }
-        return appServiceService.combineOwnerAndMember(projectMembers, projectOwners, pageable);
+        return DevopsUserPermissionVO.combineOwnerAndMember(projectMembers, projectOwners, pageable, devopsEnvironmentDTO.getCreatedBy());
     }
 
     @Override
-    public Page<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params) {
+    public Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long envId, Long selectedIamUserId, PageRequest pageable, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
@@ -1166,7 +1172,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据参数搜索所有的项目成员
         List<IamUserDTO> allProjectMembers = baseServiceClientOperator.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_DEVELOPER.getValue());
         if (allProjectMembers.isEmpty()) {
-            Page<DevopsEnvUserVO> pageInfo = new Page<>();
+            Page<DevopsUserVO> pageInfo = new Page<>();
             pageInfo.setContent(new ArrayList<>());
             return pageInfo;
         }
@@ -1198,7 +1204,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         Page<IamUserDTO> pageInfo = PageInfoUtil.createPageFromList(members, pageable);
 
-        return ConvertUtils.convertPage(pageInfo, member -> new DevopsEnvUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
+        return ConvertUtils.convertPage(pageInfo, member -> new DevopsUserVO(member.getId(), member.getLdap() ? member.getLoginName() : member.getEmail(), member.getRealName(), member.getImageUrl()));
     }
 
     @Override
@@ -1262,8 +1268,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvUserVO> listAllUserPermission(Long envId) {
-        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsEnvUserVO.class);
+    public List<DevopsUserVO> listAllUserPermission(Long envId) {
+        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsUserVO.class);
     }
 
 
@@ -1987,5 +1993,37 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         environmentMsgVO.setCheckResources(check);
         return environmentMsgVO;
+    }
+
+    @Override
+    public void updateAutoDeploy(Long projectId, @Nullable Long envId, @Nullable Boolean isAutoDeploy) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+        devopsEnvironmentDTO.setAutoDeploy(isAutoDeploy);
+        if (devopsEnvironmentMapper.updateByPrimaryKey(devopsEnvironmentDTO) != 1) {
+            throw new CommonException("error.update.env");
+        }
+    }
+
+    @Override
+    public EnvAutoDeployVO queryAutoDeploy(Long projectId, @Nullable Long envId) {
+        EnvAutoDeployVO envAutoDeployVO = new EnvAutoDeployVO();
+        envAutoDeployVO.setExistAutoDeploy(false);
+        List<DevopsCdEnvDeployInfoDTO> list = devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId);
+        if (!CollectionUtils.isEmpty(list)) {
+            envAutoDeployVO.setExistAutoDeploy(true);
+        }
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+        envAutoDeployVO.setAutoDeployStatus(devopsEnvironmentDTO.getAutoDeploy());
+        return envAutoDeployVO;
+    }
+
+    @Override
+    public DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId) {
+        // 查询环境
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        // 校验环境和项目匹配
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        return devopsEnvironmentDTO;
     }
 }

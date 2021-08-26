@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsWorkloadResourceContentMapper">
+    <delete id="deleteByResourceId">
+        DELETE
+        FROM devops_workload_resource_content
+        WHERE workload_id = #{workloadId}
+          AND type = #{type}
+    </delete>
+
+    <update id="updateContentByResourceIdAndResourceKind">
+        UPDATE devops_workload_resource_content
+        SET content=#{content}
+        WHERE workload_id = #{workloadId}
+          AND type = #{kind}
+    </update>
+</mapper>

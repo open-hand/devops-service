@@ -1,5 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -13,11 +22,6 @@ import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.util.*;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -35,6 +39,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private PermissionHelper permissionHelper;
@@ -135,8 +140,22 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId) {
-        return ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appServiceId, envId), DevopsDeployValueVO.class);
+    public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId, String name) {
+        List<DevopsDeployValueVO> devopsDeployValueVOS = ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appServiceId, envId, name), DevopsDeployValueVO.class);
+        if (CollectionUtils.isEmpty(devopsDeployValueVOS)) {
+            return new ArrayList<>();
+        }
+        // 添加用户信息
+        List<Long> userIds = devopsDeployValueVOS.stream().map(DevopsDeployValueVO::getCreatedBy).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(userIds);
+        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+        devopsDeployValueVOS.forEach(devopsDeployValueVO -> {
+            IamUserDTO iamUserDTO = userDTOMap.get(devopsDeployValueVO.getCreatedBy());
+            if (iamUserDTO != null) {
+                devopsDeployValueVO.setCreator(iamUserDTO);
+            }
+        });
+        return devopsDeployValueVOS;
     }
 
     @Override
@@ -230,12 +249,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
-        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
-        devopsDeployValueDTO.setProjectId(projectId);
-        devopsDeployValueDTO.setAppServiceId(appServiceId);
-        devopsDeployValueDTO.setEnvId(envId);
-        return devopsDeployValueMapper.select(devopsDeployValueDTO);
+    public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId, String name) {
+        return devopsDeployValueMapper.listByAppServiceIdAndEnvId(projectId, appServiceId, envId, name);
     }
 
     @Override

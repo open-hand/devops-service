@@ -25,10 +25,11 @@ public class DevopsEnvResourceDTO extends AuditDomain {
     private Long commandId;
     private Long weight;
     private Long reversion;
+
     @Transient
-    private Long  devopsEnvCommandId;
+    private Long devopsEnvCommandId;
     @Transient
-    private Long  devopsEnvironmentId;
+    private Long devopsEnvironmentId;
 
     public Long getDevopsEnvCommandId() {
         return devopsEnvCommandId;

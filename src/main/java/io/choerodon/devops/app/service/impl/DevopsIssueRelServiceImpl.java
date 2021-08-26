@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -17,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.DevopsBranchVO;
+import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
@@ -101,6 +100,36 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
+    public Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId) {
+        return devopsIssueRelMapper.listRelationByIssueIdAndObjectType(object, issueId);
+    }
+
+    @Override
+    public List<IssueIdAndBranchIdsVO> listObjectIdsByIssueIdsAndObjectType(String object, Set<Long> issueIds) {
+        if (CollectionUtils.isEmpty(issueIds)) {
+            return new ArrayList<>();
+        }
+        List<IssueIdAndBranchIdsVO> result = new ArrayList<>();
+        List<DevopsIssueRelDTO> devopsIssueRelDTOList = devopsIssueRelMapper.listObjectIdsByIssueIdsAndObjectType(object, issueIds);
+        devopsIssueRelDTOList
+                .stream()
+                .collect(Collectors.groupingBy(DevopsIssueRelDTO::getIssueId, Collectors.mapping(r -> {
+                    DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
+                    devopsBranchVO.setProjectId(r.getProjectId());
+                    devopsBranchVO.setAppServiceCode(r.getAppServiceCode());
+                    devopsBranchVO.setBranchId(r.getBranchId());
+                    return devopsBranchVO;
+                }, Collectors.toList())))
+                .forEach((k, v) -> {
+                    IssueIdAndBranchIdsVO issueIdAndBranchIdsVO = new IssueIdAndBranchIdsVO();
+                    issueIdAndBranchIdsVO.setIssueId(k);
+                    issueIdAndBranchIdsVO.setBranches(v);
+                    result.add(issueIdAndBranchIdsVO);
+                });
+        return result;
+    }
+
+    @Override
     public void fixBranchInfo() {
         int totalCount = devopsIssueRelMapper.count();
         int pageNumber = 0;
@@ -149,6 +178,14 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
             }
             pageNumber++;
         } while (pageNumber < totalPage);
+    }
+
+    @Override
+    public List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds) {
+        if (CollectionUtils.isEmpty(commitRelatedBranchIds)) {
+            return new ArrayList<>();
+        }
+        return devopsIssueRelMapper.listRelatedBranchIds(commitRelatedBranchIds);
     }
 
     @Override

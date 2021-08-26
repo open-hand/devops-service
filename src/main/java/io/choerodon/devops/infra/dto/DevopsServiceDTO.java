@@ -6,7 +6,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
-//import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -38,11 +37,23 @@ public class DevopsServiceDTO extends AuditDomain {
     private String annotations;
     private String loadBalanceIp;
 
+    @ApiModelProperty("所属实例id")
+    private Long instanceId;
+
     @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的id")
     private Long targetAppServiceId;
 
     @ApiModelProperty("目标对象是单个实例时，实例code")
     private String targetInstanceCode;
+
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
 
     public Long getId() {
         return id;

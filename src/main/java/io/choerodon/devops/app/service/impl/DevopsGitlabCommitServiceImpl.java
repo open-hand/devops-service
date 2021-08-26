@@ -402,4 +402,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             pageNumber++;
         } while (pageNumber < totalPage);
     }
+
+    @Override
+    public List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId) {
+        return devopsGitlabCommitMapper.baseListDevopsBranchesByIssueId(issueId);
+    }
 }

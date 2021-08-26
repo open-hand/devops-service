@@ -108,4 +108,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
             column(name: 'target_app_service_id', type: 'BIGINT UNSIGNED', remarks: '目标应用服务ID,不为空代表选择此应用服务下所有实例', afterColumn: 'name')
         }
     }
+
+    changeSet(author: 'wanghao', id: '2020-06-15-add-columns') {
+        addColumn(tableName: 'devops_service') {
+            column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: '所属实例的id', afterColumn: 'name')
+        }
+    }
+
 }

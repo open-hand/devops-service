@@ -49,8 +49,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
     @Autowired
-    private PipelineStageRecordMapper pipelineStageRecordMapper;
-    @Autowired
     private UserAttrService userAttrService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -178,27 +176,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         CommonExAssertUtil.assertNotNull(userId, "error.user.get");
-        // 查出该用户待审批的流水线阶段(旧流水线)
-        List<PipelineRecordDTO> pipelineRecordDTOList = pipelineStageRecordMapper.listToBeAuditedByProjectIds(projectIds, userId);
-        if (!CollectionUtils.isEmpty(pipelineRecordDTOList)) {
-            List<PipelineRecordDTO> pipelineRecordDTOAuditByThisUserList = pipelineRecordDTOList.stream()
-                    .filter(pipelineRecordDTO -> (pipelineRecordDTO.getRecordAudit() != null && pipelineRecordDTO.getRecordAudit().contains(String.valueOf(userId))) ||
-                            (pipelineRecordDTO.getStageAudit() != null && pipelineRecordDTO.getStageAudit().contains(String.valueOf(userId))) ||
-                            (pipelineRecordDTO.getTaskAudit() != null && pipelineRecordDTO.getTaskAudit().contains(String.valueOf(userId))))
-                    .collect(Collectors.toList());
-            pipelineRecordDTOAuditByThisUserList.forEach(pipelineRecordDTO -> {
-                ApprovalVO approvalVO = new ApprovalVO()
-                        .setType(ApprovalTypeEnum.PIPELINE.getType())
-                        .setProjectId(pipelineRecordDTO.getProjectId())
-                        .setProjectName(projectNameMap.get(pipelineRecordDTO.getProjectId()).getName())
-                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, pipelineRecordDTO.getPipelineName(), pipelineRecordDTO.getStageName()))
-                        .setPipelineId(pipelineRecordDTO.getPipelineId())
-                        .setPipelineRecordId(pipelineRecordDTO.getId())
-                        .setStageRecordId(pipelineRecordDTO.getStageRecordId())
-                        .setTaskRecordId(pipelineRecordDTO.getTaskRecordId());
-                approvalVOList.add(approvalVO);
-            });
-        }
 
         // 查处该用户待审批的流水线阶段(新流水线)
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
@@ -207,9 +184,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         if (!CollectionUtils.isEmpty(jobRecordIds)) {
             List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
             //筛选一下删除了流水线的
-            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> {
-                return !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()));
-            }).collect(Collectors.toList());
+            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()))).collect(Collectors.toList());
             devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
                 ApprovalVO approvalVO = new ApprovalVO()
                         .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
@@ -247,10 +222,6 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOList.stream().sorted(Comparator.comparing(LatestAppServiceVO::getLastUpdateDate).reversed())
                 .filter(distinctByKey(LatestAppServiceVO::getId)).limit(10)
                 .collect(Collectors.toList());
-
-//        int end = Math.min(latestAppServiceVOListWithoutRepeatService.size(), 10);
-//
-//        List<LatestAppServiceVO> latestTenAppServiceList = latestAppServiceVOListWithoutRepeatService.subList(0, end);
 
         Set<Long> appServiceIds = latestTenAppServiceList.stream().map(LatestAppServiceVO::getId).collect(Collectors.toSet());
         Map<Long, AppServiceDTO> appServiceDTOMap = appServiceMapper.listAppServiceByIds(appServiceIds, null, null).stream().collect(Collectors.toMap(AppServiceDTO::getId, v -> v));

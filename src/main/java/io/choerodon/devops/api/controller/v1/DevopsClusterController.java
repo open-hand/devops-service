@@ -496,4 +496,31 @@ public class DevopsClusterController {
             @PathVariable(value = "cluster_id") Long clusterId) {
         return new ResponseEntity<>(clusterNodeInfoService.queryNodeName(projectId, clusterId), HttpStatus.OK);
     }
+
+
+    /**
+     * 获取集群的数量
+     *
+     * @return 环境数量
+     */
+    @ApiOperation("获取集群的数量")
+    @Permission(permissionWithin = true)
+    @GetMapping("/count_by_options")
+    public ResponseEntity<Long> countClusterByOptions(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId) {
+        return new ResponseEntity<>(devopsClusterService.countClusterByOptions(projectId), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "断开连接")
+    @GetMapping("/{cluster_id}/disconnection")
+    public ResponseEntity<String> disconnectionHost(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @Encrypt
+            @PathVariable(value = "cluster_id") Long clusterId) {
+        return ResponseEntity.ok(devopsClusterService.disconnectionHost(clusterId));
+    }
 }

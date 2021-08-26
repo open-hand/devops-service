@@ -9,6 +9,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -44,4 +45,6 @@ public interface DevopsGitlabCommitService {
     Set<Long> listIdsByCommitSha(Set<String> commitSha);
 
     void fixIssueId();
+
+    List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId);
 }

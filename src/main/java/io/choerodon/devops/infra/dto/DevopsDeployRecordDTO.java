@@ -34,7 +34,9 @@ public class DevopsDeployRecordDTO extends AuditDomain {
     private String deployPayloadName;
 
     private Date deployTime;
-
+    /**
+     * {@link io.choerodon.devops.infra.enums.deploy.DeployResultEnum}
+     */
     private String deployResult;
 
     private String deployObjectType;
@@ -59,6 +61,8 @@ public class DevopsDeployRecordDTO extends AuditDomain {
      * 主机部署时执行的指令
      */
     private String log;
+    @ApiModelProperty("关联流程实例的key,hzero部署时需要")
+    private String businessKey;
 
     public DevopsDeployRecordDTO() {
     }
@@ -79,7 +83,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deploySource = deploySource;
     }
 
-    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName) {
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName, String deploySource, String businessKey) {
         this.projectId = projectId;
         this.deployType = deployType;
         this.deployId = deployId;
@@ -92,6 +96,16 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectName = deployObjectName;
         this.deployObjectVersion = deployObjectVersion;
         this.instanceName = instanceName;
+        this.deploySource = deploySource;
+        this.businessKey = businessKey;
+    }
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
     }
 
     public String getLog() {

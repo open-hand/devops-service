@@ -41,8 +41,9 @@ public class DeploySourceVO {
         return deployObjectId;
     }
 
-    public void setDeployObjectId(Long deployObjectId) {
+    public DeploySourceVO setDeployObjectId(Long deployObjectId) {
         this.deployObjectId = deployObjectId;
+        return this;
     }
 
 
@@ -50,31 +51,35 @@ public class DeploySourceVO {
         return type;
     }
 
-    public void setType(String type) {
+    public DeploySourceVO setType(String type) {
         this.type = type;
+        return this;
     }
 
     public String getProjectName() {
         return projectName;
     }
 
-    public void setProjectName(String projectName) {
+    public DeploySourceVO setProjectName(String projectName) {
         this.projectName = projectName;
+        return this;
     }
 
     public String getMarketAppName() {
         return marketAppName;
     }
 
-    public void setMarketAppName(String marketAppName) {
+    public DeploySourceVO setMarketAppName(String marketAppName) {
         this.marketAppName = marketAppName;
+        return this;
     }
 
     public String getMarketServiceName() {
         return marketServiceName;
     }
 
-    public void setMarketServiceName(String marketServiceName) {
+    public DeploySourceVO setMarketServiceName(String marketServiceName) {
         this.marketServiceName = marketServiceName;
+        return this;
     }
 }

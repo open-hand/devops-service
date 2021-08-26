@@ -2,6 +2,9 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
@@ -20,7 +23,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,10 +43,8 @@ import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
@@ -53,10 +53,11 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
-    public static final String CREATE_TYPE = "create";
-    public static final String UPDATE_TYPE = "update";
     public static final String EVICTED = "Evicted";
+    private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME = "choerodon.io/parent-workload-name";
+    private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT = "choerodon.io/parent-workload";
     private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
+    private static final String CHOERODON_IO_V1_COMMAND = "choerodon.io/v1-command";
     private static final String PENDING = "Pending";
     private static final String METADATA = "metadata";
     private static final String SERVICE_KIND = "service";
@@ -67,6 +68,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String SECRET_KIND = "secret";
     private static final String PERSISTENT_VOLUME_KIND = "persistentvolume";
     private static final String PERSISTENT_VOLUME_CLAIM_KIND = "persistentvolumeclaim";
+    private static final String DEPLOYMENT = "deployment";
+    private static final String JOB = "job";
+    private static final String DAEMONSET = "daemonset";
+    private static final String CRON_JOB = "cronjob";
+    private static final String STATEFULSET = "statefulset";
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
@@ -79,6 +85,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
@@ -115,8 +122,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired
-    private DevopsClusterProPermissionService devopsClusterProPermissionService;
-    @Autowired
     private TransactionalProducer producer;
     @Autowired
     private DevopsConfigMapService devopsConfigMapService;
@@ -151,37 +156,71 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
+    @Autowired
+    private WorkloadService workloadService;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
+    @Autowired
+    private DevopsStatefulSetService devopsStatefulSetService;
+    @Autowired
+    private DevopsJobService devopsJobService;
+    @Autowired
+    private DevopsDaemonSetService devopsDaemonSetService;
+    @Autowired
+    private DevopsCronJobService devopsCronJobService;
 
+    @Autowired
+    private ChartResourceOperator chartResourceOperator;
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_POD_READY,
+            description = "pod状态更新",
+            inputSchemaClass = PodReadyEventVO.class)
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
-        AppServiceInstanceDTO appServiceInstanceDTO =
-                appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseUtil.getReleaseName(key), envId);
-        if (appServiceInstanceDTO == null) {
-            logger.info("instance not found");
+        String releaseName = KeyParseUtil.getReleaseName(key);
+        AppServiceInstanceDTO appServiceInstanceDTO = null;
+
+        Map<String, String> labels = v1Pod.getMetadata().getLabels();
+        // pod 没有完整的workload标签
+        boolean isWorkloadLabelEmpty = StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME)) || StringUtils.isEmpty(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT));
+        List<V1OwnerReference> v1OwnerReferences = v1Pod.getMetadata().getOwnerReferences();
+        // pod 没有属主信息，比如直接创建的pod
+        boolean isReferencesEmpty = (v1OwnerReferences == null || v1OwnerReferences.isEmpty());
+        // 没有属主信息并且没有workload标签，舍弃
+        if (isReferencesEmpty && isWorkloadLabelEmpty) {
             return;
+        }
+        if (!StringUtils.isEmpty(releaseName)) {
+            appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+            if (appServiceInstanceDTO == null && isWorkloadLabelEmpty) {
+                logger.info("instance not found");
+                return;
+            }
+        }
+        String parentName = labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME);
+        String parentType = labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT);
+        Long instanceId;
+        if (appServiceInstanceDTO == null) {
+            instanceId = workloadService.getWorkloadId(envId, parentName, parentType);
+        } else {
+            instanceId = appServiceInstanceDTO.getId();
         }
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         DevopsEnvResourceDTO newDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
-                        appServiceInstanceDTO.getId(),
+                        instanceId,
                         null,
                         null,
                         KeyParseUtil.getResourceType(key),
                         v1Pod.getMetadata().getName());
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
         devopsEnvResourceDetailDTO.setMessage(msg);
+        devopsEnvResourceDTO.setInstanceId(instanceId);
         devopsEnvResourceDTO.setKind(KeyParseUtil.getResourceType(key));
         devopsEnvResourceDTO.setEnvId(envId);
         devopsEnvResourceDTO.setName(v1Pod.getMetadata().getName());
         devopsEnvResourceDTO.setReversion(TypeUtil.objToLong(v1Pod.getMetadata().getResourceVersion()));
-        List<V1OwnerReference> v1OwnerReferences = v1Pod.getMetadata().getOwnerReferences();
-        if (v1OwnerReferences == null || v1OwnerReferences.isEmpty()) {
-            return;
-        }
-        if (v1OwnerReferences.get(0).getKind().equals(ResourceType.JOB.getType())) {
-            return;
-        }
         saveOrUpdateResource(devopsEnvResourceDTO,
                 newDevopsEnvResourceDTO,
                 devopsEnvResourceDetailDTO,
@@ -198,12 +237,45 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setReady(getReadyValue(status, v1Pod));
         devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+        devopsEnvPodDTO.setOwnerRefKind(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT));
+        devopsEnvPodDTO.setOwnerRefName(labels.get(CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME));
+        devopsEnvPodDTO.setEnvId(envId);
 
         Boolean flag = false;
-        if (appServiceInstanceDTO.getId() != null) {
+        if (appServiceInstanceDTO != null && appServiceInstanceDTO.getId() != null) {
             List<DevopsEnvPodDTO> devopsEnvPodEList = devopsEnvPodService
                     .baseListByInstanceId(appServiceInstanceDTO.getId());
             handleEnvPod(v1Pod, appServiceInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);
+            // 实例下的pod状态变为ready,发送通知
+            if (Boolean.TRUE.equals(devopsEnvPodDTO.getReady())) {
+                producer.applyAndReturn(
+                        StartSagaBuilder
+                                .newBuilder()
+                                .withLevel(ResourceLevel.SITE)
+                                .withRefType("")
+                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
+                        builder -> builder
+                                .withPayloadAndSerialize(new PodReadyEventVO(envId, releaseName, TypeUtil.objToLong(labels.get(CHOERODON_IO_V1_COMMAND))))
+                                .withRefId(""));
+            }
+        } else {
+            DevopsEnvPodDTO devopsEnvPodDTORecord = devopsEnvPodService.baseQueryByEnvIdAndName(envId, v1Pod.getMetadata().getName());
+            if (devopsEnvPodDTORecord != null) {
+                if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
+                    devopsEnvPodService.baseDeleteById(devopsEnvPodDTORecord.getId());
+                    devopsEnvResourceService.deleteByEnvIdAndKindAndName(envId, ResourceType.POD.getType(), devopsEnvPodDTORecord.getName());
+                } else if (!resourceVersion.equals(devopsEnvPodDTORecord.getResourceVersion())) {
+                    devopsEnvPodDTORecord.setStatus(status);
+                    devopsEnvPodDTORecord.setResourceVersion(resourceVersion);
+                    devopsEnvPodDTORecord.setReady(getReadyValue(status, v1Pod));
+                    devopsEnvPodDTORecord.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+                    devopsEnvPodService.baseUpdate(devopsEnvPodDTORecord);
+                }
+
+            } else {
+                devopsEnvPodService.baseCreate(devopsEnvPodDTO);
+            }
+
         }
     }
 
@@ -235,7 +307,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void handleEnvPod(V1Pod v1Pod, AppServiceInstanceDTO appServiceInstanceDTO, String resourceVersion, DevopsEnvPodDTO devopsEnvPodDTO, Boolean flag, List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
         //如果pod的状态是被驱逐的，则应该直接删掉
         if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
-            devopsEnvPodService.baseDeleteByName(v1Pod.getMetadata().getName(), appServiceInstanceDTO.getEnvCode());
+            devopsEnvPodService.baseDeleteByNameAndEnvId(v1Pod.getMetadata().getName(), appServiceInstanceDTO.getEnvId());
             devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(), v1Pod.getMetadata().getName(), appServiceInstanceDTO.getId());
         } else {
             if (devopsEnvPodDTOS == null || devopsEnvPodDTOS.isEmpty()) {
@@ -280,7 +352,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 logger.info("Install resource: resources null...");
             } else {
                 logger.info("Install resource: resource size: {}", resources.size());
-                resources.forEach(resource -> logger.info("Install resource: resource name {}", resource.getName()));
+                resources.forEach(resource -> logger.info("Install resource: resource kind {} resource name {}", resource.getKind(), resource.getName()));
             }
         }
         String releaseName = releasePayloadVO.getName();
@@ -335,7 +407,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             // 市场实例通过effect Command查，因为同一个市场服务的多个发布对象之间，
             // chartVersion不一定发生了变化，所以需要这个来确定具体是部署哪个发布对象，
             // TODO 普通实例也应该可以通过生效的command来查版本id
-            if (AppServiceInstanceSource.MARKET.getValue().equals(appServiceInstanceDTO.getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
+            if (AppSourceType.MARKET.getValue().equals(appServiceInstanceDTO.getSource()) || AppSourceType.MIDDLEWARE.getValue().equals(appServiceInstanceDTO.getSource())) {
                 if (effectCommandId != null) {
                     DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(effectCommandId);
                     appServiceInstanceDTO.setAppServiceVersionId(devopsEnvCommandDTO.getObjectVersionId());
@@ -356,7 +428,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Failed to query effect command. instanceId: {}, releaseCommit: {}", instanceId, releaseCommit);
-                logger.debug("The ex is: {}", e);
+                logger.debug("The ex is:", e);
             } else if (logger.isInfoEnabled()) {
                 logger.info("Failed to query effect command. instanceId: {}, releaseCommit: {}, the exception class is {}", instanceId, releaseCommit, e.getClass());
             }
@@ -436,18 +508,29 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvResourceDTO.setReversion(
                     TypeUtil.objToLong(
                             ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCE_VERSION).toString()));
-            String releaseName;
+            String releaseName = KeyParseUtil.getReleaseName(key);
             DevopsEnvResourceDTO oldDevopsEnvResourceDTO;
-            AppServiceInstanceDTO appServiceInstanceDTO;
+            AppServiceInstanceDTO appServiceInstanceDTO = null;
+
             ResourceType resourceType = ResourceType.forString(KeyParseUtil.getResourceType(key));
             if (resourceType == null) {
                 resourceType = ResourceType.MISSTYPE;
             }
+            if (releaseName != null) {
+                appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+            }
+
+            // 保存chart内资源信息到对应资源表
+            ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resourceType.getType());
+            if (chartResourceOperatorService != null && appServiceInstanceDTO != null) {
+                chartResourceOperatorService.saveOrUpdateChartResource(msg, appServiceInstanceDTO);
+            }
+
             switch (resourceType) {
                 case INGRESS:
                     oldDevopsEnvResourceDTO =
                             devopsEnvResourceService.baseQueryOptions(
-                                    null,
+                                    appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getId(),
                                     null,
                                     envId,
                                     KeyParseUtil.getResourceType(key),
@@ -462,7 +545,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 KeyParseUtil.getResourceName(key));
                     }
                     saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
-                            devopsEnvResourceDetailDTO, null);
+                            devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     break;
                 case POD:
                     handlerUpdatePodMessage(key, msg, envId);
@@ -489,10 +572,30 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     // env id是null的
                     handleUpdatePvMsg(key, clusterId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
+                case DEPLOYMENT:
+                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
+                    // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
+                    if (deploymentDTO != null && DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
+                        V1beta2Deployment v1beta2Deployment = K8sUtil.deserialize(msg, V1beta2Deployment.class);
+                        if (v1beta2Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
+                            deploymentDTO.setStatus(InstanceStatus.STOPPED.getStatus());
+                            devopsDeploymentService.baseUpdate(deploymentDTO);
+                        } else if (v1beta2Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
+                            deploymentDTO.setStatus(InstanceStatus.RUNNING.getStatus());
+                            devopsDeploymentService.baseUpdate(deploymentDTO);
+                        }
+                    }
+                    break;
+                case JOB:
+                case DAEMONSET:
+                case CRON_JOB:
+                case STATEFULSET:
+                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    break;
                 default:
-                    releaseName = KeyParseUtil.getReleaseName(key);
+                    // 默认为Release对象
                     if (releaseName != null) {
-                        appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
                         if (appServiceInstanceDTO == null) {
                             return;
                         }
@@ -514,12 +617,25 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                             KeyParseUtil.getResourceName(key));
                         }
                         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+
                     }
                     break;
             }
         } catch (IOException e) {
-            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is {}", e);
+            logger.info("Unexpected exception occurred when processing resourceUpdate. The exception is", e);
         }
+    }
+
+    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
+        DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
+                devopsEnvResourceService.baseQueryOptions(
+                        appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getId(),
+                        null,
+                        envId,
+                        KeyParseUtil.getResourceType(key),
+                        KeyParseUtil.getResourceName(key));
+        saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
+                devopsEnvResourceDetailDTO, appServiceInstanceDTO);
     }
 
     /**
@@ -687,9 +803,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
-        if (KeyParseUtil.getResourceType(key).equals(ResourceType.JOB.getType())) {
-            return;
-        }
+        // 不知道这里为什么要留着job数据，但是会对工作负载产生的job造成影响，所以先注释这个逻辑，看后续出现的问题再做处理
+//        if (KeyParseUtil.getResourceType(key).equals(ResourceType.JOB.getType())) {
+//            return;
+//        }
         if (KeyParseUtil.getResourceType(key).equals(ResourceType.POD.getType())) {
             String podName = KeyParseUtil.getResourceName(key);
             String podNameSpace = KeyParseUtil.getNamespace(key);
@@ -700,6 +817,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 envId,
                 KeyParseUtil.getResourceType(key),
                 KeyParseUtil.getResourceName(key));
+
+        ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(KeyParseUtil.getResourceType(key));
+        if (chartResourceOperatorService != null) {
+            chartResourceOperatorService.deleteByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
+        }
 
     }
 
@@ -990,7 +1112,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             event.getInvolvedObject().setName(
                     event.getInvolvedObject().getName()
                             .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
-            insertDevopsCommandEvent(event, ResourceType.JOB.getType());
+            insertDevopsCommandEvent(event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
         }
     }
 
@@ -998,10 +1120,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void helmPodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
-        insertDevopsCommandEvent(event, ResourceType.POD.getType());
+        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.HELM);
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
+    @Override
+    public void workloadPodEvent(String msg) {
+        Event event = JSONArray.parseObject(msg, Event.class);
+        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.WORKLOAD);
+    }
+
+    @Transactional(rollbackFor = Exception.class, isolation = READ_COMMITTED)
     @Override
     public void gitOpsSyncEvent(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
@@ -1066,11 +1195,49 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         case PERSISTENT_VOLUME_CLAIM_KIND:
                             syncPersistentVolumeClaim(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
+                        case DEPLOYMENT:
+                            syncDeployment(objects[0], envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
+                        case JOB:
+                        case DAEMONSET:
+                        case CRON_JOB:
+                        case STATEFULSET:
+                            syncWorkload(objects[0], envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
                         default:
                             syncCustom(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
                     }
                 });
+    }
+
+    private void syncDeployment(String type, Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
+
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, objects[1]);
+        if (devopsDeploymentDTO == null) {
+            logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
+        Long resourceId = devopsDeploymentDTO.getId();
+        Long commandId = devopsDeploymentDTO.getCommandId();
+
+        if (resourceId == null || commandId == null) {
+            logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
+
+        devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndResourceId(envId, resourceId, type);
+        if (Boolean.FALSE.equals(updateEnvCommandStatus(resourceCommitVO, commandId, devopsEnvFileResourceDTO,
+                objects[0], objects[1], CommandStatus.SUCCESS.getStatus(), envFileErrorFiles))) {
+            // 更新状态为failed
+            devopsDeploymentDTO.setStatus(InstanceStatus.FAILED.getStatus());
+            devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
+        } else {
+            // 更新生效commandId
+            devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
+        }
     }
 
     private void syncPersistentVolume(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
@@ -1168,7 +1335,70 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByEnvIdAndResourceId(envId, devopsCustomizeResourceDTO.getId(), ObjectType.CUSTOM.getType());
         updateEnvCommandStatus(resourceCommitVO, devopsCustomizeResourceDTO.getCommandId(), devopsEnvFileResourceDTO,
                 objects[0], devopsCustomizeResourceDTO.getName(), CommandStatus.SUCCESS.getStatus(), envFileErrorFiles);
+    }
 
+
+    private void syncWorkload(String type, Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
+        Long resourceId = null;
+        Long commandId = null;
+        switch (type) {
+            case DEPLOYMENT:
+                DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsDeploymentDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                resourceId = devopsDeploymentDTO.getId();
+                commandId = devopsDeploymentDTO.getCommandId();
+                break;
+            case STATEFULSET:
+                DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsStatefulSetDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                resourceId = devopsStatefulSetDTO.getId();
+                commandId = devopsStatefulSetDTO.getCommandId();
+                break;
+            case JOB:
+                DevopsJobDTO devopsJobDTO = devopsJobService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsJobDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                resourceId = devopsJobDTO.getId();
+                commandId = devopsJobDTO.getCommandId();
+                break;
+            case DAEMONSET:
+                DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsDaemonSetDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                resourceId = devopsDaemonSetDTO.getId();
+                commandId = devopsDaemonSetDTO.getCommandId();
+                break;
+            case CRON_JOB:
+                DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, objects[1]);
+                if (devopsCronJobDTO == null) {
+                    logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+                    return;
+                }
+                resourceId = devopsCronJobDTO.getId();
+                commandId = devopsCronJobDTO.getCommandId();
+                break;
+        }
+
+        if (resourceId == null || commandId == null) {
+            logger.info("Non workload resource with envId: {}, kind: {}, name: {}", envId, objects[0], objects[1]);
+            return;
+        }
+
+        devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndResourceId(envId, resourceId, type);
+        updateEnvCommandStatus(resourceCommitVO, commandId, devopsEnvFileResourceDTO,
+                objects[0], objects[1], CommandStatus.SUCCESS.getStatus(), envFileErrorFiles);
     }
 
     private void syncCetificate(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
@@ -1356,7 +1586,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
             devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
         }
-
     }
 
     private void installResource(List<Resource> resources, AppServiceInstanceDTO appServiceInstanceDTO) {
@@ -1388,6 +1617,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         .get(METADATA).toString());
                 devopsEnvResourceDTO.setReversion(
                         TypeUtil.objToLong(jsonResult.get(RESOURCE_VERSION).toString()));
+
+
                 saveOrUpdateResource(
                         devopsEnvResourceDTO,
                         oldDevopsEnvResourceDTO,
@@ -1396,6 +1627,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 if (resource.getKind().equals(ResourceType.POD.getType())) {
                     syncPod(resource.getObject(), appServiceInstanceDTO);
                 }
+                // 如果需要保存对应类型的资源信息，则保存。
+                ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resource.getKind());
+                if (chartResourceOperatorService != null) {
+                    chartResourceOperatorService.saveOrUpdateChartResource(resource.getObject(), appServiceInstanceDTO);
+                }
+
             }
         } catch (Exception e) {
             logger.info("Exception occurred when processing installResource. It is: ", e);
@@ -1412,16 +1649,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setName(v1Pod.getMetadata().getName());
         devopsEnvPodDTO.setIp(v1Pod.getStatus().getPodIP());
         devopsEnvPodDTO.setStatus(status);
+        devopsEnvPodDTO.setEnvId(appServiceInstanceDTO.getEnvId());
         devopsEnvPodDTO.setResourceVersion(resourceVersion);
         devopsEnvPodDTO.setNamespace(v1Pod.getMetadata().getNamespace());
         devopsEnvPodDTO.setReady(getReadyValue(status, v1Pod));
         devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
         devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+
         devopsEnvPodService.baseCreate(devopsEnvPodDTO);
     }
 
-    private void insertDevopsCommandEvent(Event event, String type) {
+    private void insertDevopsCommandEvent(Event event, String type, PodSourceEnums source) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
                 .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
 
@@ -1437,7 +1676,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 return;
             }
 
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.queryByInstanceIdAndCommitSha(devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
+            DevopsEnvCommandDTO devopsEnvCommandDTO;
+            if (PodSourceEnums.HELM.equals(source)) {
+                devopsEnvCommandDTO = devopsEnvCommandService.queryByInstanceIdAndCommitSha(devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
+            } else {
+                DevopsEnvPodDTO devopsEnvPodDTO = devopsEnvPodService.baseQueryByEnvIdAndName(devopsEnvResourceDTO.getEnvId(), devopsEnvResourceDTO.getName());
+                Long workloadId = workloadService.getWorkloadId(devopsEnvResourceDTO.getEnvId(), devopsEnvPodDTO.getOwnerRefName(), devopsEnvPodDTO.getOwnerRefKind());
+                devopsEnvCommandDTO = devopsEnvCommandService.queryByWorkloadTypeAndObjectIdAndCommitSha(devopsEnvPodDTO.getOwnerRefKind(), workloadId, event.getCommitSha());
+            }
             if (devopsEnvCommandDTO == null) {
                 logger.info("InsertCommandEvent: EnvCommand is not found. InstanceId={}, commitSha={}", devopsEnvResourceDTO.getInstanceId(), event.getCommitSha());
                 return;
@@ -1625,7 +1871,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             newDevopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
             devopsEnvCommandService.baseUpdate(newDevopsEnvCommandDTO);
         } catch (Exception e) {
-            logger.info("Exception occurred when calling handlerServiceCreateMessage(). It is: {}", e);
+            logger.info("Exception occurred when calling handlerServiceCreateMessage(). It is:", e);
         }
     }
 
@@ -1874,6 +2120,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     DevopsEnvironmentDTO baseQueryById = devopsEnvironmentService.baseQueryById(devopsEnvCommandDTO.getEnvId());
                     sendNotificationService.sendWhenPVCResource(devopsPvcDTO, baseQueryById, SendSettingEnum.CREATE_RESOURCE.value());
                 }
+                break;
+            case DEPLOYMENT:
+            case STATEFULSET:
+            case JOB:
+            case CRONJOB:
+            case DAEMONSET:
                 break;
             default:
                 logger.warn("Unexpected resource kind when syncing commands: {}", devopsEnvCommandDTO.getObject());

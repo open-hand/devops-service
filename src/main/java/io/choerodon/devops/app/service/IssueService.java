@@ -10,7 +10,7 @@ public interface IssueService {
 
     IssueVO countCommitAndMergeRequest(Long issueId);
 
-    List<DevopsBranchVO> getBranchsByIssueId(Long issueId);
+    List<DevopsBranchVO> getBranchesByIssueId(Long issueId);
 
     List<CustomMergeRequestVO> getMergeRequestsByIssueId(Long issueId);
 

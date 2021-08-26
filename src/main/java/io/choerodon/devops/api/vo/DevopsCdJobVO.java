@@ -74,6 +74,17 @@ public class DevopsCdJobVO {
 
     private ExternalApprovalJobVO externalApprovalJobVO;
 
+    @ApiModelProperty("是否有权限修改cd的job")
+    private boolean edit;
+
+    public boolean isEdit() {
+        return edit;
+    }
+
+    public void setEdit(boolean edit) {
+        this.edit = edit;
+    }
+
     public String getEnvName() {
         return envName;
     }

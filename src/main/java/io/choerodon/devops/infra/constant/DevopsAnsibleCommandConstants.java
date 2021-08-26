@@ -12,7 +12,7 @@ public class DevopsAnsibleCommandConstants {
     /**
      * 密码模式 节点名称 主机 端口 用户 登录密码
      */
-    public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
+    public static final String INVENTORY_INI_TEMPLATE_FOR_ALL_PSW_TYPE = "%s ansible_host=%s ansible_port=%s ansible_user=%s ansible_ssh_pass=%s";
 
     /**
      * 密钥模式 节点名称 主机 端口 用户 密钥文件路径
@@ -23,20 +23,6 @@ public class DevopsAnsibleCommandConstants {
      * 保存密钥命令 密钥内容 密钥保存地址
      */
     public static final String SAVE_PRIVATE_KEY_TEMPLATE = "echo \"%s\" > %s";
-
-    /**
-     * 保存redis配置
-     */
-    public static final String SAVE_REDIS_CONFIGURATION = "cat <<EOF >/tmp/redis-configuration.yml\n" +
-            "%s\n" +
-            "EOF";
-
-    /**
-     * 保存MySQL配置
-     */
-    public static final String SAVE_MYSQL_NODE_CONFIGURATION = "cat <<EOF >/tmp/middleware/host_vars/%s.yml\n" +
-            "%s\n" +
-            "EOF";
 
     /**
      * 创建多节点配置目录

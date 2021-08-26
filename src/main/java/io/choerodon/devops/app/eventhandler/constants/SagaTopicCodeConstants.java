@@ -247,11 +247,6 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_BATCH_DEPLOYMENT = "devops-batch-deployment";
 
     /**
-     * devops 主机部署
-     */
-    public static final String DEVOPS_HOST_FEPLOY = "devops-host-deploy";
-
-    /**
      * 创建集群
      */
     public static final String DEVOPS_INSTALL_K8S = "devops-install-k8s";
@@ -287,16 +282,6 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_DELETE_APP_TEMPLATE = "api-delete-app-template";
 
     /**
-     * 部署redis
-     */
-    public static final String DEVOPS_DEPLOY_REDIS = "deploy_redis";
-
-    /**
-     * 部署mysql
-     */
-    public static final String DEVOPS_DEPLOY_MYSQL = "deploy_mysql";
-
-    /**
      * 删除tag
      */
     public static final String DEVOPS_GIT_TAG_DELETE = "devops-git-tag-delete";
@@ -306,6 +291,15 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_MERGE_REQUEST_PASS = "devops-merge-request-pass";
 
+    /**
+     * pod状态更新
+     */
+    public static final String DEVOPS_POD_READY = "devops-pod-ready";
+
+    /**
+     * 迁移应用服务
+     */
+    public static final String DEVOPS_TRANSFER_APP_SERVICE = "devops-transfer-app-service";
 
     /**
      * iam添加项目类型

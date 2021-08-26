@@ -57,6 +57,8 @@ public interface DevopsEnvCommandService {
     @Nullable
     DevopsEnvCommandDTO queryByInstanceIdAndCommitSha(Long instanceId, String sha);
 
+    DevopsEnvCommandDTO queryByWorkloadTypeAndObjectIdAndCommitSha(String type, Long objectId, String sha);
+
     /**
      * 将之前的操作中的资源更新为成功
      *
@@ -65,4 +67,12 @@ public interface DevopsEnvCommandService {
      * @param beforeDate 截止日期
      */
     void updateOperatingToSuccessBeforeDate(ObjectType objectType, Long objectId, Date beforeDate);
+
+    /**
+     * 查询工作负载的最新生效commandId
+     * @param workloadType
+     * @param workloadId
+     * @return
+     */
+    Long  queryWorkloadEffectCommandId(String workloadType, Long workloadId);
 }

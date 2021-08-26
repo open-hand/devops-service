@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -23,7 +24,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.enums.AppServiceInstanceSource;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ObjectType;
@@ -46,11 +47,10 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private AgentMsgHandlerService agentMsgHandlerService;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
@@ -98,16 +98,16 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         });
 
         // 新增instance
-        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> !AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) && !AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> !AppSourceType.MARKET.getValue().equals(f.getSpec().getSource()) && !AppSourceType.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         // 新增市场实例
-        addMarketInstance(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        addMarketInstance(objectPath, envId, projectId, addC7nHelmRelease.stream().filter(f -> AppSourceType.MARKET.getValue().equals(f.getSpec().getSource()) || AppSourceType.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         // 更新instance
-        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> !AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) && !AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> !AppSourceType.MARKET.getValue().equals(f.getSpec().getSource()) && !AppSourceType.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         // 更新市场实例
-        updateMarketInstance(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> AppServiceInstanceSource.MARKET.getValue().equals(f.getSpec().getSource()) || AppServiceInstanceSource.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
+        updateMarketInstance(objectPath, envId, projectId, updateC7nHelmRelease.stream().filter(f -> AppSourceType.MARKET.getValue().equals(f.getSpec().getSource()) || AppSourceType.MIDDLEWARE.getValue().equals(f.getSpec().getSource())).collect(Collectors.toList()), path, userId);
 
         //删除instance,和文件对象关联关系
         beforeC7nRelease.forEach(releaseName -> {
@@ -407,7 +407,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         marketInstanceCreationRequestVO.setMarketAppServiceId(appServiceVersion.getMarketServiceId());
         marketInstanceCreationRequestVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         marketInstanceCreationRequestVO.setSource(c7nHelmRelease.getSpec().getSource());
-        if (AppServiceInstanceSource.MIDDLEWARE.getValue().equals(c7nHelmRelease.getSpec().getSource())) {
+        if (AppSourceType.MIDDLEWARE.getValue().equals(c7nHelmRelease.getSpec().getSource())) {
             marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getMarketServiceVersion());
         } else {
             marketInstanceCreationRequestVO.setChartVersion(appServiceVersion.getDevopsAppServiceVersion());

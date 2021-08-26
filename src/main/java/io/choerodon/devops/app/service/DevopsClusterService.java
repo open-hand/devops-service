@@ -269,4 +269,8 @@ public interface DevopsClusterService {
     void updateStatusById(Long clusterId, ClusterStatusEnum disconnect);
 
     void updateStatusByIdInNewTrans(Long clusterId, ClusterStatusEnum disconnect);
+
+    Long countClusterByOptions(Long projectId);
+
+    String disconnectionHost(Long clusterId);
 }

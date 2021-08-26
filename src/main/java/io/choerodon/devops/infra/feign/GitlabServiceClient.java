@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -124,7 +123,9 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/groups/{groupId}/projects/event")
     ResponseEntity<List<GitlabProjectDTO>> listProjects(@PathVariable("groupId") Integer groupId,
-                                                        @RequestParam(value = "userId", required = false) Integer userId);
+                                                        @RequestParam(value = "userId", required = false) Integer userId,
+                                                        @RequestParam(value = "page", required = false) Integer page,
+                                                        @RequestParam(value = "perPage", required = false) Integer perPage);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId);
@@ -689,4 +690,34 @@ public interface GitlabServiceClient {
             @RequestParam Integer projectId,
             @ApiParam(value = "MR Iid", required = true)
             @RequestParam Integer iid);
+
+    @ApiOperation(value = "查询有权限的所有组")
+    @PostMapping("/v1/groups/{userId}")
+    ResponseEntity<List<GroupDTO>> listGroupsWithParam(@ApiParam(value = "userId")
+                                     @PathVariable(value = "userId") Integer userId,
+                                     @RequestParam(value = "owned", required = false) Boolean owned,
+                                     @RequestParam(value = "search", required = false) String search,
+                                     @RequestBody List<Integer> skipGroups);
+
+    @ApiOperation(value = "获取项目列表")
+    @GetMapping(value = "/v1/groups/{groupId}/projects")
+    ResponseEntity<List<GitlabProjectDTO>> listProjects(
+            @ApiParam(value = "组ID", required = true)
+            @PathVariable(value = "groupId") Integer groupId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "owned", required = false) Boolean owned,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "perPage", required = false) Integer perPage);
+
+    @ApiParam(value = "迁移应用服务")
+    @PutMapping(value = "/v1/projects/{projectId}/transfer")
+    ResponseEntity<GitlabProjectDTO> transferProject(
+            @ApiParam(value = "用户id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "新的groupId")
+            @RequestParam(value = "groupId") Integer groupId);
 }

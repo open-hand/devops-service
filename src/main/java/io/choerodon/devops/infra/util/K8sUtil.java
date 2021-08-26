@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
@@ -8,6 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 /**
  * Created by younger on 2018/4/25.
@@ -20,6 +24,31 @@ public class K8sUtil {
     private static final String EXIT_CODE = "ExitCode:";
     private static final String NONE_LABEL = "<none>";
     private static final JSON json = new JSON();
+    /**
+     * 名称正则
+     */
+    public static final Pattern NAME_PATTERN = Pattern.compile("[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*");
+
+    /**
+     * Host的正则
+     */
+    public static final Pattern HOST_PATTERN = Pattern.compile("^(\\*\\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
+
+    /**
+     * 子域名正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
+     */
+    public static final Pattern SUB_DOMAIN_PATTERN = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$");
+
+    /**
+     * Annotation的name正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
+     */
+    public static final Pattern ANNOTATION_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
+
+    /**
+     * Label的name正则, Annotation的Key的一部分，可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)
+     */
+    public static final Pattern LABEL_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
+
 
     private K8sUtil() {
     }
@@ -68,7 +97,7 @@ public class K8sUtil {
 
 
     private static String getPodStatus(V1ContainerStateTerminated containerStateTerminated) {
-        LOGGER.info("Get pod status: {}", containerStateTerminated);
+        LOGGER.debug("Get pod status: {}", containerStateTerminated);
         String podStatus;
         if (containerStateTerminated.getReason() != null) {
             if (containerStateTerminated.getReason().length() == 0) {
@@ -81,7 +110,7 @@ public class K8sUtil {
         } else {
             podStatus = "";
         }
-        LOGGER.info("Got pod status : {}", podStatus);
+        LOGGER.debug("Got pod status : {}", podStatus);
         return podStatus;
     }
 
@@ -346,5 +375,17 @@ public class K8sUtil {
      */
     public static <T> T deserialize(String jsonString, Class<T> destK8sResource) {
         return json.deserialize(jsonString, destK8sResource);
+    }
+
+    public static <T> Yaml getYamlObject(Tag tag, Boolean isTag, T t) {
+        SkipNullRepresenterUtil skipNullRepresenter = null;
+        if (isTag) {
+            skipNullRepresenter = new SkipNullRepresenterUtil();
+            skipNullRepresenter.addClassTag(t.getClass(), tag);
+        }
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        return skipNullRepresenter == null ? new Yaml(options) : new Yaml(skipNullRepresenter, options);
     }
 }

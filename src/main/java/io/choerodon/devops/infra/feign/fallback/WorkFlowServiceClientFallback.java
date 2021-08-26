@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
 
@@ -32,5 +33,10 @@ public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
     @Override
     public ResponseEntity<String> createCiCdPipeline(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
         throw new CommonException("error.workflow.create");
+    }
+
+    @Override
+    public ResponseEntity<String> createHzeroPipeline(Long projectId, HzeroDeployPipelineVO hzeroDeployPipelineVO) {
+        throw new CommonException("error.hzero.deploy.create");
     }
 }

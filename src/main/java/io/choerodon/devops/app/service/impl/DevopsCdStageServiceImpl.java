@@ -12,7 +12,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
-import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
 
 @Service
@@ -54,9 +53,7 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
         cdStageDTO.setProjectId(pipelineId);
         List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageMapper.select(cdStageDTO);
         if (CollectionUtils.isEmpty(devopsCdStageDTOS)) {
-            devopsCdStageDTOS.forEach(devopsCdStageDTO -> {
-                deleteById(devopsCdStageDTO.getId());
-            });
+            devopsCdStageDTOS.forEach(devopsCdStageDTO -> deleteById(devopsCdStageDTO.getId()));
         }
     }
 }

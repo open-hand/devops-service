@@ -47,6 +47,20 @@ public interface HrdsCodeRepoClient {
                                                                                  @RequestBody Set<Long> userIds);
 
     /**
+     * 查询用户在项目下有指定权限及以上的应用服务
+     *
+     * @param organizationId
+     * @param projectId
+     * @param userIds        用户id
+     * @return
+     */
+    @PostMapping("/v1/organizations/{organizationId}/projects/{projectId}/gitlab/members/access/level/repositories/within")
+    ResponseEntity<List<RepositoryPrivilegeViewDTO>> listRepositoriesByAccessLevel(@PathVariable("organizationId") Long organizationId,
+                                                                                   @PathVariable("projectId") Long projectId,
+                                                                                   @RequestParam("accessLevel") Integer accessLevel,
+                                                                                   @RequestBody Set<Long> userIds);
+
+    /**
      * 查询应用服务下有权限的成员 包括项目所有者
      *
      * @param organizationId

@@ -32,8 +32,8 @@ public class DevopsEnvResourceDetailServiceImpl implements DevopsEnvResourceDeta
     }
 
     @Override
-    public DevopsEnvResourceDetailDTO baesQueryByMessageId(Long messageId) {
-        return devopsEnvResourceDetailMapper.selectByPrimaryKey(messageId);
+    public DevopsEnvResourceDetailDTO baseQueryByResourceDetailId(Long resourceDetailId) {
+        return devopsEnvResourceDetailMapper.selectByPrimaryKey(resourceDetailId);
     }
 
     @Override
@@ -47,10 +47,10 @@ public class DevopsEnvResourceDetailServiceImpl implements DevopsEnvResourceDeta
     }
 
     @Override
-    public List<DevopsEnvResourceDetailDTO> listByMessageIds(Set<Long> resourceDetailIds) {
+    public List<DevopsEnvResourceDetailDTO> listByResourceDetailsIds(Set<Long> resourceDetailIds) {
         List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = new ArrayList<>();
        if(!CollectionUtils.isEmpty(resourceDetailIds)){
-           devopsEnvResourceDetailDTOS = devopsEnvResourceDetailMapper.listByMessageIds(resourceDetailIds);
+           devopsEnvResourceDetailDTOS = devopsEnvResourceDetailMapper.listByResourceDetailIds(resourceDetailIds);
 
        }
        return  devopsEnvResourceDetailDTOS;

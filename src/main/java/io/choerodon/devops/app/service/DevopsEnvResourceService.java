@@ -23,12 +23,28 @@ public interface DevopsEnvResourceService {
     DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);
 
     /**
+     * deploymnet 资源展示
+     *
+     * @param deploymentId
+     * @return
+     */
+    DevopsEnvResourceVO listResourcesByDeploymentId(Long deploymentId);
+
+    /**
      * 获取部署实例Event事件
      *
      * @param instanceId
      * @return
      */
     List<InstanceEventVO> listInstancePodEvent(Long instanceId);
+
+    /**
+     * 获取部署组实例Event事件
+     *
+     * @param instanceId
+     * @return
+     */
+    List<InstanceEventVO> listDeploymentPodEvent(Long instanceId);
 
     void baseCreate(DevopsEnvResourceDTO devopsEnvResourceDTO);
 
@@ -69,4 +85,12 @@ public interface DevopsEnvResourceService {
     List<DevopsEnvResourceDTO> listEnvResourceByOptions(Long envId, String type, List<String> names);
 
     List<PodEventVO> listPodEventBycommandId(Long commandId);
+
+    String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType resourceType);
+
+    Object queryDetailsByKindAndName(Long envId, String kind, String name);
+
+    String queryYamlById(Long envId, Long workLoadId, String type);
+
+    String queryDetailsYamlByKindAndName(Long envId, String kind, String name);
 }

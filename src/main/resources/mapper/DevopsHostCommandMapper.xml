@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostCommandMapper">
+    <update id="batchUpdateTimeoutCommand">
+        update devops_host_command dhc
+        set dhc.status = 'failed', dhc.error = 'Time out!'
+        where dhc.status = 'operating' and dhc.id in
+        <foreach collection="missCommands" item="commandId" open="(" close=")" index="i" separator=",">
+            #{commandId}
+        </foreach>
+    </update>
+
+    <select id="selectLatestByInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        SELECT
+	      *
+        FROM
+	     devops_host_command
+        WHERE
+	     instance_id = #{instanceId,jdbcType=BIGINT}
+        ORDER BY id DESC
+	     LIMIT 0,1;
+    </select>
+    <select id="queryInstanceLatest" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        SELECT *
+        FROM devops_host_command dhc
+        WHERE dhc.instance_id = #{instanceId}
+        ORDER BY id DESC
+        limit 1
+    </select>
+    <select id="listStagnatedRecord" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        select *
+        from devops_host_command dhc
+        where dhc.host_id = #{hostId} and dhc.status = 'operating' and dhc.last_update_date <![CDATA[<=]]> #{beforeDate}
+    </select>
+
+    <delete id="listByHostId">
+        SELECT
+          *
+        FROM
+          devops_host_command
+        WHERE
+          host_id = # {hostId}
+        ORDER BY creation_date DESC
+    </delete>
+
+    <delete id="deleteByHostId">
+        DELETE FROM devops_host_command WHERE host_id = #{hostId}
+    </delete>
+</mapper>

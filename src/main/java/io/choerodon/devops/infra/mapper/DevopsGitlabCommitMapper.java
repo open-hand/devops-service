@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -45,4 +46,6 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
     int countBranchBoundWithIssue();
 
     List<DevopsGitlabCommitDTO> listCommitBoundWithIssue();
+
+    List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId);
 }

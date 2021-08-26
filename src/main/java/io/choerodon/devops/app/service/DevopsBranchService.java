@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -16,6 +17,8 @@ public interface DevopsBranchService {
     DevopsBranchDTO baseQueryByAppAndBranchName(Long appServiceId, String branchName);
 
     DevopsBranchDTO baseQueryByAppAndBranchNameWithIssueIds(Long appServiceId, String branchName);
+
+    DevopsBranchDTO baseQueryByAppAndBranchIdWithIssueId(Long appServiceId, Long branchId);
 
     void updateBranchIssue(Long projectId, AppServiceDTO appServiceDTO, DevopsBranchDTO devopsBranchDTO, boolean onlyInsert);
 
@@ -36,6 +39,8 @@ public interface DevopsBranchService {
     void fixIssueId();
 
     List<DevopsBranchDTO> listByCommitIs(List<Long> commitIds);
+
+    List<Long> listDeletedBranchIds(Set<Long> collect);
 
     List<DevopsBranchDTO> listByIds(List<Long> branchIds);
 }

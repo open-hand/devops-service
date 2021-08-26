@@ -1,8 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
@@ -21,42 +19,23 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      *
      * @param projectId   项目id
      * @param searchParam 查询参数
-     * @param params      模糊搜索参数
+     * @param hostStatus  主机状态
      * @return 主机列表
      */
-    List<DevopsHostDTO> listByOptions(@Param("projectId") Long projectId,
-                                      @Param("searchParam") Map<String, Object> searchParam,
-                                      @Param("params") List<String> params);
+    List<DevopsHostVO> listByOptions(@Param("projectId") Long projectId,
+                                     @Param("searchParam") String searchParam,
+                                     @Param("hostStatus") String hostStatus);
 
     List<DevopsHostDTO> listByProjectIdAndIds(@Param("projectId") Long projectId,
                                               @Param("hostIds") Set<Long> hostIds);
 
     /**
-     * 批量设置主机状态为处理中
+     * 查询指定项目下的所有主机
      *
-     * @param projectId 项目id
-     * @param hostIds   主机id数据
+     * @param projectIds 项目ID列表
+     * @return 主机
      */
-    void batchSetStatusOperating(@Param("projectId") Long projectId,
-                                 @Param("hostIds") Set<Long> hostIds,
-                                 @Param("date") Date date,
-                                 @Param("updatedBy") Long updatedBy);
+    List<DevopsHostDTO> listByProject(@Param("projectIds") List<Long> projectIds);
 
-    /**
-     * 批量设置主机状态为超时失败
-     *
-     * @param projectId 项目id
-     * @param hostIds   主机id数据
-     */
-    void batchSetStatusTimeoutFailed(@Param("projectId") Long projectId,
-                                     @Param("hostIds") Set<Long> hostIds,
-                                     @Param("isTestType") Boolean isTestType,
-                                     @Param("date") Date date);
-
-    List<DevopsHostVO> listBySearchParam(@Param("projectId") Long projectId,
-                                         @Param("searchParam") String searchParam);
-
-    List<DevopsHostVO> pagingWithCheckingStatus(@Param("projectId") Long projectId,
-                                                @Param("finalHostIds") Set<Long> finalHostIds,
-                                                @Param("searchParam") String searchParam);
+    List<DevopsHostVO> listMemberHostByOptions(@Param("projectId") Long projectId, @Param("searchParam") String searchParam, @Param("hostStatus") String hostStatus, @Param("userId") Long userId);
 }

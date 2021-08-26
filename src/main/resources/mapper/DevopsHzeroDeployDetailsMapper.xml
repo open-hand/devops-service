@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHzeroDeployDetailsMapper">
+
+
+    <select id="listNotSuccessRecordId"
+            resultType="io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO">
+        SELECT *
+        FROM devops_hzero_deploy_details dhdd
+        WHERE dhdd.`status` != 'success' AND dhdd.deploy_record_id = #{recordId}
+    </select>
+    <select id="baseQueryDeployingByEnvIdAndInstanceCode"
+            resultType="io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO">
+        SELECT *
+        FROM devops_hzero_deploy_details dhdd
+        WHERE dhdd.`status` = 'deploying' AND dhdd.env_id = #{envId} AND dhdd.instance_code = #{instanceCode}
+        order by id desc
+        limit 1
+    </select>
+    <select id="listDeployingByDate"
+            resultType="io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO">
+        SELECT *
+        FROM devops_hzero_deploy_details dhdd
+        WHERE dhdd.`status` = 'deploying' AND  dhdd.last_update_date <![CDATA[<=]]> #{beforeDate}
+    </select>
+</mapper>

@@ -199,7 +199,7 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+                    deploySourceVO);
             DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
             devopsDeployRecordDTO.setLog(log.toString());
             devopsDeployRecordService.updateRecord(devopsDeployRecordDTO);
@@ -317,7 +317,7 @@ public class JarAndImageDeployServiceImpl implements JarAndImageDeployService {
                     deployObjectName,
                     deployVersion,
                     null,
-                    deploySourceVO, DetailsHelper.getUserDetails().getUserId());
+                    deploySourceVO);
             DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);
             devopsDeployRecordDTO.setLog(log.toString());
             devopsDeployRecordService.updateRecord(devopsDeployRecordDTO);

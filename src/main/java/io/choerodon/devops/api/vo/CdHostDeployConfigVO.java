@@ -162,6 +162,9 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("仓库名")
         private String neRepositoryName;
 
+        @ApiModelProperty("实例名")
+        private String name;
+
         @Encrypt
         @ApiModelProperty("仓库id")
         private Long repositoryId;
@@ -180,6 +183,14 @@ public class CdHostDeployConfigVO {
 
         @ApiModelProperty("工作目录,默认值/temp")
         private String workingPath;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
 
         public String getWorkingPath() {
             return workingPath;

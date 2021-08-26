@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -307,7 +308,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
-            @ApiIgnore @SortDefault(value = "creationDate",direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiIgnore @SortDefault(value = "creationDate", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsEnvironmentService
@@ -328,7 +329,7 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出项目下所有与该环境未分配权限的项目成员")
     @PostMapping(value = "/{env_id}/permission/list_non_related")
-    public ResponseEntity<Page<DevopsEnvUserVO>> listAllNonRelatedMembers(
+    public ResponseEntity<Page<DevopsUserVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -381,7 +382,7 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取环境下所有用户权限")
     @GetMapping(value = "/{env_id}/list_all")
-    public ResponseEntity<List<DevopsEnvUserVO>> listAllUserPermission(
+    public ResponseEntity<List<DevopsUserVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -625,5 +626,43 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "集群id，传此值时表示查询集群下的环境，不传则查询项目下环境", required = false)
             @RequestParam(value = "cluster_id", required = false) Long clusterId) {
         return new ResponseEntity<>(devopsEnvironmentService.countEnvByOption(projectId, clusterId, isFailed), HttpStatus.OK);
+    }
+
+    @ApiOperation("一键开启所有自动部署")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{env_id}/open_auto_deploy")
+    public ResponseEntity<Void> openAutoDeploy(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("环境id")
+            @Encrypt
+            @PathVariable("env_id") Long envId) {
+        devopsEnvironmentService.updateAutoDeploy(projectId, envId, true);
+        return Results.success();
+    }
+
+    @ApiOperation("一键关闭所有自动部署")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{env_id}/close_auto_deploy")
+    public ResponseEntity<Void> closeAutoDeploy(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("环境id")
+            @Encrypt
+            @PathVariable("env_id") Long envId) {
+        devopsEnvironmentService.updateAutoDeploy(projectId, envId, false);
+        return Results.success();
+    }
+
+    @ApiOperation("查询一键部署状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{env_id}/query_auto_deploy")
+    public ResponseEntity<EnvAutoDeployVO> queryAutoDeploy(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("环境id")
+            @Encrypt
+            @PathVariable("env_id") Long envId) {
+        return Results.success(devopsEnvironmentService.queryAutoDeploy(projectId, envId));
     }
 }

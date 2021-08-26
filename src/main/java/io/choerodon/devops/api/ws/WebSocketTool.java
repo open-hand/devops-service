@@ -1,14 +1,10 @@
 package io.choerodon.devops.api.ws;
 
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
-import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
-import static org.hzero.websocket.constant.WebSocketConstant.Attributes.PROCESSOR;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-
+import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
+import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.hzero.core.util.StringPool;
 import org.hzero.websocket.config.WebSocketConfig;
 import org.hzero.websocket.handler.DefaultSocketHandler;
@@ -19,12 +15,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.devops.infra.util.KeyDecryptHelper;
-import io.choerodon.devops.infra.util.KeyParseUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.PROCESSOR;
 
 /**
  * Created by Sheep on 2019/7/25.
@@ -66,6 +64,11 @@ public class WebSocketTool {
     public static String getKey(WebSocketSession session) {
         return TypeUtil.objToString(session.getAttributes().get(KEY));
     }
+
+    public static String getHostId(WebSocketSession session) {
+        return TypeUtil.objToString(session.getAttributes().get(HOST_ID));
+    }
+
 
     /**
      * 构造对应的agent的连接的group

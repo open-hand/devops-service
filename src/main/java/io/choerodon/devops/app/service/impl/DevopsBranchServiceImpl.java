@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -73,6 +70,11 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     @Override
     public DevopsBranchDTO baseQueryByAppAndBranchNameWithIssueIds(Long appServiceId, String branchName) {
         return devopsBranchMapper.queryByAppAndBranchNameWithIssueIds(appServiceId, branchName);
+    }
+
+    @Override
+    public DevopsBranchDTO baseQueryByAppAndBranchIdWithIssueId(Long appServiceId, Long branchId) {
+        return devopsBranchMapper.queryByAppAndBranchIdWithIssueId(appServiceId, branchId);
     }
 
 
@@ -199,8 +201,9 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             if ((resultCount = devopsBranchMapper.delete(deleteCondition)) != 1) {
                 throw new CommonException("Failed to delete branch due to result count " + resultCount);
             }
-            // 删除敏捷问题关联关系
-            devopsIssueRelService.deleteRelationByObjectAndObjectId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId());
+            // 在2021.7.5之前，删除分支会移除敏捷问题关联关系
+            // 在此之后会保留该关系，是为了在gitlab或界面上删除分支后，敏捷照样能够获得分支和问题的关联关系
+//            devopsIssueRelService.deleteRelationByObjectAndObjectId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId());
         } else {
             LOGGER.info("Branch {} is not found in app service with id {}", branchName, appServiceId);
         }
@@ -242,6 +245,15 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             return devopsBranchMapper.listByCommitIds(commitIds);
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<Long> listDeletedBranchIds(Set<Long> branchIds) {
+        if (CollectionUtils.isEmpty(branchIds)){
+            return new ArrayList<>();
+        }
+        List<Long> existBranchIds = devopsBranchMapper.listExistBranchIds(branchIds);
+       return  branchIds.stream().filter(id->!existBranchIds.contains(id)).collect(Collectors.toList());
     }
 
     @Override

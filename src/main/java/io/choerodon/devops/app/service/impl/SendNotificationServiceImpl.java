@@ -121,9 +121,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     @Autowired
-    @Lazy
-    private PipelineRecordService pipelineRecordService;
-    @Autowired
     private HzeroMessageClientOperator messageClientOperator;
     @Autowired
     @Lazy
@@ -796,31 +793,31 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
 
     private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
-        DevopsCdPipelineRecordDTO record = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
-        LOGGER.info(">>>>>>>>>>>>>>>> sendCdPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCdPipelineRecordDTO is {}", record.toString());
-        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(record.getPipelineId()));
+        DevopsCdPipelineRecordDTO recordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(recordDTO.getProjectId());
+        LOGGER.info(">>>>>>>>>>>>>>>> sendCdPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCdPipelineRecordDTO is {}", recordDTO);
+        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getPipelineId()));
         //pipelineRecordId是relID
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
-        recordRelDTO.setCdPipelineRecordId(record.getId());
+        recordRelDTO.setCdPipelineRecordId(recordDTO.getId());
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
         params.put("pipelineIdRecordId", relDTO.getId().toString());
         //加上查看详情的url
         params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
-                projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(record.getPipelineId()), relDTO.getId().toString()));
+                projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getPipelineId()), relDTO.getId().toString()));
         addSpecifierList(type, projectDTO.getId(), users);
-        sendNotices(type, users, constructCdParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
+        sendNotices(type, users, constructCdParamsForPipeline(recordDTO, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
     private void sendCiPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
-        DevopsCiPipelineRecordDTO record = ciPipelineRecordService.queryById(pipelineRecordId);
-        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(record.getCiPipelineId());
+        DevopsCiPipelineRecordDTO recordDTO = ciPipelineRecordService.queryById(pipelineRecordId);
+        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(recordDTO.getCiPipelineId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
-        LOGGER.info(">>>>>>>>>>>>>>>> sendCiPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCiPipelineRecordDTO is {}", record.toString());
-        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(record.getCiPipelineId()));
+        LOGGER.info(">>>>>>>>>>>>>>>> sendCiPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCiPipelineRecordDTO is {}", recordDTO);
+        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getCiPipelineId()));
         //pipelineRecordId是relID
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
-        recordRelDTO.setCiPipelineRecordId(record.getId());
+        recordRelDTO.setCiPipelineRecordId(recordDTO.getId());
         DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
         params.put("pipelineIdRecordId", relDTO.getId().toString());
         addSpecifierList(type, projectDTO.getId(), users);
@@ -850,27 +847,14 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
     }
 
-    private Map<String, String> constructParamsForPipeline(PipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+    private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO recordDTO, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put(PIPE_LINE_NAME, record.getPipelineName())
-                .put(PROJECT_ID, record.getProjectId())
+                .put(PIPE_LINE_NAME, recordDTO.getPipelineName())
+                .put(PROJECT_ID, recordDTO.getProjectId())
                 .put(PROJECT_NAME, projectDTO.getName())
                 .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
                 .put(STAGE_ID, stageId)
-                .put("triggerType", record.getTriggerType())
-                .put(STAGE_NAME, stageName)
-                .putAll(params)
-                .build();
-    }
-
-    private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO record, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
-        return StringMapBuilder.newBuilder()
-                .put(PIPE_LINE_NAME, record.getPipelineName())
-                .put(PROJECT_ID, record.getProjectId())
-                .put(PROJECT_NAME, projectDTO.getName())
-                .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
-                .put(STAGE_ID, stageId)
-                .put("triggerType", record.getTriggerType())
+                .put("triggerType", recordDTO.getTriggerType())
                 .put(STAGE_NAME, stageName)
                 .putAll(params)
                 .build();
@@ -949,9 +933,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             .put("gitlabPassword", Objects.requireNonNull(password))
                             .build();
 
-                    sendOrganizationNotices(MessageCodeConstants.GITLAB_PWD, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, organizationId);
+                    sendOrganizationNotices(MessageCodeConstants.GITLAB_PSW, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, organizationId);
                 },
-                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", MessageCodeConstants.GITLAB_PWD, ex));
+                ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", MessageCodeConstants.GITLAB_PSW, ex));
     }
 
     private static Map<String, String> constructParamsForEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
@@ -1283,9 +1267,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     List<Receiver> receivers = new ArrayList<>();
-                    userIds.forEach(userId -> {
-                        receivers.add(constructReceiver(userId));
-                    });
+                    userIds.forEach(userId -> receivers.add(constructReceiver(userId)));
 
                     sendNotices(MessageCodeConstants.PIPELINE_API_TEST_WARNING, receivers, params, projectId);
                 },
@@ -1366,12 +1348,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             LOGGER.debug("Sender: {}", JsonHelper.marshalByJackson(sender));
         }
         messageClient.async().sendMessage(sender);
-    }
-
-    private void sendPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
-        PipelineRecordDTO record = pipelineRecordService.baseQueryById(pipelineRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(record.getProjectId());
-        sendNotices(type, users, constructParamsForPipeline(record, projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
     private void setParamsForUserInfo(Map<String, String> params) {

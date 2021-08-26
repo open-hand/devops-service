@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.BaseDomain;
@@ -19,6 +21,8 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 
 public class CiCdPipelineUtils {
     private static final Integer VIEWID_DIGIT = 6;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CiCdPipelineUtils.class);
 
     private CiCdPipelineUtils() {
 
@@ -37,7 +41,7 @@ public class CiCdPipelineUtils {
                     return 0;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("error.record.sort", e);
             }
             return 0;
         });

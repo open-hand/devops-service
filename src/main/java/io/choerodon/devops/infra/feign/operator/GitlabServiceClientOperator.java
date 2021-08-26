@@ -1160,4 +1160,24 @@ public class GitlabServiceClientOperator {
     public List<Note> listByMergeRequestIid(Integer gitlabProjectId, Integer mrIiD) {
         return gitlabServiceClient.listByMergeRequestIid(gitlabProjectId, mrIiD).getBody();
     }
+
+    public List<GroupDTO> listGroupsWithParam(Integer userId,
+                                              Boolean owned,
+                                              String search,
+                                              List<Integer> skipGroups) {
+        return gitlabServiceClient.listGroupsWithParam(userId, owned, search, skipGroups).getBody();
+    }
+
+    public List<GitlabProjectDTO> listProject(Integer groupId,
+                                              Integer userId,
+                                              Boolean owned,
+                                              String search,
+                                              Integer page,
+                                              Integer perPage) {
+        return gitlabServiceClient.listProjects(groupId, userId, owned, search, page, perPage).getBody();
+    }
+
+    public GitlabProjectDTO transferProject(Integer gitlabProjectId, Integer gitlabGroupId, Integer userId) {
+        return gitlabServiceClient.transferProject(gitlabProjectId, userId, gitlabGroupId).getBody();
+    }
 }

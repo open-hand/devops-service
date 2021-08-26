@@ -6,6 +6,7 @@ import java.util.Date;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 
 /**
@@ -107,12 +108,31 @@ public class AppServiceRepVO {
 
     @ApiModelProperty("来源项目名")
     private String shareProjectName;
+    @ApiModelProperty("服务的编码")
+    private String serviceCode;
+    @ApiModelProperty("服务的名称")
+    private String serviceName;
+    @ApiModelProperty("服务来源")
+    private String source;
+    @ApiModelProperty("服务来源显示")
+    private String sourceView;
+    @ApiModelProperty("如果是市场服务的话是不是平台预置的")
+    private Boolean builtIn;
+    @ApiModelProperty("最新版本")
+    private String latestVersion;
 
     @ApiModelProperty("事务实例id")
     @Encrypt
     private Long sagaInstanceId;
     @ApiModelProperty("错误信息")
     private String errorMessage;
+
+    @ApiModelProperty("环境Id")
+    @Encrypt
+    private Long envId;
+
+    @ApiModelProperty("如果是市场服务，对应的就是部署对象")
+    private MarketServiceDeployObjectVO marketServiceDeployObjectVO;
 
     public String getErrorMessage() {
         return errorMessage;
@@ -384,6 +404,70 @@ public class AppServiceRepVO {
 
     public void setUpdateUserImage(String updateUserImage) {
         this.updateUserImage = updateUserImage;
+    }
+
+    public String getServiceCode() {
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getLatestVersion() {
+        return latestVersion;
+    }
+
+    public void setLatestVersion(String latestVersion) {
+        this.latestVersion = latestVersion;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public String getSourceView() {
+        return sourceView;
+    }
+
+    public void setSourceView(String sourceView) {
+        this.sourceView = sourceView;
+    }
+
+    public Boolean getBuiltIn() {
+        return builtIn;
+    }
+
+    public void setBuiltIn(Boolean builtIn) {
+        this.builtIn = builtIn;
+    }
+
+    public MarketServiceDeployObjectVO getMarketServiceDeployObjectVO() {
+        return marketServiceDeployObjectVO;
+    }
+
+    public void setMarketServiceDeployObjectVO(MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
+        this.marketServiceDeployObjectVO = marketServiceDeployObjectVO;
     }
 }
 

@@ -114,4 +114,20 @@ public interface DevopsEnvironmentMapper extends BaseMapper<DevopsEnvironmentDTO
                        @Param("projectId") Long projectId,
                        @Param("isFailed") Boolean isFailed,
                        @Param("type") String type);
+
+    /**
+     * 查询指定项目下的所有的环境
+     *
+     * @param projectIds 项目ID列表
+     * @return 环境
+     */
+    List<DevopsEnvironmentDTO> listByProject(@Param("projectIds") List<Long> projectIds);
+
+    /**
+     *
+     * 通过envId集合，批量查出环境信息
+     * @param ids
+     * @Return DevopsEnvironmentDTO集合
+     */
+    List<DevopsEnvironmentDTO> batchQueryByIds(@Param("ids") List<Long> ids);
 }

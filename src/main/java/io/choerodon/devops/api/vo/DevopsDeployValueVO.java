@@ -1,12 +1,13 @@
 package io.choerodon.devops.api.vo;
 
 
-import java.util.Date;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -49,6 +50,16 @@ public class DevopsDeployValueVO {
     private String appServiceName;
 
     private Long objectVersionNumber;
+
+    private IamUserDTO creator;
+
+    public IamUserDTO getCreator() {
+        return creator;
+    }
+
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
+    }
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;

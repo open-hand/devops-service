@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
@@ -24,6 +25,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Component
 public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7nHelmRelease> {
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;

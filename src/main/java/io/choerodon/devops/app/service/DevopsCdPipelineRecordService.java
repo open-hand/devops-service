@@ -27,15 +27,36 @@ public interface DevopsCdPipelineRecordService {
     DevopsPipelineDTO createCDWorkFlowDTO(Long pipelineRecordId, Boolean isRetry);
 
     /**
+     * @deprecated
      * 主机模式 镜像部署
      */
-    Boolean cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+//    Boolean cdHostImageDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
-    Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    /**
+     * @deprecated
+     * @param pipelineRecordId
+     * @param cdStageRecordId
+     * @param cdJobRecordId
+     * @return
+     */
+//    Boolean cdHostJarDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
-    Boolean cdHostCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    /**
+     * @deprecated
+     * @param pipelineRecordId
+     * @param cdStageRecordId
+     * @param cdJobRecordId
+     * @return
+     */
+//    Boolean cdHostCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+
+    void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+
+    void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+
+    void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
@@ -48,7 +69,7 @@ public interface DevopsCdPipelineRecordService {
     Page<DevopsCdPipelineRecordVO> pagingCdPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable);
 
 
-    void updatePipelineStatusFailed(Long pipelineRecordId, String errorInfo);
+    void updatePipelineStatusFailed(Long pipelineRecordId);
 
     DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long cdPipelineId);
 

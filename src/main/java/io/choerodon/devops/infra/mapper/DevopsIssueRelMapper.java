@@ -15,9 +15,21 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
 
     List<DevopsIssueRelDTO> listIssueIdsByObjectTypeAndObjectIds(Set<Long> objectIds, String object);
 
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(@Param("object") String object, @Param("issueId") Long issueId);
+
+    List<DevopsIssueRelDTO> listObjectIdsByIssueIdsAndObjectType(@Param("object") String object, @Param("issueIds") Set<Long> issueIds);
+
     Integer count();
 
     void batchUpdate(@Param("dtosToUpdate") List<DevopsIssueRelDTO> dtosToUpdate);
+
+    /**
+     * 查出还存在关联关系的分支id
+     *
+     * @param commitRelatedBranchIds 待查询的分支id
+     * @return 仍存在关系的分支id
+     */
+    List<Long> listRelatedBranchIds(@Param("commitRelatedBranchIds") Set<Long> commitRelatedBranchIds);
 
     void deleteCommitRelationByBranchIdAndIssueId(@Param("branchId") Long branchId, @Param("issueId") Long issueId);
 

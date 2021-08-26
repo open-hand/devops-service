@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsServiceInstanceService;
@@ -23,6 +24,7 @@ public class DevopsServiceInstanceServiceImpl implements DevopsServiceInstanceSe
     private DevopsServiceInstanceMapper devopsServiceInstanceMapper;
 
     @Override
+    @Transactional
     public void baseCreate(DevopsServiceInstanceDTO devopsServiceInstanceDTO) {
         if (devopsServiceInstanceMapper.insert(
                 devopsServiceInstanceDTO) != 1) {

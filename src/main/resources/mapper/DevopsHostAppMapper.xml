@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostAppMapper">
+
+    <select id="listByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppDTO">
+        select *
+        from devops_host_app dha
+        where dha.host_id = #{hostId}
+        order by dha.creation_date desc
+    </select>
+
+    <select id="listByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+        select dha.*, dh.name as host_name
+        from devops_host_app dha
+        left join devops_host dh ON dh.id = dha.host_id
+        <where>
+            <if test="hostId != null">
+                and dha.host_id = #{hostId}
+            </if>
+            <if test="operationType != null">
+                and dha.operationType = #{operationType}
+            </if>
+            <if test="rdupmType != null">
+                and dha.rdupmType = #{rdupmType}
+            </if>
+            <if test="params != null">
+                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+            </if>
+        </where>
+        order by dha.id desc
+    </select>
+
+    <delete id="deleteByHostId">
+        DELETE FROM devops_host_app WHERE host_id = #{hostId}
+    </delete>
+
+    <select id="queryAppById" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+        select dha.*, dh.name as host_name
+        from devops_host_app dha
+        left join devops_host dh ON dh.id = dha.host_id
+        where dha.id = #{id}
+    </select>
+</mapper>

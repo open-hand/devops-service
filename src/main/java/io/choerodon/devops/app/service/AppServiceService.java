@@ -14,7 +14,6 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayloa
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -313,10 +312,6 @@ public interface AppServiceService {
      */
     Page<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageable, String searchParam);
 
-    Page<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, PageRequest pageable);
-
-    DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner);
-
     List<ProjectVO> listProjects(Long organizationId, Long projectId, String params);
 
     /**
@@ -550,15 +545,42 @@ public interface AppServiceService {
 
     /**
      * 查询项目下资源使用情况
+     *
      * @param projectIds
      * @return
      */
     List<ResourceVO> listResourceByIds(List<Long> projectIds);
 
     /**
-     *
      * @param appServiceList
      * @return
      */
     List<AppServiceSimpleVO> listByProjectIdAndCode(List<AppServiceSimpleVO> appServiceList);
+
+    Long countAppCountByOptions(Long projectId);
+
+    Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest);
+
+    List<DevopsEnvironmentRepVO> listEnvByAppServiceId(Long projectId, Long appServiceId);
+
+    Boolean checkDeleteEnvApp(Long appServiceId, Long envId);
+
+    /**
+     * 根据坐标查询出项目下的应用列表
+     *
+     * @param projectId
+     * @param groupId
+     * @param artifactId
+     * @return
+     */
+    List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId);
+
+    Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, String params, PageRequest pageRequest);
+
+    Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer value);
+
+    void batchTransfer(Long projectId, List<AppServiceTransferVO> appServiceTransferVOList);
+
+    void createAppServiceForTransfer(AppServiceTransferVO appServiceTransferVO);
+
 }
