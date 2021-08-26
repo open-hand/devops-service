@@ -44,10 +44,10 @@ public class DevopsDeployAppCenterController {
     @GetMapping("/page_by_env")
     public ResponseEntity<Page<DevopsDeployAppCenterVO>> listApp(
             @PathVariable("project_id") Long projectId,
-            @Encrypt @RequestParam(value = "envId", required = false) Long envId,
+            @Encrypt @RequestParam(value = "env_id", required = false) Long envId,
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "rdupmType", required = false) String rdupmType,
-            @RequestParam(value = "operationType", required = false) String operationType,
+            @RequestParam(value = "rdupm_type", required = false) String rdupmType,
+            @RequestParam(value = "operation_type", required = false) String operationType,
             @RequestParam(value = "params", required = false) String params,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
