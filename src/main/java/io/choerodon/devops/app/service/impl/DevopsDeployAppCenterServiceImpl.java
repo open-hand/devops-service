@@ -84,10 +84,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (CollectionUtils.isEmpty(devopsDeployAppCenterVOList)) {
             return devopsDeployAppCenterVOS;
         }
+        DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(envId);
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
-            DevopsEnvironmentDTO devopsEnvAppServiceDTO = new DevopsEnvironmentDTO();
-            devopsEnvAppServiceDTO.setId(devopsDeployAppCenterVO.getEnvId());
-            devopsDeployAppCenterVO.setEnvName(devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvAppServiceDTO).getName());
+            devopsDeployAppCenterVO.setEnvName(environmentDTO.getName());
+            devopsDeployAppCenterVO.setEnvActive(environmentDTO.getActive());
+            devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
             devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
