@@ -24,6 +24,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -79,6 +80,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsDeployAppCenterHostMapper devopsDeployAppCenterHostMapper;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable) {
@@ -144,11 +147,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             // 添加pod运行统计
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(centerEnvDTO.getObjectId());
             calculatePodStatus(devopsEnvPodDTOS, detailVO);
-        } else if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.DEPLOYMENT.value())){
+        } else if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.DEPLOYMENT.value())) {
             // 添加pod运行统计
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(centerEnvDTO.getEnvId(), ResourceType.DEPLOYMENT.getType(), centerEnvDTO.getCode());
             calculatePodStatus(devopsEnvPodDTOS, detailVO);
-
+            // 查询最近的成功状态的envCommandId作为deployment的effectCommandId
+            Long effectCommandId = devopsEnvCommandService.queryWorkloadEffectCommandId(ObjectType.DEPLOYMENT.getType(), centerEnvDTO.getObjectId());
+            detailVO.setEffectCommandId(effectCommandId);
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
