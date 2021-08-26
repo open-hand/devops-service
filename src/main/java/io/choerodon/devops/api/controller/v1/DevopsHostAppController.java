@@ -40,7 +40,7 @@ public class DevopsHostAppController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "主机", required = true)
-            @RequestParam(value = "host_id", required = false) Long hostId,
+            @RequestParam(value = "hostId", required = false) Long hostId,
             @RequestParam(value = "rdupmType", required = false) String rdupmType,
             @RequestParam(value = "operationType", required = false) String operationType,
             @RequestParam(value = "params", required = false) String params,
