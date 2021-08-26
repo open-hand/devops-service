@@ -490,6 +490,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<Project> updateNameAndPath(Integer projectId, Integer userId, String name) {
+        throw new CommonException("error.update.gitlab.project");
+    }
+
+    @Override
     public ResponseEntity<List<Note>> listByMergeRequestIid(Integer projectId, Integer iid) {
         throw new CommonException("error.query.mr.notes");
     }
