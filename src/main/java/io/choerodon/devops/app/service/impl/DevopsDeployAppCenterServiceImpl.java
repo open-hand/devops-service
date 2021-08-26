@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -28,8 +27,6 @@ import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -38,7 +35,6 @@ import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterHostMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -86,6 +82,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable) {
@@ -102,7 +100,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
             devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
             devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
-            devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
+            if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
+            } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
+                devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
+
+            }
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;
