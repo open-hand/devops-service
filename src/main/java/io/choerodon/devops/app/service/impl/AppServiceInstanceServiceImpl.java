@@ -858,7 +858,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (CREATE.equals(appServiceDeployVO.getType())) {
                 devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
             } else {
-                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getAppCode());
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
                 devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
             }
