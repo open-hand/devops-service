@@ -90,7 +90,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (CollectionUtils.isEmpty(devopsDeployAppCenterVOList)) {
             return devopsDeployAppCenterVOS;
         }
-        List<DevopsEnvironmentDTO> environmentDTOS = environmentService.batchQueryByIds(devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getEnvId).collect(Collectors.toList()));
+        List<DevopsEnvironmentDTO> environmentDTOS = environmentService.baseListByIds(devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getEnvId).collect(Collectors.toList()));
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = environmentDTOS.stream().collect(Collectors.toMap(DevopsEnvironmentDTO::getId, Function.identity()));
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {

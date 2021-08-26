@@ -378,12 +378,4 @@ public interface DevopsEnvironmentService {
     EnvAutoDeployVO queryAutoDeploy(Long projectId, @Nullable Long envId);
 
     DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId);
-
-    /**
-     *
-     * 通过envId集合，批量查出环境信息
-     * @param ids
-     * @Return DevopsEnvironmentDTO集合
-     */
-    List<DevopsEnvironmentDTO> batchQueryByIds(List<Long> ids);
 }
