@@ -33,8 +33,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deployment.groovy') {
     changeSet(author: 'wanghao', id: '2021-08-26-add-column') {
         addColumn(tableName: 'devops_deployment') {
             column(name: 'status', type: 'VARCHAR(32)', remarks: '实例状态', afterColumn: 'source_type')
-            column(name: 'effect_command_id', type: 'BIGINT UNSIGNED', remarks: '当前实例生效的command id', afterColumn: 'command_id')
-
         }
     }
 }
