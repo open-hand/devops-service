@@ -1236,7 +1236,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         } else {
             // 更新生效commandId
-            devopsDeploymentDTO.setEffectCommandId(commandId);
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         }
     }
