@@ -92,4 +92,24 @@ public class DevopsDeploymentController {
         return new ResponseEntity<>(devopsDeploymentService.getInstanceResourceDetailYaml(deploymentId), HttpStatus.OK);
     }
 
+
+    /**
+     * 根据deploymentId获取更多部署详情(Json格式)
+     *
+     * @param projectId    项目id
+     * @param deploymentId deployment id
+     * @return 部署详情
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据deploymentId获取更多部署详情(Json格式)")
+    @GetMapping(value = "/{deployment_id}/detail_json")
+    public ResponseEntity<InstanceControllerDetailVO> getDeploymentDetailsJsonByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "deployment_id") Long deploymentId) {
+        return new ResponseEntity<>(devopsDeploymentService.getInstanceResourceDetailJson(deploymentId), HttpStatus.OK);
+    }
+
 }
