@@ -87,12 +87,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (CollectionUtils.isEmpty(devopsDeployAppCenterVOList)) {
             return devopsDeployAppCenterVOS;
         }
-        DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(envId);
+        List<DevopsEnvironmentDTO> environmentDTOS = environmentService.batchQueryByIds(devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getEnvId).collect(Collectors.toList()));
+        Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = environmentDTOS.stream().collect(Collectors.toMap(DevopsEnvironmentDTO::getId, Function.identity()));
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
-            devopsDeployAppCenterVO.setEnvName(environmentDTO.getName());
-            devopsDeployAppCenterVO.setEnvActive(environmentDTO.getActive());
-            devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId());
+            devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
+            devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
+            devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
             devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
