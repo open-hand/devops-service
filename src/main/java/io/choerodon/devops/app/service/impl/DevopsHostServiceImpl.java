@@ -207,7 +207,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         try {
             devopsHostMapper.deleteByPrimaryKey(hostId);
-            devopsDockerInstanceMapper.deleteByHostId(hostId);
+//            devopsDockerInstanceMapper.deleteByHostId(hostId);
             devopsHostCommandMapper.deleteByHostId(hostId);
             devopsHostAppMapper.deleteByHostId(hostId);
         } catch (Exception exception) {
