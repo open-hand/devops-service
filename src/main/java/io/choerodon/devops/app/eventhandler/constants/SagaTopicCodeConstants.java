@@ -297,6 +297,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_POD_READY = "devops-pod-ready";
 
     /**
+     * 实例部署失败
+     */
+    public static final String DEVOPS_DEPLOY_FAILED = "devops-deploy-failed";
+
+    /**
      * 迁移应用服务
      */
     public static final String DEVOPS_TRANSFER_APP_SERVICE = "devops-transfer-app-service";

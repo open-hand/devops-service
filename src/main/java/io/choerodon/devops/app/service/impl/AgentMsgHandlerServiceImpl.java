@@ -890,6 +890,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         // 如果是创建实例失败，发送通知
         if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
                 && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+            instanceDeployFailed(envId, instanceDTO.getCode(), devopsEnvCommandDTO.getId());
             logger.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
             sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
         }
@@ -1473,6 +1474,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
                 appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+                instanceDeployFailed(envId, appServiceInstanceDTO.getCode(), devopsEnvCommandDTO.getId());
                 // 发送资源创建失败通知
                 sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
             }
@@ -1496,6 +1498,22 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         sendNotificationService.sendWhenConfigMap(devopsConfigMapDTO, SendSettingEnum.CREATE_RESOURCE.value());
 
 
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_DEPLOY_FAILED,
+            description = "实例部署失败",
+            inputSchemaClass = DevopsDeployFailedVO.class)
+    private void instanceDeployFailed(Long envId, String instanceCode, Long commandId) {
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefId(envId.toString())
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
+                builder -> builder
+                        .withPayloadAndSerialize(new DevopsDeployFailedVO(envId, instanceCode, commandId)))
+                        .withRefId(envId.toString());
     }
 
     private List<DevopsEnvFileErrorDTO> getEnvFileErrors(Long envId, GitOpsSyncDTO gitOpsSyncDTO, DevopsEnvironmentDTO devopsEnvironmentDTO) {

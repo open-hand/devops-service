@@ -748,6 +748,35 @@ public class DevopsSagaHandler {
 
     }
 
+    /**
+     * hzero实例部署失败
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_HZERO_DEPLOY_FAILED,
+            description = "处理hzero实例部署失败",
+            sagaCode = DEVOPS_DEPLOY_FAILED,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handleHzeroDeployFailedEvent(String data) {
+        DevopsDeployFailedVO devopsDeployFailedVO = JsonHelper.unmarshalByJackson(data, DevopsDeployFailedVO.class);
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryDeployingByEnvIdAndInstanceCode(devopsDeployFailedVO.getEnvId(), devopsDeployFailedVO.getInstanceCode());
+        if (devopsHzeroDeployDetailsDTO != null) {
+            // pod的操作记录不是最新的则丢弃
+            if (devopsDeployFailedVO.getCommandId().equals(devopsHzeroDeployDetailsDTO.getCommandId())) {
+                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
+                return;
+            }
+
+            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
+                workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
+                devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
+                devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.FAILED);
+            }
+        }
+
+    }
+
 
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
             description = "处理应用服务迁移",
