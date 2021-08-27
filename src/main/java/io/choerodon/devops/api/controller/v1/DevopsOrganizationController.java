@@ -61,13 +61,6 @@ public class DevopsOrganizationController {
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }
 
-    @Permission(permissionPublic = true)
-    @GetMapping("/syncOrgRoot")
-    @ApiOperation("手动同步组织root")
-    public void syncOrgRoot() {
-        devopsCheckLogService.checkLog("0.21.0");
-    }
-
     @Permission(level = ResourceLevel.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
     @GetMapping("/cluster/overview")
     @ApiOperation("组织层概览，返回集群的概览")
