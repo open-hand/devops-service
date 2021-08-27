@@ -215,31 +215,6 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
     @Override
-    public void fixIssueId() {
-        int totalCount = devopsBranchMapper.countBranchBoundWithIssue();
-        int pageNumber = 0;
-        int pageSize = 100;
-        int totalPage = (totalCount + pageSize - 1) / pageSize;
-        do {
-            PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(pageNumber);
-            pageRequest.setSize(pageSize);
-            Page<DevopsBranchDTO> result = PageHelper.doPage(pageRequest, () -> devopsBranchMapper.listBranchBoundWithIssue());
-            if (!CollectionUtils.isEmpty(result.getContent())) {
-                List<DevopsIssueRelDTO> devopsIssueRelDTOList = result.getContent().stream().map(b -> {
-                    DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
-                    devopsIssueRelDTO.setIssueId(b.getIssueId());
-                    devopsIssueRelDTO.setObject(DevopsIssueRelObjectTypeEnum.BRANCH.getValue());
-                    devopsIssueRelDTO.setObjectId(b.getId());
-                    return devopsIssueRelDTO;
-                }).collect(Collectors.toList());
-                batchInsertHelper.batchInsert(devopsIssueRelDTOList);
-            }
-            pageNumber++;
-        } while (pageNumber < totalPage);
-    }
-
-    @Override
     public List<DevopsBranchDTO> listByCommitIs(List<Long> commitIds) {
         if (!CollectionUtils.isEmpty(commitIds)) {
             return devopsBranchMapper.listByCommitIds(commitIds);

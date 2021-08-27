@@ -77,8 +77,6 @@ public interface DevopsIssueRelService {
 
     List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds);
 
-    void fixBranchInfo();
-
     /**
      * 根据branchId删除commit的关联
      *

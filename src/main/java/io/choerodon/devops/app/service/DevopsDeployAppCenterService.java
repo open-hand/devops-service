@@ -69,4 +69,6 @@ public interface DevopsDeployAppCenterService {
     void deleteByEnvIdAndObjectIdAndRdupmType(Long envId, Long objectId, String rdupmType);
 
     void baseHostCreate(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType);
+
+    void fixData();
 }

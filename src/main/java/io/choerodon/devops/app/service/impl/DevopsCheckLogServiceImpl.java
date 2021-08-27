@@ -39,6 +39,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
     private DevopsIssueRelService devopsIssueRelService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Override
     public void checkLog(String version) {
@@ -70,17 +72,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
-                if ("1.0.0".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    devopsBranchService.fixIssueId();
-                    devopsGitlabCommitService.fixIssueId();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("1.0.9".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    devopsIssueRelService.fixBranchInfo();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("1.1.0".equals(version)) {
+                if ("1.1.0".equals(version)) {
                     devopsEnvApplicationService.fixData();
+                    devopsDeployAppCenterService.fixData();
                 } else {
                     LOGGER.info("version not matched");
                 }

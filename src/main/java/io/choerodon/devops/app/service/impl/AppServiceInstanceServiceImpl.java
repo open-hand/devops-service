@@ -2268,6 +2268,16 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceMapper.queryInstanceStatusByEnvIdAndCode(code, envId);
     }
 
+    @Override
+    public Integer countInstance() {
+        return appServiceInstanceMapper.countInstance();
+    }
+
+    @Override
+    public List<AppServiceInstanceDTO> listInstances() {
+        return appServiceInstanceMapper.listInstances();
+    }
+
     private void handleStartOrStopInstance(Long projectId, Long instanceId, String type) {
 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);

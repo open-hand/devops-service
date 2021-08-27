@@ -686,4 +686,13 @@
         WHERE env_id = #{envId}
         AND code = #{code}
     </select>
+
+    <select id="countInstance" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM devops_app_service_instance
+    </select>
+
+    <select id="listInstances" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
+        SELECT *
+        FROM devops_service.devops_app_service_instance
+    </select>
 </mapper>

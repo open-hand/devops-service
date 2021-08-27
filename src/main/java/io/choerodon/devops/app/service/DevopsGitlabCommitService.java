@@ -44,7 +44,5 @@ public interface DevopsGitlabCommitService {
 
     Set<Long> listIdsByCommitSha(Set<String> commitSha);
 
-    void fixIssueId();
-
     List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId);
 }
