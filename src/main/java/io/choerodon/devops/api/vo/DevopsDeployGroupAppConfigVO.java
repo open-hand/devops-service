@@ -85,19 +85,19 @@ public class DevopsDeployGroupAppConfigVO {
         this.dnsPolicy = dnsPolicy;
     }
 
-    public Integer getMaxSurge() {
+    public String getMaxSurge() {
         return maxSurge;
     }
 
-    public void setMaxSurge(Integer maxSurge) {
+    public void setMaxSurge(String maxSurge) {
         this.maxSurge = maxSurge;
     }
 
-    public Integer getMaxUnavailable() {
+    public String getMaxUnavailable() {
         return maxUnavailable;
     }
 
-    public void setMaxUnavailable(Integer maxUnavailable) {
+    public void setMaxUnavailable(String maxUnavailable) {
         this.maxUnavailable = maxUnavailable;
     }
 
