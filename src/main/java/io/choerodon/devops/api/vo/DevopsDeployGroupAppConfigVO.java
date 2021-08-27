@@ -15,9 +15,9 @@ public class DevopsDeployGroupAppConfigVO {
     private Integer replicas;
 
     @ApiModelProperty(name = "升级过程中，允许【超出副本数量】的最大数值")
-    private Integer maxSurge;
+    private String maxSurge;
     @ApiModelProperty(name = "升级过程中，不可用实例的最大数量")
-    private Integer maxUnavailable;
+    private String maxUnavailable;
 
     @ApiModelProperty(name = "dns策略")
     private String dnsPolicy;
