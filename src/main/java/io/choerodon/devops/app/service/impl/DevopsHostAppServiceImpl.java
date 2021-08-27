@@ -113,21 +113,23 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Override
     @Transactional
     public void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO) {
+        Long hostId = jarDeployVO.getHostId();
+        String groupId = null;
+        String artifactId = null;
+        String version = null;
 
         // 校验主机权限
-        devopsHostUserPermissionService.checkUserPermissionAndThrow(projectId, jarDeployVO.getHostId(), DetailsHelper.getUserDetails().getUserId());
+        devopsHostUserPermissionService.checkUserPermissionAndThrow(projectId, hostId, DetailsHelper.getUserDetails().getUserId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Long hostId = jarDeployVO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(jarDeployVO.getSourceType());
         deploySourceVO.setProjectName(projectDTO.getName());
-
         deploySourceVO.setDeployObjectId(jarDeployVO.getDeployObjectId());
-        String encodeValue = jarDeployVO.getValue();
 
+        String encodeValue = jarDeployVO.getValue();
         try {
             jarDeployVO.setValue(new String(decoder.decodeBuffer(encodeValue), StandardCharsets.UTF_8));
         } catch (IOException e) {
@@ -144,9 +146,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 标识部署对象
         String deployObjectKey = null;
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
-        String groupId = null;
-        String artifactId = null;
-        String version = null;
 
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
@@ -249,6 +248,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     version);
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
 
+        } else {
+            devopsHostAppDTO.setName(jarDeployVO.getAppName());
+            devopsHostAppDTO.setValue(encodeValue);
+            devopsHostAppDTO.setSourceConfig(calculateSourceConfig(jarDeployVO));
+            devopsHostAppDTO.setVersion(version);
+            MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
         }
         // todo 新应用中心，不需要这块儿逻辑，先注释
 //        else {
