@@ -27,6 +27,8 @@ public class ProdImageInfoVO {
     @ApiModelProperty("镜像版本")
     private String tag;
 
+    private String customImageName;
+
     private String username;
 
     private String password;
@@ -96,5 +98,13 @@ public class ProdImageInfoVO {
 
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    public String getCustomImageName() {
+        return customImageName;
+    }
+
+    public void setCustomImageName(String customImageName) {
+        this.customImageName = customImageName;
     }
 }

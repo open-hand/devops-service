@@ -616,7 +616,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 dockerPullAccountDTO.setPullPassword(dockerDeployVO.getImageInfo().getPassword());
                 dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
             }
-            dockerDeployDTO.setImage(dockerDeployVO.getImageInfo().getImageName() + ":" + dockerDeployVO.getImageInfo().getTag());
+            dockerDeployDTO.setImage(dockerDeployVO.getImageInfo().getCustomImageName() + ":" + dockerDeployVO.getImageInfo().getTag());
         }
 
         return dockerDeployDTO;
