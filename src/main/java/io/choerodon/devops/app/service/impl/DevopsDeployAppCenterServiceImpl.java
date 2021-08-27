@@ -290,6 +290,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
+    @Transactional
     public void fixData() {
         int totalCount = appServiceInstanceService.countInstance();
         int pageNumber = 0;
