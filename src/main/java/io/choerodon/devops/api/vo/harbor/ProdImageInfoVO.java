@@ -11,7 +11,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @Date 2021/6/30 15:27
  */
 public class ProdImageInfoVO {
-    @ApiModelProperty("仓库名")
+    @ApiModelProperty("仓库名 比如example.harbor.com")
     private String repoName;
 
     @ApiModelProperty("仓库类型")
@@ -21,11 +21,41 @@ public class ProdImageInfoVO {
     @ApiModelProperty("仓库Id")
     private String repoId;
 
-    @ApiModelProperty("镜像名称")
+    @ApiModelProperty("镜像名称 可能是example.harbor.com/project-1/mysql 也可能是 mysql")
     private String imageName;
 
     @ApiModelProperty("镜像版本")
     private String tag;
+
+    private String username;
+
+    private String password;
+
+    private Boolean privateRepository;
+
+    public Boolean getPrivateRepository() {
+        return privateRepository;
+    }
+
+    public void setPrivateRepository(Boolean privateRepository) {
+        this.privateRepository = privateRepository;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
 
     public String getRepoName() {
