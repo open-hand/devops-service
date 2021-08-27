@@ -20,12 +20,12 @@ public class DevopsDeployGroupVO {
     @ApiModelProperty("应用中心应用名称")
     @Size(min = 1, max = 64, message = "error.env.app.center.name.length")
     @NotBlank(message = "error.app.instance.name.null")
-    private String name;
+    private String appName;
 
     @ApiModelProperty("应用中心应用code，同时也作为实例名称")
     @Size(min = 1, max = 64, message = "error.env.app.center.code.length")
     @NotBlank(message = "error.app.instance.code.null")
-    private String code;
+    private String appCode;
 
     @Encrypt
     @ApiModelProperty(name = "项目id")
@@ -63,20 +63,20 @@ public class DevopsDeployGroupVO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getAppName() {
+        return this.appName;
     }
 
-    public String getCode() {
-        return code;
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public String getAppCode() {
+        return this.appCode;
     }
 
     public Long getProjectId() {

@@ -137,16 +137,16 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
         // 更新关联的对象id
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
-            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getName());
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppCode());
             // 插入应用记录
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(devopsDeployGroupVO.getName(), devopsDeployGroupVO.getCode(), projectId, devopsDeploymentDTO.getId(), devopsDeployGroupVO.getEnvId(), OperationTypeEnum.CREATE_APP.value(), "", RdupmTypeEnum.DEPLOYMENT.value());
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode(), projectId, devopsDeploymentDTO.getId(), devopsDeployGroupVO.getEnvId(), OperationTypeEnum.CREATE_APP.value(), "", RdupmTypeEnum.DEPLOYMENT.value());
 
             devopsDeploymentDTO.setInstanceId(devopsDeployAppCenterEnvDTO.getId());
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         } else {
             // 更新应用记录
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getCode());
-            devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getName());
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppCode());
+            devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getAppName());
             devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
     }
@@ -176,7 +176,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
         // 设置名称、labels、annotations
         V1ObjectMeta metadata = new V1ObjectMeta();
-        metadata.setName(devopsDeployGroupVO.getCode());
+        metadata.setName(devopsDeployGroupVO.getAppCode());
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getLabels())) {
             metadata.setLabels(devopsDeployGroupAppConfigVO.getLabels());
         }
@@ -243,7 +243,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
 
         Map<String, String> matchLabels = new HashMap<>();
-        matchLabels.put("code", devopsDeployGroupVO.getCode());
+        matchLabels.put("choerodon.io/application-name", devopsDeployGroupVO.getAppCode());
 
         // 设置pod labels
         V1PodTemplateSpec v1PodTemplateSpec = new V1PodTemplateSpec();
