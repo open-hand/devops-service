@@ -6,6 +6,14 @@ import java.util.Map;
 import io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO;
 
 public interface DevopsHostUserPermissionService {
+
+    /**
+     * 校验用户是否有主机权限，没有权限则抛出异常
+     * @param hostId 主机id
+     * @param userId 用户id
+     */
+    void checkUserPermissionAndThrow(Long projectId, Long hostId, Long userId);
+
     /**
      * 插入关系
      */

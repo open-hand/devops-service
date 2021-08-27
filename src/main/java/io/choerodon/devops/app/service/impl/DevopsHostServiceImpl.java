@@ -390,39 +390,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Override
     @Transactional
-    public void deleteJavaProcess(Long projectId, Long hostId, Long instanceId) {
-        devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, instanceId);
-        DevopsHostAppDTO normalInstanceDTO = devopsHostAppMapper.selectByPrimaryKey(instanceId);
-        if (normalInstanceDTO.getPid() == null) {
-            devopsHostAppMapper.deleteByPrimaryKey(instanceId);
-            return;
-        }
-        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
-        devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(instanceId);
-        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
-        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-
-        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.KILL_JAR.value());
-        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-
-
-        JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
-        javaProcessInfoVO.setInstanceId(String.valueOf(instanceId));
-        javaProcessInfoVO.setPid(normalInstanceDTO.getPid());
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
-
-        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
-
-    }
-
-    @Override
-    @Transactional
     public void deleteDockerProcess(Long projectId, Long hostId, Long instanceId) {
         devopsHostAdditionalCheckValidator.validHostIdAndDockerInstanceIdMatch(hostId, instanceId);
         DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
