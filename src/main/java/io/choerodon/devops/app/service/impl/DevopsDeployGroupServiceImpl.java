@@ -609,6 +609,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             dockerPullAccountDTO = getShareServiceDockerPullAccount(appServiceDTO, appServiceVersionDTO);
             dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
             dockerDeployDTO.setImage(appServiceVersionDTO.getImage());
+        } else {
+            // 剩下的情况是自定义仓库
+            if (dockerDeployVO.getImageInfo().getPrivateRepository()) {
+                dockerPullAccountDTO.setPullAccount(dockerDeployVO.getImageInfo().getUsername());
+                dockerPullAccountDTO.setPullPassword(dockerDeployVO.getImageInfo().getPassword());
+                dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
+            }
+            dockerDeployDTO.setImage(dockerDeployVO.getImageInfo().getImageName() + ":" + dockerDeployVO.getImageInfo().getTag());
         }
 
         return dockerDeployDTO;
