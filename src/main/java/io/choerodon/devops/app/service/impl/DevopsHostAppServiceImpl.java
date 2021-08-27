@@ -37,7 +37,6 @@ import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
@@ -106,12 +105,18 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DeployConfigService deployConfigService;
     @Autowired
     private DevopsHostCommandMapper devopsHostCommandMapper;
+    @Autowired
+    private DevopsHostUserPermissionService devopsHostUserPermissionService;
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
     @Override
     @Transactional
     public void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO) {
+
+        // 校验主机权限
+        devopsHostUserPermissionService.checkUserPermissionAndThrow(projectId, jarDeployVO.getHostId(), DetailsHelper.getUserDetails().getUserId());
+
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long hostId = jarDeployVO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
@@ -128,7 +133,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } catch (IOException e) {
             throw new CommonException("decode.values.failed", e);
         }
-        List<AppServiceDTO> appServiceDTOList;
+//        List<AppServiceDTO> appServiceDTOList;
         String deployObjectName = null;
         String deployVersion = null;
 

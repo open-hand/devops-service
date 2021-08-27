@@ -197,21 +197,6 @@ public class DevopsHostController {
         return ResponseEntity.ok(devopsHostService.listDockerProcessInfo(projectId, hostId));
     }
 
-    @ApiOperation("删除java进程")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping("/{host_id}/java_process/{instance_id}")
-    public ResponseEntity<Void> deleteJavaProcess(@ApiParam(value = "项目id", required = true)
-                                                  @PathVariable("project_id") Long projectId,
-                                                  @ApiParam(value = "主机id", required = true)
-                                                  @Encrypt
-                                                  @PathVariable("host_id") Long hostId,
-                                                  @ApiParam(value = "java实例id", required = true)
-                                                  @Encrypt
-                                                  @PathVariable("instance_id") Long instanceId) {
-        devopsHostService.deleteJavaProcess(projectId, hostId, instanceId);
-        return ResponseEntity.noContent().build();
-    }
-
     @ApiOperation("删除docker进程")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{host_id}/docker_process/{instance_id}")

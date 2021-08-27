@@ -170,15 +170,6 @@ public interface DevopsHostService {
     List<DevopsDockerInstanceVO> listDockerProcessInfo(Long projectId, Long hostId);
 
     /**
-     * 删除java进程
-     *
-     * @param projectId
-     * @param hostId
-     * @param instanceId
-     */
-    void deleteJavaProcess(Long projectId, Long hostId, Long instanceId);
-
-    /**
      * 删除docker进程
      *
      * @param projectId
