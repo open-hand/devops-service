@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 
@@ -25,6 +26,11 @@ public class BatchInsertHelperConfig {
 
     @Bean("devopsHostUserPermissionInsertHelper")
     public BatchInsertHelper<DevopsHostUserPermissionDTO> hostUserPermissionDTOBatchInsertHelper(SqlSessionFactory sqlSessionFactory) {
+        return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
+    }
+
+    @Bean("devopsAppCenterHelper")
+    public BatchInsertHelper<DevopsDeployAppCenterEnvDTO> devopsAppCenterHelper(SqlSessionFactory sqlSessionFactory) {
         return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
     }
 }

@@ -42,9 +42,6 @@ public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitD
 
     void removeIssueAssociation(@Param("appServiceId") Long appServiceId, @Param("branchName") String branchName, @Param("issueId") Long issueId);
 
-
-    int countBranchBoundWithIssue();
-
     List<DevopsGitlabCommitDTO> listCommitBoundWithIssue();
 
     List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId);

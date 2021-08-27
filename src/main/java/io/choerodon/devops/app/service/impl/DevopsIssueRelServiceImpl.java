@@ -130,57 +130,6 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public void fixBranchInfo() {
-        int totalCount = devopsIssueRelMapper.count();
-        int pageNumber = 0;
-        int pageSize = 100;
-        int totalPage = (totalCount + pageSize - 1) / pageSize;
-        do {
-            LOGGER.info("=========================process:{}/{}=========================\n", pageNumber, totalPage - 1);
-            PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(pageNumber);
-            pageRequest.setSize(pageSize);
-            Page<DevopsIssueRelDTO> result = PageHelper.doPage(pageRequest, () -> devopsIssueRelMapper.selectAll());
-            if (!CollectionUtils.isEmpty(result.getContent())) {
-                List<Long> commitIds = result.getContent().stream().filter(b -> DevopsIssueRelObjectTypeEnum.COMMIT.getValue().equals(b.getObject())).map(DevopsIssueRelDTO::getObjectId).collect(Collectors.toList());
-                List<Long> branchIds = result.getContent().stream().filter(b -> DevopsIssueRelObjectTypeEnum.BRANCH.getValue().equals(b.getObject())).map(DevopsIssueRelDTO::getObjectId).collect(Collectors.toList());
-
-                // 查出带有项目id和appServiceCode的branch信息
-                List<DevopsBranchDTO> devopsBranchDTOSByBranchId = devopsBranchService.listByIds(branchIds);
-
-                // 查出所有commit对应的branchId
-                List<DevopsBranchDTO> devopsBranchDTOListByCommitId = devopsBranchService.listByCommitIs(commitIds);
-
-                Map<Long, DevopsBranchDTO> commitIdAndBranchIdMap = devopsBranchDTOListByCommitId.stream().collect(Collectors.toMap(DevopsBranchDTO::getCommitId, Function.identity()));
-
-                Map<Long, DevopsBranchDTO> branchIdInfoMap = devopsBranchDTOSByBranchId.stream().collect(Collectors.toMap(DevopsBranchDTO::getId, Function.identity()));
-
-                // 设置关联关系中的branchId
-                List<DevopsIssueRelDTO> devopsIssueRelDTOList = result.getContent().stream().peek(b -> {
-                    DevopsBranchDTO branchDTO;
-                    if (DevopsIssueRelObjectTypeEnum.COMMIT.getValue().equals(b.getObject())) {
-                        branchDTO = commitIdAndBranchIdMap.get(b.getObjectId());
-                    } else {
-                        branchDTO = branchIdInfoMap.get(b.getObjectId());
-                    }
-                    if (branchDTO != null) {
-                        b.setBranchId(branchDTO.getId());
-                        b.setAppServiceCode(branchDTO.getAppServiceCode());
-                        b.setProjectId(branchDTO.getProjectId());
-                    }
-                }).collect(Collectors.toList());
-
-                // 更新branchId
-                List<DevopsIssueRelDTO> devopsIssueRelDTOListToUpdate = devopsIssueRelDTOList.stream().filter(i -> i.getBranchId() != null).collect(Collectors.toList());
-                if (!CollectionUtils.isEmpty(devopsIssueRelDTOListToUpdate)) {
-                    devopsIssueRelMapper.batchUpdate(devopsIssueRelDTOListToUpdate);
-                }
-            }
-            pageNumber++;
-        } while (pageNumber < totalPage);
-    }
-
-    @Override
     public List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds) {
         if (CollectionUtils.isEmpty(commitRelatedBranchIds)) {
             return new ArrayList<>();

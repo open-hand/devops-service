@@ -36,8 +36,6 @@ public interface DevopsBranchService {
 
     void deleteAllBranch(Long appServiceId);
 
-    void fixIssueId();
-
     List<DevopsBranchDTO> listByCommitIs(List<Long> commitIds);
 
     List<Long> listDeletedBranchIds(Set<Long> collect);

@@ -9,8 +9,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.hzero.mybatis.BatchInsertHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +30,7 @@ import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -46,6 +51,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  **/
 @Service
 public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployAppCenterServiceImpl.class);
 
     private static final String POD_RUNNING_STATUS = "Running";
 
@@ -84,6 +91,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
     private DevopsDeploymentService devopsDeploymentService;
+    @Autowired
+    @Qualifier("devopsAppCenterHelper")
+    private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
 
     @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable) {
@@ -277,6 +287,49 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         devopsDeployAppCenterHostDTO.setJarSource(jarSource);
         devopsDeployAppCenterHostDTO.setRdupmType(rdupmType);
         baseHostCreate(devopsDeployAppCenterHostDTO);
+    }
+
+    @Override
+    public void fixData() {
+        int totalCount = appServiceInstanceService.countInstance();
+        int pageNumber = 0;
+        int pageSize = 100;
+        int totalPage = (totalCount + pageSize - 1) / pageSize;
+        LOGGER.info("start to fix DevopsDeployAppCenterEnv data.");
+        do {
+            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage);
+            PageRequest pageRequest = new PageRequest();
+            pageRequest.setPage(pageNumber);
+            pageRequest.setSize(pageSize);
+            Page<AppServiceInstanceDTO> result = PageHelper.doPage(pageRequest, () -> appServiceInstanceService.listInstances());
+            if (!CollectionUtils.isEmpty(result.getContent())) {
+                List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = result.getContent().stream().map(i -> {
+                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+                    devopsDeployAppCenterEnvDTO.setName(i.getCode());
+                    devopsDeployAppCenterEnvDTO.setCode(i.getCode());
+                    devopsDeployAppCenterEnvDTO.setProjectId(i.getProjectId());
+                    devopsDeployAppCenterEnvDTO.setEnvId(i.getEnvId());
+                    devopsDeployAppCenterEnvDTO.setObjectId(i.getId());
+                    devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
+                    devopsDeployAppCenterEnvDTO.setOperationType(AppSourceType.MIDDLEWARE.getValue().equals(i.getSource()) ? OperationTypeEnum.BASE_COMPONENT.value() : OperationTypeEnum.CREATE_APP.value());
+
+                    // 如果是normal，需要具体判断本项目还是共享应用
+                    if (AppSourceType.NORMAL.getValue().equals(i.getSource())) {
+                        AppServiceDTO appServiceDTO = appServiceService.baseQuery(i.getAppServiceId());
+                        if (appServiceDTO.getProjectId().equals(i.getProjectId())) {
+                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
+                        } else {
+                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.SHARE.getValue());
+                        }
+                    } else {
+                        devopsDeployAppCenterEnvDTO.setChartSource(i.getSource());
+                    }
+                    return devopsDeployAppCenterEnvDTO;
+                }).collect(Collectors.toList());
+                batchInsertHelper.batchInsert(devopsDeployAppCenterEnvDTOList);
+            }
+            pageNumber++;
+        } while (pageNumber < totalPage);
     }
 
     @Override
