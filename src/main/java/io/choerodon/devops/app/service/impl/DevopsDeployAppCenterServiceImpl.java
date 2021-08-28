@@ -178,7 +178,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
-        detailVO.setEnvId(centerEnvDTO.getEnvId());
+        detailVO.setEnvironmentId(centerEnvDTO.getEnvId());
         detailVO.setEnvCode(environmentDTO.getCode());
         detailVO.setEnvName(environmentDTO.getName());
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();

@@ -31,7 +31,7 @@ public class AppCenterEnvDetailVO {
     private Long appServiceVersionId;
     @Encrypt
     @ApiModelProperty("环境id")
-    private Long envId;
+    private Long environmentId;
     @ApiModelProperty("环境code")
     private String envCode;
     @ApiModelProperty("环境名称")
@@ -282,11 +282,11 @@ public class AppCenterEnvDetailVO {
         this.code = code;
     }
 
-    public Long getEnvId() {
-        return envId;
+    public Long getEnvironmentId() {
+        return environmentId;
     }
 
-    public void setEnvId(Long envId) {
-        this.envId = envId;
+    public void setEnvironmentId(Long environmentId) {
+        this.environmentId = environmentId;
     }
 }
