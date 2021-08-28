@@ -2,10 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.AppServiceInstanceServiceImpl.isMiddleware;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,6 +16,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -44,7 +42,6 @@ import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.util.ObjectUtils;
 
 /**
  * @Author: shanyu
@@ -319,6 +316,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                     // 如果是normal，需要具体判断本项目还是共享应用
                     if (AppSourceType.NORMAL.getValue().equals(i.getSource())) {
                         AppServiceDTO appServiceDTO = appServiceService.baseQuery(i.getAppServiceId());
+                        if (appServiceDTO == null) {
+                            // 该实例对应的应用服务信息不存在
+                            return null;
+                        }
                         if (appServiceDTO.getProjectId().equals(i.getProjectId())) {
                             devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
                         } else {
@@ -328,7 +329,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                         devopsDeployAppCenterEnvDTO.setChartSource(i.getSource());
                     }
                     return devopsDeployAppCenterEnvDTO;
-                }).collect(Collectors.toList());
+                }).filter(Objects::nonNull)
+                        .collect(Collectors.toList());
                 batchInsertHelper.batchInsert(devopsDeployAppCenterEnvDTOList);
             }
             pageNumber++;
