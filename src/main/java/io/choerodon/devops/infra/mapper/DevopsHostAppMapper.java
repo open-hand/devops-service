@@ -32,4 +32,10 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
      * @return DevopsHostAppVO
      */
     DevopsHostAppVO queryAppById(@Param("id") Long id);
+
+    List<DevopsHostAppVO> listOwnedByOptions(@Param("userId") Long userId,
+                                             @Param("hostId") Long hostId,
+                                             @Param("rdupmType") String rdupmType,
+                                             @Param("operationType") String operationType,
+                                             @Param("params") String params);
 }
