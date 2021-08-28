@@ -29,6 +29,9 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("应用服务版本Id")
     private Long appServiceVersionId;
+    @Encrypt
+    @ApiModelProperty("环境id")
+    private Long envId;
     @ApiModelProperty("环境code")
     private String envCode;
     @ApiModelProperty("环境名称")
@@ -277,5 +280,13 @@ public class AppCenterEnvDetailVO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }
