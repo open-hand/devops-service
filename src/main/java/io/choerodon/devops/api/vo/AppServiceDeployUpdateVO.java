@@ -38,6 +38,9 @@ public class AppServiceDeployUpdateVO {
     @ApiModelProperty("操作类型")
     private String type;
 
+    @ApiModelProperty("应用中心应用名称")
+    private String appName;
+
     public Long getAppServiceId() {
         return appServiceId;
     }
@@ -86,4 +89,11 @@ public class AppServiceDeployUpdateVO {
         this.type = type;
     }
 
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
 }
