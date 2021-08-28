@@ -12,6 +12,9 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class ProdJarInfoVO {
     @Encrypt
+    private Long nexusId;
+
+    @Encrypt
     @ApiModelProperty("仓库id")
     private Long repositoryId;
 
@@ -23,6 +26,14 @@ public class ProdJarInfoVO {
 
     @ApiModelProperty("版本")
     private String version;
+
+    public Long getNexusId() {
+        return nexusId;
+    }
+
+    public void setNexusId(Long nexusId) {
+        this.nexusId = nexusId;
+    }
 
     public ProdJarInfoVO() {
     }
