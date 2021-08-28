@@ -44,6 +44,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @Author: shanyu
@@ -114,8 +115,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
-                devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
-
+                if (!ObjectUtils.isEmpty(deploymentDTO)) {
+                    devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
+                }
             }
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
