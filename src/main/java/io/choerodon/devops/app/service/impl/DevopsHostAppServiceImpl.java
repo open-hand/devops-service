@@ -31,6 +31,7 @@ import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
+import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
@@ -129,7 +130,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(jarDeployVO.getSourceType());
         deploySourceVO.setProjectName(projectDTO.getName());
-        deploySourceVO.setDeployObjectId(jarDeployVO.getDeployObjectId());
+        deploySourceVO.setDeployObjectId(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
 
         String encodeValue = jarDeployVO.getValue();
         try {
@@ -151,8 +152,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
-            deployObjectKey = String.valueOf(jarDeployVO.getDeployObjectId());
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getDeployObjectId()));
+            deployObjectKey = String.valueOf(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
+            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
                 throw new CommonException("error.maven.deploy.object.not.exist");
@@ -332,7 +333,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return JsonHelper.marshalByJackson(jarDeployVO.getProdJarInfoVO());
         } else if (AppSourceType.MARKET.getValue().equals(jarDeployVO.getSourceType())
                 || AppSourceType.HZERO.getValue().equals(jarDeployVO.getSourceType())) {
-            return JsonHelper.marshalByJackson(jarDeployVO.getDeployObjectId());
+            return JsonHelper.marshalByJackson(jarDeployVO.getMarketDeployObjectInfoVO());
         } else if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())){
             return jarDeployVO.getJarFileUrl();
         }
@@ -443,7 +444,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
         } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
                 || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
-            devopsHostAppVO.setDeployObjectId(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), Long.class));
+            devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
         } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
             devopsHostAppVO.setJarFileUrl(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), String.class));
         }

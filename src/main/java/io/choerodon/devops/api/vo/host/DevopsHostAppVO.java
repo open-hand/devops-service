@@ -3,8 +3,8 @@ package io.choerodon.devops.api.vo.host;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -54,8 +54,7 @@ public class DevopsHostAppVO {
     /**
      * 部署对象id
      */
-    @Encrypt
-    private Long deployObjectId;
+    private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
 
     private ProdJarInfoVO prodJarInfoVO;
 
@@ -119,12 +118,12 @@ public class DevopsHostAppVO {
         this.jarFileUrl = jarFileUrl;
     }
 
-    public Long getDeployObjectId() {
-        return deployObjectId;
+    public MarketDeployObjectInfoVO getMarketDeployObjectInfoVO() {
+        return marketDeployObjectInfoVO;
     }
 
-    public void setDeployObjectId(Long deployObjectId) {
-        this.deployObjectId = deployObjectId;
+    public void setMarketDeployObjectInfoVO(MarketDeployObjectInfoVO marketDeployObjectInfoVO) {
+        this.marketDeployObjectInfoVO = marketDeployObjectInfoVO;
     }
 
     public ProdJarInfoVO getProdJarInfoVO() {

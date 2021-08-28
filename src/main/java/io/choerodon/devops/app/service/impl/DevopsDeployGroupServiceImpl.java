@@ -538,7 +538,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), sourceType)
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), sourceType)) {
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectDTO.getId()), Objects.requireNonNull(jarDeployVO.getDeployObjectId()));
+            MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectDTO.getId()), Objects.requireNonNull(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
                 throw new CommonException("error.maven.deploy.object.not.exist");
