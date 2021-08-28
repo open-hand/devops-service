@@ -107,6 +107,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsHostCommandMapper devopsHostCommandMapper;
     @Autowired
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
@@ -370,7 +372,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params) {
-        Page<DevopsHostAppVO> page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listByOptions(hostId, rdupmType, operationType, params));
+        Page<DevopsHostAppVO> page;
+        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, DetailsHelper.getUserDetails().getUserId())) {
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listByOptions(hostId, rdupmType, operationType, params));
+        } else {
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedByOptions(DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params));
+        }
 
         if (CollectionUtils.isEmpty(page.getContent())) {
             return page;
