@@ -171,6 +171,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             // 查询最近的成功状态的envCommandId作为deployment的effectCommandId
             Long effectCommandId = devopsEnvCommandService.queryWorkloadEffectCommandId(ObjectType.DEPLOYMENT.getType(), centerEnvDTO.getObjectId());
             detailVO.setEffectCommandId(effectCommandId);
+
+            // 设置deployment的状态
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(centerEnvDTO.getObjectId());
+            detailVO.setObjectStatus(devopsDeploymentDTO.getStatus());
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());

@@ -23,8 +23,6 @@ public interface DevopsDeploymentService extends WorkloadBaseService<DevopsDeplo
 
     DevopsDeployGroupVO queryDeployGroupInfoById(Long id);
 
-    DevopsDeploymentDTO queryByInstanceIdAndSourceType(Long instanceId, String type);
-
     InstanceControllerDetailVO getInstanceResourceDetailYaml(Long deploymentId);
 
     InstanceControllerDetailVO getInstanceResourceDetailJson(Long deploymentId);

@@ -258,11 +258,6 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     }
 
     @Override
-    public DevopsDeploymentDTO queryByInstanceIdAndSourceType(Long instanceId, String type) {
-        return devopsDeploymentMapper.queryByInstanceIdAndSourceType(instanceId, type);
-    }
-
-    @Override
     public DevopsDeploymentVO queryByDeploymentIdWithResourceDetail(Long deploymentId) {
         return devopsDeploymentMapper.queryByDeploymentIdWithResourceDetail(deploymentId);
     }
