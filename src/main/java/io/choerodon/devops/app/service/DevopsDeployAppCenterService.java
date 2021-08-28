@@ -71,4 +71,6 @@ public interface DevopsDeployAppCenterService {
     void baseHostCreate(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType);
 
     void fixData();
+
+
 }
