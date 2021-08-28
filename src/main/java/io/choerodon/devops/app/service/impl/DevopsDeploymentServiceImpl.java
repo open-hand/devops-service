@@ -121,6 +121,9 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
 
         devopsEnvCommandService.baseListByObject(ObjectType.DEPLOYMENT.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
+        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
+            devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getInstanceId(), RdupmTypeEnum.DEPLOYMENT.value());
+        }
         devopsDeploymentMapper.deleteByPrimaryKey(id);
         devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
     }
