@@ -39,11 +39,6 @@
         WHERE ddp.id=#{id}
     </select>
 
-    <select id="queryByInstanceIdAndSourceType" resultType="io.choerodon.devops.infra.dto.DevopsDeploymentDTO">
-        SELECT * FROM devops_deployment
-        WHERE instance_id=#{instanceId} and source_type=#{sourceType}
-    </select>
-
     <select id="queryByDeploymentIdWithResourceDetail" resultType="io.choerodon.devops.api.vo.DevopsDeploymentVO">
         select dd.*,
         der.id        as env_resource_id,
