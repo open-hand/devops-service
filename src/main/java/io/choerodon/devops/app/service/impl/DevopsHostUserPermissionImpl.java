@@ -49,8 +49,8 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
             return;
         }
         // 2. 用户是root用户、项目所有者、主机创建者也直接放行
-        permissionHelper.checkProjectOwnerOrGitlabAdmin(projectId, userId);
-        if (devopsHostDTO.getCreatedBy().equals(userId)) {
+        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)
+                || devopsHostDTO.getCreatedBy().equals(userId)) {
             return;
         }
         // 3. 判断用户是否在devops_host_user_permission表中
