@@ -527,7 +527,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 2.保存记录
         String instanceName = jarDeploy.getName() != null ? jarDeploy.getName() : c7nNexusComponentDTO.getName();
 
-        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndName(hostId, instanceName);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(hostId, instanceName);
         // todo
         if (devopsHostAppDTO == null) {
             devopsHostAppDTO = new DevopsHostAppDTO(null
