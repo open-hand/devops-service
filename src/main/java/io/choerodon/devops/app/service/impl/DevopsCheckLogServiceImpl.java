@@ -30,7 +30,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Override
-    @Transactional
     public void checkLog(String task) {
         DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
         devopsCheckLogDTO.setLog(task);
