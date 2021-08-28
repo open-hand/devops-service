@@ -692,7 +692,12 @@
     </select>
 
     <select id="listInstances" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
-        SELECT *
-        FROM devops_service.devops_app_service_instance
+        SELECT das.project_id,
+               dasi.code,
+               dasi.env_id,
+               dasi.id,
+               dasi.source
+        FROM devops_app_service_instance dasi
+                     JOIN devops_app_service das ON dasi.app_service_id = das.id
     </select>
 </mapper>
