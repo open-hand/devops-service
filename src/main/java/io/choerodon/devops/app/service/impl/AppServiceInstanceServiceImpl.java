@@ -922,11 +922,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             code = getUpdateInstanceCode(appServiceDeployVO, devopsEnvironmentDTO, appServiceInstanceDTO);
         }
 
+        String source = "";
         //10.更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         if (!appServiceDeployVO.getNotChanged()) {
             //存储数据
             // 创建关联关系
-            String source;
 
             appServiceInstanceDTO.setApplicationType(appServiceDeployVO.getApplicationType());
             if (StringUtils.equalsIgnoreCase(appServiceInstanceDTO.getApplicationType(), AppSourceType.HZERO.getValue())) {
