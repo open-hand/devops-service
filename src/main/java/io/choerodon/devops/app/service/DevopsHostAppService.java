@@ -36,7 +36,7 @@ public interface DevopsHostAppService {
 
     DevopsHostAppDTO baseQuery(Long instanceId);
 
-    DevopsHostAppDTO queryByHostIdAndName(Long hostId, String name);
+    DevopsHostAppDTO queryByHostIdAndCode(Long hostId, String name);
 
     Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params);
 

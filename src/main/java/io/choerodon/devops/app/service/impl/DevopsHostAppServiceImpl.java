@@ -232,7 +232,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         // 2.保存记录
-        DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndName(hostId, jarDeployVO.getAppCode());
+        DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, jarDeployVO.getAppCode());
         if (devopsHostAppDTO == null) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
@@ -361,10 +361,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public DevopsHostAppDTO queryByHostIdAndName(Long hostId, String name) {
+    public DevopsHostAppDTO queryByHostIdAndCode(Long hostId, String code) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_JAR_NAME_IS_NULL);
-        DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(hostId, name);
+        Assert.notNull(code, ResourceCheckConstant.ERROR_JAR_NAME_IS_NULL);
+        DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(hostId, code);
         return devopsHostAppMapper.selectOne(devopsHostAppDTO);
     }
 
