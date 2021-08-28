@@ -1,13 +1,13 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
-
-import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -39,8 +39,7 @@ public class JarDeployVO {
     /**
      * 部署对象id
      */
-    @Encrypt
-    private Long deployObjectId;
+    private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
 
     @ApiModelProperty("部署values")
     @NotNull(message = "error.value.is.null")
@@ -61,6 +60,14 @@ public class JarDeployVO {
         this.sourceType = sourceType;
         this.value = value;
         this.prodJarInfoVO = prodJarInfoVO;
+    }
+
+    public MarketDeployObjectInfoVO getMarketDeployObjectInfoVO() {
+        return marketDeployObjectInfoVO;
+    }
+
+    public void setMarketDeployObjectInfoVO(MarketDeployObjectInfoVO marketDeployObjectInfoVO) {
+        this.marketDeployObjectInfoVO = marketDeployObjectInfoVO;
     }
 
     public String getJarFileUrl() {
@@ -101,14 +108,6 @@ public class JarDeployVO {
 
     public void setValue(String value) {
         this.value = value;
-    }
-
-    public Long getDeployObjectId() {
-        return deployObjectId;
-    }
-
-    public void setDeployObjectId(Long deployObjectId) {
-        this.deployObjectId = deployObjectId;
     }
 
     public ProdJarInfoVO getProdJarInfoVO() {
