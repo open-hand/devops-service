@@ -301,7 +301,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         int totalPage = (totalCount + pageSize - 1) / pageSize;
         LOGGER.info("start to fix DevopsDeployAppCenterEnv data.");
         do {
-            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage);
+            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage-1);
             PageRequest pageRequest = new PageRequest();
             pageRequest.setPage(pageNumber);
             pageRequest.setSize(pageSize);
