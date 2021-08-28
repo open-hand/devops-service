@@ -32,7 +32,6 @@ public class DevopsWorkloadResourceContentServiceImpl implements DevopsWorkloadR
 
     @Override
     public void update(String type, Long resourceId, String content) {
-        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentUpdateDTO = new DevopsWorkloadResourceContentDTO(resourceId, type, content);
         if (devopsWorkloadResourceContentMapper.updateContentByResourceIdAndResourceKind(type, resourceId, content) != 1) {
             throw new CommonException("error.workload.resource.update");
         }

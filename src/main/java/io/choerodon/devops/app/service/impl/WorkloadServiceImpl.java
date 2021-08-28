@@ -16,7 +16,6 @@ import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.WorkloadBaseVO;
 import io.choerodon.devops.api.vo.workload.WorkLoad;
@@ -152,7 +151,12 @@ public class WorkloadServiceImpl implements WorkloadService {
             // 前面对资源进行了数量校验，因此只会循环一次，resourceFilePath也只会被设置一次
             resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
             objects.add(datas);
-            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), FileUtil.getYaml().dump(data), kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId(), workloadBaseVO.getExtraInfo());
+            String resourceContent = FileUtil.getYaml().dump(data);
+            // 如果是更新操作，需要校验资源是否发生变化，没有变化不再进行后续处理
+            if (UPDATE_TYPE.equals(workloadBaseVO.getOperateType()) && noChange(kind, workloadBaseVO.getResourceId(), resourceContent)) {
+                return;
+            }
+            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), resourceContent, kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId(), workloadBaseVO.getExtraInfo());
         }
 
         if (CREATE_TYPE.equals(workloadBaseVO.getOperateType())) {
@@ -371,7 +375,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     }
 
     private void updateWorkLoad(String resourceType, String name, String content, Long resourceId, Long userId, Map<String, Object> extraInfo) {
-        //自定义资源关联command
+        //资源关联command
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, UPDATE_TYPE, userId);
         WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(resourceType) + WORK_LOAD);
         workLoad.updateWorkLoad(devopsEnvCommandDTO, name, resourceId, extraInfo);
@@ -476,5 +480,10 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsEnvCommandDTO.setObject(resourceType.toLowerCase());
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandDTO;
+    }
+
+    private boolean noChange(String kind, Long resourceId, String content) {
+        DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(resourceId, kind);
+        return devopsWorkloadResourceContentDTO.getContent().equals(content);
     }
 }
