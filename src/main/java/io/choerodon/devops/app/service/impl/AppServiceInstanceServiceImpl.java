@@ -854,15 +854,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     builder -> builder
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
-
-            if (CREATE.equals(appServiceDeployVO.getType())) {
-                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
-            } else {
-                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
-                devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
-                devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
-            }
-
+        }
+        if (CREATE.equals(appServiceDeployVO.getType())) {
+            devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
+        } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
+            devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
+            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
     }
@@ -971,14 +969,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             MarketInstanceSagaPayload instanceSagaPayload = initMarketInstanceSagaPayload(appServiceDeployVO, devopsEnvironmentDTO, userAttrDTO, marketServiceDeployObjectVO, appServiceInstanceDTO, secretCode);
             // 发送asgard
             sendCreateOrUpdateInstanceSaga(devopsEnvironmentDTO, instanceSagaPayload);
-            // 创建应用中心的应用
-            if (appServiceDeployVO.getCommandType().equals(CREATE)) {
-                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getOperationType(), source, RdupmTypeEnum.CHART.value());
-            } else {
-                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
-                devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
-                devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
-            }
+        }
+
+        // 创建应用中心的应用
+        if (appServiceDeployVO.getCommandType().equals(CREATE)) {
+            devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getOperationType(), source, RdupmTypeEnum.CHART.value());
+        } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
+            devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
+            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
