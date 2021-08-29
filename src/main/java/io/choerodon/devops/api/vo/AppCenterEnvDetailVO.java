@@ -73,6 +73,12 @@ public class AppCenterEnvDetailVO {
     private Boolean envActive;
     private Boolean envConnected;
 
+    @Encrypt
+    @ApiModelProperty(name = "市场应用版本id")
+    private Long mktAppVersionId;
+    @Encrypt
+    @ApiModelProperty(name = "部署对象id")
+    private Long mktDeployObjectId;
 
     public Long getAppServiceId() {
         return appServiceId;
@@ -288,5 +294,21 @@ public class AppCenterEnvDetailVO {
 
     public void setEnvironmentId(Long environmentId) {
         this.environmentId = environmentId;
+    }
+
+    public Long getMktAppVersionId() {
+        return mktAppVersionId;
+    }
+
+    public void setMktAppVersionId(Long mktAppVersionId) {
+        this.mktAppVersionId = mktAppVersionId;
+    }
+
+    public Long getMktDeployObjectId() {
+        return mktDeployObjectId;
+    }
+
+    public void setMktDeployObjectId(Long mktDeployObjectId) {
+        this.mktDeployObjectId = mktDeployObjectId;
     }
 }
