@@ -130,7 +130,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(jarDeployVO.getSourceType());
         deploySourceVO.setProjectName(projectDTO.getName());
-        deploySourceVO.setDeployObjectId(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
+
 
         String encodeValue = jarDeployVO.getValue();
         try {
@@ -198,6 +198,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
+
+            deploySourceVO.setDeployObjectId(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
 
             // 添加jar包下载信息
             jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
