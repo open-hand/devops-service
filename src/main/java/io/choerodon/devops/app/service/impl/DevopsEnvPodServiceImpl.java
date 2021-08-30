@@ -373,7 +373,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.baseQueryOptions(null, null, envId, kind, name);
 
-        if (devopsEnvResourceDTO.getInstanceId() != null) {
+        if (devopsEnvResourceDTO != null && devopsEnvResourceDTO.getInstanceId() != null) {
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvResourceDTO.getInstanceId());
             return pageByOptions(projectId,
                     envId,
