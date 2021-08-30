@@ -442,7 +442,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
         } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
-            devopsHostAppVO.setJarFileUrl(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), String.class));
+            devopsHostAppVO.setJarFileUrl(devopsHostAppVO.getSourceConfig());
         }
     }
 
