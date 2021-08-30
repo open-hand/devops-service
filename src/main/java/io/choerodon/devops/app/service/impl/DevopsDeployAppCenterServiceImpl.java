@@ -100,6 +100,22 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
 
     @Override
+   public  Boolean checkNameUnique(Long projectId, Long envId, String name){
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO=new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setName(name);
+        devopsDeployAppCenterEnvDTO.setEnvId(envId);
+        return devopsDeployAppCenterEnvMapper.selectCount(devopsDeployAppCenterEnvDTO) == 0;
+    }
+
+    @Override
+    public  Boolean checkCodeUnique(Long projectId, Long envId, String code){
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO=new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setName(code);
+        devopsDeployAppCenterEnvDTO.setEnvId(envId);
+        return devopsDeployAppCenterEnvMapper.selectCount(devopsDeployAppCenterEnvDTO) == 0;
+    }
+
+    @Override
     public Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable) {
         Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS;
         long userId = DetailsHelper.getUserDetails().getUserId();

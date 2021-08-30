@@ -2,8 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
@@ -15,6 +13,23 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @DateTime: 2021-08-18 15:27
  **/
 public interface DevopsDeployAppCenterService {
+    /**
+     * 校验名称环境下唯一
+     * @param projectId
+     * @param envId
+     * @param name
+     * @return
+     */
+    Boolean checkNameUnique(Long projectId, Long envId, String name);
+
+    /**
+     * 校验code环境下唯一
+     * @param projectId
+     * @param envId
+     * @param code
+     * @return
+     */
+    Boolean checkCodeUnique(Long projectId, Long envId, String code);
 
     /**
      * 根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用

@@ -34,6 +34,42 @@ public class DevopsDeployAppCenterController {
     DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     /**
+     * 校验名称唯一
+     *
+     * @param projectId 项目id
+     * @param envId 环境id
+     * @param name 名称
+     * @return boolean
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验名称唯一")
+    @GetMapping("/check_name")
+    public ResponseEntity<Boolean> checkNameUnique(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "env_id", required = false) Long envId,
+            @RequestParam(value = "name", required = false) String name) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(projectId, envId, name));
+    }
+
+    /**
+     * 校验code唯一
+     *
+     * @param projectId 项目id
+     * @param envId 环境id
+     * @param code code
+     * @return boolean
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验code唯一")
+    @GetMapping("/check_code")
+    public ResponseEntity<Boolean> checkCodeUnique(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "env_id", required = false) Long envId,
+            @RequestParam(value = "code", required = false) String code) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(projectId, envId, code));
+    }
+
+    /**
      * 根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用
      *
      * @param envId 环境id
