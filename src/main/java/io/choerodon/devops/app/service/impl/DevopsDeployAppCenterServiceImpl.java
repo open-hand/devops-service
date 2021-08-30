@@ -161,7 +161,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                     deployObjectIds.add(appServiceInstanceInfoDTO.getEffectCommandVersionId());
                 }
                 Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
-                MarketServiceDeployObjectVO marketServiceDeployObjectVO = versions.get(appServiceInstanceInfoDTO.getCommandVersionId();
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = versions.get(appServiceInstanceInfoDTO.getCommandVersionId());
                 if (marketServiceDeployObjectVO != null) {
                     if (!StringUtils.isEmpty(marketServiceVO.getMarketServiceCode()) && !StringUtils.isEmpty(marketServiceDeployObjectVO.getDevopsAppServiceCode())) {
                         detailVO.setAppServiceCode(marketServiceDeployObjectVO.getDevopsAppServiceCode());
