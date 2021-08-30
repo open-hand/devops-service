@@ -4,6 +4,7 @@ import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
@@ -58,7 +59,7 @@ public class DevopsHostAppVO {
 
     private ProdJarInfoVO prodJarInfoVO;
 
-    private String jarFileUrl;
+    private FileInfoVO fileInfoVO;
 
     @ApiModelProperty("groupId")
     private String groupId;
@@ -110,12 +111,12 @@ public class DevopsHostAppVO {
 
     private IamUserDTO creator;
 
-    public String getJarFileUrl() {
-        return jarFileUrl;
+    public FileInfoVO getFileInfoVO() {
+        return fileInfoVO;
     }
 
-    public void setJarFileUrl(String jarFileUrl) {
-        this.jarFileUrl = jarFileUrl;
+    public void setFileInfoVO(FileInfoVO fileInfoVO) {
+        this.fileInfoVO = fileInfoVO;
     }
 
     public MarketDeployObjectInfoVO getMarketDeployObjectInfoVO() {
