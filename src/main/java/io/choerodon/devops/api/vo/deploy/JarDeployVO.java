@@ -45,7 +45,7 @@ public class JarDeployVO {
     @NotNull(message = "error.value.is.null")
     private String value;
 
-    private String jarFileUrl;
+    private FileInfoVO fileInfoVO;
 
     private ProdJarInfoVO prodJarInfoVO;
 
@@ -70,12 +70,12 @@ public class JarDeployVO {
         this.marketDeployObjectInfoVO = marketDeployObjectInfoVO;
     }
 
-    public String getJarFileUrl() {
-        return jarFileUrl;
+    public FileInfoVO getFileInfoVO() {
+        return fileInfoVO;
     }
 
-    public void setJarFileUrl(String jarFileUrl) {
-        this.jarFileUrl = jarFileUrl;
+    public void setFileInfoVO(FileInfoVO fileInfoVO) {
+        this.fileInfoVO = fileInfoVO;
     }
 
     public String getSourceConfig() {

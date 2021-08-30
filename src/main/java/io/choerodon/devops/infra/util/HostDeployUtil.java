@@ -68,7 +68,7 @@ public class HostDeployUtil {
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             params.put("{{ USER_ID }}", "none");
             params.put("{{ PASSWORD }}", "none");
-            params.put("{{ DOWNLOAD_URL }}", jarDeployVO.getJarFileUrl());
+            params.put("{{ DOWNLOAD_URL }}", jarDeployVO.getFileInfoVO().getJarFileUrl());
         } else {
             jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
             logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");

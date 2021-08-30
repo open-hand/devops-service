@@ -26,6 +26,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
@@ -331,7 +332,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 || AppSourceType.HZERO.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getMarketDeployObjectInfoVO());
         } else if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())){
-            return jarDeployVO.getJarFileUrl();
+            return JsonHelper.marshalByJackson(jarDeployVO.getFileInfoVO());
         }
         return null;
     }
@@ -442,7 +443,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
         } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
-            devopsHostAppVO.setJarFileUrl(devopsHostAppVO.getSourceConfig());
+            devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
         }
     }
 
