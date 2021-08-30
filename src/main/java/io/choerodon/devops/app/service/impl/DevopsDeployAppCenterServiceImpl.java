@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.hzero.mybatis.BatchInsertHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterHostMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -189,9 +191,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             Long effectCommandId = devopsEnvCommandService.queryWorkloadEffectCommandId(ObjectType.DEPLOYMENT.getType(), centerEnvDTO.getObjectId());
             detailVO.setEffectCommandId(effectCommandId);
 
-            // 设置deployment的状态
+            // 设置deployment的状态、appConfig、containerConfig
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(devopsDeploymentDTO.getStatus());
+            detailVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(),DevopsDeployGroupAppConfigVO.class));
+            detailVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getContainerConfig(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+            }));
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());

@@ -21,7 +21,5 @@ public interface DevopsDeploymentMapper extends BaseMapper<DevopsDeploymentDTO>,
                                          @Param("name") String name,
                                          @Param("fromInstance") Boolean fromInstance);
 
-    DevopsDeployGroupVO queryDeployGroupInfoById(@Param("id") Long id);
-
     DevopsDeploymentVO queryByDeploymentIdWithResourceDetail(@Param("deploymentId") Long deploymentId);
 }
