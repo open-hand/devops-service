@@ -156,11 +156,11 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setAppCenterId(appCenterId);
         detailVO.setDeployWay(AppCenterDeployWayEnum.CONTAINER.getValue());
         detailVO.setRdupmType(centerEnvDTO.getRdupmType());
+        detailVO.setInstanceId(centerEnvDTO.getObjectId());
         if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(appServiceInstanceInfoDTO.getStatus());
             BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO);
-            detailVO.setInstanceId(centerEnvDTO.getObjectId());
             if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) ||
                     centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
