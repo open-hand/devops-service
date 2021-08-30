@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.oauth.DetailsHelper;
 import org.hzero.mybatis.BatchInsertHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
@@ -149,6 +150,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 detailVO.setAppServiceName(appServiceDTO.getName());
             } else {
                 MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceInstanceInfoDTO.getAppServiceId());
+                // 这里的code仅hzero开放平台的应用有数据，其他应用从marketServiceDeployObjectVO获取
                 detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
 
@@ -159,7 +161,11 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                     deployObjectIds.add(appServiceInstanceInfoDTO.getEffectCommandVersionId());
                 }
                 Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
-                if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
+                MarketServiceDeployObjectVO marketServiceDeployObjectVO = versions.get(appServiceInstanceInfoDTO.getCommandVersionId();
+                if (marketServiceDeployObjectVO != null) {
+                    if (!StringUtils.isEmpty(marketServiceVO.getMarketServiceCode()) && !StringUtils.isEmpty(marketServiceDeployObjectVO.getDevopsAppServiceCode())) {
+                        detailVO.setAppServiceCode(marketServiceDeployObjectVO.getDevopsAppServiceCode());
+                    }
                     detailVO.setMktAppVersionId(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketAppVersionId());
                     detailVO.setMktDeployObjectId(appServiceInstanceInfoDTO.getCommandVersionId());
                     // 如果是中间件，直接以应用版本作为生效版本
@@ -312,7 +318,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         int totalPage = (totalCount + pageSize - 1) / pageSize;
         LOGGER.info("start to fix DevopsDeployAppCenterEnv data.");
         do {
-            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage-1);
+            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage - 1);
             PageRequest pageRequest = new PageRequest();
             pageRequest.setPage(pageNumber);
             pageRequest.setSize(pageSize);
