@@ -3,15 +3,12 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.deploy.JarDeployVO;
-
 public class DevopsDeployGroupContainerConfigVO {
     private String name;
     private String type;
     private String sourceType;
-    private String jarFileDownloadUrl;
-    private JarDeployVO jarDeployVO;
-    private DevopsDeployGroupDockerConfigVO dockerDeployVO;
+    private DevopsDeployGroupJarDeployVO jarDeployVO;
+    private DevopsDeployGroupDockerDeployVO dockerDeployVO;
     private String requestCpu;
     private String requestMemory;
     private String limitCpu;
@@ -43,27 +40,19 @@ public class DevopsDeployGroupContainerConfigVO {
         this.sourceType = sourceType;
     }
 
-    public String getJarFileDownloadUrl() {
-        return jarFileDownloadUrl;
-    }
-
-    public void setJarFileDownloadUrl(String jarFileDownloadUrl) {
-        this.jarFileDownloadUrl = jarFileDownloadUrl;
-    }
-
-    public JarDeployVO getJarDeployVO() {
+    public DevopsDeployGroupJarDeployVO getJarDeployVO() {
         return jarDeployVO;
     }
 
-    public void setJarDeployVO(JarDeployVO jarDeployVO) {
+    public void setJarDeployVO(DevopsDeployGroupJarDeployVO jarDeployVO) {
         this.jarDeployVO = jarDeployVO;
     }
 
-    public DevopsDeployGroupDockerConfigVO getDockerDeployVO() {
+    public DevopsDeployGroupDockerDeployVO getDockerDeployVO() {
         return dockerDeployVO;
     }
 
-    public void setDockerDeployVO(DevopsDeployGroupDockerConfigVO dockerDeployVO) {
+    public void setDockerDeployVO(DevopsDeployGroupDockerDeployVO dockerDeployVO) {
         this.dockerDeployVO = dockerDeployVO;
     }
 

@@ -4,7 +4,7 @@ package io.choerodon.devops.app.service.impl
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsDeployGroupAppConfigVO
 import io.choerodon.devops.api.vo.DevopsDeployGroupContainerConfigVO
-import io.choerodon.devops.api.vo.DevopsDeployGroupDockerConfigVO
+import io.choerodon.devops.api.vo.DevopsDeployGroupDockerDeployVO
 import io.choerodon.devops.api.vo.DevopsDeployGroupVO
 import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO
 import io.choerodon.devops.app.service.DevopsDeployGroupService
@@ -83,7 +83,7 @@ class DevopsDeployGroupServiceImplSpec extends Specification {
         envs.put("env-app-code",deployGroupVO.getCode())
         deployGroupContainerConfigVO1.setEnvs(envs)
 
-        def deployGroupDockerConfigVO=new DevopsDeployGroupDockerConfigVO()
+        def deployGroupDockerConfigVO=new DevopsDeployGroupDockerDeployVO()
         def imageInfo=new ProdImageInfoVO()
         deployGroupDockerConfigVO.setSourceType("CURRENT_PROJECT")
         deployGroupDockerConfigVO.setImageInfo(imageInfo)

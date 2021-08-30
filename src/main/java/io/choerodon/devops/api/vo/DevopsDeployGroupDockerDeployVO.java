@@ -4,7 +4,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 
-public class DevopsDeployGroupDockerConfigVO extends DockerDeployVO {
+public class DevopsDeployGroupDockerDeployVO extends DockerDeployVO {
     @Encrypt
     private Long appServiceVersionId;
 
