@@ -229,12 +229,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
             jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
         }
-        if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-            throw new CommonException(ERROR_JAR_VERSION_NOT_FOUND);
-        }
-        if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
-            throw new CommonException("error.get.maven.config");
-        }
 
         // 2.保存记录
         DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, jarDeployVO.getAppCode());
