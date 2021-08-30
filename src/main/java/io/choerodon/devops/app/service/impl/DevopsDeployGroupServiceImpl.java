@@ -384,7 +384,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             if (!CollectionUtils.isEmpty(containerConfig.getPorts())) {
                 containerConfig.getPorts().forEach(portInfo -> {
                     String name = portInfo.get("name");
-                    String port = portInfo.get("port");
+                    String port = portInfo.get("containerPort");
                     String namePort = name + port;
                     if (existPorts.contains(namePort)) {
                         throw new CommonException("error.container.port.exist");
