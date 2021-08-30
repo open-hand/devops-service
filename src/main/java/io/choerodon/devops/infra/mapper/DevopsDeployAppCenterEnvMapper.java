@@ -24,4 +24,12 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
     DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(@Param("environmentId") Long environmentId, @Param("appCode") String appCode);
 
     void deleteByEnvIdAndObjectIdAndRdupmType(@Param("envId") Long envId, @Param("objectId") Long objectId, @Param("rdupmType") String rdupmType);
+
+    List<DevopsDeployAppCenterVO> listAppFromEnvByUserId(@Param("projectId") Long projectId,
+                                                 @Param("envId") Long envId,
+                                                 @Param("name") String name,
+                                                 @Param("rdupmType") String rdupmType,
+                                                 @Param("operationType") String operationType,
+                                                 @Param("params") String params,
+                                                 @Param("userId") Long userId);
 }
