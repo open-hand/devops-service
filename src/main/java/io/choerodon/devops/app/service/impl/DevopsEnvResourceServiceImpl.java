@@ -88,20 +88,25 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         if (devopsDeploymentVO == null) {
             return devopsEnvResourceVO;
         }
+
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(devopsDeploymentVO.getResourceDetailId());
 
-        // 获取相关的pod
-        List<DevopsEnvPodVO> devopsEnvPodVOs = devopsEnvPodService.listWorkloadPod(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getName());
+        if (devopsEnvResourceDetailDTO != null) {
+            // 获取相关的pod
+            List<DevopsEnvPodVO> devopsEnvPodVOs = devopsEnvPodService.listWorkloadPod(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getName());
 
-        V1beta2Deployment v1beta2Deployment = json.deserialize(
-                devopsEnvResourceDetailDTO.getMessage(),
-                V1beta2Deployment.class);
+            V1beta2Deployment v1beta2Deployment = json.deserialize(
+                    devopsEnvResourceDetailDTO.getMessage(),
+                    V1beta2Deployment.class);
 
-        addDeploymentToResource(devopsEnvResourceVO, v1beta2Deployment, deploymentId);
+            addDeploymentToResource(devopsEnvResourceVO, v1beta2Deployment, deploymentId);
 
-        devopsEnvResourceVO.getDeploymentVOS().forEach(deploymentVO -> deploymentVO.setDevopsEnvPodVOS(devopsEnvPodVOs));
+            devopsEnvResourceVO.getDeploymentVOS().forEach(deploymentVO -> deploymentVO.setDevopsEnvPodVOS(devopsEnvPodVOs));
 
-        return devopsEnvResourceVO;
+            return devopsEnvResourceVO;
+        } else {
+            return devopsEnvResourceVO;
+        }
     }
 
     /**
