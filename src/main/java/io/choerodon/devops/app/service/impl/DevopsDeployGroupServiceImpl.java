@@ -475,7 +475,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     V1Container processJarConfig(ProjectDTO projectDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, StringBuilder wgetCommandSB) {
         // 处理用户上传的jar
         if (AppSourceType.UPLOAD.getValue().equals(devopsDeployGroupContainerConfigVO.getSourceType())) {
-            wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarFileDownloadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
+            wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarDeployVO().getJarFileDownloadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
         } else {
             // 制品库中的jar
             JarPullInfoDTO jarPullInfoDTO = getJarPullInfo(projectDTO, devopsDeployGroupContainerConfigVO.getJarDeployVO());
@@ -510,7 +510,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      * @return
      */
     private V1Container processImageConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, List<V1LocalObjectReference> imagePullSecrets) {
-        DevopsDeployGroupDockerConfigVO dockerDeployVO = devopsDeployGroupContainerConfigVO.getDockerDeployVO();
+        DevopsDeployGroupDockerDeployVO dockerDeployVO = devopsDeployGroupContainerConfigVO.getDockerDeployVO();
 
         DockerDeployDTO dockerDeployDTO = createDockerDeployDTO(projectDTO, devopsEnvironmentDTO, dockerDeployVO);
         DockerPullAccountDTO pullAccountDTO = dockerDeployDTO.getDockerPullAccountDTO();
@@ -587,7 +587,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return jarPullInfoDTO;
     }
 
-    private DockerDeployDTO createDockerDeployDTO(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupDockerConfigVO dockerDeployVO) {
+    private DockerDeployDTO createDockerDeployDTO(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupDockerDeployVO dockerDeployVO) {
         DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
         DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
         if (isMarketOrHzero(dockerDeployVO)) {
