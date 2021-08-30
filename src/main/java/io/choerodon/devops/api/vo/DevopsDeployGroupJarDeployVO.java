@@ -1,15 +1,18 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 
 public class DevopsDeployGroupJarDeployVO extends JarDeployVO {
-    private String jarFileDownloadUrl;
+    private FileInfoVO fileInfoVO;
 
-    public String getJarFileDownloadUrl() {
-        return jarFileDownloadUrl;
+    @Override
+    public FileInfoVO getFileInfoVO() {
+        return fileInfoVO;
     }
 
-    public void setJarFileDownloadUrl(String jarFileDownloadUrl) {
-        this.jarFileDownloadUrl = jarFileDownloadUrl;
+    @Override
+    public void setFileInfoVO(FileInfoVO fileInfoVO) {
+        this.fileInfoVO = fileInfoVO;
     }
 }
