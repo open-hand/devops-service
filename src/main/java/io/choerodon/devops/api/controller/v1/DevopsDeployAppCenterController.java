@@ -46,8 +46,8 @@ public class DevopsDeployAppCenterController {
     @GetMapping("/check_name")
     public ResponseEntity<Boolean> checkNameUnique(
             @PathVariable("project_id") Long projectId,
-            @Encrypt @RequestParam(value = "env_id", required = false) Long envId,
-            @RequestParam(value = "name", required = false) String name) {
+            @Encrypt @RequestParam(value = "env_id") Long envId,
+            @RequestParam(value = "name") String name) {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(projectId, envId, name));
     }
 
@@ -64,8 +64,8 @@ public class DevopsDeployAppCenterController {
     @GetMapping("/check_code")
     public ResponseEntity<Boolean> checkCodeUnique(
             @PathVariable("project_id") Long projectId,
-            @Encrypt @RequestParam(value = "env_id", required = false) Long envId,
-            @RequestParam(value = "code", required = false) String code) {
+            @Encrypt @RequestParam(value = "env_id") Long envId,
+            @RequestParam(value = "code") String code) {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(projectId, envId, code));
     }
 
