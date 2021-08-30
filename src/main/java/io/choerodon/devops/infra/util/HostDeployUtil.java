@@ -60,7 +60,8 @@ public class HostDeployUtil {
         params.put("{{ WORKING_PATH }}", "$HOME/choerodon/" + instanceId);
 
         String workingPath = "$HOME/choerodon/" + instanceId;
-        String jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
+        String jarPathAndName = workingPath + "/temp-jar/default";
+        String logName = "default.log";
 
         // 2.2
         params.put("{{ JAR_NAME }}", jarPathAndName);
@@ -69,6 +70,8 @@ public class HostDeployUtil {
             params.put("{{ PASSWORD }}", "none");
             params.put("{{ DOWNLOAD_URL }}", jarDeployVO.getJarFileUrl());
         } else {
+            jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
+            logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
             params.put("{{ USER_ID }}", jarPullInfoDTO.getPullUserId());
             params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
             params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
@@ -87,7 +90,7 @@ public class HostDeployUtil {
             throw new CommonException("error.instruction");
         }
 
-        String logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
+
         String logPathAndName = workingPath + "/temp-log/" + logName;
         String javaJarExec = values.replace("${jar}", jarPathAndName) + String.format(" -DchoerodonInstanceName=%s", jarDeployVO.getAppCode()) + String.format("> %s 2>&1", logPathAndName);
         params.put("{{ JAVA_JAR_EXEC }}", javaJarExec);
