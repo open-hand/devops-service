@@ -92,15 +92,6 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     @Autowired
     private UserAttrService userAttrService;
 
-    @Override
-    public DevopsDeployGroupVO appConfigDetail(Long projectId, Long devopsConfigGroupId) {
-        DevopsDeployGroupVO devopsDeployGroupVO = devopsDeploymentService.queryDeployGroupInfoById(devopsConfigGroupId);
-        devopsDeployGroupVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeployGroupVO.getAppConfigJson(), DevopsDeployGroupAppConfigVO.class));
-        devopsDeployGroupVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeployGroupVO.getContainerConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
-        }));
-        return devopsDeployGroupVO;
-    }
-
     @Transactional
     @Override
     public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {

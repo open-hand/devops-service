@@ -23,16 +23,6 @@ public class DevopsDeployGroupController {
     @Autowired
     private DevopsDeployGroupService devopsDeployGroupService;
 
-    @ApiOperation("查询应用和容器配置信息")
-    @GetMapping("/config_detail")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    public ResponseEntity<DevopsDeployGroupVO> appConfigDetail(
-            @PathVariable("project_id") Long projectId,
-            @ApiParam(value = "应用中心 应用Id")
-            @RequestParam("devops_config_group_id") Long devopsConfigGroupId) {
-        return Results.success(devopsDeployGroupService.appConfigDetail(projectId, devopsConfigGroupId));
-    }
-
     @ApiOperation("创建或更新部署组应用")
     @PostMapping("create_or_update")
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -21,8 +21,6 @@ public interface DevopsDeploymentService extends WorkloadBaseService<DevopsDeplo
 
     Page<DeploymentInfoVO> pagingByEnvId(Long projectId, Long envId, PageRequest pageable, String name, Boolean fromInstance);
 
-    DevopsDeployGroupVO queryDeployGroupInfoById(Long id);
-
     InstanceControllerDetailVO getInstanceResourceDetailYaml(Long deploymentId);
 
     InstanceControllerDetailVO getInstanceResourceDetailJson(Long deploymentId);

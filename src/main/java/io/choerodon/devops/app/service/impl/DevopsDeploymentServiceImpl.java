@@ -253,11 +253,6 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     }
 
     @Override
-    public DevopsDeployGroupVO queryDeployGroupInfoById(Long id) {
-        return devopsDeploymentMapper.queryDeployGroupInfoById(id);
-    }
-
-    @Override
     public DevopsDeploymentVO queryByDeploymentIdWithResourceDetail(Long deploymentId) {
         return devopsDeploymentMapper.queryByDeploymentIdWithResourceDetail(deploymentId);
     }
