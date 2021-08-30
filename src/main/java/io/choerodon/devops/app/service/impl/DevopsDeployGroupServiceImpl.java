@@ -509,7 +509,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             configVO.setUrl(pullAccountDTO.getHarborUrl());
             configVO.setUserName(pullAccountDTO.getPullAccount());
             configVO.setPassword(pullAccountDTO.getPullPassword());
-            String imagePullSecretName = "secret-" + devopsDeployGroupContainerConfigVO.getName();
+            String imagePullSecretName = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
             V1LocalObjectReference v1LocalObjectReference = new V1LocalObjectReference();
             v1LocalObjectReference.setName(imagePullSecretName);
             imagePullSecrets.add(v1LocalObjectReference);
