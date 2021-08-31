@@ -101,28 +101,22 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
 
     @Override
-    public Boolean checkNameUnique(Long projectId, Long envId, String name) {
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-        devopsDeployAppCenterEnvDTO.setName(name);
-        devopsDeployAppCenterEnvDTO.setEnvId(envId);
-        return devopsDeployAppCenterEnvMapper.selectCount(devopsDeployAppCenterEnvDTO) == 0;
+    public Boolean checkNameUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name) {
+        return devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, envId, name);
     }
 
     @Override
-    public Boolean checkCodeUnique(Long projectId, Long envId, String code) {
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-        devopsDeployAppCenterEnvDTO.setName(code);
-        devopsDeployAppCenterEnvDTO.setEnvId(envId);
-        return devopsDeployAppCenterEnvMapper.selectCount(devopsDeployAppCenterEnvDTO) == 0;
+    public Boolean checkCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String code) {
+        return devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, envId, code);
     }
 
     @Override
-    public void checkNameAndCodeUnique(Long projectId, Long envId, String name, String code) {
-        if (!checkNameUnique(projectId, envId, name)) {
+    public void checkNameAndCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name, String code) {
+        if (!checkNameUnique(projectId, envId, rdupmType, objectId, name)) {
             throw new CommonException("error.env.app.center.name.exist");
         }
 
-        if (!checkCodeUnique(projectId, envId, code)) {
+        if (!checkCodeUnique(projectId, envId, rdupmType, objectId, code)) {
             throw new CommonException("error.env.app.center.code.exist");
         }
     }
