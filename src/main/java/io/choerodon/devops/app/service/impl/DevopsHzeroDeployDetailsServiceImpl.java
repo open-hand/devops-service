@@ -95,7 +95,7 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
     }
 
     @Override
