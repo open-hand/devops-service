@@ -736,6 +736,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
+        // 校验在应用中心的名称、code是否已存在
+        devopsDeployAppCenterService.checkNameAndCodeUnique(projectId, appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode());
+
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
 
         // 自动部署传入的项目id是空的, 不用校验
@@ -869,6 +872,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             description = "Devops创建市场实例", inputSchemaClass = MarketInstanceSagaPayload.class)
     @Override
     public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO, Boolean saveRecord) {
+        // 校验在应用中心的名称、code是否已存在
+        devopsDeployAppCenterService.checkNameAndCodeUnique(projectId, appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode());
+
         //1. 查询校验环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = getProjectEnvironment(projectId, appServiceDeployVO.getEnvironmentId());
 

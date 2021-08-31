@@ -346,19 +346,22 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO, boolean onlyForContainer) {
         // 如果不仅是更新容器，还要更新应用配置以及应用名称，将进行以下校验
         if (!onlyForContainer) {
+            // 校验在应用中心的名称、code是否已存在
+            devopsDeployAppCenterService.checkNameAndCodeUnique(devopsDeployGroupVO.getProjectId(), devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
-                throw new CommonException("error.app.instance.name.null");
+                throw new CommonException("error.env.app.center.name.null");
             }
 
-            if (devopsDeployGroupVO.getAppName().length() < 1 || devopsDeployGroupVO.getAppName().length() > 64) {
+            if (devopsDeployGroupVO.getAppName().length() < 1 || devopsDeployGroupVO.getAppName().length() > 53) {
                 throw new CommonException("error.env.app.center.name.length");
             }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppCode())) {
-                throw new CommonException("error.app.instance.code.null");
+                throw new CommonException("error.env.app.center.code.null");
             }
 
-            if (devopsDeployGroupVO.getAppCode().length() < 1 || devopsDeployGroupVO.getAppCode().length() > 64) {
+            if (devopsDeployGroupVO.getAppCode().length() < 1 || devopsDeployGroupVO.getAppCode().length() > 53) {
                 throw new CommonException("error.env.app.center.code.length");
             }
 

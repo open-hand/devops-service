@@ -31,6 +31,8 @@ public interface DevopsDeployAppCenterService {
      */
     Boolean checkCodeUnique(Long projectId, Long envId, String code);
 
+    void checkNameAndCodeUnique(Long projectId, Long envId, String name, String code);
+
     /**
      * 根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用
      *
