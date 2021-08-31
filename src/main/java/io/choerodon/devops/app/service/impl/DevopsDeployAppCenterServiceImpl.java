@@ -21,6 +21,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
@@ -113,6 +114,17 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         devopsDeployAppCenterEnvDTO.setName(code);
         devopsDeployAppCenterEnvDTO.setEnvId(envId);
         return devopsDeployAppCenterEnvMapper.selectCount(devopsDeployAppCenterEnvDTO) == 0;
+    }
+
+    @Override
+    public void checkNameAndCodeUnique(Long projectId, Long envId, String name, String code) {
+        if (!checkNameUnique(projectId, envId, name)) {
+            throw new CommonException("error.env.app.center.name.exist");
+        }
+
+        if (!checkCodeUnique(projectId, envId, code)) {
+            throw new CommonException("error.env.app.center.code.exist");
+        }
     }
 
     @Override
