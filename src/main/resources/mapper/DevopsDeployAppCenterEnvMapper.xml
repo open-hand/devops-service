@@ -63,7 +63,7 @@
         ORDER BY ddace.id DESC
     </select>
     <select id="checkNameUnique" resultType="java.lang.Boolean">
-        SELECT count(*) > 0
+        SELECT count(*) = 0
         FROM devops_deploy_app_center_env ddace
         WHERE ddace.env_id = #{envId, jdbcType=BIGINT}
         AND ddace.name = #{name, jdbcType=VARCHAR}
@@ -75,7 +75,7 @@
         </if>
     </select>
     <select id="checkCodeUnique" resultType="java.lang.Boolean">
-        SELECT count(*) > 0
+        SELECT count(*) = 0
         FROM devops_deploy_app_center_env ddace
         WHERE
         ddace.env_id = #{envId, jdbcType=BIGINT}
