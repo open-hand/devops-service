@@ -40,9 +40,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
         devopsCheckLogDTO.setBeginCheckDate(new Date());
         switch (task) {
-            case FIX_ENV_DATA:
-                devopsEnvApplicationService.fixData();
-                break;
             case FIX_APP_CENTER_DATA:
                 devopsDeployAppCenterService.fixData();
                 break;

@@ -31,12 +31,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_application.groovy') {
             }
         }
     }
-
-    changeSet(author: 'wx', id: '2021-06-29-devops_env_app_service-add-column') {
-        addColumn(tableName: 'devops_env_app_service') {
-            column(name: 'source', type: 'VARCHAR(64)', remarks: '服务的来源（市场的（hzero），共享的，本项目下）')
-            column(name: 'service_code', type: 'VARCHAR(64)', remarks: '服务的code')
-            column(name: 'service_name', type: 'VARCHAR(64)', remarks: '服务的名称')
-        }
-    }
 }

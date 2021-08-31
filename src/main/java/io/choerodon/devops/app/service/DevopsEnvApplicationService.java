@@ -73,6 +73,4 @@ public interface DevopsEnvApplicationService {
 
     boolean checkCanDelete(Long envId, Long appServiceId);
 
-    void fixData();
-
 }
