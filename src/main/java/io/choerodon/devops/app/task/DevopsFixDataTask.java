@@ -26,18 +26,6 @@ public class DevopsFixDataTask {
     private DevopsCheckLogService devopsCheckLogService;
 
 
-    @JobTask(maxRetryCount = 3, code = FIX_ENV_DATA, description = "修复环境应用服务数据")
-    @TimedTask(name = FIX_ENV_DATA, description = "修复环境应用服务数据", oneExecution = true,
-            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixEnvAppData(Map<String, Object> map) {
-        logger.info(">>>>>>>>>>>>>>>>>>>>begin to fix env app data<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        try {
-            devopsCheckLogService.checkLog(FIX_ENV_DATA);
-        } catch (Exception e) {
-            logger.error("error.fix.env.app.data", e);
-        }
-        logger.info(">>>>>>>>>>>>>>>>>>>>end fix env app data<<<<<<<<<<<<<<<<<<<<<<<<<<");
-    }
 
     @JobTask(maxRetryCount = 3, code = FIX_APP_CENTER_DATA, description = "修复应用中心数据")
     @TimedTask(name = FIX_APP_CENTER_DATA, description = "修复应用中心数据", oneExecution = true,
