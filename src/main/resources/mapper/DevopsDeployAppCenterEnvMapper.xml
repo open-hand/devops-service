@@ -66,7 +66,7 @@
         SELECT count(*) > 0
         FROM devops_deploy_app_center_env ddace
         WHERE ddace.env_id = #{envId, jdbcType=BIGINT}
-        AND ddace.name = #{name, jdbcType=VARCHAR})
+        AND ddace.name = #{name, jdbcType=VARCHAR}
         <if test="rdupmType != null and rdupmType != ''">
             AND ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
         </if>
@@ -79,7 +79,7 @@
         FROM devops_deploy_app_center_env ddace
         WHERE
         ddace.env_id = #{envId, jdbcType=BIGINT}
-        AND ddace.code = #{code, jdbcType=VARCHAR})
+        AND ddace.code = #{code, jdbcType=VARCHAR}
         <if test="rdupmType != null and rdupmType != ''">
             AND ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
         </if>
