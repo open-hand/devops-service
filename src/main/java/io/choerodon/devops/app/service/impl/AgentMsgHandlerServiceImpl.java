@@ -1513,7 +1513,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
                 builder -> builder
                         .withPayloadAndSerialize(new DevopsDeployFailedVO(envId, instanceCode, commandId)))
-                        .withRefId(envId.toString());
+                .withRefId(envId.toString());
     }
 
     private List<DevopsEnvFileErrorDTO> getEnvFileErrors(Long envId, GitOpsSyncDTO gitOpsSyncDTO, DevopsEnvironmentDTO devopsEnvironmentDTO) {
@@ -1816,7 +1816,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 IngressStatus.RUNNING,
                                 CertificationStatus.ACTIVE,
                                 PvStatus.forValue(newCommand.getResourceStatus()),
-                                PvcStatus.forValue(newCommand.getResourceStatus()));
+                                PvcStatus.forValue(newCommand.getResourceStatus()),
+                                InstanceStatus.RUNNING);
                     } else {
                         devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
                         devopsEnvCommandDTO.setError("The deploy is time out!");
@@ -1834,7 +1835,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 IngressStatus.FAILED,
                                 CertificationStatus.FAILED,
                                 PvStatus.FAILED,
-                                PvcStatus.FAILED);
+                                PvcStatus.FAILED,
+                                InstanceStatus.FAILED);
                     }
 
                     devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
@@ -2040,7 +2042,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                       IngressStatus ingressStatus,
                                       CertificationStatus certificationStatus,
                                       PvStatus pvStatus,
-                                      PvcStatus pvcStatus) {
+                                      PvcStatus pvcStatus,
+                                      InstanceStatus deploymentStatus) {
         switch (ObjectType.forValue(devopsEnvCommandDTO.getObject())) {
             case INSTANCE:
                 AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
@@ -2137,6 +2140,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
                 break;
             case DEPLOYMENT:
+                if (deploymentStatus == InstanceStatus.FAILED) {
+                    DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsEnvCommandDTO.getObjectId());
+                    devopsDeploymentDTO.setStatus(InstanceStatus.FAILED.getStatus());
+                    devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
+                }
+                break;
             case STATEFULSET:
             case JOB:
             case CRONJOB:
