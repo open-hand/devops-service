@@ -23,11 +23,12 @@ public class DockerDeployVO {
     private String sourceType;
     @ApiModelProperty("制品库镜像信息")
     private ProdImageInfoVO imageInfo;
-    /**
-     *  应用市场部署对象id
-     */
+    @ApiModelProperty("应用市场部署对象id")
     @Encrypt
     private Long deployObjectId;
+    @ApiModelProperty("应用市场应用版本id")
+    @Encrypt
+    private Long mktAppVersionId;
 
     @ApiModelProperty("部署values")
     @NotNull(message = "error.value.is.null")
@@ -79,5 +80,13 @@ public class DockerDeployVO {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
+    }
+
+    public Long getMktAppVersionId() {
+        return mktAppVersionId;
+    }
+
+    public void setMktAppVersionId(Long mktAppVersionId) {
+        this.mktAppVersionId = mktAppVersionId;
     }
 }
