@@ -485,7 +485,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         List<String> devopsHzeroDeployDetailsVOCodes = devopsHzeroDeployDetailsVOS.stream().map(DevopsHzeroDeployDetailsVO::getInstanceCode).collect(Collectors.toList());
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.listInstanceByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
         if (CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
-            devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.NOT_EXIST.getStatus()));
+            devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> devopsHzeroDeployDetailsVO.setAppStatus(setAppStatusDeleteOrNotExist(devopsHzeroDeployDetailsVO)));
         } else {
             Map<String, AppServiceInstanceDTO> appServiceInstanceDTOMap = appServiceInstanceDTOS.stream().collect(Collectors.toMap(AppServiceInstanceDTO::getCode, Function.identity()));
             devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
@@ -497,10 +497,13 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                         devopsHzeroDeployDetailsVO.setAppId(devopsDeployAppCenterEnvDTO.getId());
                     }
                 } else {
-                    devopsHzeroDeployDetailsVO.setAppStatus(HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(devopsHzeroDeployDetailsVO.getStatus())
-                            ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus());
+                    devopsHzeroDeployDetailsVO.setAppStatus(setAppStatusDeleteOrNotExist(devopsHzeroDeployDetailsVO));
                 }
             });
         }
+    }
+
+    private String setAppStatusDeleteOrNotExist(DevopsHzeroDeployDetailsVO devopsHzeroDeployDetailsVO) {
+        return HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(devopsHzeroDeployDetailsVO.getStatus()) ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus();
     }
 }
