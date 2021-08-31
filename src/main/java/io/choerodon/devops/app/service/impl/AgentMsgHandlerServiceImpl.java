@@ -1230,7 +1230,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, resourceId, type);
-        if (Boolean.FALSE.equals(updateEnvCommandStatus(resourceCommitVO, commandId, devopsEnvFileResourceDTO,
+        if (Boolean.TRUE.equals(updateEnvCommandStatus(resourceCommitVO, commandId, devopsEnvFileResourceDTO,
                 objects[0], objects[1], CommandStatus.SUCCESS.getStatus(), envFileErrorFiles))) {
             // 更新状态为failed
             devopsDeploymentDTO.setStatus(InstanceStatus.FAILED.getStatus());
