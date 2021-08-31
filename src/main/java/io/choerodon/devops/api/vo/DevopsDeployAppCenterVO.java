@@ -56,10 +56,10 @@ public class DevopsDeployAppCenterVO {
     private Boolean envConnected;
 
     @ApiModelProperty("实例的所有pod数量")
-    private Long podCount;
+    private Integer podCount;
 
     @ApiModelProperty("实例的运行中的pod的数量")
-    private Long podRunningCount;
+    private Integer podRunningCount;
 
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
@@ -238,19 +238,19 @@ public class DevopsDeployAppCenterVO {
         this.envConnected = envConnected;
     }
 
-    public Long getPodCount() {
+    public Integer getPodCount() {
         return podCount;
     }
 
-    public void setPodCount(Long podCount) {
+    public void setPodCount(Integer podCount) {
         this.podCount = podCount;
     }
 
-    public Long getPodRunningCount() {
+    public Integer getPodRunningCount() {
         return podRunningCount;
     }
 
-    public void setPodRunningCount(Long podRunningCount) {
+    public void setPodRunningCount(Integer podRunningCount) {
         this.podRunningCount = podRunningCount;
     }
 }

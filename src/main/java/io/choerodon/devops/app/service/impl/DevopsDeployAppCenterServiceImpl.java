@@ -130,29 +130,31 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
         List<DevopsEnvironmentDTO> environmentDTOS = environmentService.baseListByIds(devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getEnvId).collect(Collectors.toList()));
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = environmentDTOS.stream().collect(Collectors.toMap(DevopsEnvironmentDTO::getId, Function.identity()));
-        List<AppServiceInstanceDTO> appServiceInstanceDTOList = appServiceInstanceMapper.queryByInstanceIds(devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toList()));
-        Map<Long, AppServiceInstanceDTO> appServiceInstanceDTOMap = appServiceInstanceDTOList.stream().collect(Collectors.toMap(AppServiceInstanceDTO::getId, Function.identity()));
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId());
-            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceDTOMap.get(devopsDeployAppCenterVO.getObjectId());
             if (!ObjectUtils.isEmpty(devopsEnvironmentDTO)) {
                 devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
                 devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
             }
-            if (!ObjectUtils.isEmpty(appServiceInstanceDTO)) {
-                devopsDeployAppCenterVO.setPodCount(appServiceInstanceDTO.getPodCount());
-                devopsDeployAppCenterVO.setPodRunningCount(appServiceInstanceDTO.getPodRunningCount());
-            }
             devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
+            AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                // 添加pod运行统计
+                List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
+                calculatePodStatus(devopsEnvPodDTOS, detailVO);
                 devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                // 添加pod运行统计
+                List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
+                calculatePodStatus(devopsEnvPodDTOS, detailVO);
                 DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
                 if (!ObjectUtils.isEmpty(deploymentDTO)) {
                     devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
                 }
             }
+            devopsDeployAppCenterVO.setPodCount(detailVO.getPodCount());
+            devopsDeployAppCenterVO.setPodRunningCount(detailVO.getPodRunningCount());
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;
