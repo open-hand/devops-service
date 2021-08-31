@@ -13,10 +13,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @DateTime: 2021-08-19 18:49
  **/
 public class DevopsDeployGroupVO {
-    @Encrypt
-    @ApiModelProperty(name = "id,也就是deployment的id")
-    private Long id;
-
     @ApiModelProperty("应用中心应用名称")
     @Size(min = 1, max = 64, message = "error.env.app.center.name.length")
     @NotBlank(message = "error.app.instance.name.null")
@@ -42,7 +38,7 @@ public class DevopsDeployGroupVO {
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
 
     @Encrypt
-    @ApiModelProperty(name = "关联的应用中心的id")
+    @ApiModelProperty(name = "关联的deploymentId")
     private Long instanceId;
 
     private Long objectVersionNumber;
@@ -53,15 +49,6 @@ public class DevopsDeployGroupVO {
     private String appConfigJson;
     @JsonIgnore
     private String containerConfigJson;
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public void setAppName(String appName) {
         this.appName = appName;
