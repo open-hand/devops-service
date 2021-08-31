@@ -2171,6 +2171,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryById(detailsRecordId);
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
 
+        if (!HzeroDeployDetailsStatusEnum.CREATED.value().equals(devopsHzeroDeployDetailsDTO.getStatus())) {
+            LOGGER.info(">>>>>>> detailsRecord status not create, skip : {} <<<<<<<", detailsRecordId);
+            return;
+        }
+
         try {
             ApplicationContextHelper
                     .getContext()
