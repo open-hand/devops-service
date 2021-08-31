@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.host;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
@@ -20,6 +21,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 public class DevopsHostAppVO {
     @ApiModelProperty("项目id")
     private Long projectId;
+    @Encrypt
     @ApiModelProperty("主机id")
     private Long hostId;
     @ApiModelProperty("应用名称")
@@ -48,6 +50,7 @@ public class DevopsHostAppVO {
     @ApiModelProperty("主机名称")
     private String hostName;
     @ApiModelProperty("应用实例id")
+    @Encrypt
     private Long id;
     @ApiModelProperty("部署方式")
     private String deployWay;

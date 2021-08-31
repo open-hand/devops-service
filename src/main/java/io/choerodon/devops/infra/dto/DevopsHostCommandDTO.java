@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -24,9 +25,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsHostCommandDTO extends AuditDomain {
 
     @Id
+    @Encrypt
     @GeneratedValue
     private Long id;
     @ApiModelProperty("操作主机id")
+    @Encrypt
     private Long hostId;
     /**
      * {@link HostResourceType}
@@ -34,6 +37,7 @@ public class DevopsHostCommandDTO extends AuditDomain {
     @ApiModelProperty("实例类型,docker、jar")
     private String instanceType;
     @ApiModelProperty("实例id")
+    @Encrypt
     private Long instanceId;
 
     /**
@@ -48,6 +52,7 @@ public class DevopsHostCommandDTO extends AuditDomain {
     private String status;
     @ApiModelProperty("错误信息")
     private String error;
+    @Encrypt
     @ApiModelProperty("操作关联的流水线任务记录id/nullable, 不为空则说明操作关联了流水线任务")
     private Long cdJobRecordId;
 
