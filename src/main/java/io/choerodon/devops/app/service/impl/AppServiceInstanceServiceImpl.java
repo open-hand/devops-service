@@ -2265,6 +2265,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.DEPLOYING.value());
         devopsHzeroDeployDetailsDTO.setCommandId(commandId);
         devopsHzeroDeployDetailsDTO.setStartTime(new Date());
+        devopsHzeroDeployDetailsDTO.setEndTime(null);
         devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
     }
 
