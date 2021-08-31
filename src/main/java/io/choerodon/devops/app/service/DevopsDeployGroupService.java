@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
 
 /**
@@ -15,5 +17,12 @@ public interface DevopsDeployGroupService {
      * @param operateType         操作类型
      * @return
      */
-    void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType);
+    void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer);
+
+    /**
+     * 更新部署组容器配置
+     * @param projectId
+     * @param devopsDeployGroupVO
+     */
+    void updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO);
 }
