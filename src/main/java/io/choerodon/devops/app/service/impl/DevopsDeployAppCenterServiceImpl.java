@@ -139,20 +139,21 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             }
             devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
             AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
+            List<DevopsEnvPodDTO> devopsEnvPodDTOS = new ArrayList<>();
             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 // 添加pod运行统计
-                List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
-                calculatePodStatus(devopsEnvPodDTOS, detailVO);
+                devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
+
                 devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 // 添加pod运行统计
-                List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
-                calculatePodStatus(devopsEnvPodDTOS, detailVO);
+                devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
                 DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
                 if (!ObjectUtils.isEmpty(deploymentDTO)) {
                     devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
                 }
             }
+            calculatePodStatus(devopsEnvPodDTOS, detailVO);
             if (!ObjectUtils.isEmpty(detailVO)) {
                 devopsDeployAppCenterVO.setPodCount(detailVO.getPodCount());
                 devopsDeployAppCenterVO.setPodRunningCount(detailVO.getPodRunningCount());
