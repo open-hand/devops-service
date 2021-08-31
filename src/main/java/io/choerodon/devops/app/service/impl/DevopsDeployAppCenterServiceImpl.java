@@ -133,16 +133,30 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId());
-            devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
-            devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
+            if (!ObjectUtils.isEmpty(devopsEnvironmentDTO)) {
+                devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
+                devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
+            }
             devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
+            AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
+            List<DevopsEnvPodDTO> devopsEnvPodDTOS = new ArrayList<>();
             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                // 添加pod运行统计
+                devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
+
                 devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
+                // 添加pod运行统计
+                devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
                 DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
                 if (!ObjectUtils.isEmpty(deploymentDTO)) {
                     devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
                 }
+            }
+            calculatePodStatus(devopsEnvPodDTOS, detailVO);
+            if (!ObjectUtils.isEmpty(detailVO)) {
+                devopsDeployAppCenterVO.setPodCount(detailVO.getPodCount());
+                devopsDeployAppCenterVO.setPodRunningCount(detailVO.getPodRunningCount());
             }
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
