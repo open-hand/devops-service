@@ -20,33 +20,24 @@ public class JarDeployVO {
     @Encrypt
     @ApiModelProperty("主机id")
     private Long hostId;
-
     /**
      * {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
     @ApiModelProperty("部署来源")
     private String sourceType;
-
     @ApiModelProperty("应用名")
     private String appName;
-
     @ApiModelProperty("应用编码")
     private String appCode;
-
     @ApiModelProperty("来源配置")
     private String sourceConfig;
-
-    /**
-     * 部署对象id
-     */
-    private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
-
     @ApiModelProperty("部署values")
     @NotNull(message = "error.value.is.null")
     private String value;
 
+    @ApiModelProperty("部署对象信息")
+    private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
     private FileInfoVO fileInfoVO;
-
     private ProdJarInfoVO prodJarInfoVO;
 
     @ApiModelProperty("部署配置文件列表")
