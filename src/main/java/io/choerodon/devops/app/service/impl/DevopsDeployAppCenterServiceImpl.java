@@ -112,11 +112,11 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public void checkNameAndCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name, String code) {
-        if (checkNameUnique(projectId, envId, rdupmType, objectId, name)) {
+        if (!checkNameUnique(projectId, envId, rdupmType, objectId, name)) {
             throw new CommonException("error.env.app.center.name.exist");
         }
 
-        if (checkCodeUnique(projectId, envId, rdupmType, objectId, code)) {
+        if (!checkCodeUnique(projectId, envId, rdupmType, objectId, code)) {
             throw new CommonException("error.env.app.center.code.exist");
         }
     }
