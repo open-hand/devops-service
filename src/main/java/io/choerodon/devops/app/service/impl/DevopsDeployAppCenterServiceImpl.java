@@ -153,8 +153,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                     devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
                 }
             }
-            devopsDeployAppCenterVO.setPodCount(detailVO.getPodCount());
-            devopsDeployAppCenterVO.setPodRunningCount(detailVO.getPodRunningCount());
+            if (!ObjectUtils.isEmpty(detailVO)) {
+                devopsDeployAppCenterVO.setPodCount(detailVO.getPodCount());
+                devopsDeployAppCenterVO.setPodRunningCount(detailVO.getPodRunningCount());
+            }
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;
