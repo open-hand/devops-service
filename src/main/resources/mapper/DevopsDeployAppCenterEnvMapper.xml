@@ -65,9 +65,8 @@
     <select id="checkNameUnique" resultType="java.lang.Boolean">
         SELECT count(*) > 0
         FROM devops_deploy_app_center_env ddace
-        AND ddace.env_id = #{envId, jdbcType=BIGINT}
+        WHERE ddace.env_id = #{envId, jdbcType=BIGINT}
         AND ddace.name = #{name, jdbcType=VARCHAR})
-        <if test="rdupmType != null and rdupmType != ''">
             AND ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
         </if>
         <if test="objectId != null">
@@ -77,7 +76,8 @@
     <select id="checkCodeUnique" resultType="java.lang.Boolean">
         SELECT count(*) > 0
         FROM devops_deploy_app_center_env ddace
-        AND ddace.env_id = #{envId, jdbcType=BIGINT}
+        WHERE
+        ddace.env_id = #{envId, jdbcType=BIGINT}
         AND ddace.code = #{code, jdbcType=VARCHAR})
         <if test="rdupmType != null and rdupmType != ''">
             AND ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
