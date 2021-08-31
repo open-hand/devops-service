@@ -93,7 +93,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     @Transactional
     @Override
-    public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType) {
+    public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer) {
         //1. 查询校验环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvId());
 
@@ -102,7 +102,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         devopsDeployGroupVO.setProjectId(projectId);
         // 3.校验配置
-        validateConfig(devopsDeployGroupVO);
+        validateConfig(devopsDeployGroupVO, onlyForContainer);
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsDeployGroupVO.getProjectId());
 
@@ -136,12 +136,30 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         } else {
             // 更新应用记录
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppCode());
-            devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getAppName());
-            devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+            // 如果名称发生变化，更新名称
+            if (!devopsDeployAppCenterEnvDTO.getName().equals(devopsDeployGroupVO.getAppName())) {
+                devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getAppName());
+                devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+            }
         }
     }
 
-    public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {
+    @Transactional
+    @Override
+    public void updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO) {
+        // 设置appConfig
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployGroupVO.getInstanceId());
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(devopsDeploymentDTO.getInstanceId());
+
+        devopsDeployGroupVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(), DevopsDeployGroupAppConfigVO.class));
+        devopsDeployGroupVO.setAppName(devopsDeployAppCenterEnvDTO.getName());
+        devopsDeployGroupVO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
+
+        createOrUpdate(projectId, devopsDeployGroupVO, MiscConstants.UPDATE_TYPE, true);
+    }
+
+    public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {
         V1beta2Deployment deployment = new V1beta2Deployment();
         deployment.setKind(DEPLOYMENT.getType());
         deployment.setApiVersion("apps/v1");
@@ -162,7 +180,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
     }
 
-    private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
+    private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
         // 设置名称、labels、annotations
         V1ObjectMeta metadata = new V1ObjectMeta();
@@ -252,7 +271,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return deployment;
     }
 
-    private V1beta2Deployment addContainerConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
+    private V1beta2Deployment addContainerConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
         List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = devopsDeployGroupVO.getContainerConfig();
         List<V1Container> containers = new ArrayList<>();
         boolean hasJarRdupm = false;
@@ -323,27 +343,47 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      *
      * @param devopsDeployGroupVO
      */
-    private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO) {
-        DevopsDeployGroupAppConfigVO appConfig = devopsDeployGroupVO.getAppConfig();
-
-        appConfig.getLabels().forEach((key, value) -> {
-            if (!K8sUtil.LABEL_NAME_PATTERN.matcher(key).matches()) {
-                throw new CommonException("error.app.config.label.name.illegal");
+    private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO, boolean onlyForContainer) {
+        // 如果不仅是更新容器，还要更新应用配置以及应用名称，将进行以下校验
+        if (!onlyForContainer) {
+            if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
+                throw new CommonException("error.app.instance.name.null");
             }
-        });
 
-        appConfig.getAnnotations().forEach((key, value) -> {
-            if (!K8sUtil.ANNOTATION_NAME_PATTERN.matcher(key).matches()) {
-                throw new CommonException("error.app.config.annotation.name.illegal");
+            if (devopsDeployGroupVO.getAppName().length() < 1 || devopsDeployGroupVO.getAppName().length() > 64) {
+                throw new CommonException("error.env.app.center.name.length");
             }
-        });
 
-        if (!StringUtils.isEmpty(appConfig.getNameServers()) && appConfig.getNameServers().split(SEPARATOR).length > 3) {
-            throw new CommonException("error.app.config.nameservers.length");
-        }
+            if (StringUtils.isEmpty(devopsDeployGroupVO.getAppCode())) {
+                throw new CommonException("error.app.instance.code.null");
+            }
 
-        if (!StringUtils.isEmpty(appConfig.getSearches()) && appConfig.getSearches().split(SEPARATOR).length > 6) {
-            throw new CommonException("error.app.config.searches.length");
+            if (devopsDeployGroupVO.getAppCode().length() < 1 || devopsDeployGroupVO.getAppCode().length() > 64) {
+                throw new CommonException("error.env.app.center.code.length");
+            }
+
+
+            DevopsDeployGroupAppConfigVO appConfig = devopsDeployGroupVO.getAppConfig();
+
+            appConfig.getLabels().forEach((key, value) -> {
+                if (!K8sUtil.LABEL_NAME_PATTERN.matcher(key).matches()) {
+                    throw new CommonException("error.app.config.label.name.illegal");
+                }
+            });
+
+            appConfig.getAnnotations().forEach((key, value) -> {
+                if (!K8sUtil.ANNOTATION_NAME_PATTERN.matcher(key).matches()) {
+                    throw new CommonException("error.app.config.annotation.name.illegal");
+                }
+            });
+
+            if (!StringUtils.isEmpty(appConfig.getNameServers()) && appConfig.getNameServers().split(SEPARATOR).length > 3) {
+                throw new CommonException("error.app.config.nameservers.length");
+            }
+
+            if (!StringUtils.isEmpty(appConfig.getSearches()) && appConfig.getSearches().split(SEPARATOR).length > 6) {
+                throw new CommonException("error.app.config.searches.length");
+            }
         }
 
         List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOList = devopsDeployGroupVO.getContainerConfig();
@@ -462,7 +502,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      * @param wgetCommandSB
      * @return
      */
-    V1Container processJarConfig(ProjectDTO projectDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, StringBuilder wgetCommandSB) {
+    V1Container processJarConfig(ProjectDTO projectDTO, DevopsDeployGroupContainerConfigVO
+            devopsDeployGroupContainerConfigVO, V1Container v1Container, StringBuilder wgetCommandSB) {
         // 处理用户上传的jar
         if (AppSourceType.UPLOAD.getValue().equals(devopsDeployGroupContainerConfigVO.getSourceType())) {
             wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarDeployVO().getFileInfoVO().getJarFileUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
@@ -499,7 +540,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      * @param v1Container
      * @return
      */
-    private V1Container processImageConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container v1Container, List<V1LocalObjectReference> imagePullSecrets) {
+    private V1Container processImageConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupContainerConfigVO devopsDeployGroupContainerConfigVO, V1Container
+                                                   v1Container, List<V1LocalObjectReference> imagePullSecrets) {
         DevopsDeployGroupDockerDeployVO dockerDeployVO = devopsDeployGroupContainerConfigVO.getDockerDeployVO();
 
         DockerDeployDTO dockerDeployDTO = createDockerDeployDTO(projectDTO, devopsEnvironmentDTO, dockerDeployVO);
@@ -577,7 +620,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return jarPullInfoDTO;
     }
 
-    private DockerDeployDTO createDockerDeployDTO(ProjectDTO projectDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsDeployGroupDockerDeployVO dockerDeployVO) {
+    private DockerDeployDTO createDockerDeployDTO(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupDockerDeployVO dockerDeployVO) {
         DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
         DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO();
         if (isMarketOrHzero(dockerDeployVO)) {
@@ -620,7 +664,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return imageTagVo;
     }
 
-    private DockerPullAccountDTO getShareServiceDockerPullAccount(AppServiceDTO appServiceDTO, AppServiceVersionDTO appServiceVersionDTO) {
+    private DockerPullAccountDTO getShareServiceDockerPullAccount(AppServiceDTO appServiceDTO, AppServiceVersionDTO
+            appServiceVersionDTO) {
         DevopsConfigDTO devopsConfigDTO;
         if (appServiceVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
@@ -658,7 +703,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 || AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType());
     }
 
-    private MarketServiceDeployObjectVO getMarketServiceDeployObjectVO(Long projectId, DockerDeployVO dockerDeployVO) {
+    private MarketServiceDeployObjectVO getMarketServiceDeployObjectVO(Long projectId, DockerDeployVO
+            dockerDeployVO) {
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(dockerDeployVO.getDeployObjectId()));
         if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
             throw new CommonException("error.harbor.deploy.object.not.exist");

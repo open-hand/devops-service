@@ -100,16 +100,16 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
 
     @Override
-   public  Boolean checkNameUnique(Long projectId, Long envId, String name){
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO=new DevopsDeployAppCenterEnvDTO();
+    public Boolean checkNameUnique(Long projectId, Long envId, String name) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
         devopsDeployAppCenterEnvDTO.setName(name);
         devopsDeployAppCenterEnvDTO.setEnvId(envId);
         return devopsDeployAppCenterEnvMapper.selectCount(devopsDeployAppCenterEnvDTO) == 0;
     }
 
     @Override
-    public  Boolean checkCodeUnique(Long projectId, Long envId, String code){
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO=new DevopsDeployAppCenterEnvDTO();
+    public Boolean checkCodeUnique(Long projectId, Long envId, String code) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
         devopsDeployAppCenterEnvDTO.setName(code);
         devopsDeployAppCenterEnvDTO.setEnvId(envId);
         return devopsDeployAppCenterEnvMapper.selectCount(devopsDeployAppCenterEnvDTO) == 0;
@@ -224,7 +224,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             // 设置deployment的状态、appConfig、containerConfig
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(devopsDeploymentDTO.getStatus());
-            detailVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(),DevopsDeployGroupAppConfigVO.class));
+            detailVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(), DevopsDeployGroupAppConfigVO.class));
             detailVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getContainerConfig(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
             }));
         }
@@ -397,5 +397,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     public void deleteByEnvIdAndObjectIdAndRdupmType(Long envId, Long objectId, String rdupmType) {
         devopsDeployAppCenterEnvMapper.deleteByEnvIdAndObjectIdAndRdupmType(envId, objectId, rdupmType);
+    }
+
+    @Override
+    public DevopsDeployAppCenterEnvDTO selectByPrimaryKey(Long id) {
+        return devopsDeployAppCenterEnvMapper.selectByPrimaryKey(id);
     }
 }

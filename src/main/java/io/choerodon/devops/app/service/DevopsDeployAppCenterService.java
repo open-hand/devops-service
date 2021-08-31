@@ -88,4 +88,5 @@ public interface DevopsDeployAppCenterService {
     void fixData();
 
 
+    DevopsDeployAppCenterEnvDTO selectByPrimaryKey(Long id);
 }

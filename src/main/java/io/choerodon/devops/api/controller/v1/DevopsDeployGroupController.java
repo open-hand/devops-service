@@ -33,7 +33,19 @@ public class DevopsDeployGroupController {
             @ApiParam(value = "部署组信息")
             @RequestBody DevopsDeployGroupVO devopsDeployGroupVO
     ) {
-        devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type);
+        devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type, false);
+        return Results.success();
+    }
+
+    @ApiOperation("更新部署组容器配置")
+    @PostMapping("/update_container")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    public ResponseEntity<Void> updateContainer(
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "部署组信息")
+            @RequestBody DevopsDeployGroupVO devopsDeployGroupVO
+    ) {
+        devopsDeployGroupService.updateContainer(projectId, devopsDeployGroupVO);
         return Results.success();
     }
 }
