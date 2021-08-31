@@ -37,6 +37,10 @@ public class JarDeployVO {
 
     @ApiModelProperty("部署对象信息")
     private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
+    @Encrypt
+    private Long mktAppVersionId;
+    @Encrypt
+    private Long deployObjectId;
     private FileInfoVO fileInfoVO;
     private ProdJarInfoVO prodJarInfoVO;
 
@@ -131,5 +135,21 @@ public class JarDeployVO {
 
     public void setConfigSettingVOS(List<ConfigSettingVO> configSettingVOS) {
         this.configSettingVOS = configSettingVOS;
+    }
+
+    public Long getMktAppVersionId() {
+        return mktAppVersionId;
+    }
+
+    public void setMktAppVersionId(Long mktAppVersionId) {
+        this.mktAppVersionId = mktAppVersionId;
+    }
+
+    public Long getDeployObjectId() {
+        return deployObjectId;
+    }
+
+    public void setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
     }
 }
