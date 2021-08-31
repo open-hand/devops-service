@@ -64,7 +64,7 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
     public void updateStatusById(Long id, HzeroDeployDetailsStatusEnum status) {
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsMapper.selectByPrimaryKey(id);
         devopsHzeroDeployDetailsDTO.setStatus(status.value());
-        if (Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.SUCCESS.value()) || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.FAILED.value())) {
+        if (Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.SUCCESS.value()) || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.FAILED.value()) || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.CANCELED.value())) {
             devopsHzeroDeployDetailsDTO.setEndTime(new Date());
         }
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
