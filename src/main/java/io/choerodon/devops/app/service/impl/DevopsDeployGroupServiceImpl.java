@@ -461,15 +461,15 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
             requests.put("cpu", new Quantity(convertCpuResource(devopsDeployGroupContainerConfigVO.getRequestCpu()), Quantity.Format.BINARY_SI));
         }
-        if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
+        if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestMemory())) {
             requests.put("memory", new Quantity(convertMemoryResource(devopsDeployGroupContainerConfigVO.getRequestMemory()), Quantity.Format.BINARY_SI));
         }
 
         Map<String, Quantity> limits = new HashMap<>();
-        if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
+        if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getLimitCpu())) {
             limits.put("cpu", new Quantity(convertCpuResource(devopsDeployGroupContainerConfigVO.getLimitCpu()), Quantity.Format.BINARY_SI));
         }
-        if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getRequestCpu())) {
+        if (!StringUtils.isEmpty(devopsDeployGroupContainerConfigVO.getLimitMemory())) {
             limits.put("memory", new Quantity(convertMemoryResource(devopsDeployGroupContainerConfigVO.getLimitMemory()), Quantity.Format.BINARY_SI));
         }
         resourceRequirements.setLimits(limits);
