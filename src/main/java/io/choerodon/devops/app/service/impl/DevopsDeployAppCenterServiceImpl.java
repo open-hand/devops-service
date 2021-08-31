@@ -102,12 +102,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public Boolean checkNameUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name) {
-        return devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, envId, name);
+        return !devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, envId, name);
     }
 
     @Override
     public Boolean checkCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String code) {
-        return devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, envId, code);
+        return !devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, envId, code);
     }
 
     @Override
