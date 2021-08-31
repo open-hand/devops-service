@@ -112,4 +112,37 @@ public class DevopsDeploymentController {
         return new ResponseEntity<>(devopsDeploymentService.getInstanceResourceDetailJson(deploymentId), HttpStatus.OK);
     }
 
+    /**
+     * 停止deployment资源(数量变为0)
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "停止deployment资源(pod数量变为0)")
+    @PutMapping(value = "/{deployment_id}/stop")
+    public ResponseEntity<Void> stop(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "deployment_id") Long deploymentId
+    ) {
+        devopsDeploymentService.stopDeployment(projectId, deploymentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 启用deployment资源(数量变为1)
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "启用deployment资源(pod数量变为1)")
+    @PutMapping(value = "/{deployment_id}/start")
+    public ResponseEntity<Void> start(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "deployment_id") Long deploymentId
+    ) {
+        devopsDeploymentService.startDeployment(projectId, deploymentId);
+        return ResponseEntity.noContent().build();
+    }
 }

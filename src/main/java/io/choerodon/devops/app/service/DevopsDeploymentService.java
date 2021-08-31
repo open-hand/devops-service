@@ -25,4 +25,7 @@ public interface DevopsDeploymentService extends WorkloadBaseService<DevopsDeplo
 
     InstanceControllerDetailVO getInstanceResourceDetailJson(Long deploymentId);
 
+    void startDeployment(Long projectId, Long deploymentId);
+
+    void stopDeployment(Long projectId, Long deploymentId);
 }
