@@ -392,6 +392,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOList = devopsDeployGroupVO.getContainerConfig();
 
         List<String> existPorts = new ArrayList<>();
+        List<String> existContainerNames = new ArrayList<>();
         devopsDeployGroupContainerConfigVOList.forEach(containerConfig -> {
 
             if (containerConfig.getName().length() > 64) {
@@ -401,6 +402,12 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             if (!K8sUtil.NAME_PATTERN.matcher(containerConfig.getName()).matches()) {
                 throw new CommonException("error.container.config.name.illegal");
             }
+
+            if (existContainerNames.contains(containerConfig.getName())) {
+                throw new CommonException("error.container.name.exists");
+            }
+
+            existContainerNames.add(containerConfig.getName());
 
             if (!StringUtils.isEmpty(containerConfig.getRequestCpu()) && !StringUtils.isEmpty(containerConfig.getLimitCpu())) {
                 if (Integer.parseInt(containerConfig.getRequestCpu()) > Integer.parseInt(containerConfig.getLimitCpu())) {
