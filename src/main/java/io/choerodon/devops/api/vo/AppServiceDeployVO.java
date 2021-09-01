@@ -75,6 +75,31 @@ public class AppServiceDeployVO {
     @ApiModelProperty("服务来源")
     private String appServiceSource;
 
+    public AppServiceDeployVO() {
+    }
+
+    public AppServiceDeployVO(Long appServiceId,
+                              Long appServiceVersionId,
+                              Long environmentId,
+                              String values,
+                              Long valueId,
+                              String instanceName,
+                              Long instanceId,
+                              String type,
+                              String appName,
+                              String appCode) {
+        this.appServiceId = appServiceId;
+        this.appServiceVersionId = appServiceVersionId;
+        this.environmentId = environmentId;
+        this.values = values;
+        this.valueId = valueId;
+        this.instanceName = instanceName;
+        this.instanceId = instanceId;
+        this.type = type;
+        this.appName = appName;
+        this.appCode = appCode;
+    }
+
     public String getAppServiceSource() {
         return appServiceSource;
     }

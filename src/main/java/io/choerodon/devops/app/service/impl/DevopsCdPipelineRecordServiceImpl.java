@@ -43,6 +43,7 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.pipeline.DevopsDeployInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
@@ -126,12 +127,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdAuditService devopsCdAuditService;
 
     @Autowired
-    private TransactionalProducer producer;
-
-    @Autowired
-    private DevopsCdStageMapper devopsCdStageMapper;
-
-    @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     @Autowired
@@ -182,6 +177,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -1007,6 +1004,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdJobRecordVO.setCdAuto(cdAuto);
                     }
                 }
+                // 计算实例是否存在，存在则更新，不存在新建
+                DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordVO.getMetadata(), DevopsDeployInfoVO.class);
+                String deployType = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployInfoVO.getEnvId(), devopsDeployInfoVO.getCode()) == null ? DeployTypeEnum.CREATE.value() : DeployTypeEnum.UPDATE.value();
+                devopsDeployInfoVO.setDeployType(deployType);
+
             }
             //如果是人工审核返回审核信息
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {

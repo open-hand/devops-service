@@ -46,6 +46,25 @@ public class DevopsDeployGroupVO {
     @JsonIgnore
     private String containerConfigJson;
 
+    public DevopsDeployGroupVO() {
+    }
+
+    public DevopsDeployGroupVO(String appName,
+                               String appCode,
+                               Long projectId,
+                               Long envId,
+                               DevopsDeployGroupAppConfigVO appConfig,
+                               List<DevopsDeployGroupContainerConfigVO> containerConfig,
+                               Long instanceId) {
+        this.appName = appName;
+        this.appCode = appCode;
+        this.projectId = projectId;
+        this.envId = envId;
+        this.appConfig = appConfig;
+        this.containerConfig = containerConfig;
+        this.instanceId = instanceId;
+    }
+
     public void setAppName(String appName) {
         this.appName = appName;
     }
