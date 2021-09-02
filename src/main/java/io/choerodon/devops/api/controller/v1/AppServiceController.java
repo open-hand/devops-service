@@ -453,7 +453,6 @@ public class AppServiceController {
     }
 
 
-
     /**
      * 校验chart仓库配置信息是否正确
      *
@@ -872,9 +871,23 @@ public class AppServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Validated List<AppServiceTransferVO> appServiceTransferVOList
-            ) {
+    ) {
         applicationServiceService.batchTransfer(projectId, appServiceTransferVOList);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "hand-开放平台，校验名称和code是否重复")
+    @GetMapping(value = "/open/check_name_and_code")
+    public ResponseEntity<CheckAppServiceCodeAndNameVO> checkNameAndCode(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务名称")
+            @RequestParam(required = false) String name,
+            @ApiParam(value = "应用服务code")
+            @RequestParam(required = false) String code) {
+        return ResponseEntity.ok(applicationServiceService.checkNameAndCode(projectId, name, code));
     }
 }
 

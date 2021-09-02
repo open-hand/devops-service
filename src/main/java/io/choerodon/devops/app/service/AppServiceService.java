@@ -583,4 +583,6 @@ public interface AppServiceService {
 
     void createAppServiceForTransfer(AppServiceTransferVO appServiceTransferVO);
 
+    CheckAppServiceCodeAndNameVO checkNameAndCode(Long projectId, String code, String name);
+
 }
