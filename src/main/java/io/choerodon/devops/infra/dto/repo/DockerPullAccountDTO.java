@@ -19,6 +19,9 @@ public class DockerPullAccountDTO {
     @ApiModelProperty("拉取密码")
     private String pullPassword;
 
+    @ApiModelProperty("集群中拉取镜像时的secretName")
+    private String secretCode;
+
     public DockerPullAccountDTO() {
     }
 
@@ -52,6 +55,15 @@ public class DockerPullAccountDTO {
 
     public DockerPullAccountDTO setPullPassword(String pullPassword) {
         this.pullPassword = pullPassword;
+        return this;
+    }
+
+    public String getSecretCode() {
+        return secretCode;
+    }
+
+    public DockerPullAccountDTO setSecretCode(String secretCode) {
+        this.secretCode = secretCode;
         return this;
     }
 }

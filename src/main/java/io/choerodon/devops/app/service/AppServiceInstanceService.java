@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+import org.hzero.core.util.Pair;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.MarketInstanceSagaPayload;
@@ -447,4 +450,10 @@ public interface AppServiceInstanceService {
     Integer countInstance();
 
     List<AppServiceInstanceDTO> listInstances();
+
+    String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO);
+
+    String makeMarketSecret(Long projectId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO);
 }
