@@ -2529,7 +2529,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @return secret的code(如果需要)
      */
     @Nullable
-    private String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO
+    @Override
+    public String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO
             devopsEnvironmentDTO) {
         return getSecret(appServiceDTO, appServiceVersionId, devopsEnvironmentDTO, null);
     }
@@ -2615,7 +2616,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return secretCode;
     }
 
-    private String makeMarketSecret(Long projectId, DevopsEnvironmentDTO
+    @Override
+    public String makeMarketSecret(Long projectId, DevopsEnvironmentDTO
             devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
         // 先处理chart的认证信息
         sendChartMuseumAuthForMarket(devopsEnvironmentDTO.getClusterId(), marketServiceDeployObjectVO.getMarketChartConfigVO());

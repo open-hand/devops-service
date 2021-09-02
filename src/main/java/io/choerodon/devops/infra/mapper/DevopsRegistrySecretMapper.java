@@ -18,4 +18,6 @@ public interface DevopsRegistrySecretMapper extends BaseMapper<DevopsRegistrySec
             @Param("clusterId") Long clusterId,
             @Param("namespace") String namespace,
             @Param("project_id") Long projectId);
+
+    DevopsRegistrySecretDTO queryCustomRegistry(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("namespace") String namespace, @Param("clusterId") Long clusterId, @Param("secretDetail") String secretDetail);
 }
