@@ -3196,6 +3196,18 @@ public class AppServiceServiceImpl implements AppServiceService {
         baseUpdate(appServiceDTO);
     }
 
+    @Override
+    public CheckAppServiceCodeAndNameVO checkNameAndCode(Long projectId, String code, String name) {
+        CheckAppServiceCodeAndNameVO resultVO = new CheckAppServiceCodeAndNameVO();
+        if (!StringUtils.isEmpty(code)) {
+            resultVO.setCode(isCodeUnique(projectId, code));
+        }
+        if (!StringUtils.isEmpty(name)) {
+            resultVO.setCode(isNameUnique(projectId, name));
+        }
+        return resultVO;
+    }
+
     @Saga(code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
             description = "迁移应用服务",
             inputSchemaClass = AppServiceTransferVO.class)
