@@ -28,13 +28,7 @@ public interface DevopsRegistrySecretService {
 
     DevopsRegistrySecretDTO baseQuery(Long devopsRegistrySecretId);
 
-    /**
-     * 查询没有config_id为null的CUSTOM_REPO类型的secret
-     *
-     * @param devopsRegistrySecretDTO
-     * @return
-     */
-    DevopsRegistrySecretDTO queryCustomRegistry(Long projectId, Long envId, String namespace, Long clusterId, String secretDetail);
+    DevopsRegistrySecretDTO baseQuery(DevopsRegistrySecretDTO devopsRegistrySecretDTO);
 
     DevopsRegistrySecretDTO baseUpdate(DevopsRegistrySecretDTO devopsRegistrySecretDTO);
 
