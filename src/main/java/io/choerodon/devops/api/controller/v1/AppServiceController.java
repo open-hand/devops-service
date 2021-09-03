@@ -880,14 +880,11 @@ public class AppServiceController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "hand-开放平台，校验名称和code是否重复")
     @GetMapping(value = "/open/check_name_and_code")
-    public ResponseEntity<CheckAppServiceCodeAndNameVO> checkNameAndCode(
+    public ResponseEntity<List<CheckAppServiceCodeAndNameVO>> checkNameAndCode(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用服务名称")
-            @RequestParam(required = false) String name,
-            @ApiParam(value = "应用服务code")
-            @RequestParam(required = false) String code) {
-        return ResponseEntity.ok(applicationServiceService.checkNameAndCode(projectId, name, code));
+            @RequestBody List<CheckAppServiceCodeAndNameVO> codeAndNameVOList) {
+        return ResponseEntity.ok(applicationServiceService.checkNameAndCode(projectId, codeAndNameVOList));
     }
 }
 

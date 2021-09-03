@@ -9,23 +9,41 @@ import io.swagger.annotations.ApiModelProperty;
  * @Modified By:
  */
 public class CheckAppServiceCodeAndNameVO {
+    private String serviceCode;
+    private String serviceName;
     @ApiModelProperty("true:校验通过，false:已经存在该code，null:传参为null，没有校验")
-    private Boolean code;
-    private Boolean name;
+    private Boolean codeEnabledFlag;
+    private Boolean nameEnabledFlag;
 
-    public Boolean getCode() {
-        return code;
+    public String getServiceCode() {
+        return serviceCode;
     }
 
-    public void setCode(Boolean code) {
-        this.code = code;
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
     }
 
-    public Boolean getName() {
-        return name;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public void setName(Boolean name) {
-        this.name = name;
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public Boolean getCodeEnabledFlag() {
+        return codeEnabledFlag;
+    }
+
+    public void setCodeEnabledFlag(Boolean codeEnabledFlag) {
+        this.codeEnabledFlag = codeEnabledFlag;
+    }
+
+    public Boolean getNameEnabledFlag() {
+        return nameEnabledFlag;
+    }
+
+    public void setNameEnabledFlag(Boolean nameEnabledFlag) {
+        this.nameEnabledFlag = nameEnabledFlag;
     }
 }
