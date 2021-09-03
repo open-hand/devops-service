@@ -29,7 +29,7 @@ public class OpenAppServiceController {
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "hand-开放平台，校验名称和code是否重复")
-    @GetMapping(value = "/open/check_name_and_code")
+    @PostMapping(value = "/open/check_name_and_code")
     public ResponseEntity<List<CheckAppServiceCodeAndNameVO>> checkNameAndCode(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -39,7 +39,7 @@ public class OpenAppServiceController {
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "hand-开放平台，创建应用服务")
-    @GetMapping(value = "/open/create")
+    @PostMapping(value = "/open/create")
     public ResponseEntity<OpenAppServiceReqVO> openCreateAppService(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
