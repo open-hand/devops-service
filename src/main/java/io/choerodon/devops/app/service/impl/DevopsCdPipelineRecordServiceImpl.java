@@ -468,9 +468,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             artifactId = jarDeploy.getArtifactId();
             versionRegular = jarDeploy.getVersionRegular();
         } else {
-            if (ObjectUtils.isEmpty(cdPipelineRecordDTO.getGitlabPipelineId())) {
-                throw new CommonException("error.no.gitlab.pipeline.id");
-            }
             CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getGitlabPipelineId(), jarDeploy.getPipelineTask());
             nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
             groupId = ciPipelineMavenDTO.getGroupId();

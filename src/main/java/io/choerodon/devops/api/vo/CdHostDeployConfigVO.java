@@ -12,9 +12,18 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("主机详情")
     private HostConnectionVO hostConnectionVO;
 
+    @ApiModelProperty("应用名称")
+    private String appName;
+    @ApiModelProperty("应用编码")
+    private String appCode;
+
     @ApiModelProperty("主机部署类型 jar/customize")
     // HostDeployType
     private String hostDeployType;
+
+    @Encrypt
+    @ApiModelProperty("主机ID")
+    private Long hostId;
 
     @ApiModelProperty("jar部署详情")
     private JarDeploy jarDeploy;
@@ -145,6 +154,22 @@ public class CdHostDeployConfigVO {
         }
     }
 
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
     public static class Customize {
 
         @ApiModelProperty("部署values")
@@ -157,6 +182,14 @@ public class CdHostDeployConfigVO {
         public void setValues(String values) {
             this.values = values;
         }
+    }
+
+    public Long getHostId() {
+        return hostId;
+    }
+
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
     }
 
     public String getHostDeployType() {
