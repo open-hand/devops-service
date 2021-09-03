@@ -3197,15 +3197,16 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public CheckAppServiceCodeAndNameVO checkNameAndCode(Long projectId, String code, String name) {
-        CheckAppServiceCodeAndNameVO resultVO = new CheckAppServiceCodeAndNameVO();
-        if (!StringUtils.isEmpty(code)) {
-            resultVO.setCode(isCodeUnique(projectId, code));
-        }
-        if (!StringUtils.isEmpty(name)) {
-            resultVO.setCode(isNameUnique(projectId, name));
-        }
-        return resultVO;
+    public List<CheckAppServiceCodeAndNameVO> checkNameAndCode(Long projectId, List<CheckAppServiceCodeAndNameVO> codeAndNameVOList) {
+        codeAndNameVOList.forEach(t -> {
+            if (!StringUtils.isEmpty(t.getServiceCode())) {
+                t.setCodeEnabledFlag(isCodeUnique(projectId, t.getServiceCode()));
+            }
+            if (!StringUtils.isEmpty(t.getServiceName())) {
+                t.setNameEnabledFlag(isNameUnique(projectId, t.getServiceName()));
+            }
+        });
+        return codeAndNameVOList;
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
