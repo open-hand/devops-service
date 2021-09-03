@@ -40,6 +40,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
+import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -111,6 +112,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsHostAppInstanceService devopsHostAppInstanceService;
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
@@ -133,13 +136,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         deploySourceVO.setProjectName(projectDTO.getName());
 
 
-        String encodeValue = jarDeployVO.getValue();
-        try {
-            jarDeployVO.setValue(new String(decoder.decodeBuffer(encodeValue), StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new CommonException("decode.values.failed", e);
-        }
-//        List<AppServiceDTO> appServiceDTOList;
+//        String encodeValue = jarDeployVO.getValue();
+//        try {
+//            jarDeployVO.setValue(new String(decoder.decodeBuffer(encodeValue), StandardCharsets.UTF_8));
+//        } catch (IOException e) {
+//            throw new CommonException("decode.values.failed", e);
+//        }
         String deployObjectName = null;
         String deployVersion = null;
 
@@ -184,15 +186,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             nexusMavenRepoDTO.setNePullUserId(marketMavenConfigVO.getPullUserName());
             nexusMavenRepoDTO.setNePullUserPassword(marketMavenConfigVO.getPullPassword());
             mavenRepoDTOList.add(nexusMavenRepoDTO);
-//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
-//                AppServiceDTO appServiceDTO = new AppServiceDTO();
-//                appServiceDTO.setId(marketServiceDeployObjectVO.getMarketServiceId());
-//                appServiceDTO.setName(marketServiceDeployObjectVO.getMarketServiceName());
-//                appServiceDTOList = Arrays.asList(appServiceDTO);
-//            } else {
-//                appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, jarReleaseConfigVO.getGroupId(), jarReleaseConfigVO.getArtifactId());
-
-//            }
 
             deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
             deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
@@ -224,7 +217,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     .append(BaseConstants.Symbol.COLON)
                     .append(artifactId)
                     .toString();
-//            appServiceDTOList = appServiceService.listByProjectIdAndGAV(projectId, groupId, artifactId);
             // 添加jar包下载信息
             jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
             jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
@@ -240,39 +232,38 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     jarDeployVO.getAppCode(),
                     jarDeployVO.getSourceType(),
                     RdupmTypeEnum.JAR.value(),
-                    OperationTypeEnum.CREATE_APP.value(),
-                    calculateSourceConfig(jarDeployVO),
-                    encodeValue,
-                    groupId,
-                    artifactId,
-                    version);
+                    OperationTypeEnum.CREATE_APP.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
+                    hostId,
+                    devopsHostAppDTO.getId(),
+                    jarDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
+                    jarDeployVO.getSourceType(),
+                    calculateSourceConfig(jarDeployVO),
+                    jarDeployVO.getPreCommand(),
+                    jarDeployVO.getRunCommand(),
+                    jarDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setGroupId(groupId);
+            devopsHostAppInstanceDTO.setArtifactId(artifactId);
+            devopsHostAppInstanceDTO.setVersion(version);
 
+            devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
-            devopsHostAppDTO.setValue(encodeValue);
-            devopsHostAppDTO.setSourceConfig(calculateSourceConfig(jarDeployVO));
-            devopsHostAppDTO.setVersion(version);
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
-        }
-        // todo 新应用中心，不需要这块儿逻辑，先注释
-//        else {
-//            // 删除原有应用关联关系
-//            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsHostAppDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
-//        }
-//        // 有关联的应用，则保存关联关系
-//        if (!CollectionUtils.isEmpty(appServiceDTOList)) {
-//            Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-//            Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
-//            Long instanceId = devopsHostAppDTO.getId();
-//            appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
-//                    hostId,
-//                    appId,
-//                    jarDeployVO.getSourceType(),
-//                    instanceId,
-//                    HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
-//        }
 
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
+            String finalVersion = version;
+            devopsHostAppInstanceDTOS.forEach(devopsHostAppInstanceDTO -> {
+                devopsHostAppInstanceDTO.setPreCommand(jarDeployVO.getPreCommand());
+                devopsHostAppInstanceDTO.setRunCommand(jarDeployVO.getRunCommand());
+                devopsHostAppInstanceDTO.setPostCommand(jarDeployVO.getPostCommand());
+                devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
+                devopsHostAppInstanceDTO.setSourceConfig(calculateSourceConfig(jarDeployVO));
+                devopsHostAppInstanceDTO.setVersion(finalVersion);
+                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+            });
+        }
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),

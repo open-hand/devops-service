@@ -24,21 +24,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
             column(name: 'rdupm_type', type: 'VARCHAR(32)', remarks: '制品类型 jar') {
                 constraints(nullable: false)
             }
-            column(name: 'source_type', type: 'VARCHAR(32)', remarks: '部署来源') {
-                constraints(nullable: false)
-            }
-            column(name: 'source_config', type: 'VARCHAR(512)', remarks: '部署来源配置') {
-                constraints(nullable: false)
-            }
-
-            column(name: 'value', type: 'VARCHAR(512)', remarks: '部署命令') {
-                constraints(nullable: false)
-            }
-
-            column(name: 'status', type: 'VARCHAR(32)', remarks: '进程状态')
-            column(name: 'pid', type: 'VARCHAR(128)', remarks: '进程id')
-
-            column(name: 'ports', type: 'VARCHAR(128)', remarks: '占用端口')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -56,14 +41,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
         }
         createIndex(indexName: "idx_project_id", tableName: "devops_host_app") {
             column(name: "project_id")
-        }
-    }
-
-    changeSet(author: 'wanghao', id: '2021-08-24-add-column') {
-        addColumn(tableName: 'devops_host_app') {
-            column(name: 'group_id', type:  'varchar(512)', remarks: 'groupId', afterColumn: 'ports')
-            column(name: 'artifact_id', type:  'varchar(512)', remarks: 'artifactId', afterColumn: 'group_id')
-            column(name: 'version', type:  'varchar(512)', remarks: 'version', afterColumn: 'artifact_id')
         }
     }
 }

@@ -31,9 +31,13 @@ public class JarDeployVO {
     private String appCode;
     @ApiModelProperty("来源配置")
     private String sourceConfig;
-    @ApiModelProperty("部署values")
-    @NotNull(message = "error.value.is.null")
-    private String value;
+
+    @ApiModelProperty("前置命令")
+    private String preCommand;
+    @ApiModelProperty("运行命令")
+    private String runCommand;
+    @ApiModelProperty("后置命令")
+    private String postCommand;
 
     @ApiModelProperty("部署对象信息")
     private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
@@ -48,13 +52,14 @@ public class JarDeployVO {
     private List<ConfigSettingVO> configSettingVOS;
 
     public JarDeployVO() {
-        this.value = "";
     }
 
-    public JarDeployVO(String sourceType, String value, ProdJarInfoVO prodJarInfoVO) {
+    public JarDeployVO(String sourceType, String preCommand, String runCommand, String postCommand, ProdJarInfoVO prodJarInfoVO) {
         this.sourceType = sourceType;
-        this.value = value;
         this.prodJarInfoVO = prodJarInfoVO;
+        this.preCommand = preCommand;
+        this.runCommand = runCommand;
+        this.postCommand = postCommand;
     }
 
     public MarketDeployObjectInfoVO getMarketDeployObjectInfoVO() {
@@ -63,6 +68,30 @@ public class JarDeployVO {
 
     public void setMarketDeployObjectInfoVO(MarketDeployObjectInfoVO marketDeployObjectInfoVO) {
         this.marketDeployObjectInfoVO = marketDeployObjectInfoVO;
+    }
+
+    public String getPreCommand() {
+        return preCommand;
+    }
+
+    public void setPreCommand(String preCommand) {
+        this.preCommand = preCommand;
+    }
+
+    public String getRunCommand() {
+        return runCommand;
+    }
+
+    public void setRunCommand(String runCommand) {
+        this.runCommand = runCommand;
+    }
+
+    public String getPostCommand() {
+        return postCommand;
+    }
+
+    public void setPostCommand(String postCommand) {
+        this.postCommand = postCommand;
     }
 
     public FileInfoVO getFileInfoVO() {
@@ -95,14 +124,6 @@ public class JarDeployVO {
 
     public void setAppCode(String appCode) {
         this.appCode = appCode;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     public ProdJarInfoVO getProdJarInfoVO() {
