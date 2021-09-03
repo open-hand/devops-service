@@ -12,143 +12,15 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("主机详情")
     private HostConnectionVO hostConnectionVO;
 
-    @ApiModelProperty("主机部署类型 image/jar/customize")
+    @ApiModelProperty("主机部署类型 jar/customize")
     // HostDeployType
     private String hostDeployType;
-
-    @ApiModelProperty("镜像部署详情")
-    private ImageDeploy imageDeploy;
 
     @ApiModelProperty("jar部署详情")
     private JarDeploy jarDeploy;
 
     @ApiModelProperty("自定义部署customize详情")
     private Customize customize;
-
-    public static class ImageDeploy {
-        @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
-        private String deploySource;
-
-        @ApiModelProperty("流水线部署 流水线任务名称")
-        private String pipelineTask;
-
-        @ApiModelProperty("仓库名")
-        private String repoName;
-
-        @ApiModelProperty("仓库类型")
-        private String repoType;
-
-        @Encrypt
-        @ApiModelProperty("仓库Id")
-        private String repoId;
-
-        @ApiModelProperty("镜像名称")
-        private String imageName;
-
-        @Encrypt
-        @ApiModelProperty("镜像Id")
-        private Long imageId;
-
-        @ApiModelProperty("匹配类型")
-        private String matchType;
-
-        @ApiModelProperty("匹配内容")
-        private String matchContent;
-
-        @ApiModelProperty("部署values")
-        private String value;
-
-        @ApiModelProperty("容器名称")
-        private String containerName;
-
-        public String getDeploySource() {
-            return deploySource;
-        }
-
-        public void setDeploySource(String deploySource) {
-            this.deploySource = deploySource;
-        }
-
-        public String getPipelineTask() {
-            return pipelineTask;
-        }
-
-        public void setPipelineTask(String pipelineTask) {
-            this.pipelineTask = pipelineTask;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public String getRepoType() {
-            return repoType;
-        }
-
-        public void setRepoType(String repoType) {
-            this.repoType = repoType;
-        }
-
-        public String getRepoId() {
-            return repoId;
-        }
-
-        public void setRepoId(String repoId) {
-            this.repoId = repoId;
-        }
-
-        public String getRepoName() {
-            return repoName;
-        }
-
-        public void setRepoName(String repoName) {
-            this.repoName = repoName;
-        }
-
-        public String getImageName() {
-            return imageName;
-        }
-
-        public void setImageName(String imageName) {
-            this.imageName = imageName;
-        }
-
-        public String getMatchType() {
-            return matchType;
-        }
-
-        public void setMatchType(String matchType) {
-            this.matchType = matchType;
-        }
-
-        public String getMatchContent() {
-            return matchContent;
-        }
-
-        public void setMatchContent(String matchContent) {
-            this.matchContent = matchContent;
-        }
-
-        public String getContainerName() {
-            return containerName;
-        }
-
-        public void setContainerName(String containerName) {
-            this.containerName = containerName;
-        }
-
-        public Long getImageId() {
-            return imageId;
-        }
-
-        public void setImageId(Long imageId) {
-            this.imageId = imageId;
-        }
-    }
 
     public static class JarDeploy {
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
@@ -301,14 +173,6 @@ public class CdHostDeployConfigVO {
 
     public void setCustomize(Customize customize) {
         this.customize = customize;
-    }
-
-    public ImageDeploy getImageDeploy() {
-        return imageDeploy;
-    }
-
-    public void setImageDeploy(ImageDeploy imageDeploy) {
-        this.imageDeploy = imageDeploy;
     }
 
     public JarDeploy getJarDeploy() {
