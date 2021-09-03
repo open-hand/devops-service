@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.io.InputStream;
 import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
@@ -45,5 +46,22 @@ public class OpenAppServiceController {
             @ApiParam(value = "服务信息", required = true)
             @RequestBody @Validated OpenAppServiceReqVO openAppServiceReqVO) {
         return ResponseEntity.ok(applicationServiceService.openCreateAppService(projectId, openAppServiceReqVO));
+    }
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "hand-开放平台，创建应用服务")
+    @GetMapping(value = "/open/download_source")
+    public InputStream downloadArchiveByFormat(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "服务编码", required = true)
+            @RequestParam(value = "serviceCode") String serviceCode,
+            @ApiParam(value = "用户邮箱", required = true)
+            @RequestParam(value = "email") String email,
+            @ApiParam(value = "commitSha或者分支")
+            @RequestParam(value = "commitSha", required = false, defaultValue = "master") String commitSha,
+            @ApiParam(value = "服务编码")
+            @RequestParam(value = "format", required = false) String format) {
+        return applicationServiceService.downloadArchiveByFormat(projectId, serviceCode, email, commitSha, format);
     }
 }

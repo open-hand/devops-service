@@ -28,6 +28,8 @@ public class DevOpsAppServicePayload {
     private AppServiceDTO appServiceDTO;
     private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
 
+    private Boolean isOpen;
+
     public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
         return devopsUserPermissionVOS;
     }
@@ -147,5 +149,13 @@ public class DevOpsAppServicePayload {
     public DevOpsAppServicePayload setDate(Date date) {
         this.date = date;
         return this;
+    }
+
+    public Boolean getOpen() {
+        return isOpen;
+    }
+
+    public void setOpen(Boolean open) {
+        isOpen = open;
     }
 }

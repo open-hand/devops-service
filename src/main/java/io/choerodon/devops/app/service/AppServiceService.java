@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -587,5 +588,12 @@ public interface AppServiceService {
     List<CheckAppServiceCodeAndNameVO> checkNameAndCode(Long projectId, List<CheckAppServiceCodeAndNameVO> codeAndNameVOList);
 
     OpenAppServiceReqVO openCreateAppService(Long projectId, OpenAppServiceReqVO openAppServiceReqVO);
+
+    /**
+     * 提供开放平台需要源码下载接口
+     *
+     * @return
+     */
+    InputStream downloadArchiveByFormat(Long projectId, String serviceCode, String email, String commitSha, String format);
 
 }

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -515,4 +516,8 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
         throw new CommonException("error.transfer.projects");
     }
 
+    @Override
+    public InputStream downloadArchiveByFormat(Integer projectId, Integer userId, String commitSha, String format) {
+        throw new CommonException("error.down.project");
+    }
 }

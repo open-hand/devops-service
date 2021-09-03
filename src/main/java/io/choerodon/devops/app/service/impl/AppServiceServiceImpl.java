@@ -3255,6 +3255,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(projectId);
         devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
+        devOpsAppServicePayload.setOpen(true);
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
@@ -3463,5 +3464,13 @@ public class AppServiceServiceImpl implements AppServiceService {
             return Collections.emptyList();
         }
         return appServiceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(appServiceIds));
+    }
+
+    @Override
+    public InputStream downloadArchiveByFormat(Long projectId, String serviceCode, String email, String commitSha, String format) {
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(email);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+        AppServiceDTO appServiceDTO = baseQueryByCode(serviceCode, projectId);
+        return gitlabServiceClientOperator.downloadArchiveByFormat(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), commitSha, null);
     }
 }
