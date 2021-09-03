@@ -50,40 +50,6 @@ public class DevopsHostAppDTO extends AuditDomain {
      */
     @ApiModelProperty("操作类型")
     private String operationType;
-    @ApiModelProperty("来源配置")
-    private String sourceConfig;
-    @ApiModelProperty("部署配置")
-    private String value;
-    @ApiModelProperty("groupId")
-    private String groupId;
-    @ApiModelProperty("artifactId")
-    private String artifactId;
-    @ApiModelProperty("version")
-    private String version;
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    public String getArtifactId() {
-        return artifactId;
-    }
-
-    public void setArtifactId(String artifactId) {
-        this.artifactId = artifactId;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
 
     public DevopsHostAppDTO() {
     }
@@ -93,7 +59,7 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.code = code;
     }
 
-    public DevopsHostAppDTO(Long projectId, Long hostId, String name, String code, String sourceType, String rdupmType, String operationType, String sourceConfig, String value, @Nullable String groupId,@Nullable String artifactId,@Nullable String version) {
+    public DevopsHostAppDTO(Long projectId, Long hostId, String name, String code, String sourceType, String rdupmType, String operationType) {
         this.projectId = projectId;
         this.hostId = hostId;
         this.name = name;
@@ -101,19 +67,6 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.sourceType = sourceType;
         this.rdupmType = rdupmType;
         this.operationType = operationType;
-        this.sourceConfig = sourceConfig;
-        this.value = value;
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     public Long getProjectId() {
@@ -138,14 +91,6 @@ public class DevopsHostAppDTO extends AuditDomain {
 
     public void setOperationType(String operationType) {
         this.operationType = operationType;
-    }
-
-    public String getSourceConfig() {
-        return sourceConfig;
-    }
-
-    public void setSourceConfig(String sourceConfig) {
-        this.sourceConfig = sourceConfig;
     }
 
     public String getRdupmType() {
