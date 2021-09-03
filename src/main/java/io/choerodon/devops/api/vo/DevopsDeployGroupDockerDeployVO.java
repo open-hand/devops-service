@@ -6,12 +6,14 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
 
 public class DevopsDeployGroupDockerDeployVO {
-    @ApiModelProperty("容器名")
-    private String name;
     @ApiModelProperty("部署来源")
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppSourceType}
+     */
     private String sourceType;
     @ApiModelProperty("制品库镜像信息")
     private ProdImageInfoVO imageInfo;
+
     @ApiModelProperty("应用市场部署对象id")
     @Encrypt
     private Long deployObjectId;
@@ -38,14 +40,6 @@ public class DevopsDeployGroupDockerDeployVO {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getSourceType() {

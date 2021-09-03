@@ -9,12 +9,21 @@ public class DevopsDeployGroupContainerConfigVO {
     private String sourceType;
     private DevopsDeployGroupJarDeployVO jarDeployVO;
     private DevopsDeployGroupDockerDeployVO dockerDeployVO;
+    private String pipelineJobName;
     private String requestCpu;
     private String requestMemory;
     private String limitCpu;
     private String limitMemory;
     private Map<String, String> envs;
     private List<Map<String, String>> ports;
+
+    public String getPipelineJobName() {
+        return pipelineJobName;
+    }
+
+    public void setPipelineJobName(String pipelineJobName) {
+        this.pipelineJobName = pipelineJobName;
+    }
 
     public String getName() {
         return name;
