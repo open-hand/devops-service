@@ -876,16 +876,6 @@ public class AppServiceController {
         return ResponseEntity.noContent().build();
     }
 
-
-    @Permission(permissionLogin = true)
-    @ApiOperation(value = "hand-开放平台，校验名称和code是否重复")
-    @GetMapping(value = "/open/check_name_and_code")
-    public ResponseEntity<List<CheckAppServiceCodeAndNameVO>> checkNameAndCode(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestBody List<CheckAppServiceCodeAndNameVO> codeAndNameVOList) {
-        return ResponseEntity.ok(applicationServiceService.checkNameAndCode(projectId, codeAndNameVOList));
-    }
 }
 
 

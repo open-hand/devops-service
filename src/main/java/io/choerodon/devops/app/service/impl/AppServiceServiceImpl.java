@@ -73,6 +73,7 @@ import io.choerodon.devops.api.vo.market.MarketCategoryVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.api.vo.market.MarketSourceCodeVO;
+import io.choerodon.devops.api.vo.open.OpenAppServiceReqVO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
@@ -3207,6 +3208,65 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         });
         return codeAndNameVOList;
+    }
+
+    @Override
+    @Transactional
+    public OpenAppServiceReqVO openCreateAppService(Long projectId, OpenAppServiceReqVO openAppServiceReqVO) {
+        openAppServiceReqVO.setProjectId(projectId);
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(openAppServiceReqVO.getEmail());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+        userAttrService.checkUserSync(userAttrDTO, iamUserDTO.getId());
+
+        ApplicationValidator.checkApplicationService(openAppServiceReqVO.getCode());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        // 判断项目下是否还能创建应用服务
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
+
+        // 查询创建应用服务所在的gitlab应用组
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+
+        boolean isGitlabRoot = false;
+        if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
+            // 如果这边表存了gitlabAdmin这个字段,那么gitlabUserId就不会为空,所以不判断此字段为空
+            isGitlabRoot = gitlabServiceClientOperator.isGitlabAdmin(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        }
+
+        if (!isGitlabRoot) {
+            MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+            }
+        }
+        AppServiceReqVO appServiceReqVO = new AppServiceReqVO();
+        BeanUtils.copyProperties(openAppServiceReqVO, appServiceReqVO);
+        AppServiceDTO appServiceDTO = getApplicationServiceDTO(projectId, appServiceReqVO);
+        appServiceDTO = baseCreate(appServiceDTO);
+
+        //创建saga payload
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+        devOpsAppServicePayload.setPath(appServiceDTO.getCode());
+        devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
+        devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
+        devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType(APPSERVICE)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefId(String.valueOf(appServiceDTO.getId()))
+                        .withSourceId(projectId),
+                builder -> {
+                });
+        return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getProjectId()), OpenAppServiceReqVO.class);
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,

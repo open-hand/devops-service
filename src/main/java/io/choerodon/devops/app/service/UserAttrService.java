@@ -58,6 +58,8 @@ public interface UserAttrService {
 
     UserAttrDTO baseQueryById(Long id);
 
+    UserAttrDTO baseQueryByIamUserId(Long iamUserId);
+
     Long baseQueryUserIdByGitlabUserId(Long gitLabUserId);
 
     List<UserAttrDTO> baseListByUserIds(List<Long> userIds);
