@@ -344,6 +344,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         HarborRepoDTO selectedHarborConfig = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
         if (!Objects.isNull(selectedHarborConfig) && !Objects.isNull(selectedHarborConfig.getHarborRepoConfig())) {
             selectedHarborConfig.getHarborRepoConfig().setType(selectedHarborConfig.getRepoType());
+            selectedHarborConfig.getHarborRepoConfig().setLoginName(null);
+            selectedHarborConfig.getHarborRepoConfig().setPassword(null);
             appServiceRepVO.setHarborRepoConfigDTO(selectedHarborConfig.getHarborRepoConfig());
         }
         return appServiceRepVO;
