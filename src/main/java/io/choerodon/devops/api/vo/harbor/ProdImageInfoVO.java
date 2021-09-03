@@ -14,12 +14,15 @@ public class ProdImageInfoVO {
     @ApiModelProperty("仓库名 比如example.harbor.com")
     private String repoName;
 
+    @ApiModelProperty(value = "仓库地址")
+    private String repoUrl;
+
     @ApiModelProperty("仓库类型")
     private String repoType;
 
     @Encrypt
     @ApiModelProperty("仓库Id")
-    private String repoId;
+    private Long repoId;
 
     @ApiModelProperty("镜像名称 可能是example.harbor.com/project-1/mysql 也可能是 mysql")
     private String imageName;
@@ -29,11 +32,43 @@ public class ProdImageInfoVO {
 
     private String customImageName;
 
+    private String imageUrl;
+
     private String username;
 
     private String password;
 
     private Boolean privateRepository;
+
+    public String getRepoUrl() {
+        return repoUrl;
+    }
+
+    public void setRepoUrl(String repoUrl) {
+        this.repoUrl = repoUrl;
+    }
+
+    public ProdImageInfoVO() {
+    }
+
+    public ProdImageInfoVO(String repoName, String repoType,String repoUrl, Long repoId, String imageUrl, String username, String password, Boolean privateRepository) {
+        this.repoUrl = repoUrl;
+        this.repoName = repoName;
+        this.repoType = repoType;
+        this.repoId = repoId;
+        this.imageUrl = imageUrl;
+        this.username = username;
+        this.password = password;
+        this.privateRepository = privateRepository;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
     public Boolean getPrivateRepository() {
         return privateRepository;
@@ -76,11 +111,11 @@ public class ProdImageInfoVO {
         this.repoType = repoType;
     }
 
-    public String getRepoId() {
+    public Long getRepoId() {
         return repoId;
     }
 
-    public void setRepoId(String repoId) {
+    public void setRepoId(Long repoId) {
         this.repoId = repoId;
     }
 

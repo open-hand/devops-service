@@ -38,6 +38,11 @@ public enum AppSourceType {
     UPLOAD("upload"),
 
     /**
+     * 流水线构建产生的制品
+     */
+    PIPELINE("pipeline"),
+
+    /**
      * 自定义来源 （应用中心部署组部署会用上）
      */
     CUSTOM("custom"),

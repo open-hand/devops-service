@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD;
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1Pod;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.UUIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,9 +41,11 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsDeployInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
+import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
@@ -51,6 +55,7 @@ import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
@@ -58,10 +63,7 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
@@ -137,8 +139,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
-    private TransactionalProducer producer;
-    @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
@@ -177,6 +177,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private DevopsDeployGroupService devopsDeployGroupService;
+    @Autowired
+    private CiPipelineImageService ciPipelineImageService;
+    @Autowired
+    private RdupmClientOperator rdupmClientOperator;
+    @Autowired
+    private CiPipelineMavenService ciPipelineMavenService;
 
 
     @Override
@@ -453,9 +459,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     @Override
+    @Async
     @Transactional
     public void envAutoDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         StringBuilder log = new StringBuilder();
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         try {
             ApplicationContextHelper
                     .getContext()
@@ -465,10 +473,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             LOGGER.error("error.create.pipeline.auto.deploy.instance", e);
             log.append("Deploy app instance failed").append(System.lineSeparator());
             log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
-            sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
             devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, log.toString());
             devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
+            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
+                    MessageCodeConstants.PIPELINE_FAILED,
+                    devopsCdPipelineRecordDTO.getCreatedBy(), GitUserNameUtil.getEmail(), new HashMap<>());
         }
     }
 
@@ -480,64 +490,51 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
         // 获取数据
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        Date startDate = new Date();
+        Long commandId = null;
+
         // 设置用户上下文
         log.append("Pipeline trigger user id is :").append(devopsCdJobRecordDTO.getCreatedBy()).append(System.lineSeparator());
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
-
         DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), DevopsDeployInfoVO.class);
 
         // 1. 校验环境是否开启一键关闭自动部署
         log.append("## 1.Check Environment automatic deploy enable.").append(System.lineSeparator());
         if (Boolean.FALSE.equals(checkAutoDeploy(devopsDeployInfoVO.getEnvId()))) {
             log.append("Environment automatic deploy has been turned off!").append(System.lineSeparator());
-            devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-            devopsCdJobRecordService.updateLogById(jobRecordId, log);
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.SKIPPED.toValue());
+            devopsCdJobRecordDTO.setLog(log.toString());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
             return;
         }
         // 2. 校验用户权限
-        // 判断是否需要校验环境权限
-        // 2.1 需要： 没有权限将任务状态改为skipped，有权限往下执行
-        // 2.2 不需要：没有权限使用管理员账户部署，有权限则使用自己账户
         log.append("## 2.Check user env permission.").append(System.lineSeparator());
-        if (Boolean.FALSE.equals(devopsDeployInfoVO.getSkipCheckPermission())) {
-            log.append("Skip check user permission Flag is false, check user permission.").append(System.lineSeparator());
-            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsDeployInfoVO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
-                log.append("User have no env Permission, skipped.").append(System.lineSeparator());
-                devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-                devopsCdJobRecordService.updateLogById(jobRecordId, log);
-                return;
-            } else {
-                log.append("Check user permission Passed.").append(System.lineSeparator());
-            }
-        } else {
-            log.append("Skip check user permission Flag is true, choose deploy account.").append(System.lineSeparator());
-            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsDeployInfoVO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
-                log.append("User have no env Permission, use admin account to deploy.").append(System.lineSeparator());
-                CustomContextUtil.setUserContext(IamAdminIdHolder.getAdminId());
-            } else {
-                log.append("User have env Permission, use self account to deploy.").append(System.lineSeparator());
-            }
+        if (Boolean.FALSE.equals(checkUserPermission(devopsDeployInfoVO, devopsCdJobRecordDTO, log))) {
+            return;
         }
 
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployInfoVO.getEnvId(), devopsDeployInfoVO.getCode());
         if (RdupmTypeEnum.CHART.value().equals(devopsDeployInfoVO.getDeployObjectType())) {
             // 1. 获取部署版本信息
-            log.append("## 1.Query Deploy version.").append(System.lineSeparator());
+            log.append("## 3.Query Deploy version.").append(System.lineSeparator());
             AppServiceVersionDTO appServiceVersionDTO = getDeployVersion(pipelineRecordId);
             if (appServiceVersionDTO == null) {
                 log.append("Not Found App Version in this branch and commit, skipped.").append(System.lineSeparator());
-                devopsCdJobRecordService.updateStatusById(jobRecordId, PipelineStatus.SKIPPED.toValue());
-                devopsCdJobRecordService.updateLogById(jobRecordId, log);
+                devopsCdJobRecordDTO.setStatus(PipelineStatus.SKIPPED.toValue());
+                devopsCdJobRecordDTO.setLog(log.toString());
+                devopsCdJobRecordService.update(devopsCdJobRecordDTO);
                 return;
             } else {
                 log.append("Deploy Version is ").append(appServiceVersionDTO.getVersion()).append(System.lineSeparator());
             }
-            log.append("## 3.Deploy app instance.").append(System.lineSeparator());
+            log.append("## 4.Deploy app instance.").append(System.lineSeparator());
 
             AppServiceDeployVO appServiceDeployVO = null;
             if (devopsDeployAppCenterEnvDTO == null) {
                 // 不存在应用则新建
+                log.append("App not exist, create it now.").append(System.lineSeparator());
                 appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
                         appServiceVersionDTO.getId(),
                         devopsDeployInfoVO.getEnvId(),
@@ -553,20 +550,18 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
                 DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
                 AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
-
+                log.append("App exist, upgrade it now.").append(System.lineSeparator());
                 // 如果当前部署版本和流水线生成版本相同则重启
                 if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())) {
                     log.append("Deploy version is same to instance version, restart it.").append(System.lineSeparator());
-                    log.append("Deploying app instance...").append(System.lineSeparator());
 
                     DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
                     cdJobRecordDTO.setStartedDate(new Date());
                     DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(devopsCdJobRecordDTO.getProjectId(), preInstance.getId(), true, true);
-                    log.append("Deploy app success.").append(System.lineSeparator());
+                    log.append("Restart success.").append(System.lineSeparator());
                     // 更新job状态为success
                     cdJobRecordDTO.setCommandId(devopsEnvCommandDTO.getId());
                     cdJobRecordDTO.setFinishedDate(new Date());
-                    cdJobRecordDTO.setDurationSeconds((new Date().getTime() - cdJobRecordDTO.getStartedDate().getTime()) / 1000);
                     cdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
                     cdJobRecordDTO.setLog(log.toString());
                     devopsCdJobRecordService.update(cdJobRecordDTO);
@@ -600,7 +595,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         devopsDeployInfoVO.getCode());
             }
 
-            appServiceInstanceService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), appServiceDeployVO, true);
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), appServiceDeployVO, true);
+            commandId = appServiceInstanceVO.getCommandId();
         } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployInfoVO.getDeployObjectType())) {
             DevopsDeployGroupVO devopsDeployGroupVO = new DevopsDeployGroupVO(devopsDeployInfoVO.getName(),
                     devopsDeployInfoVO.getCode(),
@@ -609,9 +605,104 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     devopsDeployInfoVO.getAppConfig(),
                     devopsDeployInfoVO.getContainerConfig(),
                     devopsDeployAppCenterEnvDTO == null ? null : devopsDeployAppCenterEnvDTO.getObjectId());
+            devopsDeployInfoVO.getContainerConfig().forEach(config -> {
+                if (config.getPipelineJobName() != null) {
+                    if (RdupmTypeEnum.DOCKER.value().equals(config.getType())) {
+                        CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
+                        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
+
+                        DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
+                        dockerDeployVO.setSourceType(AppSourceType.PIPELINE.getValue());
+
+                        String username = null;
+                        String password = null;
+                        // 设置拉取账户
+                        if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
+                            username = harborRepoDTO.getHarborRepoConfig().getLoginName();
+                            password = harborRepoDTO.getHarborRepoConfig().getPassword();
+                        } else {
+                            username = harborRepoDTO.getPullRobot().getName();
+                            password = harborRepoDTO.getPullRobot().getToken();
+                        }
+                        ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
+                                harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
+                                harborRepoDTO.getHarborRepoConfig().getType(),
+                                harborRepoDTO.getHarborRepoConfig().getRepoId(),
+                                ciPipelineImageDTO.getImageTag(),
+                                username,
+                                password,
+                                Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()));
+                        dockerDeployVO.setImageInfo(prodImageInfoVO);
+
+                        config.setDockerDeployVO(dockerDeployVO);
+
+                    } else {
+                        CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
+                        ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(ciPipelineMavenDTO.getNexusRepoId(),
+                                ciPipelineMavenDTO.getGroupId(),
+                                ciPipelineMavenDTO.getArtifactId(),
+                                getMavenVersion(ciPipelineMavenDTO.getVersion()));
+
+                        DevopsDeployGroupJarDeployVO devopsDeployGroupJarDeployVO = new DevopsDeployGroupJarDeployVO();
+                        devopsDeployGroupJarDeployVO.setProdJarInfoVO(prodJarInfoVO);
+                        devopsDeployGroupJarDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+                        config.setJarDeployVO(devopsDeployGroupJarDeployVO);
+                    }
+                }
+            });
+
             String operateType = devopsDeployAppCenterEnvDTO == null ? MiscConstants.CREATE_TYPE : MiscConstants.UPDATE_TYPE;
-            devopsDeployGroupService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), devopsDeployGroupVO, operateType, false);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsDeployGroupService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), devopsDeployGroupVO, operateType, false);
+            commandId = devopsEnvCommandDTO.getId();
         }
+
+        log.append("Deploy app success.").append(System.lineSeparator());
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
+        devopsCdJobRecordDTO.setStartedDate(startDate);
+        devopsCdJobRecordDTO.setFinishedDate(new Date());
+        devopsCdJobRecordDTO.setCommandId(commandId);
+        devopsCdJobRecordDTO.setLog(log.toString());
+        devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+    }
+
+    private String getMavenVersion(String version) {
+        if (version.contains(BaseConstants.Symbol.SLASH)) {
+            return version.split(BaseConstants.Symbol.SLASH)[0];
+        } else {
+            return version;
+        }
+    }
+
+    /**
+     *          // 判断是否需要校验环境权限
+     *         // 2.1 需要： 没有权限将任务状态改为skipped，有权限往下执行
+     *         // 2.2 不需要：没有权限使用管理员账户部署，有权限则使用自己账户
+     * @param devopsDeployInfoVO
+     * @param devopsCdJobRecordDTO
+     * @param log
+     */
+    private boolean checkUserPermission(DevopsDeployInfoVO devopsDeployInfoVO, DevopsCdJobRecordDTO devopsCdJobRecordDTO, StringBuilder log) {
+        if (Boolean.FALSE.equals(devopsDeployInfoVO.getSkipCheckPermission())) {
+            log.append("Skip check user permission Flag is false, check user permission.").append(System.lineSeparator());
+            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsDeployInfoVO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
+                log.append("User have no env Permission, skipped.").append(System.lineSeparator());
+                devopsCdJobRecordDTO.setStatus(PipelineStatus.SKIPPED.toValue());
+                devopsCdJobRecordDTO.setLog(log.toString());
+                devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+                return false;
+            } else {
+                log.append("Check user permission Passed.").append(System.lineSeparator());
+            }
+        } else {
+            log.append("Skip check user permission Flag is true, choose deploy account.").append(System.lineSeparator());
+            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(devopsDeployInfoVO.getEnvId(), devopsCdJobRecordDTO.getCreatedBy()))) {
+                log.append("User have no env Permission, use admin account to deploy.").append(System.lineSeparator());
+                CustomContextUtil.setUserContext(IamAdminIdHolder.getAdminId());
+            } else {
+                log.append("User have env Permission, use self account to deploy.").append(System.lineSeparator());
+            }
+        }
+        return true;
     }
 
     @Override

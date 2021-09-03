@@ -109,7 +109,8 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdate(Long projectId, WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO, MultipartFile multipartFile, ResourceType resourceType) {
+    public DevopsEnvCommandDTO createOrUpdate(Long projectId, WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO, MultipartFile multipartFile, ResourceType resourceType) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = null;
         WorkloadBaseVO workloadBaseVO = processKeyEncrypt(workloadBaseCreateOrUpdateVO);
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, workloadBaseVO.getEnvId());
 
@@ -154,9 +155,9 @@ public class WorkloadServiceImpl implements WorkloadService {
             String resourceContent = FileUtil.getYaml().dump(data);
             // 如果是更新操作，需要校验资源是否发生变化，没有变化不再进行后续处理
             if (UPDATE_TYPE.equals(workloadBaseVO.getOperateType()) && noChange(kind, workloadBaseVO.getResourceId(), resourceContent)) {
-                return;
+                return null;
             }
-            handleWorkLoad(projectId, workloadBaseVO.getEnvId(), resourceContent, kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId(), workloadBaseVO.getExtraInfo());
+            devopsEnvCommandDTO = handleWorkLoad(projectId, workloadBaseVO.getEnvId(), resourceContent, kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId(), workloadBaseVO.getExtraInfo());
         }
 
         if (CREATE_TYPE.equals(workloadBaseVO.getOperateType())) {
@@ -182,7 +183,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, resourceFilePath, resourceType.getType(), gitOpsPath, CommandType.UPDATE.getType());
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
-
+        return devopsEnvCommandDTO;
     }
 
     @Override
@@ -317,7 +318,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         return decryptedWorkloadBaseVO;
     }
 
-    private void handleWorkLoad(Long projectId, Long envId, String content, String kind, String name, String operateType, Long resourceId, Long userId, Map<String, Object> extraInfo) {
+    private DevopsEnvCommandDTO handleWorkLoad(Long projectId, Long envId, String content, String kind, String name, String operateType, Long resourceId, Long userId, Map<String, Object> extraInfo) {
         if (CREATE_TYPE.equals(operateType)) {
             createWorkload(projectId, envId, content, kind, operateType, name, userId, extraInfo);
         } else if (UPDATE_TYPE.equals(operateType)) {
@@ -330,7 +331,9 @@ public class WorkloadServiceImpl implements WorkloadService {
 
             //更新自定义资源关联的最新command
             updateWorkLoadCommandId(kind, resourceId, devopsEnvCommandDTO.getId());
+            return devopsEnvCommandDTO;
         }
+        return null;
     }
 
 
@@ -358,7 +361,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         workLoad.checkWorkloadExist(envId, name);
     }
 
-    private void createWorkload(Long projectId, Long envId, String content, String resourceType, String operateType, String name, Long userId, Map<String, Object> extraInfo) {
+    private DevopsEnvCommandDTO createWorkload(Long projectId, Long envId, String content, String resourceType, String operateType, String name, Long userId, Map<String, Object> extraInfo) {
         //校验新增的类型是否已存在
         checkWorkloadExist(resourceType, envId, name);
 
@@ -372,14 +375,16 @@ public class WorkloadServiceImpl implements WorkloadService {
 
         devopsEnvCommandDTO.setObjectId(workLoadId);
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+        return devopsEnvCommandDTO;
     }
 
-    private void updateWorkLoad(String resourceType, String name, String content, Long resourceId, Long userId, Map<String, Object> extraInfo) {
+    private DevopsEnvCommandDTO updateWorkLoad(String resourceType, String name, String content, Long resourceId, Long userId, Map<String, Object> extraInfo) {
         //资源关联command
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, UPDATE_TYPE, userId);
         WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(resourceType) + WORK_LOAD);
         workLoad.updateWorkLoad(devopsEnvCommandDTO, name, resourceId, extraInfo);
         devopsWorkloadResourceContentService.update(resourceType, resourceId, content);
+        return devopsEnvCommandDTO;
     }
 
 

@@ -96,7 +96,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     @Transactional
     @Override
-    public void createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer) {
+    public DevopsEnvCommandDTO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer) {
         //1. 查询校验环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvId());
 
@@ -126,7 +126,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
 
         workloadBaseCreateOrUpdateVO.setExtraInfo(extraInfo);
-        workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, ResourceType.DEPLOYMENT);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, DEPLOYMENT);
 
         // 更新关联的对象id
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
@@ -145,6 +145,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
             }
         }
+        return devopsEnvCommandDTO;
     }
 
     @Transactional
@@ -657,6 +658,12 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
                 devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
                 dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
+            } else if(AppSourceType.PIPELINE.getValue().equals(devopsDeployGroupDockerDeployVO.getSourceType())) {
+                configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
+                configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());
+                configVO.setUrl(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoUrl());
+                devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
+                dockerDeployDTO.setImage(devopsDeployGroupDockerDeployVO.getImageInfo().getCustomImageName());
             } else {
                 configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
                 configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());
