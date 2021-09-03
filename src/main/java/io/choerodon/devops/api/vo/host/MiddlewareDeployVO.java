@@ -1,10 +1,19 @@
 package io.choerodon.devops.api.vo.host;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class MiddlewareDeployVO {
+    @ApiModelProperty("中间件类型 Redis/MySQL")
     private String MiddlewareType;
+    @ApiModelProperty("部署模式 MiddlewareDeployModeEnum")
+    private String mode;
+    @ApiModelProperty("部署脚本")
     private String DeployShell;
+    @ApiModelProperty("实例记录")
     private String InstanceId;
+    @ApiModelProperty("操作记录id")
     private String CommandId;
+    @ApiModelProperty("记录id")
     private String recordId;
 
     public String getMiddlewareType() {
@@ -45,5 +54,13 @@ public class MiddlewareDeployVO {
 
     public void setRecordId(String recordId) {
         this.recordId = recordId;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 }

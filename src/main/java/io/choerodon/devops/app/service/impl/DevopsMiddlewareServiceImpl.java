@@ -282,6 +282,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             MiddlewareDeployVO middlewareDeployVO = new MiddlewareDeployVO();
             middlewareDeployVO.setMiddlewareType(REDIS.getType());
+            middlewareDeployVO.setMode(middlewareRedisHostDeployVO.getMode());
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             middlewareDeployVO.setRecordId(String.valueOf(recordId));
@@ -376,6 +377,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             MiddlewareDeployVO middlewareDeployVO = new MiddlewareDeployVO();
             middlewareDeployVO.setMiddlewareType(MYSQL.getType());
+            middlewareDeployVO.setMode(middlewareMySqlHostDeployVO.getMode());
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             middlewareDeployVO.setInstanceId(String.valueOf(devopsMiddlewareDTO.getId()));
