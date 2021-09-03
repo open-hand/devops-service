@@ -507,7 +507,14 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);
             } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 log.append("Deploy type is update instance.").append(System.lineSeparator());
-                AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
+                AppServiceInstanceDTO instanceE = null;
+
+                if (devopsCdEnvDeployInfoDTO.getInstanceId() != null) {
+                    instanceE = appServiceInstanceService.baseQuery(devopsCdEnvDeployInfoDTO.getInstanceId());
+                } else {
+                    instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
+                }
+
                 if (instanceE == null) {
                     log.append("Instance ").append(devopsCdEnvDeployInfoDTO.getInstanceName()).append(" not found, create it now.").append(System.lineSeparator());
                     addCreateInfoForAppServiceDeployVO(appServiceDeployVO, appServiceServiceE, devopsCdEnvDeployInfoDTO, devopsCdJobRecordDTO);

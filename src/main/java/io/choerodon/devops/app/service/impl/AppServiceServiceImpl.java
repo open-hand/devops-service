@@ -2866,7 +2866,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params) {
+    public Page<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
         // 校验用户是否同步
@@ -2884,7 +2884,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
-                return new ArrayList<>();
+                return new Page<>();
             }
             return ConvertUtils.convertPage(PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.listAppServiceToCreatePipelineForMember(projectId, userId, appServiceIds, searchParamMap, paramList)), AppServiceServiceImpl::dto2SimpleVo);
         }
