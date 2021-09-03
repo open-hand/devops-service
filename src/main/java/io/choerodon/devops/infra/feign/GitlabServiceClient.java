@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -727,4 +728,14 @@ public interface GitlabServiceClient {
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "新的groupId")
             @RequestParam(value = "groupId") Integer groupId);
+
+    @ApiParam(value = "下载服务源码 压缩包")
+    @PutMapping(value = "/v1/projects/{projectId}/repository/archive_format")
+    InputStream downloadArchiveByFormat(
+            @ApiParam(value = "用户id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "commit_sha") String commitSha,
+            @RequestParam(value = "format", required = false) String format);
 }

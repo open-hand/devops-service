@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.feign.operator;
 
 import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
 
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -1186,5 +1187,9 @@ public class GitlabServiceClientOperator {
         CommonExAssertUtil.assertNotNull(newName, "error.ci.newName.null");
         CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
         gitlabServiceClient.updateNameAndPath(projectId, userId, newName);
+    }
+
+    public InputStream downloadArchiveByFormat(Integer gitlabProjectId, Integer userId, String commitSha, String format) {
+        return gitlabServiceClient.downloadArchiveByFormat(gitlabProjectId, userId, commitSha, format);
     }
 }
