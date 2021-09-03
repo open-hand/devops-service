@@ -1938,10 +1938,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
-        if (deployConfigVO.getImageDeploy() != null
-                && deployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
-            devopsCiJobDTO.setName(deployConfigVO.getImageDeploy().getPipelineTask());
-        }
+//        if (deployConfigVO.getImageDeploy() != null
+//                && deployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
+//            devopsCiJobDTO.setName(deployConfigVO.getImageDeploy().getPipelineTask());
+//        }
         if (deployConfigVO.getJarDeploy() != null
                 && deployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
             devopsCiJobDTO.setName(deployConfigVO.getJarDeploy().getPipelineTask());
