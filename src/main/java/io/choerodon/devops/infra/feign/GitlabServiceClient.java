@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.feign;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -129,7 +130,13 @@ public interface GitlabServiceClient {
                                                         @RequestParam(value = "perPage", required = false) Integer perPage);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId);
+    ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId,
+                                                             @RequestParam(value = "tokenName", required = false) String tokenName,
+                                                             @RequestParam(value = "date", required = false) Date date);
+
+    @DeleteMapping(value = "/v1/users/{userId}/impersonation_tokens")
+    ResponseEntity<Void> revokeImpersonationToken(@PathVariable("userId") Integer userId,
+                                                                   @RequestParam(value = "tokenId") Integer tokenId);
 
     @GetMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<List<ImpersonationTokenDTO>> listProjectToken(@PathVariable("userId") Integer userId);
@@ -702,10 +709,10 @@ public interface GitlabServiceClient {
     @ApiOperation(value = "查询有权限的所有组")
     @PostMapping("/v1/groups/{userId}")
     ResponseEntity<List<GroupDTO>> listGroupsWithParam(@ApiParam(value = "userId")
-                                     @PathVariable(value = "userId") Integer userId,
-                                     @RequestParam(value = "owned", required = false) Boolean owned,
-                                     @RequestParam(value = "search", required = false) String search,
-                                     @RequestBody List<Integer> skipGroups);
+                                                       @PathVariable(value = "userId") Integer userId,
+                                                       @RequestParam(value = "owned", required = false) Boolean owned,
+                                                       @RequestParam(value = "search", required = false) String search,
+                                                       @RequestBody List<Integer> skipGroups);
 
     @ApiOperation(value = "获取项目列表")
     @GetMapping(value = "/v1/groups/{groupId}/projects")
@@ -730,12 +737,12 @@ public interface GitlabServiceClient {
             @RequestParam(value = "groupId") Integer groupId);
 
     @ApiParam(value = "下载服务源码 压缩包")
-    @PutMapping(value = "/v1/projects/{projectId}/repository/archive_format")
-    InputStream downloadArchiveByFormat(
+    @GetMapping(value = "/v1/projects/{projectId}/repository/archive_format")
+    ResponseEntity<InputStream> downloadArchiveByFormat(
             @ApiParam(value = "用户id", required = true)
             @PathVariable(value = "projectId") Integer projectId,
             @ApiParam(value = "用户Id")
-            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "user_id") Integer userId,
             @RequestParam(value = "commit_sha") String commitSha,
             @RequestParam(value = "format", required = false) String format);
 }

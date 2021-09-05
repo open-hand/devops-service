@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -81,6 +82,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayloa
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -120,6 +122,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String CHART = "chart";
     private static final String GIT = ".git";
     private static final String SONAR_KEY = "%s-%s:%s";
+    private static final String PRIVATE_TOKEN_FORMAT = "private-token:%s";
+    private static final String PRIVATE_TOKEN_ID_FORMAT = "private-token-id:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
@@ -242,6 +246,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -3467,10 +3473,32 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public InputStream downloadArchiveByFormat(Long projectId, String serviceCode, String email, String commitSha, String format) {
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(email);
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+    public String getPrivateToken(Long projectId, String serviceCode, String email, Long gitlabProjectId) {
         AppServiceDTO appServiceDTO = baseQueryByCode(serviceCode, projectId);
-        return gitlabServiceClientOperator.downloadArchiveByFormat(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), commitSha, null);
+        if (!appServiceDTO.getGitlabProjectId().equals(TypeUtil.objToInteger(gitlabProjectId))) {
+            throw new CommonException("error.consistent.gitlabProjectId");
+        }
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(email);
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, iamUserDTO.getId())) {
+            throw new CommonException("user.not.gitlab.project.owner");
+        }
+        String key = String.format(PRIVATE_TOKEN_FORMAT, gitlabProjectId);
+        String privateToken = stringRedisTemplate.opsForValue().get(key);
+        if (StringUtils.isEmpty(privateToken)) {
+            String tokenIdKey = String.format(PRIVATE_TOKEN_ID_FORMAT, gitlabProjectId);
+            String tokenIdStr = stringRedisTemplate.opsForValue().get(tokenIdKey);
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+            if (!StringUtils.isEmpty(tokenIdStr)) {
+                gitlabServiceClientOperator.revokeImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), TypeUtil.objToInteger(tokenIdStr));
+            }
+            ImpersonationTokenDTO tokenDTO = gitlabServiceClientOperator.createProjectToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "c7nToken", DateUtil.subOrAddDay(new Date(), 7));
+            if (tokenDTO == null) {
+                throw new CommonException("error.create.private.token");
+            }
+            privateToken = tokenDTO.getToken();
+            stringRedisTemplate.opsForValue().set(key, privateToken, 7, TimeUnit.DAYS);
+            stringRedisTemplate.opsForValue().set(tokenIdKey, tokenDTO.getId().toString());
+        }
+        return privateToken;
     }
 }

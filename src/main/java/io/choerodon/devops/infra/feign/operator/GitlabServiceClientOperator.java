@@ -237,7 +237,7 @@ public class GitlabServiceClientOperator {
     public String createProjectToken(Integer gitlabProjectId, String name, Integer userId) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
-            impersonationToken = gitlabServiceClient.createProjectToken(userId);
+            impersonationToken = gitlabServiceClient.createProjectToken(userId, null, null);
         } catch (Exception e) {
             gitUtil.deleteWorkingDirectory(name);
             gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
@@ -253,15 +253,20 @@ public class GitlabServiceClientOperator {
      * @return access token
      */
     @Nullable
-    public String createProjectToken(Integer userId) {
+    public ImpersonationTokenDTO createProjectToken(Integer userId, String tokenName, Date date) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
-            impersonationToken = gitlabServiceClient.createProjectToken(userId);
+            impersonationToken = gitlabServiceClient.createProjectToken(userId, tokenName, date);
         } catch (Exception e) {
             return null;
         }
-        return impersonationToken.getBody().getToken();
+        return impersonationToken.getBody();
     }
+
+    public void revokeImpersonationToken(Integer userId, Integer tokenId) {
+        gitlabServiceClient.revokeImpersonationToken(userId, tokenId);
+    }
+
 
     public GroupDTO queryGroupByName(String groupName, Integer userId) {
         ResponseEntity<GroupDTO> groupDTOResponseEntity;
@@ -1190,6 +1195,6 @@ public class GitlabServiceClientOperator {
     }
 
     public InputStream downloadArchiveByFormat(Integer gitlabProjectId, Integer userId, String commitSha, String format) {
-        return gitlabServiceClient.downloadArchiveByFormat(gitlabProjectId, userId, commitSha, format);
+        return gitlabServiceClient.downloadArchiveByFormat(gitlabProjectId, userId, commitSha, format).getBody();
     }
 }
