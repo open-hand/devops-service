@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.io.InputStream;
 import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
@@ -29,7 +28,7 @@ public class OpenAppServiceController {
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "hand-开放平台，校验名称和code是否重复")
-    @PostMapping(value = "/open/check_name_and_code")
+    @PostMapping(value = "/check_name_and_code")
     public ResponseEntity<List<CheckAppServiceCodeAndNameVO>> checkNameAndCode(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -39,7 +38,7 @@ public class OpenAppServiceController {
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "hand-开放平台，创建应用服务")
-    @PostMapping(value = "/open/create")
+    @PostMapping(value = "/create")
     public ResponseEntity<OpenAppServiceReqVO> openCreateAppService(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -49,19 +48,17 @@ public class OpenAppServiceController {
     }
 
     @Permission(permissionLogin = true)
-    @ApiOperation(value = "hand-开放平台，创建应用服务")
-    @GetMapping(value = "/open/download_source")
-    public InputStream downloadArchiveByFormat(
+    @ApiOperation(value = "hand-开放平台，获取private token")
+    @GetMapping(value = "/private_token")
+    public String getPrivateToken(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
             @RequestParam(value = "serviceCode") String serviceCode,
             @ApiParam(value = "用户邮箱", required = true)
             @RequestParam(value = "email") String email,
-            @ApiParam(value = "commitSha或者分支")
-            @RequestParam(value = "commitSha", required = false, defaultValue = "master") String commitSha,
-            @ApiParam(value = "服务编码")
-            @RequestParam(value = "format", required = false) String format) {
-        return applicationServiceService.downloadArchiveByFormat(projectId, serviceCode, email, commitSha, format);
+            @ApiParam(value = "项目id", required = true)
+            @RequestParam(value = "gitlab_project_id") Long gitlabProjectId) {
+        return applicationServiceService.getPrivateToken(projectId, serviceCode, email, gitlabProjectId);
     }
 }

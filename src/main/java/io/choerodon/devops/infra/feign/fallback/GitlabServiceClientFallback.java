@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.feign.fallback;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -301,8 +302,13 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<ImpersonationTokenDTO> createProjectToken(Integer userId) {
+    public ResponseEntity<ImpersonationTokenDTO> createProjectToken(Integer userId, String tokenName, Date date) {
         throw new CommonException("error.project.token.create");
+    }
+
+    @Override
+    public ResponseEntity<Void> revokeImpersonationToken(Integer userId, Integer tokenId) {
+        throw new CommonException("error.project.token.revoke");
     }
 
     @Override
@@ -517,7 +523,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public InputStream downloadArchiveByFormat(Integer projectId, Integer userId, String commitSha, String format) {
+    public ResponseEntity<InputStream> downloadArchiveByFormat(Integer projectId, Integer userId, String commitSha, String format) {
         throw new CommonException("error.down.project");
     }
 }

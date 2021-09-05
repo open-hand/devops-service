@@ -43,9 +43,8 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     private AppServiceMapper appServiceMapper;
 
     @Override
-
     public boolean isGitlabAdmin(Long userId) {
-        UserAttrDTO result = userAttrService.baseQueryById(userId);
+        UserAttrDTO result = userAttrService.baseQueryByIamUserId(userId);
         return result != null && result.getGitlabAdmin();
     }
 
