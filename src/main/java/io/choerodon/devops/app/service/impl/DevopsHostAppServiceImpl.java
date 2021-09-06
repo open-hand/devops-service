@@ -404,16 +404,20 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     public void deleteById(Long projectId, Long hostId, Long appId) {
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
-        // todo
-//        if (devopsHostAppDTO.getPid() == null) {
-//            devopsHostAppMapper.deleteByPrimaryKey(appId);
-//            return;
-//        }
+        List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
+        DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+        if (devopsHostAppInstanceDTO.getPid() == null) {
+            if (devopsHostAppDTO != null) {
+                devopsHostAppMapper.deleteByPrimaryKey(appId);
+            }
+            devopsHostAppInstanceService.baseDelete(devopsHostAppInstanceDTO.getId());
+            return;
+        }
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(appId);
+        devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
@@ -425,8 +429,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
 
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
-        javaProcessInfoVO.setInstanceId(String.valueOf(appId));
-//        javaProcessInfoVO.setPid(devopsHostAppDTO.getPid());
+        javaProcessInfoVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+        javaProcessInfoVO.setPid(devopsHostAppInstanceDTO.getPid());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
