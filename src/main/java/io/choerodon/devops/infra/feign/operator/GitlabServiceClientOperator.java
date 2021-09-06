@@ -234,7 +234,7 @@ public class GitlabServiceClientOperator {
         return tokens;
     }
 
-    public String createProjectToken(Integer gitlabProjectId, String name, Integer userId) {
+    public String createProjectToken(Integer gitlabProjectId, Integer userId, String name) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
             impersonationToken = gitlabServiceClient.createProjectToken(userId, null, null);
@@ -253,7 +253,7 @@ public class GitlabServiceClientOperator {
      * @return access token
      */
     @Nullable
-    public ImpersonationTokenDTO createProjectToken(Integer userId, String tokenName, Date date) {
+    public ImpersonationTokenDTO createPrivateToken(Integer userId, String tokenName, Date date) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
             impersonationToken = gitlabServiceClient.createProjectToken(userId, tokenName, date);
