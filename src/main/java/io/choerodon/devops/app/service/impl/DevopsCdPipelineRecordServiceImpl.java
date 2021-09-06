@@ -154,9 +154,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsDeployRecordService devopsDeployRecordService;
 
     @Autowired
-    private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
-
-    @Autowired
     private DevopsHostCommandService devopsHostCommandService;
 
     @Autowired
@@ -168,10 +165,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
     private DevopsHostAppMapper devopsHostAppMapper;
-    @Autowired
-    private DevopsDockerInstanceService devopsDockerInstanceService;
-    @Autowired
-    private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
+
     @Autowired
     private DevopsHostAppService devopsHostAppService;
     @Autowired
@@ -179,6 +173,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private DevopsHostAppInstanceService devopsHostAppInstanceService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -491,16 +487,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
 
         JarDeployVO jarDeployVO = null;
-        try {
             jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
-                    new String(decoder.decodeBuffer(jarDeploy.getValue()), StandardCharsets.UTF_8),
+                    jarDeployVO.getPreCommand(),
+                    jarDeployVO.getRunCommand(),
+                    jarDeployVO.getPostCommand(),
                     new ProdJarInfoVO(nexusRepoId,
                             groupId,
                             artifactId,
                             c7nNexusComponentDTO.getVersion()));
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
 
 
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
@@ -522,38 +516,45 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String instanceName = jarDeploy.getName() != null ? jarDeploy.getName() : c7nNexusComponentDTO.getName();
 
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(hostId, instanceName);
-        // todo
         if (devopsHostAppDTO == null) {
-            devopsHostAppDTO = new DevopsHostAppDTO(null
-                    ,hostId,
-                    instanceName,
-                    null,
+            devopsHostAppDTO = new DevopsHostAppDTO(projectId,
+                    hostId,
+                    jarDeployVO.getAppName(),
+                    jarDeployVO.getAppCode(),
                     AppSourceType.CURRENT_PROJECT.getValue(),
                     RdupmTypeEnum.JAR.value(),
-                    OperationTypeEnum.PIPELINE_DEPLOY.value(),
-                    jobRecordDTO.getMetadata(),
-                    jarDeploy.getValue(),
-                    null,
-                    null,
-                    null);
+                    OperationTypeEnum.PIPELINE_DEPLOY.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
-
-        } else {
-            // 删除原有应用关联关系
-            devopsHostAppInstanceRelService.deleteByHostIdAndInstanceInfo(hostId, devopsHostAppDTO.getId(), HostInstanceType.NORMAL_PROCESS.value());
-        }
-        // 有关联的应用，则保存关联关系
-        List<AppServiceDTO> appServiceDTOList = applicationService.listByProjectIdAndGAV(projectId, groupId, artifactId);
-        if (!CollectionUtils.isEmpty(appServiceDTOList)) {
-            Set<Long> appIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-            Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
-            Long instanceId = devopsHostAppDTO.getId();
-            appIds.forEach(appId -> devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
-                    appId,
-                    AppSourceType.CURRENT_PROJECT.getValue(),
-                    instanceId,
-                    HostInstanceType.NORMAL_PROCESS.value(), appServiceDTOMap.get(appId) == null ? null : appServiceDTOMap.get(appId).getName()));
+                    devopsHostAppDTO.getId(),
+                    jarDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
+                    jarDeployVO.getSourceType(),
+                    devopsHostAppService.calculateSourceConfig(jarDeployVO),
+                    jarDeployVO.getPreCommand(),
+                    jarDeployVO.getRunCommand(),
+                    jarDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setGroupId(groupId);
+            devopsHostAppInstanceDTO.setArtifactId(artifactId);
+            devopsHostAppInstanceDTO.setVersion(c7nNexusComponentDTO.getVersion());
+
+            devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
+        } else {
+            devopsHostAppDTO.setName(jarDeployVO.getAppName());
+            MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
+
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
+            String finalVersion = c7nNexusComponentDTO.getVersion();
+            JarDeployVO finalJarDeployVO = jarDeployVO;
+            devopsHostAppInstanceDTOS.forEach(devopsHostAppInstanceDTO -> {
+                devopsHostAppInstanceDTO.setPreCommand(finalJarDeployVO.getPreCommand());
+                devopsHostAppInstanceDTO.setRunCommand(finalJarDeployVO.getRunCommand());
+                devopsHostAppInstanceDTO.setPostCommand(finalJarDeployVO.getPostCommand());
+                devopsHostAppInstanceDTO.setSourceType(finalJarDeployVO.getSourceType());
+                devopsHostAppInstanceDTO.setSourceConfig(devopsHostAppService.calculateSourceConfig(finalJarDeployVO));
+                devopsHostAppInstanceDTO.setVersion(finalVersion);
+                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+            });
         }
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(

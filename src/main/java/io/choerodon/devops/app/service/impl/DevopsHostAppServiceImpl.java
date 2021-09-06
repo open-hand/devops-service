@@ -315,7 +315,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
-    private String calculateSourceConfig(JarDeployVO jarDeployVO) {
+    public String calculateSourceConfig(JarDeployVO jarDeployVO) {
 
         if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getProdJarInfoVO());

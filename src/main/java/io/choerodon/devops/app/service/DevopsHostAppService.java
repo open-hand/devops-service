@@ -23,6 +23,7 @@ public interface DevopsHostAppService {
      */
     void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO);
 
+    String calculateSourceConfig(JarDeployVO jarDeployVO);
     /**
      * 查询java实例列表
      * @param hostId
