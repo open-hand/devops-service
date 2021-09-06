@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.constant.MiscConstants;
@@ -12,6 +13,7 @@ import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -170,5 +172,16 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
                 .map(AppServiceDTO::getId)
                 .collect(Collectors.toList());
         CommonExAssertUtil.assertTrue(appServiceIdsBelongToProject.containsAll(appServiceIds), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+    }
+
+    @Override
+    public void checkDeploymentWay(DevopsServiceReqVO devopsServiceReqVO) {
+        boolean targetAppServiceIdFlag = devopsServiceReqVO.getTargetAppServiceId() == null;
+        boolean targetDeploymentIdFlag = devopsServiceReqVO.getTargetDeploymentId() == null;
+        boolean targetInstanceCodeFlag = StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode());
+        boolean flag = (targetAppServiceIdFlag && targetDeploymentIdFlag && !targetInstanceCodeFlag) || (targetAppServiceIdFlag && !targetDeploymentIdFlag && targetInstanceCodeFlag) || (!targetAppServiceIdFlag && targetDeploymentIdFlag && targetInstanceCodeFlag);
+        if (!flag) {
+            throw new CommonException("error.deployment.way.not.only");
+        }
     }
 }
