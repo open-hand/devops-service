@@ -19,4 +19,9 @@ public interface DevopsHostAppInstanceService {
 
     void baseUpdate(DevopsHostAppInstanceDTO devopsHostAppInstanceDTO);
 
+    List<DevopsHostAppInstanceDTO> listByHostId(Long hostId);
+
+    void baseDelete(Long id);
+
+    DevopsHostAppInstanceDTO baseQuery(Long id);
 }
