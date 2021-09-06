@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
 import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -44,7 +43,23 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
                             @Param("envId") Long envId,
                             @Param("code") String code);
 
-    List<AppCenterEnvDetailVO> listByProjectIdAndEnvId(@Param("projectId")Long projectId,
-                                                             @Param("envId") Long envId,
-                                                             @Param("rdupmType") String rdupmType);
+    /**
+     * 根据项目id和环境id查询deployment的应用列表
+     * @param projectId
+     * @param envId
+     * @return DevopsDeployAppCenterVO集合
+     */
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
+                                                       @Param("envId") Long envId);
+
+    /**
+     * 根据项目id,环境id和应用服务id查询chart的应用列表
+     * @param projectId
+     * @param envId
+     * @param appServiceId
+     * @return DevopsDeployAppCenterVO集合
+     */
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(@Param("projectId") Long projectId,
+                                                          @Param("envId") Long envId,
+                                                          @Param("appServiceId") Long appServiceId);
 }

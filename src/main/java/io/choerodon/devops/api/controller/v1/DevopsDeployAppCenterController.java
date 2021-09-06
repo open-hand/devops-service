@@ -171,13 +171,13 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
     @GetMapping(value = "/deployment")
-    public ResponseEntity<List<AppCenterEnvDetailVO>> listFromDeployment(
+    public ResponseEntity<List<DevopsDeployAppCenterVO>> listFromDeployment(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId, RdupmTypeEnum.DEPLOYMENT.value()));
+        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId));
     }
 
     /**
@@ -186,12 +186,15 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
     @GetMapping(value = "/chart")
-    public ResponseEntity<List<AppCenterEnvDetailVO>> listFromChart(
+    public ResponseEntity<List<DevopsDeployAppCenterVO>> listFromChart(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "环境ID", required = true)
-            @RequestParam(value = "env_id") Long envId) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId, RdupmTypeEnum.CHART.value()));
+            @RequestParam(value = "env_id") Long envId,
+            @Encrypt
+            @ApiParam(value = "应用服务ID", required = true)
+            @RequestParam(value = "app_service_id") Long appServiceId) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId));
     }
 }
