@@ -15,6 +15,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -162,5 +163,35 @@ public class DevopsDeployAppCenterController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Results.success(devopsDeployAppCenterService.envChartService(projectId, appCenterId, pageRequest, searchParam));
+    }
+
+    /**
+     * 根据projectId和envId查询deployment的应用列表
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
+    @GetMapping(value = "/deployment")
+    public ResponseEntity<List<AppCenterEnvDetailVO>> listFromDeployment(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId, RdupmTypeEnum.DEPLOYMENT.value()));
+    }
+
+    /**
+     * 根据projectId和envId查询chart的应用列表
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
+    @GetMapping(value = "/chart")
+    public ResponseEntity<List<AppCenterEnvDetailVO>> listFromChart(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId, RdupmTypeEnum.CHART.value()));
     }
 }
