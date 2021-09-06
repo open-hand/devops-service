@@ -97,18 +97,16 @@ public interface DevopsDeployAppCenterService {
      * 根据项目id和环境id查询deployment的应用列表
      * @param projectId
      * @param envId
-     * @param rdupmType
      * @return DevopsDeployAppCenterVO集合
      */
-    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId, String rdupmType);
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId);
 
     /**
      * 根据项目id,环境id和应用服务id查询chart的应用列表
      * @param projectId
      * @param envId
      * @param appServiceId
-     * @param rdupmType
      * @return DevopsDeployAppCenterVO集合
      */
-    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, String rdupmType);
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId);
 }

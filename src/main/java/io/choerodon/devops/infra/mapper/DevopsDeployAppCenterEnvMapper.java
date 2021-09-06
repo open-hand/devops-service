@@ -47,23 +47,19 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * 根据项目id和环境id查询deployment的应用列表
      * @param projectId
      * @param envId
-     * @param rdupmType
      * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
-                                                       @Param("envId") Long envId,
-                                                       @Param("rdupmType") String rdupmType);
+                                                       @Param("envId") Long envId);
 
     /**
      * 根据项目id,环境id和应用服务id查询chart的应用列表
      * @param projectId
      * @param envId
      * @param appServiceId
-     * @param rdupmType
      * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(@Param("projectId") Long projectId,
                                                           @Param("envId") Long envId,
-                                                          @Param("appServiceId") Long appServiceId,
-                                                          @Param("rdupmType") String rdupmType);
+                                                          @Param("appServiceId") Long appServiceId);
 }
