@@ -48,7 +48,7 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @param projectId
      * @param envId
      * @param rdupmType
-     * @return AppCenterEnvDetailVO集合
+     * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
                                                        @Param("envId") Long envId,
@@ -60,7 +60,7 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @param envId
      * @param appServiceId
      * @param rdupmType
-     * @return AppCenterEnvDetailVO集合
+     * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(@Param("projectId") Long projectId,
                                                           @Param("envId") Long envId,

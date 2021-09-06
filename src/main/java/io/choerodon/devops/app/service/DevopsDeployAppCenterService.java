@@ -98,7 +98,7 @@ public interface DevopsDeployAppCenterService {
      * @param projectId
      * @param envId
      * @param rdupmType
-     * @return AppCenterEnvDetailVO集合
+     * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId, String rdupmType);
 
@@ -108,7 +108,7 @@ public interface DevopsDeployAppCenterService {
      * @param envId
      * @param appServiceId
      * @param rdupmType
-     * @return AppCenterEnvDetailVO集合
+     * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, String rdupmType);
 }
