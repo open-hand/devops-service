@@ -238,7 +238,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
         deploySourceVO.setProjectName(projectDTO.getName());
 
-        Long recordId = devopsDeployRecordService.saveRecord(
+        devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.BASE_COMPONENT,
                 null,
@@ -311,6 +311,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareDeployVO.setMiddlewareType(DevopsMiddlewareTypeEnum.REDIS.getType());
             middlewareDeployVO.setMode(middlewareRedisHostDeployVO.getMode());
             middlewareDeployVO.setDeployShell(deployShell);
+            middlewareDeployVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
