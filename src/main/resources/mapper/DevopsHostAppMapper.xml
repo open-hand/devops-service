@@ -10,18 +10,22 @@
     </select>
 
     <select id="listByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        select dha.*, dh.name as host_name
+        select dha.*, dh.name as host_name,
+               dhai.app_id, dhai.code, dhai.source_type, dhai.source_config,
+               dhai.pre_command, dhai.run_command, dhai.post_command, dhai.status, dhai.pid,
+               dhai.ports, dhai.group_id, dhai.artifact_id, dhai.version
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
+        left join devops_host_app_instance dhai on dhai.app_id = dha.id
         <where>
             <if test="hostId != null">
                 and dha.host_id = #{hostId}
             </if>
             <if test="operationType != null">
-                and dha.operationType = #{operationType}
+                and dha.operation_type = #{operationType}
             </if>
             <if test="rdupmType != null">
-                and dha.rdupmType = #{rdupmType}
+                and dha.rdupm_type = #{rdupmType}
             </if>
             <if test="params != null">
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
@@ -35,9 +39,13 @@
     </delete>
 
     <select id="queryAppById" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        select dha.*, dh.name as host_name
+        select dha.*, dh.name as host_name,
+               dhai.app_id, dhai.code, dhai.source_type, dhai.source_config,
+               dhai.pre_command, dhai.run_command, dhai.post_command, dhai.status, dhai.pid,
+               dhai.ports, dhai.group_id, dhai.artifact_id, dhai.version
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
+        left join devops_host_app_instance dhai on dhai.app_id = dha.id
         where dha.id = #{id}
     </select>
     <select id="listOwnedByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
