@@ -34,8 +34,6 @@ public class DevopsHostAppDTO extends AuditDomain {
     private String name;
     @ApiModelProperty("应用编码")
     private String code;
-    @ApiModelProperty("部署来源")
-    private String sourceType;
     @ApiModelProperty("进程状态")
     private String status;
     @ApiModelProperty("制品类型")
@@ -54,12 +52,11 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.code = code;
     }
 
-    public DevopsHostAppDTO(Long projectId, Long hostId, String name, String code, String sourceType, String rdupmType, String operationType) {
+    public DevopsHostAppDTO(Long projectId, Long hostId, String name, String code, String rdupmType, String operationType) {
         this.projectId = projectId;
         this.hostId = hostId;
         this.name = name;
         this.code = code;
-        this.sourceType = sourceType;
         this.rdupmType = rdupmType;
         this.operationType = operationType;
     }
@@ -126,13 +123,5 @@ public class DevopsHostAppDTO extends AuditDomain {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getSourceType() {
-        return sourceType;
-    }
-
-    public void setSourceType(String sourceType) {
-        this.sourceType = sourceType;
     }
 }

@@ -271,7 +271,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     devopsHostDTOForConnection.getId(),
                     middlewareRedisHostDeployVO.getName(),
                     middlewareRedisHostDeployVO.getName(),
-                    AppSourceType.MIDDLEWARE.getValue(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
                     HostCommandStatusEnum.OPERATING.value()
             );
@@ -408,7 +407,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     devopsHostDTOForConnection.getId(),
                     middlewareMySqlHostDeployVO.getName(),
                     middlewareMySqlHostDeployVO.getName(),
-                    AppSourceType.MIDDLEWARE.getValue(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
                     HostCommandStatusEnum.OPERATING.value()
             );
