@@ -59,41 +59,41 @@ public class HostDeployUtil {
         Map<String, String> params = new HashMap<>();
         params.put("{{ WORKING_PATH }}", "$HOME/choerodon/" + instanceId);
 
-        String workingPath = "$HOME/choerodon/" + instanceId;
-        String jarPathAndName = workingPath + "/temp-jar/default";
-        String logName = "default.log";
-
-        // 2.2
-        params.put("{{ JAR_NAME }}", jarPathAndName);
-        if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
-            params.put("{{ USER_ID }}", "none");
-            params.put("{{ PASSWORD }}", "none");
-            params.put("{{ DOWNLOAD_URL }}", jarDeployVO.getFileInfoVO().getJarFileUrl());
-        } else {
-            jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
-            logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
-            params.put("{{ USER_ID }}", jarPullInfoDTO.getPullUserId());
-            params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
-            params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
-        }
-
-
-        // 2.3
-        String[] strings = jarDeployVO.getValue().split("\n");
-        String values = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
-                values = s;
-            }
-        }
-        if (StringUtils.isEmpty(values) || !values.contains("${jar}")) {
-            throw new CommonException("error.instruction");
-        }
-
-
-        String logPathAndName = workingPath + "/temp-log/" + logName;
-        String javaJarExec = values.replace("${jar}", jarPathAndName) + String.format(" -DchoerodonInstanceName=%s", jarDeployVO.getAppCode()) + String.format("> %s 2>&1", logPathAndName);
-        params.put("{{ JAVA_JAR_EXEC }}", javaJarExec);
+//        String workingPath = "$HOME/choerodon/" + instanceId;
+//        String jarPathAndName = workingPath + "/temp-jar/default";
+//        String logName = "default.log";
+//
+//        // 2.2
+//        params.put("{{ JAR_NAME }}", jarPathAndName);
+//        if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
+//            params.put("{{ USER_ID }}", "none");
+//            params.put("{{ PASSWORD }}", "none");
+//            params.put("{{ DOWNLOAD_URL }}", jarDeployVO.getFileInfoVO().getJarFileUrl());
+//        } else {
+//            jarPathAndName = workingPath + "/temp-jar/" + jarDeployVO.getProdJarInfoVO().getArtifactId();
+//            logName = jarDeployVO.getProdJarInfoVO().getArtifactId().replace(".jar", ".log");
+//            params.put("{{ USER_ID }}", jarPullInfoDTO.getPullUserId());
+//            params.put("{{ PASSWORD }}", jarPullInfoDTO.getPullUserPassword());
+//            params.put("{{ DOWNLOAD_URL }}", jarPullInfoDTO.getDownloadUrl());
+//        }
+//
+//
+//        // 2.3
+//        String[] strings = jarDeployVO.getValue().split("\n");
+//        String values = "";
+//        for (String s : strings) {
+//            if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
+//                values = s;
+//            }
+//        }
+//        if (StringUtils.isEmpty(values) || !values.contains("${jar}")) {
+//            throw new CommonException("error.instruction");
+//        }
+//
+//
+//        String logPathAndName = workingPath + "/temp-log/" + logName;
+//        String javaJarExec = values.replace("${jar}", jarPathAndName) + String.format(" -DchoerodonInstanceName=%s", jarDeployVO.getAppCode()) + String.format("> %s 2>&1", logPathAndName);
+//        params.put("{{ JAVA_JAR_EXEC }}", javaJarExec);
 
         return FileUtil.replaceReturnString(JAVA_DEPLOY_COMMAND_TEMPLATE, params);
     }
