@@ -136,7 +136,7 @@ public interface GitlabServiceClient {
 
     @DeleteMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<Void> revokeImpersonationToken(@PathVariable("userId") Integer userId,
-                                                                   @RequestParam(value = "tokenId") Integer tokenId);
+                                                  @RequestParam(value = "tokenId") Integer tokenId);
 
     @GetMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<List<ImpersonationTokenDTO>> listProjectToken(@PathVariable("userId") Integer userId);
