@@ -57,6 +57,10 @@ public class DevopsServiceReqVO {
     @ApiModelProperty("目标对象是单个实例时，实例code")
     private String targetInstanceCode;
 
+    @Encrypt
+    @ApiModelProperty("目标对象是部署组时，部署组的id")
+    private Long targetDeploymentId;
+
     private DevopsIngressVO devopsIngressVO;
 
     public Map<String, String> getSelectors() {

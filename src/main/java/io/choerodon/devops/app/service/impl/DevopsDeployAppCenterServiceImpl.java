@@ -411,7 +411,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public List<AppCenterEnvDetailVO> batchQueryByProjectIdAndEnvId(Long projectId, Long envId) {
-        return devopsDeployAppCenterEnvMapper.batchQueryByProjectIdAndEnvId(projectId, envId);
+    public List<AppCenterEnvDetailVO> listByProjectIdAndEnvId(Long projectId, Long envId, String rdupmType) {
+        return devopsDeployAppCenterEnvMapper.listByProjectIdAndEnvId(projectId, envId, rdupmType);
     }
 }

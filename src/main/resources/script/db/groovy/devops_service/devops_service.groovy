@@ -115,4 +115,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
         }
     }
 
+    changeSet(author: 'shanyu', id: '2021-09-06-add-columns') {
+        addColumn(tableName: 'devops_service') {
+            column(name: 'target_deployment_id', type: 'BIGINT UNSIGNED', remarks: '部署组id', afterColumn: 'target_app_service_id')
+        }
+    }
+
 }

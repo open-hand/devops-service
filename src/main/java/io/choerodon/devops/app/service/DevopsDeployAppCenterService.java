@@ -95,9 +95,10 @@ public interface DevopsDeployAppCenterService {
 
     /**
      * 根据项目id和环境id查询deployment的应用列表
-     * @param
-     * @param
+     * @param projectId
+     * @param envId
+     * @param rdupmType
      * @return
      */
-    List<AppCenterEnvDetailVO> batchQueryByProjectIdAndEnvId(Long projectId, Long envId);
+    List<AppCenterEnvDetailVO> listByProjectIdAndEnvId(Long projectId, Long envId, String rdupmType);
 }
