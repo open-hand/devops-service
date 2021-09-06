@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.api.vo.AppCenterEnvDetailVO;
 import io.choerodon.devops.api.vo.DevopsDeployAppCenterVO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -51,7 +50,7 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @param rdupmType
      * @return AppCenterEnvDetailVO集合
      */
-    List<AppCenterEnvDetailVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
                                                        @Param("envId") Long envId,
                                                        @Param("rdupmType") String rdupmType);
 
@@ -63,7 +62,7 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @param rdupmType
      * @return AppCenterEnvDetailVO集合
      */
-    List<AppCenterEnvDetailVO> listByProjectIdAndEnvIdAndAppId(@Param("projectId") Long projectId,
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(@Param("projectId") Long projectId,
                                                           @Param("envId") Long envId,
                                                           @Param("appServiceId") Long appServiceId,
                                                           @Param("rdupmType") String rdupmType);

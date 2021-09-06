@@ -88,7 +88,7 @@
         </if>
     </select>
 
-    <select id="listByProjectIdAndEnvId" resultType="io.choerodon.devops.api.vo.AppCenterEnvDetailVO">
+    <select id="listByProjectIdAndEnvId" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
         SELECT *
         FROM devops_deploy_app_center_env
         WHERE project_id = #{projectId}
@@ -96,7 +96,7 @@
         AND rdupm_type = #{rdupmType}
     </select>
 
-    <select id="listByProjectIdAndEnvIdAndAppId" resultType="io.choerodon.devops.api.vo.AppCenterEnvDetailVO">
+    <select id="listByProjectIdAndEnvIdAndAppId" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
         SELECT ddace.*
         FROM devops_deploy_app_center_env ddace
         LEFT JOIN devops_app_service_instance dasi ON ddace.env_id = dasi.env_id AND ddace.code = dasi.code
