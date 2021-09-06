@@ -555,7 +555,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),
-                devopsHostAppDTO.getId().toString(),
+                devopsHostAppInstanceDTO.getId().toString(),
                 HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                         mavenRepoDTOList.get(0).getNePullUserPassword(),
                         nexusComponentDTOList.get(0).getDownloadUrl(),
@@ -571,7 +571,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(devopsHostAppDTO.getId());
+        devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
