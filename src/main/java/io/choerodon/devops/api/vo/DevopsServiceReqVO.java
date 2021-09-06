@@ -150,4 +150,12 @@ public class DevopsServiceReqVO {
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
     }
+
+    public Long getTargetDeploymentId() {
+        return targetDeploymentId;
+    }
+
+    public void setTargetDeploymentId(Long targetDeploymentId) {
+        this.targetDeploymentId = targetDeploymentId;
+    }
 }

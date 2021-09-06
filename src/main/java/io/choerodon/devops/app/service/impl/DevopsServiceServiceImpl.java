@@ -173,7 +173,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE,
             description = "Devops创建网络", inputSchema = "{}")
     public Boolean create(Long projectId, DevopsServiceReqVO devopsServiceReqVO) {
-
+        //校验部署方式是否唯一
+        permissionHelper.checkDeploymentWay(devopsServiceReqVO);
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsServiceReqVO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
