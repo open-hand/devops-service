@@ -414,4 +414,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     public List<AppCenterEnvDetailVO> listByProjectIdAndEnvId(Long projectId, Long envId, String rdupmType) {
         return devopsDeployAppCenterEnvMapper.listByProjectIdAndEnvId(projectId, envId, rdupmType);
     }
+
+    @Override
+    public List<AppCenterEnvDetailVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, String rdupmType) {
+        return devopsDeployAppCenterEnvMapper.listByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId, rdupmType);
+    }
 }

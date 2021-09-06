@@ -191,7 +191,10 @@ public class DevopsDeployAppCenterController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "环境ID", required = true)
-            @RequestParam(value = "env_id") Long envId) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId, RdupmTypeEnum.CHART.value()));
+            @RequestParam(value = "env_id") Long envId,
+            @Encrypt
+            @ApiParam(value = "应用服务ID", required = true)
+            @RequestParam(value = "app_service_id") Long appServiceId) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId, RdupmTypeEnum.CHART.value()));
     }
 }

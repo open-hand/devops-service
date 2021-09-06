@@ -95,4 +95,15 @@
         AND env_id = #{envId}
         AND rdupm_type = #{rdupmType}
     </select>
+
+    <select id="listByProjectIdAndEnvIdAndAppId" resultType="io.choerodon.devops.api.vo.AppCenterEnvDetailVO">
+        SELECT ddace.*
+        FROM devops_deploy_app_center_env ddace
+        LEFT JOIN devops_app_service_instance dasi ON ddace.env_id = dasi.env_id AND ddace.code = dasi.code
+        LEFT JOIN devops_app_service das ON dasi.app_service_id = das.id
+        WHERE ddace.project_id = #{projectId}
+        AND ddace.env_id = #{envId}
+        AND ddace.rdupm_type = #{rdupmType}
+        AND das.id = #{appServiceId}
+    </select>
 </mapper>
