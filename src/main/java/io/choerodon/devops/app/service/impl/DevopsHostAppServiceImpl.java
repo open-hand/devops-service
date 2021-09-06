@@ -43,7 +43,6 @@ import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
-import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
@@ -149,8 +148,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         // 标识部署对象
         String deployObjectKey = null;
-        JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
-
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
             deployObjectKey = String.valueOf(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
@@ -193,11 +190,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             deploySourceVO.setDeployObjectId(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
 
-            // 添加jar包下载信息
-            jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
-            jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
-            jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
-        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())) {
+        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())){
             // 0.2 从制品库获取仓库信息
             Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
             groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
@@ -215,14 +208,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     .append(BaseConstants.Symbol.COLON)
                     .append(artifactId)
                     .toString();
-            // 添加jar包下载信息
-            jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
-            jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
-            jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
         }
 
         // 2.保存记录
         DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, jarDeployVO.getAppCode());
+        DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = null;
         if (devopsHostAppDTO == null) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
@@ -232,7 +222,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.CREATE_APP.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
-            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
+            devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
                     devopsHostAppDTO.getId(),
                     jarDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
@@ -251,24 +241,41 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
-            String finalVersion = version;
-            devopsHostAppInstanceDTOS.forEach(devopsHostAppInstanceDTO -> {
-                devopsHostAppInstanceDTO.setPreCommand(jarDeployVO.getPreCommand());
-                devopsHostAppInstanceDTO.setRunCommand(jarDeployVO.getRunCommand());
-                devopsHostAppInstanceDTO.setPostCommand(jarDeployVO.getPostCommand());
-                devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
-                devopsHostAppInstanceDTO.setSourceConfig(calculateSourceConfig(jarDeployVO));
-                devopsHostAppInstanceDTO.setVersion(finalVersion);
-                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
-            });
+            devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+
+            devopsHostAppInstanceDTO.setPreCommand(jarDeployVO.getPreCommand());
+            devopsHostAppInstanceDTO.setRunCommand(jarDeployVO.getRunCommand());
+            devopsHostAppInstanceDTO.setPostCommand(jarDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
+            devopsHostAppInstanceDTO.setSourceConfig(calculateSourceConfig(jarDeployVO));
+            devopsHostAppInstanceDTO.setVersion(version);
+            devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
+
+        String downloadCommand;
+        if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
+            downloadCommand = HostDeployUtil.genDownloadCommand("none",
+                    "none",
+                    jarDeployVO.getFileInfoVO().getJarFileUrl(),
+                    HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
+                    "default");
+        } else {
+            downloadCommand = HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
+                    mavenRepoDTOList.get(0).getNePullUserPassword(),
+                    nexusComponentDTOList.get(0).getDownloadUrl(),
+                    HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
+                    jarDeployVO.getProdJarInfoVO().getArtifactId());
+        }
+
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),
-                deployObjectName,
                 String.valueOf(devopsHostAppDTO.getId()),
-                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsHostAppDTO.getId()),
-                devopsHostAppDTO.getPid());
+                downloadCommand,
+                jarDeployVO.getPreCommand(),
+                jarDeployVO.getRunCommand(),
+                jarDeployVO.getPostCommand(),
+                devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
@@ -397,10 +404,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     public void deleteById(Long projectId, Long hostId, Long appId) {
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
-        if (devopsHostAppDTO.getPid() == null) {
-            devopsHostAppMapper.deleteByPrimaryKey(appId);
-            return;
-        }
+        // todo
+//        if (devopsHostAppDTO.getPid() == null) {
+//            devopsHostAppMapper.deleteByPrimaryKey(appId);
+//            return;
+//        }
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_JAR.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -418,7 +426,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         JavaProcessInfoVO javaProcessInfoVO = new JavaProcessInfoVO();
         javaProcessInfoVO.setInstanceId(String.valueOf(appId));
-        javaProcessInfoVO.setPid(devopsHostAppDTO.getPid());
+//        javaProcessInfoVO.setPid(devopsHostAppDTO.getPid());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -437,7 +445,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
                 || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
-        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
+        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
             devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
         }
     }

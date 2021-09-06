@@ -49,7 +49,8 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
                 DevopsHostAppDTO devopsHostAppDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
                 if (devopsHostAppDTO != null) {
                     devopsHostAppDTO.setStatus(updateProcessInfo.getStatus());
-                    devopsHostAppDTO.setPorts(updateProcessInfo.getPorts());
+                    // todo
+//                    devopsHostAppDTO.setPorts(updateProcessInfo.getPorts());
                     devopsHostAppService.baseUpdate(devopsHostAppDTO);
                 }
             });

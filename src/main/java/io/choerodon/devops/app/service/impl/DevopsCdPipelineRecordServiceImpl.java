@@ -557,12 +557,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             });
         }
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
-                instanceName,
-                c7nNexusComponentDTO.getName(),
-                String.valueOf(devopsHostAppDTO.getId()),
-                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsHostAppDTO.getId()),
-                devopsHostAppDTO.getPid());
+//        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+//                instanceName,
+//                c7nNexusComponentDTO.getName(),
+//                String.valueOf(devopsHostAppDTO.getId()),
+//                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsHostAppDTO.getId()),
+//                devopsHostAppDTO.getPid());
 
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -594,7 +594,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+//        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
