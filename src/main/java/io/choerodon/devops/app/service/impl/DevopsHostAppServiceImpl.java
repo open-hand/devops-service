@@ -270,7 +270,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),
-                String.valueOf(devopsHostAppDTO.getId()),
+                String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
                 jarDeployVO.getPreCommand(),
                 jarDeployVO.getRunCommand(),
@@ -281,7 +281,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(devopsHostAppDTO.getId());
+        devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
