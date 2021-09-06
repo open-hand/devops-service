@@ -163,4 +163,20 @@ public class DevopsDeployAppCenterController {
             @RequestBody(required = false) String searchParam) {
         return Results.success(devopsDeployAppCenterService.envChartService(projectId, appCenterId, pageRequest, searchParam));
     }
+
+    /**
+     * 根据projectId和envId查询deployment的应用列表
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
+    @GetMapping(value = "/batch")
+    public ResponseEntity<List<AppCenterEnvDetailVO>> batchQueryByProjectIdAndEnvId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId
+    ) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.batchQueryByProjectIdAndEnvId(projectId, envId));
+    }
 }

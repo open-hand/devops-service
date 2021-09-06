@@ -91,4 +91,13 @@ public interface DevopsDeployAppCenterService {
 
 
     DevopsDeployAppCenterEnvDTO selectByPrimaryKey(Long id);
+
+
+    /**
+     * 根据项目id和环境id查询deployment的应用列表
+     * @param
+     * @param
+     * @return
+     */
+    List<AppCenterEnvDetailVO> batchQueryByProjectIdAndEnvId(Long projectId, Long envId);
 }

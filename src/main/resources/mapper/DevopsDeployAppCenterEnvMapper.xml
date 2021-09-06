@@ -87,4 +87,12 @@
             AND ddace.object_id != #{objectId}
         </if>
     </select>
+
+    <select id="batchQueryByProjectIdAndEnvId" resultType="io.choerodon.devops.api.vo.AppCenterEnvDetailVO">
+        SELECT *
+        FROM devops_deploy_app_center_env
+        WHERE project_id = #{projectId}
+        AND env_id = #{envId}
+        AND rdupm_type = 'deployment'
+    </select>
 </mapper>

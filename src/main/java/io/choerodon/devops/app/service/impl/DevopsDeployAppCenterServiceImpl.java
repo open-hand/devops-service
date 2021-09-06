@@ -409,4 +409,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     public DevopsDeployAppCenterEnvDTO selectByPrimaryKey(Long id) {
         return devopsDeployAppCenterEnvMapper.selectByPrimaryKey(id);
     }
+
+    @Override
+    public List<AppCenterEnvDetailVO> batchQueryByProjectIdAndEnvId(Long projectId, Long envId) {
+        return devopsDeployAppCenterEnvMapper.batchQueryByProjectIdAndEnvId(projectId, envId);
+    }
 }
