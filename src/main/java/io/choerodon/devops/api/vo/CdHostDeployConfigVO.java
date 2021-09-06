@@ -28,8 +28,12 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("jar部署详情")
     private JarDeploy jarDeploy;
 
-    @ApiModelProperty("自定义部署customize详情")
-    private Customize customize;
+    @ApiModelProperty("前置命令")
+    private String preCommand;
+    @ApiModelProperty("启动命令")
+    private String runAppCommand;
+    @ApiModelProperty("后置命令")
+    private String postCommand;
 
     public static class JarDeploy {
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
@@ -62,8 +66,6 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("部署values")
         private String value;
 
-        @ApiModelProperty("工作目录,默认值/temp")
-        private String workingPath;
 
         public String getName() {
             return name;
@@ -71,14 +73,6 @@ public class CdHostDeployConfigVO {
 
         public void setName(String name) {
             this.name = name;
-        }
-
-        public String getWorkingPath() {
-            return workingPath;
-        }
-
-        public void setWorkingPath(String workingPath) {
-            this.workingPath = workingPath;
         }
 
         public String getValue() {
@@ -154,6 +148,30 @@ public class CdHostDeployConfigVO {
         }
     }
 
+    public String getPreCommand() {
+        return preCommand;
+    }
+
+    public void setPreCommand(String preCommand) {
+        this.preCommand = preCommand;
+    }
+
+    public String getRunAppCommand() {
+        return runAppCommand;
+    }
+
+    public void setRunAppCommand(String runAppCommand) {
+        this.runAppCommand = runAppCommand;
+    }
+
+    public String getPostCommand() {
+        return postCommand;
+    }
+
+    public void setPostCommand(String postCommand) {
+        this.postCommand = postCommand;
+    }
+
     public String getAppName() {
         return appName;
     }
@@ -170,20 +188,6 @@ public class CdHostDeployConfigVO {
         this.appCode = appCode;
     }
 
-    public static class Customize {
-
-        @ApiModelProperty("部署values")
-        private String values;
-
-        public String getValues() {
-            return values;
-        }
-
-        public void setValues(String values) {
-            this.values = values;
-        }
-    }
-
     public Long getHostId() {
         return hostId;
     }
@@ -198,14 +202,6 @@ public class CdHostDeployConfigVO {
 
     public void setHostDeployType(String hostDeployType) {
         this.hostDeployType = hostDeployType;
-    }
-
-    public Customize getCustomize() {
-        return customize;
-    }
-
-    public void setCustomize(Customize customize) {
-        this.customize = customize;
     }
 
     public JarDeploy getJarDeploy() {

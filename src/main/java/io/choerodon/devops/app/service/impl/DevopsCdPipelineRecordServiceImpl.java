@@ -385,41 +385,41 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         LOGGER.info("start custom deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-        // 0.1 查询部署信息
-        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-        String value = null;
-        try {
-            value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
-
-        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
-
-
-        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.CUSTOM_DEPLOY.value());
-        devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
-        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
-        devopsHostCommandDTO.setInstanceType(HostInstanceType.CUSTOM.value());
-        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-        String commands = genCustomCommands(value);
-
-        // 3. 发送部署指令给agent
-        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.CUSTOM_DEPLOY.value());
-        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(commands);
-
-        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-
-        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.PIPELINE_CUSTOM_DEPLOY, hostId, cdJobRecordId),
-                JsonHelper.marshalByJackson(hostAgentMsgVO));
+//        // 0.1 查询部署信息
+//        DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
+//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+//        String value = null;
+//        try {
+//            value = new String(decoder.decodeBuffer(cdHostDeployConfigVO.getCustomize().getValues()), StandardCharsets.UTF_8);
+//        } catch (IOException e) {
+//            throw new CommonException(e);
+//        }
+//
+//        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+//
+//
+//        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+//        devopsHostCommandDTO.setCommandType(HostCommandEnum.CUSTOM_DEPLOY.value());
+//        devopsHostCommandDTO.setHostId(hostId);
+//        devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
+//        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+//        devopsHostCommandDTO.setInstanceType(HostInstanceType.CUSTOM.value());
+//        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+//
+//        String commands = genCustomCommands(value);
+//
+//        // 3. 发送部署指令给agent
+//        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+//        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+//        hostAgentMsgVO.setType(HostCommandEnum.CUSTOM_DEPLOY.value());
+//        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+//        hostAgentMsgVO.setPayload(commands);
+//
+//        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+//
+//        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+//                String.format(DevopsHostConstants.PIPELINE_CUSTOM_DEPLOY, hostId, cdJobRecordId),
+//                JsonHelper.marshalByJackson(hostAgentMsgVO));
 
 
     }
@@ -486,11 +486,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
 
-        JarDeployVO jarDeployVO = null;
-            jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
-                    jarDeployVO.getPreCommand(),
-                    jarDeployVO.getRunCommand(),
-                    jarDeployVO.getPostCommand(),
+        JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.PIPELINE.getValue(),
+                    cdHostDeployConfigVO.getPreCommand(),
+                    cdHostDeployConfigVO.getRunAppCommand(),
+                    cdHostDeployConfigVO.getPostCommand(),
                     new ProdJarInfoVO(nexusRepoId,
                             groupId,
                             artifactId,
@@ -513,9 +512,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
 
         // 2.保存记录
-        String instanceName = jarDeploy.getName() != null ? jarDeploy.getName() : c7nNexusComponentDTO.getName();
-
-        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(hostId, instanceName);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(hostId, jarDeployVO.getAppCode());
+        DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
         if (devopsHostAppDTO == null) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
@@ -525,7 +523,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.PIPELINE_DEPLOY.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
-            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
+            devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
                     devopsHostAppDTO.getId(),
                     jarDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
@@ -544,26 +542,29 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
-            String finalVersion = c7nNexusComponentDTO.getVersion();
-            JarDeployVO finalJarDeployVO = jarDeployVO;
-            devopsHostAppInstanceDTOS.forEach(devopsHostAppInstanceDTO -> {
-                devopsHostAppInstanceDTO.setPreCommand(finalJarDeployVO.getPreCommand());
-                devopsHostAppInstanceDTO.setRunCommand(finalJarDeployVO.getRunCommand());
-                devopsHostAppInstanceDTO.setPostCommand(finalJarDeployVO.getPostCommand());
-                devopsHostAppInstanceDTO.setSourceType(finalJarDeployVO.getSourceType());
-                devopsHostAppInstanceDTO.setSourceConfig(devopsHostAppService.calculateSourceConfig(finalJarDeployVO));
-                devopsHostAppInstanceDTO.setVersion(finalVersion);
-                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
-            });
+            devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+
+            devopsHostAppInstanceDTO.setPreCommand(jarDeployVO.getPreCommand());
+            devopsHostAppInstanceDTO.setRunCommand(jarDeployVO.getRunCommand());
+            devopsHostAppInstanceDTO.setPostCommand(jarDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
+            devopsHostAppInstanceDTO.setSourceConfig(devopsHostAppService.calculateSourceConfig(jarDeployVO));
+            devopsHostAppInstanceDTO.setVersion(c7nNexusComponentDTO.getVersion());
+            devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
-//        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
-//                instanceName,
-//                c7nNexusComponentDTO.getName(),
-//                String.valueOf(devopsHostAppDTO.getId()),
-//                HostDeployUtil.genJavaRunCmd(jarPullInfoDTO, jarDeployVO, devopsHostAppDTO.getId()),
-//                devopsHostAppDTO.getPid());
-
+        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+                jarDeployVO.getAppCode(),
+                devopsHostAppDTO.getId().toString(),
+                HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
+                        mavenRepoDTOList.get(0).getNePullUserPassword(),
+                        nexusComponentDTOList.get(0).getDownloadUrl(),
+                        HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
+                        c7nNexusComponentDTO.getName()),
+                        jarDeployVO.getPreCommand(),
+                        jarDeployVO.getRunCommand(),
+                        jarDeployVO.getPostCommand(),
+                        devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_JAR.value());
@@ -594,7 +595,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_JAR.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-//        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
