@@ -11,12 +11,10 @@ import org.springframework.stereotype.Component;
 import io.choerodon.devops.api.vo.host.CommandResultVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
-import io.choerodon.devops.api.vo.host.MiddlewareDeployVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
-import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
@@ -42,8 +40,6 @@ public class CommandResultHandler implements HostMsgHandler {
     private DevopsHostAppService devopsHostAppService;
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
-    @Autowired
-    private DevopsDeployRecordService devopsDeployRecordService;
 
     @PostConstruct
     void init() {
@@ -89,28 +85,21 @@ public class CommandResultHandler implements HostMsgHandler {
     public void handler(String hostId, Long commandId, CommandResultVO commandResultVO) {
         DevopsHostCommandDTO devopsHostCommandDTO = devopsHostCommandService.baseQueryById(commandId);
 
-        // 中间件单独处理
-        if (devopsHostCommandDTO.getCommandType().equals(HostCommandEnum.DEPLOY_MIDDLEWARE.value())) {
-            MiddlewareDeployVO middlewareDeployVO = JsonHelper.unmarshalByJackson(commandResultVO.getPayload(), MiddlewareDeployVO.class);
-            String status = Boolean.TRUE.equals(commandResultVO.getSuccess()) ? CommandStatus.SUCCESS.getStatus() : CommandStatus.FAILED.getStatus();
-            devopsDeployRecordService.updateRecord(Long.valueOf(middlewareDeployVO.getRecordId()), status, commandResultVO.getErrorMsg());
+        if (Boolean.TRUE.equals(commandResultVO.getSuccess())) {
+            // 操作成功处理逻辑
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.SUCCESS.value());
+            // 使用函数式接口 + 策略模式
+            Consumer<String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
+            if (consumer != null) {
+                consumer.accept(commandResultVO.getPayload());
+            }
         } else {
-            if (Boolean.TRUE.equals(commandResultVO.getSuccess())) {
-                // 操作成功处理逻辑
-                devopsHostCommandDTO.setStatus(HostCommandStatusEnum.SUCCESS.value());
-                // 使用函数式接口 + 策略模式
-                Consumer<String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
-                if (consumer != null) {
-                    consumer.accept(commandResultVO.getPayload());
-                }
-            } else {
-                devopsHostCommandDTO.setStatus(HostCommandStatusEnum.FAILED.value());
-                devopsHostCommandDTO.setError(commandResultVO.getErrorMsg());
-            }
-            devopsHostCommandService.baseUpdate(devopsHostCommandDTO);
-            if (devopsHostCommandDTO.getCdJobRecordId() != null) {
-                devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
-            }
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.FAILED.value());
+            devopsHostCommandDTO.setError(commandResultVO.getErrorMsg());
+        }
+        devopsHostCommandService.baseUpdate(devopsHostCommandDTO);
+        if (devopsHostCommandDTO.getCdJobRecordId() != null) {
+            devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
         }
     }
 

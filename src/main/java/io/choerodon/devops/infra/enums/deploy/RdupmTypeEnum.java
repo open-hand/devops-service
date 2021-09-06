@@ -23,7 +23,15 @@ public enum RdupmTypeEnum {
     /**
      * jar包
      */
-    JAR("jar");
+    JAR("jar"),
+    /**
+     * 其他类型
+     */
+    OTHER("other"),
+    /**
+     * 中间件
+     */
+    MIDDLEWARE("middleware");
 
     private String value;
 

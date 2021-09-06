@@ -211,7 +211,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
      * @param errorMsg 错误消息
      */
     @Override
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void updateRecord(Long recordId, String status, String errorMsg) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
         devopsDeployRecordDTO.setDeployResult(status);

@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.DevopsMiddlewareDeployPayload;
 import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
 
 public interface DevopsMiddlewareService {
@@ -9,7 +8,7 @@ public interface DevopsMiddlewareService {
 
     void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO);
 
-    DevopsMiddlewareDTO saveMiddlewareInfo(Long projectId, String name, String type, String mode, String version, String hostIds, String configuration);
+    DevopsMiddlewareDTO saveMiddlewareInfo(Long projectId, Long instanceId, String name, String type, String mode, String version, String hostIds, String configuration);
 
     AppServiceInstanceVO envDeployForMySql(Long projectId, MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO);
 
