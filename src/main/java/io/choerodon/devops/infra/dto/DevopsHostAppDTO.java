@@ -34,10 +34,6 @@ public class DevopsHostAppDTO extends AuditDomain {
     private String name;
     @ApiModelProperty("应用编码")
     private String code;
-    @ApiModelProperty("进程id")
-    private String pid;
-    @ApiModelProperty("占用端口")
-    private String ports;
     @ApiModelProperty("部署来源")
     private String sourceType;
     @ApiModelProperty("进程状态")
@@ -130,22 +126,6 @@ public class DevopsHostAppDTO extends AuditDomain {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getPid() {
-        return pid;
-    }
-
-    public void setPid(String pid) {
-        this.pid = pid;
-    }
-
-    public String getPorts() {
-        return ports;
-    }
-
-    public void setPorts(String ports) {
-        this.ports = ports;
     }
 
     public String getSourceType() {

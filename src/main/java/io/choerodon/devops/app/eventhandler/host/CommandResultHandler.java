@@ -51,28 +51,29 @@ public class CommandResultHandler implements HostMsgHandler {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
             DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsHostAppDTO.setStatus(processInfoVO.getStatus());
-            devopsHostAppDTO.setPid(processInfoVO.getPid());
-            devopsHostAppDTO.setPorts(processInfoVO.getPorts());
+            // todo
+//            devopsHostAppDTO.setPid(processInfoVO.getPid());
+//            devopsHostAppDTO.setPorts(processInfoVO.getPorts());
             devopsHostAppService.baseUpdate(devopsHostAppDTO);
         });
-        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {
-            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
-            devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
-        });
-        Consumer<String> dockerUpdateConsumer = payload -> {
-            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
-            // 更新状态和容器id
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
-            devopsDockerInstanceDTO.setContainerId(processInfoVO.getContainerId());
-            devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
-            devopsDockerInstanceDTO.setPorts(processInfoVO.getPorts());
-            devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
-        };
-        resultHandlerMap.put(HostCommandEnum.STOP_DOCKER.value(), dockerUpdateConsumer);
-        resultHandlerMap.put(HostCommandEnum.START_DOCKER.value(), dockerUpdateConsumer);
-        resultHandlerMap.put(HostCommandEnum.RESTART_DOCKER.value(), dockerUpdateConsumer);
-
-        resultHandlerMap.put(HostCommandEnum.DEPLOY_DOCKER.value(), dockerUpdateConsumer);
+//        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {
+//            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
+//            devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
+//        });
+//        Consumer<String> dockerUpdateConsumer = payload -> {
+//            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
+//            // 更新状态和容器id
+//            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
+//            devopsDockerInstanceDTO.setContainerId(processInfoVO.getContainerId());
+//            devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
+//            devopsDockerInstanceDTO.setPorts(processInfoVO.getPorts());
+//            devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
+//        };
+//        resultHandlerMap.put(HostCommandEnum.STOP_DOCKER.value(), dockerUpdateConsumer);
+//        resultHandlerMap.put(HostCommandEnum.START_DOCKER.value(), dockerUpdateConsumer);
+//        resultHandlerMap.put(HostCommandEnum.RESTART_DOCKER.value(), dockerUpdateConsumer);
+//
+//        resultHandlerMap.put(HostCommandEnum.DEPLOY_DOCKER.value(), dockerUpdateConsumer);
     }
 
 

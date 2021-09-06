@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.enums.AppSourceType;
 public class HostDeployUtil {
 
     private static final String JAVA_DEPLOY_COMMAND_TEMPLATE;
+    private static final String JAR_DOWNLOAD_COMMAND = "curl -o %s -u %s:%s %s";
 
     private HostDeployUtil() {
     }
@@ -55,9 +56,21 @@ public class HostDeployUtil {
         return dockerRunExec.toString();
     }
 
+    public static String genWorkingPath(Long instanceId) {
+        return "$HOME/choerodon/" + instanceId;
+    }
+
+
+    public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String workingPath, String jarName) {
+        String jarPathAndName = workingPath + "/temp-jar/" + jarName;
+        return String.format(JAR_DOWNLOAD_COMMAND, jarPathAndName, pullUserId, pullUserPassword, downloadUrl);
+
+    }
+
+
     public static String genJavaRunCmd(JarPullInfoDTO jarPullInfoDTO, JarDeployVO jarDeployVO, Long instanceId) {
         Map<String, String> params = new HashMap<>();
-        params.put("{{ WORKING_PATH }}", "$HOME/choerodon/" + instanceId);
+//        params.put("{{ WORKING_PATH }}", );
 
 //        String workingPath = "$HOME/choerodon/" + instanceId;
 //        String jarPathAndName = workingPath + "/temp-jar/default";
