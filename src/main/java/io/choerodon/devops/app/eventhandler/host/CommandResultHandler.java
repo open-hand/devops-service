@@ -9,11 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.host.CommandResultVO;
-import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
+import io.choerodon.devops.app.service.DevopsCdPipelineService;
+import io.choerodon.devops.app.service.DevopsHostAppInstanceService;
+import io.choerodon.devops.app.service.DevopsHostAppService;
+import io.choerodon.devops.app.service.DevopsHostCommandService;
+import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
@@ -35,26 +36,30 @@ public class CommandResultHandler implements HostMsgHandler {
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
     @Autowired
-    private DevopsDockerInstanceService devopsDockerInstanceService;
-    @Autowired
     private DevopsHostAppService devopsHostAppService;
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
+    @Autowired
+    private DevopsHostAppInstanceService devopsHostAppInstanceService;
 
     @PostConstruct
     void init() {
         resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), payload -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
-            devopsHostAppService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
+            if (devopsHostAppInstanceDTO != null) {
+                devopsHostAppInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
+                devopsHostAppService.baseDelete(devopsHostAppInstanceDTO.getAppId());
+            }
+
         });
         resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), payload -> {
             JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
-            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
-            devopsHostAppDTO.setStatus(processInfoVO.getStatus());
-            // todo
-//            devopsHostAppDTO.setPid(processInfoVO.getPid());
-//            devopsHostAppDTO.setPorts(processInfoVO.getPorts());
-            devopsHostAppService.baseUpdate(devopsHostAppDTO);
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
+            devopsHostAppInstanceDTO.setStatus(processInfoVO.getStatus());
+            devopsHostAppInstanceDTO.setPid(processInfoVO.getPid());
+            devopsHostAppInstanceDTO.setPorts(processInfoVO.getPorts());
+            devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         });
 //        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {
 //            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);

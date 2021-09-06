@@ -12,8 +12,8 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
 import io.choerodon.devops.api.vo.host.JavaProcessUpdatePayload;
-import io.choerodon.devops.app.service.DevopsHostAppService;
-import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
+import io.choerodon.devops.app.service.DevopsHostAppInstanceService;
+import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
 
@@ -28,7 +28,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
 public class JavaProcessUpdateHandler implements HostMsgHandler {
 
     @Autowired
-    private DevopsHostAppService devopsHostAppService;
+    private DevopsHostAppInstanceService devopsHostAppInstanceService;
 
     @Override
     @Transactional
@@ -36,22 +36,20 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
 
 
         JavaProcessUpdatePayload javaProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, JavaProcessUpdatePayload.class);
-        List<DevopsHostAppDTO> devopsHostAppDTOList = devopsHostAppService.listByHostId(Long.valueOf(hostId));
-        if (CollectionUtils.isEmpty(devopsHostAppDTOList)) {
+        List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByHostId(Long.valueOf(hostId));
+        if (CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
             return;
         }
-        Map<Long, DevopsHostAppDTO> devopsJavaInstanceDTOMap = devopsHostAppDTOList.stream().collect(Collectors.toMap(DevopsHostAppDTO::getId, Function.identity()));
+        Map<Long, DevopsHostAppInstanceDTO> devopsJavaInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.toMap(DevopsHostAppInstanceDTO::getId, Function.identity()));
 
         // 处理更新的数据
         List<JavaProcessInfoVO> updateProcessInfos = javaProcessUpdatePayload.getUpdateProcessInfos();
         if (!CollectionUtils.isEmpty(updateProcessInfos)) {
             updateProcessInfos.forEach(updateProcessInfo -> {
-                DevopsHostAppDTO devopsHostAppDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
-                if (devopsHostAppDTO != null) {
-                    devopsHostAppDTO.setStatus(updateProcessInfo.getStatus());
-                    // todo
-//                    devopsHostAppDTO.setPorts(updateProcessInfo.getPorts());
-                    devopsHostAppService.baseUpdate(devopsHostAppDTO);
+                DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
+                if (devopsHostAppInstanceDTO != null) {
+                    devopsHostAppInstanceDTO.setStatus(updateProcessInfo.getStatus());
+                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
                 }
             });
         }
