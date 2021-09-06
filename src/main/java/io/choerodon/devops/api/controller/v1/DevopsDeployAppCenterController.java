@@ -175,8 +175,7 @@ public class DevopsDeployAppCenterController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "环境ID", required = true)
-            @RequestParam(value = "env_id") Long envId
-    ) {
+            @RequestParam(value = "env_id") Long envId) {
         return ResponseEntity.ok(devopsDeployAppCenterService.batchQueryByProjectIdAndEnvId(projectId, envId));
     }
 }
