@@ -2790,7 +2790,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         String accessToken = userAttrDTO.getGitlabToken();
         if (accessToken == null) {
             accessToken = gitlabServiceClientOperator.createProjectToken(gitlabProjectId,
-                    applicationDir, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                    applicationDir);
             userAttrDTO.setGitlabToken(accessToken);
             userAttrService.baseUpdate(userAttrDTO);
         }
@@ -3491,7 +3492,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (!StringUtils.isEmpty(tokenIdStr)) {
                 gitlabServiceClientOperator.revokeImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), TypeUtil.objToInteger(tokenIdStr));
             }
-            ImpersonationTokenDTO tokenDTO = gitlabServiceClientOperator.createProjectToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "c7nToken", DateUtil.subOrAddDay(new Date(), 7));
+            ImpersonationTokenDTO tokenDTO = gitlabServiceClientOperator.createPrivateToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "c7nToken", DateUtil.subOrAddDay(new Date(), 7));
             if (tokenDTO == null) {
                 throw new CommonException("error.create.private.token");
             }
