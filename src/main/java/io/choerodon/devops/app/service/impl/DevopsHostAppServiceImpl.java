@@ -218,7 +218,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     hostId,
                     jarDeployVO.getAppName(),
                     jarDeployVO.getAppCode(),
-                    jarDeployVO.getSourceType(),
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.CREATE_APP.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);

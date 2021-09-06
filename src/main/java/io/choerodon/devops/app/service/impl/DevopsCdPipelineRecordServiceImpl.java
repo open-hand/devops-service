@@ -486,7 +486,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
 
-        JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.PIPELINE.getValue(),
+        JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
                     cdHostDeployConfigVO.getPreCommand(),
                     cdHostDeployConfigVO.getRunAppCommand(),
                     cdHostDeployConfigVO.getPostCommand(),
@@ -519,7 +519,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     hostId,
                     jarDeployVO.getAppName(),
                     jarDeployVO.getAppCode(),
-                    AppSourceType.CURRENT_PROJECT.getValue(),
                     RdupmTypeEnum.JAR.value(),
                     OperationTypeEnum.PIPELINE_DEPLOY.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
@@ -527,7 +526,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     hostId,
                     devopsHostAppDTO.getId(),
                     jarDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
-                    jarDeployVO.getSourceType(),
+                    AppSourceType.CURRENT_PROJECT.getValue(),
                     devopsHostAppService.calculateSourceConfig(jarDeployVO),
                     jarDeployVO.getPreCommand(),
                     jarDeployVO.getRunCommand(),
