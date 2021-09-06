@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.annotation.Nullable;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;

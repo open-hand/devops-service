@@ -35,5 +35,7 @@ public class DevopsHostConstants {
 
     public static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
 
+    public static final String ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED = "error.save.middleware.instance.failed";
+
 
 }

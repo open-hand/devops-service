@@ -5,7 +5,6 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
-import io.choerodon.devops.infra.dto.DevopsDeployAppCenterHostDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -15,6 +14,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsDeployAppCenterService {
     /**
      * 校验名称环境下唯一
+     *
      * @param projectId
      * @param envId
      * @param name
@@ -24,6 +24,7 @@ public interface DevopsDeployAppCenterService {
 
     /**
      * 校验code环境下唯一
+     *
      * @param projectId
      * @param envId
      * @param code
@@ -70,13 +71,6 @@ public interface DevopsDeployAppCenterService {
     DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode);
 
     /**
-     * 创建主机应用
-     *
-     * @param devopsDeployAppCenterHostDTO
-     */
-    void baseHostCreate(DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO);
-
-    /**
      * 根据环境id、关联对象类型、关联对象id删除记录
      *
      * @param envId
@@ -84,8 +78,6 @@ public interface DevopsDeployAppCenterService {
      * @param rdupmType
      */
     void deleteByEnvIdAndObjectIdAndRdupmType(Long envId, Long objectId, String rdupmType);
-
-    void baseHostCreate(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType);
 
     void fixData();
 

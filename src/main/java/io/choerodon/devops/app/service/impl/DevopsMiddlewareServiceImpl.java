@@ -6,7 +6,6 @@ import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
 import static io.choerodon.devops.infra.enums.deploy.MiddlewareDeployModeEnum.*;
 import static io.choerodon.devops.infra.enums.host.HostCommandEnum.DEPLOY_MIDDLEWARE;
 import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_MYSQL;
-import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_REDIS;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +31,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -42,17 +42,16 @@ import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.dto.DevopsMiddlewareDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
@@ -131,7 +130,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
     @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    private DevopsHostAppInstanceService devopsHostAppInstanceService;
+    @Autowired
+    private DevopsHostAppService devopsHostAppService;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -244,21 +245,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 DeployModeEnum.HOST,
                 devopsHostDTOForConnection.getId(),
                 devopsHostDTOForConnection.getName(),
-                CommandStatus.OPERATING.getStatus(),
+                CommandStatus.SUCCESS.getStatus(),
                 DeployObjectTypeEnum.MIDDLEWARE,
                 middlewareRedisHostDeployVO.getName(),
                 middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
                 null,
                 deploySourceVO);
-
-        // 保存中间件信息
-        DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
-                middlewareRedisHostDeployVO.getName(),
-                REDIS.getType(),
-                middlewareRedisHostDeployVO.getMode(),
-                middlewareRedisHostDeployVO.getVersion(),
-                devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
-                JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
 
         String deployShell;
         try {
@@ -270,22 +262,56 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     + generateRedisConfiguration(middlewareRedisHostDeployVO)
                     + generateInstallRedis();
 
+            Map<String, String> middlewareConfig = new HashMap<>();
+            middlewareConfig.put("version", middlewareRedisHostDeployVO.getVersion());
+            middlewareConfig.put("mode", middlewareRedisHostDeployVO.getMode());
+
+            DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(
+                    projectId,
+                    devopsHostDTOForConnection.getId(),
+                    middlewareRedisHostDeployVO.getName(),
+                    middlewareRedisHostDeployVO.getName(),
+                    AppSourceType.MIDDLEWARE.getValue(),
+                    RdupmTypeEnum.MIDDLEWARE.value(),
+                    HostCommandStatusEnum.OPERATING.value()
+            );
+
+            devopsHostAppService.baseCreate(devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED);
+
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
+                    devopsHostDTOForConnection.getId(),
+                    devopsHostAppDTO.getId(),
+                    middlewareRedisHostDeployVO.getName(),
+                    AppSourceType.MIDDLEWARE.getValue(),
+                    JsonHelper.marshalByJackson(middlewareConfig),
+                    null,
+                    null,
+                    null);
+            devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
+
+            // 保存中间件信息
+            DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
+                    devopsHostAppInstanceDTO.getId(),
+                    middlewareRedisHostDeployVO.getName(),
+                    REDIS.getType(),
+                    middlewareRedisHostDeployVO.getMode(),
+                    middlewareRedisHostDeployVO.getVersion(),
+                    devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
+                    JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
+
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setHostId(devopsHostDTOForConnection.getId());
             devopsHostCommandDTO.setInstanceId(devopsMiddlewareDTO.getId());
-            devopsHostCommandDTO.setCommandType(DEPLOY_MIDDLEWARE.value());
-            devopsHostCommandDTO.setInstanceType(MIDDLEWARE_REDIS.value());
+            devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_MIDDLEWARE.value());
+            devopsHostCommandDTO.setInstanceType(HostInstanceType.MIDDLEWARE_REDIS.value());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-            devopsDeployAppCenterService.baseHostCreate(middlewareServiceReleaseInfo.getDevopsAppServiceName(), middlewareServiceReleaseInfo.getDevopsAppServiceCode(), projectId,
-                    middlewareServiceReleaseInfo.getDevopsAppServiceId(), devopsHostCommandDTO.getHostId(), devopsHostCommandDTO.getCommandType(), AppSourceType.MIDDLEWARE.getValue(), devopsHostCommandDTO.getInstanceType());
 
             MiddlewareDeployVO middlewareDeployVO = new MiddlewareDeployVO();
-            middlewareDeployVO.setMiddlewareType(REDIS.getType());
+            middlewareDeployVO.setMiddlewareType(DevopsMiddlewareTypeEnum.REDIS.getType());
             middlewareDeployVO.setMode(middlewareRedisHostDeployVO.getMode());
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            middlewareDeployVO.setRecordId(String.valueOf(recordId));
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
@@ -298,7 +324,21 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     JsonHelper.marshalByJackson(hostAgentMsgVO));
             LOGGER.info("deploy Middleware Redis,mode:{} version:{} projectId:{}", middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion(), projectId);
         } catch (Exception e) {
-            devopsDeployRecordService.updateRecord(recordId, CommandStatus.FAILED.getStatus(), e.getMessage());
+            devopsDeployRecordService.saveFailRecord(
+                    projectId,
+                    DeployType.BASE_COMPONENT,
+                    null,
+                    DeployModeEnum.HOST,
+                    devopsHostDTOForConnection.getId(),
+                    devopsHostDTOForConnection.getName(),
+                    CommandStatus.FAILED.getStatus(),
+                    DeployObjectTypeEnum.MIDDLEWARE,
+                    middlewareRedisHostDeployVO.getName(),
+                    middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
+                    null,
+                    deploySourceVO,
+                    DetailsHelper.getUserDetails().getUserId(),
+                    e.getMessage());
             throw new CommonException(e.getMessage());
         }
     }
@@ -334,28 +374,19 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
         deploySourceVO.setProjectName(projectDTO.getName());
 
-        Long recordId = devopsDeployRecordService.saveRecord(
+        devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.BASE_COMPONENT,
                 null,
                 DeployModeEnum.HOST,
                 devopsHostDTOForConnection.getId(),
                 devopsHostDTOForConnection.getName(),
-                CommandStatus.OPERATING.getStatus(),
+                CommandStatus.SUCCESS.getStatus(),
                 DeployObjectTypeEnum.MIDDLEWARE,
                 middlewareMySqlHostDeployVO.getName(),
                 middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
                 null,
                 deploySourceVO);
-
-        // 保存中间件信息
-        DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
-                middlewareMySqlHostDeployVO.getName(),
-                MYSQL.getType(),
-                middlewareMySqlHostDeployVO.getMode(),
-                middlewareMySqlHostDeployVO.getVersion(),
-                devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
-                JsonHelper.marshalByJackson(middlewareMySqlHostDeployVO.getConfiguration()));
 
         String deployShell;
         try {
@@ -367,9 +398,47 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     + generateMySqlConfiguration(middlewareMySqlHostDeployVO)
                     + generateInstallMySQL();
 
+            Map<String, String> middlewareConfig = new HashMap<>();
+            middlewareConfig.put("version", middlewareMySqlHostDeployVO.getVersion());
+            middlewareConfig.put("mode", middlewareMySqlHostDeployVO.getMode());
+
+            DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(
+                    projectId,
+                    devopsHostDTOForConnection.getId(),
+                    middlewareMySqlHostDeployVO.getName(),
+                    middlewareMySqlHostDeployVO.getName(),
+                    AppSourceType.MIDDLEWARE.getValue(),
+                    RdupmTypeEnum.MIDDLEWARE.value(),
+                    HostCommandStatusEnum.OPERATING.value()
+            );
+
+            devopsHostAppService.baseCreate(devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED);
+
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
+                    devopsHostDTOForConnection.getId(),
+                    devopsHostAppDTO.getId(),
+                    middlewareMySqlHostDeployVO.getName(),
+                    AppSourceType.MIDDLEWARE.getValue(),
+                    JsonHelper.marshalByJackson(middlewareConfig),
+                    null,
+                    null,
+                    null);
+            devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
+
+            // 保存中间件信息
+            DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
+                    devopsHostAppInstanceDTO.getId(),
+                    middlewareMySqlHostDeployVO.getName(),
+                    REDIS.getType(),
+                    middlewareMySqlHostDeployVO.getMode(),
+                    middlewareMySqlHostDeployVO.getVersion(),
+                    devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
+                    JsonHelper.marshalByJackson(middlewareMySqlHostDeployVO.getConfiguration()));
+
+
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setHostId(devopsHostDTOForConnection.getId());
-            devopsHostCommandDTO.setInstanceId(devopsMiddlewareDTO.getId());
+            devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
             devopsHostCommandDTO.setCommandType(DEPLOY_MIDDLEWARE.value());
             devopsHostCommandDTO.setInstanceType(MIDDLEWARE_MYSQL.value());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
@@ -380,8 +449,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareDeployVO.setMode(middlewareMySqlHostDeployVO.getMode());
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            middlewareDeployVO.setInstanceId(String.valueOf(devopsMiddlewareDTO.getId()));
-            middlewareDeployVO.setRecordId(String.valueOf(recordId));
+            middlewareDeployVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
@@ -392,19 +460,32 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + devopsHostDTOForConnection.getId(),
                     String.format(DevopsHostConstants.MIDDLEWARE_INSTANCE, devopsHostDTOForConnection.getId(), devopsMiddlewareDTO.getId()),
                     JsonHelper.marshalByJackson(hostAgentMsgVO));
-            devopsDeployAppCenterService.baseHostCreate(middlewareServiceReleaseInfo.getMarketServiceName(), middlewareServiceReleaseInfo.getDevopsAppServiceCode(), projectId, devopsHostCommandDTO.getInstanceId(),
-                    devopsHostCommandDTO.getHostId(), devopsHostCommandDTO.getCommandType(), AppSourceType.MIDDLEWARE.getValue(), devopsHostCommandDTO.getInstanceType());
             LOGGER.info("deploy Middleware MySQL,mode:{} version:{} projectId:{}", middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion(), projectId);
         } catch (Exception e) {
-            devopsDeployRecordService.updateRecord(recordId, CommandStatus.FAILED.getStatus(), e.getMessage());
+            devopsDeployRecordService.saveFailRecord(
+                    projectId,
+                    DeployType.BASE_COMPONENT,
+                    null,
+                    DeployModeEnum.HOST,
+                    devopsHostDTOForConnection.getId(),
+                    devopsHostDTOForConnection.getName(),
+                    CommandStatus.FAILED.getStatus(),
+                    DeployObjectTypeEnum.MIDDLEWARE,
+                    middlewareMySqlHostDeployVO.getName(),
+                    middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
+                    null,
+                    deploySourceVO,
+                    DetailsHelper.getUserDetails().getUserId(),
+                    e.getMessage());
             throw new CommonException(e.getMessage());
         }
     }
 
     @Override
-    public DevopsMiddlewareDTO saveMiddlewareInfo(Long projectId, String name, String type, String mode, String version, String hostIds, String configuration) {
+    public DevopsMiddlewareDTO saveMiddlewareInfo(Long projectId, Long instanceId, String name, String type, String mode, String version, String hostIds, String configuration) {
         DevopsMiddlewareDTO devopsMiddlewareDTO = new DevopsMiddlewareDTO(
                 projectId,
+                instanceId,
                 name,
                 type,
                 mode,

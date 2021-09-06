@@ -39,7 +39,6 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
-import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterHostMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -86,8 +85,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsServiceService devopsServiceService;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
-    @Autowired
-    private DevopsDeployAppCenterHostMapper devopsDeployAppCenterHostMapper;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
@@ -330,25 +327,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode) {
         return devopsDeployAppCenterEnvMapper.queryByEnvIdAndCode(environmentId, appCode);
-    }
-
-    @Override
-    public void baseHostCreate(DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterHostMapper, devopsDeployAppCenterHostDTO, "error.host.app.center.insert");
-    }
-
-    @Override
-    public void baseHostCreate(String name, String code, Long projectId, Long objectId, Long hostId, String operationType, String jarSource, String rdupmType) {
-        DevopsDeployAppCenterHostDTO devopsDeployAppCenterHostDTO = new DevopsDeployAppCenterHostDTO();
-        devopsDeployAppCenterHostDTO.setName(name);
-        devopsDeployAppCenterHostDTO.setCode(code);
-        devopsDeployAppCenterHostDTO.setProjectId(projectId);
-        devopsDeployAppCenterHostDTO.setObjectId(objectId);
-        devopsDeployAppCenterHostDTO.setHostId(hostId);
-        devopsDeployAppCenterHostDTO.setOperationType(operationType);
-        devopsDeployAppCenterHostDTO.setJarSource(jarSource);
-        devopsDeployAppCenterHostDTO.setRdupmType(rdupmType);
-        baseHostCreate(devopsDeployAppCenterHostDTO);
     }
 
     @Override

@@ -27,4 +27,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_middleware.groovy') {
     changeSet(author: 'lihao', id: '2021-04-20-update-column') {
         modifyDataType(tableName: 'devops_middleware', columnName: 'mode', newDataType: 'VARCHAR(32)')
     }
+
+    changeSet(author: 'lihao',id: '2021-09-06-add-column'){
+        addColumn(tableName: 'devops_middleware') {
+            column(name: "instance_id", type: 'BIGINT UNSIGNED', remarks: "实例id", afterColumn: "id")
+        }
+    }
 }

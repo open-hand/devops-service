@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -199,7 +197,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
             jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
             jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
-        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())){
+        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())) {
             // 0.2 从制品库获取仓库信息
             Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
             groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
@@ -322,7 +320,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else if (AppSourceType.MARKET.getValue().equals(jarDeployVO.getSourceType())
                 || AppSourceType.HZERO.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getMarketDeployObjectInfoVO());
-        } else if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())){
+        } else if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getFileInfoVO());
         }
         return null;
@@ -427,13 +425,19 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseCreate(DevopsHostAppDTO devopsHostAppDTO, String errorCode) {
+        MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, errorCode);
+    }
+
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {
         if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
         } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
                 || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
-        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
+        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
         }
     }

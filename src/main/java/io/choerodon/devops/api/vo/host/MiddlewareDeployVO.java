@@ -13,8 +13,6 @@ public class MiddlewareDeployVO {
     private String InstanceId;
     @ApiModelProperty("操作记录id")
     private String CommandId;
-    @ApiModelProperty("记录id")
-    private String recordId;
 
     public String getMiddlewareType() {
         return MiddlewareType;
@@ -46,14 +44,6 @@ public class MiddlewareDeployVO {
 
     public void setCommandId(String commandId) {
         CommandId = commandId;
-    }
-
-    public String getRecordId() {
-        return recordId;
-    }
-
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
     }
 
     public String getMode() {
