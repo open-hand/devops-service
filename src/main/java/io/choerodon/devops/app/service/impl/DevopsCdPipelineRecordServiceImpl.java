@@ -590,7 +590,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsHostAppDTO.getId()),
+                String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
     }
