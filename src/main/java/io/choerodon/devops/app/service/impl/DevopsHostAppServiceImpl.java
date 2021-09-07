@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
@@ -191,7 +188,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             deploySourceVO.setDeployObjectId(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
 
-        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())){
+        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(jarDeployVO.getSourceType())) {
             // 0.2 从制品库获取仓库信息
             Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
             groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
@@ -252,19 +249,25 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
+        Map<String, String> params = new HashMap<>();
+        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String appFile = workDir + jarDeployVO.getFileInfoVO().getFileName();
+        params.put("{{ WORK_DIR }}", workDir);
+        params.put("{{ APP_FILE_NAME }}", jarDeployVO.getFileInfoVO().getFileName());
+        params.put("{{ APP_FILE }}", appFile);
         String downloadCommand;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             downloadCommand = HostDeployUtil.genDownloadCommand("none",
                     "none",
                     jarDeployVO.getFileInfoVO().getJarFileUrl(),
-                    HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
-                    "default");
+                    workDir,
+                    appFile);
         } else {
             downloadCommand = HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
                     nexusComponentDTOList.get(0).getDownloadUrl(),
-                    HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
-                    jarDeployVO.getProdJarInfoVO().getArtifactId());
+                    workDir,
+                    appFile);
         }
 
 
@@ -272,15 +275,15 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 jarDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                jarDeployVO.getPreCommand(),
-                jarDeployVO.getRunCommand(),
-                jarDeployVO.getPostCommand(),
+                StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, jarDeployVO.getPreCommand()),
+                StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, jarDeployVO.getRunCommand()),
+                StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, jarDeployVO.getPostCommand()),
                 devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
@@ -416,7 +419,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
@@ -495,28 +498,35 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
+        Map<String, String> params = new HashMap<>();
+        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String appFile = workDir + customDeployVO.getFileInfoVO().getFileName();
+        params.put("{{ WORK_DIR }}", workDir);
+        params.put("{{ APP_FILE_NAME }}", customDeployVO.getFileInfoVO().getFileName());
+        params.put("{{ APP_FILE }}", appFile);
+
         String downloadCommand = null;
         if (AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType())) {
             downloadCommand = HostDeployUtil.genDownloadCommand("none",
                     "none",
                     customDeployVO.getFileInfoVO().getJarFileUrl(),
-                    HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
-                    "default");
+                    workDir,
+                    appFile);
         }
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 customDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                customDeployVO.getPreCommand(),
-                customDeployVO.getRunCommand(),
-                customDeployVO.getPostCommand(),
+                StringUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, customDeployVO.getPreCommand()),
+                StringUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, customDeployVO.getRunCommand()),
+                StringUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, customDeployVO.getPostCommand()),
                 devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
@@ -558,7 +568,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
                 || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
-        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())){
+        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
         }
     }

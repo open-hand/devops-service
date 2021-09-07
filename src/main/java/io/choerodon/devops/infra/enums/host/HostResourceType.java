@@ -9,9 +9,9 @@ package io.choerodon.devops.infra.enums.host;
  */
 public enum HostResourceType {
     /**
-     * java进程
+     * instance进程
      */
-    JAVA_PROCESS("java_process"),
+    INSTANCE_PROCESS("instance_process"),
     /**
      * docker进程
      */

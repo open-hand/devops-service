@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
@@ -441,7 +442,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
-        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
@@ -542,13 +543,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
 
         JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
-                    cdHostDeployConfigVO.getPreCommand(),
-                    cdHostDeployConfigVO.getRunAppCommand(),
-                    cdHostDeployConfigVO.getPostCommand(),
-                    new ProdJarInfoVO(nexusRepoId,
-                            groupId,
-                            artifactId,
-                            c7nNexusComponentDTO.getVersion()));
+                cdHostDeployConfigVO.getPreCommand(),
+                cdHostDeployConfigVO.getRunAppCommand(),
+                cdHostDeployConfigVO.getPostCommand(),
+                new ProdJarInfoVO(nexusRepoId,
+                        groupId,
+                        artifactId,
+                        c7nNexusComponentDTO.getVersion()));
 
 
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
@@ -607,24 +608,31 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
+        Map<String, String> params = new HashMap<>();
+        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String appFile = workDir + jarDeployVO.getFileInfoVO().getFileName();
+        params.put("{{ WORK_DIR }}", workDir);
+        params.put("{{ APP_FILE_NAME }}", jarDeployVO.getFileInfoVO().getFileName());
+        params.put("{{ APP_FILE }}", appFile);
+
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                         mavenRepoDTOList.get(0).getNePullUserPassword(),
                         nexusComponentDTOList.get(0).getDownloadUrl(),
-                        HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
-                        c7nNexusComponentDTO.getName()),
-                        jarDeployVO.getPreCommand(),
-                        jarDeployVO.getRunCommand(),
-                        jarDeployVO.getPostCommand(),
-                        devopsHostAppInstanceDTO.getPid());
+                        workDir,
+                        appFile),
+                StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, jarDeployVO.getPreCommand()),
+                StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, jarDeployVO.getRunCommand()),
+                StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, jarDeployVO.getPostCommand()),
+                devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
-        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);

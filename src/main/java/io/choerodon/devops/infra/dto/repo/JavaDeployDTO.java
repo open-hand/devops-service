@@ -22,17 +22,17 @@ public class JavaDeployDTO {
     @ApiModelProperty("前置命令")
     private String preCommand;
     @ApiModelProperty("启动命令")
-    private String runAppCommand;
+    private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
 
 
-    public JavaDeployDTO(String instanceName, String instanceId, String downloadCommand, String preCommand, String runAppCommand, String postCommand, String pid) {
+    public JavaDeployDTO(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String pid) {
         this.instanceName = instanceName;
         this.instanceId = instanceId;
         this.downloadCommand = downloadCommand;
         this.preCommand = preCommand;
-        this.runAppCommand = runAppCommand;
+        this.runCommand = runCommand;
         this.postCommand = postCommand;
         this.pid = pid;
     }
@@ -53,12 +53,12 @@ public class JavaDeployDTO {
         this.preCommand = preCommand;
     }
 
-    public String getRunAppCommand() {
-        return runAppCommand;
+    public String getRunCommand() {
+        return runCommand;
     }
 
-    public void setRunAppCommand(String runAppCommand) {
-        this.runAppCommand = runAppCommand;
+    public void setRunCommand(String runCommand) {
+        this.runCommand = runCommand;
     }
 
     public String getPostCommand() {
