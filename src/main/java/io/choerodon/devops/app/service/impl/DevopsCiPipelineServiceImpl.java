@@ -1852,7 +1852,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         t.setPipelineId(pipelineId);
         DevopsCdJobDTO devopsCdJobDTO = ConvertUtils.convertObject(t, DevopsCdJobDTO.class);
         // 环境部署需要保存部署配置信息
-        if (JobTypeEnum.CD_DEPLOY.value().equals(t.getType())) {
+        if (JobTypeEnum.CD_DEPLOY.value().equals(t.getType())
+                || JobTypeEnum.CD_DEPLOYMENT.value().equals(t.getType())) {
             // todo 待删除
 //            // 使用能够解密主键加密的json工具解密
 //            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);

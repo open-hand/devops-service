@@ -173,7 +173,8 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         // 2. 更新阶段状态为执行中
         devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
         // 3. 重试任务
-        if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())) {
+        if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())
+                || JobTypeEnum.CD_DEPLOYMENT.value().equals(devopsCdJobRecordDTO.getType())) {
             // 4.1 重试环境部署任务
             devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordDTO.getType())) {

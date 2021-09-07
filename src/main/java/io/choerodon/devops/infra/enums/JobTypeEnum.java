@@ -32,6 +32,11 @@ public enum JobTypeEnum {
     CD_DEPLOY("cdDeploy"),
 
     /**
+     * cd 部署组部署
+     */
+    CD_DEPLOYMENT("cdDeployment"),
+
+    /**
      * cd 审核任务
      */
     CD_AUDIT("cdAudit"),
