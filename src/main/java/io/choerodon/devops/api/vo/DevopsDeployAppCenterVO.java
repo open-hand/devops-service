@@ -61,6 +61,12 @@ public class DevopsDeployAppCenterVO {
     @ApiModelProperty("实例的运行中的pod的数量")
     private Integer podRunningCount;
 
+    @ApiModelProperty("应用市场所属的实例部署的当前版本是否可用, 如果被删除就是false/只有市场实例需要")
+    private Boolean currentVersionAvailable;
+    @ApiModelProperty("应用市场所属的实例是否有更新版本可以升级，如果有是true/只有市场实例需要")
+    private Boolean upgradeAvailable;
+
+
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
 
@@ -77,6 +83,22 @@ public class DevopsDeployAppCenterVO {
     private Long lastUpdatedBy;
 
     private IamUserDTO creator;
+
+    public Boolean getCurrentVersionAvailable() {
+        return currentVersionAvailable;
+    }
+
+    public void setCurrentVersionAvailable(Boolean currentVersionAvailable) {
+        this.currentVersionAvailable = currentVersionAvailable;
+    }
+
+    public Boolean getUpgradeAvailable() {
+        return upgradeAvailable;
+    }
+
+    public void setUpgradeAvailable(Boolean upgradeAvailable) {
+        this.upgradeAvailable = upgradeAvailable;
+    }
 
     public Long getId() {
         return id;

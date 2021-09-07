@@ -146,8 +146,21 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
+                AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(devopsDeployAppCenterVO.getObjectId());
 
-                devopsDeployAppCenterVO.setStatus(appServiceInstanceService.queryInstanceStatusByEnvIdAndCode(devopsDeployAppCenterVO.getCode(), devopsDeployAppCenterVO.getEnvId()));
+                devopsDeployAppCenterVO.setStatus(appServiceInstanceInfoDTO.getStatus());
+                if (AppServiceInstanceServiceImpl.isMarket(appServiceInstanceInfoDTO.getSource())
+                        || AppServiceInstanceServiceImpl.isMiddleware(appServiceInstanceInfoDTO.getSource())) {
+                    List<MarketServiceDeployObjectVO> upgradeAble = marketServiceClientOperator.queryUpgradeDeployObjects(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId(), appServiceInstanceInfoDTO.getCommandVersionId());
+                    // 这里查出的版本是包含当前的版本和最新的版本，两个版本
+                    // 如果只查出一个版本，但不是当前版本，就是可升级的
+                    if (upgradeAble.size() > 1) {
+                        devopsDeployAppCenterVO.setUpgradeAvailable(true);
+                    } else {
+                        devopsDeployAppCenterVO.setUpgradeAvailable(upgradeAble.size() == 1 && !appServiceInstanceInfoDTO.getCommandVersionId().equals(upgradeAble.get(0).getId()));
+                    }
+                }
+
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
@@ -209,8 +222,28 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                     } else {
                         detailVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getDevopsAppServiceVersion());
                     }
+                    detailVO.setCurrentVersionAvailable(true);
                 } else {
                     detailVO.setCommandVersion("版本已被删除");
+                    detailVO.setCurrentVersionAvailable(false);
+                }
+
+                if (versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()) != null) {
+                    // 如果是中间件，直接以应用版本作为生效版本
+                    if (isMiddleware(appServiceInstanceInfoDTO.getSource())) {
+                        detailVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getMarketServiceVersion());
+                    } else {
+                        detailVO.setEffectCommandVersion(versions.get(appServiceInstanceInfoDTO.getEffectCommandVersionId()).getDevopsAppServiceVersion());
+                    }
+                }
+
+                List<MarketServiceDeployObjectVO> upgradeAble = marketServiceClientOperator.queryUpgradeDeployObjects(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId(), appServiceInstanceInfoDTO.getCommandVersionId());
+                // 这里查出的版本是包含当前的版本和最新的版本，两个版本
+                // 如果只查出一个版本，但不是当前版本，就是可升级的
+                if (upgradeAble.size() > 1) {
+                    detailVO.setUpgradeAvailable(true);
+                } else {
+                    detailVO.setUpgradeAvailable(upgradeAble.size() == 1 && !appServiceInstanceInfoDTO.getCommandVersionId().equals(upgradeAble.get(0).getId()));
                 }
             }
             // 添加pod运行统计
