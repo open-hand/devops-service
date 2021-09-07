@@ -17,8 +17,10 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("应用编码")
     private String appCode;
 
-    @ApiModelProperty("主机部署类型 jar/customize")
-    // HostDeployType
+    /**
+     * {@link io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum}
+     */
+    @ApiModelProperty("主机部署类型 jar/other")
     private String hostDeployType;
 
     @Encrypt
