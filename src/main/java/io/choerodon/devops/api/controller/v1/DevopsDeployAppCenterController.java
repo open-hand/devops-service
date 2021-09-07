@@ -15,7 +15,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
-import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -200,5 +199,25 @@ public class DevopsDeployAppCenterController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
         return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId, pageable));
+    }
+
+    /**
+     * 根据环境id分页查询所有chart应用
+     *
+     * @param envId 环境id
+     * @return page
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据环境id分页查询所有chart应用")
+    @GetMapping("/page_chart")
+    public ResponseEntity<Page<DevopsDeployAppCenterVO>> pageChart(
+            @PathVariable("project_id") Long projectId,
+            @Encrypt @RequestParam(value = "env_id") Long envId,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "operation_type", required = false) String operationType,
+            @RequestParam(value = "params", required = false) String params,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageable) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.pageChart(projectId, envId, name, operationType, params, pageable));
     }
 }

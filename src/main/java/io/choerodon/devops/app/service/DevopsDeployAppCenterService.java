@@ -101,4 +101,15 @@ public interface DevopsDeployAppCenterService {
      * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
+
+    /**
+     * @Description 查询环境下的Chart应用
+     * @Param projectId
+     * @Param envId
+     * @Param name
+     * @Param operationType
+     * @Param params
+     * @Return DevopsDeployAppCenterVO集合
+     */
+    Page<DevopsDeployAppCenterVO> pageChart(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable);
 }

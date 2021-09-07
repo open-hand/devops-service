@@ -65,7 +65,17 @@ public class DevopsDeployAppCenterVO {
     private Boolean currentVersionAvailable;
     @ApiModelProperty("应用市场所属的实例是否有更新版本可以升级，如果有是true/只有市场实例需要")
     private Boolean upgradeAvailable;
-
+    @ApiModelProperty("应用服务id")
+    private Long appServiceId;
+    @ApiModelProperty("应用服务名称")
+    private String appServiceName;
+    @Encrypt
+    @ApiModelProperty("应用最新的command的版本id")
+    private Long commandVersionId;
+    @ApiModelProperty("应用最新的command所对应的应用服务版本")
+    private String commandVersion;
+    @ApiModelProperty("应用最新的command的错误信息")
+    private String error;
 
     @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
@@ -274,6 +284,46 @@ public class DevopsDeployAppCenterVO {
 
     public void setPodRunningCount(Integer podRunningCount) {
         this.podRunningCount = podRunningCount;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
+    }
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }
 
