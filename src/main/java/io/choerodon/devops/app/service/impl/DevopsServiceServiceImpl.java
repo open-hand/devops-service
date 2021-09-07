@@ -844,6 +844,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             devopsServiceDTO.setTargetInstanceCode(null);
             baseUpdateTargetInstanceCode(devopsServiceDTO.getId());
         }
+        if (devopsServiceReqVO.getTargetDeploymentId() != null) {
+            devopsServiceDTO.setTargetDeploymentId(devopsServiceReqVO.getTargetDeploymentId());
+        } else {
+            devopsServiceDTO.setTargetDeploymentId(null);
+            baseUpdateTargetDeploymentId(devopsServiceDTO.getId());
+        }
         if (devopsServiceReqVO.getAppServiceId() == null) {
             if (devopsServiceReqVO.getTargetAppServiceId() != null) {
                 devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getTargetAppServiceId());
@@ -867,6 +873,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
 
     private void baseUpdateTargetInstanceCode(Long devopsServiceId) {
         devopsServiceMapper.updateTargetInstanceCodeToNull(devopsServiceId);
+    }
+
+    private void baseUpdateTargetDeploymentId(Long devopsServiceId) {
+        devopsServiceMapper.updateTargetDeploymentIdToNull(devopsServiceId);
     }
 
     private DevopsServiceDTO handlerUpdateService(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceDTO devopsServiceDTO) {

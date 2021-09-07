@@ -379,4 +379,10 @@
             #{id}
         </foreach>
     </select>
+
+    <update id="updateTargetDeploymentIdToNull">
+        UPDATE devops_service ds
+        SET ds.target_deployment_id = null
+        WHERE ds.id = #{serviceId}
+    </update>
 </mapper>
