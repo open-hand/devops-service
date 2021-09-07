@@ -269,8 +269,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(
                     projectId,
                     devopsHostDTOForConnection.getId(),
-                    middlewareRedisHostDeployVO.getName(),
-                    middlewareRedisHostDeployVO.getName(),
+                    middlewareRedisHostDeployVO.getAppName(),
+                    middlewareRedisHostDeployVO.getAppCode(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
                     HostCommandStatusEnum.OPERATING.value()
             );
@@ -280,7 +280,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     devopsHostDTOForConnection.getId(),
                     devopsHostAppDTO.getId(),
-                    middlewareRedisHostDeployVO.getName(),
+                    middlewareRedisHostDeployVO.getAppCode(),
                     AppSourceType.MIDDLEWARE.getValue(),
                     JsonHelper.marshalByJackson(middlewareConfig),
                     null,
@@ -405,8 +405,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(
                     projectId,
                     devopsHostDTOForConnection.getId(),
-                    middlewareMySqlHostDeployVO.getName(),
-                    middlewareMySqlHostDeployVO.getName(),
+                    middlewareMySqlHostDeployVO.getAppName(),
+                    middlewareMySqlHostDeployVO.getAppCode(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
                     HostCommandStatusEnum.OPERATING.value()
             );
@@ -416,7 +416,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     devopsHostDTOForConnection.getId(),
                     devopsHostAppDTO.getId(),
-                    middlewareMySqlHostDeployVO.getName(),
+                    middlewareMySqlHostDeployVO.getAppCode(),
                     AppSourceType.MIDDLEWARE.getValue(),
                     JsonHelper.marshalByJackson(middlewareConfig),
                     null,
