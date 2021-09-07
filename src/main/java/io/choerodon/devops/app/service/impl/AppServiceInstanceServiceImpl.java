@@ -2031,7 +2031,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         // 纪录此次批量部署的环境id及要创建的docker_registry_secret的code的映射
         // 环境id -> configId -> secretCode
         Map<Long, List<Pair<Long, String>>> envSecrets = new HashMap<>();
-
+        List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = new ArrayList<>();
         for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
             InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO, envSecrets);
             instances.add(payload);
@@ -2064,7 +2064,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     ingresses.add(devopsIngressService.createForBatchDeployment(devopsEnvironmentDTO, userAttrDTO, projectId, appServiceDeployVO.getDevopsIngressVO()));
                 }
             }
+            devopsDeployAppCenterEnvDTOList.add(devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceDeployVO.getInstanceId(),
+                    appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getType(), appServiceDeployVO.getAppServiceSource(), RdupmTypeEnum.DEPLOYMENT.value()));
         }
+        devopsDeployAppCenterService.batchInsert(devopsDeployAppCenterEnvDTOList);
 
         // 构造saga的payload
         BatchDeploymentPayload batchDeploymentPayload = new BatchDeploymentPayload();

@@ -60,10 +60,14 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(@Param("projectId") Long projectId,
-                                                          @Param("envId") Long envId,
-                                                          @Param("appServiceId") Long appServiceId);
+                                                                  @Param("envId") Long envId,
+                                                                  @Param("appServiceId") Long appServiceId);
 
     Integer batchInsert(@Param("devopsDeployAppCenterEnvDTOList") List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList);
+
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
+                                                          @Param("envId") Long envId,
+                                                          @Param("params") String params);
                                                                   @Param("envId") Long envId,
                                                                   @Param("appServiceId") Long appServiceId);
 

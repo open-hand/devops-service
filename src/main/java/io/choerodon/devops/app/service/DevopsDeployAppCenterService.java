@@ -100,7 +100,7 @@ public interface DevopsDeployAppCenterService {
      * @param appServiceId
      * @return DevopsDeployAppCenterVO集合
      */
-    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId);
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
     /**
      * @Description 批量插入DevopsDeployAppCenterEnvDTO
