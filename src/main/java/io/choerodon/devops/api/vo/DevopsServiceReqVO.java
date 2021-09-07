@@ -8,17 +8,11 @@ import javax.validation.constraints.Size;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
-import io.choerodon.devops.api.validator.annotation.AtMostSeveralFieldsNotEmpty;
 import io.choerodon.devops.infra.dto.PortMapVO;
 
 /**
  * Created by Zenger on 2018/4/13.
  */
-@AtMostSeveralFieldsNotEmpty(message = "error.service.target.too.much",
-        fields = {"endPoints", "selectors", "targetAppServiceId", "targetInstanceCode"})
-@AtLeastOneNotEmpty(message = "error.service.target.null",
-        fields = {"endPoints", "selectors", "targetAppServiceId", "targetInstanceCode"})
 public class DevopsServiceReqVO {
     @ApiModelProperty("环境ID / 必填")
     @NotNull(message = "error.env.id.null")
