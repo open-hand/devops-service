@@ -10,14 +10,14 @@ import java.util.List;
  * @Date 2021/6/27 21:05
  */
 public class InitInfoVO {
-    private List<JavaProcessInfoVO> javaProcessInfos;
+    private List<InstanceProcessInfoVO> javaProcessInfos;
     private List<DockerProcessInfoVO> dockerProcessInfos;
 
-    public List<JavaProcessInfoVO> getJavaProcessInfos() {
+    public List<InstanceProcessInfoVO> getJavaProcessInfos() {
         return javaProcessInfos;
     }
 
-    public void setJavaProcessInfos(List<JavaProcessInfoVO> javaProcessInfos) {
+    public void setJavaProcessInfos(List<InstanceProcessInfoVO> javaProcessInfos) {
         this.javaProcessInfos = javaProcessInfos;
     }
 

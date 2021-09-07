@@ -23,12 +23,11 @@ public enum HostCommandEnum {
     START_DOCKER("start_docker"),
     STOP_DOCKER("stop_docker"),
     REMOVE_DOCKER("remove_docker"),
-    DEPLOY_JAR("deploy_jar"),
-    KILL_JAR("kill_jar"),
+    DEPLOY_INSTANCE("deploy_instance"),
+    KILL_INSTANCE("kill_instance"),
     INIT_AGENT("init_agent"),
     UPGRADE_AGENT("upgrade_agent"),
     INIT_AGENT_FAILED("init_agent_failed"),
-    CUSTOM_DEPLOY("custom_deploy"),
     /**
      * 该事件返回command结果
      */

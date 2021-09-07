@@ -12,7 +12,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.InitInfoVO;
-import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
+import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -36,9 +36,9 @@ public class InitHandler implements HostMsgHandler {
         InitInfoVO initInfoVO = JsonHelper.unmarshalByJackson(payload, InitInfoVO.class);
 
         // 初始化java进程
-        List<JavaProcessInfoVO> javaProcessInfos = initInfoVO.getJavaProcessInfos();
+        List<InstanceProcessInfoVO> javaProcessInfos = initInfoVO.getJavaProcessInfos();
         if (!CollectionUtils.isEmpty(javaProcessInfos)) {
-            Map<Object, Object> processInfoMap = javaProcessInfos.stream().collect(Collectors.toMap(JavaProcessInfoVO::getPid, Function.identity()));
+            Map<Object, Object> processInfoMap = javaProcessInfos.stream().collect(Collectors.toMap(InstanceProcessInfoVO::getPid, Function.identity()));
             redisTemplate.opsForHash().putAll(String.format(DevopsHostConstants.HOST_JAVA_PROCESS_INFO_KEY, hostId), processInfoMap);
         }
         // 初始化docker进程

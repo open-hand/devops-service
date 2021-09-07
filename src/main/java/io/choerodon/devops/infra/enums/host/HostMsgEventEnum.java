@@ -14,9 +14,9 @@ public enum HostMsgEventEnum {
      */
     RESOURCE_USAGE_INFO_UPDATE("resource_usage_info_update"),
     /**
-     * java进程更新
+     * 实例进程更新
      */
-    JAVA_PROCESS_UPDATE("java_process_update"),
+    INSTANCE_PROCESS_UPDATE("instance_process_update"),
     /**
      * docker进程更新
      */

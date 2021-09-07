@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @author wanghao
  * @Date 2021/6/25 17:35
  */
-public class JavaProcessInfoVO {
+public class InstanceProcessInfoVO {
     private String instanceId;
     private String pid;
     private String ports;

@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.host.CommandResultVO;
-import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
+import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsHostAppInstanceService;
 import io.choerodon.devops.app.service.DevopsHostAppService;
@@ -44,8 +44,8 @@ public class CommandResultHandler implements HostMsgHandler {
 
     @PostConstruct
     void init() {
-        resultHandlerMap.put(HostCommandEnum.KILL_JAR.value(), payload -> {
-            JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
+        resultHandlerMap.put(HostCommandEnum.KILL_INSTANCE.value(), payload -> {
+            InstanceProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, InstanceProcessInfoVO.class);
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             if (devopsHostAppInstanceDTO != null) {
                 devopsHostAppInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
@@ -53,8 +53,8 @@ public class CommandResultHandler implements HostMsgHandler {
             }
 
         });
-        resultHandlerMap.put(HostCommandEnum.DEPLOY_JAR.value(), payload -> {
-            JavaProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, JavaProcessInfoVO.class);
+        resultHandlerMap.put(HostCommandEnum.DEPLOY_INSTANCE.value(), payload -> {
+            InstanceProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, InstanceProcessInfoVO.class);
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsHostAppInstanceDTO.setStatus(processInfoVO.getStatus());
             devopsHostAppInstanceDTO.setPid(processInfoVO.getPid());

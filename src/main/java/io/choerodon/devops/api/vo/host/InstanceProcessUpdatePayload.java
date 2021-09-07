@@ -9,14 +9,14 @@ import java.util.List;
  * @author wanghao
  * @Date 2021/6/27 19:27
  */
-public class JavaProcessUpdatePayload {
-    private List<JavaProcessInfoVO> updateProcessInfos;
+public class InstanceProcessUpdatePayload {
+    private List<InstanceProcessInfoVO> updateProcessInfos;
 
-    public List<JavaProcessInfoVO> getUpdateProcessInfos() {
+    public List<InstanceProcessInfoVO> getUpdateProcessInfos() {
         return updateProcessInfos;
     }
 
-    public void setUpdateProcessInfos(List<JavaProcessInfoVO> updateProcessInfos) {
+    public void setUpdateProcessInfos(List<InstanceProcessInfoVO> updateProcessInfos) {
         this.updateProcessInfos = updateProcessInfos;
     }
 
