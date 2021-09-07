@@ -50,7 +50,7 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
-                                                       @Param("envId") Long envId);
+                                                          @Param("envId") Long envId);
 
     /**
      * 根据项目id,环境id和应用服务id查询chart的应用列表
@@ -60,6 +60,35 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(@Param("projectId") Long projectId,
-                                                          @Param("envId") Long envId,
-                                                          @Param("appServiceId") Long appServiceId);
+                                                                  @Param("envId") Long envId,
+                                                                  @Param("appServiceId") Long appServiceId);
+
+    /**
+     * @Description 查询环境下的Chart应用
+     * @Param projectId
+     * @Param envId
+     * @Param name
+     * @Param operationType
+     * @Param params
+     * @Return DevopsDeployAppCenterVO集合
+     */
+    List<DevopsDeployAppCenterVO> listChart(@Param("projectId") Long projectId,
+                                            @Param("envId") Long envId,
+                                            @Param("name") String name,
+                                            @Param("operationType") String operationType,
+                                            @Param("params") String params);
+
+    /**
+     * @Description 查询环境下的Chart应用
+     * @Param projectId
+     * @Param envId
+     * @Param params
+     * @Return DevopsDeployAppCenterVO集合
+     */
+    List<DevopsDeployAppCenterVO> listChartByUserId(@Param("projectId") Long projectId,
+                                                         @Param("envId") Long envId,
+                                                         @Param("name") String name,
+                                                         @Param("operationType") String operationType,
+                                                         @Param("params") String params,
+                                                         @Param("userId") Long userId);
 }
