@@ -2659,6 +2659,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return result;
     }
 
+    private String parseMarketChartRepo(String chartRepo) {
+        if (chartRepo.endsWith(BaseConstants.Symbol.SLASH)) {
+            chartRepo = chartRepo.substring(0, chartRepo.length() - 1);
+        }
+
+        int lastSlashIndex = chartRepo.lastIndexOf(BaseConstants.Symbol.SLASH);
+        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "error.chart.repo.invalid.slash");
+        String tempUrl = chartRepo.substring(0, lastSlashIndex);
+        lastSlashIndex = tempUrl.lastIndexOf(BaseConstants.Symbol.SLASH);
+
+        String repoName = chartRepo.substring(0, lastSlashIndex);
+        CommonExAssertUtil.assertTrue(chartRepo.contains("//"), "error.chart.repo.invalid.double.slash");
+        return repoName;
+    }
+
     /**
      * 发送chart museum的认证信息
      *
@@ -2681,8 +2696,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private void sendChartMuseumAuthForMarket(Long clusterId, MarketChartConfigVO marketChartConfigVO) {
         ConfigVO configVO = new ConfigVO();
-        String[] domainAndRepo = parseMarketRepo(marketChartConfigVO.getRepoUrl());
-        configVO.setUrl(domainAndRepo[0]);
+        String domainAndRepo = parseMarketChartRepo(marketChartConfigVO.getRepoUrl());
+        configVO.setUrl(domainAndRepo);
         configVO.setUserName(marketChartConfigVO.getUsername());
         configVO.setPassword(marketChartConfigVO.getPassword());
         if (configVO.getUserName() != null && configVO.getPassword() != null) {
