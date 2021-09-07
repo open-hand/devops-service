@@ -56,12 +56,19 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("当前实例生效的commandId/可能为null")
     private Long effectCommandId;
+    @ApiModelProperty("当前实例生效的版本/可能为null")
+    private String effectCommandVersion;
     @ApiModelProperty(value = "集群id", hidden = true)
     @Encrypt
     private Long clusterId;
     @Encrypt
     @ApiModelProperty("实例最新的command的版本id")
     private Long commandVersionId;
+    @ApiModelProperty("应用市场所属的实例部署的当前版本是否可用, 如果被删除就是false/只有市场实例需要")
+    private Boolean currentVersionAvailable;
+    @ApiModelProperty("应用市场所属的实例是否有更新版本可以升级，如果有是true/只有市场实例需要")
+    private Boolean upgradeAvailable;
+
     private String versionName;
     private IamUserDTO creator;
 
@@ -86,6 +93,30 @@ public class AppCenterEnvDetailVO {
 
     @ApiModelProperty(name = "部署组容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
+
+    public Boolean getCurrentVersionAvailable() {
+        return currentVersionAvailable;
+    }
+
+    public String getEffectCommandVersion() {
+        return effectCommandVersion;
+    }
+
+    public void setEffectCommandVersion(String effectCommandVersion) {
+        this.effectCommandVersion = effectCommandVersion;
+    }
+
+    public void setCurrentVersionAvailable(Boolean currentVersionAvailable) {
+        this.currentVersionAvailable = currentVersionAvailable;
+    }
+
+    public Boolean getUpgradeAvailable() {
+        return upgradeAvailable;
+    }
+
+    public void setUpgradeAvailable(Boolean upgradeAvailable) {
+        this.upgradeAvailable = upgradeAvailable;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;
