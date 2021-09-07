@@ -106,6 +106,21 @@
         AND ddace.rdupm_type = 'chart'
     </select>
 
+    <insert id="batchInsert">
+        INSERT INTO devops_deploy_app_center_env (name, code, project_id, object_id, env_id, operation_type, rdupm_type, chart_source)
+        VALUES
+        <foreach collection="devopsDeployAppCenterEnvDTOList" item="devopsDeployAppCenterEnvDTO" separator=",">
+            (#{devopsDeployAppCenterEnvDTO.name},
+            #{devopsDeployAppCenterEnvDTO.code},
+            #{devopsDeployAppCenterEnvDTO.projectId},
+            #{devopsDeployAppCenterEnvDTO.objectId},
+            #{devopsDeployAppCenterEnvDTO.envId},
+            #{devopsDeployAppCenterEnvDTO.operationType},
+            #{devopsDeployAppCenterEnvDTO.rdupmType},
+            #{devopsDeployAppCenterEnvDTO.chartSource})
+        </foreach>
+    </insert>
+
     <select id="listChart" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
         SELECT *
         FROM devops_deploy_app_center_env

@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
@@ -110,6 +111,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO,
                 businessKey);
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsList = new ArrayList<>();
+        List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = new ArrayList<>();
         hzeroDeployVO.getDeployDetailsVOList().forEach(instanceVO -> {
             // 保存部署配置
             DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(new DevopsHzeroDeployConfigDTO(instanceVO.getValue(),
@@ -125,8 +127,10 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     instanceVO.getInstanceCode(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
-
+            devopsDeployAppCenterEnvDTOList.add(devopsDeployAppCenterService.baseCreate(instanceVO.getMktServiceName(), instanceVO.getInstanceCode(), projectId, instanceVO.getMktDeployObjectId(),
+                    instanceVO.getDevopsIngressVO().getEnvId(), OperationTypeEnum.HZERO.value(), "", RdupmTypeEnum.DEPLOYMENT.value()));
         });
+        devopsDeployAppCenterService.batchInsert(devopsDeployAppCenterEnvDTOList);
 
         // 构建工作流部署对象
         HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsList);

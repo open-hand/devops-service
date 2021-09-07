@@ -100,6 +100,14 @@ public interface DevopsDeployAppCenterService {
      * @param appServiceId
      * @return DevopsDeployAppCenterVO集合
      */
+    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId);
+
+    /**
+     * @Description 批量插入DevopsDeployAppCenterEnvDTO
+     * @Param devopsDeployAppCenterEnvDTOList
+     * @Return Integer
+     */
+    Integer batchInsert(List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList);
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
     /**
