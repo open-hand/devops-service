@@ -13,6 +13,10 @@ public enum DeployObjectTypeEnum {
     JAR("jar"),
     IMAGE("image"),
     MIDDLEWARE("middleware"),
+    /**
+     * 其他类型
+     */
+    OTHER("other"),
     HZERO("hzero");
 
     private String value;

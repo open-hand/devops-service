@@ -23,6 +23,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
+import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
@@ -315,7 +316,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsHostAppDTO.getId()),
+                String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
@@ -440,6 +441,115 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(DevopsHostAppDTO devopsHostAppDTO, String errorCode) {
         MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, errorCode);
+    }
+
+    @Override
+    @Transactional
+    public void deployCustomInstance(Long projectId, CustomDeployVO customDeployVO) {
+        Long hostId = customDeployVO.getHostId();
+        // 校验主机权限
+        devopsHostUserPermissionService.checkUserPermissionAndThrow(projectId, hostId, DetailsHelper.getUserDetails().getUserId());
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
+
+        DeploySourceVO deploySourceVO = new DeploySourceVO();
+        deploySourceVO.setType(customDeployVO.getSourceType());
+        deploySourceVO.setProjectName(projectDTO.getName());
+
+        // 2.保存记录
+        DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, customDeployVO.getAppCode());
+        DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = null;
+        if (devopsHostAppDTO == null) {
+            devopsHostAppDTO = new DevopsHostAppDTO(projectId,
+                    hostId,
+                    customDeployVO.getAppName(),
+                    customDeployVO.getAppCode(),
+                    RdupmTypeEnum.OTHER.value(),
+                    OperationTypeEnum.CREATE_APP.value());
+            MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_CUSTOM_INSTANCE_FAILED);
+
+            devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
+                    hostId,
+                    devopsHostAppDTO.getId(),
+                    customDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
+                    customDeployVO.getSourceType(),
+                    AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null,
+                    customDeployVO.getPreCommand(),
+                    customDeployVO.getRunCommand(),
+                    customDeployVO.getPostCommand());
+
+            devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
+        } else {
+            devopsHostAppDTO.setName(customDeployVO.getAppName());
+            MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
+
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
+            devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+
+            devopsHostAppInstanceDTO.setPreCommand(customDeployVO.getPreCommand());
+            devopsHostAppInstanceDTO.setRunCommand(customDeployVO.getRunCommand());
+            devopsHostAppInstanceDTO.setPostCommand(customDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setSourceType(customDeployVO.getSourceType());
+            devopsHostAppInstanceDTO.setSourceConfig(AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null);
+            devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+        }
+
+        String downloadCommand = null;
+        if (AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType())) {
+            downloadCommand = HostDeployUtil.genDownloadCommand("none",
+                    "none",
+                    customDeployVO.getFileInfoVO().getJarFileUrl(),
+                    HostDeployUtil.genWorkingPath(devopsHostAppDTO.getId()),
+                    "default");
+        }
+
+        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+                customDeployVO.getAppCode(),
+                String.valueOf(devopsHostAppInstanceDTO.getId()),
+                downloadCommand,
+                customDeployVO.getPreCommand(),
+                customDeployVO.getRunCommand(),
+                customDeployVO.getPostCommand(),
+                devopsHostAppInstanceDTO.getPid());
+
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.JAVA_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+        // 保存执行记录
+        devopsDeployRecordService.saveRecord(
+                projectId,
+                DeployType.MANUAL,
+                null,
+                DeployModeEnum.HOST,
+                devopsHostDTO.getId(),
+                devopsHostDTO.getName(),
+                PipelineStatus.SUCCESS.toValue(),
+                DeployObjectTypeEnum.OTHER,
+                devopsHostDTO.getName(),
+                null,
+                null,
+                deploySourceVO);
+
+        // 3. 发送部署指令给agent
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+        }
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
+                JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {

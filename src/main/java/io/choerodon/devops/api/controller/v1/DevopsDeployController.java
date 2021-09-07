@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
@@ -63,6 +64,17 @@ public class DevopsDeployController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt @RequestBody @Validated JarDeployVO jarDeployVO) {
         devopsHostAppService.deployJavaInstance(projectId, jarDeployVO);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "其他类型部署")
+    @PostMapping("/custom")
+    public ResponseEntity<Void> deployCustomInstance(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt @RequestBody @Validated CustomDeployVO customDeployVO) {
+        devopsHostAppService.deployCustomInstance(projectId, customDeployVO);
         return ResponseEntity.noContent().build();
     }
 

@@ -2,9 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
@@ -60,4 +59,6 @@ public interface DevopsHostAppService {
     void deleteById(Long projectId, Long hostId, Long appId);
 
     void baseCreate(DevopsHostAppDTO devopsHostAppDTO, String errorCode);
+
+    void deployCustomInstance(Long projectId, CustomDeployVO customDeployVO);
 }
