@@ -312,6 +312,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+            middlewareDeployVO.setName(middlewareRedisHostDeployVO.getName());
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
@@ -449,6 +450,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareDeployVO.setDeployShell(deployShell);
             middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             middlewareDeployVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+            middlewareDeployVO.setName(middlewareMySqlHostDeployVO.getName());
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));

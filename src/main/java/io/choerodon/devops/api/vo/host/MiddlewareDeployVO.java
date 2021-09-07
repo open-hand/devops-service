@@ -13,6 +13,8 @@ public class MiddlewareDeployVO {
     private String InstanceId;
     @ApiModelProperty("操作记录id")
     private String CommandId;
+    @ApiModelProperty("中间件名称")
+    private String name;
 
     public String getMiddlewareType() {
         return MiddlewareType;
@@ -52,5 +54,13 @@ public class MiddlewareDeployVO {
 
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
