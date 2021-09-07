@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.devops.api.vo.host.JavaProcessInfoVO;
-import io.choerodon.devops.api.vo.host.JavaProcessUpdatePayload;
+import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
+import io.choerodon.devops.api.vo.host.InstanceProcessUpdatePayload;
 import io.choerodon.devops.app.service.DevopsHostAppInstanceService;
 import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
@@ -35,7 +35,7 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
     public void handler(String hostId, Long commandId, String payload) {
 
 
-        JavaProcessUpdatePayload javaProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, JavaProcessUpdatePayload.class);
+        InstanceProcessUpdatePayload instanceProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, InstanceProcessUpdatePayload.class);
         List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByHostId(Long.valueOf(hostId));
         if (CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
             return;
@@ -43,7 +43,7 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
         Map<Long, DevopsHostAppInstanceDTO> devopsJavaInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.toMap(DevopsHostAppInstanceDTO::getId, Function.identity()));
 
         // 处理更新的数据
-        List<JavaProcessInfoVO> updateProcessInfos = javaProcessUpdatePayload.getUpdateProcessInfos();
+        List<InstanceProcessInfoVO> updateProcessInfos = instanceProcessUpdatePayload.getUpdateProcessInfos();
         if (!CollectionUtils.isEmpty(updateProcessInfos)) {
             updateProcessInfos.forEach(updateProcessInfo -> {
                 DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
@@ -58,6 +58,6 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
 
     @Override
     public String getType() {
-        return HostMsgEventEnum.JAVA_PROCESS_UPDATE.value();
+        return HostMsgEventEnum.INSTANCE_PROCESS_UPDATE.value();
     }
 }
