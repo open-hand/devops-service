@@ -33,8 +33,6 @@ public class JavaProcessUpdateHandler implements HostMsgHandler {
     @Override
     @Transactional
     public void handler(String hostId, Long commandId, String payload) {
-
-
         InstanceProcessUpdatePayload instanceProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, InstanceProcessUpdatePayload.class);
         List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByHostId(Long.valueOf(hostId));
         if (CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {

@@ -34,8 +34,6 @@ public class DevopsHostAppDTO extends AuditDomain {
     private String name;
     @ApiModelProperty("应用编码")
     private String code;
-    @ApiModelProperty("进程状态")
-    private String status;
     @ApiModelProperty("制品类型")
     private String rdupmType;
     /**
@@ -91,14 +89,6 @@ public class DevopsHostAppDTO extends AuditDomain {
 
     public void setRdupmType(String rdupmType) {
         this.rdupmType = rdupmType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public Long getId() {
