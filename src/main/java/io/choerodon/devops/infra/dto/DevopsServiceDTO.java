@@ -46,6 +46,8 @@ public class DevopsServiceDTO extends AuditDomain {
     @ApiModelProperty("目标对象是单个实例时，实例code")
     private String targetInstanceCode;
 
+    @ApiModelProperty("目标对象是部署组时，部署组的id")
+    private Long targetDeploymentId;
 
     public Long getInstanceId() {
         return instanceId;
@@ -173,5 +175,13 @@ public class DevopsServiceDTO extends AuditDomain {
 
     public void setSelectors(String selectors) {
         this.selectors = selectors;
+    }
+
+    public Long getTargetDeploymentId() {
+        return targetDeploymentId;
+    }
+
+    public void setTargetDeploymentId(Long targetDeploymentId) {
+        this.targetDeploymentId = targetDeploymentId;
     }
 }
