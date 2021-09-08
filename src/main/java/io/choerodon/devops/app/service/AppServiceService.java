@@ -590,4 +590,6 @@ public interface AppServiceService {
 
     String getPrivateToken(Long projectId, String serviceCode, String email, Long gitlabProjectId);
 
+    String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode);
+
 }
