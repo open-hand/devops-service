@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -28,6 +30,9 @@ public class DeploymentInfoVO {
     private String commandStatus;
 
     private String error;
+
+    @ApiModelProperty("来源类型 chart/工作负载/部署组")
+    private String sourceType;
 
     public String getCommandType() {
         return commandType;
@@ -139,5 +144,13 @@ public class DeploymentInfoVO {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 }

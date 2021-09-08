@@ -489,6 +489,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public Integer batchInsert(List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList) {
-        return batchInsert(devopsDeployAppCenterEnvDTOList);
+        return devopsDeployAppCenterEnvMapper.batchInsert(devopsDeployAppCenterEnvDTOList);
     }
 }
