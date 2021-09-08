@@ -5,17 +5,17 @@ import java.util.Map;
 import java.util.function.Consumer;
 import javax.annotation.PostConstruct;
 
+import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.host.CommandResultVO;
 import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
-import io.choerodon.devops.app.service.DevopsCdPipelineService;
-import io.choerodon.devops.app.service.DevopsHostAppInstanceService;
-import io.choerodon.devops.app.service.DevopsHostAppService;
-import io.choerodon.devops.app.service.DevopsHostCommandService;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.impl.DevopsMiddlewareServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
@@ -41,6 +41,8 @@ public class CommandResultHandler implements HostMsgHandler {
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
+    @Autowired
+    private DevopsMiddlewareService devopsMiddlewareService;
 
     @PostConstruct
     void init() {
@@ -50,6 +52,9 @@ public class CommandResultHandler implements HostMsgHandler {
             if (devopsHostAppInstanceDTO != null) {
                 devopsHostAppInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
                 devopsHostAppService.baseDelete(devopsHostAppInstanceDTO.getAppId());
+                if (devopsHostAppInstanceDTO.getSourceType().equals(AppSourceType.MIDDLEWARE.getValue())) {
+                    devopsMiddlewareService.deleteByInstanceId(processInfoVO.getInstanceId());
+                }
             }
 
         });

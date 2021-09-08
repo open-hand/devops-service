@@ -495,7 +495,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareMapper.selectOne(middlewareDTOToSearch);
         DevopsHostDTO devopsHostDTOForConnection = null;
         Long hostIdForConnection = devopsHostAppInstanceDTO.getHostId();
-        Set<Long> hostIds = Arrays.stream(middlewareDTOToSearch.getHostIds().split(",")).map(Long::parseLong).collect(Collectors.toSet());
+        Set<Long> hostIds = Arrays.stream(devopsMiddlewareDTO.getHostIds().split(",")).map(Long::parseLong).collect(Collectors.toSet());
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
         for (DevopsHostDTO host : devopsHostDTOList) {
             if (host.getId().equals(hostIdForConnection)) {
@@ -524,6 +524,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         MiddlewareHostCommandVO middlewareHostCommandVO = new MiddlewareHostCommandVO();
         middlewareHostCommandVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
         middlewareHostCommandVO.setShell(uninstallShell);
+        middlewareHostCommandVO.setPid(devopsHostAppInstanceDTO.getPid());
 
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostIdForConnection));
@@ -531,15 +532,14 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareHostCommandVO));
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
-
-        InstanceProcessInfoVO instanceProcessInfoVO = new InstanceProcessInfoVO();
-        instanceProcessInfoVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-        instanceProcessInfoVO.setPid(devopsHostAppInstanceDTO.getPid());
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceProcessInfoVO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareHostCommandVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostIdForConnection, DevopsHostConstants.GROUP + hostIdForConnection, JsonHelper.marshalByJackson(hostAgentMsgVO));
+    }
 
-
+    @Override
+    public void deleteByInstanceId(String instanceId) {
+        devopsMiddlewareMapper.deleteByInstanceId(instanceId);
     }
 
     @Override

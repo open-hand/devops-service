@@ -15,6 +15,8 @@ public class MiddlewareHostCommandVO {
     private String CommandId;
     @ApiModelProperty("中间件名称")
     private String name;
+    @ApiModelProperty("中间件pid")
+    private String pid;
 
     public String getMiddlewareType() {
         return MiddlewareType;
@@ -62,5 +64,13 @@ public class MiddlewareHostCommandVO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
     }
 }

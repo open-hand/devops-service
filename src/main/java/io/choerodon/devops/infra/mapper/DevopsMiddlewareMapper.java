@@ -15,4 +15,6 @@ public interface DevopsMiddlewareMapper extends BaseMapper<DevopsMiddlewareDTO> 
      * @return
      */
     Integer checkNameUnique(@Param("projectId") Long projectId, @Param("name") String name, @Param("type") String type);
+
+    void deleteByInstanceId(@Param("instanceId") String instanceId);
 }
