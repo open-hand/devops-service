@@ -170,7 +170,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
     @GetMapping(value = "/deployment")
-    public ResponseEntity<Page<DevopsDeployAppCenterVO>> listFromDeployment(
+    public ResponseEntity<Page<DevopsDeployAppCenterVO>> pageFromDeployment(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -187,7 +187,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
     @GetMapping(value = "/chart")
-    public ResponseEntity<Page<DevopsDeployAppCenterVO>> listFromChart(
+    public ResponseEntity<Page<DevopsDeployAppCenterVO>> pageFromChart(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
