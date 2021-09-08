@@ -170,7 +170,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
     @GetMapping(value = "/deployment")
-    public ResponseEntity<List<DevopsDeployAppCenterVO>> listFromDeployment(
+    public ResponseEntity<Page<DevopsDeployAppCenterVO>> pageFromDeployment(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -178,7 +178,7 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId, pageable));
+        return ResponseEntity.ok(devopsDeployAppCenterService.pageByProjectIdAndEnvId(projectId, envId, pageable));
     }
 
     /**
@@ -187,7 +187,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据projectId和envId查询deployment的应用列表")
     @GetMapping(value = "/chart")
-    public ResponseEntity<List<DevopsDeployAppCenterVO>> listFromChart(
+    public ResponseEntity<Page<DevopsDeployAppCenterVO>> pageFromChart(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -198,7 +198,7 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId, pageable));
+        return ResponseEntity.ok(devopsDeployAppCenterService.pageByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId, pageable));
     }
 
     /**
