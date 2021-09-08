@@ -124,10 +124,10 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     instanceVO.getMktDeployObjectId(),
                     devopsHzeroDeployConfigDTO.getId(),
                     HzeroDeployDetailsStatusEnum.CREATED.value(),
-                    instanceVO.getInstanceCode(),
+                    instanceVO.getAppCode(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
-            devopsDeployAppCenterEnvDTOList.add(devopsDeployAppCenterService.baseCreate(instanceVO.getMktServiceName(), instanceVO.getInstanceCode(), projectId, instanceVO.getMktDeployObjectId(),
+            devopsDeployAppCenterEnvDTOList.add(devopsDeployAppCenterService.baseCreate(instanceVO.getAppName(), instanceVO.getAppCode(), projectId, instanceVO.getMktDeployObjectId(),
                     instanceVO.getDevopsIngressVO().getEnvId(), OperationTypeEnum.HZERO.value(), "", RdupmTypeEnum.DEPLOYMENT.value()));
         });
         devopsDeployAppCenterService.batchInsert(devopsDeployAppCenterEnvDTOList);

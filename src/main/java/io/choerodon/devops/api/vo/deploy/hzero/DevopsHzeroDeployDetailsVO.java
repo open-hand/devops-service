@@ -2,6 +2,9 @@ package io.choerodon.devops.api.vo.deploy.hzero;
 
 import java.util.Date;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -53,6 +56,14 @@ public class DevopsHzeroDeployDetailsVO {
     @Encrypt
     @ApiModelProperty("应用id")
     private Long appId;
+    @ApiModelProperty("应用中心应用名称")
+    @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
+    @NotBlank(message = "error.app.instance.name.null")
+    private String appName;
+    @ApiModelProperty("应用中心应用code，同时也作为实例名称")
+    @Size(min = 1, max = 53, message = "error.env.app.center.code.length")
+    @NotBlank(message = "error.app.instance.code.null")
+    private String appCode;
 
     private String mktServiceName;
 
@@ -187,5 +198,21 @@ public class DevopsHzeroDeployDetailsVO {
 
     public void setAppStatus(String appStatus) {
         this.appStatus = appStatus;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }
