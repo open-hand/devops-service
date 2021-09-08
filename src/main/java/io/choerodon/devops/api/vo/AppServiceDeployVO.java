@@ -62,12 +62,12 @@ public class AppServiceDeployVO {
 
     @ApiModelProperty("应用中心应用名称")
     @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
-    @NotBlank(message = "error.app.instance.name.null")
+    @NotBlank(message = "error.app.name.null")
     private String appName;
 
     @ApiModelProperty("应用中心应用code，同时也作为实例名称")
     @Size(min = 1, max = 53, message = "error.env.app.center.code.length")
-    @NotBlank(message = "error.app.instance.code.null")
+    @NotBlank(message = "error.app.code.null")
     private String appCode;
 
     @ApiModelProperty("服务来源")
