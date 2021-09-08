@@ -486,4 +486,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         List<DevopsEnvironmentDTO> environmentDTOS = environmentService.baseListByIds(devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getEnvId).collect(Collectors.toList()));
         return environmentDTOS.stream().collect(Collectors.toMap(DevopsEnvironmentDTO::getId, Function.identity()));
     }
+
+    @Override
+    public Integer batchInsert(List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList) {
+        return devopsDeployAppCenterEnvMapper.batchInsert(devopsDeployAppCenterEnvDTOList);
+    }
 }

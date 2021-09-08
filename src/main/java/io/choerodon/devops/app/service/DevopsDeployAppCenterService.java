@@ -103,6 +103,13 @@ public interface DevopsDeployAppCenterService {
     List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
     /**
+     * @Description 批量插入DevopsDeployAppCenterEnvDTO
+     * @Param devopsDeployAppCenterEnvDTOList
+     * @Return Integer
+     */
+    Integer batchInsert(List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList);
+
+    /**
      * @Description 查询环境下的Chart应用
      * @Param projectId
      * @Param envId

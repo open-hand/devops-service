@@ -64,6 +64,13 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
                                                                   @Param("appServiceId") Long appServiceId);
 
     /**
+     * @Description 批量插入DevopsDeployAppCenterEnvDTO
+     * @Param devopsDeployAppCenterEnvDTOList
+     * @Return Integer
+     */
+    Integer batchInsert(@Param("devopsDeployAppCenterEnvDTOList") List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList);
+
+    /**
      * @Description 查询环境下的Chart应用
      * @Param projectId
      * @Param envId
