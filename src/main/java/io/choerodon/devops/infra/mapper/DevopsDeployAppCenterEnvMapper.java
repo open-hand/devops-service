@@ -65,12 +65,6 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
 
     Integer batchInsert(@Param("devopsDeployAppCenterEnvDTOList") List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList);
 
-    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(@Param("projectId") Long projectId,
-                                                          @Param("envId") Long envId,
-                                                          @Param("params") String params);
-                                                                  @Param("envId") Long envId,
-                                                                  @Param("appServiceId") Long appServiceId);
-
     /**
      * @Description 查询环境下的Chart应用
      * @Param projectId

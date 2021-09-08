@@ -108,7 +108,6 @@ public interface DevopsDeployAppCenterService {
      * @Return Integer
      */
     Integer batchInsert(List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList);
-    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
     /**
      * @Description 查询环境下的Chart应用
