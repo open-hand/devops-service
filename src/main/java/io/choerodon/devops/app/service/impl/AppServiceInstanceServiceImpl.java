@@ -2038,7 +2038,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             recordInstances.add(new DevopsDeployRecordInstanceDTO(
                     null,
                     payload.getAppServiceDeployVO().getInstanceId(),
-                    payload.getAppServiceDeployVO().getInstanceName(),
+                    payload.getAppServiceDeployVO().getAppCode(),
                     payload.getAppServiceVersionDTO().getVersion(),
                     payload.getApplicationDTO().getId(),
                     devopsEnvironmentDTO.getId()));

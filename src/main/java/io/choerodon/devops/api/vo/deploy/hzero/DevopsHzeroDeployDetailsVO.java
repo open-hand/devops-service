@@ -53,6 +53,10 @@ public class DevopsHzeroDeployDetailsVO {
     @Encrypt
     @ApiModelProperty("应用id")
     private Long appId;
+    @ApiModelProperty("应用编码")
+    private String appCode;
+    @ApiModelProperty("应用名称")
+    private String appName;
 
     private String mktServiceName;
 
@@ -187,5 +191,21 @@ public class DevopsHzeroDeployDetailsVO {
 
     public void setAppStatus(String appStatus) {
         this.appStatus = appStatus;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }

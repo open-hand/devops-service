@@ -34,8 +34,6 @@ public class AppServiceDeployVO {
     private Long valueId;
 
     @ApiModelProperty("实例名称")
-    @Size(min = 1, max = 53, message = "error.app.instance.name.length")
-    @NotBlank(message = "error.app.instance.name.null")
     private String instanceName;
 
     @Encrypt
