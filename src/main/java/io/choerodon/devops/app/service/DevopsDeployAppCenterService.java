@@ -91,7 +91,7 @@ public interface DevopsDeployAppCenterService {
      * @param envId
      * @return DevopsDeployAppCenterVO集合
      */
-    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId, PageRequest pageRequest);
+    Page<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId, PageRequest pageRequest);
 
     /**
      * 根据项目id,环境id和应用服务id查询chart的应用列表
@@ -100,7 +100,7 @@ public interface DevopsDeployAppCenterService {
      * @param appServiceId
      * @return DevopsDeployAppCenterVO集合
      */
-    List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
+    Page<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
     /**
      * @Description 批量插入DevopsDeployAppCenterEnvDTO

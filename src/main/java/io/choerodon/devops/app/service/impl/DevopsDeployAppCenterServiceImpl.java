@@ -407,12 +407,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public List<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId, PageRequest pageRequest) {
+    public Page<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId, PageRequest pageRequest) {
         return PageHelper.doPageAndSort(pageRequest, () -> devopsDeployAppCenterEnvMapper.listByProjectIdAndEnvId(projectId, envId));
     }
 
     @Override
-    public List<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest) {
+    public Page<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest) {
         return PageHelper.doPageAndSort(pageRequest, () -> devopsDeployAppCenterEnvMapper.listByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId));
     }
 
