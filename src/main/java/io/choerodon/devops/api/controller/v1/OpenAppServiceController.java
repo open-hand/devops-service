@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -50,7 +51,7 @@ public class OpenAppServiceController {
     @Permission(permissionLogin = true)
     @ApiOperation(value = "hand-开放平台，获取private token")
     @GetMapping(value = "/private_token")
-    public String getPrivateToken(
+    public ResponseEntity<String> getPrivateToken(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
@@ -59,6 +60,23 @@ public class OpenAppServiceController {
             @RequestParam(value = "email") String email,
             @ApiParam(value = "项目id", required = true)
             @RequestParam(value = "gitlab_project_id") Long gitlabProjectId) {
-        return applicationServiceService.getPrivateToken(projectId, serviceCode, email, gitlabProjectId);
+        return Results.success(applicationServiceService.getPrivateToken(projectId, serviceCode, email, gitlabProjectId));
     }
+
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "hand-开放平台，获取ssh地址")
+    @GetMapping(value = "/ssh_url")
+    public String getSshUrl(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "组织编码", required = true)
+            @RequestParam(value = "orgCode") String orgCode,
+            @ApiParam(value = "项目编码", required = true)
+            @RequestParam(value = "projectCode") String projectCode,
+            @ApiParam(value = "服务编码", required = true)
+            @RequestParam(value = "serviceCode") String serviceCode) {
+        return applicationServiceService.getSshUrl(projectId, orgCode, projectCode, serviceCode);
+    }
+
 }
