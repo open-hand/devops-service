@@ -48,6 +48,21 @@ public class DevopsAnsibleCommandConstants {
     public static final String MYSQL_ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/middleware && ansible-playbook -i /tmp/mysql-inventory.ini mysql-install.yml 1>%s 2>&1";
 
     /**
+     * ansible卸载中间件
+     */
+    public static final String UNINSTALL_MIDDLEWARE_ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/middleware && ansible-playbook -i /tmp/%s %s 1>%s 2>&1";
+
+    /**
+     * mysql卸载命令
+     */
+    public static final String MYSQL_UNINSTALL_COMMAND = "mysql-reset.yml";
+
+    /**
+     * redis卸载命令
+     */
+    public static final String REDIS_UNINSTALL_COMMAND = "redis-reset.yml";
+
+    /**
      * 获取指定目录内容
      */
     public static final String CAT_FILE = "cat %s";

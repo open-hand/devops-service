@@ -15,11 +15,11 @@ public class MiddlewareInventoryVO {
         this.chrony = new StringBuilder();
         this.chrony.append("[chrony]\n");
         switch (middlewareTypeEnum) {
-            case REDIS:
+            case Redis:
                 this.redis = new StringBuilder();
                 this.redis.append("[redis]\n");
                 break;
-            case MYSQL:
+            case MySQL:
                 this.mysql = new StringBuilder();
                 this.mysql.append("[mysql]\n");
                 break;

@@ -45,6 +45,9 @@ public class DevopsMiddlewareDTO extends AuditDomain {
     @ApiModelProperty("配置内容")
     private String configuration;
 
+    public DevopsMiddlewareDTO() {
+    }
+
     public DevopsMiddlewareDTO(Long projectId, Long instanceId, String name, String type, String mode, String version, String hostIds, String configuration) {
         this.projectId = projectId;
         this.instanceId = instanceId;

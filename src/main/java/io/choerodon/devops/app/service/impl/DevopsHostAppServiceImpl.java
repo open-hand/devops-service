@@ -14,7 +14,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -76,7 +75,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostAppServiceImpl.class);
 
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
-    private static final String ERROR_JAR_VERSION_NOT_FOUND = "error.jar.version.not.found";
 
     @Lazy
     @Autowired
@@ -109,8 +107,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
-
-    private static final BASE64Decoder decoder = new BASE64Decoder();
+    @Autowired
+    private DevopsMiddlewareService devopsMiddlewareService;
 
     @Override
     @Transactional
@@ -409,27 +407,34 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppInstanceService.baseDelete(devopsHostAppInstanceDTO.getId());
             return;
         }
-        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
-        devopsHostCommandDTO.setHostId(hostId);
-        devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
-        devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
-        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
-        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+        // 走中间件删除逻辑
+        if (devopsHostAppInstanceDTO.getSourceType().equals(AppSourceType.MIDDLEWARE.getValue())) {
+            devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
+        } else {
+
+            DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+            devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
+            devopsHostCommandDTO.setHostId(hostId);
+            devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
+            devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+            devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
 
-        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.KILL_INSTANCE.value());
-        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+            hostAgentMsgVO.setHostId(String.valueOf(hostId));
+            hostAgentMsgVO.setType(HostCommandEnum.KILL_INSTANCE.value());
+            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
 
-        InstanceProcessInfoVO instanceProcessInfoVO = new InstanceProcessInfoVO();
-        instanceProcessInfoVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-        instanceProcessInfoVO.setPid(devopsHostAppInstanceDTO.getPid());
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceProcessInfoVO));
+            InstanceProcessInfoVO instanceProcessInfoVO = new InstanceProcessInfoVO();
+            instanceProcessInfoVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+            instanceProcessInfoVO.setPid(devopsHostAppInstanceDTO.getPid());
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceProcessInfoVO));
 
-        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+        }
 
     }
 

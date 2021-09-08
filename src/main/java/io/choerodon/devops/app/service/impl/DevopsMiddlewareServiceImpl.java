@@ -1,18 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
-import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MYSQL;
-import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.REDIS;
+import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MySQL;
+import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.Redis;
 import static io.choerodon.devops.infra.enums.deploy.MiddlewareDeployModeEnum.*;
 import static io.choerodon.devops.infra.enums.host.HostCommandEnum.DEPLOY_MIDDLEWARE;
 import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_MYSQL;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,6 +19,7 @@ import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,10 +31,12 @@ import org.yaml.snakeyaml.Yaml;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
+import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.host.MiddlewareDeployVO;
+import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
+import io.choerodon.devops.api.vo.host.MiddlewareHostCommandVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
@@ -52,6 +52,7 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostInstanceType;
+import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
@@ -78,6 +79,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private static final String MYSQL_CONFIGMAP_VALUE_TEMPLATE = "    %s=%s\n";
 
     private static final String MYSQL_INSTALL_LOG_PATH = "/tmp/mysql-install.log";
+
+    private static final String SHELL_HEADER = "set -e\n";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMiddlewareServiceImpl.class);
 
@@ -133,6 +136,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
+    @Lazy
+    @Autowired
+    private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -145,7 +151,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     public AppServiceInstanceVO envDeployForRedis(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisEnvDeployVO.getMode(), middlewareRedisEnvDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(Redis.getType(), middlewareRedisEnvDeployVO.getMode(), middlewareRedisEnvDeployVO.getVersion());
 
         middlewareRedisEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareRedisEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
@@ -168,7 +174,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     public AppServiceInstanceVO envDeployForMySql(Long projectId, MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO) {
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), STANDALONE.getValue(), middlewareMySqlEnvDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MySQL.getType(), STANDALONE.getValue(), middlewareMySqlEnvDeployVO.getVersion());
 
         middlewareMySqlEnvDeployVO.setMarketDeployObjectId(middlewareServiceReleaseInfo.getId());
         middlewareMySqlEnvDeployVO.setMarketAppServiceId(middlewareServiceReleaseInfo.getMarketServiceId());
@@ -218,7 +224,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
-        checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), REDIS.getType());
+        checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), Redis.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareRedisHostDeployVO.getHostIds());
 
@@ -228,7 +234,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(REDIS.getType(), middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(Redis.getType(), middlewareRedisHostDeployVO.getMode(), middlewareRedisHostDeployVO.getVersion());
 
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
 
@@ -254,11 +260,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         String deployShell;
         try {
-            MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, REDIS);
+            MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, Redis);
             // 安装ansible、git初始化文件
             deployShell = preProcessShell()
                     + generatePrivateKey(devopsHostDTOList)
-                    + generateHostConfiguration(middlewareInventoryVO, REDIS)
+                    + generateHostConfiguration(middlewareInventoryVO, Redis)
                     + generateRedisConfiguration(middlewareRedisHostDeployVO)
                     + generateInstallRedis();
 
@@ -292,7 +298,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
                     devopsHostAppInstanceDTO.getId(),
                     middlewareRedisHostDeployVO.getName(),
-                    REDIS.getType(),
+                    Redis.getType(),
                     middlewareRedisHostDeployVO.getMode(),
                     middlewareRedisHostDeployVO.getVersion(),
                     devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
@@ -306,19 +312,19 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
-            MiddlewareDeployVO middlewareDeployVO = new MiddlewareDeployVO();
-            middlewareDeployVO.setMiddlewareType(DevopsMiddlewareTypeEnum.REDIS.getType());
-            middlewareDeployVO.setMode(middlewareRedisHostDeployVO.getMode());
-            middlewareDeployVO.setDeployShell(deployShell);
-            middlewareDeployVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-            middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            middlewareDeployVO.setName(middlewareRedisHostDeployVO.getName());
+            MiddlewareHostCommandVO middlewareHostCommandVO = new MiddlewareHostCommandVO();
+            middlewareHostCommandVO.setMiddlewareType(Redis.getType());
+            middlewareHostCommandVO.setMode(middlewareRedisHostDeployVO.getMode());
+            middlewareHostCommandVO.setShell(deployShell);
+            middlewareHostCommandVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+            middlewareHostCommandVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+            middlewareHostCommandVO.setName(middlewareRedisHostDeployVO.getName());
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
             hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_MIDDLEWARE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareDeployVO));
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareHostCommandVO));
 
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + devopsHostDTOForConnection.getId(),
                     String.format(DevopsHostConstants.MIDDLEWARE_INSTANCE, devopsHostDTOForConnection.getId(), devopsMiddlewareDTO.getId()),
@@ -358,14 +364,14 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             }
         }
 
-        checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getName(), MYSQL.getType());
+        checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getName(), MySQL.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareMySqlHostDeployVO.getHostIds());
 
         convertMySQLConfiguration(middlewareMySqlHostDeployVO, devopsHostDTOList.stream().collect(Collectors.toMap(DevopsHostDTO::getId, Function.identity())));
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
-        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MYSQL.getType(), middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion());
+        MarketServiceDeployObjectVO middlewareServiceReleaseInfo = marketServiceClientOperator.getMiddlewareServiceReleaseInfo(MySQL.getType(), middlewareMySqlHostDeployVO.getMode(), middlewareMySqlHostDeployVO.getVersion());
 
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
 
@@ -391,11 +397,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         String deployShell;
         try {
-            MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, MYSQL);
+            MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, MySQL);
             // 安装ansible、git初始化文件
             deployShell = preProcessShell()
                     + generatePrivateKey(devopsHostDTOList)
-                    + generateHostConfiguration(middlewareInventoryVO, MYSQL)
+                    + generateHostConfiguration(middlewareInventoryVO, MySQL)
                     + generateMySqlConfiguration(middlewareMySqlHostDeployVO)
                     + generateInstallMySQL();
 
@@ -429,7 +435,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
                     devopsHostAppInstanceDTO.getId(),
                     middlewareMySqlHostDeployVO.getName(),
-                    REDIS.getType(),
+                    Redis.getType(),
                     middlewareMySqlHostDeployVO.getMode(),
                     middlewareMySqlHostDeployVO.getVersion(),
                     devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
@@ -444,19 +450,19 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
-            MiddlewareDeployVO middlewareDeployVO = new MiddlewareDeployVO();
-            middlewareDeployVO.setMiddlewareType(MYSQL.getType());
-            middlewareDeployVO.setMode(middlewareMySqlHostDeployVO.getMode());
-            middlewareDeployVO.setDeployShell(deployShell);
-            middlewareDeployVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            middlewareDeployVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-            middlewareDeployVO.setName(middlewareMySqlHostDeployVO.getName());
+            MiddlewareHostCommandVO middlewareHostCommandVO = new MiddlewareHostCommandVO();
+            middlewareHostCommandVO.setMiddlewareType(MySQL.getType());
+            middlewareHostCommandVO.setMode(middlewareMySqlHostDeployVO.getMode());
+            middlewareHostCommandVO.setShell(deployShell);
+            middlewareHostCommandVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+            middlewareHostCommandVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+            middlewareHostCommandVO.setName(middlewareMySqlHostDeployVO.getName());
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
             hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_MIDDLEWARE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareDeployVO));
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareHostCommandVO));
 
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + devopsHostDTOForConnection.getId(),
                     String.format(DevopsHostConstants.MIDDLEWARE_INSTANCE, devopsHostDTOForConnection.getId(), devopsMiddlewareDTO.getId()),
@@ -480,6 +486,60 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     e.getMessage());
             throw new CommonException(e.getMessage());
         }
+    }
+
+    @Override
+    public void uninstallMiddleware(Long projectId, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
+        DevopsMiddlewareDTO middlewareDTOToSearch = new DevopsMiddlewareDTO();
+        middlewareDTOToSearch.setInstanceId(devopsHostAppInstanceDTO.getId());
+        DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareMapper.selectOne(middlewareDTOToSearch);
+        DevopsHostDTO devopsHostDTOForConnection = null;
+        Long hostIdForConnection = devopsHostAppInstanceDTO.getHostId();
+        Set<Long> hostIds = Arrays.stream(middlewareDTOToSearch.getHostIds().split(",")).map(Long::parseLong).collect(Collectors.toSet());
+        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
+        for (DevopsHostDTO host : devopsHostDTOList) {
+            if (host.getId().equals(hostIdForConnection)) {
+                devopsHostDTOForConnection = host;
+                break;
+            }
+        }
+        if (devopsHostDTOForConnection == null) {
+            return;
+        }
+
+        DevopsMiddlewareTypeEnum middlewareTypeEnum = DevopsMiddlewareTypeEnum.valueOf(devopsMiddlewareDTO.getType());
+
+        MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, middlewareTypeEnum);
+        String uninstallShell;
+        uninstallShell = generateShellHeader() + generateHostConfiguration(middlewareInventoryVO, middlewareTypeEnum) + generateUninstallCommand(middlewareTypeEnum);
+
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
+        devopsHostCommandDTO.setHostId(devopsHostAppInstanceDTO.getHostId());
+        devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
+        devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+        MiddlewareHostCommandVO middlewareHostCommandVO = new MiddlewareHostCommandVO();
+        middlewareHostCommandVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+        middlewareHostCommandVO.setShell(uninstallShell);
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostIdForConnection));
+        hostAgentMsgVO.setType(HostCommandEnum.KILL_MIDDLEWARE.value());
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(middlewareHostCommandVO));
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+
+        InstanceProcessInfoVO instanceProcessInfoVO = new InstanceProcessInfoVO();
+        instanceProcessInfoVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+        instanceProcessInfoVO.setPid(devopsHostAppInstanceDTO.getPid());
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceProcessInfoVO));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostIdForConnection, DevopsHostConstants.GROUP + hostIdForConnection, JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+
     }
 
     @Override
@@ -546,11 +606,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     .append(System.lineSeparator());
 
             switch (middlewareTypeEnum) {
-                case REDIS:
+                case Redis:
                     middlewareInventoryVO.getRedis().append(ip)
                             .append(System.lineSeparator());
                     break;
-                case MYSQL:
+                case MySQL:
                     middlewareInventoryVO.getMysql().append(ip)
                             .append(System.lineSeparator());
                     break;
@@ -766,5 +826,27 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private String generateInstallMySQL() {
         return String.format(MYSQL_ANSIBLE_COMMAND_TEMPLATE, MYSQL_INSTALL_LOG_PATH) + System.lineSeparator();
+    }
+
+    private String generateUninstallCommand(DevopsMiddlewareTypeEnum middlewareTypeEnum) {
+        String inventoryIni;
+        String uninstallCommand;
+        switch (middlewareTypeEnum) {
+            case Redis:
+                inventoryIni = "/tmp/redis-inventory.ini";
+                uninstallCommand = REDIS_UNINSTALL_COMMAND;
+                break;
+            case MySQL:
+                inventoryIni = "/tmp/mysql-inventory.ini";
+                uninstallCommand = MYSQL_UNINSTALL_COMMAND;
+                break;
+            default:
+                throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
+        }
+        return String.format(UNINSTALL_MIDDLEWARE_ANSIBLE_COMMAND_TEMPLATE, inventoryIni, uninstallCommand, "/tmp/middleware-uninstall.log");
+    }
+
+    private String generateShellHeader() {
+        return SHELL_HEADER;
     }
 }
