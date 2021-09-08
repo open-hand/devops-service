@@ -1,7 +1,13 @@
 package io.choerodon.devops.infra.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
+import sun.misc.BASE64Decoder;
+
+import io.choerodon.core.exception.CommonException;
 
 /**
  * Creator: Runge
@@ -10,6 +16,8 @@ import java.util.Base64;
  * Description:
  */
 public class Base64Util {
+
+    private static final BASE64Decoder decoder = new BASE64Decoder();
 
     private Base64Util() {
     }
@@ -42,5 +50,13 @@ public class Base64Util {
      */
     public static String getBase64DecodedString(String cipherText) {
         return new String(Base64.getDecoder().decode(cipherText.getBytes()));
+    }
+
+    public static String decodeBuffer(String encodeStr) {
+        try {
+            return new String(decoder.decodeBuffer(encodeStr), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+           throw new CommonException(e);
+        }
     }
 }

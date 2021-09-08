@@ -33,7 +33,7 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("前置命令")
     private String preCommand;
     @ApiModelProperty("启动命令")
-    private String runAppCommand;
+    private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
 
@@ -158,12 +158,12 @@ public class CdHostDeployConfigVO {
         this.preCommand = preCommand;
     }
 
-    public String getRunAppCommand() {
-        return runAppCommand;
+    public String getRunCommand() {
+        return runCommand;
     }
 
-    public void setRunAppCommand(String runAppCommand) {
-        this.runAppCommand = runAppCommand;
+    public void setRunCommand(String runCommand) {
+        this.runCommand = runCommand;
     }
 
     public String getPostCommand() {

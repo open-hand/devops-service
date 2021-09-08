@@ -130,13 +130,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         deploySourceVO.setType(jarDeployVO.getSourceType());
         deploySourceVO.setProjectName(projectDTO.getName());
 
-
-//        String encodeValue = jarDeployVO.getValue();
-//        try {
-//            jarDeployVO.setValue(new String(decoder.decodeBuffer(encodeValue), StandardCharsets.UTF_8));
-//        } catch (IOException e) {
-//            throw new CommonException("decode.values.failed", e);
-//        }
         String deployObjectName = null;
         String deployVersion = null;
 
@@ -518,9 +511,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 customDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                StringUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, customDeployVO.getPreCommand()),
-                StringUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, customDeployVO.getRunCommand()),
-                StringUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, customDeployVO.getPostCommand()),
+                StringUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getPreCommand())),
+                StringUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(customDeployVO.getRunCommand())),
+                StringUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getPostCommand())),
                 devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
