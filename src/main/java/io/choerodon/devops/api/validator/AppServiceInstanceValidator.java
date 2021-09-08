@@ -70,7 +70,6 @@ public class AppServiceInstanceValidator {
         CommonExAssertUtil.assertTrue(envId != null, "error.env.id.null");
         appServiceDeployVOS.forEach(ins -> ins.setEnvironmentId(envId));
 
-        List<String> instanceCodes = new ArrayList<>(size);
         List<String> serviceNames = new ArrayList<>(size);
         List<String> ingressNames = new ArrayList<>(size);
 
@@ -83,12 +82,6 @@ public class AppServiceInstanceValidator {
                     throw new CommonException(cv.getMessageTemplate());
                 });
             }
-            if (instanceCodes.contains(appServiceDeployVO.getInstanceName())) {
-                throw new CommonException("error.app.service.name.duplicated.in.list", appServiceDeployVO.getInstanceName());
-            }
-            // 实例名称最大53，限制于helm release的名称长度，参考issue: https://github.com/helm/helm/issues/6006
-            CommonExAssertUtil.assertTrue(appServiceDeployVO.getInstanceName().length() <= 53, "error.app.instance.name.length");
-            instanceCodes.add(appServiceDeployVO.getInstanceName());
 
             // 校验网络
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
