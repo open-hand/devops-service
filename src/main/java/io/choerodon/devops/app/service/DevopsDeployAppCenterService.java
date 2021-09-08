@@ -89,18 +89,20 @@ public interface DevopsDeployAppCenterService {
      * 根据项目id和环境id查询deployment的应用列表
      * @param projectId
      * @param envId
+     * @param pageRequest
      * @return DevopsDeployAppCenterVO集合
      */
-    Page<DevopsDeployAppCenterVO> listByProjectIdAndEnvId(Long projectId, Long envId, PageRequest pageRequest);
+    Page<DevopsDeployAppCenterVO> pageByProjectIdAndEnvId(Long projectId, Long envId, PageRequest pageRequest);
 
     /**
      * 根据项目id,环境id和应用服务id查询chart的应用列表
      * @param projectId
      * @param envId
      * @param appServiceId
+     * @param pageRequest
      * @return DevopsDeployAppCenterVO集合
      */
-    Page<DevopsDeployAppCenterVO> listByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
+    Page<DevopsDeployAppCenterVO> pageByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
     /**
      * @Description 批量插入DevopsDeployAppCenterEnvDTO

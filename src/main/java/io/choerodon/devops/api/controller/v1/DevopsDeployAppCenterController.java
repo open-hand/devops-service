@@ -178,7 +178,7 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvId(projectId, envId, pageable));
+        return ResponseEntity.ok(devopsDeployAppCenterService.pageByProjectIdAndEnvId(projectId, envId, pageable));
     }
 
     /**
@@ -198,7 +198,7 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.listByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId, pageable));
+        return ResponseEntity.ok(devopsDeployAppCenterService.pageByProjectIdAndEnvIdAndAppId(projectId, envId, appServiceId, pageable));
     }
 
     /**
