@@ -516,7 +516,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
 
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployInfoVO.getEnvId(), devopsDeployInfoVO.getCode());
-        if (JobTypeEnum.CHART.value().equals(devopsCdJobRecordDTO.getType())) {
+        if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())) {
             // 1. 获取部署版本信息
             log.append("## 3.Query Deploy version.").append(System.lineSeparator());
             AppServiceVersionDTO appServiceVersionDTO = getDeployVersion(pipelineRecordId);
