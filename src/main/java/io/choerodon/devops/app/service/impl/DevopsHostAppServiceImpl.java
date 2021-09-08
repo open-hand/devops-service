@@ -242,33 +242,38 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
-        String appFile = workDir + jarDeployVO.getFileInfoVO().getFileName();
         params.put("{{ WORK_DIR }}", workDir);
-        params.put("{{ APP_FILE_NAME }}", jarDeployVO.getFileInfoVO().getFileName());
-        params.put("{{ APP_FILE }}", appFile);
         String downloadCommand;
+        String appFile;
+        String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
+            appFileName = jarDeployVO.getFileInfoVO().getFileName();
+            appFile = workDir + jarDeployVO.getFileInfoVO().getFileName();
             downloadCommand = HostDeployUtil.genDownloadCommand("none",
                     "none",
                     jarDeployVO.getFileInfoVO().getJarFileUrl(),
                     workDir,
                     appFile);
         } else {
+            appFileName = nexusComponentDTOList.get(0).getName();
+            appFile = workDir + appFileName;
             downloadCommand = HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
                     nexusComponentDTOList.get(0).getDownloadUrl(),
                     workDir,
                     appFile);
         }
+        params.put("{{ APP_FILE_NAME }}", appFileName);
+        params.put("{{ APP_FILE }}", appFile);
 
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, jarDeployVO.getPreCommand()),
-                StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, jarDeployVO.getRunCommand()),
-                StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, jarDeployVO.getPostCommand()),
+                StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
+                StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
+                StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
                 devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();

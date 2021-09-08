@@ -85,4 +85,6 @@ public interface DevopsMiddlewareService {
      * @param devopsHostAppInstanceDTO
      */
     void uninstallMiddleware(Long projectId, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO);
+
+    void deleteByInstanceId(String instanceId);
 }

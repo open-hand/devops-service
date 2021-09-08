@@ -25,7 +25,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
  * @Date 2021/6/25 14:25
  */
 @Component
-public class JavaProcessUpdateHandler implements HostMsgHandler {
+public class InstanceProcessUpdateHandler implements HostMsgHandler {
 
     @Autowired
     private DevopsHostAppInstanceService devopsHostAppInstanceService;

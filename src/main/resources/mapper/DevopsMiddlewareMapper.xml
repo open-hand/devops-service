@@ -8,4 +8,8 @@
         AND dm.name=#{name}
         AND dm.type=#{type}
     </select>
+
+    <select id="deleteByInstanceId" resultType="int">
+        DELETE FROM devops_middleware WHERE instance_id=#{instanceId}
+    </select>
 </mapper>
