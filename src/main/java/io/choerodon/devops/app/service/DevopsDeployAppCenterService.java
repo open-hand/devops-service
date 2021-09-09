@@ -16,23 +16,21 @@ public interface DevopsDeployAppCenterService {
      * 校验名称环境下唯一
      *
      * @param projectId
-     * @param envId
      * @param name
      * @return
      */
-    Boolean checkNameUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name);
+    Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name);
 
     /**
      * 校验code环境下唯一
      *
      * @param projectId
-     * @param envId
      * @param code
      * @return
      */
-    Boolean checkCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String code);
+    Boolean checkCodeUnique(Long projectId, String rdupmType, Long objectId, String code);
 
-    void checkNameAndCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name, String code);
+    void checkNameAndCodeUnique(Long projectId, String rdupmType, Long objectId, String name, String code);
 
     /**
      * 根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用
