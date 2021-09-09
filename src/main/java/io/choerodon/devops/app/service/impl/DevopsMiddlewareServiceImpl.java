@@ -12,8 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.io.IOUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -265,7 +267,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             deployShell = preProcessShell()
                     + generatePrivateKey(devopsHostDTOList)
                     + generateHostConfiguration(middlewareInventoryVO, Redis)
-                    + generateRedisConfiguration(middlewareRedisHostDeployVO)
+                    + generateRedisConfiguration(middlewareRedisHostDeployVO.getPassword(), middlewareRedisHostDeployVO.getConfiguration())
                     + generateInstallRedis();
 
             Map<String, String> middlewareConfig = new HashMap<>();
@@ -295,6 +297,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
 
             // 保存中间件信息
+            Map<String, Object> redisConfigurationToSave = new HashMap<>();
+            redisConfigurationToSave.put("configuration", middlewareRedisHostDeployVO.getConfiguration());
+            redisConfigurationToSave.put("password", middlewareRedisHostDeployVO.getPassword());
             DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
                     devopsHostAppInstanceDTO.getId(),
                     middlewareRedisHostDeployVO.getName(),
@@ -302,7 +307,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareRedisHostDeployVO.getMode(),
                     middlewareRedisHostDeployVO.getVersion(),
                     devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
-                    JsonHelper.marshalByJackson(middlewareRedisHostDeployVO.getConfiguration()));
+                    JsonHelper.marshalByJackson(redisConfigurationToSave));
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setHostId(devopsHostDTOForConnection.getId());
@@ -402,7 +407,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             deployShell = preProcessShell()
                     + generatePrivateKey(devopsHostDTOList)
                     + generateHostConfiguration(middlewareInventoryVO, MySQL)
-                    + generateMySqlConfiguration(middlewareMySqlHostDeployVO)
+                    + generateMySqlConfiguration(middlewareMySqlHostDeployVO.getPassword(), middlewareMySqlHostDeployVO.getVirtualIp(), middlewareMySqlHostDeployVO.getConfiguration())
                     + generateInstallMySQL();
 
             Map<String, String> middlewareConfig = new HashMap<>();
@@ -432,6 +437,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
 
             // 保存中间件信息
+            Map<String, Object> mysqlConfigurationToSave = new HashMap<>();
+            mysqlConfigurationToSave.put("password", middlewareMySqlHostDeployVO.getPassword());
+            mysqlConfigurationToSave.put("virtualIp", middlewareMySqlHostDeployVO.getVirtualIp());
+            mysqlConfigurationToSave.put("configuration", middlewareMySqlHostDeployVO.getConfiguration());
             DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
                     devopsHostAppInstanceDTO.getId(),
                     middlewareMySqlHostDeployVO.getName(),
@@ -439,7 +448,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareMySqlHostDeployVO.getMode(),
                     middlewareMySqlHostDeployVO.getVersion(),
                     devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
-                    JsonHelper.marshalByJackson(middlewareMySqlHostDeployVO.getConfiguration()));
+                    JsonHelper.marshalByJackson(mysqlConfigurationToSave));
 
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -510,8 +519,19 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         DevopsMiddlewareTypeEnum middlewareTypeEnum = DevopsMiddlewareTypeEnum.valueOf(devopsMiddlewareDTO.getType());
 
         MiddlewareInventoryVO middlewareInventoryVO = calculateGeneralInventoryValue(devopsHostDTOList, middlewareTypeEnum);
+
+        Map<String, Object> stringObjectMap = JsonHelper.unmarshalByJackson(devopsMiddlewareDTO.getConfiguration(), new TypeReference<Map<String, Object>>() {
+        });
+
+        Supplier<String> generateInstallMiddlewareShell = devopsMiddlewareDTO.getType().equals(Redis.getType()) ?
+                () -> generateRedisConfiguration((String) stringObjectMap.get("password"), (Map<String, String>) stringObjectMap.get("configuration")) :
+                () -> generateMySqlConfiguration((String) stringObjectMap.get("password"), (String) stringObjectMap.get("virtualIp"), (Map<String, Map<String, String>>) stringObjectMap.get("configuration"));
+
         String uninstallShell;
-        uninstallShell = generateShellHeader() + generateHostConfiguration(middlewareInventoryVO, middlewareTypeEnum) + generateUninstallCommand(middlewareTypeEnum);
+        uninstallShell = generateShellHeader()
+                + generateInstallMiddlewareShell.get()
+                + generateHostConfiguration(middlewareInventoryVO, middlewareTypeEnum)
+                + generateUninstallCommand(middlewareTypeEnum);
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
@@ -758,17 +778,16 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         return "cat <<EOF > /tmp/" + type.getType().toLowerCase() + "-inventory.ini" + System.lineSeparator() + middlewareInventoryVO.getInventoryConfiguration() + System.lineSeparator() + "EOF" + System.lineSeparator();
     }
 
-    private String generateRedisConfiguration(MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
+    private String generateRedisConfiguration(String password, Map<String, String> configuration) {
         String command = "cat <<EOF > /tmp/redis-configuration.yml" + System.lineSeparator();
-        Map<String, String> configuration = middlewareRedisHostDeployVO.getConfiguration();
         Map<String, Map<String, String>> baseConfig = new HashMap<>();
         configuration.putIfAbsent("port", "6379");
         configuration.putIfAbsent("bind", "0.0.0.0");
         configuration.putIfAbsent("databases", "16");
         configuration.putIfAbsent("dir", "/var/lib/redis/data");
         configuration.putIfAbsent("logfile", "/var/log/redis/redis.log");
-        configuration.putIfAbsent("requirepass", middlewareRedisHostDeployVO.getPassword());
-        configuration.putIfAbsent("masterauth", middlewareRedisHostDeployVO.getPassword());
+        configuration.putIfAbsent("requirepass", password);
+        configuration.putIfAbsent("masterauth", password);
         configuration.putIfAbsent("appendonly", "yes");
         configuration.putIfAbsent("appendfsync", "everysec");
         configuration.putIfAbsent("no-appendfsync-on-rewrite", "yes");
@@ -788,9 +807,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         return command + redisConfiguration + System.lineSeparator() + "EOF" + System.lineSeparator();
     }
 
-    private String generateMySqlConfiguration(MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
+    private String generateMySqlConfiguration(String password, String virtualIp, Map<String, Map<String, String>> configurations) {
         StringBuilder command = new StringBuilder(MKDIR_FOR_MULTI_NODE_CONFIGURATION + System.lineSeparator());
-        Map<String, Map<String, String>> configurations = middlewareMySqlHostDeployVO.getConfiguration();
         for (Map.Entry<String, Map<String, String>> entry : configurations.entrySet()) {
 
             String header = String.format("cat <<EOF >/tmp/middleware/host_vars/%s.yml", entry.getKey()) + System.lineSeparator();
@@ -800,7 +818,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             Map<String, String> authConfiguration = new HashMap<>();
             authConfiguration.put("replicationUser", "replicator");
             authConfiguration.put("replicationPassword", "Changeit!123");
-            authConfiguration.putIfAbsent("rootPassword", middlewareMySqlHostDeployVO.getPassword());
+            authConfiguration.putIfAbsent("rootPassword", password);
 
             mysqldConfiguration.putIfAbsent("datadir", "/var/lib/mysql");
             mysqldConfiguration.putIfAbsent("port", "3306");
@@ -808,7 +826,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             configuration.put("auth", authConfiguration);
             configuration.put("mysqld", mysqldConfiguration);
-            configuration.put("lb_keepalived_virtual_ipaddress", middlewareMySqlHostDeployVO.getVirtualIp());
+            configuration.put("lb_keepalived_virtual_ipaddress", virtualIp);
 
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
