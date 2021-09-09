@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CheckAppServiceCodeAndNameVO;
 import io.choerodon.devops.api.vo.open.OpenAppServiceReqVO;
 import io.choerodon.devops.app.service.AppServiceService;
@@ -27,7 +28,7 @@ public class OpenAppServiceController {
     @Autowired
     private AppServiceService applicationServiceService;
 
-    @Permission(permissionLogin = true)
+    @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "hand-开放平台，校验名称和code是否重复")
     @PostMapping(value = "/check_name_and_code")
     public ResponseEntity<List<CheckAppServiceCodeAndNameVO>> checkNameAndCode(
@@ -37,7 +38,7 @@ public class OpenAppServiceController {
         return ResponseEntity.ok(applicationServiceService.checkNameAndCode(projectId, codeAndNameVOList));
     }
 
-    @Permission(permissionLogin = true)
+    @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "hand-开放平台，创建应用服务")
     @PostMapping(value = "/create")
     public ResponseEntity<OpenAppServiceReqVO> openCreateAppService(
@@ -48,7 +49,7 @@ public class OpenAppServiceController {
         return ResponseEntity.ok(applicationServiceService.openCreateAppService(projectId, openAppServiceReqVO));
     }
 
-    @Permission(permissionLogin = true)
+    @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "hand-开放平台，获取private token")
     @GetMapping(value = "/private_token")
     public ResponseEntity<String> getPrivateToken(
@@ -63,8 +64,7 @@ public class OpenAppServiceController {
         return Results.success(applicationServiceService.getPrivateToken(projectId, serviceCode, email, gitlabProjectId));
     }
 
-
-    @Permission(permissionLogin = true)
+    @Permission(level = ResourceLevel.SITE)
     @ApiOperation(value = "hand-开放平台，获取ssh地址")
     @GetMapping(value = "/ssh_url")
     public String getSshUrl(
