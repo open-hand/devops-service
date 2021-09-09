@@ -23,7 +23,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @Modified By:
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/open_app_service")
+@RequestMapping(value = "/v1/projects/open_app_service")
 public class OpenAppServiceController {
     @Autowired
     private AppServiceService applicationServiceService;
@@ -33,7 +33,7 @@ public class OpenAppServiceController {
     @PostMapping(value = "/check_name_and_code")
     public ResponseEntity<List<CheckAppServiceCodeAndNameVO>> checkNameAndCode(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "project_id") Long projectId,
             @RequestBody List<CheckAppServiceCodeAndNameVO> codeAndNameVOList) {
         return ResponseEntity.ok(applicationServiceService.checkNameAndCode(projectId, codeAndNameVOList));
     }
@@ -43,7 +43,7 @@ public class OpenAppServiceController {
     @PostMapping(value = "/create")
     public ResponseEntity<OpenAppServiceReqVO> openCreateAppService(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody @Validated OpenAppServiceReqVO openAppServiceReqVO) {
         return ResponseEntity.ok(applicationServiceService.openCreateAppService(projectId, openAppServiceReqVO));
@@ -54,7 +54,7 @@ public class OpenAppServiceController {
     @GetMapping(value = "/private_token")
     public ResponseEntity<String> getPrivateToken(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
             @RequestParam(value = "serviceCode") String serviceCode,
             @ApiParam(value = "用户邮箱", required = true)
@@ -69,7 +69,7 @@ public class OpenAppServiceController {
     @GetMapping(value = "/ssh_url")
     public String getSshUrl(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "project_id") Long projectId,
             @ApiParam(value = "组织编码", required = true)
             @RequestParam(value = "orgCode") String orgCode,
             @ApiParam(value = "项目编码", required = true)
