@@ -50,7 +50,7 @@ public class DevopsAnsibleCommandConstants {
     /**
      * ansible卸载中间件
      */
-    public static final String UNINSTALL_MIDDLEWARE_ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/middleware && ansible-playbook -i %s %s 1>%s 2>&1";
+    public static final String UNINSTALL_MIDDLEWARE_ANSIBLE_COMMAND_TEMPLATE = "cd /tmp/middleware && ansible-playbook -i %s %s %s 1>%s 2>&1";
 
     /**
      * mysql卸载命令

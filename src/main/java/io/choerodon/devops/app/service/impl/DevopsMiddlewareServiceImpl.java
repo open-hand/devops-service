@@ -82,7 +82,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String MYSQL_INSTALL_LOG_PATH = "/tmp/mysql-install.log";
 
-    private static final String SHELL_HEADER = "set -e\n";
+    private static final String SHELL_HEADER = "set -e\n" +
+            "if [ -d \"/tmp/middleware\" ]; then\n" +
+            "    rm -rf /tmp/middleware\n" +
+            "fi\n" +
+            "git clone https://gitee.com/open-hand/middleware.git /tmp/middleware\n";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMiddlewareServiceImpl.class);
 
@@ -444,7 +448,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
                     devopsHostAppInstanceDTO.getId(),
                     middlewareMySqlHostDeployVO.getName(),
-                    Redis.getType(),
+                    MySQL.getType(),
                     middlewareMySqlHostDeployVO.getMode(),
                     middlewareMySqlHostDeployVO.getVersion(),
                     devopsHostDTOList.stream().map(h -> String.valueOf(h.getId())).collect(Collectors.joining(",")),
@@ -558,7 +562,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     @Override
-    public void deleteByInstanceId(String instanceId) {
+    public void deleteByInstanceId(Long instanceId) {
         devopsMiddlewareMapper.deleteByInstanceId(instanceId);
     }
 
@@ -741,7 +745,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         Map<String, Map<String, String>> convertedConfiguration = new HashMap<>();
         middlewareMySqlHostDeployVO.getConfiguration().forEach((k, v) -> {
             String key = encryptService.decrypt(k);
-            convertedConfiguration.put(devopsHostDTOMap.get(Long.parseLong(key)).getName(), v);
+            convertedConfiguration.put(devopsHostDTOMap.get(Long.parseLong(key)).getHostIp(), v);
         });
         middlewareMySqlHostDeployVO.setConfiguration(convertedConfiguration);
     }
@@ -817,7 +821,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             Map<String, String> authConfiguration = new HashMap<>();
             authConfiguration.put("replicationUser", "replicator");
-            authConfiguration.put("replicationPassword", "Changeit!123");
+            authConfiguration.put("replicationPassword", password);
             authConfiguration.putIfAbsent("rootPassword", password);
 
             mysqldConfiguration.putIfAbsent("datadir", "/var/lib/mysql");
@@ -849,10 +853,12 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private String generateUninstallCommand(DevopsMiddlewareTypeEnum middlewareTypeEnum) {
         String inventoryIni;
         String uninstallCommand;
+        String configuration = "";
         switch (middlewareTypeEnum) {
             case Redis:
                 inventoryIni = "/tmp/redis-inventory.ini";
                 uninstallCommand = REDIS_UNINSTALL_COMMAND;
+                configuration = "-e @/tmp/redis-configuration.yml";
                 break;
             case MySQL:
                 inventoryIni = "/tmp/mysql-inventory.ini";
@@ -861,7 +867,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             default:
                 throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
         }
-        return String.format(UNINSTALL_MIDDLEWARE_ANSIBLE_COMMAND_TEMPLATE, inventoryIni, uninstallCommand, "/tmp/middleware-uninstall.log");
+        return String.format(UNINSTALL_MIDDLEWARE_ANSIBLE_COMMAND_TEMPLATE, inventoryIni, configuration, uninstallCommand, "/tmp/middleware-uninstall.log");
     }
 
     private String generateShellHeader() {
