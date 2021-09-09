@@ -467,7 +467,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (!CollectionUtils.isEmpty(devopsCdJobVOS)) {
             for (DevopsCdJobVO devopsCdJobVO : devopsCdJobVOS) {
                 //如果是自动部署添加环境名字
-                if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobVO.getType())) {
+                if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobVO.getType())
+                        || JobTypeEnum.CD_DEPLOYMENT.value().equals(devopsCdJobVO.getType())) {
                     handleCdDeploy(devopsCdJobVO);
                 } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobVO.getType())) {
                     handCdHost(devopsCdJobVO);
