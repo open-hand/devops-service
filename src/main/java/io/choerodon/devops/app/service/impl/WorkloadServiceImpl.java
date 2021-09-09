@@ -320,9 +320,9 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     private DevopsEnvCommandDTO handleWorkLoad(Long projectId, Long envId, String content, String kind, String name, String operateType, Long resourceId, Long userId, Map<String, Object> extraInfo) {
         if (CREATE_TYPE.equals(operateType)) {
-            createWorkload(projectId, envId, content, kind, operateType, name, userId, extraInfo);
+            return createWorkload(projectId, envId, content, kind, operateType, name, userId, extraInfo);
         } else if (UPDATE_TYPE.equals(operateType)) {
-            updateWorkLoad(kind, name, content, resourceId, userId, extraInfo);
+            return updateWorkLoad(kind, name, content, resourceId, userId, extraInfo);
         } else {
             //自定义资源关联command
             DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(kind, DELETE_TYPE, userId);
@@ -333,7 +333,6 @@ public class WorkloadServiceImpl implements WorkloadService {
             updateWorkLoadCommandId(kind, resourceId, devopsEnvCommandDTO.getId());
             return devopsEnvCommandDTO;
         }
-        return null;
     }
 
 
