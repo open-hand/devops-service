@@ -71,9 +71,12 @@ public class AppCenterEnvDetailVO {
 
     private String versionName;
     private IamUserDTO creator;
+    private IamUserDTO updater;
 
     @ApiModelProperty("创建时间")
     private Date creationDate;
+    @ApiModelProperty("更新时间")
+    private Date lastUpdateDate;
 
     @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
@@ -236,6 +239,22 @@ public class AppCenterEnvDetailVO {
 
     public void setCreator(IamUserDTO creator) {
         this.creator = creator;
+    }
+
+    public IamUserDTO getUpdater() {
+        return updater;
+    }
+
+    public void setUpdater(IamUserDTO updater) {
+        this.updater = updater;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getRdupmType() {
