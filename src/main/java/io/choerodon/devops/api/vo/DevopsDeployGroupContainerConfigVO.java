@@ -6,6 +6,9 @@ import java.util.Map;
 public class DevopsDeployGroupContainerConfigVO {
     private String name;
     private String type;
+    /**
+     * {@link io.choerodon.devops.infra.enums.AppSourceType}
+     */
     private String sourceType;
     private DevopsDeployGroupJarDeployVO jarDeployVO;
     private DevopsDeployGroupDockerDeployVO dockerDeployVO;

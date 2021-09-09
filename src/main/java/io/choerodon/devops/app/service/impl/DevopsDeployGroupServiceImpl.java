@@ -351,7 +351,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 如果不仅是更新容器，还要更新应用配置以及应用名称，将进行以下校验
         if (!onlyForContainer) {
             // 校验在应用中心的名称、code是否已存在
-            devopsDeployAppCenterService.checkNameAndCodeUnique(devopsDeployGroupVO.getProjectId(), devopsDeployGroupVO.getEnvId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+            devopsDeployAppCenterService.checkNameAndCodeUnique(devopsDeployGroupVO.getProjectId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
                 throw new CommonException("error.env.app.center.name.null");

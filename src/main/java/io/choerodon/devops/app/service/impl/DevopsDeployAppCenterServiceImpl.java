@@ -98,22 +98,22 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
 
     @Override
-    public Boolean checkNameUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name) {
-        return devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, envId, name);
+    public Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name) {
+        return devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, projectId, name);
     }
 
     @Override
-    public Boolean checkCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String code) {
-        return devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, envId, code);
+    public Boolean checkCodeUnique(Long projectId, String rdupmType, Long objectId, String code) {
+        return devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, projectId, code);
     }
 
     @Override
-    public void checkNameAndCodeUnique(Long projectId, Long envId, String rdupmType, Long objectId, String name, String code) {
-        if (!checkNameUnique(projectId, envId, rdupmType, objectId, name)) {
+    public void checkNameAndCodeUnique(Long projectId, String rdupmType, Long objectId, String name, String code) {
+        if (!checkNameUnique(projectId, rdupmType, objectId, name)) {
             throw new CommonException("error.env.app.center.name.exist");
         }
 
-        if (!checkCodeUnique(projectId, envId, rdupmType, objectId, code)) {
+        if (!checkCodeUnique(projectId, rdupmType, objectId, code)) {
             throw new CommonException("error.env.app.center.code.exist");
         }
     }
