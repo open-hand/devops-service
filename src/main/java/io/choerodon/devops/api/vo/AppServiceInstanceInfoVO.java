@@ -77,6 +77,13 @@ public class AppServiceInstanceInfoVO {
     @Encrypt
     private Long clusterId;
 
+    @ApiModelProperty("环境id")
+    @Encrypt
+    private Long envId;
+
+    @ApiModelProperty("应用名称")
+    private String appName;
+
     /**
      * {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
@@ -299,5 +306,21 @@ public class AppServiceInstanceInfoVO {
 
     public void setUpgradeAvailable(Boolean upgradeAvailable) {
         this.upgradeAvailable = upgradeAvailable;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }
