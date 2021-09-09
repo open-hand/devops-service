@@ -410,6 +410,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppMapper.deleteByPrimaryKey(appId);
             }
             devopsHostAppInstanceService.baseDelete(devopsHostAppInstanceDTO.getId());
+            if (devopsHostAppInstanceDTO.getSourceType().equals(AppSourceType.MIDDLEWARE.getValue())) {
+                devopsMiddlewareService.deleteByInstanceId(devopsHostAppInstanceDTO.getId());
+            }
             return;
         }
 

@@ -53,10 +53,9 @@ public class CommandResultHandler implements HostMsgHandler {
                 devopsHostAppInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
                 devopsHostAppService.baseDelete(devopsHostAppInstanceDTO.getAppId());
                 if (devopsHostAppInstanceDTO.getSourceType().equals(AppSourceType.MIDDLEWARE.getValue())) {
-                    devopsMiddlewareService.deleteByInstanceId(processInfoVO.getInstanceId());
+                    devopsMiddlewareService.deleteByInstanceId(Long.valueOf(processInfoVO.getInstanceId()));
                 }
             }
-
         });
         Consumer<String> deploy_instance = (payload) -> {
             InstanceProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, InstanceProcessInfoVO.class);

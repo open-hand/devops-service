@@ -86,5 +86,5 @@ public interface DevopsMiddlewareService {
      */
     void uninstallMiddleware(Long projectId, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO);
 
-    void deleteByInstanceId(String instanceId);
+    void deleteByInstanceId(Long instanceId);
 }
