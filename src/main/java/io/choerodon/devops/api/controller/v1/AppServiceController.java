@@ -789,7 +789,7 @@ public class AppServiceController {
     @ApiOperation(value = "分页查询没有CI流水线的应用服务")
     @CustomPageRequest
     @PostMapping("/page_app_services_without_ci")
-    public ResponseEntity<List<AppServiceSimpleVO>> pageAppServiceWithoutCiPipeline(
+    public ResponseEntity<Page<AppServiceSimpleVO>> pageAppServiceWithoutCiPipeline(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(name = "project_id") Long projectId,
             @ApiIgnore @PageableDefault() PageRequest pageRequest,

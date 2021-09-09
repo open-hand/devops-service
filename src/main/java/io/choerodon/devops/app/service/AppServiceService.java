@@ -502,7 +502,7 @@ public interface AppServiceService {
      * @param params      查询参数，用于搜索
      * @return 应用服务列表
      */
-    List<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params);
+    Page<AppServiceSimpleVO> pageAppServiceToCreateCiPipeline(Long projectId, PageRequest pageRequest, @Nullable String params);
 
     /**
      * 查出不带.git后缀的gitlab仓库地址
