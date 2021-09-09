@@ -7,6 +7,8 @@
                ins.code,
                ins.status,
                ins.source,
+               ddace.name AS appName,
+               env.id     as envId,
                env.project_id,
                (SELECT count(1)
                 FROM devops_env_pod dp
@@ -40,14 +42,16 @@
                        where ndav.id = cmd.object_version_id
                        )                       commandVersion,
                cmd.command_type                commandType,
-               cmd.error                       error
+               cmd.error error
         FROM devops_app_service_instance ins
+                     JOIN devops_deploy_app_center_env ddace ON ddace.object_id = ins.id
                      LEFT JOIN devops_app_service_version version ON ins.app_service_version_id = version.id
                      LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
                      LEFT JOIN devops_env env ON ins.env_id = env.id
                      LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
                      LEFT JOIN devops_env_command effect ON ins.effect_command_id = effect.id
         WHERE ins.id = #{instanceId}
+          AND ddace.rdupm_type = 'chart'
     </select>
 
     <select id="listInstanceInfoByEnvAndOptions" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">

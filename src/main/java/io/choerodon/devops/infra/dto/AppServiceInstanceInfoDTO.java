@@ -39,6 +39,8 @@ public class AppServiceInstanceInfoDTO {
     private Long effectCommandVersionId;
     @ApiModelProperty("实例来源")
     private String source;
+    @ApiModelProperty("应用名称")
+    private String appName;
 
 
     public Long getId() {
@@ -231,5 +233,13 @@ public class AppServiceInstanceInfoDTO {
 
     public void setEffectCommandVersionId(Long effectCommandVersionId) {
         this.effectCommandVersionId = effectCommandVersionId;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }
