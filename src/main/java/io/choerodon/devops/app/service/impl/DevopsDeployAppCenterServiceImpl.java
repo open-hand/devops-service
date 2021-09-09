@@ -196,7 +196,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
                 MarketServiceDeployObjectVO marketServiceDeployObjectVO = versions.get(appServiceInstanceInfoDTO.getCommandVersionId());
                 if (marketServiceDeployObjectVO != null) {
-                    if (!StringUtils.isEmpty(marketServiceVO.getMarketServiceCode()) && !StringUtils.isEmpty(marketServiceDeployObjectVO.getDevopsAppServiceCode())) {
+                    if (StringUtils.isEmpty(marketServiceVO.getMarketServiceCode()) && !StringUtils.isEmpty(marketServiceDeployObjectVO.getDevopsAppServiceCode())) {
                         detailVO.setAppServiceCode(marketServiceDeployObjectVO.getDevopsAppServiceCode());
                     }
                     detailVO.setMktAppVersionId(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketAppVersionId());
@@ -259,6 +259,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
 
         detailVO.setCreator(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
+        detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getLastUpdatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
     }
