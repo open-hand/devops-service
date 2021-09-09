@@ -38,7 +38,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
-import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -426,9 +425,15 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (!CollectionUtils.isEmpty(containerConfig.getPorts())) {
-                containerConfig.getPorts().forEach(portInfo -> {
+                List<Map<String, String>> filteredPorts = new ArrayList<>();
+                for (Map<String, String> portInfo : containerConfig.getPorts()) {
                     String name = portInfo.get("name");
                     String port = portInfo.get("containerPort");
+                    String protocol = portInfo.get("protocol");
+                    // 三个字段，任意一个为空就跳过校验
+                    if (StringUtils.isEmpty(name) || StringUtils.isEmpty(port) || StringUtils.isEmpty(protocol)) {
+                        break;
+                    }
                     String namePort = name + port;
                     if (existPorts.contains(namePort)) {
                         throw new CommonException("error.container.port.exist");
@@ -440,7 +445,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                     if (Integer.parseInt(port) < 1 || Integer.parseInt(port) > 65535) {
                         throw new CommonException("error.container.port.range");
                     }
-                });
+                    filteredPorts.add(portInfo);
+                }
+                containerConfig.setPorts(filteredPorts);
             }
         });
     }
@@ -658,7 +665,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
                 devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
                 dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
-            } else if(AppSourceType.PIPELINE.getValue().equals(devopsDeployGroupDockerDeployVO.getSourceType())) {
+            } else if (AppSourceType.PIPELINE.getValue().equals(devopsDeployGroupDockerDeployVO.getSourceType())) {
                 configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
                 configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());
                 configVO.setUrl(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoUrl());
@@ -672,7 +679,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 dockerDeployDTO.setImage(devopsDeployGroupDockerDeployVO.getImageInfo().getCustomImageName() + ":" + devopsDeployGroupDockerDeployVO.getImageInfo().getTag());
             }
 
-            String secretCode = String.format("%s%s", "secret-", EncryptionUtils.MD5.encrypt(String.format("%s-%s-%s", configVO.getUrl() , configVO.getUserName() , configVO.getUserName())).substring(0,20));
+            String secretCode = String.format("%s%s", "secret-", EncryptionUtils.MD5.encrypt(String.format("%s-%s-%s", configVO.getUrl(), configVO.getUserName(), configVO.getUserName())).substring(0, 20));
 
             devopsRegistrySecretDTO.setSecretCode(secretCode);
             DevopsRegistrySecretDTO existDevopsRegistrySecretDTO = devopsRegistrySecretService.baseQuery(devopsRegistrySecretDTO);
