@@ -111,7 +111,6 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO,
                 businessKey);
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsList = new ArrayList<>();
-        List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = new ArrayList<>();
         hzeroDeployVO.getDeployDetailsVOList().forEach(instanceVO -> {
             // 保存部署配置
             DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(new DevopsHzeroDeployConfigDTO(instanceVO.getValue(),
@@ -127,11 +126,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     instanceVO.getAppCode(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
-            devopsDeployAppCenterEnvDTOList.add(devopsDeployAppCenterService.baseCreate(instanceVO.getAppName(), instanceVO.getAppCode(), projectId, instanceVO.getMktDeployObjectId(),
-                    instanceVO.getDevopsIngressVO().getEnvId(), OperationTypeEnum.HZERO.value(), "", RdupmTypeEnum.DEPLOYMENT.value()));
+            devopsDeployAppCenterService.baseCreate(instanceVO.getAppName(), instanceVO.getAppCode(), projectId, instanceVO.getMktDeployObjectId(),
+                    hzeroDeployVO.getEnvId(), OperationTypeEnum.HZERO.value(), AppSourceType.HZERO.getValue(), RdupmTypeEnum.CHART.value());
         });
-        devopsDeployAppCenterService.batchInsert(devopsDeployAppCenterEnvDTOList);
-
         // 构建工作流部署对象
         HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsList);
         // 启动流程实例

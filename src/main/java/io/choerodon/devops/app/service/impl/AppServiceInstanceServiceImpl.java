@@ -1959,11 +1959,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 初始化自定义实例名
         String code;
-        if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
+        if (appServiceDeployVO.getAppCode() == null || appServiceDeployVO.getAppCode().trim().equals("")) {
             code = String.format(INSTANCE_NAME_TEMPLATE, appServiceDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
         } else {
-            checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), false);
-            code = appServiceDeployVO.getInstanceName();
+            checkNameInternal(appServiceDeployVO.getAppCode(), appServiceDeployVO.getEnvironmentId(), false);
+            code = appServiceDeployVO.getAppCode();
         }
 
 
@@ -1995,7 +1995,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
         // 创建应用中心应用
-        devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getInstanceName(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), OperationTypeEnum.BATCH_DEPLOY.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
+        devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), OperationTypeEnum.BATCH_DEPLOY.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
         appServiceDeployVO.setInstanceName(code);
@@ -2031,7 +2031,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         // 纪录此次批量部署的环境id及要创建的docker_registry_secret的code的映射
         // 环境id -> configId -> secretCode
         Map<Long, List<Pair<Long, String>>> envSecrets = new HashMap<>();
-        List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = new ArrayList<>();
         for (AppServiceDeployVO appServiceDeployVO : appServiceDeployVOS) {
             InstanceSagaPayload payload = processSingleOfBatch(projectId, devopsEnvironmentDTO, userAttrDTO, appServiceDeployVO, envSecrets);
             instances.add(payload);
@@ -2064,10 +2063,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     ingresses.add(devopsIngressService.createForBatchDeployment(devopsEnvironmentDTO, userAttrDTO, projectId, appServiceDeployVO.getDevopsIngressVO()));
                 }
             }
-            devopsDeployAppCenterEnvDTOList.add(devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceDeployVO.getInstanceId(),
-                    appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getType(), appServiceDeployVO.getAppServiceSource(), RdupmTypeEnum.DEPLOYMENT.value()));
         }
-        devopsDeployAppCenterService.batchInsert(devopsDeployAppCenterEnvDTOList);
 
         // 构造saga的payload
         BatchDeploymentPayload batchDeploymentPayload = new BatchDeploymentPayload();
