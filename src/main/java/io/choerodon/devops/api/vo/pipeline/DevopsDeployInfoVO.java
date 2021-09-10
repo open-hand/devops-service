@@ -28,12 +28,23 @@ public class DevopsDeployInfoVO {
     @ApiModelProperty("应用编码")
     private String code;
     @Encrypt
+    @ApiModelProperty("应用id")
+    private Long appId;
+    @Encrypt
     @ApiModelProperty("chart包: 部署配置id")
     private Long valueId;
     @ApiModelProperty("部署组：应用配置")
     private DevopsDeployGroupAppConfigVO appConfig;
     @ApiModelProperty("部署组：容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public Long getEnvId() {
         return envId;
