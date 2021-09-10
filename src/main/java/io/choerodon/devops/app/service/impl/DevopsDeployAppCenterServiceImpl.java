@@ -349,6 +349,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
+    public DevopsDeployAppCenterEnvDTO queryByRdupmTypeAndObjectId(RdupmTypeEnum rdupmTypeEnum, Long objectId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setRdupmType(rdupmTypeEnum.value());
+        devopsDeployAppCenterEnvDTO.setObjectId(objectId);
+        return devopsDeployAppCenterEnvMapper.selectOne(devopsDeployAppCenterEnvDTO);
+    }
+
+    @Override
     public void fixData() {
         int totalCount = appServiceInstanceService.countInstance();
         int pageNumber = 0;

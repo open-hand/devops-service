@@ -13,6 +13,7 @@ import io.choerodon.devops.app.service.DevopsCdJobService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdAuditDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -40,6 +41,13 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
         Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setPipelineId(pipelineId);
+        return devopsCdJobMapper.select(devopsCdJobDTO);
+    }
+
+    @Override
+    public List<DevopsCdJobDTO> listByType(JobTypeEnum jobTypeEnum) {
+        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
+        devopsCdJobDTO.setType(jobTypeEnum.value());
         return devopsCdJobMapper.select(devopsCdJobDTO);
     }
 
@@ -76,16 +84,6 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     }
 
     @Override
-    public String queryTrace(Long gitlabProjectId, Long jobId) {
-        return null;
-    }
-
-    @Override
-    public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
-
-    }
-
-    @Override
     public DevopsCdJobDTO queryById(Long stageId) {
         Assert.notNull(stageId, PipelineCheckConstant.ERROR_STAGE_ID_IS_NULL);
         return devopsCdJobMapper.selectByPrimaryKey(stageId);
@@ -95,5 +93,11 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     @Transactional
     public void baseUpdate(DevopsCdJobDTO devopsCdJobDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdJobMapper, devopsCdJobDTO, ERROR_UPDATE_JOB_FAILED);
+    }
+
+    @Override
+    @Transactional
+    public void baseDelete(Long id) {
+        devopsCdJobMapper.deleteByPrimaryKey(id);
     }
 }

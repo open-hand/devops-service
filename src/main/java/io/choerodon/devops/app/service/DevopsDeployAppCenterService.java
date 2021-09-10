@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -67,6 +68,8 @@ public interface DevopsDeployAppCenterService {
     DevopsDeployAppCenterEnvDTO baseCreate(String name, String code, Long projectId, Long objectId, Long envId, String operationType, String chartSource, String rdupmType);
 
     DevopsDeployAppCenterEnvDTO queryByEnvIdAndCode(Long environmentId, String appCode);
+
+    DevopsDeployAppCenterEnvDTO queryByRdupmTypeAndObjectId(RdupmTypeEnum rdupmTypeEnum, Long objectId);
 
     /**
      * 根据环境id、关联对象类型、关联对象id删除记录
