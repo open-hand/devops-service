@@ -1860,6 +1860,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsDeployInfoVO));
             devopsCdJobDTO.setValueId(devopsDeployInfoVO.getValueId());
+            devopsCdJobDTO.setAppId(devopsDeployInfoVO.getValueId());
 
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
             // 使用能够解密主键加密的json工具解密
