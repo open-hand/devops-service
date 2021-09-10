@@ -21,7 +21,7 @@ public class AppServiceInstanceInfoDTO {
     private String versionName;
     private Date lastUpdateDate;
     private Long objectVersionNumber;
-    private Long envId;
+    private Long environmentId;
     private Long clusterId;
     private Long commandVersionId;
     private String commandVersion;
@@ -40,7 +40,7 @@ public class AppServiceInstanceInfoDTO {
     @ApiModelProperty("实例来源")
     private String source;
     @ApiModelProperty("应用名称")
-    private String appName;
+    private String name;
 
 
     public Long getId() {
@@ -131,12 +131,12 @@ public class AppServiceInstanceInfoDTO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public Long getEnvId() {
-        return envId;
+    public Long getEnvironmentId() {
+        return environmentId;
     }
 
-    public void setEnvId(Long envId) {
-        this.envId = envId;
+    public void setEnvironmentId(Long environmentId) {
+        this.environmentId = environmentId;
     }
 
     public Long getClusterId() {
@@ -235,11 +235,11 @@ public class AppServiceInstanceInfoDTO {
         this.effectCommandVersionId = effectCommandVersionId;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getName() {
+        return name;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setName(String name) {
+        this.name = name;
     }
 }

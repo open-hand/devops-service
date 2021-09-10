@@ -7,8 +7,8 @@
                ins.code,
                ins.status,
                ins.source,
-               ddace.name AS appName,
-               env.id     as envId,
+               ddace.name AS name,
+               env.id     AS environmentId,
                env.project_id,
                (SELECT count(1)
                 FROM devops_env_pod dp
