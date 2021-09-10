@@ -1855,23 +1855,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 环境部署需要保存部署配置信息
         if (JobTypeEnum.CD_DEPLOY.value().equals(t.getType())
                 || JobTypeEnum.CD_DEPLOYMENT.value().equals(t.getType())) {
-            // todo 待删除
-//            // 使用能够解密主键加密的json工具解密
-//            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
-//            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
-//            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsCdEnvDeployInfoDTO));
-//            // 将从Audit-domain中继承的这个字段设置为空， 不然会将一些不需要的字段也序列化到输出到json
-//            devopsCdEnvDeployInfoDTO.set_innerMap(null);
-//            devopsCdEnvDeployInfoDTO.setProjectId(projectId);
-//            // 删除 前端传输的metadata中 多余数据
-//            updateExtraInfoToNull(devopsCdEnvDeployInfoDTO);
-//            devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
-//            devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
-
             // 使用能够解密主键加密的json工具解密
             DevopsDeployInfoVO devopsDeployInfoVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsDeployInfoVO.class);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsDeployInfoVO));
+            devopsCdJobDTO.setValueId(devopsDeployInfoVO.getValueId());
 
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
             // 使用能够解密主键加密的json工具解密

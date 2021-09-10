@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.DevopsDeployAppCenterEnvVO;
 import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
-import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 
 /**
  * @Author: shanyu
@@ -16,7 +16,7 @@ public interface DevopsDeployGroupService {
      * @param operateType         操作类型
      * @return
      */
-    DevopsEnvCommandDTO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer);
+    DevopsDeployAppCenterEnvVO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer);
 
     /**
      * 更新部署组容器配置

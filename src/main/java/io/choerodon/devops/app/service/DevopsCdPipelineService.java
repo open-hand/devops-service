@@ -33,6 +33,8 @@ public interface DevopsCdPipelineService {
 
 
     void pipelineDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, StringBuilder log);
+
+    void pipelineDeployDeployment(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, StringBuilder log);
     /**
      * 执行下一个任务
      * 1. 人工卡点任务更新为待审核

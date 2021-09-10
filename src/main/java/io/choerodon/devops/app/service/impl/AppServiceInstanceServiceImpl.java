@@ -858,14 +858,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
         }
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
         if (CREATE.equals(appServiceDeployVO.getType())) {
-            devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
+            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), isFromPipeline ? OperationTypeEnum.PIPELINE_DEPLOY.value() : OperationTypeEnum.CREATE_APP.value(), isProjectAppService ? AppSourceType.NORMAL.getValue() : AppSourceType.SHARE.getValue(), RdupmTypeEnum.CHART.value());
         } else {
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
+            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
             devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
             devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
         }
-        return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
+        AppServiceInstanceVO instanceVO = ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
+        instanceVO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+        return instanceVO;
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
