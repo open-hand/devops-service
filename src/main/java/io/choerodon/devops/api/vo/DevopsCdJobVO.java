@@ -72,10 +72,22 @@ public class DevopsCdJobVO {
     private Date lastUpdateDate;
     private Long objectVersionNumber;
 
+    @Encrypt
+    private Long appId;
+
     private ExternalApprovalJobVO externalApprovalJobVO;
 
     @ApiModelProperty("是否有权限修改cd的job,默认有")
     private boolean edit = true;
+
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public boolean isEdit() {
         return edit;

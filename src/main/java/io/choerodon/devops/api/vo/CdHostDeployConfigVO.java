@@ -49,9 +49,6 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("仓库名")
         private String neRepositoryName;
 
-        @ApiModelProperty("实例名")
-        private String name;
-
         @Encrypt
         @ApiModelProperty("仓库id")
         private Long repositoryId;
@@ -64,26 +61,6 @@ public class CdHostDeployConfigVO {
 
         @ApiModelProperty("版本正则")
         private String versionRegular;
-
-        @ApiModelProperty("部署values")
-        private String value;
-
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
 
         public String getServerName() {
             return serverName;

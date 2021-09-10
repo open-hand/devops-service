@@ -50,6 +50,7 @@ import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
@@ -516,7 +517,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (!Objects.isNull(devopsEnvironmentDTO)) {
             devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
         }
-
+        if (devopsCdJobVO.getAppId() != null) {
+            devopsDeployInfoVO.setDeployType(DeployTypeEnum.UPDATE.value());
+        } else {
+            devopsDeployInfoVO.setDeployType(DeployTypeEnum.CREATE.value());
+        }
         //判断当前用户是不是有环境的权限
         //环境为项目下所有成员都有权限
         devopsCdJobVO.setEdit(isEditCdJob(devopsEnvironmentDTO, devopsCdJobVO));

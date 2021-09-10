@@ -44,4 +44,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job.groovy') {
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '部署任务关联的应用id', beforeColumn: "value_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2021-09-10-drop-column') {
+        sql("""
+            DELETE FROM devops_cd_job WHERE type = 'cdHost';
+        """)
+    }
 }
