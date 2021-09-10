@@ -3,18 +3,13 @@ package io.choerodon.devops.infra.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.poi.util.StringUtil;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
-import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
-import io.choerodon.devops.infra.enums.AppSourceType;
 
 /**
  * 〈功能简述〉
@@ -86,12 +81,23 @@ public class HostDeployUtil {
     }
 
     public static String genCommand(Map<String, String> params, String command) {
-        params.put("{{ COMMAND }}", command);
+        params.put("{{ COMMAND }}", removeComments(command));
         return FileUtil.replaceReturnString(HOST_COMMAND_TEMPLATE, params);
     }
 
     public static String genRunCommand(Map<String, String> params, String runCommand) {
-        params.put("{{ COMMAND }}", runCommand);
+        params.put("{{ COMMAND }}", removeComments(runCommand));
         return FileUtil.replaceReturnString(HOST_RUN_COMMAND_TEMPLATE, params);
+    }
+
+    private static String removeComments(String rawCommand) {
+        StringBuilder commandSB = new StringBuilder();
+        String[] lines = rawCommand.split("\n");
+        for (String line : lines) {
+            if (line.length() > 0 && !line.contains("#")) {
+                commandSB.append(line);
+            }
+        }
+        return commandSB.toString();
     }
 }

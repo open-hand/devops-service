@@ -27,9 +27,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'pre_command', type: 'VARCHAR(512)', remarks: '前置命令')
-            column(name: 'run_command', type: 'VARCHAR(512)', remarks: '运行命令')
-            column(name: 'post_command', type: 'VARCHAR(512)', remarks: '后置命令')
+            column(name: 'pre_command', type: 'TEXT', remarks: '前置命令')
+            column(name: 'run_command', type: 'TEXT', remarks: '运行命令')
+            column(name: 'post_command', type: 'TEXT', remarks: '后置命令')
 
             column(name: 'status', type: 'VARCHAR(32)', remarks: '进程状态')
             column(name: 'pid', type: 'VARCHAR(128)', remarks: '进程id')
