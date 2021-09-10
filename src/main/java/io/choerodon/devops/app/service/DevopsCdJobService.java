@@ -24,4 +24,6 @@ public interface DevopsCdJobService {
     void retryJob(Long projectId, Long gitlabProjectId, Long jobId);
 
     DevopsCdJobDTO queryById(Long stageId);
+
+    void baseUpdate(DevopsCdJobDTO devopsCdJobDTO);
 }

@@ -47,6 +47,26 @@ public class DevopsCdJobDTO extends AuditDomain {
     @ApiModelProperty("任务顺序")
     private Long sequence;
     private Long deployInfoId;
+    @ApiModelProperty("chart部署任务才需要设置，表示选择的部署配置id")
+    private Long valueId;
+    @ApiModelProperty("部署任务关联的应用id")
+    private Long appId;
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public Long getId() {
         return id;

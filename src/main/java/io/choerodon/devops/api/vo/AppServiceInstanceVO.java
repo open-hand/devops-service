@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -12,6 +13,10 @@ public class AppServiceInstanceVO {
     private Long id;
     @Encrypt
     private Long appServiceId;
+
+    @ApiModelProperty("所属应用id")
+    @Encrypt
+    private Long appId;
     @Encrypt
     private Long envId;
     private String publishLevel;
@@ -40,6 +45,14 @@ public class AppServiceInstanceVO {
     private Long objectVersionNumber;
     private Long projectId;
     private List<DeploymentVO> deploymentVOS;
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public Long getId() {
         return id;

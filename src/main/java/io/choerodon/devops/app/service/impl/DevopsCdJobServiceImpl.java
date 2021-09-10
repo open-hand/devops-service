@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -14,9 +15,12 @@ import io.choerodon.devops.infra.dto.DevopsCdAuditDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 @Service
 public class DevopsCdJobServiceImpl implements DevopsCdJobService {
+    private static final String ERROR_UPDATE_JOB_FAILED = "error.update.job.failed";
+
     @Autowired
     private DevopsCdJobMapper devopsCdJobMapper;
     @Autowired
@@ -85,5 +89,11 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     public DevopsCdJobDTO queryById(Long stageId) {
         Assert.notNull(stageId, PipelineCheckConstant.ERROR_STAGE_ID_IS_NULL);
         return devopsCdJobMapper.selectByPrimaryKey(stageId);
+    }
+
+    @Override
+    @Transactional
+    public void baseUpdate(DevopsCdJobDTO devopsCdJobDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdJobMapper, devopsCdJobDTO, ERROR_UPDATE_JOB_FAILED);
     }
 }
