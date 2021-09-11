@@ -617,14 +617,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String appFile = workDir + c7nNexusComponentDTO.getName();
         params.put("{{ WORK_DIR }}", workDir);
-        params.put("{{ APP_FILE_NAME }}", "");
-        params.put("{{ APP_FILE }}", "");
+        params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());
+        params.put("{{ APP_FILE }}", appFile);
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
                 jarDeployVO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
-                "",
+                HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
+                        mavenRepoDTOList.get(0).getNePullUserPassword(),
+                        c7nNexusComponentDTO.getDownloadUrl(),
+                        workDir,
+                        appFile),
                 StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
                 StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
                 StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
