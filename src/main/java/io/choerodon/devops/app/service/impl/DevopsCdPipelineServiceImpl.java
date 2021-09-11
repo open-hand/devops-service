@@ -465,6 +465,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         StringBuilder log = new StringBuilder();
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>Begin envAutoDeploy,devopsCdJobRecordDTO: {}<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsCdJobRecordDTO));
+        }
         try {
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())) {
                 ApplicationContextHelper
@@ -488,6 +491,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
                     MessageCodeConstants.PIPELINE_FAILED,
                     devopsCdPipelineRecordDTO.getCreatedBy(), GitUserNameUtil.getEmail(), new HashMap<>());
+        }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>End envAutoDeploy,devopsCdJobRecordDTO: {}<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsCdJobRecordDTO));
         }
     }
 
