@@ -37,7 +37,6 @@ import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
 import io.choerodon.devops.api.vo.host.MiddlewareHostCommandVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
@@ -284,7 +283,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareRedisHostDeployVO.getAppName(),
                     middlewareRedisHostDeployVO.getAppCode(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
-                    HostCommandStatusEnum.OPERATING.value()
+                    OperationTypeEnum.BASE_COMPONENT.value()
             );
 
             devopsHostAppService.baseCreate(devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED);
@@ -424,7 +423,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareMySqlHostDeployVO.getAppName(),
                     middlewareMySqlHostDeployVO.getAppCode(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
-                    HostCommandStatusEnum.OPERATING.value()
+                    OperationTypeEnum.BASE_COMPONENT.value()
             );
 
             devopsHostAppService.baseCreate(devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED);
@@ -580,35 +579,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         );
         MapperUtil.resultJudgedInsertSelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "error.middleware.insert");
         return devopsMiddlewareDTO;
-    }
-
-    @Override
-    public void updateMiddlewareStatus() {
-        // 添加redis锁，防止多个pod并发更新状态
-        if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(MIDDLEWARE_STATUS_SYNC_LOCK, "lock", 1, TimeUnit.MINUTES))) {
-            return;
-        }
-        try {
-            // 查处所有处于操作中的中间件
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO();
-            devopsDeployRecordDTO.setDeployResult(CommandStatus.OPERATING.getStatus());
-            devopsDeployRecordDTO.setDeployObjectType(DeployObjectTypeEnum.MIDDLEWARE.value());
-            List<DevopsDeployRecordDTO> devopsDeployRecordDTOList = devopsDeployRecordService.baseList(devopsDeployRecordDTO);
-            // 过滤出时间已经超过30分钟的中间件
-            long currentTimeMillis = System.currentTimeMillis();
-            List<DevopsDeployRecordDTO> timeoutRecords = devopsDeployRecordDTOList
-                    .stream()
-                    .filter(d -> currentTimeMillis - d.getCreationDate().getTime() > 1800000)
-                    .peek(d -> {
-                        d.setDeployResult(CommandStatus.FAILED.getStatus());
-                        d.setErrorMessage("time out");
-                    })
-                    .collect(Collectors.toList());
-            // 将中间件状态设置为超时
-            timeoutRecords.forEach(d -> devopsDeployRecordService.updateRecord(d));
-        } finally {
-            stringRedisTemplate.delete(MIDDLEWARE_STATUS_SYNC_LOCK);
-        }
     }
 
     private MiddlewareInventoryVO calculateGeneralInventoryValue(List<DevopsHostDTO> devopsHostDTOList, DevopsMiddlewareTypeEnum middlewareTypeEnum) {

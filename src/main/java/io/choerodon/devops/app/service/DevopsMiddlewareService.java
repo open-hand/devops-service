@@ -66,11 +66,6 @@ public interface DevopsMiddlewareService {
     MiddlewareRedisEnvDeployVO queryRedisConfig(Long projectId, Long appServiceInstanceId, Long marketDeployObjectId);
 
     /**
-     * 更新中间件状态，每隔30分钟将仍处于操作中的置为超时
-     */
-    void updateMiddlewareStatus();
-
-    /**
      * 主机部署mysql
      *
      * @param projectId
