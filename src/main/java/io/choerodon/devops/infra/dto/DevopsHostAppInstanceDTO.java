@@ -72,6 +72,8 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
         this.postCommand = postCommand;
     }
 
+
+
     public Long getId() {
         return id;
     }
