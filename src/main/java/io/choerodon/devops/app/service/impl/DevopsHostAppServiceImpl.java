@@ -351,8 +351,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public DevopsHostAppDTO baseQuery(Long instanceId) {
-        return devopsHostAppMapper.selectByPrimaryKey(instanceId);
+    public DevopsHostAppDTO baseQuery(Long id) {
+        return devopsHostAppMapper.selectByPrimaryKey(id);
     }
 
     @Override

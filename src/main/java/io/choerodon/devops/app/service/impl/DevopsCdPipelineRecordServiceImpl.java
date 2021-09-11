@@ -127,9 +127,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private AppServiceService applicationService;
 
     @Autowired
-    private CiPipelineImageService ciPipelineImageService;
-
-    @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
 
     @Autowired
@@ -148,9 +145,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsHostCommandService devopsHostCommandService;
 
     @Autowired
-    private DevopsHostService devopsHostService;
-
-    @Autowired
     private KeySocketSendHelper webSocketHelper;
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
@@ -163,9 +157,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
-    @Autowired
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
+    @Autowired
+    private DevopsCdJobService devopsCdJobService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -574,9 +568,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
 
         // 2.保存记录
-        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(hostId, jarDeployVO.getAppCode());
+        DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
+        DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
-        if (devopsHostAppDTO == null) {
+        if (devopsCdJobDTO.getAppId() == null) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
                     jarDeployVO.getAppName(),
@@ -598,7 +593,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceDTO.setVersion(c7nNexusComponentDTO.getVersion());
 
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
+
+            // 保存appId
+            devopsCdJobDTO.setAppId(devopsHostAppDTO.getId());
+            devopsCdJobService.baseUpdate(devopsCdJobDTO);
+
         } else {
+            devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdJobDTO.getAppId());
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
