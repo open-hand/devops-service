@@ -657,6 +657,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             return;
         }
 
+
         String operateType;
         Long objectId;
         if (devopsCdJobDTO.getAppId() == null) {
@@ -673,9 +674,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 return;
             }
             operateType = MiscConstants.UPDATE_TYPE;
-            objectId = devopsDeployAppCenterEnvDTO.getId();
+            objectId = devopsDeployAppCenterEnvDTO.getObjectId();
         }
-
         DevopsDeployGroupVO devopsDeployGroupVO = new DevopsDeployGroupVO(devopsDeployInfoVO.getAppName(),
                 devopsDeployInfoVO.getAppCode(),
                 devopsCdJobRecordDTO.getProjectId(),
@@ -683,6 +683,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 devopsDeployInfoVO.getAppConfig(),
                 devopsDeployInfoVO.getContainerConfig(),
                 objectId);
+
+
         devopsDeployInfoVO.getContainerConfig().forEach(config -> {
             if (config.getPipelineJobName() != null) {
                 if (RdupmTypeEnum.DOCKER.value().equals(config.getType())) {
