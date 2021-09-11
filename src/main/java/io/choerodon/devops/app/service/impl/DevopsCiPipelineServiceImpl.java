@@ -508,6 +508,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void handCdHost(DevopsCdJobVO devopsCdJobVO) {
         // 加密json中主键
         CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobVO.getMetadata(), CdHostDeployConfigVO.class);
+        if (devopsCdJobVO.getAppId() != null) {
+            cdHostDeployConfigVO.setDeployType(DeployTypeEnum.UPDATE.value());
+        } else {
+            cdHostDeployConfigVO.setDeployType(DeployTypeEnum.CREATE.value());
+        }
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
 

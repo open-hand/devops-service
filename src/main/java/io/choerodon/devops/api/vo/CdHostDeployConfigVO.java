@@ -16,6 +16,9 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("应用id")
     private Long appId;
 
+    @ApiModelProperty("部署方式，后端查询时设置，实例存在则更新，否则新建")
+    private String deployType;
+
     @ApiModelProperty("应用名称")
     private String appName;
     @ApiModelProperty("应用编码")
@@ -129,6 +132,15 @@ public class CdHostDeployConfigVO {
         public void setPipelineTask(String pipelineTask) {
             this.pipelineTask = pipelineTask;
         }
+    }
+
+
+    public String getDeployType() {
+        return deployType;
+    }
+
+    public void setDeployType(String deployType) {
+        this.deployType = deployType;
     }
 
     public Long getAppId() {
