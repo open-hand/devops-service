@@ -36,7 +36,7 @@ public interface DevopsHostAppService {
 
     void baseDelete(Long instanceId);
 
-    DevopsHostAppDTO baseQuery(Long instanceId);
+    DevopsHostAppDTO baseQuery(Long id);
 
     DevopsHostAppDTO queryByHostIdAndCode(Long hostId, String name);
 
