@@ -24,9 +24,9 @@ public class DevopsDeployInfoVO {
     @ApiModelProperty("部署方式，后端查询时设置，实例存在则更新，否则新建")
     private String deployType;
     @ApiModelProperty("应用名称")
-    private String name;
+    private String appName;
     @ApiModelProperty("应用编码")
-    private String code;
+    private String appCode;
     @Encrypt
     @ApiModelProperty("应用id")
     private Long appId;
@@ -70,20 +70,20 @@ public class DevopsDeployInfoVO {
         this.deployType = deployType;
     }
 
-    public String getName() {
-        return name;
+    public String getAppName() {
+        return appName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
-    public String getCode() {
-        return code;
+    public String getAppCode() {
+        return appCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public Long getValueId() {

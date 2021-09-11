@@ -1069,11 +1069,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         devopsCdJobRecordVO.setCdAuto(cdAuto);
                     }
                 }
-                // 计算实例是否存在，存在则更新，不存在新建
-                DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordVO.getMetadata(), DevopsDeployInfoVO.class);
-                String deployType = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployInfoVO.getEnvId(), devopsDeployInfoVO.getCode()) == null ? DeployTypeEnum.CREATE.value() : DeployTypeEnum.UPDATE.value();
-                devopsDeployInfoVO.setDeployType(deployType);
-
             }
             //如果是人工审核返回审核信息
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {
