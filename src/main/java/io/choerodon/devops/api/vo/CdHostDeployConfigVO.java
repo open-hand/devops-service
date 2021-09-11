@@ -12,6 +12,10 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("主机详情")
     private HostConnectionVO hostConnectionVO;
 
+    @Encrypt
+    @ApiModelProperty("应用id")
+    private Long appId;
+
     @ApiModelProperty("应用名称")
     private String appName;
     @ApiModelProperty("应用编码")
@@ -125,6 +129,14 @@ public class CdHostDeployConfigVO {
         public void setPipelineTask(String pipelineTask) {
             this.pipelineTask = pipelineTask;
         }
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public String getPreCommand() {
