@@ -54,6 +54,9 @@ public class DevopsHostAppVO {
     private Long id;
     @ApiModelProperty("部署方式")
     private String deployWay;
+    @Encrypt
+    @ApiModelProperty("实例id")
+    private Long instanceId;
 
     /**
      * 部署对象id
@@ -304,5 +307,13 @@ public class DevopsHostAppVO {
 
     public void setDeployWay(String deployWay) {
         this.deployWay = deployWay;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 }
