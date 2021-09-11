@@ -54,7 +54,9 @@ public class JarDeployVO {
     public JarDeployVO() {
     }
 
-    public JarDeployVO(String sourceType, String preCommand, String runCommand, String postCommand, ProdJarInfoVO prodJarInfoVO) {
+    public JarDeployVO(String sourceType, String appName, String appCode, String preCommand, String runCommand, String postCommand, ProdJarInfoVO prodJarInfoVO) {
+        this.appCode = appCode;
+        this.appName = appName;
         this.sourceType = sourceType;
         this.prodJarInfoVO = prodJarInfoVO;
         this.preCommand = preCommand;

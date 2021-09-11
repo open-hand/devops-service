@@ -547,6 +547,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
 
         JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
+                cdHostDeployConfigVO.getAppName(),
+                cdHostDeployConfigVO.getAppCode(),
                 cdHostDeployConfigVO.getPreCommand(),
                 cdHostDeployConfigVO.getRunCommand(),
                 cdHostDeployConfigVO.getPostCommand(),
