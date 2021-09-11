@@ -92,8 +92,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             }
                         }
                         DevopsDeployInfoVO devopsDeployInfoVO = new DevopsDeployInfoVO();
-                        devopsDeployInfoVO.setCode(devopsCdEnvDeployInfoDTO.getInstanceName());
-                        devopsDeployInfoVO.setName(devopsCdEnvDeployInfoDTO.getInstanceName());
+                        devopsDeployInfoVO.setAppCode(devopsCdEnvDeployInfoDTO.getInstanceName());
+                        devopsDeployInfoVO.setAppName(devopsCdEnvDeployInfoDTO.getInstanceName());
                         devopsDeployInfoVO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
                         devopsDeployInfoVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
                         devopsDeployInfoVO.setSkipCheckPermission(!devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag());

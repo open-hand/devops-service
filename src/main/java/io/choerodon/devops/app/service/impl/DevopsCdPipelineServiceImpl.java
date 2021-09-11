@@ -543,11 +543,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     devopsDeployInfoVO.getEnvId(),
                     devopsDeployValueService.baseQueryById(devopsDeployInfoVO.getValueId()).getValue(),
                     devopsDeployInfoVO.getValueId(),
-                    devopsDeployInfoVO.getCode(),
+                    devopsDeployInfoVO.getAppCode(),
                     null,
                     CommandType.CREATE.getType(),
-                    devopsDeployInfoVO.getName(),
-                    devopsDeployInfoVO.getCode());
+                    devopsDeployInfoVO.getAppName(),
+                    devopsDeployInfoVO.getAppCode());
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), appServiceDeployVO, true);
             commandId = appServiceInstanceVO.getCommandId();
             appId = appServiceInstanceVO.getAppId();
@@ -605,11 +605,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     devopsDeployInfoVO.getEnvId(),
                     devopsDeployValueService.baseQueryById(devopsDeployInfoVO.getValueId()).getValue(),
                     devopsDeployInfoVO.getValueId(),
-                    devopsDeployInfoVO.getCode(),
+                    devopsDeployInfoVO.getAppCode(),
                     devopsDeployAppCenterEnvDTO.getObjectId(),
                     CommandType.UPDATE.getType(),
-                    devopsDeployInfoVO.getName(),
-                    devopsDeployInfoVO.getCode());
+                    devopsDeployInfoVO.getAppName(),
+                    devopsDeployInfoVO.getAppCode());
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), appServiceDeployVO, true);
             commandId = appServiceInstanceVO.getCommandId();
         }
@@ -670,8 +670,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             objectId = devopsDeployAppCenterEnvDTO.getId();
         }
 
-        DevopsDeployGroupVO devopsDeployGroupVO = new DevopsDeployGroupVO(devopsDeployInfoVO.getName(),
-                devopsDeployInfoVO.getCode(),
+        DevopsDeployGroupVO devopsDeployGroupVO = new DevopsDeployGroupVO(devopsDeployInfoVO.getAppName(),
+                devopsDeployInfoVO.getAppCode(),
                 devopsCdJobRecordDTO.getProjectId(),
                 devopsDeployInfoVO.getEnvId(),
                 devopsDeployInfoVO.getAppConfig(),
