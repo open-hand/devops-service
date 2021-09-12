@@ -1,5 +1,11 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import io.reactivex.Emitter;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -31,11 +37,30 @@ public class WorkFlowServiceOperator {
     }
 
     public void approveUserTask(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        CustomContextUtil.setUserContext(loginName, userId, orgId);
-        approveUserTask(projectId, businessKey);
-        // 复位用户上下文
-        CustomContextUtil.setUserContext(userDetails);
+        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        CustomContextUtil.setUserContext(loginName, userId, orgId);
+                        try {
+                            approveUserTask(projectId, businessKey);
+                        } catch (Exception e) {
+                            throw new CommonException(e);
+                        }
+                    }
+                });
     }
 
 
