@@ -616,6 +616,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     CommandType.UPDATE.getType(),
                     devopsDeployInfoVO.getAppName(),
                     devopsDeployInfoVO.getAppCode());
+            appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), appServiceDeployVO, true);
             commandId = appServiceInstanceVO.getCommandId();
         }
