@@ -49,7 +49,11 @@ public enum AppSourceType {
     /**
      * 中间件,中间件在devops中的逻辑和市场应用大多都类似 （应用中心chart包部署会用上）
      */
-    MIDDLEWARE("middleware");
+    MIDDLEWARE("middleware"),
+    /**
+     * 部署组
+     */
+    DEPLOYMENT("deployment");
 
     private String value;
 
