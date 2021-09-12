@@ -146,7 +146,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
         }
         DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = ConvertUtils.convertObject(devopsDeployAppCenterEnvDTO, DevopsDeployAppCenterEnvVO.class);
-        devopsDeployAppCenterEnvVO.setCommandId(devopsEnvCommandDTO.getId());
+        if(devopsEnvCommandDTO != null) {
+            devopsDeployAppCenterEnvVO.setCommandId(devopsEnvCommandDTO.getId());
+        }
+
         return devopsDeployAppCenterEnvVO;
     }
 

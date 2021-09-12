@@ -739,6 +739,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobDTO.setAppId(appId);
             devopsCdJobService.baseUpdate(devopsCdJobDTO);
         }
+        if (commandId == null) {
+            devopsCdJobRecordDTO.setStatus(PipelineStatus.SKIPPED.toValue());
+            devopsCdJobRecordDTO.setLog(log.toString());
+            devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+            return;
+        }
 
         log.append("Deploy app success.").append(System.lineSeparator());
         devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
