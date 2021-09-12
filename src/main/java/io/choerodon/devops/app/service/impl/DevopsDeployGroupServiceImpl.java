@@ -25,6 +25,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
@@ -37,7 +38,10 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -92,6 +96,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsRegistrySecretService devopsRegistrySecretService;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
 
     @Transactional
     @Override
@@ -145,6 +151,20 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
             }
         }
+        // 插入部署记录
+        devopsDeployRecordService.saveRecord(
+                devopsEnvironmentDTO.getProjectId(),
+                DeployType.MANUAL,
+                devopsEnvCommandDTO.getId(),
+                DeployModeEnum.ENV,
+                devopsEnvironmentDTO.getId(),
+                devopsEnvironmentDTO.getName(),
+                null,
+                DeployObjectTypeEnum.APP,
+                devopsDeployGroupVO.getAppName(),
+                "",
+                devopsDeployGroupVO.getAppName(),
+                new DeploySourceVO(AppSourceType.DEPLOYMENT, projectDTO.getName()));
         DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = ConvertUtils.convertObject(devopsDeployAppCenterEnvDTO, DevopsDeployAppCenterEnvVO.class);
         if(devopsEnvCommandDTO != null) {
             devopsDeployAppCenterEnvVO.setCommandId(devopsEnvCommandDTO.getId());

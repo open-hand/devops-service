@@ -367,7 +367,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         //自定义资源关联command
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(resourceType, operateType, userId);
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
-        Long workLoadId = null;
+        Long workLoadId;
         WorkLoad workLoad = workLoadMap.get(io.choerodon.devops.infra.util.StringUtils.toLowerCaseFirstOne(resourceType) + WORK_LOAD);
         workLoadId = workLoad.createWorkload(name, projectId, envId, devopsEnvCommandDTO.getId(), extraInfo);
         devopsWorkloadResourceContentService.create(resourceType, workLoadId, content);
