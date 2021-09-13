@@ -133,6 +133,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = combineDevopsEnvironmentDTOMap(devopsDeployAppCenterVOList);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        Map<Long, AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOMap = devopsInstanceDTOMap(devopsDeployAppCenterVOList);
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId());
             if (!ObjectUtils.isEmpty(devopsEnvironmentDTO)) {
@@ -142,8 +143,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
             AppCenterEnvDetailVO detailVO = new AppCenterEnvDetailVO();
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = new ArrayList<>();
+            AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceInfoDTOMap.get(devopsDeployAppCenterVO.getObjectId());
             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
-                setAppInstanceInfoToAppCenter(devopsDeployAppCenterVO);
+                setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
@@ -434,20 +436,17 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = combineDevopsEnvironmentDTOMap(devopsDeployAppCenterVOList);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap = devopsMarketDTOMap(projectId, devopsDeployAppCenterVOList);
+        Map<Long, AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOMap = devopsInstanceDTOMap(devopsDeployAppCenterVOList);
+        Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap = devopsMarketDTOMap(projectId, devopsDeployAppCenterVOList, appServiceInstanceInfoDTOMap);
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId());
-            if (!ObjectUtils.isEmpty(devopsEnvironmentDTO)) {
-                devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
-                devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
-            }
-            devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
-            setAppInstanceInfoToAppCenter(devopsDeployAppCenterVO);
+            setEnvInfoToAppCenterVO(devopsDeployAppCenterVO, devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId()), upgradeClusterList);
+            AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceInfoDTOMap.get(devopsDeployAppCenterVO.getObjectId());
+            setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
             // 添加pod运行统计
             setPodInfoToAppCenter(devopsDeployAppCenterVO);
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = devopsMarketDTOMap.get(devopsDeployAppCenterVO.getAppServiceId());
+            MarketServiceDeployObjectVO marketServiceDeployObjectVO = devopsMarketDTOMap.get(appServiceInstanceInfoDTO.getAppServiceVersionId());
             if (isMarketOrMiddleware(devopsDeployAppCenterVO.getChartSource()) && !ObjectUtils.isEmpty(marketServiceDeployObjectVO)) {
-                setVersionAndAppName(devopsDeployAppCenterVO, marketServiceDeployObjectVO.getMarketServiceName(), marketServiceDeployObjectVO.getMarketAppVersionId(), marketServiceDeployObjectVO.getMarketServiceVersion());
+                setVersionAndAppNameToAppCenterVO(devopsDeployAppCenterVO, marketServiceDeployObjectVO.getMarketServiceName(), marketServiceDeployObjectVO.getMarketAppVersionId(), marketServiceDeployObjectVO.getMarketServiceVersion());
             }
         });
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
@@ -465,15 +464,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return devopsDeployAppCenterVOS;
     }
 
-    private void setAppInstanceInfoToAppCenter(DevopsDeployAppCenterVO devopsDeployAppCenterVO) {
-        AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(devopsDeployAppCenterVO.getObjectId());
+    private void setAppInstanceInfoToAppCenter(Long projectId, DevopsDeployAppCenterVO devopsDeployAppCenterVO, AppServiceInstanceInfoDTO appServiceInstanceInfoDTO) {
         devopsDeployAppCenterVO.setAppServiceId(appServiceInstanceInfoDTO.getAppServiceId());
         devopsDeployAppCenterVO.setStatus(appServiceInstanceInfoDTO.getStatus());
         devopsDeployAppCenterVO.setError(appServiceInstanceInfoDTO.getError());
         if (isMarketOrMiddleware(appServiceInstanceInfoDTO.getSource())) {
-            devopsDeployAppCenterVO.setUpgradeAvailable(isUpgradeAvailable(appServiceInstanceInfoDTO));
+            devopsDeployAppCenterVO.setUpgradeAvailable(isUpgradeAvailable(projectId, appServiceInstanceInfoDTO));
         } else {
-            setVersionAndAppName(devopsDeployAppCenterVO, appServiceInstanceInfoDTO.getAppServiceName(), appServiceInstanceInfoDTO.getCommandVersionId(), appServiceInstanceInfoDTO.getCommandVersion());
+            setVersionAndAppNameToAppCenterVO(devopsDeployAppCenterVO, appServiceInstanceInfoDTO.getAppServiceName(), appServiceInstanceInfoDTO.getCommandVersionId(), appServiceInstanceInfoDTO.getCommandVersion());
         }
     }
 
@@ -496,34 +494,52 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return AppServiceInstanceServiceImpl.isMarket(source) || AppServiceInstanceServiceImpl.isMiddleware(source);
     }
 
-    private Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap(Long projectId, List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
-        Set<Long> marketObjectIds = devopsDeployAppCenterVOList.stream().filter(appCenterVO -> isMarketOrMiddleware(appCenterVO.getChartSource())).map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toSet());
-        if (CollectionUtils.isEmpty(marketObjectIds)) {
-            return new HashMap<>();
-        }
-        List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOList = marketServiceClientOperator.listDeployObjectsByIds(projectId, marketObjectIds);
+    private Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap(Long projectId, List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList, Map<Long, AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOMap) {
         Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOList)) {
-            devopsMarketDTOMap = marketServiceDeployObjectVOList.stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getMarketServiceId, Function.identity()));
+        Set<Long> marketObjectIds = devopsDeployAppCenterVOList.stream().filter(appCenterVO -> isMarketOrMiddleware(appCenterVO.getChartSource())).map(appCenterVO ->
+                appServiceInstanceInfoDTOMap.get(appCenterVO.getObjectId()).getAppServiceVersionId()).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(marketObjectIds)) {
+            List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOList = marketServiceClientOperator.listDeployObjectsByIds(projectId, marketObjectIds);
+            if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOList)) {
+                devopsMarketDTOMap = marketServiceDeployObjectVOList.stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
+            }
         }
         return devopsMarketDTOMap;
     }
 
-    private void setVersionAndAppName(DevopsDeployAppCenterVO devopsDeployAppCenterVO, String name, Long versionId, String version) {
+    private Map<Long, AppServiceInstanceInfoDTO> devopsInstanceDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
+        List<Long> instanceIds =devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toList());
+        List<AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOList = appServiceInstanceMapper.listInfoById(instanceIds);
+        Map<Long, AppServiceInstanceInfoDTO> devopsMarketDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(appServiceInstanceInfoDTOList)) {
+            devopsMarketDTOMap = appServiceInstanceInfoDTOList.stream().collect(Collectors.toMap(AppServiceInstanceInfoDTO::getId, Function.identity()));
+        }
+        return devopsMarketDTOMap;
+    }
+
+    private void setVersionAndAppNameToAppCenterVO(DevopsDeployAppCenterVO devopsDeployAppCenterVO, String name, Long versionId, String version) {
         devopsDeployAppCenterVO.setAppServiceName(name);
         devopsDeployAppCenterVO.setCommandVersionId(versionId);
         devopsDeployAppCenterVO.setCommandVersion(version);
     }
 
-    private boolean isUpgradeAvailable(AppServiceInstanceInfoDTO appServiceInstanceInfoDTO) {
-        List<MarketServiceDeployObjectVO> upgradeAble = marketServiceClientOperator.queryUpgradeDeployObjects(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId(), appServiceInstanceInfoDTO.getCommandVersionId());
+    private void setEnvInfoToAppCenterVO(DevopsDeployAppCenterVO devopsDeployAppCenterVO, DevopsEnvironmentDTO devopsEnvironmentDTO, List<Long> upgradeClusterList) {
+        if (!ObjectUtils.isEmpty(devopsEnvironmentDTO)) {
+            devopsDeployAppCenterVO.setEnvName(devopsEnvironmentDTO.getName());
+            devopsDeployAppCenterVO.setEnvActive(devopsEnvironmentDTO.getActive());
+            devopsDeployAppCenterVO.setEnvConnected(upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId()));
+        }
+    }
+
+    private boolean isUpgradeAvailable(Long projectId, AppServiceInstanceInfoDTO appServiceInstanceinfoDTO) {
+        List<MarketServiceDeployObjectVO> upgradeAble = marketServiceClientOperator.queryUpgradeDeployObjects(projectId, appServiceInstanceinfoDTO.getAppServiceId(), appServiceInstanceinfoDTO.getCommandVersionId());
         // 这里查出的版本是包含当前的版本和最新的版本，两个版本
         // 如果只查出一个版本，但不是当前版本，就是可升级的
         boolean upgradeAvailable;
         if (upgradeAble.size() > 1) {
             upgradeAvailable = true;
         } else {
-            upgradeAvailable = upgradeAble.size() == 1 && !appServiceInstanceInfoDTO.getCommandVersionId().equals(upgradeAble.get(0).getId());
+            upgradeAvailable = upgradeAble.size() == 1 && !appServiceInstanceinfoDTO.getCommandVersionId().equals(upgradeAble.get(0).getId());
         }
         return upgradeAvailable;
     }
