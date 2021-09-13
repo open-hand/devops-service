@@ -186,6 +186,7 @@ public final class KeyDecryptHelper {
         } else {
             EncryptContext.setEncryptType(EncryptType.TO_STRING.name());
             try {
+                ensureInitObjectMapper();
                 return SPRINT_OBJECT_MAPPER.writeValueAsString(object);
             } catch (JsonProcessingException e) {
                 throw new CommonException("error.encrypt.json", e);
