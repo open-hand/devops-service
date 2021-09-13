@@ -48,7 +48,7 @@ public class DevopsDeploymentController {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.DEPLOYMENT);
+        workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.DEPLOYMENT, false);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

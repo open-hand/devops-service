@@ -109,7 +109,7 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DevopsEnvCommandDTO createOrUpdate(Long projectId, WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO, MultipartFile multipartFile, ResourceType resourceType) {
+    public DevopsEnvCommandDTO createOrUpdate(Long projectId, WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO, MultipartFile multipartFile, ResourceType resourceType, Boolean fromPipeline) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = null;
         WorkloadBaseVO workloadBaseVO = processKeyEncrypt(workloadBaseCreateOrUpdateVO);
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, workloadBaseVO.getEnvId());
@@ -153,8 +153,10 @@ public class WorkloadServiceImpl implements WorkloadService {
             resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
             objects.add(datas);
             String resourceContent = FileUtil.getYaml().dump(data);
-            // 如果是更新操作，需要校验资源是否发生变化，没有变化不再进行后续处理
-            if (UPDATE_TYPE.equals(workloadBaseVO.getOperateType()) && noChange(kind, workloadBaseVO.getResourceId(), resourceContent)) {
+            // 如果是更新操作，需要校验资源是否发生变化，没有变化不再进行后续处理(流水线不校验)
+            if (Boolean.FALSE.equals(fromPipeline)
+                    && UPDATE_TYPE.equals(workloadBaseVO.getOperateType())
+                    && noChange(kind, workloadBaseVO.getResourceId(), resourceContent)) {
                 return null;
             }
             devopsEnvCommandDTO = handleWorkLoad(projectId, workloadBaseVO.getEnvId(), resourceContent, kind, name, workloadBaseVO.getOperateType(), workloadBaseVO.getResourceId(), DetailsHelper.getUserDetails().getUserId(), workloadBaseVO.getExtraInfo());

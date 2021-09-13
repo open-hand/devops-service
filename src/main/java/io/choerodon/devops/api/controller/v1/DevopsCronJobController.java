@@ -58,7 +58,7 @@ public class DevopsCronJobController {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.CRON_JOB);
+        workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.CRON_JOB, false);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -33,7 +33,7 @@ public class DevopsDeployGroupController {
             @ApiParam(value = "部署组信息")
             @RequestBody DevopsDeployGroupVO devopsDeployGroupVO
     ) {
-        devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type, false);
+        devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type, false, false);
         return Results.success();
     }
 
