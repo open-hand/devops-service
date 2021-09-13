@@ -1488,7 +1488,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceVersionDTO.getVersion(),
                 devopsDeployAppCenterEnvDTO.getName(),
                 devopsDeployAppCenterEnvDTO.getCode(),
-                devopsDeployAppCenterEnvDTO.getId(),
+                devopsDeployAppCenterEnvDTO.getObjectId(),
                 new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
 
@@ -2011,7 +2011,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceVersionDTO.getVersion(),
                 appServiceDeployVO.getAppName(),
                 appServiceDeployVO.getAppCode(),
-                devopsDeployAppCenterEnvDTO.getId(),
+                devopsDeployAppCenterEnvDTO.getObjectId(),
                 new DeploySourceVO(isProjectAppService ? AppSourceType.CURRENT_PROJECT : AppSourceType.SHARE, projectDTO.getName()));
 
         // 创建应用中心应用
