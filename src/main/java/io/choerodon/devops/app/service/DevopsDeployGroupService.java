@@ -16,7 +16,11 @@ public interface DevopsDeployGroupService {
      * @param operateType         操作类型
      * @return
      */
-    DevopsDeployAppCenterEnvVO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer);
+    DevopsDeployAppCenterEnvVO createOrUpdate(Long projectId,
+                                              DevopsDeployGroupVO devopsDeployGroupVO,
+                                              String operateType,
+                                              boolean onlyForContainer,
+                                              Boolean fromPipeline);
 
     /**
      * 更新部署组容器配置

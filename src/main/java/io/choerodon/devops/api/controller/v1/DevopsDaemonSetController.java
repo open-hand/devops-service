@@ -60,7 +60,7 @@ public class DevopsDaemonSetController {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.DAEMONSET);
+        workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.DAEMONSET, false);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

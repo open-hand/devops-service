@@ -9,7 +9,11 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 
 public interface WorkloadService {
-    DevopsEnvCommandDTO createOrUpdate(Long projectId, WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO, MultipartFile multipartFile, ResourceType type);
+    DevopsEnvCommandDTO createOrUpdate(Long projectId,
+                                       WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO,
+                                       MultipartFile multipartFile,
+                                       ResourceType type,
+                                       Boolean fromPipeline);
 
     Long getWorkloadId(Long envId, String workloadName, String type);
 

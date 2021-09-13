@@ -101,7 +101,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     @Transactional
     @Override
-    public DevopsDeployAppCenterEnvVO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer) {
+    public DevopsDeployAppCenterEnvVO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer, Boolean fromPipeline) {
         //1. 查询校验环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvId());
 
@@ -131,7 +131,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
 
         workloadBaseCreateOrUpdateVO.setExtraInfo(extraInfo);
-        DevopsEnvCommandDTO devopsEnvCommandDTO = workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, DEPLOYMENT);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, DEPLOYMENT, fromPipeline);
 
         // 更新关联的对象id
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
@@ -151,6 +151,12 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
             }
         }
+        DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = ConvertUtils.convertObject(devopsDeployAppCenterEnvDTO, DevopsDeployAppCenterEnvVO.class);
+        if(devopsEnvCommandDTO == null) {
+            return devopsDeployAppCenterEnvVO;
+        }
+        devopsDeployAppCenterEnvVO.setCommandId(devopsEnvCommandDTO.getId());
+
         // 插入部署记录
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
@@ -165,10 +171,6 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 "",
                 devopsDeployGroupVO.getAppName(),
                 new DeploySourceVO(AppSourceType.DEPLOYMENT, projectDTO.getName()));
-        DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = ConvertUtils.convertObject(devopsDeployAppCenterEnvDTO, DevopsDeployAppCenterEnvVO.class);
-        if(devopsEnvCommandDTO != null) {
-            devopsDeployAppCenterEnvVO.setCommandId(devopsEnvCommandDTO.getId());
-        }
 
         return devopsDeployAppCenterEnvVO;
     }
@@ -184,7 +186,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         devopsDeployGroupVO.setAppName(devopsDeployAppCenterEnvDTO.getName());
         devopsDeployGroupVO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
 
-        createOrUpdate(projectId, devopsDeployGroupVO, MiscConstants.UPDATE_TYPE, true);
+        createOrUpdate(projectId, devopsDeployGroupVO, MiscConstants.UPDATE_TYPE, true, false);
     }
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO
