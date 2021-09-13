@@ -42,7 +42,7 @@
         select dha.*, dh.name as host_name,
                dhai.app_id, dhai.code, dhai.source_type, dhai.source_config,
                dhai.pre_command, dhai.run_command, dhai.post_command, dhai.status, dhai.pid,
-               dhai.ports, dhai.group_id, dhai.artifact_id, dhai.version
+               dhai.ports, dhai.group_id, dhai.artifact_id, dhai.version,dhai.id as instanceId
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_app_instance dhai on dhai.app_id = dha.id
