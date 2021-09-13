@@ -27,7 +27,9 @@ public class DeployRecordVO {
     @Encrypt
     private Long instanceId;
 
-    private String instanceName;
+    private String appName;
+
+    private String appCode;
 
     private String deployMode;
 
@@ -65,6 +67,14 @@ public class DeployRecordVO {
     private String errorMessage;
 
     private String log;
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
 
     public String getLog() {
         return log;
@@ -140,12 +150,12 @@ public class DeployRecordVO {
         this.instanceId = instanceId;
     }
 
-    public String getInstanceName() {
-        return instanceName;
+    public String getAppName() {
+        return appName;
     }
 
-    public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public IamUserDTO getExecuteUser() {

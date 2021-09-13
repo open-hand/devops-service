@@ -34,7 +34,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.pipeline.DevopsDeployInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
@@ -1071,7 +1070,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         cdAuto.setEnvId(deployRecordVO.getEnvId());
                         cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
                         cdAuto.setInstanceId(deployRecordVO.getInstanceId());
-                        cdAuto.setInstanceName(deployRecordVO.getInstanceName());
+                        cdAuto.setInstanceName(deployRecordVO.getAppName());
 
                         devopsCdJobRecordVO.setCdAuto(cdAuto);
                     }
