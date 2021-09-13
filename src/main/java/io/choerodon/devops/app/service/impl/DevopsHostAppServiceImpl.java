@@ -506,6 +506,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        if (customDeployVO.getFileInfoVO().getFileName() == null) {
+            customDeployVO.getFileInfoVO().setFileName("");
+        }
         String appFile = workDir + customDeployVO.getFileInfoVO().getFileName();
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", customDeployVO.getFileInfoVO().getFileName());
@@ -576,6 +579,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
         } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
+        }
+    }
+
+    public static void main(String[] args) {
+        String testStr = "djasklf\nasdfkljasdk\n";
+        for (String line : testStr.split("\\\\n")) {
+            System.out.println(line);
         }
     }
 
