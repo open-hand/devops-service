@@ -96,7 +96,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
         renameColumn(columnDataType: 'varchar(255)', newColumnName: 'app_name', oldColumnName: 'instance_name', tableName: 'devops_deploy_record')
 
         addColumn(tableName: 'devops_deploy_record') {
-            column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: '应用对应实例id', afterColumn: 'deploy_object_version')
+            column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id', afterColumn: 'deploy_object_version')
             column(name: 'app_code', type: 'VARCHAR(255)', remarks: '应用编码', afterColumn: 'app_name')
 
         }

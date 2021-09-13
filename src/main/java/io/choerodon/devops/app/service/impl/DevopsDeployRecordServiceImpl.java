@@ -101,7 +101,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                            String deployVersion,
                            String appName,
                            String appCode,
-                           Long instanceId,
+                           Long appId,
                            DeploySourceVO deploySource) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                 projectId,
@@ -117,7 +117,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 deployVersion,
                 appName,
                 appCode,
-                instanceId,
+                appId,
                 JsonHelper.marshalByJackson(deploySource));
         try {
             baseCreate(devopsDeployRecordDTO);
@@ -340,11 +340,12 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                     // 添加环境id
                     v.setEnvId(devopsEnvironmentDTO.getId());
                 }
-                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(v.getInstanceId());
-                if (appServiceInstanceDTO != null) {
-                    // 添加应用服务id
-                    v.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                }
+                // todo 结构调整后，不确定是否还需要这个字段，先注释
+//                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(v.getAppId());
+//                if (appServiceInstanceDTO != null) {
+//                    // 添加应用服务id
+//                    v.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+//                }
             }
 
         });
@@ -367,7 +368,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             // 添加环境id
             deployRecordVO.setEnvId(devopsEnvironmentDTO.getId());
         }
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(deployRecordVO.getInstanceId());
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(deployRecordVO.getAppId());
         if (appServiceInstanceDTO != null) {
             // 添加应用服务id
             deployRecordVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());

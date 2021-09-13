@@ -51,7 +51,7 @@ public interface DevopsDeployRecordService {
                     String deployVersion,
                     String appName,
                     String appCode,
-                    Long instanceId,
+                    Long appId,
                     DeploySourceVO deploySourceVO);
 
     Long saveDeployRecord(Long projectId,

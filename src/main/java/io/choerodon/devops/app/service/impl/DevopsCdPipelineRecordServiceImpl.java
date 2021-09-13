@@ -458,7 +458,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 null,
                 cdHostDeployConfigVO.getAppName(),
                 cdHostDeployConfigVO.getAppCode(),
-                null,
+                devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
         // 3. 发送部署指令给agent
@@ -659,7 +659,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 c7nNexusComponentDTO.getVersion(),
                 cdHostDeployConfigVO.getAppName(),
                 cdHostDeployConfigVO.getAppCode(),
-                null,
+                devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
         // 3. 发送部署指令给agent
@@ -1069,7 +1069,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
                         cdAuto.setEnvId(deployRecordVO.getEnvId());
                         cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
-                        cdAuto.setInstanceId(deployRecordVO.getInstanceId());
+                        cdAuto.setInstanceId(deployRecordVO.getAppId());
                         cdAuto.setInstanceName(deployRecordVO.getAppName());
 
                         devopsCdJobRecordVO.setCdAuto(cdAuto);
