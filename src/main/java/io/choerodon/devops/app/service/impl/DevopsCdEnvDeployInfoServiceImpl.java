@@ -110,4 +110,9 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
         Assert.notNull(environmentId, ERROR_VALUE_ID_IS_NULL);
         return devopsCdEnvDeployInfoMapper.queryCurrentByEnvId(environmentId);
     }
+
+    @Override
+    public List<DevopsCdEnvDeployInfoDTO> listAll() {
+        return devopsCdEnvDeployInfoMapper.selectAll();
+    }
 }

@@ -26,4 +26,7 @@ public interface DevopsCdEnvDeployInfoService {
     List<DevopsCdEnvDeployInfoDTO> queryCurrentByValueId(Long valueId);
 
     List<DevopsCdEnvDeployInfoDTO> queryCurrentByEnvId(Long environmentId);
+
+    List<DevopsCdEnvDeployInfoDTO> listAll();
+
 }
