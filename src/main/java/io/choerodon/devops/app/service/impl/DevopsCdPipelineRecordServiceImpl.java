@@ -422,7 +422,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppInstanceDTO.getId());
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", "");
         params.put("{{ APP_FILE }}", "");
@@ -616,7 +616,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppInstanceDTO.getId());
         String appFile = workDir + c7nNexusComponentDTO.getName();
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());

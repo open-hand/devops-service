@@ -241,7 +241,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppInstanceDTO.getId());
         params.put("{{ WORK_DIR }}", workDir);
         String downloadCommand;
         String appFile;
@@ -505,7 +505,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppDTO.getId());
+        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppInstanceDTO.getId());
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
