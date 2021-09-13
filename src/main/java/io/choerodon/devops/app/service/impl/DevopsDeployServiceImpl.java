@@ -24,7 +24,6 @@ import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployPipelineVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
