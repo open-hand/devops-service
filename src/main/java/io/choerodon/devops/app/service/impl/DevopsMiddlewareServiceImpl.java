@@ -261,6 +261,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 middlewareRedisHostDeployVO.getName(),
                 middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
                 null,
+                null,
+                null,
                 deploySourceVO);
 
         String deployShell;
@@ -400,6 +402,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 DeployObjectTypeEnum.MIDDLEWARE,
                 middlewareMySqlHostDeployVO.getName(),
                 middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
+                null,
+                null,
                 null,
                 deploySourceVO);
 

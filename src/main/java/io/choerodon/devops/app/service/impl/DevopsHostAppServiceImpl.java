@@ -297,6 +297,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 deployObjectName,
                 deployVersion,
                 null,
+                null,
+                null,
                 deploySourceVO);
 
         // 保存用户设置部署配置文件
@@ -551,6 +553,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.OTHER,
                 devopsHostDTO.getName(),
+                null,
+                null,
                 null,
                 null,
                 deploySourceVO);
