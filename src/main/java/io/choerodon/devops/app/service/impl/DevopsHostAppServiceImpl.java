@@ -395,7 +395,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostAppVO = devopsHostAppVOS.get(0);
         compoundDevopsHostAppVO(devopsHostAppVO);
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
-        devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getId()));
+        devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getInstanceId()));
         return devopsHostAppVO;
     }
 
