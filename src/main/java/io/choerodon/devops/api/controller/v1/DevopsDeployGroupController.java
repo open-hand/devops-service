@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsDeployAppCenterEnvVO;
 import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
 import io.choerodon.devops.app.service.DevopsDeployGroupService;
 import io.choerodon.swagger.annotation.Permission;
@@ -26,26 +27,24 @@ public class DevopsDeployGroupController {
     @ApiOperation("创建或更新部署组应用")
     @PostMapping("create_or_update")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    public ResponseEntity<Void> createOrUpdate(
+    public ResponseEntity<DevopsDeployAppCenterEnvVO> createOrUpdate(
             @PathVariable("project_id") Long projectId,
             @ApiParam("操作类型")
             @RequestParam("type") String type,
             @ApiParam(value = "部署组信息")
             @RequestBody DevopsDeployGroupVO devopsDeployGroupVO
     ) {
-        devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type, false, false);
-        return Results.success();
+        return Results.success(devopsDeployGroupService.createOrUpdate(projectId, devopsDeployGroupVO, type, false, false));
     }
 
     @ApiOperation("更新部署组容器配置")
     @PostMapping("/update_container")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    public ResponseEntity<Void> updateContainer(
+    public ResponseEntity<DevopsDeployAppCenterEnvVO> updateContainer(
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "部署组信息")
             @RequestBody DevopsDeployGroupVO devopsDeployGroupVO
     ) {
-        devopsDeployGroupService.updateContainer(projectId, devopsDeployGroupVO);
-        return Results.success();
+        return Results.success(devopsDeployGroupService.updateContainer(projectId, devopsDeployGroupVO));
     }
 }

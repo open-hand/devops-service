@@ -179,7 +179,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     @Transactional
     @Override
-    public void updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO) {
+    public DevopsDeployAppCenterEnvVO updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO) {
         // 设置appConfig
         DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployGroupVO.getInstanceId());
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(devopsDeploymentDTO.getInstanceId());
