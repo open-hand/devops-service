@@ -52,7 +52,7 @@ public class CommandResultHandler implements HostMsgHandler {
             if (devopsHostAppInstanceDTO != null) {
                 devopsHostAppInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
                 devopsHostAppService.baseDelete(devopsHostAppInstanceDTO.getAppId());
-                if (devopsHostAppInstanceDTO.getSourceType().equals(AppSourceType.MIDDLEWARE.getValue())) {
+                if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
                     devopsMiddlewareService.deleteByInstanceId(Long.valueOf(processInfoVO.getInstanceId()));
                 }
             }
