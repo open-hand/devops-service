@@ -51,6 +51,66 @@ public class DevopsCdEnvDeployInfoDTO extends AuditDomain {
 
     private Boolean checkEnvPermissionFlag;     // 部署时是否校验环境权限
 
+    private Long appId;
+
+    private String appName;
+
+    private String appCode;
+
+    private Boolean skipCheckPermission;
+
+    private String appConfigJson;
+
+    private String containerConfigJson;
+
+    public String getAppConfigJson() {
+        return appConfigJson;
+    }
+
+    public void setAppConfigJson(String appConfigJson) {
+        this.appConfigJson = appConfigJson;
+    }
+
+    public String getContainerConfigJson() {
+        return containerConfigJson;
+    }
+
+    public void setContainerConfigJson(String containerConfigJson) {
+        this.containerConfigJson = containerConfigJson;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return skipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        this.skipCheckPermission = skipCheckPermission;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
     public Long getCdJobId() {
         return cdJobId;
     }

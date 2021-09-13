@@ -566,13 +566,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdJobRecordService.update(jobRecordDTO);
 
         // 2. 执行jar部署
-        devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
+        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
 
         // 2.保存记录
         DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
         DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
-        if (devopsCdJobDTO.getAppId() == null) {
+        if (DeployTypeEnum.CREATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
                     jarDeployVO.getAppName(),
@@ -596,11 +596,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
 
             // 保存appId
-            devopsCdJobDTO.setAppId(devopsHostAppDTO.getId());
+            devopsCdEnvDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
+            devopsCdEnvDeployInfoDTO.setDeployType(DeployTypeEnum.UPDATE.value());
+            devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
             devopsCdJobService.baseUpdate(devopsCdJobDTO);
 
         } else {
-            devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdJobDTO.getAppId());
+            devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdEnvDeployInfoDTO.getAppId());
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 

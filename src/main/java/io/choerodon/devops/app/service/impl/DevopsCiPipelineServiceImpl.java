@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -517,15 +518,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
-        DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobVO.getMetadata(), DevopsDeployInfoVO.class);
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsDeployInfoVO.getEnvId());
+        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
+        DevopsDeployInfoVO devopsDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsDeployInfoVO.class);
+        devopsDeployInfoVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getAppConfigJson(), DevopsDeployGroupAppConfigVO.class));
+        devopsDeployInfoVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getAppConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+        }));
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
         if (!Objects.isNull(devopsEnvironmentDTO)) {
             devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
-        }
-        if (devopsCdJobVO.getAppId() != null) {
-            devopsDeployInfoVO.setDeployType(DeployTypeEnum.UPDATE.value());
-        } else {
-            devopsDeployInfoVO.setDeployType(DeployTypeEnum.CREATE.value());
         }
         //判断当前用户是不是有环境的权限
         //环境为项目下所有成员都有权限
@@ -1865,19 +1865,44 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 环境部署需要保存部署配置信息
         if (JobTypeEnum.CD_DEPLOY.value().equals(t.getType())
                 || JobTypeEnum.CD_DEPLOYMENT.value().equals(t.getType())) {
+            //            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsCdEnvDeployInfoDTO.class);
+//            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+//            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsCdEnvDeployInfoDTO));
+//            // 将从Audit-domain中继承的这个字段设置为空， 不然会将一些不需要的字段也序列化到输出到json
+//            devopsCdEnvDeployInfoDTO.set_innerMap(null);
+//            devopsCdEnvDeployInfoDTO.setProjectId(projectId);
+//            // 删除 前端传输的metadata中 多余数据
+//            updateExtraInfoToNull(devopsCdEnvDeployInfoDTO);
+//            devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
+//            devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
+
             // 使用能够解密主键加密的json工具解密
             DevopsDeployInfoVO devopsDeployInfoVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), DevopsDeployInfoVO.class);
+            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = ConvertUtils.convertObject(devopsDeployInfoVO, DevopsCdEnvDeployInfoDTO.class);
+            if (devopsDeployInfoVO.getAppConfig() != null) {
+                devopsCdEnvDeployInfoDTO.setAppConfigJson(JsonHelper.marshalByJackson(devopsDeployInfoVO.getAppConfig()));
+            }
+            if (devopsDeployInfoVO.getContainerConfig() != null) {
+                devopsCdEnvDeployInfoDTO.setContainerConfigJson(JsonHelper.marshalByJackson(devopsDeployInfoVO.getContainerConfig()));
+            }
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsDeployInfoVO));
-            devopsCdJobDTO.setValueId(devopsDeployInfoVO.getValueId());
-            devopsCdJobDTO.setAppId(devopsDeployInfoVO.getAppId());
+            devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
+            devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
 
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
             checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = new DevopsCdEnvDeployInfoDTO();
+            devopsCdEnvDeployInfoDTO.setAppId(cdHostDeployConfigVO.getAppId());
+            devopsCdEnvDeployInfoDTO.setAppName(cdHostDeployConfigVO.getAppName());
+            devopsCdEnvDeployInfoDTO.setAppCode(cdHostDeployConfigVO.getAppCode());
+            devopsCdEnvDeployInfoDTO.setDeployType(cdHostDeployConfigVO.getDeployType());
+            devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
+            devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             // 如果审核任务，审核人员只有一个人，则默认设置为或签
             if (CollectionUtils.isEmpty(t.getCdAuditUserIds())) {
