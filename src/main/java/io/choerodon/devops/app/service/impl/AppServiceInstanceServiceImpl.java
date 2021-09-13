@@ -266,6 +266,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         Map<Long, MarketServiceDeployObjectVO> versions = marketServiceClientOperator.listDeployObjectsByIds(appServiceInstanceInfoDTO.getProjectId(), deployObjectIds).stream().collect(Collectors.toMap(MarketServiceDeployObjectVO::getId, Function.identity()));
         if (versions.get(appServiceInstanceInfoDTO.getCommandVersionId()) != null) {
+            appServiceInstanceInfoVO.setMktAppVersionId(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketAppVersionId());
+            appServiceInstanceInfoVO.setMktDeployObjectId(appServiceInstanceInfoDTO.getCommandVersionId());
             // 如果是中间件，直接以应用版本作为生效版本
             if (isMiddleware(appServiceInstanceInfoDTO.getSource())) {
                 appServiceInstanceInfoVO.setCommandVersion(versions.get(appServiceInstanceInfoDTO.getCommandVersionId()).getMarketServiceVersion());
