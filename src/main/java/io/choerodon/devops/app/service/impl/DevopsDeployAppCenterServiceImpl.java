@@ -497,7 +497,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     private Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap(Long projectId, List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
-        Set<Long> marketObjectIds =devopsDeployAppCenterVOList.stream().filter(appCenterVO -> isMarketOrMiddleware(appCenterVO.getChartSource())).map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toSet());
+        Set<Long> marketObjectIds = devopsDeployAppCenterVOList.stream().filter(appCenterVO -> isMarketOrMiddleware(appCenterVO.getChartSource())).map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(marketObjectIds)) {
+            return new HashMap<>();
+        }
         List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOList = marketServiceClientOperator.listDeployObjectsByIds(projectId, marketObjectIds);
         Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(marketServiceDeployObjectVOList)) {
