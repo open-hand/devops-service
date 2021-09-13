@@ -459,4 +459,5 @@ public interface AppServiceInstanceService {
 
     InstanceValueVO queryValues(Long instanceId);
 
+    InstanceValueVO queryValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId);
 }

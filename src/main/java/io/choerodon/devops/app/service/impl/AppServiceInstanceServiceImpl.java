@@ -2660,6 +2660,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return instanceValueVO;
     }
 
+    @Override
+    public InstanceValueVO queryValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId) {
+        AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "instance.not.exist.in.database");
+        InstanceValueVO instanceValueVO = new InstanceValueVO();
+        instanceValueVO.setYaml(marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue());
+        return instanceValueVO;
+    }
+
     private String[] parseMarketRepo(String harborRepo) {
         if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);
