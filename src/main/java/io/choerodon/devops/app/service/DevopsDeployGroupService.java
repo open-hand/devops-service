@@ -27,5 +27,5 @@ public interface DevopsDeployGroupService {
      * @param projectId
      * @param devopsDeployGroupVO
      */
-    void updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO);
+    DevopsDeployAppCenterEnvVO updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO);
 }
