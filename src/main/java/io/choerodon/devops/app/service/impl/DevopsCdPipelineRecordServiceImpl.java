@@ -457,6 +457,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 DeployObjectTypeEnum.JAR,
                 cdHostDeployConfigVO.getAppName(),
                 null,
+                cdHostDeployConfigVO.getAppName(),
+                cdHostDeployConfigVO.getAppCode(),
                 null,
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
@@ -656,6 +658,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 DeployObjectTypeEnum.JAR,
                 c7nNexusComponentDTO.getName(),
                 c7nNexusComponentDTO.getVersion(),
+                cdHostDeployConfigVO.getAppName(),
+                cdHostDeployConfigVO.getAppCode(),
                 null,
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 

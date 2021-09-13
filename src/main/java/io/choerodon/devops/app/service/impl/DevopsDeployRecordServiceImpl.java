@@ -99,7 +99,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                            DeployObjectTypeEnum deployObjectType,
                            String deployObjectName,
                            String deployVersion,
-                           String instanceName,
+                           String appName,
+                           String appCode,
+                           Long instanceId,
                            DeploySourceVO deploySource) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(
                 projectId,
@@ -113,7 +115,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 deployObjectType.value(),
                 deployObjectName,
                 deployVersion,
-                instanceName,
+                appName,
+                appCode,
+                instanceId,
                 JsonHelper.marshalByJackson(deploySource));
         try {
             baseCreate(devopsDeployRecordDTO);
@@ -182,6 +186,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 deployObjectName,
                 deployVersion,
                 instanceName,
+                null,
+                null,
                 JsonHelper.marshalByJackson(deploySourceVO));
         devopsDeployRecordDTO.setErrorMessage(errorMessage);
         try {

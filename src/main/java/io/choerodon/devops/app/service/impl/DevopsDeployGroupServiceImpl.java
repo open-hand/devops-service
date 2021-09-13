@@ -166,10 +166,12 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 devopsEnvironmentDTO.getId(),
                 devopsEnvironmentDTO.getName(),
                 null,
-                DeployObjectTypeEnum.APP,
+                DeployObjectTypeEnum.DEPLOYMENT,
                 devopsDeployGroupVO.getAppName(),
                 "",
                 devopsDeployGroupVO.getAppName(),
+                devopsDeployGroupVO.getAppCode(),
+                devopsDeployAppCenterEnvVO.getId(),
                 new DeploySourceVO(AppSourceType.DEPLOYMENT, projectDTO.getName()));
 
         return devopsDeployAppCenterEnvVO;

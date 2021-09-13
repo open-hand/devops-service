@@ -4,6 +4,7 @@ import java.util.Date;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -45,7 +46,12 @@ public class DevopsDeployRecordDTO extends AuditDomain {
 
     private String deployObjectVersion;
 
-    private String instanceName;
+    private String appName;
+
+    private String appCode;
+
+    @Encrypt
+    private Long instanceId;
 
     /**
      * 部署来源
@@ -64,10 +70,32 @@ public class DevopsDeployRecordDTO extends AuditDomain {
     @ApiModelProperty("关联流程实例的key,hzero部署时需要")
     private String businessKey;
 
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
     public DevopsDeployRecordDTO() {
     }
 
-    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName, String deploySource) {
+    public DevopsDeployRecordDTO(Long projectId,
+                                 String deployType,
+                                 Long deployId,
+                                 String deployMode,
+                                 Long deployPayloadId,
+                                 String deployPayloadName,
+                                 String deployResult,
+                                 Date deployTime,
+                                 String deployObjectType,
+                                 String deployObjectName,
+                                 String deployObjectVersion,
+                                 String appName,
+                                 String appCode,
+                                 Long instanceId,
+                                 String deploySource) {
         this.projectId = projectId;
         this.deployType = deployType;
         this.deployId = deployId;
@@ -79,11 +107,13 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectType = deployObjectType;
         this.deployObjectName = deployObjectName;
         this.deployObjectVersion = deployObjectVersion;
-        this.instanceName = instanceName;
+        this.appName = appName;
+        this.appCode = appCode;
+        this.instanceId = instanceId;
         this.deploySource = deploySource;
     }
 
-    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String instanceName, String deploySource, String businessKey) {
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String deployMode, Long deployPayloadId, String deployPayloadName, String deployResult, Date deployTime, String deployObjectType, String deployObjectName, String deployObjectVersion, String appName, String deploySource, String businessKey) {
         this.projectId = projectId;
         this.deployType = deployType;
         this.deployId = deployId;
@@ -95,9 +125,17 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectType = deployObjectType;
         this.deployObjectName = deployObjectName;
         this.deployObjectVersion = deployObjectVersion;
-        this.instanceName = instanceName;
+        this.appName = appName;
         this.deploySource = deploySource;
         this.businessKey = businessKey;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public String getBusinessKey() {
@@ -212,12 +250,12 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectVersion = deployObjectVersion;
     }
 
-    public String getInstanceName() {
-        return instanceName;
+    public String getAppName() {
+        return appName;
     }
 
-    public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public String getDeploySource() {
@@ -251,7 +289,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
                 ", deployObjectType='" + deployObjectType + '\'' +
                 ", deployObjectName='" + deployObjectName + '\'' +
                 ", deployObjectVersion='" + deployObjectVersion + '\'' +
-                ", instanceName='" + instanceName + '\'' +
+                ", instanceName='" + appName + '\'' +
                 ", deploySource='" + deploySource + '\'' +
                 ", errorMessage='" + errorMessage + '\'' +
                 '}';

@@ -103,78 +103,78 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Override
     @Transactional
     public void deployDockerInstance(Long projectId, DockerDeployVO dockerDeployVO) {
-        //1.获取项目信息
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        //2.获取主机信息
-        DevopsHostDTO hostDTO = getHost(dockerDeployVO.getHostId());
-        checkHostExist(hostDTO);
-
-
-        String deployObjectName = null;
-        String deployVersion = null;
-        Long appServiceId = null;
-        String serviceName = null;
-        DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
-
-        DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
-
-        if (isMarketOrHzero(dockerDeployVO)) {
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectId, dockerDeployVO);
-            MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
-            DockerPullAccountDTO dockerPullAccountDTO = initDockerPullAccountDTO(marketHarborConfigVO);
-            dockerDeployDTO = initMarketDockerDeployDTO(dockerDeployDTO, dockerPullAccountDTO, marketServiceDeployObjectVO);
-            appServiceId = marketServiceDeployObjectVO.getMarketServiceId();
-            if (AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType())) {
-                deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();
-                deployVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
-            } else {
-                //部署对象的名称
-                deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
-                deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
-            }
-            serviceName = marketServiceDeployObjectVO.getMarketServiceName();
-            fillDeploySource(deploySourceVO, marketServiceDeployObjectVO);
-            //如果是市场部署将部署人员添加为应用的订阅人员
-            marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
-        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
-            HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
-            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
-
-            deployVersion = dockerDeployVO.getImageInfo().getTag();
-            deployObjectName = dockerDeployVO.getImageInfo().getImageName();
-            AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
-            appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
-            serviceName = appServiceDTO == null ? null : appServiceDTO.getName();
-        }
-
-        // 2.保存记录
-        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getName());
-        devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, hostDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
-        DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
-        String values = getDeValues(dockerDeployVO);
-
-        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, values));
-        dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
-
-        // 3. 保存部署记录
-        devopsDeployRecordService.saveRecord(
-                projectId,
-                DeployType.MANUAL,
-                null,
-                DeployModeEnum.HOST,
-                hostDTO.getId(),
-                hostDTO.getName(),
-                PipelineStatus.SUCCESS.toValue(),
-                DeployObjectTypeEnum.IMAGE,
-                deployObjectName,
-                deployVersion,
-                null,
-                deploySourceVO);
-
-        // 4. 发送部署指令给agent
-        HostAgentMsgVO hostAgentMsgVO = initHostAgentMsg(hostDTO, dockerDeployDTO, devopsHostCommandDTO);
-
-        sendHostDeployMsg(hostDTO, devopsDockerInstanceDTO, hostAgentMsgVO);
+//        //1.获取项目信息
+//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//        //2.获取主机信息
+//        DevopsHostDTO hostDTO = getHost(dockerDeployVO.getHostId());
+//        checkHostExist(hostDTO);
+//
+//
+//        String deployObjectName = null;
+//        String deployVersion = null;
+//        Long appServiceId = null;
+//        String serviceName = null;
+//        DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
+//
+//        DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
+//
+//        if (isMarketOrHzero(dockerDeployVO)) {
+//            MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectId, dockerDeployVO);
+//            MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
+//            DockerPullAccountDTO dockerPullAccountDTO = initDockerPullAccountDTO(marketHarborConfigVO);
+//            dockerDeployDTO = initMarketDockerDeployDTO(dockerDeployDTO, dockerPullAccountDTO, marketServiceDeployObjectVO);
+//            appServiceId = marketServiceDeployObjectVO.getMarketServiceId();
+//            if (AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType())) {
+//                deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();
+//                deployVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
+//            } else {
+//                //部署对象的名称
+//                deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
+//                deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
+//            }
+//            serviceName = marketServiceDeployObjectVO.getMarketServiceName();
+//            fillDeploySource(deploySourceVO, marketServiceDeployObjectVO);
+//            //如果是市场部署将部署人员添加为应用的订阅人员
+//            marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
+//        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
+//            HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
+//            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
+//
+//            deployVersion = dockerDeployVO.getImageInfo().getTag();
+//            deployObjectName = dockerDeployVO.getImageInfo().getImageName();
+//            AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
+//            appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
+//            serviceName = appServiceDTO == null ? null : appServiceDTO.getName();
+//        }
+//
+//        // 2.保存记录
+//        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getName());
+//        devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, hostDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
+//        DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
+//        String values = getDeValues(dockerDeployVO);
+//
+//        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, values));
+//        dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
+//
+//        // 3. 保存部署记录
+//        devopsDeployRecordService.saveRecord(
+//                projectId,
+//                DeployType.MANUAL,
+//                null,
+//                DeployModeEnum.HOST,
+//                hostDTO.getId(),
+//                hostDTO.getName(),
+//                PipelineStatus.SUCCESS.toValue(),
+//                DeployObjectTypeEnum.IMAGE,
+//                deployObjectName,
+//                deployVersion,
+//                null,
+//                deploySourceVO);
+//
+//        // 4. 发送部署指令给agent
+//        HostAgentMsgVO hostAgentMsgVO = initHostAgentMsg(hostDTO, dockerDeployDTO, devopsHostCommandDTO);
+//
+//        sendHostDeployMsg(hostDTO, devopsDockerInstanceDTO, hostAgentMsgVO);
 
     }
 
