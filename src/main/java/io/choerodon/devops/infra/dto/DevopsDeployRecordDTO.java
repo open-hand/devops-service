@@ -51,7 +51,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
     private String appCode;
 
     @Encrypt
-    private Long instanceId;
+    private Long appId;
 
     /**
      * 部署来源
@@ -70,12 +70,12 @@ public class DevopsDeployRecordDTO extends AuditDomain {
     @ApiModelProperty("关联流程实例的key,hzero部署时需要")
     private String businessKey;
 
-    public Long getInstanceId() {
-        return instanceId;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public DevopsDeployRecordDTO() {
@@ -94,7 +94,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
                                  String deployObjectVersion,
                                  String appName,
                                  String appCode,
-                                 Long instanceId,
+                                 Long appId,
                                  String deploySource) {
         this.projectId = projectId;
         this.deployType = deployType;
@@ -109,7 +109,7 @@ public class DevopsDeployRecordDTO extends AuditDomain {
         this.deployObjectVersion = deployObjectVersion;
         this.appName = appName;
         this.appCode = appCode;
-        this.instanceId = instanceId;
+        this.appId = appId;
         this.deploySource = deploySource;
     }
 

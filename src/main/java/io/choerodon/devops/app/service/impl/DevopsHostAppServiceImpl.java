@@ -296,9 +296,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 DeployObjectTypeEnum.JAR,
                 deployObjectName,
                 deployVersion,
-                null,
-                null,
-                null,
+                devopsHostAppDTO.getName(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getId(),
                 deploySourceVO);
 
         // 保存用户设置部署配置文件
@@ -554,9 +554,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 DeployObjectTypeEnum.OTHER,
                 devopsHostDTO.getName(),
                 null,
-                null,
-                null,
-                null,
+                devopsHostAppDTO.getName(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getId(),
                 deploySourceVO);
 
         // 3. 发送部署指令给agent

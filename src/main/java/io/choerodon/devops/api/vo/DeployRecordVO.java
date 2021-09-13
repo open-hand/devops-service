@@ -27,6 +27,9 @@ public class DeployRecordVO {
     @Encrypt
     private Long instanceId;
 
+    @Encrypt
+    private Long appId;
+
     private String appName;
 
     private String appCode;
@@ -67,6 +70,14 @@ public class DeployRecordVO {
     private String errorMessage;
 
     private String log;
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
 
     public String getAppCode() {
         return appCode;
@@ -142,12 +153,12 @@ public class DeployRecordVO {
         this.deployResult = deployResult;
     }
 
-    public Long getInstanceId() {
-        return instanceId;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public String getAppName() {
