@@ -410,14 +410,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppMapper.deleteByPrimaryKey(appId);
             }
             devopsHostAppInstanceService.baseDelete(devopsHostAppInstanceDTO.getId());
-            if (devopsHostAppInstanceDTO.getSourceType().equals(AppSourceType.MIDDLEWARE.getValue())) {
+            if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
                 devopsMiddlewareService.deleteByInstanceId(devopsHostAppInstanceDTO.getId());
             }
             return;
         }
 
         // 走中间件删除逻辑
-        if (devopsHostAppInstanceDTO.getSourceType().equals(AppSourceType.MIDDLEWARE.getValue())) {
+        if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
             devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
         } else {
 
