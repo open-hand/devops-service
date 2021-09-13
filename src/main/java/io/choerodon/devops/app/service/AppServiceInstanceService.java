@@ -456,4 +456,7 @@ public interface AppServiceInstanceService {
 
     String makeMarketSecret(Long projectId, DevopsEnvironmentDTO
             devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO);
+
+    InstanceValueVO queryValues(Long instanceId);
+
 }

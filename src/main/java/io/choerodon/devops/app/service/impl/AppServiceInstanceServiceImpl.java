@@ -2646,6 +2646,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return secretCode;
     }
 
+    @Override
+    public InstanceValueVO queryValues(Long instanceId) {
+        AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
+        // 上次实例部署时的完整values
+        String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
+
+        InstanceValueVO instanceValueVO = new InstanceValueVO();
+        fillDeployValueInfo(instanceValueVO, appServiceInstanceDTO.getValueId());
+        instanceValueVO.setYaml(yaml);
+        return instanceValueVO;
+    }
+
     private String[] parseMarketRepo(String harborRepo) {
         if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);

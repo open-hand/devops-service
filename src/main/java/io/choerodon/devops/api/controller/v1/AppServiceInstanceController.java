@@ -365,6 +365,27 @@ public class AppServiceInstanceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
+    /**
+     * 获取当前实例生效的Values
+     *
+     * @param projectId  项目id
+     * @param instanceId 实例id
+     * @return InstanceValueVO
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取当前实例升级到特定版本的Values")
+    @GetMapping(value = "/{instance_id}/values")
+    public ResponseEntity<InstanceValueVO> queryValues(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "instance_id") Long instanceId) {
+        return ResponseEntity.ok(appServiceInstanceService.queryValues(instanceId));
+    }
+
 
     /**
      * 获取当前实例升级到特定版本的Values
