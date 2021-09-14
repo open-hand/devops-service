@@ -22,6 +22,8 @@ public interface DevopsDeployAppCenterService {
      */
     Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name);
 
+    Boolean checkNameUnique(Long projectId, Long appId, String name);
+
     /**
      * 校验名称环境下唯一,不唯一抛出异常
      *
@@ -30,6 +32,8 @@ public interface DevopsDeployAppCenterService {
      * @return
      */
     void checkNameUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name);
+
+    void checkNameUniqueAndThrow(Long projectId, Long appId, String name);
 
     /**
      * 校验code环境下唯一

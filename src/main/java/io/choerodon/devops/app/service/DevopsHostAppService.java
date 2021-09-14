@@ -50,6 +50,16 @@ public interface DevopsHostAppService {
      */
     DevopsHostAppVO queryAppById(Long projectId, Long id);
 
+
+    void checkNameAndCodeUniqueAndThrow(Long projectId, Long appId, String name, String code);
+
+    void checkNameUniqueAndThrow(Long projectId, Long appId, String name);
+
+    void checkCodeUniqueAndThrow(Long projectId, Long appId, String code);
+
+    Boolean checkNameUnique(Long projectId, Long appId, String name);
+
+    Boolean checkCodeUnique(Long projectId, Long appId, String code);
     /**
      * 删除主机应用
      * @param projectId
