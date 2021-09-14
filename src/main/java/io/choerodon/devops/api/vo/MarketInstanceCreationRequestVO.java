@@ -91,7 +91,8 @@ public class MarketInstanceCreationRequestVO {
                                            Long marketAppServiceId,
                                            Long marketDeployObjectId,
                                            String values,
-                                           String instanceName,
+                                           String appName,
+                                           String appCode,
                                            String commandType,
                                            Long environmentId,
                                            DevopsServiceReqVO devopsServiceReqVO,
@@ -103,7 +104,8 @@ public class MarketInstanceCreationRequestVO {
         this.marketAppServiceId = marketAppServiceId;
         this.marketDeployObjectId = marketDeployObjectId;
         this.values = values;
-        this.instanceName = instanceName;
+        this.appName = appName;
+        this.appCode = appCode;
         this.commandType = commandType;
         this.environmentId = environmentId;
         this.devopsServiceReqVO = devopsServiceReqVO;

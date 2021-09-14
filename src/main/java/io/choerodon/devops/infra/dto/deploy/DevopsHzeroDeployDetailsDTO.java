@@ -54,8 +54,14 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
     @ApiModelProperty("部署状态")
     private String status;
 
+    @ApiModelProperty("应用id")
+    private Long appId;
+
+    @ApiModelProperty("应用名称")
+    private String appName;
+
     @ApiModelProperty("实例code")
-    private String instanceCode;
+    private String appCode;
 
     @ApiModelProperty("部署顺序")
     private Long sequence;
@@ -72,15 +78,39 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
     public DevopsHzeroDeployDetailsDTO() {
     }
 
-    public DevopsHzeroDeployDetailsDTO(Long deployRecordId, Long envId, Long mktServiceId, Long mktDeployObjectId, Long valueId, String status, String instanceCode, Long sequence) {
+    public DevopsHzeroDeployDetailsDTO(Long deployRecordId, Long envId, Long mktServiceId, Long mktDeployObjectId, Long valueId, String status, String appCode, Long sequence) {
         this.deployRecordId = deployRecordId;
         this.envId = envId;
         this.mktServiceId = mktServiceId;
         this.mktDeployObjectId = mktDeployObjectId;
         this.valueId = valueId;
         this.status = status;
-        this.instanceCode = instanceCode;
+        this.appCode = appCode;
         this.sequence = sequence;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public Long getCommandId() {
@@ -145,14 +175,6 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getInstanceCode() {
-        return instanceCode;
-    }
-
-    public void setInstanceCode(String instanceCode) {
-        this.instanceCode = instanceCode;
     }
 
     public Long getSequence() {

@@ -125,8 +125,6 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     instanceVO.getAppCode(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
-            devopsDeployAppCenterService.baseCreate(instanceVO.getAppName(), instanceVO.getAppCode(), projectId, instanceVO.getMktDeployObjectId(),
-                    hzeroDeployVO.getEnvId(), OperationTypeEnum.HZERO.value(), AppSourceType.HZERO.getValue(), RdupmTypeEnum.CHART.value());
         });
         // 构建工作流部署对象
         HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsList);
@@ -153,7 +151,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
             // 1. 查询Pod是否全部启动成功
             if (Boolean.TRUE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
-                    devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                    devopsHzeroDeployDetailsDTO.getAppId(),
                     devopsHzeroDeployDetailsDTO.getCommandId()))) {
                 devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
 
