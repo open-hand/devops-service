@@ -53,6 +53,7 @@ import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
@@ -87,6 +88,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
     private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
+    private static final String UNKNOWN_DEPLOY_TYPE = "unknown.deploy.type";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -150,6 +152,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -1919,6 +1923,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (devopsDeployInfoVO.getContainerConfig() != null) {
                 devopsCdEnvDeployInfoDTO.setContainerConfigJson(JsonHelper.marshalByJackson(devopsDeployInfoVO.getContainerConfig()));
             }
+
+            String rdupmType = JobTypeEnum.CD_DEPLOY.value().equals(t.getType()) ? RdupmTypeEnum.CHART.value() : RdupmTypeEnum.DEPLOYMENT.value();
+            if (DeployTypeEnum.CREATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                // 校验应用编码和应用名称
+                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, rdupmType, null, devopsCdEnvDeployInfoDTO.getAppName(), devopsCdEnvDeployInfoDTO.getAppCode());
+            } else if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                devopsDeployAppCenterService.checkNameUniqueAndThrow(projectId, rdupmType, devopsCdEnvDeployInfoDTO.getAppId(), devopsCdEnvDeployInfoDTO.getAppName());
+            } else {
+                throw new CommonException(UNKNOWN_DEPLOY_TYPE);
+            }
+
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsDeployInfoVO));
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
@@ -1932,6 +1947,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
             if (cdHostDeployConfigVO.getJarDeploy() != null) {
                 devopsCdHostDeployInfoDTO.setJarDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+            }
+
+            if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
+                // 校验应用编码和应用名称
+                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, devopsCdHostDeployInfoDTO.getHostDeployType(), null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
+            } else if (DeployTypeEnum.UPDATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
+                devopsDeployAppCenterService.checkNameUniqueAndThrow(projectId, devopsCdHostDeployInfoDTO.getHostDeployType(), devopsCdHostDeployInfoDTO.getAppId(), devopsCdHostDeployInfoDTO.getAppName());
+            } else {
+                throw new CommonException(UNKNOWN_DEPLOY_TYPE);
             }
 
             devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
