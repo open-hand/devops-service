@@ -327,7 +327,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(organizationId);
         if (resourceLimitVO != null) {
             DevopsClusterDTO example = new DevopsClusterDTO();
-            example.setOrganizationId(organizationId);
+            example.setProjectId(projectId);
             int num = devopsClusterMapper.selectCount(example);
             return num <= resourceLimitVO.getClusterMaxNumber();
         }
