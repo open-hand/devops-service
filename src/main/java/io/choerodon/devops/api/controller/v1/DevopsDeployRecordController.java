@@ -4,6 +4,7 @@ import java.util.Date;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -54,7 +55,7 @@ public class DevopsDeployRecordController {
             @RequestParam(value = "deploy_object_name", required = false) String deployObjectName,
             @ApiParam(value = "部署对象版本")
             @RequestParam(value = "deploy_object_version", required = false) String deployObjectVersion
-            ) {
+    ) {
         return ResponseEntity.ok(devopsDeployRecordService.paging(projectId, pageRequest, deployType, deployMode, deployPayloadName, deployResult, deployObjectName, deployObjectVersion));
     }
 
@@ -84,7 +85,7 @@ public class DevopsDeployRecordController {
     @PostMapping("/{record_id}/retry")
     public ResponseEntity<Void> retry(
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "record_id") Long recordId,
+            @Encrypt @PathVariable(value = "record_id") Long recordId,
             @RequestBody @Validated HzeroDeployVO hzeroDeployVO) {
         devopsDeployRecordService.retry(projectId, recordId, hzeroDeployVO);
         return ResponseEntity.noContent().build();
