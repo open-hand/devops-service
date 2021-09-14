@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.HashMap;
 import java.util.Objects;
 import javax.validation.Valid;
 
@@ -60,6 +61,7 @@ public class DevopsJobController {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
+        workloadBaseCreateOrUpdateVO.setExtraInfo(new HashMap<>());
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.JOB, false);
     }
 

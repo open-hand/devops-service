@@ -47,7 +47,6 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     public static final String EXTRA_INFO_KEY_APP_CONFIG = "appConfig";
     public static final String EXTRA_INFO_KEY_CONTAINER_CONFIG = "containerConfig";
     public static final String EXTRA_INFO_KEY_SOURCE_TYPE = "sourceType";
-    public static final String INSTANCE_ID = "instanceId";
 
 
     @Autowired
