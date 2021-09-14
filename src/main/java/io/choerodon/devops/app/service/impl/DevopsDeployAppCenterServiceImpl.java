@@ -103,15 +103,20 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
+    public void checkNameUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name) {
+        if (!devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, projectId, name)) {
+            throw new CommonException("error.env.app.center.name.exist");
+        }
+    }
+
+    @Override
     public Boolean checkCodeUnique(Long projectId, String rdupmType, Long objectId, String code) {
         return devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, projectId, code);
     }
 
     @Override
-    public void checkNameAndCodeUnique(Long projectId, String rdupmType, Long objectId, String name, String code) {
-        if (!checkNameUnique(projectId, rdupmType, objectId, name)) {
-            throw new CommonException("error.env.app.center.name.exist");
-        }
+    public void checkNameAndCodeUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name, String code) {
+        checkNameUniqueAndThrow(projectId, rdupmType, objectId, name);
 
         if (!checkCodeUnique(projectId, rdupmType, objectId, code)) {
             throw new CommonException("error.env.app.center.code.exist");

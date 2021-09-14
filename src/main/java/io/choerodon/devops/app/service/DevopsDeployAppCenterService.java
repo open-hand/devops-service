@@ -23,6 +23,15 @@ public interface DevopsDeployAppCenterService {
     Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name);
 
     /**
+     * 校验名称环境下唯一,不唯一抛出异常
+     *
+     * @param projectId
+     * @param name
+     * @return
+     */
+    void checkNameUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name);
+
+    /**
      * 校验code环境下唯一
      *
      * @param projectId
@@ -31,7 +40,7 @@ public interface DevopsDeployAppCenterService {
      */
     Boolean checkCodeUnique(Long projectId, String rdupmType, Long objectId, String code);
 
-    void checkNameAndCodeUnique(Long projectId, String rdupmType, Long objectId, String name, String code);
+    void checkNameAndCodeUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name, String code);
 
     /**
      * 根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用
