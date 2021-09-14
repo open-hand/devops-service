@@ -37,7 +37,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_env_deploy_info.groovy') {
             column(name: "check_env_permission_flag", type: "TINYINT UNSIGNED", defaultValue: "0", remarks: '是否校验环境权限')
         }
     }
-    changeSet(author: 'wanghao', id: '2020-11-25-add-column') {
+    changeSet(author: 'wanghao', id: '2021-09-14-add-column') {
         addColumn(tableName: 'devops_cd_env_deploy_info') {
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id', afterColumn: "deploy_type")
             column(name: 'app_name', type: 'VARCHAR(64)', remarks: '应用名称', afterColumn: "app_id")
