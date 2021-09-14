@@ -38,6 +38,7 @@ import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -119,6 +120,8 @@ public class DevopsSagaHandler {
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     /**
      * devops创建环境
@@ -713,14 +716,15 @@ public class DevopsSagaHandler {
             seq = 1)
     public void handlePodReadyEvent(String data) {
         PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
-        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryDeployingByEnvIdAndInstanceCode(podReadyEventVO.getEnvId(), podReadyEventVO.getInstanceCode());
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, podReadyEventVO.getInstanceId());
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
         if (devopsHzeroDeployDetailsDTO != null) {
             // pod的操作记录不是最新的则丢弃
             if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
                 LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
                 return;
             }
-            if (Boolean.FALSE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(podReadyEventVO.getEnvId(),
+            if (Boolean.FALSE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
                     devopsHzeroDeployDetailsDTO.getAppId(),
                     devopsHzeroDeployDetailsDTO.getCommandId()))) {
                 return;
@@ -759,7 +763,8 @@ public class DevopsSagaHandler {
             seq = 1)
     public void handleHzeroDeployFailedEvent(String data) {
         DevopsDeployFailedVO devopsDeployFailedVO = JsonHelper.unmarshalByJackson(data, DevopsDeployFailedVO.class);
-        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryDeployingByEnvIdAndInstanceCode(devopsDeployFailedVO.getEnvId(), devopsDeployFailedVO.getInstanceCode());
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, devopsDeployFailedVO.getInstanceId());
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
         if (devopsHzeroDeployDetailsDTO != null) {
             // pod的操作记录不是最新的则丢弃
             if (devopsDeployFailedVO.getCommandId().equals(devopsHzeroDeployDetailsDTO.getCommandId())) {

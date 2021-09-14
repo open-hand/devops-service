@@ -20,6 +20,9 @@ public interface DevopsHzeroDeployDetailsService {
 
     void updateStatusById(Long id, HzeroDeployDetailsStatusEnum status);
 
+    DevopsHzeroDeployDetailsDTO baseQueryByAppId(Long appId);
+
+
     DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String instanceCode);
 
     List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(Long recordId);

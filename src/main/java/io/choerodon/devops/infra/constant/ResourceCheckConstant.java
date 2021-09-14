@@ -60,6 +60,7 @@ public class ResourceCheckConstant {
 
     // app
     public static final String ERROR_APP_CODE_IS_NULL = "error.app.code.is.null";
+    public static final String ERROR_APP_ID_IS_NULL = "error.app.id.is.null";
 
     // pipeline
     public static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";

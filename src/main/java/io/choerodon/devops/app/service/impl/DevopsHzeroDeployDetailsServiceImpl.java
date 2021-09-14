@@ -72,6 +72,14 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
     }
 
     @Override
+    public DevopsHzeroDeployDetailsDTO baseQueryByAppId(Long appId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = new DevopsHzeroDeployDetailsDTO();
+        devopsHzeroDeployDetailsDTO.setAppId(appId);
+        return devopsHzeroDeployDetailsMapper.selectOne(devopsHzeroDeployDetailsDTO);
+    }
+
+    @Override
     public DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String appCode) {
         Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
         Assert.notNull(appCode, ResourceCheckConstant.ERROR_INSTANCE_CODE_IS_NULL);
