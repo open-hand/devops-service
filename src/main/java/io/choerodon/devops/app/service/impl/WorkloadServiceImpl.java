@@ -251,7 +251,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE_TYPE, id, null, null);
+        handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE_TYPE, id, null, new HashMap<>());
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
@@ -412,7 +412,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
-        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get("sourceType"))) {
+        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
             devopsDeploymentDTO.setAppConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG));
             devopsDeploymentDTO.setContainerConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG));
         }
