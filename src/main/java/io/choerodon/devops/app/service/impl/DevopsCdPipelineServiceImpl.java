@@ -738,7 +738,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = devopsDeployGroupService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), devopsDeployGroupVO, devopsCdEnvDeployInfoDTO.getDeployType(), false, true);
         commandId = devopsDeployAppCenterEnvVO.getCommandId();
-        if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+        if (DeployTypeEnum.CREATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
             appId = devopsDeployAppCenterEnvVO.getId();
             devopsCdEnvDeployInfoDTO.setAppId(appId);
             devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
