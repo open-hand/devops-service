@@ -421,7 +421,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     cdHostDeployConfigVO.getPostCommand());
 
             devopsCdHostDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
-            devopsCdHostDeployInfoDTO.setHostDeployType(DeployTypeEnum.UPDATE.value());
+            devopsCdHostDeployInfoDTO.setDeployType(DeployTypeEnum.UPDATE.value());
             devopsCdHostDeployInfoService.baseUpdate(devopsCdHostDeployInfoDTO);
 
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
