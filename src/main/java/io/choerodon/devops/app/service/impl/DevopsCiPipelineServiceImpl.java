@@ -144,6 +144,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
+    @Autowired
+    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -1895,14 +1897,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
             checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
-            DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = new DevopsCdEnvDeployInfoDTO();
-            devopsCdEnvDeployInfoDTO.setAppId(cdHostDeployConfigVO.getAppId());
-            devopsCdEnvDeployInfoDTO.setAppName(cdHostDeployConfigVO.getAppName());
-            devopsCdEnvDeployInfoDTO.setAppCode(cdHostDeployConfigVO.getAppCode());
-            devopsCdEnvDeployInfoDTO.setDeployType(cdHostDeployConfigVO.getDeployType());
-            devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
+            DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
+            devopsCdHostDeployInfoDTO.setJarDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+
+            devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
-            devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
+
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             // 如果审核任务，审核人员只有一个人，则默认设置为或签
             if (CollectionUtils.isEmpty(t.getCdAuditUserIds())) {
