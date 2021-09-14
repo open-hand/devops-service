@@ -312,6 +312,7 @@
 		ddr.deploy_type,
 		denc.status AS command_status,
 		denc.object_id AS instance_id,
+		ddr.app_id,
 		ddr.app_name,
 		ddr.app_code,
 		ddr.deploy_mode,
