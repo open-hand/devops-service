@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
@@ -79,6 +80,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
     private static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
+    private static final String ENV = "env";
+    private static final String HOST = "host";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
@@ -162,6 +165,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdJobService devopsCdJobService;
     @Autowired
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -1075,15 +1084,32 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (commandId != null) {
                     DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
                     if (deployRecordVO != null) {
+                        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
                         DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                        cdAuto.setAppServiceId(deployRecordVO.getAppServiceId());
                         cdAuto.setAppServiceName(deployRecordVO.getDeployObjectName());
                         cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
                         cdAuto.setEnvId(deployRecordVO.getEnvId());
                         cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
-                        cdAuto.setInstanceId(deployRecordVO.getAppId());
-                        cdAuto.setInstanceName(deployRecordVO.getAppName());
-
+                        cdAuto.setAppId(deployRecordVO.getAppId());
+                        cdAuto.setAppName(deployRecordVO.getAppName());
+                        if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                            cdAuto.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                            cdAuto.setChartSource(devopsDeployAppCenterEnvDTO.getChartSource());
+                            cdAuto.setDeployType(ENV);
+                            cdAuto.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                            if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                                AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId() ,devopsDeployAppCenterEnvDTO.getObjectId());
+                                if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
+                                    cdAuto.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
+                                    cdAuto.setStatus(appServiceInstanceInfoVO.getStatus());
+                                }
+                            } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                                DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterEnvDTO.getObjectId());
+                                if (!ObjectUtils.isEmpty(deploymentDTO)) {
+                                    cdAuto.setStatus(deploymentDTO.getStatus());
+                                }
+                            }
+                        }
                         devopsCdJobRecordVO.setCdAuto(cdAuto);
                     }
                 }
@@ -1110,6 +1136,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             //如果是主机部署 显示主机部署模式(镜像，jar，自定义)，来源，关联构建任务
             if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordVO.getType())) {
                 CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdHostDeployConfigVO.class);
+                DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                DevopsHostAppVO devopsHostAppVO = devopsHostAppService.queryAppById(devopsCdJobRecordVO.getProjectId(), cdHostDeployConfigVO.getAppId());
+                if (!ObjectUtils.isEmpty(devopsHostAppVO)) {
+                    cdAuto.setRdupmType(devopsHostAppVO.getRdupmType());
+                    cdAuto.setDeployType(HOST);
+                    cdAuto.setDeployTypeId(devopsHostAppVO.getHostId());
+                    cdAuto.setStatus(devopsHostAppVO.getStatus());
+                }
                 devopsCdJobRecordVO.setCdHostDeployConfigVO(cdHostDeployConfigVO);
             }
 
