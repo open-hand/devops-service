@@ -316,7 +316,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setHostId(devopsHostDTOForConnection.getId());
-            devopsHostCommandDTO.setInstanceId(devopsMiddlewareDTO.getId());
+            devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
             devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_MIDDLEWARE.value());
             devopsHostCommandDTO.setInstanceType(HostInstanceType.MIDDLEWARE_REDIS.value());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
