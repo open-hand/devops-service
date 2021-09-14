@@ -45,6 +45,7 @@ import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
@@ -89,6 +90,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
+
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
 
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
@@ -527,7 +531,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         if (devopsCdEnvDeployInfoDTO.getContainerConfigJson() != null) {
             devopsDeployInfoVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getContainerConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
-        }));
+            }));
         }
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
         if (!Objects.isNull(devopsEnvironmentDTO)) {
@@ -1042,6 +1046,30 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return new Page<>();
         }
         return handPipelineRecord(devopsPipelineRecordRelDTOS);
+    }
+
+    @Override
+    public Map<String, String> runnerGuide(Long projectId) {
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+        // name: orgName-projectName + suffix
+        String groupName = GitOpsUtil.renderGroupName(tenant.getTenantNum(),
+                projectDTO.getCode(), "");
+        String processedGitlabUrl = "";
+        if (gitlabUrl.endsWith("/")) {
+            processedGitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
+        } else {
+            processedGitlabUrl = gitlabUrl;
+        }
+
+        Map<String, String> params = new HashMap<>();
+        params.put("gitlab-group-url", String.format("%s/%s", processedGitlabUrl, groupName));
+        params.put("gateway", gatewayUrl);
+        params.put("gitlab-url", gitlabUrl);
+
+        return params;
     }
 
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {

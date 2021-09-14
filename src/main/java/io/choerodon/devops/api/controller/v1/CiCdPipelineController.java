@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 
@@ -261,5 +262,16 @@ public class CiCdPipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
     }
 
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询runner指引需要的参数")
+    @GetMapping(value = "/runner_guide")
+    public ResponseEntity<Map<String, String>> runnerGuide(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(devopsCiPipelineService.runnerGuide(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
+    }
 
 }

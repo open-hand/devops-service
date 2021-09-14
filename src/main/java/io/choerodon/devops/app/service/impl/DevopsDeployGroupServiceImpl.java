@@ -152,7 +152,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
         }
         DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = ConvertUtils.convertObject(devopsDeployAppCenterEnvDTO, DevopsDeployAppCenterEnvVO.class);
-        if(devopsEnvCommandDTO == null) {
+        if (devopsEnvCommandDTO == null) {
             return devopsDeployAppCenterEnvVO;
         }
         devopsDeployAppCenterEnvVO.setCommandId(devopsEnvCommandDTO.getId());
@@ -188,7 +188,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         devopsDeployGroupVO.setAppName(devopsDeployAppCenterEnvDTO.getName());
         devopsDeployGroupVO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
 
-        createOrUpdate(projectId, devopsDeployGroupVO, MiscConstants.UPDATE_TYPE, true, false);
+        return createOrUpdate(projectId, devopsDeployGroupVO, MiscConstants.UPDATE_TYPE, true, false);
     }
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO
