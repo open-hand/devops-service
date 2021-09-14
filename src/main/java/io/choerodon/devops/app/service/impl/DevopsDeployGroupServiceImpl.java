@@ -160,7 +160,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 插入部署记录
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
-                DeployType.MANUAL,
+                fromPipeline ? DeployType.AUTO : DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
                 DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
