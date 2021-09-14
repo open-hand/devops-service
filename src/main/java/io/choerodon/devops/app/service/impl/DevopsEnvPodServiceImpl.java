@@ -412,7 +412,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(appId);
 
         // 查询实例
-        AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getId());
+        AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
         String instanceCode = instanceE.getCode();
         // 查询部署版本
 
