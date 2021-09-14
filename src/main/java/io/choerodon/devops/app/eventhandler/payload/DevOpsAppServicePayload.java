@@ -151,11 +151,11 @@ public class DevOpsAppServicePayload {
         return this;
     }
 
-    public Boolean getOpen() {
+    public Boolean getOpenAppService() {
         return openAppService;
     }
 
-    public void setOpen(Boolean open) {
-        openAppService = open;
+    public void setOpenAppService(Boolean openAppService) {
+        this.openAppService = openAppService;
     }
 }
