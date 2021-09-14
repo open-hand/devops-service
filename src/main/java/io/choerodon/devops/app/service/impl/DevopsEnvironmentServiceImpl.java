@@ -209,7 +209,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentReqVO, DevopsEnvironmentDTO.class);
-        checkEnableCreate(projectId, devopsEnvironmentReqVO.getClusterId());
+        checkEnableCreate(projectId);
         if (!devopsClusterProPermissionService.projectHasClusterPermission(projectId, devopsEnvironmentReqVO.getClusterId())) {
             throw new CommonException("error.project.miss.cluster.permission");
         }
@@ -832,15 +832,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     /**
      * 判断是否还能创建环境
      *
-     * @param clusterId
      * @param projectId
      */
-    private void checkEnableCreate(Long projectId, Long clusterId) {
+    private void checkEnableCreate(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(projectDTO.getOrganizationId());
         if (resourceLimitVO != null) {
             DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
-            example.setClusterId(clusterId);
+            example.setProjectId(projectId);
             int num = devopsEnvironmentMapper.selectCount(example);
             if (num > resourceLimitVO.getEnvMaxNumber()) {
                 throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
