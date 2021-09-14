@@ -45,7 +45,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_env_deploy_info.groovy') {
             column(name: "skip_check_permission", type: "TINYINT UNSIGNED", defaultValue: "0", remarks: '是否校验环境权限', afterColumn: "app_code")
 
             column(name: 'app_config_json', type: 'text', remarks: '应用配置', afterColumn: "skip_check_permission")
-            column(name: 'container_config_json', type: 'text', remarks: '容器配置', afterColumn: "app_config")
+            column(name: 'container_config_json', type: 'text', remarks: '容器配置', afterColumn: "app_config_json")
         }
     }
 
