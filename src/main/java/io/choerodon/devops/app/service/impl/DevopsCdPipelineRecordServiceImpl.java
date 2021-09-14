@@ -1086,7 +1086,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     if (deployRecordVO != null) {
                         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
                         DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                        cdAuto.setAppServiceId(deployRecordVO.getAppServiceId());
                         cdAuto.setAppServiceName(deployRecordVO.getDeployObjectName());
                         cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
                         cdAuto.setEnvId(deployRecordVO.getEnvId());
@@ -1101,6 +1100,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
                                 AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId() ,devopsDeployAppCenterEnvDTO.getObjectId());
                                 if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
+                                    cdAuto.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
                                     cdAuto.setStatus(appServiceInstanceInfoVO.getStatus());
                                 }
                             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {

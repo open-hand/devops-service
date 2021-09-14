@@ -368,11 +368,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             // 添加环境id
             deployRecordVO.setEnvId(devopsEnvironmentDTO.getId());
         }
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(deployRecordVO.getAppId());
-        if (appServiceInstanceDTO != null) {
-            // 添加应用服务id
-            deployRecordVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-        }
         return deployRecordVO;
     }
 
