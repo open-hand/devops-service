@@ -138,6 +138,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = combineDevopsEnvironmentDTOMap(devopsDeployAppCenterVOList);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        //将查询出的AppServiceInstanceInfoDTO集合组合成以id为key，实体为value的map
         Map<Long, AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOMap = devopsInstanceDTOMap(devopsDeployAppCenterVOList);
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId());
@@ -150,7 +151,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = new ArrayList<>();
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceInfoDTOMap.get(devopsDeployAppCenterVO.getObjectId());
             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
-                setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+                if (!ObjectUtils.isEmpty(appServiceInstanceInfoDTO)) {
+                    //将AppInstanceInfo里的值赋值给AppCenter
+                    setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+                }
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
@@ -434,26 +438,36 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public Page<DevopsDeployAppCenterVO> pageChart(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {
+        //分页查询满足的DevopsDeployAppCenterVO
         Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = pageAppCenterByUserId(projectId, envId, name, operationType, params, pageable);
         List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList = devopsDeployAppCenterVOS.getContent();
         if (CollectionUtils.isEmpty(devopsDeployAppCenterVOList)) {
             return devopsDeployAppCenterVOS;
         }
+        //将查询出的DevopsEnvironmentDTO集合组合成以id为key，实体为value的map
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = combineDevopsEnvironmentDTOMap(devopsDeployAppCenterVOList);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        //将查询出的AppServiceInstanceInfoDTO集合组合成以id为key，实体为value的map
         Map<Long, AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOMap = devopsInstanceDTOMap(devopsDeployAppCenterVOList);
+        //将查询出的MarketServiceDeployObjectVO集合组合成以id为key，实体为value的map
         Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap = devopsMarketDTOMap(projectId, devopsDeployAppCenterVOList, appServiceInstanceInfoDTOMap);
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
+            //将环境信息赋值给AppCenterVO
             setEnvInfoToAppCenterVO(devopsDeployAppCenterVO, devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId()), upgradeClusterList);
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceInfoDTOMap.get(devopsDeployAppCenterVO.getObjectId());
-            setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+            if (!ObjectUtils.isEmpty(appServiceInstanceInfoDTO)) {
+                //将AppInstanceInfo里的值赋值给AppCenter
+                setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+            }
             // 添加pod运行统计
             setPodInfoToAppCenter(devopsDeployAppCenterVO);
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = devopsMarketDTOMap.get(appServiceInstanceInfoDTO.getAppServiceVersionId());
             if (isMarketOrMiddleware(devopsDeployAppCenterVO.getChartSource()) && !ObjectUtils.isEmpty(marketServiceDeployObjectVO)) {
+                //将版本，appName等内容赋值给AppCenterVO
                 setVersionAndAppNameToAppCenterVO(devopsDeployAppCenterVO, marketServiceDeployObjectVO.getMarketServiceName(), marketServiceDeployObjectVO.getMarketAppVersionId(), marketServiceDeployObjectVO.getMarketServiceVersion());
             }
         });
+        //赋值创建者信息
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;
     }
