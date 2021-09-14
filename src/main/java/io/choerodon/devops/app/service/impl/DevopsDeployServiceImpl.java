@@ -123,6 +123,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     devopsHzeroDeployConfigDTO.getId(),
                     HzeroDeployDetailsStatusEnum.CREATED.value(),
                     instanceVO.getAppCode(),
+                    instanceVO.getAppName(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
         });

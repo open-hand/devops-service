@@ -78,7 +78,7 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
     public DevopsHzeroDeployDetailsDTO() {
     }
 
-    public DevopsHzeroDeployDetailsDTO(Long deployRecordId, Long envId, Long mktServiceId, Long mktDeployObjectId, Long valueId, String status, String appCode, Long sequence) {
+    public DevopsHzeroDeployDetailsDTO(Long deployRecordId, Long envId, Long mktServiceId, Long mktDeployObjectId, Long valueId, String status, String appCode, String appName, Long sequence) {
         this.deployRecordId = deployRecordId;
         this.envId = envId;
         this.mktServiceId = mktServiceId;
@@ -86,6 +86,7 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
         this.valueId = valueId;
         this.status = status;
         this.appCode = appCode;
+        this.appName = appName;
         this.sequence = sequence;
     }
 
