@@ -522,9 +522,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
         DevopsDeployInfoVO devopsDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsDeployInfoVO.class);
-        devopsDeployInfoVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getAppConfigJson(), DevopsDeployGroupAppConfigVO.class));
-        devopsDeployInfoVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getAppConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+        if (devopsCdEnvDeployInfoDTO.getAppConfigJson() != null) {
+            devopsDeployInfoVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getAppConfigJson(), DevopsDeployGroupAppConfigVO.class));
+        }
+        if (devopsCdEnvDeployInfoDTO.getContainerConfigJson() != null) {
+            devopsDeployInfoVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getContainerConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
         }));
+        }
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
         if (!Objects.isNull(devopsEnvironmentDTO)) {
             devopsCdJobVO.setEnvName(devopsEnvironmentDTO.getName());
