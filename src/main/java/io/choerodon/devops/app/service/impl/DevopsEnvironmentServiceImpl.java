@@ -841,7 +841,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
             example.setProjectId(projectId);
             int num = devopsEnvironmentMapper.selectCount(example);
-            if (num > resourceLimitVO.getEnvMaxNumber()) {
+            if (num >= resourceLimitVO.getEnvMaxNumber()) {
                 throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
             }
         }
