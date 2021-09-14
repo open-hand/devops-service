@@ -2285,6 +2285,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     AppSourceType.MARKET.getValue(),
                     AppSourceType.HZERO.getValue(),
                     OperationTypeEnum.HZERO.value());
+            marketInstanceCreationRequestVO.setInstanceName(devopsHzeroDeployDetailsDTO.getAppCode());
             instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
             commandId = instanceVO.getCommandId();
             devopsHzeroDeployDetailsDTO.setAppId(instanceVO.getAppId());
@@ -2315,9 +2316,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         AppSourceType.MARKET.getValue(),
                         AppSourceType.HZERO.getValue(),
                         OperationTypeEnum.HZERO.value());
+                marketInstanceCreationRequestVO.setInstanceName(devopsHzeroDeployDetailsDTO.getAppCode());
                 marketInstanceCreationRequestVO.setInstanceId(appServiceInstanceDTO.getId());
                 instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
                 commandId = instanceVO.getCommandId();
+                devopsHzeroDeployDetailsDTO.setAppId(instanceVO.getAppId());
             }
 
         }
