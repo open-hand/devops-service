@@ -329,7 +329,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             DevopsClusterDTO example = new DevopsClusterDTO();
             example.setProjectId(projectId);
             int num = devopsClusterMapper.selectCount(example);
-            return num <= resourceLimitVO.getClusterMaxNumber();
+            return num < resourceLimitVO.getClusterMaxNumber();
         }
         return true;
     }
