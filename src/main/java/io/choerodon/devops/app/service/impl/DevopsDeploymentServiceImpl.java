@@ -31,7 +31,10 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
+import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -220,6 +223,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsDeploymentDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             devopsDeploymentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
+            devopsDeploymentDTO.setSourceType(DeploymentSourceTypeEnums.CHART.getType());
             devopsDeploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
             devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
         }

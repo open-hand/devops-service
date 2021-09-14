@@ -22,8 +22,8 @@ public class HostDeployUtil {
 
     private static final String HOST_COMMAND_TEMPLATE;
     private static final String HOST_RUN_COMMAND_TEMPLATE;
-    private static final String FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND = "curl -o %s -u %s:%s %s";
-    private static final String FILE_DOWNLOAD_COMMAND = "curl -o %s %s";
+    private static final String FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND = "curl -fsSLo %s -u %s:%s %s";
+    private static final String FILE_DOWNLOAD_COMMAND = "curl -fsSLo %s %s";
 
     private HostDeployUtil() {
     }
