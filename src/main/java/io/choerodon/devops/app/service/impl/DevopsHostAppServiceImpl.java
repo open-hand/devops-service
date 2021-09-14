@@ -402,6 +402,36 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
+    public void checkNameAndCodeUniqueAndThrow(Long projectId, Long appId, String name, String code) {
+        checkNameUniqueAndThrow(projectId, appId, name);
+
+        checkCodeUniqueAndThrow(projectId, appId, name);
+
+    }
+
+    public void checkCodeUniqueAndThrow(Long projectId, Long appId, String code) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, code))) {
+            throw new CommonException("error.host.app.code.exist");
+        }
+    }
+
+    public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, name))) {
+            throw new CommonException("error.host.app.name.exist");
+        }
+    }
+
+    @Override
+    public Boolean checkCodeUnique(Long projectId, Long appId, String code) {
+        return devopsHostAppMapper.checkCodeUnique(projectId, appId, code);
+    }
+
+    @Override
+    public Boolean checkNameUnique(Long projectId, Long appId, String name) {
+        return devopsHostAppMapper.checkNameUnique(projectId, appId, name);
+    }
+
+    @Override
     public void deleteById(Long projectId, Long hostId, Long appId) {
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);

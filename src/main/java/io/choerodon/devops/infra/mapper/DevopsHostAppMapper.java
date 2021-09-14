@@ -38,4 +38,8 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                                              @Param("rdupmType") String rdupmType,
                                              @Param("operationType") String operationType,
                                              @Param("params") String params);
+
+    Boolean checkNameUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("name") String name);
+
+    Boolean checkCodeUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("code") String code);
 }

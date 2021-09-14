@@ -98,4 +98,8 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
                                                          @Param("operationType") String operationType,
                                                          @Param("params") String params,
                                                          @Param("userId") Long userId);
+
+    Boolean checkNameUniqueByAppId(@Param("appId") Long appId,
+                            @Param("projectId") Long projectId,
+                            @Param("name") String name);
 }

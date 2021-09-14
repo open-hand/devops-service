@@ -154,6 +154,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private DevopsHostAppService devopsHostAppService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -1924,7 +1926,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 校验应用编码和应用名称
                 devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, rdupmType, null, devopsCdEnvDeployInfoDTO.getAppName(), devopsCdEnvDeployInfoDTO.getAppCode());
             } else if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                devopsDeployAppCenterService.checkNameUniqueAndThrow(projectId, rdupmType, devopsCdEnvDeployInfoDTO.getAppId(), devopsCdEnvDeployInfoDTO.getAppName());
+                devopsDeployAppCenterService.checkNameUniqueAndThrow(projectId, devopsCdEnvDeployInfoDTO.getAppId(), devopsCdEnvDeployInfoDTO.getAppName());
             } else {
                 throw new CommonException(UNKNOWN_DEPLOY_TYPE);
             }
@@ -1946,9 +1948,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
             if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
                 // 校验应用编码和应用名称
-                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, devopsCdHostDeployInfoDTO.getHostDeployType(), null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
+                devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
             } else if (DeployTypeEnum.UPDATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
-                devopsDeployAppCenterService.checkNameUniqueAndThrow(projectId, devopsCdHostDeployInfoDTO.getHostDeployType(), devopsCdHostDeployInfoDTO.getAppId(), devopsCdHostDeployInfoDTO.getAppName());
+                devopsHostAppService.checkNameUnique(projectId, devopsCdHostDeployInfoDTO.getAppId(), devopsCdHostDeployInfoDTO.getAppName());
             } else {
                 throw new CommonException(UNKNOWN_DEPLOY_TYPE);
             }

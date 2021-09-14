@@ -74,4 +74,24 @@
         </where>
         order by dha.id desc
     </select>
+
+    <select id="checkNameUnique" resultType="java.lang.Boolean">
+        SELECT count(*) = 0
+        FROM devops_host_app dha
+        WHERE dha.project_id = #{projectId}
+        AND dha.name = #{name}
+        <if test="appId != null">
+            AND dha.id != #{appId}
+        </if>
+    </select>
+
+    <select id="checkCodeUnique" resultType="java.lang.Boolean">
+        SELECT count(*) = 0
+        FROM devops_host_app dha
+        WHERE dha.project_id = #{projectId}
+        AND dha.code = #{code, jdbcType=VARCHAR}
+        <if test="appId != null">
+            AND dha.id != #{appId}
+        </if>
+    </select>
 </mapper>
