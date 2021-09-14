@@ -26,9 +26,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_hzero_deploy_details.groovy') {
             column(name: 'status', type: 'VARCHAR(32)', remarks: '部署状态') {
                 constraints(nullable: false)
             }
-            column(name: 'app_id', type: 'VARCHAR(255)', remarks: '应用id') {
-                constraints(nullable: false)
-            }
+            column(name: 'app_id', type: 'VARCHAR(255)', remarks: '应用id')
+
             column(name: 'app_name', type: 'VARCHAR(255)', remarks: '应用名称') {
                 constraints(nullable: false)
             }
