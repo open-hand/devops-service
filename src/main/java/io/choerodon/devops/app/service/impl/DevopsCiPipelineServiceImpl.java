@@ -1925,10 +1925,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (DeployTypeEnum.CREATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 // 校验应用编码和应用名称
                 devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, rdupmType, null, devopsCdEnvDeployInfoDTO.getAppName(), devopsCdEnvDeployInfoDTO.getAppCode());
-            } else if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-                devopsDeployAppCenterService.checkNameUniqueAndThrow(projectId, devopsCdEnvDeployInfoDTO.getAppId(), devopsCdEnvDeployInfoDTO.getAppName());
-            } else {
-                throw new CommonException(UNKNOWN_DEPLOY_TYPE);
             }
 
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
@@ -1949,10 +1945,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
                 // 校验应用编码和应用名称
                 devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
-            } else if (DeployTypeEnum.UPDATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
-                devopsHostAppService.checkNameUnique(projectId, devopsCdHostDeployInfoDTO.getAppId(), devopsCdHostDeployInfoDTO.getAppName());
-            } else {
-                throw new CommonException(UNKNOWN_DEPLOY_TYPE);
             }
 
             devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
