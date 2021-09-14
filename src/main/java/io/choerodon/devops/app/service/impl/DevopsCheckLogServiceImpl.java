@@ -20,6 +20,7 @@ import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -70,14 +71,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
     private void fixPipelineCdDeployData() {
-        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByType(JobTypeEnum.CD_DEPLOY);
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline cdDeploy task! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        List<DevopsCdEnvDeployInfoDTO> devopsCdEnvDeployInfoDTOS = devopsCdEnvDeployInfoService.listAll();
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline devopsCdEnvDeployInfoDTO! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         Set<Long> errorJobIds = new HashSet<>();
-        for (DevopsCdJobDTO devopsCdJobDTO : devopsCdJobDTOS) {
+        for (DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO : devopsCdEnvDeployInfoDTOS) {
             try {
-                Long deployInfoId = devopsCdJobDTO.getDeployInfoId();
-                if (deployInfoId != null) {
-                    DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(deployInfoId);
                     if (devopsCdEnvDeployInfoDTO != null) {
 
                         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = null;
@@ -91,31 +89,32 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdEnvDeployInfoDTO.getInstanceName());
                             }
                         }
-                        DevopsDeployInfoVO devopsDeployInfoVO = new DevopsDeployInfoVO();
-                        devopsDeployInfoVO.setAppCode(devopsCdEnvDeployInfoDTO.getInstanceName());
-                        devopsDeployInfoVO.setAppName(devopsCdEnvDeployInfoDTO.getInstanceName());
-                        devopsDeployInfoVO.setEnvId(devopsCdEnvDeployInfoDTO.getEnvId());
-                        devopsDeployInfoVO.setValueId(devopsCdEnvDeployInfoDTO.getValueId());
-                        devopsDeployInfoVO.setSkipCheckPermission(!devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag());
                         // 找到了关联的应用，设置关联应用id，流水线执行时走更新实例逻辑
-                        if (devopsDeployAppCenterEnvDTO != null) {
-                            devopsCdJobDTO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+                        if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())
+                                && devopsDeployAppCenterEnvDTO != null) {
+                            devopsCdEnvDeployInfoDTO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
+                            devopsCdEnvDeployInfoDTO.setAppName(devopsDeployAppCenterEnvDTO.getName());
+                            devopsCdEnvDeployInfoDTO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+                            devopsCdEnvDeployInfoDTO.setSkipCheckPermission(!devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag());
+                            devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
+                        } else {
+                            devopsCdEnvDeployInfoDTO.setAppName(devopsCdEnvDeployInfoDTO.getInstanceName());
+                            devopsCdEnvDeployInfoDTO.setAppCode(devopsCdEnvDeployInfoDTO.getInstanceName());
+                            devopsCdEnvDeployInfoDTO.setSkipCheckPermission(!devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag());
+                            devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
                         }
-                        devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsDeployInfoVO));
-                        devopsCdJobService.baseUpdate(devopsCdJobDTO);
-                    }
                 }
             } catch (Exception e) {
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline cdDeploy task : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCdJobDTO.getId());
-                errorJobIds.add(devopsCdJobDTO.getId());
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline devopsCdEnvDeployInfoDTO : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCdEnvDeployInfoDTO.getId());
+                errorJobIds.add(devopsCdEnvDeployInfoDTO.getId());
             }
 
         }
         if (CollectionUtils.isEmpty(errorJobIds)) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline cdDeploy task! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline devopsCdEnvDeployInfoDTO! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         } else {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline cdDeploy task, but exist errors! Failed job ids is : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(errorJobIds));
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline devopsCdEnvDeployInfoDTO, but exist errors! Failed devopsCdEnvDeployInfo ids is : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(errorJobIds));
             }
         }
 

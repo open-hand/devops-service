@@ -39,20 +39,18 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
     @Transactional
     public DevopsCdEnvDeployInfoDTO save(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
         // 参数校验
-        Assert.notNull(devopsCdEnvDeployInfoDTO.getAppServiceId(), ERROR_APP_SVC_ID_IS_NULL);
         Assert.notNull(devopsCdEnvDeployInfoDTO.getEnvId(), ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(devopsCdEnvDeployInfoDTO.getValueId(), ERROR_VALUE_ID_IS_NULL);
-        if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-            if (devopsCdEnvDeployInfoDTO.getInstanceName() == null || devopsCdEnvDeployInfoDTO.getInstanceId() != null) {
-                throw new CommonException(ERROR_PARAM_IS_INVALID);
-            }
-        } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-            if (devopsCdEnvDeployInfoDTO.getInstanceId() == null) {
-                throw new CommonException(ERROR_PARAM_IS_INVALID);
-            }
-        } else {
-            throw new CommonException(ERROR_PARAM_IS_INVALID);
-        }
+//        if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+//            if (devopsCdEnvDeployInfoDTO.getInstanceName() == null || devopsCdEnvDeployInfoDTO.getInstanceId() != null) {
+//                throw new CommonException(ERROR_PARAM_IS_INVALID);
+//            }
+//        } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+//            if (devopsCdEnvDeployInfoDTO.getInstanceId() == null) {
+//                throw new CommonException(ERROR_PARAM_IS_INVALID);
+//            }
+//        } else {
+//            throw new CommonException(ERROR_PARAM_IS_INVALID);
+//        }
         // 保存记录
         if (devopsCdEnvDeployInfoMapper.insertSelective(devopsCdEnvDeployInfoDTO) != 1) {
             throw new CommonException(ERROR_SAVE_DEPLOY_INFO);
@@ -109,5 +107,10 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
     public List<DevopsCdEnvDeployInfoDTO> queryCurrentByEnvId(Long environmentId) {
         Assert.notNull(environmentId, ERROR_VALUE_ID_IS_NULL);
         return devopsCdEnvDeployInfoMapper.queryCurrentByEnvId(environmentId);
+    }
+
+    @Override
+    public List<DevopsCdEnvDeployInfoDTO> listAll() {
+        return devopsCdEnvDeployInfoMapper.selectAll();
     }
 }

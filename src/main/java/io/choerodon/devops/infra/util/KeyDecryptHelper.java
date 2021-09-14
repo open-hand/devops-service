@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
@@ -183,7 +184,13 @@ public final class KeyDecryptHelper {
                 throw new CommonException("error.encrypt.json", ex);
             }
         } else {
-            return JsonHelper.marshalByJackson(object);
+            EncryptContext.setEncryptType(EncryptType.TO_STRING.name());
+            try {
+                ensureInitObjectMapper();
+                return SPRINT_OBJECT_MAPPER.writeValueAsString(object);
+            } catch (JsonProcessingException e) {
+                throw new CommonException("error.encrypt.json", e);
+            }
         }
     }
 

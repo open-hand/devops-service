@@ -33,6 +33,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
@@ -159,6 +160,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsCdJobService devopsCdJobService;
+    @Autowired
+    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -386,9 +389,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdJobRecordService.update(jobRecordDTO);
 
         // 2.保存记录
-        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(hostId, cdHostDeployConfigVO.getAppCode());
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
+
+        DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
-        if (devopsHostAppDTO == null) {
+        if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
                     cdHostDeployConfigVO.getAppName(),
@@ -406,8 +411,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     cdHostDeployConfigVO.getRunCommand(),
                     cdHostDeployConfigVO.getPostCommand());
 
+            devopsCdHostDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
+            devopsCdHostDeployInfoDTO.setHostDeployType(DeployTypeEnum.UPDATE.value());
+            devopsCdHostDeployInfoService.baseUpdate(devopsCdHostDeployInfoDTO);
+
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
+            devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
             devopsHostAppDTO.setName(cdHostDeployConfigVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
@@ -566,13 +576,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdJobRecordService.update(jobRecordDTO);
 
         // 2. 执行jar部署
-        devopsCdEnvDeployInfoService.updateOrUpdateByCdJob(jobRecordDTO.getJobId(), getJarName(jarPullInfoDTO.getDownloadUrl()));
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
 
         // 2.保存记录
         DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
         DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
-        if (devopsCdJobDTO.getAppId() == null) {
+        if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
                     jarDeployVO.getAppName(),
@@ -596,11 +606,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
 
             // 保存appId
-            devopsCdJobDTO.setAppId(devopsHostAppDTO.getId());
+            devopsCdHostDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
+            devopsCdHostDeployInfoDTO.setDeployType(DeployTypeEnum.UPDATE.value());
+            devopsCdHostDeployInfoService.baseUpdate(devopsCdHostDeployInfoDTO);
             devopsCdJobService.baseUpdate(devopsCdJobDTO);
 
         } else {
-            devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdJobDTO.getAppId());
+            devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
