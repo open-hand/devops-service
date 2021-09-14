@@ -518,8 +518,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         String downloadCommand = null;
         if (AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType())) {
-            downloadCommand = HostDeployUtil.genDownloadCommand("none",
-                    "none",
+            downloadCommand = HostDeployUtil.genDownloadCommand(null,
+                    null,
                     customDeployVO.getFileInfoVO().getJarFileUrl(),
                     workDir,
                     appFile);
