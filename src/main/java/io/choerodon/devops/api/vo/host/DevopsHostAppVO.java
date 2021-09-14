@@ -45,8 +45,6 @@ public class DevopsHostAppVO {
     private String operationType;
     @ApiModelProperty("来源配置")
     private String sourceConfig;
-    @ApiModelProperty("部署配置")
-    private String value;
     @ApiModelProperty("主机名称")
     private String hostName;
     @ApiModelProperty("应用实例id")
@@ -57,6 +55,37 @@ public class DevopsHostAppVO {
     @Encrypt
     @ApiModelProperty("实例id")
     private Long instanceId;
+
+    @ApiModelProperty("前置命令")
+    private String preCommand;
+    @ApiModelProperty("运行命令")
+    private String runCommand;
+    @ApiModelProperty("后置命令")
+    private String postCommand;
+
+    public String getPreCommand() {
+        return preCommand;
+    }
+
+    public void setPreCommand(String preCommand) {
+        this.preCommand = preCommand;
+    }
+
+    public String getRunCommand() {
+        return runCommand;
+    }
+
+    public void setRunCommand(String runCommand) {
+        this.runCommand = runCommand;
+    }
+
+    public String getPostCommand() {
+        return postCommand;
+    }
+
+    public void setPostCommand(String postCommand) {
+        this.postCommand = postCommand;
+    }
 
     /**
      * 部署对象id
@@ -285,13 +314,6 @@ public class DevopsHostAppVO {
         this.sourceConfig = sourceConfig;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
 
     public Long getId() {
         return id;
