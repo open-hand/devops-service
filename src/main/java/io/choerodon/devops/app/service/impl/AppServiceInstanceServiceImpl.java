@@ -1006,7 +1006,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         } else {
             // 创建应用中心的应用
             if (appServiceDeployVO.getCommandType().equals(CREATE)) {
-                devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getOperationType(), source, RdupmTypeEnum.CHART.value());
+                devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode(), projectId, appServiceInstanceDTO.getId(), appServiceDeployVO.getEnvironmentId(), appServiceDeployVO.getOperationType(), source, RdupmTypeEnum.CHART.value());
             } else {
                 devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
                 devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
@@ -1014,9 +1014,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
         }
 
-
-
-        return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
+        AppServiceInstanceVO instanceVO = ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
+        instanceVO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+        return instanceVO;
     }
 
     private String getChartVersion(MarketInstanceCreationRequestVO appServiceDeployVO, MarketServiceDeployObjectVO
@@ -2256,7 +2256,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
-        AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
+
+//        AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
         DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
 
         // 设置用户上下文
@@ -2268,14 +2269,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DetailsHelper.setCustomUserDetails(customUserDetails);
         AppServiceInstanceVO instanceVO;
         Long commandId = null;
-        if (appServiceInstanceDTO == null) {
+        if (devopsHzeroDeployDetailsDTO.getAppId() == null) {
             // 新建实例
             MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
                     null,
                     devopsHzeroDeployDetailsDTO.getMktServiceId(),
                     devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
                     devopsHzeroDeployConfigDTO.getValue(),
-                    devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                    devopsHzeroDeployDetailsDTO.getAppName(),
+                    devopsHzeroDeployDetailsDTO.getAppCode(),
                     CommandType.CREATE.getType(),
                     devopsHzeroDeployDetailsDTO.getEnvId(),
                     devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
@@ -2283,11 +2285,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     AppSourceType.MARKET.getValue(),
                     AppSourceType.HZERO.getValue(),
                     OperationTypeEnum.HZERO.value());
-            marketInstanceCreationRequestVO.setAppCode(devopsHzeroDeployDetailsDTO.getInstanceCode());
-            marketInstanceCreationRequestVO.setAppName(devopsHzeroDeployDetailsDTO.getInstanceCode());
             instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
             commandId = instanceVO.getCommandId();
+            devopsHzeroDeployDetailsDTO.setAppId(instanceVO.getAppId());
         } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(devopsHzeroDeployDetailsDTO.getAppId());
+            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
             // 更新实例
             if (devopsHzeroDeployDetailsDTO.getMktDeployObjectId().equals(appServiceInstanceDTO.getAppServiceVersionId())
                     && baseQueryValueByInstanceId(appServiceInstanceDTO.getId()).equals(devopsHzeroDeployConfigDTO.getValue())) {
@@ -2303,7 +2306,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         devopsHzeroDeployDetailsDTO.getMktServiceId(),
                         devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
                         devopsHzeroDeployConfigDTO.getValue(),
-                        devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                        devopsHzeroDeployDetailsDTO.getAppName(),
+                        devopsHzeroDeployDetailsDTO.getAppCode(),
                         CommandType.UPDATE.getType(),
                         devopsHzeroDeployDetailsDTO.getEnvId(),
                         devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
@@ -2311,8 +2315,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         AppSourceType.MARKET.getValue(),
                         AppSourceType.HZERO.getValue(),
                         OperationTypeEnum.HZERO.value());
-                marketInstanceCreationRequestVO.setAppCode(devopsHzeroDeployDetailsDTO.getInstanceCode());
-                marketInstanceCreationRequestVO.setAppName(devopsHzeroDeployDetailsDTO.getInstanceCode());
+                marketInstanceCreationRequestVO.setInstanceId(appServiceInstanceDTO.getId());
                 instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
                 commandId = instanceVO.getCommandId();
             }
@@ -2323,6 +2326,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsHzeroDeployDetailsDTO.setCommandId(commandId);
         devopsHzeroDeployDetailsDTO.setStartTime(new Date());
         devopsHzeroDeployDetailsDTO.setEndTime(null);
+
         devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
     }
 

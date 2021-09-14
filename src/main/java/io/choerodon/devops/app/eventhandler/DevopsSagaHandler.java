@@ -721,7 +721,7 @@ public class DevopsSagaHandler {
                 return;
             }
             if (Boolean.FALSE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(podReadyEventVO.getEnvId(),
-                    podReadyEventVO.getInstanceCode(),
+                    devopsHzeroDeployDetailsDTO.getAppId(),
                     devopsHzeroDeployDetailsDTO.getCommandId()))) {
                 return;
             }

@@ -83,11 +83,11 @@ public interface DevopsEnvPodService {
     /**
      * 校验实例下POD状态是否全部成功启动，如果传了commandId, 则要求Pod标签中的commandId必须大于等于commandId
      * @param envId
-     * @param instanceCode
+     * @param appId
      * @param commandId
      * @return
      */
-    boolean checkInstancePodStatusAllReadyWithCommandId(Long envId, String instanceCode, @Nullable Long commandId);
+    boolean checkInstancePodStatusAllReadyWithCommandId(Long envId, Long appId, @Nullable Long commandId);
 
     List<DevopsEnvPodVO> listWorkloadPod(String ownerKind,String ownerName);
 }
