@@ -3264,7 +3264,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(projectId);
         devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
-        devOpsAppServicePayload.setOpen(true);
+        devOpsAppServicePayload.setOpenAppService(true);
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()

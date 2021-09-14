@@ -30,11 +30,9 @@ public class DevopsHzeroDeployDetailsVO {
     private String value;
     @Encrypt
     @ApiModelProperty("市场服务id")
-    @Encrypt
     private Long mktServiceId;
     @Encrypt
     @ApiModelProperty("部署对象id")
-    @Encrypt
     private Long mktDeployObjectId;
 
     @ApiModelProperty("部署顺序")
