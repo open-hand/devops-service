@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -72,7 +73,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
         // 关联资源
         devopsEnvResourceDTOS.forEach(envResourceDTO -> {
-            DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(envResourceDTO.getResourceDetailId());
+                    DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(envResourceDTO.getResourceDetailId());
                     if (isReleaseGenerated(envResourceDetailDTO.getMessage())) {
                         dealWithResource(envResourceDetailDTO, envResourceDTO, devopsEnvResourceDTO, appServiceInstanceDTO.getEnvId());
                     }
@@ -655,7 +656,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public Object queryDetailsByKindAndName(Long envId, String kind, String name) {
         String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
-
+        if (StringUtils.isEmpty(message)) {
+            return null;
+        }
         try {
             return new ObjectMapper().readTree(message);
         } catch (IOException e) {
