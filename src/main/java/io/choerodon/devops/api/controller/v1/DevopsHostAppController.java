@@ -73,4 +73,24 @@ public class DevopsHostAppController {
         devopsHostAppService.deleteById(projectId, hostId, appId);
         return ResponseEntity.noContent().build();
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验名称唯一")
+    @GetMapping("apps/check_name")
+    public ResponseEntity<Boolean> checkNameUnique(
+            @PathVariable("project_id") Long projectId,
+            @RequestParam(value = "name") String name,
+            @ApiParam(value = "应用id，更新应用时需要校验", required = true)
+            @RequestParam(value = "app_id", required = false) Long appId) {
+        return ResponseEntity.ok(devopsHostAppService.checkNameUnique(projectId, appId, name));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验code唯一")
+    @GetMapping("apps/check_code")
+    public ResponseEntity<Boolean> checkCodeUnique(
+            @PathVariable("project_id") Long projectId,
+            @RequestParam(value = "code") String code) {
+        return ResponseEntity.ok(devopsHostAppService.checkCodeUnique(projectId, null, code));
+    }
 }
