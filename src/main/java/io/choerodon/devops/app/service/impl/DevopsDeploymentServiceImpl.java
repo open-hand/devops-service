@@ -302,7 +302,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     }
 
     @Override
-    public List<DevopsEnvPortVO> listPortByDeploymentAndEnvId(Long deploymentId) {
+    public List<DevopsEnvPortVO> listPortByDeploymentId(Long deploymentId) {
         List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
         DevopsDeploymentDTO devopsDeploymentDTO = selectByPrimaryKey(deploymentId);
         if (!ObjectUtils.isEmpty(devopsDeploymentDTO)) {

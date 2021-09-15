@@ -169,7 +169,7 @@ public class DevopsDeploymentController {
             @Encrypt
             @ApiParam(value = "部署ID", required = true)
             @PathVariable(value = "deployment_id") Long deploymentId) {
-        return Optional.ofNullable(devopsDeploymentService.listPortByDeploymentAndEnvId(deploymentId))
+        return Optional.ofNullable(devopsDeploymentService.listPortByDeploymentId(deploymentId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.service.port.query"));
     }

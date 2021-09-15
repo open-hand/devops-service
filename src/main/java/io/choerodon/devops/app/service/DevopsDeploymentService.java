@@ -32,7 +32,7 @@ public interface DevopsDeploymentService extends WorkloadBaseService<DevopsDeplo
 
     void stopDeployment(Long projectId, Long deploymentId);
 
-    List<DevopsEnvPortVO>  listPortByDeploymentAndEnvId(Long deploymentId);
+    List<DevopsEnvPortVO>  listPortByDeploymentId(Long deploymentId);
 
     List<DevopsEnvPortVO> listPortByDevopsEnvMessageVOS(List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS);
 }
