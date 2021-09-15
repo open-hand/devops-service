@@ -52,6 +52,18 @@ public class DevopsDeployAppCenterController {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(projectId, rdupmType, objectId, name));
     }
 
+    @ApiOperation("查询引用了容器应用作为替换对象的流水线信息")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{app_id}/pipeline_reference")
+    public ResponseEntity<PipelineInstanceReferenceVO> queryPipelineReference(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "应用ID", required = true)
+            @PathVariable(value = "app_id") Long appId) {
+        return ResponseEntity.ok().body(devopsDeployAppCenterService.queryPipelineReference(projectId, appId));
+    }
+
     /**
      * 校验code唯一
      *

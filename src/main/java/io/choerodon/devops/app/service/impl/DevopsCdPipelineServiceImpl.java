@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +45,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
-import io.choerodon.devops.api.vo.pipeline.DevopsDeployInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
@@ -1519,6 +1520,18 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long instanceId) {
         return devopsCiCdPipelineMapper.queryPipelineReference(instanceId);
+    }
+
+    @Nullable
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId) {
+        return devopsCiCdPipelineMapper.queryPipelineReferenceEnvApp(appId);
+    }
+
+    @Nullable
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
+        return devopsCiCdPipelineMapper.queryPipelineReferenceHostApp(appId);
     }
 
     @Override
