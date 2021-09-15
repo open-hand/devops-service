@@ -117,9 +117,12 @@ public class DevopsCdJobRecordVO {
         private String status;
         private String rdupmType;
         private String chartSource;
+        private String operationType;
         private String deployType;
         @Encrypt
         private Long deployTypeId;
+        private String hostName;
+
 
         public Long getAppServiceId() {
             return appServiceId;
@@ -215,6 +218,22 @@ public class DevopsCdJobRecordVO {
 
         public void setDeployTypeId(Long deployTypeId) {
             this.deployTypeId = deployTypeId;
+        }
+
+        public String getOperationType() {
+            return operationType;
+        }
+
+        public void setOperationType(String operationType) {
+            this.operationType = operationType;
+        }
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public void setHostName(String hostName) {
+            this.hostName = hostName;
         }
     }
 
