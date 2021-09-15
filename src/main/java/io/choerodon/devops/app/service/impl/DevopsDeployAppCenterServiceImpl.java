@@ -97,6 +97,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Qualifier("devopsAppCenterHelper")
     private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
     @Autowired
+    @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
