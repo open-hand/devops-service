@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
@@ -17,12 +18,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
+import io.choerodon.devops.api.vo.DevopsDeployGroupContainerConfigVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
+import io.choerodon.devops.api.vo.DevopsEnvPortVO;
 import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -32,6 +36,7 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -50,7 +55,9 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     public static final String EXTRA_INFO_KEY_APP_CONFIG = "appConfig";
     public static final String EXTRA_INFO_KEY_CONTAINER_CONFIG = "containerConfig";
     public static final String EXTRA_INFO_KEY_SOURCE_TYPE = "sourceType";
-
+    public static final String MAP_KEY_NAME = "name";
+    public static final String MAP_KEY_PROTOCOL = "protocol";
+    public static final String MAP_KEY_CONTAINER_PORT = "containerPort";
 
     @Autowired
     private DevopsDeploymentMapper devopsDeploymentMapper;
@@ -292,6 +299,38 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     public void stopDeployment(Long projectId, Long deploymentId) {
         handleStartOrStopDeployment(projectId, deploymentId, CommandType.STOP.getType());
+    }
+
+    @Override
+    public List<DevopsEnvPortVO> listPortByDeploymentAndEnvId(Long deploymentId) {
+        List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
+        DevopsDeploymentDTO devopsDeploymentDTO = selectByPrimaryKey(deploymentId);
+        if (!ObjectUtils.isEmpty(devopsDeploymentDTO)) {
+            String containerConfig = devopsDeploymentDTO.getContainerConfig();
+            List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = JsonHelper.unmarshalByJackson(containerConfig, new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {});
+            if (!CollectionUtils.isEmpty(devopsDeployGroupContainerConfigVOS)) {
+                devopsEnvPortVOS = listPortByDevopsEnvMessageVOS(devopsDeployGroupContainerConfigVOS);
+            }
+        }
+        return devopsEnvPortVOS;
+    }
+
+    @Override
+    public List<DevopsEnvPortVO> listPortByDevopsEnvMessageVOS(List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS) {
+        List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
+        devopsDeployGroupContainerConfigVOS.forEach(devopsDeployGroupContainerConfigVO -> {
+            List<Map<String, String>> ports = devopsDeployGroupContainerConfigVO.getPorts();
+            if (!CollectionUtils.isEmpty(ports)) {
+                for (Map<String, String> portMap : ports) {
+                    DevopsEnvPortVO devopsEnvPortVO = new DevopsEnvPortVO();
+                    devopsEnvPortVO.setResourceName(portMap.get(MAP_KEY_NAME));
+                    devopsEnvPortVO.setPortName(portMap.get(MAP_KEY_PROTOCOL));
+                    devopsEnvPortVO.setPortValue(Integer.parseInt(portMap.get(MAP_KEY_CONTAINER_PORT)));
+                    devopsEnvPortVOS.add(devopsEnvPortVO);
+                }
+            }
+        });
+        return devopsEnvPortVOS;
     }
 
     private void handleStartOrStopDeployment(Long projectId, Long deploymentId, String type) {

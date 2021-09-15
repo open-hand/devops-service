@@ -1,8 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -18,8 +20,10 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
+import io.choerodon.devops.api.vo.DevopsEnvPortVO;
 import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
@@ -151,5 +155,22 @@ public class DevopsDeploymentController {
     ) {
         devopsDeploymentService.startDeployment(projectId, deploymentId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 查询deployment服务在环境下的所有端口
+     * @param deploymentId     服务id
+     * @return List
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询deployment服务在环境下的所有端口")
+    @GetMapping("/{deployment_id}/list_port")
+    public ResponseEntity<List<DevopsEnvPortVO>> listPortByDeploymentAndEnvId(
+            @Encrypt
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable(value = "deployment_id") Long deploymentId) {
+        return Optional.ofNullable(devopsDeploymentService.listPortByDeploymentAndEnvId(deploymentId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.service.port.query"));
     }
 }

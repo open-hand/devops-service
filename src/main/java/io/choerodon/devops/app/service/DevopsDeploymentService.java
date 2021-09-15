@@ -1,9 +1,12 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
-import io.choerodon.devops.api.vo.DevopsDeployGroupVO;
+import io.choerodon.devops.api.vo.DevopsDeployGroupContainerConfigVO;
 import io.choerodon.devops.api.vo.DevopsDeploymentVO;
+import io.choerodon.devops.api.vo.DevopsEnvPortVO;
 import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -28,4 +31,8 @@ public interface DevopsDeploymentService extends WorkloadBaseService<DevopsDeplo
     void startDeployment(Long projectId, Long deploymentId);
 
     void stopDeployment(Long projectId, Long deploymentId);
+
+    List<DevopsEnvPortVO>  listPortByDeploymentAndEnvId(Long deploymentId);
+
+    List<DevopsEnvPortVO> listPortByDevopsEnvMessageVOS(List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS);
 }
