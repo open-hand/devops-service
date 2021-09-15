@@ -247,15 +247,15 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String appFile;
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
-            appFileName = jarDeployVO.getFileInfoVO().getFileName();
-            appFile = workDir + jarDeployVO.getFileInfoVO().getFileName();
+            appFileName = jarDeployVO.getFileInfoVO().getFileName() + System.currentTimeMillis();
+            appFile = workDir + appFileName;
             downloadCommand = HostDeployUtil.genDownloadCommand("none",
                     "none",
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
                     workDir,
                     appFile);
         } else {
-            appFileName = nexusComponentDTOList.get(0).getName();
+            appFileName = nexusComponentDTOList.get(0).getName() + System.currentTimeMillis();
             appFile = workDir + appFileName;
             downloadCommand = HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
@@ -541,9 +541,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
-        String appFile = workDir + customDeployVO.getFileInfoVO().getFileName();
+        String appFileName = customDeployVO.getFileInfoVO().getFileName() + System.currentTimeMillis();
+        String appFile = workDir + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
-        params.put("{{ APP_FILE_NAME }}", customDeployVO.getFileInfoVO().getFileName());
+        params.put("{{ APP_FILE_NAME }}", appFileName);
         params.put("{{ APP_FILE }}", appFile);
 
         String downloadCommand = null;
