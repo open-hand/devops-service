@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
@@ -71,4 +72,10 @@ public interface DevopsHostAppService {
     void baseCreate(DevopsHostAppDTO devopsHostAppDTO, String errorCode);
 
     void deployCustomInstance(Long projectId, CustomDeployVO customDeployVO);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
+
+
 }

@@ -19,6 +19,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.FileInfoVO;
@@ -109,6 +110,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
+    @Autowired
+    private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
     @Transactional
@@ -604,6 +607,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId) {
+        return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
+        return devopsCdPipelineService.queryPipelineReferenceHostApp(projectId, appId);
     }
 
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {

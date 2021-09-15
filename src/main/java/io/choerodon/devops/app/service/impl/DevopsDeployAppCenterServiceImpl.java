@@ -96,6 +96,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Autowired
     @Qualifier("devopsAppCenterHelper")
     private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
+    @Autowired
+    private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
     public Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name) {
@@ -482,6 +484,11 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         //赋值创建者信息
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
+        return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
     }
 
     private Page<DevopsDeployAppCenterVO> pageAppCenterByUserId(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {

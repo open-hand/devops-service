@@ -59,4 +59,8 @@ public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
      * @return 一个或无
      */
     PipelineInstanceReferenceVO queryPipelineReference(@Param("instanceId") Long instanceId);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(@Param("appId") Long appId);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(@Param("appId") Long appId);
 }
