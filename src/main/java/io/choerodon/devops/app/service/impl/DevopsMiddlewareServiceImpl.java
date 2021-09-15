@@ -10,7 +10,6 @@ import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_M
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -22,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -128,8 +126,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Autowired
     private DevopsMiddlewareMapper devopsMiddlewareMapper;
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-    @Autowired
     private EncryptService encryptService;
     @Autowired
     private DevopsPvcService devopsPvcService;
@@ -194,8 +190,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     @Override
-    public AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
-        return appServiceInstanceService.createOrUpdateMarketInstance(projectId, ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class), true);
+    public AppServiceInstanceVO updateMiddlewareInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+        return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
 
     @Override

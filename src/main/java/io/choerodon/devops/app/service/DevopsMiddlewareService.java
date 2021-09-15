@@ -47,13 +47,13 @@ public interface DevopsMiddlewareService {
     AppServiceInstanceVO envDeployForMySql(Long projectId, MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO);
 
     /**
-     * 更新redis容器实例
+     * 更新容器实例
      *
      * @param projectId
-     * @param middlewareRedisEnvDeployVO
+     * @param marketInstanceCreationRequestVO
      * @return
      */
-    AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO);
+    AppServiceInstanceVO updateMiddlewareInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO);
 
     /**
      * 查询redis配置信息

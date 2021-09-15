@@ -47,25 +47,6 @@ public class DevopsMiddlewareController {
                                                                        @RequestParam("market_deploy_object_id") Long marketDeployObjectId) {
         return ResponseEntity.ok(middlewareService.queryRedisConfig(projectId, appServiceInstanceId, marketDeployObjectId));
     }
-
-    /**
-     * 更新redis中间件实例
-     */
-    @ApiOperation(value = "环境部署更新实例")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @PutMapping("/redis/{instance_id}")
-    public ResponseEntity<AppServiceInstanceVO> updateRedisInstance(@PathVariable("project_id") Long projectId,
-                                                                    @Encrypt
-                                                                    @ApiParam(value = "实例id", required = true)
-                                                                    @PathVariable("instance_id") Long instanceId,
-                                                                    @RequestBody MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
-        middlewareRedisEnvDeployVO.setCommandType(CommandType.UPDATE.getType());
-        middlewareRedisEnvDeployVO.setInstanceId(instanceId);
-        middlewareRedisEnvDeployVO.setSource(AppSourceType.MIDDLEWARE.getValue());
-        return ResponseEntity.ok(middlewareService.updateRedisInstance(projectId, middlewareRedisEnvDeployVO));
-    }
-
-
     /**
      * redis主机部署
      */
@@ -81,7 +62,6 @@ public class DevopsMiddlewareController {
     /**
      * MySQL环境部署
      */
-
     @ApiOperation(value = "MySQL环境部署")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/mysql/deploy/env")
@@ -103,5 +83,22 @@ public class DevopsMiddlewareController {
                                                    @RequestBody @Valid MiddlewareMySqlHostDeployVO middlewareMySqlHostDeployVO) {
         middlewareService.hostDeployForMySql(projectId, middlewareMySqlHostDeployVO);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 更新中间件实例
+     */
+    @ApiOperation(value = "环境部署更新实例")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/{instance_id}")
+    public ResponseEntity<AppServiceInstanceVO> updateMiddlewareInstance(@PathVariable("project_id") Long projectId,
+                                                                         @Encrypt
+                                                                         @ApiParam(value = "实例id", required = true)
+                                                                         @PathVariable("instance_id") Long instanceId,
+                                                                         @RequestBody MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+        marketInstanceCreationRequestVO.setCommandType(CommandType.UPDATE.getType());
+        marketInstanceCreationRequestVO.setInstanceId(instanceId);
+        marketInstanceCreationRequestVO.setSource(AppSourceType.MIDDLEWARE.getValue());
+        return ResponseEntity.ok(middlewareService.updateMiddlewareInstance(projectId, marketInstanceCreationRequestVO));
     }
 }
