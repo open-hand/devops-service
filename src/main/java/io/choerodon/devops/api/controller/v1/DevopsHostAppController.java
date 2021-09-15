@@ -82,7 +82,7 @@ public class DevopsHostAppController {
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "name") String name,
             @ApiParam(value = "应用id，更新应用时才需要传", required = true)
-            @RequestParam(value = "app_id", required = false) Long appId) {
+            @Encrypt @RequestParam(value = "app_id", required = false) Long appId) {
         return ResponseEntity.ok(devopsHostAppService.checkNameUnique(projectId, appId, name));
     }
 
