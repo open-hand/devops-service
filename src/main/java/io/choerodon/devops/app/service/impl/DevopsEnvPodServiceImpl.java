@@ -411,8 +411,17 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(appId);
 
+        if (devopsDeployAppCenterEnvDTO == null) {
+            LOGGER.info(">>>>>>[checkPodStatus]envId: {}, appid: {},app not found, is deleted?<<<<<<<<<", envId, appId);
+            return false;
+        }
         // 查询实例
         AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
+
+        if (instanceE == null) {
+            LOGGER.info(">>>>>>[checkPodStatus]envId: {}, appid: {},instance not found, is deleted?<<<<<<<<<", envId, appId);
+            return false;
+        }
         String instanceCode = instanceE.getCode();
         // 查询部署版本
 
