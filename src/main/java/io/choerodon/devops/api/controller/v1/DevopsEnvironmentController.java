@@ -665,4 +665,11 @@ public class DevopsEnvironmentController {
             @PathVariable("env_id") Long envId) {
         return Results.success(devopsEnvironmentService.queryAutoDeploy(projectId, envId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "检查是否还能创建环境")
+    @GetMapping("/check_enable_create")
+    public ResponseEntity<Boolean> checkEnableCreateEnv(@PathVariable(name = "project_id") Long projectId) {
+        return ResponseEntity.ok(devopsEnvironmentService.checkEnableCreateEnv(projectId));
+    }
 }

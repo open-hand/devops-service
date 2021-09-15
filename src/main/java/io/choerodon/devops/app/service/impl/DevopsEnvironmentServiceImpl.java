@@ -209,7 +209,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentReqVO, DevopsEnvironmentDTO.class);
-        checkEnableCreate(projectId);
+        if (!checkEnableCreateEnv(projectId)) {
+            throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
+        }
         if (!devopsClusterProPermissionService.projectHasClusterPermission(projectId, devopsEnvironmentReqVO.getClusterId())) {
             throw new CommonException("error.project.miss.cluster.permission");
         }
@@ -834,18 +836,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      *
      * @param projectId
      */
-    private void checkEnableCreate(Long projectId) {
+    @Override
+    public Boolean checkEnableCreateEnv(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(projectDTO.getOrganizationId());
         if (resourceLimitVO != null) {
             DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
             example.setProjectId(projectId);
             int num = devopsEnvironmentMapper.selectCount(example);
-            if (num >= resourceLimitVO.getEnvMaxNumber()) {
-                throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
-            }
+            return num < resourceLimitVO.getEnvMaxNumber();
         }
-
+        return true;
     }
 
     @Override
