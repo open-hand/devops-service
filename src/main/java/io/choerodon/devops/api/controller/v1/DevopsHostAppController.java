@@ -36,13 +36,15 @@ public class DevopsHostAppController {
     @GetMapping("/apps/paging")
     @CustomPageRequest
     public ResponseEntity<Page<DevopsHostAppVO>> pagingAppByHost(
-            @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
-            @ApiParam(value = "主机", required = true)
+            @ApiParam(value = "主机id", required = true)
             @RequestParam(value = "host_id", required = false) Long hostId,
+            @ApiParam(value = "制品类型", required = true)
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
+            @ApiParam(value = "操作类型", required = true)
             @RequestParam(value = "operation_type", required = false) String operationType,
+            @ApiParam(value = "搜索参数", required = true)
             @RequestParam(value = "params", required = false) String params,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
         return ResponseEntity.ok(devopsHostAppService.pagingAppByHost(projectId, hostId, pageRequest, rdupmType, operationType, params));
@@ -52,9 +54,8 @@ public class DevopsHostAppController {
     @ApiOperation(value = "查询主机下的应用实例详情")
     @GetMapping("/apps/{app_id}")
     public ResponseEntity<DevopsHostAppVO> queryAppById(
-            @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "实例ID", required = true)
+            @ApiParam(value = "主机应用id", required = true)
             @Encrypt
             @PathVariable(value = "app_id") Long id) {
         return ResponseEntity.ok(devopsHostAppService.queryAppById(projectId, id));
@@ -63,12 +64,12 @@ public class DevopsHostAppController {
     @ApiOperation("删除主机应用")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{host_id}/apps/{app_id}")
-    public ResponseEntity<Void> deleteById(@ApiParam(value = "项目id", required = true)
-                                           @PathVariable("project_id") Long projectId,
+    public ResponseEntity<Void> deleteById(@PathVariable("project_id") Long projectId,
                                            @ApiParam(value = "主机id", required = true)
                                            @Encrypt
                                            @PathVariable("host_id") Long hostId,
                                            @Encrypt
+                                           @ApiParam(value = "主机应用id", required = true)
                                            @PathVariable("app_id") Long appId) {
         devopsHostAppService.deleteById(projectId, hostId, appId);
         return ResponseEntity.noContent().build();
@@ -76,20 +77,21 @@ public class DevopsHostAppController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验名称唯一")
-    @GetMapping("apps/check_name")
+    @GetMapping("/apps/check_name")
     public ResponseEntity<Boolean> checkNameUnique(
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "name") String name,
-            @ApiParam(value = "应用id，更新应用时需要校验", required = true)
+            @ApiParam(value = "应用id，更新应用时才需要传", required = true)
             @RequestParam(value = "app_id", required = false) Long appId) {
         return ResponseEntity.ok(devopsHostAppService.checkNameUnique(projectId, appId, name));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验code唯一")
-    @GetMapping("apps/check_code")
+    @GetMapping("/apps/check_code")
     public ResponseEntity<Boolean> checkCodeUnique(
             @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用编码", required = true)
             @RequestParam(value = "code") String code) {
         return ResponseEntity.ok(devopsHostAppService.checkCodeUnique(projectId, null, code));
     }
