@@ -2238,7 +2238,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             LOGGER.info(">>>>>>> detailsRecord status not create, skip : {} <<<<<<<", detailsRecordId);
             return;
         }
-
+        devopsHzeroDeployDetailsDTO.setStartTime(new Date());
         try {
             ApplicationContextHelper
                     .getContext()
@@ -2246,8 +2246,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     .pipelineDeployHzeroApp(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO);
         } catch (Exception e) {
             LOGGER.info(">>>>>>> Deploy hzero app failed ! <<<<<<<", e);
+            devopsHzeroDeployDetailsDTO.setEndTime(new Date());
+            devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.FAILED.value());
             workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
-            devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
+            devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
             devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.FAILED);
         }
 
