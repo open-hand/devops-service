@@ -111,6 +111,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
     @Autowired
+    @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
