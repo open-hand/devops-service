@@ -34,7 +34,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
-import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
@@ -171,6 +170,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private DevopsHostService devopsHostService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -1095,6 +1096,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
                             cdAuto.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
                             cdAuto.setChartSource(devopsDeployAppCenterEnvDTO.getChartSource());
+                            cdAuto.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
                             cdAuto.setDeployType(ENV);
                             cdAuto.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
                             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
@@ -1103,7 +1105,32 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                                     cdAuto.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
                                     cdAuto.setStatus(appServiceInstanceInfoVO.getStatus());
                                 }
-                            } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                            }
+                        }
+                        devopsCdJobRecordVO.setCdAuto(cdAuto);
+                    }
+                }
+            }
+
+            //部署组部署 返回对应信息
+            if (JobTypeEnum.CD_DEPLOYMENT.value().equals(devopsCdJobRecordVO.getType())) {
+                //部署环境 应用服务 生成版本 实例名称
+                Long commandId = devopsCdJobRecordVO.getCommandId();
+                if (commandId != null) {
+                    DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+                    if (deployRecordVO != null) {
+                        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
+                        DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                        cdAuto.setEnvId(deployRecordVO.getEnvId());
+                        cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
+                        cdAuto.setAppId(deployRecordVO.getAppId());
+                        cdAuto.setAppName(deployRecordVO.getAppName());
+                        if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                            cdAuto.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
+                            cdAuto.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                            cdAuto.setDeployType(ENV);
+                            cdAuto.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                            if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
                                 DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterEnvDTO.getObjectId());
                                 if (!ObjectUtils.isEmpty(deploymentDTO)) {
                                     cdAuto.setStatus(deploymentDTO.getStatus());
@@ -1114,6 +1141,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     }
                 }
             }
+
             //如果是人工审核返回审核信息
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {
                 // 指定审核人员 已审核人员 审核状态
@@ -1137,14 +1165,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordVO.getType())) {
                 CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdHostDeployConfigVO.class);
                 DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                DevopsHostAppVO devopsHostAppVO = devopsHostAppService.queryAppById(devopsCdJobRecordVO.getProjectId(), cdHostDeployConfigVO.getAppId());
-                if (!ObjectUtils.isEmpty(devopsHostAppVO)) {
-                    cdAuto.setRdupmType(devopsHostAppVO.getRdupmType());
+                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(cdHostDeployConfigVO.getHostId(), cdHostDeployConfigVO.getAppCode());
+                if (!ObjectUtils.isEmpty(devopsHostAppDTO)) {
+                    cdAuto.setAppId(devopsHostAppDTO.getId());
+                    cdAuto.setAppName(devopsHostAppDTO.getName());
+                    cdAuto.setRdupmType(devopsHostAppDTO.getRdupmType());
+                    cdAuto.setOperationType(devopsHostAppDTO.getOperationType());
                     cdAuto.setDeployType(HOST);
-                    cdAuto.setDeployTypeId(devopsHostAppVO.getHostId());
-                    cdAuto.setStatus(devopsHostAppVO.getStatus());
+                    cdAuto.setDeployTypeId(devopsHostAppDTO.getHostId());
+                }
+                DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(devopsHostAppDTO.getHostId());
+                if (!ObjectUtils.isEmpty(devopsHostDTO)) {
+                    cdAuto.setHostName(devopsHostDTO.getName());
                 }
                 devopsCdJobRecordVO.setCdHostDeployConfigVO(cdHostDeployConfigVO);
+                devopsCdJobRecordVO.setCdAuto(cdAuto);
             }
 
             if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordVO.getType())
