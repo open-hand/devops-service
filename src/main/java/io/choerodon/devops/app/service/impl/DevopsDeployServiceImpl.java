@@ -141,6 +141,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(MiscConstants.HZERO_DEPLOY_STATUS_SYNC_REDIS_KEY, "lock", 3, TimeUnit.MINUTES))) {
             return;
         }
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Start check hzero deploying status<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
 
         // 获取三分钟以前的时间
@@ -150,10 +151,14 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listDeployingByDate(date);
 
         devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Deploying timeout details id is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsHzeroDeployDetailsDTO.getId());
+
             // 1. 查询Pod是否全部启动成功
             if (Boolean.TRUE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
                     devopsHzeroDeployDetailsDTO.getAppId(),
                     devopsHzeroDeployDetailsDTO.getCommandId()))) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Deploying success details id is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsHzeroDeployDetailsDTO.getId());
+
                 devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
 
                 DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
@@ -167,6 +172,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                             MiscConstants.WORKFLOW_ADMIN_ORG_ID);
                 }
             } else {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Deploying failed details id is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsHzeroDeployDetailsDTO.getId());
+
                 devopsHzeroDeployDetailsService.updateStatusToFailed(devopsHzeroDeployDetailsDTO);
             }
         });
