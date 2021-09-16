@@ -393,10 +393,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
-        // 1.更新流水线状态 记录信息
-        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
-        jobRecordDTO.setStartedDate(new Date());
-        devopsCdJobRecordService.update(jobRecordDTO);
+
 
         // 2.保存记录
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
@@ -464,11 +461,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        // 更新流水线状态 记录信息
+        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        jobRecordDTO.setStartedDate(new Date());
+        jobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordService.update(jobRecordDTO);
+
         // 保存执行记录
         devopsDeployRecordService.saveRecord(
                 jobRecordDTO.getProjectId(),
                 DeployType.AUTO,
-                null,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 hostId,
                 devopsHostDTO != null ? devopsHostDTO.getName() : null,
@@ -579,11 +582,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
 
 
-        // 1.更新流水线状态 记录信息
-        jobRecordDTO.setDeployMetadata(gson.toJson(jarPullInfoDTO));
-        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
-        jobRecordDTO.setStartedDate(new Date());
-        devopsCdJobRecordService.update(jobRecordDTO);
+
+
 
         // 2. 执行jar部署
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
@@ -667,11 +667,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        // 更新流水线状态 记录信息
+        jobRecordDTO.setDeployMetadata(gson.toJson(jarPullInfoDTO));
+        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        jobRecordDTO.setStartedDate(new Date());
+        jobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordService.update(jobRecordDTO);
+
         // 保存执行记录
         devopsDeployRecordService.saveRecord(
                 jobRecordDTO.getProjectId(),
                 DeployType.AUTO,
-                null,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 hostId,
                 devopsHostDTO != null ? devopsHostDTO.getName() : null,
