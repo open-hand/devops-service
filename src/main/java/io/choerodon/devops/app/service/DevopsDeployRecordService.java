@@ -130,6 +130,8 @@ public interface DevopsDeployRecordService {
 
     DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId);
 
+    DeployRecordVO queryHostDeployRecordByCommandId(Long commandId);
+
     void updateResultById(Long deployRecordId, DeployResultEnum status);
 
     DevopsDeployRecordDTO baseQueryById(Long deployRecordId);

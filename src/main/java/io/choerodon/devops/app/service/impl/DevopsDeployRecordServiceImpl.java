@@ -373,6 +373,13 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     }
 
     @Override
+    public DeployRecordVO queryHostDeployRecordByCommandId(Long commandId) {
+        Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
+
+        return devopsDeployRecordMapper.queryHostDeployRecordByCommandId(commandId);
+    }
+
+    @Override
     @Transactional
     public void updateResultById(Long deployRecordId, DeployResultEnum status) {
         DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(deployRecordId);

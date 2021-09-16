@@ -1163,23 +1163,23 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
             //如果是主机部署 显示主机部署模式(镜像，jar，自定义)，来源，关联构建任务
             if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordVO.getType())) {
-                CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdHostDeployConfigVO.class);
-                DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.queryByHostIdAndCode(cdHostDeployConfigVO.getHostId(), cdHostDeployConfigVO.getAppCode());
-                if (!ObjectUtils.isEmpty(devopsHostAppDTO)) {
-                    cdAuto.setAppId(devopsHostAppDTO.getId());
-                    cdAuto.setAppName(devopsHostAppDTO.getName());
-                    cdAuto.setRdupmType(devopsHostAppDTO.getRdupmType());
-                    cdAuto.setOperationType(devopsHostAppDTO.getOperationType());
+                Long commandId = devopsCdJobRecordVO.getCommandId();
+                if (commandId != null) {
+                    DeployRecordVO deployRecordVO = devopsDeployRecordService.queryHostDeployRecordByCommandId(commandId);
+                    DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                    cdAuto.setAppId(deployRecordVO.getAppId());
+                    cdAuto.setAppName(deployRecordVO.getAppName());
+                    cdAuto.setHostName(deployRecordVO.getDeployPayloadName());
                     cdAuto.setDeployType(HOST);
-                    cdAuto.setDeployTypeId(devopsHostAppDTO.getHostId());
+                    cdAuto.setDeployTypeId(deployRecordVO.getDeployPayloadId());
+                    cdAuto.setOperationType(deployRecordVO.getDeployObjectType());
+                    cdAuto.setRdupmType(deployRecordVO.getDeployObjectType());
+                    DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(deployRecordVO.getAppId());
+                    if (!ObjectUtils.isEmpty(devopsHostAppDTO)) {
+                        cdAuto.setOperationType(devopsHostAppDTO.getOperationType());
+                    }
+                    devopsCdJobRecordVO.setCdAuto(cdAuto);
                 }
-                DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(devopsHostAppDTO.getHostId());
-                if (!ObjectUtils.isEmpty(devopsHostDTO)) {
-                    cdAuto.setHostName(devopsHostDTO.getName());
-                }
-                devopsCdJobRecordVO.setCdHostDeployConfigVO(cdHostDeployConfigVO);
-                devopsCdJobRecordVO.setCdAuto(cdAuto);
             }
 
             if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordVO.getType())
