@@ -66,7 +66,9 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
         devopsHzeroDeployDetailsDTO.setStatus(status.value());
         if ((Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.SUCCESS.value()) || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.FAILED.value())
                 || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.CANCELED.value())) && devopsHzeroDeployDetailsDTO.getStartTime() != null) {
-            devopsHzeroDeployDetailsDTO.setEndTime(new Date());
+            if (devopsHzeroDeployDetailsDTO.getEndTime() != null) {
+                devopsHzeroDeployDetailsDTO.setEndTime(new Date());
+            }
         }
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
     }
