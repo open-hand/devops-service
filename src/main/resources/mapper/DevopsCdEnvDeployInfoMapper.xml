@@ -12,7 +12,7 @@
     <select id="queryCurrentByEnvId" resultType="io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO">
         SELECT dcedi.*
         FROM devops_cicd_pipeline dcp
-                 INNER JOIN devops_cd_job dcj ON (dcj.pipeline_id = dcp.id AND dcj.type = 'cdDeploy')
+                 INNER JOIN devops_cd_job dcj ON (dcj.pipeline_id = dcp.id AND dcj.type = 'cdDeploy' or dcj.type = 'cdDeployment')
                  INNER JOIN devops_cd_env_deploy_info dcedi ON dcedi.id = dcj.deploy_info_id
         WHERE dcedi.env_id = #{envId}
     </select>

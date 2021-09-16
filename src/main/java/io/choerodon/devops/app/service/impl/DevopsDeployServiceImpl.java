@@ -95,6 +95,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     @Transactional
     public Long deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>deployHzeroApplication project info is {}<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(projectDTO));
+        }
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(hzeroDeployVO.getEnvId());
         MarketApplicationDTO marketApplicationDTO = marketServiceClientOperator.queryApplication(hzeroDeployVO.getMktAppId(), projectDTO.getOrganizationId());
         // 保存部署记录
