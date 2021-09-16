@@ -630,12 +630,4 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
         }
     }
-
-    public static void main(String[] args) {
-        String testStr = "djasklf\nasdfkljasdk\n";
-        for (String line : testStr.split("\\\\n")) {
-            System.out.println(line);
-        }
-    }
-
 }
