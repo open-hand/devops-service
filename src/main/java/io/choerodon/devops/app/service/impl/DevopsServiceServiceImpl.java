@@ -117,6 +117,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     private PermissionHelper permissionHelper;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
 
     @Override
     public Boolean checkName(Long envId, String name) {
@@ -989,17 +991,23 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
      *
      * @param targetInstanceCode 实例Id
      * @param targetAppServiceId 目标应用服务id
+     * @param targetDeploymentId 目标部署组id
      * @return 选择器
      */
     @Nonnull
     private Map<String, String> buildSelectorForInstance(String targetInstanceCode,
-                                                         Long targetAppServiceId) {
+                                                         Long targetAppServiceId,
+                                                         Long targetDeploymentId) {
         Map<String, String> selectors = new HashMap<>();
         if (targetInstanceCode != null) {
             selectors.put(AppServiceInstanceService.INSTANCE_LABEL_RELEASE, targetInstanceCode);
         }
         if (targetAppServiceId != null) {
             selectors.put(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID, targetAppServiceId.toString());
+        }
+        if (targetDeploymentId != null) {
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(targetDeploymentId);
+            selectors.put(AppServiceInstanceService.APPLICATION_LABEL, devopsDeploymentDTO.getName());
         }
         return selectors;
     }

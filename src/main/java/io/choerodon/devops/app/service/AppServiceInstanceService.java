@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-import org.hzero.core.util.Pair;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
@@ -26,6 +24,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface AppServiceInstanceService {
     String INSTANCE_LABEL_RELEASE = "choerodon.io/release";
     String INSTANCE_LABEL_APP_SERVICE_ID = "choerodon.io/app-service-id";
+    String APPLICATION_LABEL = "choerodon.io/application-name";
 
     /**
      * 根据实例id查询实例信息
