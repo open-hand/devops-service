@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 
 /**
  * 〈功能简述〉
@@ -39,7 +40,7 @@ public class DevopsHostAppVO {
     @ApiModelProperty("制品类型")
     private String rdupmType;
     /**
-     * {@link io.choerodon.devops.infra.enums.deploy.OperationTypeEnum}
+     * {@link OperationTypeEnum}
      */
     @ApiModelProperty("操作类型")
     private String operationType;
@@ -102,6 +103,12 @@ public class DevopsHostAppVO {
     private String artifactId;
     @ApiModelProperty("version")
     private String version;
+
+    @ApiModelProperty("中间件部署模式")
+    private String middlewareMode;
+
+    @ApiModelProperty("中间件部署版本")
+    private String middlewareVersion;
 
     private Date creationDate;
     private Long createdBy;
@@ -337,5 +344,21 @@ public class DevopsHostAppVO {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getMiddlewareMode() {
+        return middlewareMode;
+    }
+
+    public void setMiddlewareMode(String middlewareMode) {
+        this.middlewareMode = middlewareMode;
+    }
+
+    public String getMiddlewareVersion() {
+        return middlewareVersion;
+    }
+
+    public void setMiddlewareVersion(String middlewareVersion) {
+        this.middlewareVersion = middlewareVersion;
     }
 }

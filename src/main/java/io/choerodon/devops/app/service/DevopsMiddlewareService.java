@@ -81,5 +81,16 @@ public interface DevopsMiddlewareService {
      */
     void uninstallMiddleware(Long projectId, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO);
 
+    /**
+     * 根据实例id删除中间
+     * @param instanceId
+     */
     void deleteByInstanceId(Long instanceId);
+
+    /**
+     * 根据实例id查询中间件
+     * @param instanceId
+     * @return
+     */
+    DevopsMiddlewareDTO queryByInstanceId(Long instanceId);
 }

@@ -35,10 +35,7 @@ import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
-import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
@@ -402,6 +399,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         compoundDevopsHostAppVO(devopsHostAppVO);
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
         devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getInstanceId()));
+        // 表示中间件，需要查询额外字段
+        if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
+            DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getInstanceId());
+            devopsHostAppVO.setMiddlewareMode(devopsMiddlewareDTO.getMode());
+            devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
+        }
         return devopsHostAppVO;
     }
 

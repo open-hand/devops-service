@@ -563,6 +563,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     @Override
+    public DevopsMiddlewareDTO queryByInstanceId(Long instanceId) {
+        return devopsMiddlewareMapper.queryByInstanceId(instanceId);
+    }
+
+    @Override
     public DevopsMiddlewareDTO saveMiddlewareInfo(Long projectId, Long instanceId, String name, String type, String mode, String version, String hostIds, String configuration) {
         DevopsMiddlewareDTO devopsMiddlewareDTO = new DevopsMiddlewareDTO(
                 projectId,
