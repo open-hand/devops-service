@@ -380,6 +380,7 @@ public class DevopsHostController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "主机id", required = true)
+            @Encrypt
             @PathVariable("host_id") Long hostId,
             @RequestBody @Valid DevopsHostConnectionVO devopsHostConnectionVO) {
         return ResponseEntity.ok(devopsHostService.testConnectHost(projectId, hostId, devopsHostConnectionVO));
