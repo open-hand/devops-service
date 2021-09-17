@@ -947,7 +947,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
 
         Map<String, String> instanceSelector = buildSelectorForInstance(
                 devopsServiceReqVO.getTargetInstanceCode(),
-                devopsServiceReqVO.getTargetAppServiceId());
+                devopsServiceReqVO.getTargetAppServiceId(),
+                devopsServiceReqVO.getTargetDeploymentId());
         if (instanceSelector.isEmpty()) {
             spec.setSelector(devopsServiceReqVO.getSelectors());
         } else {
