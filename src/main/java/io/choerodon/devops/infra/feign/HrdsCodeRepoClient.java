@@ -58,6 +58,7 @@ public interface HrdsCodeRepoClient {
     ResponseEntity<List<RepositoryPrivilegeViewDTO>> listRepositoriesByAccessLevel(@PathVariable("organizationId") Long organizationId,
                                                                                    @PathVariable("projectId") Long projectId,
                                                                                    @RequestParam("accessLevel") Integer accessLevel,
+                                                                                   @RequestParam("appId") Long appId,
                                                                                    @RequestBody Set<Long> userIds);
 
     /**

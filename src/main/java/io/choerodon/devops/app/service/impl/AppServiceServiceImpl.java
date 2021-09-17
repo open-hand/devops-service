@@ -3115,8 +3115,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer accessLevel) {
-        List<RepositoryPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.listRepositoriesByAccessLevel(organizationId, projectId, accessLevel, Collections.singleton(userId)).getBody();
+    public Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer accessLevel, Long appId) {
+        List<RepositoryPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.listRepositoriesByAccessLevel(organizationId, projectId, accessLevel, appId, Collections.singleton(userId)).getBody();
         if (CollectionUtils.isEmpty(viewDTOList)) {
             return new HashSet<>();
         }
