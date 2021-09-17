@@ -48,7 +48,7 @@ public class DevopsDeployAppCenterController {
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "name") String name,
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
-            @RequestParam(value = "object_id", required = false) Long objectId) {
+            @Encrypt @RequestParam(value = "object_id", required = false) Long objectId) {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(projectId, rdupmType, objectId, name));
     }
 
