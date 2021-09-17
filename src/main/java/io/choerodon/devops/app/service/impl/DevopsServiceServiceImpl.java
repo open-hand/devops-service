@@ -680,6 +680,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 }
             }
         }
+
+        if (devopsServiceQueryDTO.getTargetDeploymentId() != null) {
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsServiceQueryDTO.getTargetDeploymentId());
+            if (devopsDeploymentDTO != null) {
+                devopsServiceTargetVO.setTargetDeploymentName(devopsDeploymentDTO.getName());
+            }
+        }
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 
         // service的dnsName为${serviceName.namespace}

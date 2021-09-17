@@ -107,7 +107,8 @@
         CASE
         WHEN dai.status IS NULL THEN 'deleted'
         ELSE dai.status
-        END ins_status
+        END ins_status,
+        dp.id as target_deployment_id
         FROM
         (
         SELECT
@@ -133,6 +134,7 @@
         or (dai.code = ds.target_instance_code and dai.env_id = ds.env_id)
         or dai.app_service_id = ds.target_app_service_id
         )
+        LEFT JOIN devops_deployment dp ON ds.target_deployment_id=dp.id
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
@@ -236,6 +238,7 @@
         <result property="appServiceId" column="app_service_id"/>
         <result property="appServiceName" column="app_service_name"/>
         <result property="targetAppServiceId" column="target_app_service_id"/>
+        <result property="targetDeploymentId" column="target_deployment_id"/>
         <result property="appServiceProjectId" column="app_service_project_id"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
