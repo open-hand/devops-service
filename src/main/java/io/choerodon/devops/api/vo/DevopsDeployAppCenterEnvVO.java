@@ -5,6 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * devops环境部署应用表
@@ -12,6 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class DevopsDeployAppCenterEnvVO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(name = "name")
@@ -24,9 +26,11 @@ public class DevopsDeployAppCenterEnvVO {
     private Long projectId;
 
     @ApiModelProperty(name = "部署对象id")
+    @Encrypt
     private Long objectId;
 
     @ApiModelProperty(name = "Id")
+    @Encrypt
     private Long envId;
 
     @ApiModelProperty(name = "操作类型")
@@ -39,6 +43,7 @@ public class DevopsDeployAppCenterEnvVO {
     private String rdupmType;
 
     @ApiModelProperty(name = "操作记录id")
+    @Encrypt
     private Long commandId;
 
     public Long getCommandId() {
