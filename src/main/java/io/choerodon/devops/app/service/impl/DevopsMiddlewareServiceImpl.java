@@ -91,9 +91,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String MYSQL_STANDALONE_VALUE_TEMPLATE;
 
-    private static final String MIDDLEWARE_STATUS_SYNC_LOCK = "middleware-status-sync-lock";
+    public static final Map<String, String> MODE_MAP = new HashMap<>();
 
     static {
+        MODE_MAP.put(STANDALONE.getValue(), "单机模式");
+        MODE_MAP.put(SENTINEL.getValue(), "哨兵模式");
+        MODE_MAP.put(MASTER_SLAVE.getValue(), "主备模式");
+
         try (InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml")) {
             REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
         } catch (Exception e) {
