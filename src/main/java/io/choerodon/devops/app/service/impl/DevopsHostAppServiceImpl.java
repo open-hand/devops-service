@@ -440,6 +440,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public void deleteById(Long projectId, Long hostId, Long appId) {
+        // 校验应用是否关联流水线，是则抛出异常，不能删除
+//        if (queryPipelineReferenceHostApp(projectId, appId) != null) {
+//          throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+//        }
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
         List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
@@ -611,11 +615,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
-    }
-
-    @Override
-    public PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId) {
-        return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
     }
 
     @Override

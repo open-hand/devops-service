@@ -112,7 +112,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String MIDDLEWARE_CHART_REPO_TEMPLATE = "%s/market/market/repo/";
     private static final String ERROR_APP_INSTANCE_IS_OPERATING = "error.app.instance.is.operating";
 
-
     @Value("${services.gateway.url}")
     private String gateway;
 
@@ -1640,6 +1639,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceInstanceDTO == null) {
             return;
         }
+
+//        devopsDeployAppCenterService.checkEnableDeleteAndThrowE(projectId, RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
+
         // 加锁
         if (Boolean.FALSE.equals(stringRedisTemplate.opsForValue().setIfAbsent(String.format(APP_INSTANCE_DELETE_REDIS_KEY, instanceId), "lock", 5, TimeUnit.MINUTES))) {
             throw new CommonException(ERROR_APP_INSTANCE_IS_OPERATING);

@@ -27,6 +27,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
@@ -490,6 +491,17 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
         return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
+    }
+
+    @Override
+    public void checkEnableDeleteAndThrowE(Long projectId, RdupmTypeEnum rdupmTypeEnum, Long instanceId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = queryByRdupmTypeAndObjectId(rdupmTypeEnum, instanceId);
+        if (devopsDeployAppCenterEnvDTO == null) {
+            return;
+        }
+        if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
+            throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+        }
     }
 
     private Page<DevopsDeployAppCenterVO> pageAppCenterByUserId(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {

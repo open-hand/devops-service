@@ -205,6 +205,7 @@ public class WorkloadServiceImpl implements WorkloadService {
                 if (devopsDeploymentDTO == null) {
                     return;
                 }
+//                devopsDeployAppCenterService.checkEnableDeleteAndThrowE(projectId, RdupmTypeEnum.DEPLOYMENT, id);
                 envId = devopsDeploymentDTO.getEnvId();
                 resourceName = devopsDeploymentDTO.getName();
                 break;

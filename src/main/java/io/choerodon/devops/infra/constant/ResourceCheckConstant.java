@@ -20,6 +20,7 @@ public class ResourceCheckConstant {
     // app service version
     public static final String ERROR_SERVICE_VERSION_VALUE_ID_IS_NULL = "error.service.version.value.id.is.null";
 
+
     public static final String ERROR_PARAM_IS_INVALID = "error.param.is.invalid";
     public static final String ERROR_USER_ID_IS_NULL = "error.user.id.is.null";
 
@@ -61,6 +62,8 @@ public class ResourceCheckConstant {
     // app
     public static final String ERROR_APP_CODE_IS_NULL = "error.app.code.is.null";
     public static final String ERROR_APP_ID_IS_NULL = "error.app.id.is.null";
+    public static final String ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE = "error.app.instance.is.associated.with.pipeline";
+
 
     // pipeline
     public static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
