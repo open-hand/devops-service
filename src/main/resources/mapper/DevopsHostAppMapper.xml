@@ -18,6 +18,7 @@
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_app_instance dhai on dhai.app_id = dha.id
         <where>
+            dha.project_id = #{projectId}
             <if test="hostId != null">
                 and dha.host_id = #{hostId}
             </if>
@@ -58,7 +59,7 @@
         left join devops_host_user_permission dhup ON dhup.host_id = dh.id
         left join devops_host_app_instance dhai on dhai.app_id = dha.id
         <where>
-            AND (dh.skip_check_permission = 1 OR dhup.iam_user_id = #{userId})
+            dha.project_id = #{projectId} AND (dh.skip_check_permission = 1 OR dhup.iam_user_id = #{userId})
             <if test="hostId != null">
                 and dha.host_id = #{hostId}
             </if>
