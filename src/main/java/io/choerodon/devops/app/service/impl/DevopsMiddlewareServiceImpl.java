@@ -165,7 +165,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class);
-        marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
+        marketInstanceCreationRequestVO.setApplicationType(AppSourceType.MIDDLEWARE.getValue());
         marketInstanceCreationRequestVO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
         marketInstanceCreationRequestVO.setInstanceName(marketInstanceCreationRequestVO.getAppCode());
 
@@ -183,7 +183,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareMySqlEnvDeployVO.setValues(generateMysqlStandaloneValues(middlewareMySqlEnvDeployVO));
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareMySqlEnvDeployVO, MarketInstanceCreationRequestVO.class);
-        marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
+        marketInstanceCreationRequestVO.setApplicationType(AppSourceType.MIDDLEWARE.getValue());
         marketInstanceCreationRequestVO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
         marketInstanceCreationRequestVO.setInstanceName(marketInstanceCreationRequestVO.getAppCode());
 

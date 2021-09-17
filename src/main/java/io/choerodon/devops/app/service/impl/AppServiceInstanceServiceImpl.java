@@ -956,7 +956,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (StringUtils.equalsIgnoreCase(appServiceInstanceDTO.getApplicationType(), AppSourceType.HZERO.getValue())) {
                 source = AppSourceType.HZERO.getValue();
             } else {
-                source = AppSourceType.MARKET.getValue();
+                source = appServiceDeployVO.getSource();
             }
 
             devopsEnvApplicationService.createEnvAppRelationShipIfNon(appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getEnvironmentId(), source, appServiceCode, appServiceName);
