@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
@@ -12,6 +14,8 @@ public class StatefulSetVO {
     private Long currentReplicas;
     private String age;
     private List<DevopsEnvPodVO> devopsEnvPodVOS;
+    @Encrypt
+    private Long instanceId;
 
     public String getName() {
         return name;
@@ -59,5 +63,13 @@ public class StatefulSetVO {
 
     public void setDevopsEnvPodVOS(List<DevopsEnvPodVO> devopsEnvPodVOS) {
         this.devopsEnvPodVOS = devopsEnvPodVOS;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 }

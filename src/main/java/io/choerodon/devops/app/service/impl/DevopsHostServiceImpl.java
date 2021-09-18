@@ -650,7 +650,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, false));
         if (!devopsHostDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
-            List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = devopsHostUserPermissionService.listUserHostPermissionByOption(envId, searchParamMap, paramList);
+            List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = devopsHostUserPermissionService.listUserHostPermissionByOption(hostId, searchParamMap, paramList);
             List<Long> permissions = devopsHostUserPermissionDTOList.stream().map(DevopsHostUserPermissionDTO::getIamUserId).collect(Collectors.toList());
             projectMembers = projectMembers
                     .stream()

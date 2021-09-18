@@ -172,11 +172,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 break;
             case DAEMONSET:
                 V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1beta2DaemonSet.class);
-                addDaemonSetToResource(devopsEnvResourceVO, v1beta2DaemonSet);
+                addDaemonSetToResource(devopsEnvResourceVO, v1beta2DaemonSet, devopsEnvResourceDTO.getInstanceId());
                 break;
             case STATEFULSET:
                 V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1beta2StatefulSet.class);
-                addStatefulSetSetToResource(devopsEnvResourceVO, v1beta2StatefulSet);
+                addStatefulSetSetToResource(devopsEnvResourceVO, v1beta2StatefulSet, devopsEnvResourceDTO.getInstanceId());
                 break;
             case PERSISTENT_VOLUME_CLAIM:
                 V1PersistentVolumeClaim persistentVolumeClaim = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1PersistentVolumeClaim.class);
@@ -451,13 +451,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2DaemonSet     daemonSet对象
      */
-    private void addDaemonSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2DaemonSet v1beta2DaemonSet) {
+    private void addDaemonSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2DaemonSet v1beta2DaemonSet, Long instanceId) {
         DaemonSetVO daemonSetVO = new DaemonSetVO();
         daemonSetVO.setName(v1beta2DaemonSet.getMetadata().getName());
         daemonSetVO.setAge(v1beta2DaemonSet.getMetadata().getCreationTimestamp().toString());
         daemonSetVO.setCurrentScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getCurrentNumberScheduled()));
         daemonSetVO.setDesiredScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getDesiredNumberScheduled()));
         daemonSetVO.setNumberAvailable(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getNumberAvailable()));
+        daemonSetVO.setInstanceId(instanceId);
 
         devopsEnvResourceDTO.getDaemonSetVOS().add(daemonSetVO);
     }
@@ -468,13 +469,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2StatefulSet   statefulSet对象
      */
-    private void addStatefulSetSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2StatefulSet v1beta2StatefulSet) {
+    private void addStatefulSetSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2StatefulSet v1beta2StatefulSet, Long instanceId) {
         StatefulSetVO statefulSetVO = new StatefulSetVO();
         statefulSetVO.setName(v1beta2StatefulSet.getMetadata().getName());
         statefulSetVO.setDesiredReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getSpec().getReplicas()));
         statefulSetVO.setAge(v1beta2StatefulSet.getMetadata().getCreationTimestamp().toString());
         statefulSetVO.setReadyReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getStatus().getReadyReplicas()));
         statefulSetVO.setCurrentReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getStatus().getCurrentReplicas()));
+        statefulSetVO.setInstanceId(instanceId);
 
         devopsEnvResourceDTO.getStatefulSetVOS().add(statefulSetVO);
     }
