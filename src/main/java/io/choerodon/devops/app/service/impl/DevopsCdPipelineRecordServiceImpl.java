@@ -522,12 +522,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+//        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO1 = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
+//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
 
-        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
+
+        Long hostId = devopsCdHostDeployInfoDTO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
-        CdHostDeployConfigVO.JarDeploy jarDeploy = cdHostDeployConfigVO.getJarDeploy();
+        CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
 
 
         // 0.1 从制品库获取仓库信息
@@ -565,11 +568,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
 
         JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
-                cdHostDeployConfigVO.getAppName(),
-                cdHostDeployConfigVO.getAppCode(),
-                cdHostDeployConfigVO.getPreCommand(),
-                cdHostDeployConfigVO.getRunCommand(),
-                cdHostDeployConfigVO.getPostCommand(),
+                devopsCdHostDeployInfoDTO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getPreCommand(),
+                devopsCdHostDeployInfoDTO.getRunCommand(),
+                devopsCdHostDeployInfoDTO.getPostCommand(),
                 new ProdJarInfoVO(nexusRepoId,
                         groupId,
                         artifactId,
@@ -580,13 +583,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
         jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
-
-
-
-
-
-        // 2. 执行jar部署
-        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
 
         // 2.保存记录
         DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
@@ -686,8 +682,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 DeployObjectTypeEnum.JAR,
                 c7nNexusComponentDTO.getName(),
                 c7nNexusComponentDTO.getVersion(),
-                cdHostDeployConfigVO.getAppName(),
-                cdHostDeployConfigVO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
