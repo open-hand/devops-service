@@ -24,7 +24,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.PermissionHelper;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
@@ -55,6 +57,10 @@ public class GitlabServiceClientOperator {
     private GitUtil gitUtil;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
 
     public GitLabUserDTO createUser(String password, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
@@ -625,9 +631,14 @@ public class GitlabServiceClientOperator {
     public Page<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId, boolean checkMember) {
         if (checkMember) {
             if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectDTO.getId())) {
-                MemberDTO memberDTO = getProjectMember(
-                        gitlabProjectId,
-                        userId);
+//                MemberDTO memberDTO = getProjectMember(
+//                        gitlabProjectId,
+//                        userId);
+                DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+                MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), userId);
+                if (memberDTO == null || memberDTO.getId() == null) {
+                    memberDTO = gitlabServiceClientOperator.getMember(Long.valueOf(gitlabProjectId), Long.valueOf(userId));
+                }
                 if (memberDTO == null) {
                     throw new CommonException("error.user.not.in.gitlab.project");
                 }
