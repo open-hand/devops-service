@@ -60,39 +60,38 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             if (StringUtils.isEmpty(content)) {
                 handEmptyScanResult(gitlabPipelineId, startDate, endDate);
                 return;
-            } else {
-                imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
-                });
-                if (CollectionUtils.isEmpty(imageScanResultVOS)) {
-                    handEmptyScanResult(gitlabPipelineId, startDate, endDate);
-                    return;
-                } else {
-                    ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
-                    List<VulnerabilitieVO> vulnerabilities = imageScanResultVO.getVulnerabilities();
-                    vulnerabilities.forEach(vulnerabilitieVO -> {
-                        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                        devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
-                        BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
-                        devopsImageScanResultDTO.setStartDate(startDate);
-                        devopsImageScanResultDTO.setEndDate(endDate);
-                        devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-                        DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
-                        scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-                        scanResultDTO.setVulnerabilityCode(vulnerabilitieVO.getVulnerabilityCode());
-                        scanResultDTO.setTarget(imageScanResultVO.getTarget());
-                        DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
-                        if (Objects.isNull(resultDTO)) {
-                            devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
-                        } else {
-                            BeanUtils.copyProperties(devopsImageScanResultDTO, resultDTO);
-                            devopsImageScanResultMapper.updateByPrimaryKeySelective(resultDTO);
-                        }
-                    });
-                }
-
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
+        });
+        if (CollectionUtils.isEmpty(imageScanResultVOS)) {
+            handEmptyScanResult(gitlabPipelineId, startDate, endDate);
+            return;
+        }
+        //查询数据库是否存在，不存在则插入
+        DevopsImageScanResultDTO existScanResult = new DevopsImageScanResultDTO();
+        existScanResult.setGitlabPipelineId(gitlabPipelineId);
+        if (devopsImageScanResultMapper.selectCount(existScanResult) > 0) {
+            //批量更新
+            devopsImageScanResultMapper.updateScanDate(startDate, endDate, gitlabPipelineId);
+        } else {
+            //批量插入
+            ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
+            List<VulnerabilitieVO> vulnerabilities = imageScanResultVO.getVulnerabilities();
+            List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = new ArrayList<>();
+
+            vulnerabilities.forEach(vulnerabilitieVO -> {
+                DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
+                BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
+                devopsImageScanResultDTO.setStartDate(startDate);
+                devopsImageScanResultDTO.setEndDate(endDate);
+                devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+                devopsImageScanResultDTOS.add(devopsImageScanResultDTO);
+            });
+            devopsImageScanResultMapper.insertScanResultBatch(devopsImageScanResultDTOS);
         }
 
 
