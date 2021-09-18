@@ -625,6 +625,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         } else {
             devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
+            if (devopsHostAppDTO == null) {
+                LOGGER.info("App not found, is deleted? Skip this task.appId:{},appName:{},appCode{}", devopsCdHostDeployInfoDTO.getAppId(), devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
+                updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
+                return;
+            }
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
