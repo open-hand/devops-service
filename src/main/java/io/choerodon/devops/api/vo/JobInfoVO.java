@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -11,6 +13,7 @@ import java.util.Map;
  * @since 2021/6/10 23:11
  */
 public class JobInfoVO {
+    @Encrypt
     private Long id;
     private String name;
     private Integer completions;
@@ -18,6 +21,7 @@ public class JobInfoVO {
     private String age;
     private List<Integer> ports;
     private Map<String, String> labels;
+    @Encrypt
     private Long instanceId;
 
     private String commandType;

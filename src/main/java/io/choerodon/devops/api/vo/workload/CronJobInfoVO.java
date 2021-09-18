@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo.workload;
 import java.util.List;
 import java.util.Map;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -11,6 +13,7 @@ import java.util.Map;
  * @since 2021/6/11 0:09
  */
 public class CronJobInfoVO {
+    @Encrypt
     private Long id;
     private String name;
 
@@ -25,6 +28,7 @@ public class CronJobInfoVO {
     private String lastScheduleTime;
     private List<Integer> ports;
     private Map<String, String> labels;
+    @Encrypt
     private Long instanceId;
 
     private String commandType;
