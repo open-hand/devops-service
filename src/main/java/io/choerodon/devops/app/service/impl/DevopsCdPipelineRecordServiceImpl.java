@@ -388,35 +388,32 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-
-        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-
-
-
-        // 2.保存记录
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
+
+//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+
+        Long hostId = devopsCdHostDeployInfoDTO.getHostId();
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
         if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
-                    cdHostDeployConfigVO.getAppName(),
-                    cdHostDeployConfigVO.getAppCode(),
+                    devopsCdHostDeployInfoDTO.getAppName(),
+                    devopsCdHostDeployInfoDTO.getAppCode(),
                     RdupmTypeEnum.OTHER.value(),
                     OperationTypeEnum.PIPELINE_DEPLOY.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
                     devopsHostAppDTO.getId(),
-                    cdHostDeployConfigVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
+                    devopsCdHostDeployInfoDTO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
                     null,
                     null,
-                    cdHostDeployConfigVO.getPreCommand(),
-                    cdHostDeployConfigVO.getRunCommand(),
-                    cdHostDeployConfigVO.getPostCommand());
+                    devopsCdHostDeployInfoDTO.getPreCommand(),
+                    devopsCdHostDeployInfoDTO.getRunCommand(),
+                    devopsCdHostDeployInfoDTO.getPostCommand());
 
             devopsCdHostDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
             devopsCdHostDeployInfoDTO.setDeployType(DeployTypeEnum.UPDATE.value());
@@ -425,15 +422,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
             devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
-            devopsHostAppDTO.setName(cdHostDeployConfigVO.getAppName());
+            devopsHostAppDTO.setName(devopsCdHostDeployInfoDTO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
 
-            devopsHostAppInstanceDTO.setPreCommand(cdHostDeployConfigVO.getPreCommand());
-            devopsHostAppInstanceDTO.setRunCommand(cdHostDeployConfigVO.getRunCommand());
-            devopsHostAppInstanceDTO.setPostCommand(cdHostDeployConfigVO.getPostCommand());
+            devopsHostAppInstanceDTO.setPreCommand(devopsCdHostDeployInfoDTO.getPreCommand());
+            devopsHostAppInstanceDTO.setRunCommand(devopsCdHostDeployInfoDTO.getRunCommand());
+            devopsHostAppInstanceDTO.setPostCommand(devopsCdHostDeployInfoDTO.getPostCommand());
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
@@ -444,12 +441,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         params.put("{{ APP_FILE }}", "");
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
-                cdHostDeployConfigVO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 null,
-                StringUtils.isEmpty(cdHostDeployConfigVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(cdHostDeployConfigVO.getPreCommand())),
-                StringUtils.isEmpty(cdHostDeployConfigVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(cdHostDeployConfigVO.getRunCommand())),
-                StringUtils.isEmpty(cdHostDeployConfigVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(cdHostDeployConfigVO.getPostCommand())),
+                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
+                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
+                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
                 devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -477,10 +474,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsHostDTO != null ? devopsHostDTO.getName() : null,
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.JAR,
-                cdHostDeployConfigVO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppName(),
                 null,
-                cdHostDeployConfigVO.getAppName(),
-                cdHostDeployConfigVO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
@@ -500,17 +497,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
 
-    }
-
-    private String genCustomCommands(String value) {
-        String[] strings = value.split("\n");
-        String commands = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#")) {
-                commands = commands + s;
-            }
-        }
-        return "#!/bin/bash\n" + commands;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
