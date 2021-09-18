@@ -29,8 +29,10 @@ AGENT=${WORK_DIR}/${AGENT_NAME}
 AGENT_LOG=$WORK_DIR/${AGENT_NAME}.log
 
 # 3. 下载执行程序
+tar_file=${WORK_DIR}/c7n-agent-tar.gz
 echo "Downloading c7n-agent"
-curl -o "${AGENT}" "{{ BINARY }}"
+curl -o ${tar_file} "{{ BINARY }}"
+tar -zxvf ${tar_file}
 echo "c7n-agent downloaded successfully"
 
 # 4. 启动程序
