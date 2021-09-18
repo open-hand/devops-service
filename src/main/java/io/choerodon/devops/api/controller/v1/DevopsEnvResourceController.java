@@ -47,7 +47,7 @@ public class DevopsEnvResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @RequestParam(value = "env_id") Long envId,
-            @RequestParam(value = "workload_id") Long workLoadId,
+            @Encrypt @RequestParam(value = "workload_id") Long workLoadId,
             @RequestParam(value = "type") String type
     ) {
         return ResponseEntity.ok(devopsEnvResourceService.queryYamlById(envId, workLoadId, type));
