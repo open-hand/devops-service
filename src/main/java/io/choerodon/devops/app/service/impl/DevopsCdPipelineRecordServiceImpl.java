@@ -62,6 +62,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -171,7 +172,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private DevopsHostService devopsHostService;
+    private HostConnectionHandler hostConnectionHandler;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -393,6 +394,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
 
         Long hostId = devopsCdHostDeployInfoDTO.getHostId();
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+
+        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
+            LOGGER.info("host {} not connect, skip this task.", hostId);
+            updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
+            return;
+        }
+
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         DevopsHostAppDTO devopsHostAppDTO;
@@ -514,6 +523,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
 
         Long hostId = devopsCdHostDeployInfoDTO.getHostId();
+
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+
+        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
+            LOGGER.info("host {} not connect, skip this task.", hostId);
+            updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
+            return;
+        }
+
+
+
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
