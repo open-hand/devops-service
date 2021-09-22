@@ -723,9 +723,12 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     }
 
     private HarborC7nRepoImageTagVo getHarborC7nRepoImageTagVo(DevopsDeployGroupDockerDeployVO devopsDeployGroupDockerDeployVO) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(">>>>>>>>>>>>>>>>>>>[getHarborC7nRepoImageTagVo] imageInfo is {}<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsDeployGroupDockerDeployVO.getImageInfo()));
+        }
         HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType(), TypeUtil.objToLong(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoId()), devopsDeployGroupDockerDeployVO.getImageInfo().getImageName(), devopsDeployGroupDockerDeployVO.getImageInfo().getTag());
         if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
-            throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);
+            throw new CommonException("ERROR_IMAGE_TAG_NOT_FOUND");
         }
         return imageTagVo;
     }
