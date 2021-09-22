@@ -709,7 +709,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             nameAndTagArray[1],
                             Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()));
                     dockerDeployVO.setImageInfo(prodImageInfoVO);
-
+                    config.setPipelineJobName(null);
                     config.setDockerDeployVO(dockerDeployVO);
 
                 } else {
@@ -722,6 +722,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     DevopsDeployGroupJarDeployVO devopsDeployGroupJarDeployVO = new DevopsDeployGroupJarDeployVO();
                     devopsDeployGroupJarDeployVO.setProdJarInfoVO(prodJarInfoVO);
                     devopsDeployGroupJarDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+                    config.setPipelineJobName(null);
                     config.setJarDeployVO(devopsDeployGroupJarDeployVO);
                 }
             }
