@@ -46,10 +46,7 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
-import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
-import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
-import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
+import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
@@ -572,14 +569,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
-
+        C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), projectId, nexusRepoId);
         JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
                 devopsCdHostDeployInfoDTO.getAppName(),
                 devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsCdHostDeployInfoDTO.getPreCommand(),
                 devopsCdHostDeployInfoDTO.getRunCommand(),
                 devopsCdHostDeployInfoDTO.getPostCommand(),
-                new ProdJarInfoVO(nexusRepoId,
+                new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
+                        nexusRepoId,
                         groupId,
                         artifactId,
                         c7nNexusComponentDTO.getVersion()));

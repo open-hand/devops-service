@@ -16,6 +16,7 @@ import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.feign.RdupmClient;
 
@@ -118,5 +119,10 @@ public class RdupmClientOperator {
         }
         return response.getBody();
     }
+
+    public C7nNexusRepoDTO getMavenRepo(Long organizationId, Long projectId, Long repositoryId) {
+        return rdupmClient.getMavenRepo(organizationId, projectId, repositoryId).getBody();
+    }
+
 
 }

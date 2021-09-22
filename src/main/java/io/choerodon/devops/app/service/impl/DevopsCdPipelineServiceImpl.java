@@ -725,7 +725,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             ciPipelineMavenDTO.getArtifactId(),
                             getMavenVersion(ciPipelineMavenDTO.getVersion()));
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobRecordDTO.getProjectId());
-                    C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), devopsCdJobRecordDTO.getProjectId(), ciPipelineMavenDTO.getNexusRepoId()).getBody();
+                    C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), devopsCdJobRecordDTO.getProjectId(), ciPipelineMavenDTO.getNexusRepoId());
 
                     prodJarInfoVO.setNexusId(c7nNexusRepoDTO.getConfigId());
 
