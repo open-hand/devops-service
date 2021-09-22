@@ -636,6 +636,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineDeployDeployment(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, StringBuilder log) {
         LOGGER.info("autoDeploy:pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
         // log 用于记录部署日志
