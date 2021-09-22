@@ -1,16 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.hzero.core.base.BaseConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -24,10 +13,24 @@ import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.ClusterStatusEnum;
+import io.choerodon.devops.infra.enums.DevopsHostStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
 
 /**
  * 用户资源查询接口默认实现
@@ -44,6 +47,11 @@ public class UserResourceServiceImpl implements UserResourceService {
     private DevopsClusterMapper devopsClusterMapper;
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    @Lazy
+    private HostConnectionHandler hostConnectionHandler;
 
     @Autowired
     private DevopsHostService devopsHostService;
@@ -74,7 +82,9 @@ public class UserResourceServiceImpl implements UserResourceService {
         if (CollectionUtils.isEmpty(hostDTOS)) {
             return result;
         }
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
         hostDTOS.forEach(hostDTO -> {
+            hostDTO.setHostStatus(updatedClusterList.contains(hostDTO.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue());
             ProjectDTO project = projects.stream().filter(projectDTO -> Objects.equals(projectDTO.getId(),
                     hostDTO.getProjectId())).findFirst().orElse(null);
             ResourceUsageInfoVO resourceUsageInfo = devopsHostService.queryResourceUsageInfo(hostDTO.getProjectId(), hostDTO.getId());
@@ -95,7 +105,13 @@ public class UserResourceServiceImpl implements UserResourceService {
         if (CollectionUtils.isEmpty(clusterDTOS)) {
             return result;
         }
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         clusterDTOS.forEach(clusterDTO -> {
+            boolean connect = updatedEnvList.contains(clusterDTO.getId());
+            if (connect && clusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.DISCONNECT.value())) {
+                // 如果在数据库中保存的状态是DISCONNECTED,则将状态置为CONNECTED
+                clusterDTO.setStatus(ClusterStatusEnum.RUNNING.value());
+            }
             ProjectDTO project = projects.stream().filter(projectDTO -> Objects.equals(projectDTO.getId(),
                     clusterDTO.getProjectId())).findFirst().orElse(null);
             result.add(ClusterDetailResourceVO.build(clusterDTO, project == null ? null : project.getName()));
