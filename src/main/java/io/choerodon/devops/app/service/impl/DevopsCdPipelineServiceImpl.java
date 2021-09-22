@@ -703,7 +703,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     String iamgeName = nameAndTagArray[0].substring(nameAndTagArray[0].lastIndexOf("/") + 1);
 
                     ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
-                            harborRepoDTO.getHarborRepoConfig().getType(),
+                            harborRepoDTO.getRepoType(),
                             harborRepoDTO.getHarborRepoConfig().getRepoId(),
                             iamgeName,
                             nameAndTagArray[1],
