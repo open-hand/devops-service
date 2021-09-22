@@ -60,12 +60,14 @@ import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
@@ -186,6 +188,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private RdupmClientOperator rdupmClientOperator;
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
+    @Autowired
+    private RdupmClient rdupmClient;
+
 
 
     @Override
@@ -719,6 +724,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             ciPipelineMavenDTO.getGroupId(),
                             ciPipelineMavenDTO.getArtifactId(),
                             getMavenVersion(ciPipelineMavenDTO.getVersion()));
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobRecordDTO.getProjectId());
+                    C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), devopsCdJobRecordDTO.getProjectId(), ciPipelineMavenDTO.getNexusRepoId()).getBody();
+
+                    prodJarInfoVO.setNexusId(c7nNexusRepoDTO.getConfigId());
+
 
                     DevopsDeployGroupJarDeployVO devopsDeployGroupJarDeployVO = new DevopsDeployGroupJarDeployVO();
                     devopsDeployGroupJarDeployVO.setProdJarInfoVO(prodJarInfoVO);
