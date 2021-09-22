@@ -17,7 +17,6 @@ import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
-import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsIssueRelMapper;
 
 @Service
@@ -95,8 +94,8 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId) {
-        return devopsIssueRelMapper.listRelationByIssueIdAndObjectType(object, issueId);
+    public Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(Long projectId, String object, Long issueId) {
+        return devopsIssueRelMapper.listRelationByIssueIdAndObjectType(projectId, object, issueId);
     }
 
     @Override

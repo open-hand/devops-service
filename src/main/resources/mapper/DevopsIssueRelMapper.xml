@@ -35,7 +35,8 @@
     <select id="listRelationByIssueIdAndObjectType" resultType="io.choerodon.devops.infra.dto.DevopsIssueRelDTO">
         SELECT dir.object_id, dir.project_id, dir.app_service_code, dir.branch_id
         FROM devops_issue_rel dir
-        WHERE dir.issue_id = #{issueId}
+        WHERE dir.project_id = #{projectId}
+          AND dir.issue_id = #{issueId}
           AND dir.object = #{object}
     </select>
 

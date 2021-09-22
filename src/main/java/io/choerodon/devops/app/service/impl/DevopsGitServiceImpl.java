@@ -1184,17 +1184,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchIdWithIssueId(appServiceId, branchId);
-        if (devopsBranchDTO == null) {
-            return;
+        if (devopsBranchDTO != null) {
+            CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
         }
-        CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
+
         // 移除分支关联关系
-        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsBranchDTO.getId(), issueId);
+        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueId);
 
         // 移除分支对应的提交关联关系
-        devopsIssueRelService.deleteCommitRelationByBranchId(devopsBranchDTO.getId(), issueId);
+        devopsIssueRelService.deleteCommitRelationByBranchId(branchId, issueId);
 
-        Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
+        // 查出剩下的和敏捷问题有关联的分支
+        Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndObjectType(projectId, DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
         List<DevopsBranchVO> devopsBranchVOS = remainBranchIssueRelation.stream().map(r -> {
             DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
             devopsBranchVO.setAppServiceCode(r.getAppServiceCode());
