@@ -47,13 +47,13 @@ public interface DevopsMiddlewareService {
     AppServiceInstanceVO envDeployForMySql(Long projectId, MiddlewareMySqlEnvDeployVO middlewareMySqlEnvDeployVO);
 
     /**
-     * 更新redis容器实例
+     * 更新容器实例
      *
      * @param projectId
-     * @param middlewareRedisEnvDeployVO
+     * @param marketInstanceCreationRequestVO
      * @return
      */
-    AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO);
+    AppServiceInstanceVO updateMiddlewareInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO);
 
     /**
      * 查询redis配置信息
@@ -81,5 +81,16 @@ public interface DevopsMiddlewareService {
      */
     void uninstallMiddleware(Long projectId, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO);
 
+    /**
+     * 根据实例id删除中间
+     * @param instanceId
+     */
     void deleteByInstanceId(Long instanceId);
+
+    /**
+     * 根据实例id查询中间件
+     * @param instanceId
+     * @return
+     */
+    DevopsMiddlewareDTO queryByInstanceId(Long instanceId);
 }

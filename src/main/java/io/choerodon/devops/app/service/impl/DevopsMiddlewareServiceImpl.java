@@ -10,7 +10,6 @@ import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_M
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -21,8 +20,6 @@ import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -33,7 +30,6 @@ import org.yaml.snakeyaml.Yaml;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
-import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
@@ -95,9 +91,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     private static final String MYSQL_STANDALONE_VALUE_TEMPLATE;
 
-    private static final String MIDDLEWARE_STATUS_SYNC_LOCK = "middleware-status-sync-lock";
+    public static final Map<String, String> MODE_MAP = new HashMap<>();
 
     static {
+        MODE_MAP.put(STANDALONE.getValue(), "单机模式");
+        MODE_MAP.put(SENTINEL.getValue(), "哨兵模式");
+        MODE_MAP.put(MASTER_SLAVE.getValue(), "主备模式");
+
         try (InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml")) {
             REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
         } catch (Exception e) {
@@ -128,8 +128,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Autowired
     private DevopsMiddlewareMapper devopsMiddlewareMapper;
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-    @Autowired
     private EncryptService encryptService;
     @Autowired
     private DevopsPvcService devopsPvcService;
@@ -141,9 +139,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
-    @Lazy
-    @Autowired
-    private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -170,8 +165,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         }
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class);
-        marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
+        marketInstanceCreationRequestVO.setApplicationType(AppSourceType.MIDDLEWARE.getValue());
         marketInstanceCreationRequestVO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
+        marketInstanceCreationRequestVO.setInstanceName(marketInstanceCreationRequestVO.getAppCode());
 
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
@@ -187,15 +183,16 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareMySqlEnvDeployVO.setValues(generateMysqlStandaloneValues(middlewareMySqlEnvDeployVO));
 
         MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = ConvertUtils.convertObject(middlewareMySqlEnvDeployVO, MarketInstanceCreationRequestVO.class);
-        marketInstanceCreationRequestVO.setApplicationType(AppServiceType.MIDDLEWARE_SERVICE.getType());
+        marketInstanceCreationRequestVO.setApplicationType(AppSourceType.MIDDLEWARE.getValue());
         marketInstanceCreationRequestVO.setOperationType(OperationTypeEnum.BASE_COMPONENT.value());
+        marketInstanceCreationRequestVO.setInstanceName(marketInstanceCreationRequestVO.getAppCode());
 
         return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
 
     @Override
-    public AppServiceInstanceVO updateRedisInstance(Long projectId, MiddlewareRedisEnvDeployVO middlewareRedisEnvDeployVO) {
-        return appServiceInstanceService.createOrUpdateMarketInstance(projectId, ConvertUtils.convertObject(middlewareRedisEnvDeployVO, MarketInstanceCreationRequestVO.class), true);
+    public AppServiceInstanceVO updateMiddlewareInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO) {
+        return appServiceInstanceService.createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, true);
     }
 
     @Override
@@ -316,7 +313,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setHostId(devopsHostDTOForConnection.getId());
-            devopsHostCommandDTO.setInstanceId(devopsMiddlewareDTO.getId());
+            devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
             devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_MIDDLEWARE.value());
             devopsHostCommandDTO.setInstanceType(HostInstanceType.MIDDLEWARE_REDIS.value());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
@@ -567,6 +564,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     public void deleteByInstanceId(Long instanceId) {
         devopsMiddlewareMapper.deleteByInstanceId(instanceId);
+    }
+
+    @Override
+    public DevopsMiddlewareDTO queryByInstanceId(Long instanceId) {
+        return devopsMiddlewareMapper.queryByInstanceId(instanceId);
     }
 
     @Override

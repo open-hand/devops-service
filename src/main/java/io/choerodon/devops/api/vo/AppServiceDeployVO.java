@@ -37,6 +37,10 @@ public class AppServiceDeployVO {
     private String instanceName;
 
     @Encrypt
+    @ApiModelProperty("应用id")
+    private Long appCenterId;
+
+    @Encrypt
     @ApiModelProperty("实例id")
     private Long instanceId;
 
@@ -96,6 +100,22 @@ public class AppServiceDeployVO {
         this.type = type;
         this.appName = appName;
         this.appCode = appCode;
+    }
+
+    public Long getAppCenterId() {
+        return appCenterId;
+    }
+
+    public void setAppCenterId(Long appCenterId) {
+        this.appCenterId = appCenterId;
+    }
+
+    public boolean isNotChange() {
+        return isNotChange;
+    }
+
+    public void setNotChange(boolean notChange) {
+        isNotChange = notChange;
     }
 
     public String getAppServiceSource() {

@@ -132,5 +132,25 @@ public interface DevopsCdPipelineService {
     @Nullable
     PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long instanceId);
 
+    /**
+     * 查询引用了环境应用作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
+     *
+     * @param projectId  项目id
+     * @param appId 应用id
+     * @return 一个或者无
+     */
+    @Nullable
+    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
+
+    /**
+     * 查询引用了主机应用作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
+     *
+     * @param projectId  项目id
+     * @param appId 应用id
+     * @return 一个或者无
+     */
+    @Nullable
+    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
+
     void hostDeployStatusUpdate(Long jobRecordId, Boolean status, String error);
 }

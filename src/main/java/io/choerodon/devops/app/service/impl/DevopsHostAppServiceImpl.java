@@ -19,6 +19,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.FileInfoVO;
@@ -34,10 +35,7 @@ import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
-import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
@@ -109,6 +107,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
+    @Autowired
+    @Lazy
+    private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
     @Transactional
@@ -247,15 +248,15 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String appFile;
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
-            appFileName = jarDeployVO.getFileInfoVO().getFileName();
-            appFile = workDir + jarDeployVO.getFileInfoVO().getFileName();
+            appFileName = jarDeployVO.getFileInfoVO().getFileName() + System.currentTimeMillis();
+            appFile = workDir + appFileName;
             downloadCommand = HostDeployUtil.genDownloadCommand("none",
                     "none",
-                    jarDeployVO.getFileInfoVO().getJarFileUrl(),
+                    jarDeployVO.getFileInfoVO().getUploadUrl(),
                     workDir,
                     appFile);
         } else {
-            appFileName = nexusComponentDTOList.get(0).getName();
+            appFileName = nexusComponentDTOList.get(0).getName() + System.currentTimeMillis();
             appFile = workDir + appFileName;
             downloadCommand = HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
@@ -288,7 +289,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         Long devopsDeployRecordId = devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
-                null,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 devopsHostDTO.getId(),
                 devopsHostDTO.getName(),
@@ -369,9 +370,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params) {
         Page<DevopsHostAppVO> page;
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, DetailsHelper.getUserDetails().getUserId())) {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listByOptions(hostId, rdupmType, operationType, params));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listByOptions(projectId, hostId, rdupmType, operationType, params));
         } else {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedByOptions(DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params));
         }
 
         if (CollectionUtils.isEmpty(page.getContent())) {
@@ -398,11 +399,51 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         compoundDevopsHostAppVO(devopsHostAppVO);
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
         devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getInstanceId()));
+        // 表示中间件，需要查询额外字段
+        if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
+            DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getInstanceId());
+            devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
+            devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
+        }
         return devopsHostAppVO;
     }
 
     @Override
+    public void checkNameAndCodeUniqueAndThrow(Long projectId, Long appId, String name, String code) {
+        checkNameUniqueAndThrow(projectId, appId, name);
+
+        checkCodeUniqueAndThrow(projectId, appId, name);
+
+    }
+
+    public void checkCodeUniqueAndThrow(Long projectId, Long appId, String code) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, code))) {
+            throw new CommonException("error.host.app.code.exist");
+        }
+    }
+
+    public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, name))) {
+            throw new CommonException("error.host.app.name.exist");
+        }
+    }
+
+    @Override
+    public Boolean checkCodeUnique(Long projectId, Long appId, String code) {
+        return devopsHostAppMapper.checkCodeUnique(projectId, appId, code);
+    }
+
+    @Override
+    public Boolean checkNameUnique(Long projectId, Long appId, String name) {
+        return devopsHostAppMapper.checkNameUnique(projectId, appId, name);
+    }
+
+    @Override
     public void deleteById(Long projectId, Long hostId, Long appId) {
+        // 校验应用是否关联流水线，是则抛出异常，不能删除
+//        if (queryPipelineReferenceHostApp(projectId, appId) != null) {
+//          throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+//        }
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
         List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
@@ -511,16 +552,17 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
-        String appFile = workDir + customDeployVO.getFileInfoVO().getFileName();
+        String appFileName = customDeployVO.getFileInfoVO().getFileName() + System.currentTimeMillis();
+        String appFile = workDir + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
-        params.put("{{ APP_FILE_NAME }}", customDeployVO.getFileInfoVO().getFileName());
+        params.put("{{ APP_FILE_NAME }}", appFileName);
         params.put("{{ APP_FILE }}", appFile);
 
         String downloadCommand = null;
         if (AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType())) {
-            downloadCommand = HostDeployUtil.genDownloadCommand("none",
-                    "none",
-                    customDeployVO.getFileInfoVO().getJarFileUrl(),
+            downloadCommand = HostDeployUtil.genDownloadCommand(null,
+                    null,
+                    customDeployVO.getFileInfoVO().getUploadUrl(),
                     workDir,
                     appFile);
         }
@@ -546,13 +588,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
-                null,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 devopsHostDTO.getId(),
                 devopsHostDTO.getName(),
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.OTHER,
-                devopsHostDTO.getName(),
+                "其他制品",
                 null,
                 devopsHostAppDTO.getName(),
                 devopsHostAppDTO.getCode(),
@@ -575,6 +617,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
+        return devopsCdPipelineService.queryPipelineReferenceHostApp(projectId, appId);
+    }
+
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {
         if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
             devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
@@ -585,12 +632,4 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
         }
     }
-
-    public static void main(String[] args) {
-        String testStr = "djasklf\nasdfkljasdk\n";
-        for (String line : testStr.split("\\\\n")) {
-            System.out.println(line);
-        }
-    }
-
 }

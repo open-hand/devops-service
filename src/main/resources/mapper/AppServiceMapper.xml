@@ -815,16 +815,16 @@
 
     <select id="queryResourceById" resultType="io.choerodon.devops.api.vo.iam.ResourceVO">
         SELECT
-            das.project_id as projectId,
-            count( * ) as currentAppService,
-            ( SELECT count( * ) FROM devops_cluster dc WHERE dc.project_id = das.project_id ) as currentCluster,
-            ( SELECT count( * ) FROM devops_env de WHERE de.project_id = das.project_id ) as currentEnv
+            dp.iam_project_id AS projectId,
+            ( SELECT count( * ) FROM devops_app_service das WHERE das.project_id = dp.iam_project_id ) AS currentAppService,
+            ( SELECT count( * ) FROM devops_cluster dc WHERE dc.project_id = dp.iam_project_id ) AS currentCluster,
+            ( SELECT count( * ) FROM devops_env de WHERE de.project_id = dp.iam_project_id ) AS currentEnv
         FROM
-            devops_app_service das
+            devops_project dp
         WHERE
-            das.project_id = #{projectId}
+            dp.iam_project_id = #{projectId}
         GROUP BY
-            das.project_id
+            dp.iam_project_id
     </select>
 
     <select id="listShareAppServiceHavingVersion" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">

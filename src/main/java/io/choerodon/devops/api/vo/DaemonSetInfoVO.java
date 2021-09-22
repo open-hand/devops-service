@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -11,7 +13,7 @@ import java.util.Map;
  * @since 2021/6/10 21:37
  */
 public class DaemonSetInfoVO {
-
+    @Encrypt
     private Long id;
     private String name;
     private Long desiredScheduled;
@@ -21,6 +23,7 @@ public class DaemonSetInfoVO {
     private String age;
     private List<Integer> ports;
     private Map<String, String> labels;
+    @Encrypt
     private Long instanceId;
 
     private String commandType;

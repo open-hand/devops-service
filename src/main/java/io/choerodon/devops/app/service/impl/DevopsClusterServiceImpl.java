@@ -327,9 +327,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(organizationId);
         if (resourceLimitVO != null) {
             DevopsClusterDTO example = new DevopsClusterDTO();
-            example.setOrganizationId(organizationId);
+            example.setProjectId(projectId);
             int num = devopsClusterMapper.selectCount(example);
-            return num <= resourceLimitVO.getClusterMaxNumber();
+            return num < resourceLimitVO.getClusterMaxNumber();
         }
         return true;
     }
@@ -340,7 +340,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (StringUtils.isEmpty(devopsClusterUpdateVO.getName())) {
             devopsClusterUpdateVO.setName(null);
         }
-        baseUpdate(projectId, ConvertUtils.convertObject(devopsClusterUpdateVO, DevopsClusterDTO.class));
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsClusterUpdateVO.getId());
+        // 内部调用不需要校验
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        // 可以更新的字段：集群名称、集群描述
+        devopsClusterDTO.setName(devopsClusterUpdateVO.getName());
+        devopsClusterDTO.setDescription(devopsClusterUpdateVO.getDescription());
+        devopsClusterMapper.updateByPrimaryKey(devopsClusterDTO);
     }
 
     @Override

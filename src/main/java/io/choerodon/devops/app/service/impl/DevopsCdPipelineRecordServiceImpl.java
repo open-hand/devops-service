@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
@@ -33,7 +34,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
-import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
@@ -62,6 +62,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -79,6 +80,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
     private static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
+    private static final String ENV = "env";
+    private static final String HOST = "host";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
@@ -162,6 +165,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdJobService devopsCdJobService;
     @Autowired
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private HostConnectionHandler hostConnectionHandler;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
@@ -378,55 +389,57 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-
-        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-
-        // 1.更新流水线状态 记录信息
-        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
-        jobRecordDTO.setStartedDate(new Date());
-        devopsCdJobRecordService.update(jobRecordDTO);
-
-        // 2.保存记录
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
+
+//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+
+        Long hostId = devopsCdHostDeployInfoDTO.getHostId();
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+
+        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
+            LOGGER.info("host {} not connect, skip this task.", hostId);
+            updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
+            return;
+        }
+
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
         if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
-                    cdHostDeployConfigVO.getAppName(),
-                    cdHostDeployConfigVO.getAppCode(),
+                    devopsCdHostDeployInfoDTO.getAppName(),
+                    devopsCdHostDeployInfoDTO.getAppCode(),
                     RdupmTypeEnum.OTHER.value(),
                     OperationTypeEnum.PIPELINE_DEPLOY.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
                     devopsHostAppDTO.getId(),
-                    cdHostDeployConfigVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
+                    devopsCdHostDeployInfoDTO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
                     null,
                     null,
-                    cdHostDeployConfigVO.getPreCommand(),
-                    cdHostDeployConfigVO.getRunCommand(),
-                    cdHostDeployConfigVO.getPostCommand());
+                    devopsCdHostDeployInfoDTO.getPreCommand(),
+                    devopsCdHostDeployInfoDTO.getRunCommand(),
+                    devopsCdHostDeployInfoDTO.getPostCommand());
 
             devopsCdHostDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
-            devopsCdHostDeployInfoDTO.setHostDeployType(DeployTypeEnum.UPDATE.value());
+            devopsCdHostDeployInfoDTO.setDeployType(DeployTypeEnum.UPDATE.value());
             devopsCdHostDeployInfoService.baseUpdate(devopsCdHostDeployInfoDTO);
 
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
             devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
-            devopsHostAppDTO.setName(cdHostDeployConfigVO.getAppName());
+            devopsHostAppDTO.setName(devopsCdHostDeployInfoDTO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
 
-            devopsHostAppInstanceDTO.setPreCommand(cdHostDeployConfigVO.getPreCommand());
-            devopsHostAppInstanceDTO.setRunCommand(cdHostDeployConfigVO.getRunCommand());
-            devopsHostAppInstanceDTO.setPostCommand(cdHostDeployConfigVO.getPostCommand());
+            devopsHostAppInstanceDTO.setPreCommand(devopsCdHostDeployInfoDTO.getPreCommand());
+            devopsHostAppInstanceDTO.setRunCommand(devopsCdHostDeployInfoDTO.getRunCommand());
+            devopsHostAppInstanceDTO.setPostCommand(devopsCdHostDeployInfoDTO.getPostCommand());
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
@@ -437,12 +450,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         params.put("{{ APP_FILE }}", "");
 
         JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
-                cdHostDeployConfigVO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 null,
-                StringUtils.isEmpty(cdHostDeployConfigVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(cdHostDeployConfigVO.getPreCommand())),
-                StringUtils.isEmpty(cdHostDeployConfigVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(cdHostDeployConfigVO.getRunCommand())),
-                StringUtils.isEmpty(cdHostDeployConfigVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(cdHostDeployConfigVO.getPostCommand())),
+                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
+                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
+                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
                 devopsHostAppInstanceDTO.getPid());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -454,20 +467,26 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        // 更新流水线状态 记录信息
+        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        jobRecordDTO.setStartedDate(new Date());
+        jobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordService.update(jobRecordDTO);
+
         // 保存执行记录
         devopsDeployRecordService.saveRecord(
                 jobRecordDTO.getProjectId(),
                 DeployType.AUTO,
-                null,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 hostId,
                 devopsHostDTO != null ? devopsHostDTO.getName() : null,
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.JAR,
-                cdHostDeployConfigVO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppName(),
                 null,
-                cdHostDeployConfigVO.getAppName(),
-                cdHostDeployConfigVO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
@@ -489,17 +508,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    private String genCustomCommands(String value) {
-        String[] strings = value.split("\n");
-        String commands = "";
-        for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#")) {
-                commands = commands + s;
-            }
-        }
-        return "#!/bin/bash\n" + commands;
-    }
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
@@ -509,12 +517,26 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+//        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO1 = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
+//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
 
-        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
+
+        Long hostId = devopsCdHostDeployInfoDTO.getHostId();
+
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+
+        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
+            LOGGER.info("host {} not connect, skip this task.", hostId);
+            updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
+            return;
+        }
+
+
+
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
-        CdHostDeployConfigVO.JarDeploy jarDeploy = cdHostDeployConfigVO.getJarDeploy();
+        CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
 
 
         // 0.1 从制品库获取仓库信息
@@ -552,11 +574,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
 
         JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
-                cdHostDeployConfigVO.getAppName(),
-                cdHostDeployConfigVO.getAppCode(),
-                cdHostDeployConfigVO.getPreCommand(),
-                cdHostDeployConfigVO.getRunCommand(),
-                cdHostDeployConfigVO.getPostCommand(),
+                devopsCdHostDeployInfoDTO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getPreCommand(),
+                devopsCdHostDeployInfoDTO.getRunCommand(),
+                devopsCdHostDeployInfoDTO.getPostCommand(),
                 new ProdJarInfoVO(nexusRepoId,
                         groupId,
                         artifactId,
@@ -567,16 +589,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
         jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
         jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
-
-
-        // 1.更新流水线状态 记录信息
-        jobRecordDTO.setDeployMetadata(gson.toJson(jarPullInfoDTO));
-        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
-        jobRecordDTO.setStartedDate(new Date());
-        devopsCdJobRecordService.update(jobRecordDTO);
-
-        // 2. 执行jar部署
-        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
 
         // 2.保存记录
         DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
@@ -613,6 +625,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         } else {
             devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
+            if (devopsHostAppDTO == null) {
+                LOGGER.info("App not found, is deleted? Skip this task.appId:{},appName:{},appCode{}", devopsCdHostDeployInfoDTO.getAppId(), devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
+                updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
+                return;
+            }
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
@@ -657,11 +674,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        // 更新流水线状态 记录信息
+        jobRecordDTO.setDeployMetadata(gson.toJson(jarPullInfoDTO));
+        jobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        jobRecordDTO.setStartedDate(new Date());
+        jobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordService.update(jobRecordDTO);
+
         // 保存执行记录
         devopsDeployRecordService.saveRecord(
                 jobRecordDTO.getProjectId(),
                 DeployType.AUTO,
-                null,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 hostId,
                 devopsHostDTO != null ? devopsHostDTO.getName() : null,
@@ -669,8 +693,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 DeployObjectTypeEnum.JAR,
                 c7nNexusComponentDTO.getName(),
                 c7nNexusComponentDTO.getVersion(),
-                cdHostDeployConfigVO.getAppName(),
-                cdHostDeployConfigVO.getAppCode(),
+                devopsCdHostDeployInfoDTO.getAppName(),
+                devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
@@ -1075,19 +1099,63 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 if (commandId != null) {
                     DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
                     if (deployRecordVO != null) {
+                        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
                         DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
-                        cdAuto.setAppServiceId(deployRecordVO.getAppServiceId());
                         cdAuto.setAppServiceName(deployRecordVO.getDeployObjectName());
                         cdAuto.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
                         cdAuto.setEnvId(deployRecordVO.getEnvId());
                         cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
-                        cdAuto.setInstanceId(deployRecordVO.getAppId());
-                        cdAuto.setInstanceName(deployRecordVO.getAppName());
-
+                        cdAuto.setAppId(deployRecordVO.getAppId());
+                        cdAuto.setAppName(deployRecordVO.getAppName());
+                        if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                            cdAuto.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                            cdAuto.setChartSource(devopsDeployAppCenterEnvDTO.getChartSource());
+                            cdAuto.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
+                            cdAuto.setDeployType(ENV);
+                            cdAuto.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                            if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                                AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId() ,devopsDeployAppCenterEnvDTO.getObjectId());
+                                if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
+                                    cdAuto.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
+                                    cdAuto.setStatus(appServiceInstanceInfoVO.getStatus());
+                                }
+                            }
+                        }
                         devopsCdJobRecordVO.setCdAuto(cdAuto);
                     }
                 }
             }
+
+            //部署组部署 返回对应信息
+            if (JobTypeEnum.CD_DEPLOYMENT.value().equals(devopsCdJobRecordVO.getType())) {
+                //部署环境 应用服务 生成版本 实例名称
+                Long commandId = devopsCdJobRecordVO.getCommandId();
+                if (commandId != null) {
+                    DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+                    if (deployRecordVO != null) {
+                        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
+                        DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                        cdAuto.setEnvId(deployRecordVO.getEnvId());
+                        cdAuto.setEnvName(deployRecordVO.getDeployPayloadName());
+                        cdAuto.setAppId(deployRecordVO.getAppId());
+                        cdAuto.setAppName(deployRecordVO.getAppName());
+                        if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                            cdAuto.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
+                            cdAuto.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                            cdAuto.setDeployType(ENV);
+                            cdAuto.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                            if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                                DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterEnvDTO.getObjectId());
+                                if (!ObjectUtils.isEmpty(deploymentDTO)) {
+                                    cdAuto.setStatus(deploymentDTO.getStatus());
+                                }
+                            }
+                        }
+                        devopsCdJobRecordVO.setCdAuto(cdAuto);
+                    }
+                }
+            }
+
             //如果是人工审核返回审核信息
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {
                 // 指定审核人员 已审核人员 审核状态
@@ -1109,8 +1177,23 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
             //如果是主机部署 显示主机部署模式(镜像，jar，自定义)，来源，关联构建任务
             if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordVO.getType())) {
-                CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), CdHostDeployConfigVO.class);
-                devopsCdJobRecordVO.setCdHostDeployConfigVO(cdHostDeployConfigVO);
+                Long commandId = devopsCdJobRecordVO.getCommandId();
+                if (commandId != null) {
+                    DeployRecordVO deployRecordVO = devopsDeployRecordService.queryHostDeployRecordByCommandId(commandId);
+                    DevopsCdJobRecordVO.CdAuto cdAuto = devopsCdJobRecordVO.new CdAuto();
+                    cdAuto.setAppId(deployRecordVO.getAppId());
+                    cdAuto.setAppName(deployRecordVO.getAppName());
+                    cdAuto.setHostName(deployRecordVO.getDeployPayloadName());
+                    cdAuto.setDeployType(HOST);
+                    cdAuto.setDeployTypeId(deployRecordVO.getDeployPayloadId());
+                    cdAuto.setOperationType(deployRecordVO.getDeployObjectType());
+                    cdAuto.setRdupmType(deployRecordVO.getDeployObjectType());
+                    DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(deployRecordVO.getAppId());
+                    if (!ObjectUtils.isEmpty(devopsHostAppDTO)) {
+                        cdAuto.setOperationType(devopsHostAppDTO.getOperationType());
+                    }
+                    devopsCdJobRecordVO.setCdAuto(cdAuto);
+                }
             }
 
             if (JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordVO.getType())
@@ -1129,6 +1212,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(devopsCdJobRecordVO.getType())) {
                 ExternalApprovalJobVO externalApprovalJobVO = gson.fromJson(devopsCdJobRecordVO.getMetadata(), ExternalApprovalJobVO.class);
                 devopsCdJobRecordVO.setExternalApprovalJobVO(externalApprovalJobVO);
+            }
+            if (devopsCdJobRecordVO.getStartedDate() != null && devopsCdJobRecordVO.getFinishedDate() != null) {
+                long durationSeconds = (devopsCdJobRecordVO.getFinishedDate().getTime() - devopsCdJobRecordVO.getFinishedDate().getTime()) / 1000;
+                devopsCdJobRecordVO.setDurationSeconds(durationSeconds == 0 ? 1 : durationSeconds);
             }
         });
 

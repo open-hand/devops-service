@@ -12,12 +12,40 @@
 
     <delete id="deleteByGitlabPipelineIds">
 
-        delete  from
-         devops_image_scan_result
+        delete from
+        devops_image_scan_result
         where GITLAB_PIPELINE_ID IN
         <foreach collection="gitlabPipelineIds" item="id" index="no" open="("
                  separator="," close=")">
             #{id}
         </foreach>
     </delete>
+
+
+    <insert id="insertScanResultBatch" parameterType="java.util.List">
+        insert into devops_image_scan_result
+        (VULNERABILITY_CODE, GITLAB_PIPELINE_ID, START_DATE,
+        END_DATE,SEVERITY,PKG_NAME,INSTALLED_VERSION,FIXED_VERSION,DESCRIPTION,TARGET)
+        values
+        <foreach collection="devopsImageScanResultDTOS" item="item" index="index" separator=",">
+            (
+            #{item.vulnerabilityCode},
+            #{item.gitlabPipelineId},
+            #{item.startDate},
+            #{item.endDate},
+            #{item.severity},
+            #{item.pkgName},
+            #{item.installedVersion},
+            #{item.fixedVersion},
+            #{item.description},
+            #{item.target}
+            )
+        </foreach>
+    </insert>
+
+
+    <update id="updateScanDate">
+        UPDATE devops_image_scan_result SET START_DATE=#{startDate}, END_DATE=#{endDate}
+        WHERE GITLAB_PIPELINE_ID = #{gitlabPipelineId};
+    </update>
 </mapper>

@@ -144,7 +144,8 @@ public interface MarketServiceClient {
     @GetMapping("/v1/market/application/{application_id}")
     @ApiOperation("查询应用详情")
     ResponseEntity<String> queryApplication(
-            @PathVariable(name = "application_id", required = false) Long applicationId);
+            @PathVariable(name = "application_id", required = false) Long applicationId,
+            @RequestParam(value = "organization_id", required = false) Long organizationId);
 
     @ApiOperation(value = "查询版本信息")
     @GetMapping("/v1/applications/{application_id}/app_versions/{app_version_id}")

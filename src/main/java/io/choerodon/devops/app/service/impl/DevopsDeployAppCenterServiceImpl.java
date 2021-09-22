@@ -27,6 +27,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
@@ -96,10 +97,32 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Autowired
     @Qualifier("devopsAppCenterHelper")
     private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
+    @Autowired
+    @Lazy
+    private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
     public Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name) {
         return devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, projectId, name);
+    }
+
+    @Override
+    public Boolean checkNameUnique(Long projectId, Long appId, String name) {
+        return devopsDeployAppCenterEnvMapper.checkNameUniqueByAppId(appId, projectId, name);
+    }
+
+    @Override
+    public void checkNameUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, rdupmType, objectId, name))) {
+            throw new CommonException("error.env.app.center.name.exist");
+        }
+    }
+
+    @Override
+    public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
+        if (Boolean.FALSE.equals(checkNameUnique(appId, projectId, name))) {
+            throw new CommonException("error.env.app.center.name.exist");
+        }
     }
 
     @Override
@@ -108,10 +131,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public void checkNameAndCodeUnique(Long projectId, String rdupmType, Long objectId, String name, String code) {
-        if (!checkNameUnique(projectId, rdupmType, objectId, name)) {
-            throw new CommonException("error.env.app.center.name.exist");
-        }
+    public void checkNameAndCodeUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name, String code) {
+        checkNameUniqueAndThrow(projectId, rdupmType, objectId, name);
 
         if (!checkCodeUnique(projectId, rdupmType, objectId, code)) {
             throw new CommonException("error.env.app.center.code.exist");
@@ -133,6 +154,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = combineDevopsEnvironmentDTOMap(devopsDeployAppCenterVOList);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        //将查询出的AppServiceInstanceInfoDTO集合组合成以id为key，实体为value的map
         Map<Long, AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOMap = devopsInstanceDTOMap(devopsDeployAppCenterVOList);
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId());
@@ -145,7 +167,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = new ArrayList<>();
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceInfoDTOMap.get(devopsDeployAppCenterVO.getObjectId());
             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
-                setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+                if (!ObjectUtils.isEmpty(appServiceInstanceInfoDTO)) {
+                    //将AppInstanceInfo里的值赋值给AppCenter
+                    setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+                }
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(devopsDeployAppCenterVO.getObjectId());
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
@@ -429,28 +454,54 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public Page<DevopsDeployAppCenterVO> pageChart(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {
+        //分页查询满足的DevopsDeployAppCenterVO
         Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = pageAppCenterByUserId(projectId, envId, name, operationType, params, pageable);
         List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList = devopsDeployAppCenterVOS.getContent();
         if (CollectionUtils.isEmpty(devopsDeployAppCenterVOList)) {
             return devopsDeployAppCenterVOS;
         }
+        //将查询出的DevopsEnvironmentDTO集合组合成以id为key，实体为value的map
         Map<Long, DevopsEnvironmentDTO> devopsEnvironmentDTOMap = combineDevopsEnvironmentDTOMap(devopsDeployAppCenterVOList);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        //将查询出的AppServiceInstanceInfoDTO集合组合成以id为key，实体为value的map
         Map<Long, AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOMap = devopsInstanceDTOMap(devopsDeployAppCenterVOList);
+        //将查询出的MarketServiceDeployObjectVO集合组合成以id为key，实体为value的map
         Map<Long, MarketServiceDeployObjectVO> devopsMarketDTOMap = devopsMarketDTOMap(projectId, devopsDeployAppCenterVOList, appServiceInstanceInfoDTOMap);
         devopsDeployAppCenterVOList.forEach(devopsDeployAppCenterVO -> {
+            //将环境信息赋值给AppCenterVO
             setEnvInfoToAppCenterVO(devopsDeployAppCenterVO, devopsEnvironmentDTOMap.get(devopsDeployAppCenterVO.getEnvId()), upgradeClusterList);
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceInfoDTOMap.get(devopsDeployAppCenterVO.getObjectId());
-            setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+            if (!ObjectUtils.isEmpty(appServiceInstanceInfoDTO)) {
+                //将AppInstanceInfo里的值赋值给AppCenter
+                setAppInstanceInfoToAppCenter(projectId, devopsDeployAppCenterVO, appServiceInstanceInfoDTO);
+            }
             // 添加pod运行统计
             setPodInfoToAppCenter(devopsDeployAppCenterVO);
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = devopsMarketDTOMap.get(appServiceInstanceInfoDTO.getAppServiceVersionId());
             if (isMarketOrMiddleware(devopsDeployAppCenterVO.getChartSource()) && !ObjectUtils.isEmpty(marketServiceDeployObjectVO)) {
+                //将版本，appName等内容赋值给AppCenterVO
                 setVersionAndAppNameToAppCenterVO(devopsDeployAppCenterVO, marketServiceDeployObjectVO.getMarketServiceName(), marketServiceDeployObjectVO.getMarketAppVersionId(), marketServiceDeployObjectVO.getMarketServiceVersion());
             }
         });
+        //赋值创建者信息
         UserDTOFillUtil.fillUserInfo(devopsDeployAppCenterVOList, "createdBy", "creator");
         return devopsDeployAppCenterVOS;
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
+        return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
+    }
+
+    @Override
+    public void checkEnableDeleteAndThrowE(Long projectId, RdupmTypeEnum rdupmTypeEnum, Long instanceId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = queryByRdupmTypeAndObjectId(rdupmTypeEnum, instanceId);
+        if (devopsDeployAppCenterEnvDTO == null) {
+            return;
+        }
+        if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
+            throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+        }
     }
 
     private Page<DevopsDeployAppCenterVO> pageAppCenterByUserId(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {

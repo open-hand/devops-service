@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -368,12 +369,14 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             // 添加环境id
             deployRecordVO.setEnvId(devopsEnvironmentDTO.getId());
         }
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(deployRecordVO.getAppId());
-        if (appServiceInstanceDTO != null) {
-            // 添加应用服务id
-            deployRecordVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-        }
         return deployRecordVO;
+    }
+
+    @Override
+    public DeployRecordVO queryHostDeployRecordByCommandId(Long commandId) {
+        Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
+
+        return devopsDeployRecordMapper.queryHostDeployRecordByCommandId(commandId);
     }
 
     @Override
@@ -488,28 +491,13 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     }
 
     private void batchSetAppStatus(List<DevopsHzeroDeployDetailsVO> devopsHzeroDeployDetailsVOS, Long envId) {
-        List<String> devopsHzeroDeployDetailsVOCodes = devopsHzeroDeployDetailsVOS.stream().map(DevopsHzeroDeployDetailsVO::getInstanceCode).collect(Collectors.toList());
-        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.listInstanceByDeployDetailsCode(devopsHzeroDeployDetailsVOCodes, envId);
-        if (CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
-            devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> devopsHzeroDeployDetailsVO.setAppStatus(setAppStatusDeleteOrNotExist(devopsHzeroDeployDetailsVO)));
-        } else {
-            Map<String, AppServiceInstanceDTO> appServiceInstanceDTOMap = appServiceInstanceDTOS.stream().collect(Collectors.toMap(AppServiceInstanceDTO::getCode, Function.identity()));
-            devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
-                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceDTOMap.get(devopsHzeroDeployDetailsVO.getInstanceCode());
-                if (appServiceInstanceDTO != null) {
-                    devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.EXIST.getStatus());
-                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(envId, devopsHzeroDeployDetailsVO.getInstanceCode());
-                    if (devopsDeployAppCenterEnvDTO != null) {
-                        devopsHzeroDeployDetailsVO.setAppId(devopsDeployAppCenterEnvDTO.getId());
-                    }
-                } else {
-                    devopsHzeroDeployDetailsVO.setAppStatus(setAppStatusDeleteOrNotExist(devopsHzeroDeployDetailsVO));
-                }
-            });
-        }
-    }
-
-    private String setAppStatusDeleteOrNotExist(DevopsHzeroDeployDetailsVO devopsHzeroDeployDetailsVO) {
-        return HzeroDeployDetailsStatusEnum.SUCCESS.value().equals(devopsHzeroDeployDetailsVO.getStatus()) ? AppStatus.DELETED.getStatus() : AppStatus.NOT_EXIST.getStatus();
+        devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
+            if (devopsHzeroDeployDetailsVO.getAppId() != null) {
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(envId, devopsHzeroDeployDetailsVO.getAppCode());
+                devopsHzeroDeployDetailsVO.setAppStatus(!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO) ? AppStatus.EXIST.getStatus() : AppStatus.DELETED.getStatus());
+            } else {
+                devopsHzeroDeployDetailsVO.setAppStatus(AppStatus.NOT_EXIST.getStatus());
+            }
+        });
     }
 }

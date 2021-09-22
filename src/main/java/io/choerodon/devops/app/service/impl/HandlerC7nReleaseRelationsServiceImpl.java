@@ -371,6 +371,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             }
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setCommandId(appServiceInstanceDTO.getCommandId());
+        } else {
+            appServiceDeployVO.setAppName(c7nHelmRelease.getMetadata().getName());
+            appServiceDeployVO.setAppCode(c7nHelmRelease.getMetadata().getName());
         }
         return appServiceDeployVO;
     }
@@ -434,6 +437,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             }
             marketInstanceCreationRequestVO.setInstanceId(appServiceInstanceDTO.getId());
             marketInstanceCreationRequestVO.setCommandId(appServiceInstanceDTO.getCommandId());
+        } else {
+            marketInstanceCreationRequestVO.setAppName(c7nHelmRelease.getMetadata().getName());
+            marketInstanceCreationRequestVO.setAppCode(c7nHelmRelease.getMetadata().getName());
         }
         return marketInstanceCreationRequestVO;
     }

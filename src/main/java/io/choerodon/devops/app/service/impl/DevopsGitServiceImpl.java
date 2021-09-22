@@ -329,8 +329,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (userAttrDTO == null) {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
-            MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null || memberDTO.getId() == null) {
+                memberDTO = gitlabServiceClientOperator.getMember(Long.valueOf(applicationDTO.getGitlabProjectId()), userAttrDTO.getGitlabUserId());
+            }
             if (memberDTO == null) {
                 throw new CommonException("error.user.not.in.gitlab.project");
             }
@@ -1261,7 +1266,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     .collect(Collectors.toMap(v -> TypeUtil.objToLong(v.getId()), Function.identity()));
             devopsProjectDTOS.forEach(devopsProjectDTO1 -> {
 
-                if(groupDTOMap.get(devopsProjectDTO1.getDevopsAppGroupId()) != null) {
+                if (groupDTOMap.get(devopsProjectDTO1.getDevopsAppGroupId()) != null) {
                     groupDTOMap.get(devopsProjectDTO1.getDevopsAppGroupId()).setBindFlag(true);
                 }
                 if (groupDTOMap.get(devopsProjectDTO1.getDevopsEnvGroupId()) != null) {
@@ -1270,8 +1275,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 if (groupDTOMap.get(devopsProjectDTO1.getDevopsClusterEnvGroupId()) != null) {
                     groupDTOMap.get(devopsProjectDTO1.getDevopsClusterEnvGroupId()).setBindFlag(true);
                 }
-                });
-            }
+            });
+        }
 
         return groupDTOS;
     }

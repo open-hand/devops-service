@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo.deploy.hzero;
 
 import java.util.Date;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -20,6 +19,7 @@ import io.choerodon.devops.api.vo.DevopsServiceReqVO;
  */
 public class DevopsHzeroDeployDetailsVO {
 
+    @Encrypt
     private Long id;
     @ApiModelProperty("实例code")
     private String instanceCode;
@@ -28,8 +28,10 @@ public class DevopsHzeroDeployDetailsVO {
     private Long valueId;
     @ApiModelProperty("部署配置")
     private String value;
+    @Encrypt
     @ApiModelProperty("市场服务id")
     private Long mktServiceId;
+    @Encrypt
     @ApiModelProperty("部署对象id")
     private Long mktDeployObjectId;
 

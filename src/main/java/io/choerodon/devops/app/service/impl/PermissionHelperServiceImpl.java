@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -176,12 +177,23 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
 
     @Override
     public void checkDeploymentWay(DevopsServiceReqVO devopsServiceReqVO) {
-        boolean targetAppServiceIdFlag = devopsServiceReqVO.getTargetAppServiceId() == null;
-        boolean targetDeploymentIdFlag = devopsServiceReqVO.getTargetDeploymentId() == null;
-        boolean targetInstanceCodeFlag = StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode());
-        boolean flag = (targetAppServiceIdFlag && targetDeploymentIdFlag && !targetInstanceCodeFlag) || (targetAppServiceIdFlag && !targetDeploymentIdFlag && targetInstanceCodeFlag) || (!targetAppServiceIdFlag && targetDeploymentIdFlag && targetInstanceCodeFlag);
+        boolean flag = isOnlyOneTure(new boolean[]{devopsServiceReqVO.getTargetAppServiceId() == null, devopsServiceReqVO.getTargetDeploymentId() == null, StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode()),
+                ArrayUtil.isEmpty(devopsServiceReqVO.getEndPoints()), ArrayUtil.isEmpty(devopsServiceReqVO.getSelectors())});
         if (!flag) {
             throw new CommonException("error.deployment.way.not.only");
         }
+    }
+
+    private boolean isOnlyOneTure(boolean[] flags) {
+        if (flags == null || flags.length == 0) {
+            return false;
+        }
+        int count = 0;
+        for (boolean flag : flags) {
+            if (!flag) {
+                count ++;
+            }
+        }
+        return count == 1;
     }
 }

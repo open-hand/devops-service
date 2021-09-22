@@ -26,6 +26,7 @@
                 </if>
             </if>
         </where>
+        ORDER BY dd.id DESC
     </select>
 
     <select id="queryByDeploymentIdWithResourceDetail" resultType="io.choerodon.devops.api.vo.DevopsDeploymentVO">

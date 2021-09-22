@@ -20,6 +20,7 @@ import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsWorkloadResourceContentDTO;
+import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -178,7 +179,7 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
         devopsDeploymentVO.setProjectId(projectId);
         devopsDeploymentVO.setEnvId(envId);
         devopsDeploymentVO.setOperateType(operateType);
-
+        devopsDeploymentVO.setSourceType(DeploymentSourceTypeEnums.WORKLOAD.getType());
         return devopsDeploymentVO;
     }
 }

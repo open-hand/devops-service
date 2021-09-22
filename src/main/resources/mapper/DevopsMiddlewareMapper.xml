@@ -12,4 +12,8 @@
     <select id="deleteByInstanceId" resultType="int">
         DELETE FROM devops_middleware WHERE instance_id=#{instanceId}
     </select>
+
+    <select id="queryByInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsMiddlewareDTO">
+        SELECT * FROM devops_middleware WHERE instance_id=#{instanceId}
+    </select>
 </mapper>

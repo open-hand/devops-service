@@ -28,7 +28,7 @@ public class DevOpsAppServicePayload {
     private AppServiceDTO appServiceDTO;
     private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
 
-    private Boolean isOpen;
+    private Boolean openAppService;
 
     public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
         return devopsUserPermissionVOS;
@@ -151,11 +151,11 @@ public class DevOpsAppServicePayload {
         return this;
     }
 
-    public Boolean getOpen() {
-        return isOpen;
+    public Boolean getOpenAppService() {
+        return openAppService;
     }
 
-    public void setOpen(Boolean open) {
-        isOpen = open;
+    public void setOpenAppService(Boolean openAppService) {
+        this.openAppService = openAppService;
     }
 }

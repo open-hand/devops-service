@@ -1,6 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -16,12 +20,16 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DeploymentInfoVO;
+import io.choerodon.devops.api.vo.DevopsEnvPortVO;
 import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
 import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
 import io.choerodon.devops.app.service.WorkloadService;
+import io.choerodon.devops.app.service.impl.DevopsDeploymentServiceImpl;
+import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -48,6 +56,9 @@ public class DevopsDeploymentController {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
+        Map<String, Object> extraInfo = new HashMap<>();
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.WORKLOAD.getType());
+        workloadBaseCreateOrUpdateVO.setExtraInfo(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.DEPLOYMENT, false);
     }
 
@@ -144,5 +155,22 @@ public class DevopsDeploymentController {
     ) {
         devopsDeploymentService.startDeployment(projectId, deploymentId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 查询deployment服务的所有端口
+     * @param deploymentId     服务id
+     * @return List
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询deployment服务的所有端口")
+    @GetMapping("/{deployment_id}/list_port")
+    public ResponseEntity<List<DevopsEnvPortVO>> listPortByDeploymentId(
+            @Encrypt
+            @ApiParam(value = "部署组ID", required = true)
+            @PathVariable(value = "deployment_id") Long deploymentId) {
+        return Optional.ofNullable(devopsDeploymentService.listPortByDeploymentId(deploymentId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.service.port.query"));
     }
 }

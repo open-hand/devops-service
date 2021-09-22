@@ -2,11 +2,11 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.api.vo.DeployTimeVO;
 import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
@@ -83,6 +83,7 @@ public interface DevopsCiPipelineService {
     void checkUserBranchPushPermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref);
 
     void checkUserBranchMergePermission(Long projectId, Long gitlabUserId, Long gitlabProjectId, String ref);
+
     /**
      * 查询这个应用服务关联的CI流水线的数量
      *
@@ -100,4 +101,6 @@ public interface DevopsCiPipelineService {
     ExecuteTimeVO pipelineExecuteTime(List<Long> pipelineIds, Date startTime, Date endTime);
 
     Page<CiCdPipelineRecordVO> pagePipelineExecuteTime(List<Long> pipelineIds, Date startTime, Date endTime, PageRequest pageRequest);
+
+    Map<String, String> runnerGuide(Long projectId);
 }

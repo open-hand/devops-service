@@ -3115,8 +3115,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer accessLevel) {
-        List<RepositoryPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.listRepositoriesByAccessLevel(organizationId, projectId, accessLevel, Collections.singleton(userId)).getBody();
+    public Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer accessLevel, Long appId) {
+        List<RepositoryPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClient.listRepositoriesByAccessLevel(organizationId, projectId, accessLevel, appId, Collections.singleton(userId)).getBody();
         if (CollectionUtils.isEmpty(viewDTOList)) {
             return new HashSet<>();
         }
@@ -3264,7 +3264,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(projectId);
         devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
-        devOpsAppServicePayload.setOpen(true);
+        devOpsAppServicePayload.setOpenAppService(true);
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()

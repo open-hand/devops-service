@@ -66,17 +66,27 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
         devopsHzeroDeployDetailsDTO.setStatus(status.value());
         if ((Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.SUCCESS.value()) || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.FAILED.value())
                 || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.CANCELED.value())) && devopsHzeroDeployDetailsDTO.getStartTime() != null) {
-            devopsHzeroDeployDetailsDTO.setEndTime(new Date());
+            if (devopsHzeroDeployDetailsDTO.getEndTime() != null) {
+                devopsHzeroDeployDetailsDTO.setEndTime(new Date());
+            }
         }
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHzeroDeployDetailsMapper, devopsHzeroDeployDetailsDTO, ERROR_UPDATE_DEPLOY_DETAILS_FAILED);
     }
 
     @Override
-    public DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String instanceCode) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(instanceCode, ResourceCheckConstant.ERROR_INSTANCE_CODE_IS_NULL);
+    public DevopsHzeroDeployDetailsDTO baseQueryByAppId(Long appId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = new DevopsHzeroDeployDetailsDTO();
+        devopsHzeroDeployDetailsDTO.setAppId(appId);
+        return devopsHzeroDeployDetailsMapper.selectOne(devopsHzeroDeployDetailsDTO);
+    }
 
-        return devopsHzeroDeployDetailsMapper.baseQueryDeployingByEnvIdAndInstanceCode(envId, instanceCode);
+    @Override
+    public DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String appCode) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(appCode, ResourceCheckConstant.ERROR_INSTANCE_CODE_IS_NULL);
+
+        return devopsHzeroDeployDetailsMapper.baseQueryDeployingByEnvIdAndInstanceCode(envId, appCode);
     }
 
     @Override

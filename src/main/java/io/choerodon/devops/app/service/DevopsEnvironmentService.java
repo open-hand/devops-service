@@ -378,4 +378,6 @@ public interface DevopsEnvironmentService {
     EnvAutoDeployVO queryAutoDeploy(Long projectId, @Nullable Long envId);
 
     DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId);
+
+    Boolean checkEnableCreateEnv(Long projectId);
 }

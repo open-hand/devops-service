@@ -107,8 +107,8 @@ public class MarketServiceClientOperator {
         });
     }
 
-    public MarketApplicationDTO queryApplication(Long applicationId) {
-        return FeignClientUtils.doRequest(() -> marketServiceClient.queryApplication(applicationId), MarketApplicationDTO.class);
+    public MarketApplicationDTO queryApplication(Long applicationId, Long organizationId) {
+        return FeignClientUtils.doRequest(() -> marketServiceClient.queryApplication(applicationId, organizationId), MarketApplicationDTO.class);
     }
 
     public MarketAppVersionDTO queryAppVersionById(Long applicationId, Long appVersionId) {

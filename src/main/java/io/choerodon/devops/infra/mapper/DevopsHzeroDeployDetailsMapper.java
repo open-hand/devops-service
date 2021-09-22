@@ -19,7 +19,7 @@ public interface DevopsHzeroDeployDetailsMapper extends BaseMapper<DevopsHzeroDe
     List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(@Param("recordId") Long recordId);
 
     DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(@Param("envId") Long envId,
-                                                                         @Param("instanceCode") String instanceCode);
+                                                                         @Param("appCode") String appCode);
 
     List<DevopsHzeroDeployDetailsDTO> listDeployingByDate(@Param("beforeDate") String beforeDate);
 }

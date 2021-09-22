@@ -130,9 +130,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             //触发人员 执行时间 流程耗时
             fillPipelineVO(devopsCiPipelineRecordVO.getUsername(), stageRecordVOS, devopsCiPipelineRecordVO.getCreatedDate(), ciCdPipelineVO, ciCdPipelineRecordVO);
             //cicd 剔除跳过的阶段
-            if (isFirstRecord(devopsPipelineRecordRelVO)) {
-                ciCdPipelineRecordVO.setStageRecordVOS(null);
-            }
+//            if (isFirstRecord(devopsPipelineRecordRelVO)) {
+//                ciCdPipelineRecordVO.setStageRecordVOS(null);
+//            }
             ciCdPipelineRecordVO.setPipelineName(ciCdPipelineDTO.getName());
             ciCdPipelineRecordVO.setGitlabProjectId(devopsCiPipelineRecordVO.getGitlabProjectId());
             ciCdPipelineRecordVO.setGitlabPipelineId(devopsCiPipelineRecordVO.getGitlabPipelineId());

@@ -110,6 +110,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
         }
         List<Long> userIds = new ArrayList<>(userIdsSet);
+        if (CollectionUtils.isEmpty(userIds)) {
+            return;
+        }
         userList.add(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
             if (userDTO.getRealName() != null) {
                 return userDTO.getRealName();

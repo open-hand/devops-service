@@ -31,6 +31,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
@@ -45,6 +46,7 @@ import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
@@ -52,6 +54,7 @@ import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
@@ -86,9 +89,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
     private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
+    private static final String UNKNOWN_DEPLOY_TYPE = "unknown.deploy.type";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
+
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
 
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
@@ -146,6 +153,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private DevopsHostAppService devopsHostAppService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -510,12 +521,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void handCdHost(DevopsCdJobVO devopsCdJobVO) {
         // 加密json中主键
-        CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobVO.getMetadata(), CdHostDeployConfigVO.class);
-        if (devopsCdJobVO.getAppId() != null) {
-            cdHostDeployConfigVO.setDeployType(DeployTypeEnum.UPDATE.value());
-        } else {
-            cdHostDeployConfigVO.setDeployType(DeployTypeEnum.CREATE.value());
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
+        CdHostDeployConfigVO cdHostDeployConfigVO = ConvertUtils.convertObject(devopsCdHostDeployInfoDTO, CdHostDeployConfigVO.class);
+        if (devopsCdHostDeployInfoDTO.getJarDeployJson() != null) {
+            cdHostDeployConfigVO.setJarDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class));
         }
+
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
 
@@ -527,7 +538,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         if (devopsCdEnvDeployInfoDTO.getContainerConfigJson() != null) {
             devopsDeployInfoVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsCdEnvDeployInfoDTO.getContainerConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
-        }));
+            }));
         }
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getEnvId());
         if (!Objects.isNull(devopsEnvironmentDTO)) {
@@ -619,7 +630,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void fillEditPipelinePermission(Long projectId, CiCdPipelineVO ciCdPipelineVO, AppServiceDTO appServiceDTO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         //当前用户是否对这条流水线有修改的权限
-        Set<Long> memberAppServiceIds = appServiceService.getMemberAppServiceIdsByAccessLevel(projectDTO.getOrganizationId(), projectId, DetailsHelper.getUserDetails().getUserId(), AccessLevel.DEVELOPER.value);
+        Set<Long> memberAppServiceIds = appServiceService.getMemberAppServiceIdsByAccessLevel(projectDTO.getOrganizationId(), projectId, DetailsHelper.getUserDetails().getUserId(), AccessLevel.DEVELOPER.value, appServiceDTO.getId());
         if (!CollectionUtils.isEmpty(memberAppServiceIds) && memberAppServiceIds.contains(appServiceDTO.getId())) {
             ciCdPipelineVO.setEdit(Boolean.TRUE);
         } else {
@@ -1042,6 +1053,30 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return new Page<>();
         }
         return handPipelineRecord(devopsPipelineRecordRelDTOS);
+    }
+
+    @Override
+    public Map<String, String> runnerGuide(Long projectId) {
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+        // name: orgName-projectName + suffix
+        String groupName = GitOpsUtil.renderGroupName(tenant.getTenantNum(),
+                projectDTO.getCode(), "");
+        String processedGitlabUrl = "";
+        if (gitlabUrl.endsWith("/")) {
+            processedGitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
+        } else {
+            processedGitlabUrl = gitlabUrl;
+        }
+
+        Map<String, String> params = new HashMap<>();
+        params.put("gitlab-group-url", String.format("%s/%s", processedGitlabUrl, groupName));
+        params.put("gateway", gatewayUrl);
+        params.put("gitlab-url", gitlabUrl);
+
+        return params;
     }
 
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
@@ -1891,6 +1926,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (devopsDeployInfoVO.getContainerConfig() != null) {
                 devopsCdEnvDeployInfoDTO.setContainerConfigJson(JsonHelper.marshalByJackson(devopsDeployInfoVO.getContainerConfig()));
             }
+
+            String rdupmType = JobTypeEnum.CD_DEPLOY.value().equals(t.getType()) ? RdupmTypeEnum.CHART.value() : RdupmTypeEnum.DEPLOYMENT.value();
+            if (DeployTypeEnum.CREATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
+                // 校验应用编码和应用名称
+                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, rdupmType, null, devopsCdEnvDeployInfoDTO.getAppName(), devopsCdEnvDeployInfoDTO.getAppCode());
+            }
+
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsDeployInfoVO));
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
@@ -1902,7 +1944,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
-            devopsCdHostDeployInfoDTO.setJarDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+            if (cdHostDeployConfigVO.getJarDeploy() != null) {
+                devopsCdHostDeployInfoDTO.setJarDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+            }
+
+            if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
+                // 校验应用编码和应用名称
+                devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
+            }
 
             devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));

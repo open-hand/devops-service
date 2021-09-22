@@ -152,7 +152,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
         }
         DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = ConvertUtils.convertObject(devopsDeployAppCenterEnvDTO, DevopsDeployAppCenterEnvVO.class);
-        if(devopsEnvCommandDTO == null) {
+        if (devopsEnvCommandDTO == null) {
             return devopsDeployAppCenterEnvVO;
         }
         devopsDeployAppCenterEnvVO.setCommandId(devopsEnvCommandDTO.getId());
@@ -160,7 +160,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 插入部署记录
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
-                DeployType.MANUAL,
+                fromPipeline ? DeployType.AUTO : DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
                 DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
@@ -179,7 +179,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     @Transactional
     @Override
-    public void updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO) {
+    public DevopsDeployAppCenterEnvVO updateContainer(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO) {
         // 设置appConfig
         DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployGroupVO.getInstanceId());
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(devopsDeploymentDTO.getInstanceId());
@@ -188,7 +188,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         devopsDeployGroupVO.setAppName(devopsDeployAppCenterEnvDTO.getName());
         devopsDeployGroupVO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
 
-        createOrUpdate(projectId, devopsDeployGroupVO, MiscConstants.UPDATE_TYPE, true, false);
+        return createOrUpdate(projectId, devopsDeployGroupVO, MiscConstants.UPDATE_TYPE, true, false);
     }
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO
@@ -380,7 +380,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 如果不仅是更新容器，还要更新应用配置以及应用名称，将进行以下校验
         if (!onlyForContainer) {
             // 校验在应用中心的名称、code是否已存在
-            devopsDeployAppCenterService.checkNameAndCodeUnique(devopsDeployGroupVO.getProjectId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+            devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsDeployGroupVO.getProjectId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
                 throw new CommonException("error.env.app.center.name.null");
@@ -557,7 +557,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             devopsDeployGroupContainerConfigVO, V1Container v1Container, StringBuilder wgetCommandSB) {
         // 处理用户上传的jar
         if (AppSourceType.UPLOAD.getValue().equals(devopsDeployGroupContainerConfigVO.getSourceType())) {
-            wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarDeployVO().getFileInfoVO().getJarFileUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
+            wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarDeployVO().getFileInfoVO().getUploadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
         } else {
             // 制品库中的jar
             JarPullInfoDTO jarPullInfoDTO = getJarPullInfo(projectDTO, devopsDeployGroupContainerConfigVO.getJarDeployVO());

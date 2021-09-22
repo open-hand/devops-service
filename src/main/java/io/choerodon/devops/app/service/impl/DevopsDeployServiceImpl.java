@@ -28,12 +28,14 @@ import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.market.MarketApplicationDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.deploy.*;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.util.GenerateUUID;
@@ -74,6 +76,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
@@ -90,8 +94,12 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     @Override
     @Transactional
     public Long deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>deployHzeroApplication project info is {}<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(projectDTO));
+        }
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(hzeroDeployVO.getEnvId());
-        MarketApplicationDTO marketApplicationDTO = marketServiceClientOperator.queryApplication(hzeroDeployVO.getMktAppId());
+        MarketApplicationDTO marketApplicationDTO = marketServiceClientOperator.queryApplication(hzeroDeployVO.getMktAppId(), projectDTO.getOrganizationId());
         // 保存部署记录
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(AppSourceType.HZERO.getValue());
@@ -123,10 +131,9 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     devopsHzeroDeployConfigDTO.getId(),
                     HzeroDeployDetailsStatusEnum.CREATED.value(),
                     instanceVO.getAppCode(),
+                    instanceVO.getAppName(),
                     instanceVO.getSequence()));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
-            devopsDeployAppCenterService.baseCreate(instanceVO.getAppName(), instanceVO.getAppCode(), projectId, instanceVO.getMktDeployObjectId(),
-                    hzeroDeployVO.getEnvId(), OperationTypeEnum.HZERO.value(), AppSourceType.HZERO.getValue(), RdupmTypeEnum.CHART.value());
         });
         // 构建工作流部署对象
         HzeroDeployPipelineVO hzeroDeployPipelineVO = new HzeroDeployPipelineVO(businessKey, devopsHzeroDeployDetailsList);
@@ -142,6 +149,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         if (!Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(MiscConstants.HZERO_DEPLOY_STATUS_SYNC_REDIS_KEY, "lock", 3, TimeUnit.MINUTES))) {
             return;
         }
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Start check hzero deploying status<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
 
         // 获取三分钟以前的时间
@@ -151,10 +159,14 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsDTOS = devopsHzeroDeployDetailsService.listDeployingByDate(date);
 
         devopsHzeroDeployDetailsDTOS.forEach(devopsHzeroDeployDetailsDTO -> {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Deploying timeout details id is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsHzeroDeployDetailsDTO.getId());
+
             // 1. 查询Pod是否全部启动成功
             if (Boolean.TRUE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
-                    devopsHzeroDeployDetailsDTO.getInstanceCode(),
+                    devopsHzeroDeployDetailsDTO.getAppId(),
                     devopsHzeroDeployDetailsDTO.getCommandId()))) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Deploying success details id is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsHzeroDeployDetailsDTO.getId());
+
                 devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
 
                 DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
@@ -168,6 +180,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                             MiscConstants.WORKFLOW_ADMIN_ORG_ID);
                 }
             } else {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>[Hzero Deploy] Deploying failed details id is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsHzeroDeployDetailsDTO.getId());
+
                 devopsHzeroDeployDetailsService.updateStatusToFailed(devopsHzeroDeployDetailsDTO);
             }
         });

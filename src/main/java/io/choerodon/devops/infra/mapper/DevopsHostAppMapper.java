@@ -21,7 +21,8 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
 
     void deleteByHostId(@Param("hostId") Long hostId);
 
-    List<DevopsHostAppVO> listByOptions(@Param("hostId") Long hostId,
+    List<DevopsHostAppVO> listByOptions(@Param("projectId") Long projectId,
+                                        @Param("hostId") Long hostId,
                                         @Param("rdupmType") String rdupmType,
                                         @Param("operationType") String operationType,
                                         @Param("params") String params);
@@ -33,9 +34,14 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
      */
     DevopsHostAppVO queryAppById(@Param("id") Long id);
 
-    List<DevopsHostAppVO> listOwnedByOptions(@Param("userId") Long userId,
+    List<DevopsHostAppVO> listOwnedByOptions(@Param("projectId") Long projectId,
+                                             @Param("userId") Long userId,
                                              @Param("hostId") Long hostId,
                                              @Param("rdupmType") String rdupmType,
                                              @Param("operationType") String operationType,
                                              @Param("params") String params);
+
+    Boolean checkNameUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("name") String name);
+
+    Boolean checkCodeUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("code") String code);
 }

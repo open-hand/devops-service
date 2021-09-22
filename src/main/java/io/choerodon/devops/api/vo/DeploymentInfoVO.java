@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -13,6 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 2021/6/10 16:25
  */
 public class DeploymentInfoVO {
+    @Encrypt
     private Long id;
     private String name;
     private Long desired;
@@ -23,6 +25,7 @@ public class DeploymentInfoVO {
     private List<Integer> ports;
     private Map<String, String> labels;
     private List<DevopsEnvPodVO> devopsEnvPodVOS;
+    @Encrypt
     private Long instanceId;
 
     private String commandType;

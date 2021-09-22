@@ -22,6 +22,19 @@ public interface DevopsDeployAppCenterService {
      */
     Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name);
 
+    Boolean checkNameUnique(Long projectId, Long appId, String name);
+
+    /**
+     * 校验名称环境下唯一,不唯一抛出异常
+     *
+     * @param projectId
+     * @param name
+     * @return
+     */
+    void checkNameUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name);
+
+    void checkNameUniqueAndThrow(Long projectId, Long appId, String name);
+
     /**
      * 校验code环境下唯一
      *
@@ -31,7 +44,7 @@ public interface DevopsDeployAppCenterService {
      */
     Boolean checkCodeUnique(Long projectId, String rdupmType, Long objectId, String code);
 
-    void checkNameAndCodeUnique(Long projectId, String rdupmType, Long objectId, String name, String code);
+    void checkNameAndCodeUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name, String code);
 
     /**
      * 根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用
@@ -122,4 +135,8 @@ public interface DevopsDeployAppCenterService {
      * @Return DevopsDeployAppCenterVO集合
      */
     Page<DevopsDeployAppCenterVO> pageChart(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable);
+
+    PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId);
+
+    void checkEnableDeleteAndThrowE(Long projectId, RdupmTypeEnum rdupmTypeEnum, Long instanceId);
 }

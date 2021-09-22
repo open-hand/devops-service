@@ -578,7 +578,7 @@ public interface AppServiceService {
 
     Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, String params, PageRequest pageRequest);
 
-    Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer value);
+    Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer value, Long appId);
 
     void batchTransfer(Long projectId, List<AppServiceTransferVO> appServiceTransferVOList);
 

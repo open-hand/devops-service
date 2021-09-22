@@ -10,32 +10,21 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @since 2021/8/27 10:59
  */
 public class DevopsDeployFailedVO {
-    @Encrypt
-    private Long envId;
-    private String instanceCode;
+    private Long instanceId;
     @Encrypt
     private Long commandId;
 
-    public DevopsDeployFailedVO(Long envId, String instanceCode, Long commandId) {
-        this.envId = envId;
-        this.instanceCode = instanceCode;
+    public DevopsDeployFailedVO(Long instanceId, Long commandId) {
+        this.instanceId = instanceId;
         this.commandId = commandId;
     }
 
-    public Long getEnvId() {
-        return envId;
+    public Long getInstanceId() {
+        return instanceId;
     }
 
-    public void setEnvId(Long envId) {
-        this.envId = envId;
-    }
-
-    public String getInstanceCode() {
-        return instanceCode;
-    }
-
-    public void setInstanceCode(String instanceCode) {
-        this.instanceCode = instanceCode;
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 
     public Long getCommandId() {
