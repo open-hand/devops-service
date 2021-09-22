@@ -58,10 +58,8 @@ public class OpenAppServiceController {
             @ApiParam(value = "服务编码", required = true)
             @RequestParam(value = "serviceCode") String serviceCode,
             @ApiParam(value = "用户邮箱", required = true)
-            @RequestParam(value = "email") String email,
-            @ApiParam(value = "项目id", required = true)
-            @RequestParam(value = "gitlab_project_id") Long gitlabProjectId) {
-        return Results.success(applicationServiceService.getPrivateToken(projectId, serviceCode, email, gitlabProjectId));
+            @RequestParam(value = "email") String email) {
+        return Results.success(applicationServiceService.getPrivateToken(projectId, serviceCode, email));
     }
 
     @Permission(level = ResourceLevel.SITE)
