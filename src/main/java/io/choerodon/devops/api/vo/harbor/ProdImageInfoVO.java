@@ -51,14 +51,12 @@ public class ProdImageInfoVO {
     public ProdImageInfoVO() {
     }
 
-    public ProdImageInfoVO(String repoName, String repoType,String repoUrl, Long repoId, String customImageName, String username, String password, Boolean privateRepository) {
-        this.repoUrl = repoUrl;
+    public ProdImageInfoVO(String repoName, String repoType, Long repoId, String imageName, String tag, Boolean privateRepository) {
         this.repoName = repoName;
         this.repoType = repoType;
         this.repoId = repoId;
-        this.customImageName = customImageName;
-        this.username = username;
-        this.password = password;
+        this.imageName = imageName;
+        this.tag = tag;
         this.privateRepository = privateRepository;
     }
 

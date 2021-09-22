@@ -651,7 +651,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 设置用户上下文
         log.append("Pipeline trigger user id is :").append(devopsCdJobRecordDTO.getCreatedBy()).append(System.lineSeparator());
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
-//        DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), DevopsDeployInfoVO.class);
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
 
         // 1. 校验环境是否开启一键关闭自动部署
@@ -697,25 +696,16 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
                     DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
-                    dockerDeployVO.setSourceType(AppSourceType.PIPELINE.getValue());
+                    dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
 
-                    String username;
-                    String password;
-                    // 设置拉取账户
-                    if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
-                        username = harborRepoDTO.getHarborRepoConfig().getLoginName();
-                        password = harborRepoDTO.getHarborRepoConfig().getPassword();
-                    } else {
-                        username = harborRepoDTO.getPullRobot().getName();
-                        password = harborRepoDTO.getPullRobot().getToken();
-                    }
+                    String[] nameAndTagArray = ciPipelineImageDTO.getImageTag().split(":");
+                    String iamgeName = nameAndTagArray[0].substring(nameAndTagArray[0].lastIndexOf("/") + 1);
+
                     ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
-                            harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
                             harborRepoDTO.getHarborRepoConfig().getType(),
                             harborRepoDTO.getHarborRepoConfig().getRepoId(),
-                            ciPipelineImageDTO.getImageTag(),
-                            username,
-                            password,
+                            iamgeName,
+                            nameAndTagArray[1],
                             Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()));
                     dockerDeployVO.setImageInfo(prodImageInfoVO);
 

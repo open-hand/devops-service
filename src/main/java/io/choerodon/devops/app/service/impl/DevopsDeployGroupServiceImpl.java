@@ -695,12 +695,6 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
                 devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
                 dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
-            } else if (AppSourceType.PIPELINE.getValue().equals(devopsDeployGroupDockerDeployVO.getSourceType())) {
-                configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
-                configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());
-                configVO.setUrl(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoUrl());
-                devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
-                dockerDeployDTO.setImage(devopsDeployGroupDockerDeployVO.getImageInfo().getCustomImageName());
             } else {
                 configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
                 configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());
