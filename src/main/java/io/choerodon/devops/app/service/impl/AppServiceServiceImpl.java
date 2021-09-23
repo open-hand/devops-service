@@ -3507,7 +3507,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode) {
-        return String.format("ssh://git@%s/%s-%s/%s.git",
-                gitlabSshUrl, orgCode, projectCode, serviceCode);
+        AppServiceDTO appServiceDTO = baseQueryByCode(serviceCode, projectId);
+        return String.format("%s/api/v4/projects/%s/repository/archive.zip", gitlabUrl, appServiceDTO.getGitlabProjectId());
     }
 }
