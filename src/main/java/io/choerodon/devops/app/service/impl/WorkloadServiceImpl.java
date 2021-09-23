@@ -142,7 +142,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             throw new CommonException("error.workload.size", resourceType.getType());
         }
 
-        for (Object workload : workLoads) {
+        for (Object workload : yaml.loadAll(content)) {
             Map<String, Object> datas = (Map<String, Object>) workload;
 
             String kind = (String) datas.get(KIND);
