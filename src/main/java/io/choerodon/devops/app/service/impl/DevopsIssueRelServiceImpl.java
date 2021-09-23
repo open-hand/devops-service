@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hzero.mybatis.BatchInsertHelper;
@@ -13,17 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
-import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsIssueRelMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
@@ -105,12 +100,12 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public List<IssueIdAndBranchIdsVO> listObjectIdsByIssueIdsAndObjectType(String object, Set<Long> issueIds) {
+    public List<IssueIdAndBranchIdsVO> listBranchInfoByIssueIds(Set<Long> issueIds) {
         if (CollectionUtils.isEmpty(issueIds)) {
             return new ArrayList<>();
         }
         List<IssueIdAndBranchIdsVO> result = new ArrayList<>();
-        List<DevopsIssueRelDTO> devopsIssueRelDTOList = devopsIssueRelMapper.listObjectIdsByIssueIdsAndObjectType(object, issueIds);
+        List<DevopsIssueRelDTO> devopsIssueRelDTOList = devopsIssueRelMapper.listRelationByIssueIdsAndObjectType(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), issueIds);
         devopsIssueRelDTOList
                 .stream()
                 .collect(Collectors.groupingBy(DevopsIssueRelDTO::getIssueId, Collectors.mapping(r -> {

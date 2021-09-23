@@ -60,12 +60,14 @@ import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
+import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
@@ -186,6 +188,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private RdupmClientOperator rdupmClientOperator;
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
+    @Autowired
+    private RdupmClient rdupmClient;
+
 
 
     @Override
@@ -636,6 +641,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineDeployDeployment(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, StringBuilder log) {
         LOGGER.info("autoDeploy:pipelineRecordId {} stageRecordId: {} jobRecordId: {}", pipelineRecordId, stageRecordId, jobRecordId);
         // log 用于记录部署日志
@@ -651,7 +657,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 设置用户上下文
         log.append("Pipeline trigger user id is :").append(devopsCdJobRecordDTO.getCreatedBy()).append(System.lineSeparator());
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
-//        DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), DevopsDeployInfoVO.class);
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
 
         // 1. 校验环境是否开启一键关闭自动部署
@@ -697,28 +702,20 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
                     DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
-                    dockerDeployVO.setSourceType(AppSourceType.PIPELINE.getValue());
+                    dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
 
-                    String username;
-                    String password;
-                    // 设置拉取账户
-                    if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
-                        username = harborRepoDTO.getHarborRepoConfig().getLoginName();
-                        password = harborRepoDTO.getHarborRepoConfig().getPassword();
-                    } else {
-                        username = harborRepoDTO.getPullRobot().getName();
-                        password = harborRepoDTO.getPullRobot().getToken();
-                    }
+                    String[] nameAndTagArray = ciPipelineImageDTO.getImageTag().split(":");
+                    String iamgeName = nameAndTagArray[0].substring(nameAndTagArray[0].lastIndexOf("/") + 1);
+
                     ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
-                            harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
-                            harborRepoDTO.getHarborRepoConfig().getType(),
+                            harborRepoDTO.getRepoType(),
                             harborRepoDTO.getHarborRepoConfig().getRepoId(),
-                            ciPipelineImageDTO.getImageTag(),
-                            username,
-                            password,
+                            iamgeName,
+                            nameAndTagArray[1],
                             Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()));
                     dockerDeployVO.setImageInfo(prodImageInfoVO);
-
+                    config.setPipelineJobName(null);
+                    config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
                     config.setDockerDeployVO(dockerDeployVO);
 
                 } else {
@@ -727,10 +724,17 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             ciPipelineMavenDTO.getGroupId(),
                             ciPipelineMavenDTO.getArtifactId(),
                             getMavenVersion(ciPipelineMavenDTO.getVersion()));
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobRecordDTO.getProjectId());
+                    C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), devopsCdJobRecordDTO.getProjectId(), ciPipelineMavenDTO.getNexusRepoId());
+
+                    prodJarInfoVO.setNexusId(c7nNexusRepoDTO.getConfigId());
+
 
                     DevopsDeployGroupJarDeployVO devopsDeployGroupJarDeployVO = new DevopsDeployGroupJarDeployVO();
                     devopsDeployGroupJarDeployVO.setProdJarInfoVO(prodJarInfoVO);
                     devopsDeployGroupJarDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+                    config.setPipelineJobName(null);
+                    config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
                     config.setJarDeployVO(devopsDeployGroupJarDeployVO);
                 }
             }

@@ -50,6 +50,13 @@ public class ProdJarInfoVO {
         this.artifactId = artifactId;
         this.version = version;
     }
+    public ProdJarInfoVO(Long nexusId, Long repositoryId, String groupId, String artifactId, String version) {
+        this.nexusId = nexusId;
+        this.repositoryId = repositoryId;
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+    }
 
     public Long getRepositoryId() {
         return repositoryId;

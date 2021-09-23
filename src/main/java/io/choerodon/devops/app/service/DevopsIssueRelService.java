@@ -68,12 +68,11 @@ public interface DevopsIssueRelService {
     Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId);
 
     /**
-     * 列出关联了敏捷问题的commitId或branchId
+     * 列出敏捷问题以及关联的分支信息
      *
-     * @param object   关联对象
      * @param issueIds 敏捷问题ids
      */
-    List<IssueIdAndBranchIdsVO> listObjectIdsByIssueIdsAndObjectType(String object, Set<Long> issueIds);
+    List<IssueIdAndBranchIdsVO> listBranchInfoByIssueIds(Set<Long> issueIds);
 
     List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds);
 

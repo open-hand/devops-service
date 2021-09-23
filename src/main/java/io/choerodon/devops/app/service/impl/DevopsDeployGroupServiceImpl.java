@@ -695,12 +695,6 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
                 devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
                 dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
-            } else if (AppSourceType.PIPELINE.getValue().equals(devopsDeployGroupDockerDeployVO.getSourceType())) {
-                configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
-                configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());
-                configVO.setUrl(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoUrl());
-                devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
-                dockerDeployDTO.setImage(devopsDeployGroupDockerDeployVO.getImageInfo().getCustomImageName());
             } else {
                 configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
                 configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());
@@ -729,6 +723,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     }
 
     private HarborC7nRepoImageTagVo getHarborC7nRepoImageTagVo(DevopsDeployGroupDockerDeployVO devopsDeployGroupDockerDeployVO) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(">>>>>>>>>>>>>>>>>>>[getHarborC7nRepoImageTagVo] imageInfo is {}<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsDeployGroupDockerDeployVO.getImageInfo()));
+        }
         HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType(), TypeUtil.objToLong(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoId()), devopsDeployGroupDockerDeployVO.getImageInfo().getImageName(), devopsDeployGroupDockerDeployVO.getImageInfo().getTag());
         if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
             throw new CommonException(ERROR_IMAGE_TAG_NOT_FOUND);

@@ -612,8 +612,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long envId) {
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(envId);
+    public Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long hostId) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        if (devopsHostDTO == null) {
+            return new Page<>();
+        }
+
         // 校验用户为项目所有者或者为主机创建者
         CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
 
@@ -646,7 +650,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, false));
         if (!devopsHostDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
-            List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = devopsHostUserPermissionService.listUserHostPermissionByOption(envId, searchParamMap, paramList);
+            List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = devopsHostUserPermissionService.listUserHostPermissionByOption(hostId, searchParamMap, paramList);
             List<Long> permissions = devopsHostUserPermissionDTOList.stream().map(DevopsHostUserPermissionDTO::getIamUserId).collect(Collectors.toList());
             projectMembers = projectMembers
                     .stream()

@@ -1231,7 +1231,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Map<Long, List<Long>> mappedIssueIds = devopsIssueRelService.listMappedIssueIdsByObjectTypeAndObjectId(DevopsIssueRelObjectTypeEnum.COMMIT.getValue(), commitIds);
             Set<Long> issueIds = new HashSet<>();
             mappedIssueIds.forEach((k, v) -> issueIds.addAll(v));
-            return devopsIssueRelService.listObjectIdsByIssueIdsAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueIds);
+            return devopsIssueRelService.listBranchInfoByIssueIds(issueIds);
         } else {
             return new ArrayList<>();
         }

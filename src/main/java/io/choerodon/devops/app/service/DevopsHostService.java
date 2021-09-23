@@ -264,10 +264,10 @@ public interface DevopsHostService {
      * @param projectId
      * @param pageable
      * @param params
-     * @param envId
+     * @param hostId
      * @return
      */
-    Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long envId);
+    Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long hostId);
 
     /**
      * 删除主机下该用户的权限

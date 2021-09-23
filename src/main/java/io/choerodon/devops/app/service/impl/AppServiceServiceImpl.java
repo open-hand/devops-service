@@ -3476,19 +3476,19 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public String getPrivateToken(Long projectId, String serviceCode, String email, Long gitlabProjectId) {
+    public String getPrivateToken(Long projectId, String serviceCode, String email) {
         AppServiceDTO appServiceDTO = baseQueryByCode(serviceCode, projectId);
-        if (!appServiceDTO.getGitlabProjectId().equals(TypeUtil.objToInteger(gitlabProjectId))) {
-            throw new CommonException("error.consistent.gitlabProjectId");
+        if (appServiceDTO.getGitlabProjectId() == null) {
+            throw new CommonException("error.app.service.sync");
         }
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(email);
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, iamUserDTO.getId())) {
             throw new CommonException("user.not.gitlab.project.owner");
         }
-        String key = String.format(PRIVATE_TOKEN_FORMAT, gitlabProjectId);
+        String key = String.format(PRIVATE_TOKEN_FORMAT, appServiceDTO.getGitlabProjectId());
         String privateToken = stringRedisTemplate.opsForValue().get(key);
         if (StringUtils.isEmpty(privateToken)) {
-            String tokenIdKey = String.format(PRIVATE_TOKEN_ID_FORMAT, gitlabProjectId);
+            String tokenIdKey = String.format(PRIVATE_TOKEN_ID_FORMAT, appServiceDTO.getGitlabProjectId());
             String tokenIdStr = stringRedisTemplate.opsForValue().get(tokenIdKey);
             UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
             if (!StringUtils.isEmpty(tokenIdStr)) {
