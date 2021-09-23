@@ -471,6 +471,11 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                     if (StringUtils.isEmpty(name) || StringUtils.isEmpty(port) || StringUtils.isEmpty(protocol)) {
                         break;
                     }
+
+                    if (name.matches("[0-9]+") || !K8sUtil.PORT_NAME_PATTERN.matcher(name).matches()) {
+                        throw new CommonException("error.container.port.name.illegal");
+                    }
+
                     String namePort = name + port;
                     if (existPorts.contains(namePort)) {
                         throw new CommonException("error.container.port.exist");

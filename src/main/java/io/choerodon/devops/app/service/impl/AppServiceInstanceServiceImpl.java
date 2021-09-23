@@ -738,7 +738,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
         // 校验在应用中心的名称、code是否已存在
-        devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(appServiceDeployVO.getEnvironmentId(), RdupmTypeEnum.CHART.value(), appServiceDeployVO.getAppCenterId(), appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode());
+        devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(appServiceDeployVO.getEnvironmentId(), RdupmTypeEnum.CHART.value(), appServiceDeployVO.getInstanceId(), appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode());
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
 
