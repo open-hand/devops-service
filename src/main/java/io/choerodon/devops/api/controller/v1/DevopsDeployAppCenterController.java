@@ -50,7 +50,8 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "env_id") Long envId,
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
             @Encrypt @RequestParam(value = "object_id", required = false) Long objectId) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(envId, rdupmType, objectId, name));
+//        return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(envId, rdupmType, objectId, name));
+        return ResponseEntity.ok(true);
     }
 
     @ApiOperation("查询引用了容器应用作为替换对象的流水线信息")
@@ -82,7 +83,8 @@ public class DevopsDeployAppCenterController {
             @RequestParam(value = "env_id") Long envId,
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
             @RequestParam(value = "object_id", required = false) Long objectId) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(envId, rdupmType, objectId, code));
+//        return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(envId, rdupmType, objectId, code));
+        return ResponseEntity.ok(true);
     }
 
     /**
