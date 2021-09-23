@@ -49,6 +49,8 @@ public class K8sUtil {
      */
     public static final Pattern LABEL_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
 
+    public static final Pattern PORT_NAME_PATTERN=Pattern.compile("^[0-9a-z]([0-9a-z]+-)*[0-9a-z]*[0-9a-z]$");
+
 
     private K8sUtil() {
     }
