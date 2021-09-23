@@ -317,7 +317,7 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_TRANSFER_APP_SERVICE = "devops-transfer-app-service";
 
     /**
-     * 迁移应用服务
+     * 处理hzero实例部署失败
      */
     public static final String DEVOPS_HZERO_DEPLOY_FAILED = "devops-hzero-deploy-failed";
 

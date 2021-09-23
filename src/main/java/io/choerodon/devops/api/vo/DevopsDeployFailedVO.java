@@ -14,6 +14,9 @@ public class DevopsDeployFailedVO {
     @Encrypt
     private Long commandId;
 
+    public DevopsDeployFailedVO() {
+    }
+
     public DevopsDeployFailedVO(Long instanceId, Long commandId) {
         this.instanceId = instanceId;
         this.commandId = commandId;
