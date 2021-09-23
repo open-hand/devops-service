@@ -12,6 +12,8 @@ import java.util.Map;
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -31,6 +33,8 @@ import io.choerodon.devops.infra.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 public class ResourceConvertToYamlHandler<T> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceConvertToYamlHandler.class);
 
     public static final String UPDATE = "update";
     private static final String C7NTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease";
@@ -197,7 +201,15 @@ public class ResourceConvertToYamlHandler<T> {
                         break;
                 }
             }
-            return resultBuilder.toString();
+            String result = resultBuilder.toString();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>Old result yaml is {} <<<<<<<<<<<<<<<<<<<", result);
+            }
+            String replacedResult = result.replaceAll("((\\r\\n)|\\n)[\\s\\t ]*(\\1)+", "$1");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>ReplacedResult yaml is {} <<<<<<<<<<<<<<<<<<<", replacedResult);
+            }
+            return replacedResult;
         } catch (FileNotFoundException e) {
             throw new CommonException(e.getMessage(), e);
         }
