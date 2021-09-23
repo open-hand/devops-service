@@ -41,7 +41,10 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -124,9 +127,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public void checkNameAndCodeUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name, String code) {
-        checkNameUniqueAndThrow(envId, rdupmType, objectId, name);
+        if (!StringUtils.isEmpty(name)) {
+            checkNameUniqueAndThrow(envId, rdupmType, objectId, name);
+        }
 
-        checkCodeUniqueAndThrow(envId, rdupmType, objectId, code);
+        if (!StringUtils.isEmpty(code)) {
+            checkCodeUniqueAndThrow(envId, rdupmType, objectId, code);
+        }
     }
 
     @Override
