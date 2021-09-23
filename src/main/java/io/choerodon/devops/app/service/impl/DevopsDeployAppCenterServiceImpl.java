@@ -41,10 +41,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.UserDTOFillUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -261,6 +258,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             // 添加pod运行统计
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(centerEnvDTO.getObjectId());
             calculatePodStatus(devopsEnvPodDTOS, detailVO);
+
+            // 计算是否存在关联的网络
+            detailVO.setExistService(devopsServiceService.countInstanceService(projectId, centerEnvDTO.getEnvId(), centerEnvDTO.getObjectId()) > 0);
+
         } else if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.DEPLOYMENT.value())) {
             // 添加pod运行统计
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(centerEnvDTO.getEnvId(), ResourceType.DEPLOYMENT.getType(), centerEnvDTO.getCode());

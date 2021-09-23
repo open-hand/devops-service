@@ -83,6 +83,8 @@ public class AppCenterEnvDetailVO {
     private String commandVersion;
     private Boolean envActive;
     private Boolean envConnected;
+    @ApiModelProperty(name = "应用是否存在关联的网络，存在则返回false，否则false")
+    private Boolean existService;
 
     @Encrypt
     @ApiModelProperty(name = "市场应用版本id")
@@ -103,6 +105,14 @@ public class AppCenterEnvDetailVO {
 
     public String getEffectCommandVersion() {
         return effectCommandVersion;
+    }
+
+    public Boolean getExistService() {
+        return existService;
+    }
+
+    public void setExistService(Boolean existService) {
+        this.existService = existService;
     }
 
     public void setEffectCommandVersion(String effectCommandVersion) {

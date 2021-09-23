@@ -506,6 +506,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         return devopsServiceMapper.select(devopsServiceDTO);
     }
 
+    @Override
+    public Integer countInstanceService(Long projectId, Long envId, Long objectId) {
+        List<DevopsServiceQueryDTO> devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
+                projectId, envId, objectId, null,
+                null, null, null);
+        return devopsServiceQueryDTOS.size();
+    }
+
 
     public DevopsServiceQueryDTO baseQueryById(Long id) {
         return devopsServiceMapper.queryById(id);
