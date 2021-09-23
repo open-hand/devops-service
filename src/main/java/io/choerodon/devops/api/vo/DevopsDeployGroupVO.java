@@ -1,8 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.List;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -24,8 +22,8 @@ public class DevopsDeployGroupVO {
     private Long projectId;
 
     @Encrypt
-    @ApiModelProperty(name = "Id")
-    private Long envId;
+    @ApiModelProperty(name = "环境id")
+    private Long environmentId;
 
     @ApiModelProperty(name = "应用配置")
     private DevopsDeployGroupAppConfigVO appConfig;
@@ -52,14 +50,14 @@ public class DevopsDeployGroupVO {
     public DevopsDeployGroupVO(String appName,
                                String appCode,
                                Long projectId,
-                               Long envId,
+                               Long environmentId,
                                DevopsDeployGroupAppConfigVO appConfig,
                                List<DevopsDeployGroupContainerConfigVO> containerConfig,
                                Long instanceId) {
         this.appName = appName;
         this.appCode = appCode;
         this.projectId = projectId;
-        this.envId = envId;
+        this.environmentId = environmentId;
         this.appConfig = appConfig;
         this.containerConfig = containerConfig;
         this.instanceId = instanceId;
@@ -89,12 +87,12 @@ public class DevopsDeployGroupVO {
         this.projectId = projectId;
     }
 
-    public Long getEnvId() {
-        return envId;
+    public Long getEnvironmentId() {
+        return environmentId;
     }
 
-    public void setEnvId(Long envId) {
-        this.envId = envId;
+    public void setEnvironmentId(Long environmentId) {
+        this.environmentId = environmentId;
     }
 
     public DevopsDeployGroupAppConfigVO getAppConfig() {

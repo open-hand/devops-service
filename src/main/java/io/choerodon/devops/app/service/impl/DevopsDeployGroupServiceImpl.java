@@ -104,7 +104,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     @Override
     public DevopsDeployAppCenterEnvVO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer, Boolean fromPipeline) {
         //1. 查询校验环境
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvironmentId());
 
         // 2.校验用户是否拥有环境权限
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -119,7 +119,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         String deployment = buildDeploymentYaml(projectDTO, devopsEnvironmentDTO, devopsDeployGroupVO);
         // 5.创建deployment
         WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO = new WorkloadBaseCreateOrUpdateVO();
-        workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvId()));
+        workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvironmentId()));
         workloadBaseCreateOrUpdateVO.setOperateType(operateType);
         workloadBaseCreateOrUpdateVO.setContent(deployment);
         if (devopsDeployGroupVO.getInstanceId() != null) {
@@ -137,15 +137,15 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 更新关联的对象id
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
-            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppCode());
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvironmentId(), devopsDeployGroupVO.getAppCode());
             // 插入应用记录
-            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode(), projectId, devopsDeploymentDTO.getId(), devopsDeployGroupVO.getEnvId(), OperationTypeEnum.CREATE_APP.value(), "", RdupmTypeEnum.DEPLOYMENT.value());
+            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode(), projectId, devopsDeploymentDTO.getId(), devopsDeployGroupVO.getEnvironmentId(), OperationTypeEnum.CREATE_APP.value(), "", RdupmTypeEnum.DEPLOYMENT.value());
 
             devopsDeploymentDTO.setInstanceId(devopsDeployAppCenterEnvDTO.getId());
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         } else {
             // 更新应用记录
-            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppCode());
+            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvironmentId(), devopsDeployGroupVO.getAppCode());
             // 如果名称发生变化，更新名称
             if (!devopsDeployAppCenterEnvDTO.getName().equals(devopsDeployGroupVO.getAppName())) {
                 devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getAppName());
@@ -384,9 +384,9 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             // 创建操作需要校验name和code
             // 更新操作只需要校验name
             if (MiscConstants.CREATE_TYPE.equals(operateType)) {
-                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsDeployGroupVO.getEnvId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsDeployGroupVO.getEnvironmentId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
             } else {
-                devopsDeployAppCenterService.checkNameUniqueAndThrow(devopsDeployGroupVO.getEnvId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName());
+                devopsDeployAppCenterService.checkNameUniqueAndThrow(devopsDeployGroupVO.getEnvironmentId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName());
             }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
