@@ -37,8 +37,8 @@ public class DevopsDeployAppCenterController {
      * 校验名称唯一
      *
      * @param projectId 项目id
-     * @param envId 环境id
-     * @param name 名称
+     * @param envId     环境id
+     * @param name      名称
      * @return boolean
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -47,9 +47,10 @@ public class DevopsDeployAppCenterController {
     public ResponseEntity<Boolean> checkNameUnique(
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "name") String name,
+            @RequestParam(value = "env_id") Long envId,
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
             @Encrypt @RequestParam(value = "object_id", required = false) Long objectId) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(projectId, rdupmType, objectId, name));
+        return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(envId, rdupmType, objectId, name));
     }
 
     @ApiOperation("查询引用了容器应用作为替换对象的流水线信息")
@@ -68,8 +69,8 @@ public class DevopsDeployAppCenterController {
      * 校验code唯一
      *
      * @param projectId 项目id
-     * @param envId 环境id
-     * @param code code
+     * @param envId     环境id
+     * @param code      code
      * @return boolean
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -78,9 +79,10 @@ public class DevopsDeployAppCenterController {
     public ResponseEntity<Boolean> checkCodeUnique(
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "code") String code,
+            @RequestParam(value = "env_id") Long envId,
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
             @RequestParam(value = "object_id", required = false) Long objectId) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(projectId, rdupmType, objectId, code));
+        return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(envId, rdupmType, objectId, code));
     }
 
     /**

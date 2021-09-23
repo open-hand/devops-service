@@ -111,7 +111,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         devopsDeployGroupVO.setProjectId(projectId);
         // 3.校验配置
-        validateConfig(devopsDeployGroupVO, onlyForContainer);
+        validateConfig(devopsDeployGroupVO, operateType, onlyForContainer);
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsDeployGroupVO.getProjectId());
 
@@ -378,11 +378,16 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      *
      * @param devopsDeployGroupVO
      */
-    private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO, boolean onlyForContainer) {
+    private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer) {
         // 如果不仅是更新容器，还要更新应用配置以及应用名称，将进行以下校验
         if (!onlyForContainer) {
-            // 校验在应用中心的名称、code是否已存在
-            devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsDeployGroupVO.getProjectId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+            // 创建操作需要校验name和code
+            // 更新操作只需要校验name
+            if (MiscConstants.CREATE_TYPE.equals(operateType)) {
+                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsDeployGroupVO.getEnvId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+            } else {
+                devopsDeployAppCenterService.checkNameUniqueAndThrow(devopsDeployGroupVO.getEnvId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName());
+            }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
                 throw new CommonException("error.env.app.center.name.null");

@@ -99,41 +99,34 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
-    public Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name) {
-        return devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, projectId, name);
+    public Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name) {
+        return devopsDeployAppCenterEnvMapper.checkNameUnique(rdupmType, objectId, envId, name);
     }
 
     @Override
-    public Boolean checkNameUnique(Long projectId, Long appId, String name) {
-        return devopsDeployAppCenterEnvMapper.checkNameUniqueByAppId(appId, projectId, name);
+    public Boolean checkCodeUnique(Long envId, String rdupmType, Long objectId, String code) {
+        return devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, envId, code);
     }
 
     @Override
-    public void checkNameUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name) {
-        if (Boolean.FALSE.equals(checkNameUnique(projectId, rdupmType, objectId, name))) {
+    public void checkNameUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name) {
+        if (Boolean.FALSE.equals(checkNameUnique(envId, rdupmType, objectId, name))) {
             throw new CommonException("error.env.app.center.name.exist");
         }
     }
 
     @Override
-    public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
-        if (Boolean.FALSE.equals(checkNameUnique(appId, projectId, name))) {
-            throw new CommonException("error.env.app.center.name.exist");
-        }
-    }
-
-    @Override
-    public Boolean checkCodeUnique(Long projectId, String rdupmType, Long objectId, String code) {
-        return devopsDeployAppCenterEnvMapper.checkCodeUnique(rdupmType, objectId, projectId, code);
-    }
-
-    @Override
-    public void checkNameAndCodeUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name, String code) {
-        checkNameUniqueAndThrow(projectId, rdupmType, objectId, name);
-
-        if (!checkCodeUnique(projectId, rdupmType, objectId, code)) {
+    public void checkCodeUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name) {
+        if (Boolean.FALSE.equals(checkCodeUnique(envId, rdupmType, objectId, name))) {
             throw new CommonException("error.env.app.center.code.exist");
         }
+    }
+
+    @Override
+    public void checkNameAndCodeUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name, String code) {
+        checkNameUniqueAndThrow(envId, rdupmType, objectId, name);
+
+        checkCodeUniqueAndThrow(envId, rdupmType, objectId, code);
     }
 
     @Override
@@ -560,7 +553,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     private Map<Long, AppServiceInstanceInfoDTO> devopsInstanceDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
-        List<Long> instanceIds =devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toList());
+        List<Long> instanceIds = devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toList());
         List<AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOList = appServiceInstanceMapper.listInfoById(instanceIds);
         Map<Long, AppServiceInstanceInfoDTO> devopsMarketDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(appServiceInstanceInfoDTOList)) {
