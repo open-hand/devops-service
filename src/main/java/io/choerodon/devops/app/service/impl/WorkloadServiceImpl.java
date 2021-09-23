@@ -34,7 +34,9 @@ import io.choerodon.devops.infra.util.*;
 public class WorkloadServiceImpl implements WorkloadService {
 
     private static final String METADATA = "metadata";
+    private static final String LABEL = "labels";
     private static final String KIND = "kind";
+    private static final String SPEC = "spec";
     private static final String MASTER = "master";
     private static final String WORK_LOAD = "WorkLoad";
 
@@ -140,8 +142,8 @@ public class WorkloadServiceImpl implements WorkloadService {
             throw new CommonException("error.workload.size", resourceType.getType());
         }
 
-        for (Object data : yaml.loadAll(content)) {
-            Map<String, Object> datas = (Map<String, Object>) data;
+        for (Object workload : workLoads) {
+            Map<String, Object> datas = (Map<String, Object>) workload;
 
             String kind = (String) datas.get(KIND);
 
@@ -152,7 +154,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             // 前面对资源进行了数量校验，因此只会循环一次，resourceFilePath也只会被设置一次
             resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
             objects.add(datas);
-            String resourceContent = FileUtil.getYaml().dump(data);
+            String resourceContent = FileUtil.getYaml().dump(workload);
             // 如果是更新操作，需要校验资源是否发生变化，没有变化不再进行后续处理(流水线不校验)
             if (Boolean.FALSE.equals(fromPipeline)
                     && UPDATE_TYPE.equals(workloadBaseVO.getOperateType())

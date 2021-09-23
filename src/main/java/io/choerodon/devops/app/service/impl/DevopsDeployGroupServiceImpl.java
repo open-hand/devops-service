@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
 import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
 
 import java.io.IOException;
@@ -58,7 +60,6 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployGroupServiceImpl.class);
 
-    private static final String AUTH_TYPE = "pull";
     private static final String WGET_COMMAND_TEMPLATE = "wget %s -O /choerodon/%s";
     private static final String WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE = "wget --user=%s --password=%s %s -O /choerodon/%s";
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
@@ -285,7 +286,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
 
         Map<String, String> matchLabels = new HashMap<>();
-        matchLabels.put("choerodon.io/application-name", devopsDeployGroupVO.getAppCode());
+        matchLabels.put(PARENT_WORK_LOAD_NAME_LABEL, devopsDeployGroupVO.getAppCode());
+        matchLabels.put(PARENT_WORK_LOAD_LABEL, DEPLOYMENT.getType());
 
         // 设置pod labels
         V1PodTemplateSpec v1PodTemplateSpec = new V1PodTemplateSpec();
