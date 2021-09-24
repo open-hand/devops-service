@@ -702,7 +702,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     if (ownerReference != null) {
                         devopsEnvPodVO.setOwnerName(ownerReference.get("name").asText());
                         devopsEnvPodVO.setOwnerKind(ownerReference.get("kind").asText());
-                        devopsEnvPodVOS.add(devopsEnvPodVO);
                     }
                 }
             } catch (Exception e) {
