@@ -683,4 +683,27 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, message);
         }
     }
+
+    @Override
+    public List<DevopsEnvPodVO> listPodResourceByInstanceId(Long instanceId) {
+        List<DevopsEnvResourceDTO> resourceWithDetailByInstanceId = devopsEnvResourceMapper.getResourceWithDetailByInstanceIdAndKind(instanceId, ResourceType.POD.getType());
+        List<DevopsEnvPodVO> devopsEnvPodVOS = new ArrayList<>();
+        for (DevopsEnvResourceDTO r : resourceWithDetailByInstanceId) {
+            try {
+                DevopsEnvPodVO devopsEnvPodVO = new DevopsEnvPodVO();
+                devopsEnvPodVO.setName(r.getName());
+                JsonNode info = new ObjectMapper().readTree(r.getMessage());
+                JsonNode jsonNode = info.get("metadata").withArray("ownerReferences");
+                JsonNode ownerReference = jsonNode.get(0);
+                if (ownerReference != null) {
+                    devopsEnvPodVO.setOwnerName(ownerReference.get("name").asText());
+                    devopsEnvPodVO.setOwnerKind(ownerReference.get("kind").asText());
+                    devopsEnvPodVOS.add(devopsEnvPodVO);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return devopsEnvPodVOS;
+    }
 }
