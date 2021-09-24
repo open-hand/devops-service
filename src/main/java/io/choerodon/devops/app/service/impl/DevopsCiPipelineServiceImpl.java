@@ -156,6 +156,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
+    @Autowired
+    @Lazy
+    private DevopsHostUserPermissionService devopsHostUserPermissionService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -525,6 +528,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (devopsCdHostDeployInfoDTO.getJarDeployJson() != null) {
             cdHostDeployConfigVO.setJarDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class));
         }
+
+        devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserPermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
 
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
