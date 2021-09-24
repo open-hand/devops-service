@@ -701,7 +701,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvResourceVO.setDaemonSetVOS(
                 devopsEnvResourceVO.getDaemonSetVOS()
                         .stream()
-                        .peek(daemonSetVO -> daemonSetVO.setDevopsEnvPodDTOS(
+                        .peek(daemonSetVO -> daemonSetVO.setDevopsEnvPodVOS(
                                 filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, daemonSetVO.getName())
                         ))
                         .collect(Collectors.toList())
