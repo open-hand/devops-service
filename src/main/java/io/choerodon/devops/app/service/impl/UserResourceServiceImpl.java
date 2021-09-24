@@ -87,7 +87,11 @@ public class UserResourceServiceImpl implements UserResourceService {
             hostDTO.setHostStatus(updatedClusterList.contains(hostDTO.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue());
             ProjectDTO project = projects.stream().filter(projectDTO -> Objects.equals(projectDTO.getId(),
                     hostDTO.getProjectId())).findFirst().orElse(null);
-            ResourceUsageInfoVO resourceUsageInfo = devopsHostService.queryResourceUsageInfo(hostDTO.getProjectId(), hostDTO.getId());
+            ResourceUsageInfoVO resourceUsageInfo = null;
+            //只有已连接状态下才查询Usage信息
+            if (DevopsHostStatus.CONNECTED.getValue().equals(hostDTO.getHostStatus())) {
+                resourceUsageInfo = devopsHostService.queryResourceUsageInfo(hostDTO.getProjectId(), hostDTO.getId());
+            }
             result.add(HostDetailResourceVO.build(hostDTO, resourceUsageInfo, project == null ? null : project.getName()));
         });
         return result;
