@@ -47,7 +47,7 @@ public class DevopsDeployAppCenterController {
     public ResponseEntity<Boolean> checkNameUnique(
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "name") String name,
-            @RequestParam(value = "env_id") Long envId,
+            @Encrypt @RequestParam(value = "env_id") Long envId,
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
             @Encrypt @RequestParam(value = "object_id", required = false) Long objectId) {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(envId, rdupmType, objectId, name));
@@ -79,9 +79,9 @@ public class DevopsDeployAppCenterController {
     public ResponseEntity<Boolean> checkCodeUnique(
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "code") String code,
-            @RequestParam(value = "env_id") Long envId,
+            @Encrypt @RequestParam(value = "env_id") Long envId,
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
-            @RequestParam(value = "object_id", required = false) Long objectId) {
+            @Encrypt @RequestParam(value = "object_id", required = false) Long objectId) {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(envId, rdupmType, objectId, code));
     }
 
