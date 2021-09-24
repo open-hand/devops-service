@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
 import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
@@ -705,7 +704,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 configVO.setUserName(harborC7nRepoImageTagVo.getPullAccount());
                 configVO.setPassword(harborC7nRepoImageTagVo.getPullPassword());
                 configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
-                devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
+                devopsRegistrySecretDTO.setRepoType(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType());
                 dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
             } else {
                 configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
