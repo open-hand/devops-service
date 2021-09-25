@@ -233,15 +233,17 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
         // 设置升级策略
         V1beta2DeploymentStrategy v1beta2DeploymentStrategy = new V1beta2DeploymentStrategy();
-        v1beta2DeploymentStrategy.setType("RollingUpdate");
-        V1beta2RollingUpdateDeployment rollingUpdate = new V1beta2RollingUpdateDeployment();
-        if (devopsDeployGroupAppConfigVO.getMaxSurge() != null) {
-            rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxSurge()));
+        v1beta2DeploymentStrategy.setType(devopsDeployGroupAppConfigVO.getStrategyType());
+        if (devopsDeployGroupAppConfigVO.getStrategyType().equals("RollingUpdate")) {
+            V1beta2RollingUpdateDeployment rollingUpdate = new V1beta2RollingUpdateDeployment();
+            if (devopsDeployGroupAppConfigVO.getMaxSurge() != null) {
+                rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxSurge()));
+            }
+            if (devopsDeployGroupAppConfigVO.getMaxUnavailable() != null) {
+                rollingUpdate.setMaxUnavailable(new IntOrString(devopsDeployGroupAppConfigVO.getMaxUnavailable()));
+            }
+            v1beta2DeploymentStrategy.setRollingUpdate(rollingUpdate);
         }
-        if (devopsDeployGroupAppConfigVO.getMaxUnavailable() != null) {
-            rollingUpdate.setMaxUnavailable(new IntOrString(devopsDeployGroupAppConfigVO.getMaxUnavailable()));
-        }
-        v1beta2DeploymentStrategy.setRollingUpdate(rollingUpdate);
         v1beta2DeploymentSpec.setStrategy(v1beta2DeploymentStrategy);
 
         // 设置dns策略
