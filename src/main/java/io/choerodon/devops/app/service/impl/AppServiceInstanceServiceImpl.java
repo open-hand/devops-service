@@ -297,7 +297,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId());
-        appServiceInstanceInfoVO.setApplicationType(marketServiceVO.getApplicationType());
+        if (marketServiceVO != null) {
+            appServiceInstanceInfoVO.setApplicationType(marketServiceVO.getApplicationType());
+        }
         appServiceInstanceInfoVO.setAppServiceName(marketServiceVO != null ? marketServiceVO.getMarketServiceName() : MiscConstants.UNKNOWN_SERVICE);
     }
 
