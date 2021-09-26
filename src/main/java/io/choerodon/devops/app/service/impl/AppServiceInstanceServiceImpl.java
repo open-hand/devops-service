@@ -2851,7 +2851,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             deploymentName) {
         return devopsEnvPodVOS.stream().filter(devopsEnvPodVO -> {
                     if (ResourceType.REPLICASET.getType().equals(devopsEnvPodVO.getOwnerKind())) {
-                        String controllerNameFromPod = devopsEnvPodVO.getName().split("-")[0];
+                        String controllerNameFromPod = devopsEnvPodVO.getName().substring(0,
+                                devopsEnvPodVO.getName().lastIndexOf('-', devopsEnvPodVO.getName().lastIndexOf('-') - 1));
                         return deploymentName.equals(controllerNameFromPod);
                     } else {
                         return false;
