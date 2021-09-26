@@ -65,7 +65,6 @@ public class DevopsHostAppInstanceServiceImpl implements DevopsHostAppInstanceSe
 
     @Override
     public DevopsHostAppInstanceDTO baseQuery(Long id) {
-
         return devopsHostAppInstanceMapper.selectByPrimaryKey(id);
     }
 }

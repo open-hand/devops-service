@@ -139,6 +139,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
+    @Autowired
+    private PermissionHelper permissionHelper;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -569,6 +571,17 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     public DevopsMiddlewareDTO queryByInstanceId(Long instanceId) {
         return devopsMiddlewareMapper.queryByInstanceId(instanceId);
+    }
+
+    @Override
+    @Transactional
+    public void updateHostInstance(Long projectId, MiddlewareHostInstanceVO middlewareHostInstanceVO) {
+        DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(middlewareHostInstanceVO.getInstanceId());
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostAppInstanceDTO.getProjectId()), "error.operating.resource.in.other.project");
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsHostAppInstanceDTO.getAppId());
+        devopsHostAppService.checkNameUniqueAndThrow(projectId, devopsHostAppInstanceDTO.getAppId(), middlewareHostInstanceVO.getAppName());
+        devopsHostAppDTO.setName(middlewareHostInstanceVO.getAppName());
+        devopsHostAppService.baseUpdate(devopsHostAppDTO);
     }
 
     @Override
