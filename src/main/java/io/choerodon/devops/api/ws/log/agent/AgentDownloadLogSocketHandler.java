@@ -2,6 +2,8 @@ package io.choerodon.devops.api.ws.log.agent;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_DOWNLOAD_LOG;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
@@ -14,6 +16,7 @@ import io.choerodon.devops.api.ws.log.LogMessageHandler;
 
 @Component
 public class AgentDownloadLogSocketHandler extends AbstractSocketHandler {
+    private static final Logger LOGGER= LoggerFactory.getLogger(AgentDownloadLogSocketHandler.class);
 
     @Autowired
     private AgentExecAndLogSocketHandler agentExecAndLogSocketHandler;
@@ -37,6 +40,7 @@ public class AgentDownloadLogSocketHandler extends AbstractSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        LOGGER.info("log transfer completed");
         agentExecAndLogSocketHandler.afterConnectionClosed(session, status);
     }
 }
