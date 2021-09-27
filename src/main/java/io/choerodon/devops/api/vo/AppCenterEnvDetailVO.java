@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("应用中心 应用id")
-    private Long appCenterId;
+    private Long id;
     private String name;
     private String code;
 
@@ -163,12 +163,12 @@ public class AppCenterEnvDetailVO {
         this.commandVersionId = commandVersionId;
     }
 
-    public Long getAppCenterId() {
-        return appCenterId;
+    public Long getId() {
+        return id;
     }
 
-    public void setAppCenterId(Long appCenterId) {
-        this.appCenterId = appCenterId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getEnvCode() {

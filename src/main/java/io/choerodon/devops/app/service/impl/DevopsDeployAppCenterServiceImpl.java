@@ -192,7 +192,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     public AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
         AppCenterEnvDetailVO detailVO = ConvertUtils.convertObject(centerEnvDTO, AppCenterEnvDetailVO.class);
-        detailVO.setAppCenterId(appCenterId);
+        detailVO.setId(appCenterId);
         detailVO.setDeployWay(AppCenterDeployWayEnum.CONTAINER.getValue());
         detailVO.setRdupmType(centerEnvDTO.getRdupmType());
         detailVO.setInstanceId(centerEnvDTO.getObjectId());
