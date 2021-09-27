@@ -28,6 +28,7 @@ import io.choerodon.devops.api.vo.workload.DevopsCronjobVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -106,6 +107,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                     ZoneId zoneId = ZoneId.systemDefault();
                     cronJobInfoVO.setLastScheduleTime(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
                 }
+                cronJobInfoVO.setSourceType(cronJobInfoVO.getInstanceId() == null ? DeploymentSourceTypeEnums.WORKLOAD.getType() : DeploymentSourceTypeEnums.CHART.getType());
             }
             return cronJobInfoVO;
         });

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.workload;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -36,6 +37,9 @@ public class CronJobInfoVO {
     private String commandStatus;
 
     private String error;
+
+    @ApiModelProperty("来源类型 chart/工作负载")
+    private String sourceType;
 
     public String getCreationTimestamp() {
         return creationTimestamp;
@@ -139,5 +143,13 @@ public class CronJobInfoVO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 }
