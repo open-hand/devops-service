@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
+import io.choerodon.devops.api.vo.GitlabRepositoryInfo;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
@@ -112,6 +113,18 @@ public class GitUtil {
         } catch (GitAPIException e) {
             return Boolean.FALSE;
         }
+    }
+
+    /**
+     * https://code.choerodon.com.cn/hzero-c7ncd/devops-service
+     *
+     * @param repositoryUrl
+     * @return
+     */
+    public static GitlabRepositoryInfo calaulateRepositoryInfo(String repositoryUrl) {
+        String[] protolAndDomain = repositoryUrl.split("://");
+        String[] repoInfo = protolAndDomain[1].split("/");
+        return new GitlabRepositoryInfo(protolAndDomain[0] + "://" + repoInfo[0], repoInfo[1], repoInfo[2]);
     }
 
     private static String getLog(String repoPath, String fileName) {

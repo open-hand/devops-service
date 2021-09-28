@@ -18,6 +18,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -70,6 +71,17 @@ public class AppServiceController {
         return Optional.ofNullable(applicationServiceService.create(projectId, appServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.create"));
+    }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "创建外部代码仓库")
+    @PostMapping("/external")
+    public ResponseEntity<AppServiceDTO> createExternalApp(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody @Validated ExternalAppServiceVO externalAppServiceVO) {
+        return ResponseEntity.ok(applicationServiceService.createExternalApp(projectId, externalAppServiceVO));
     }
 
     /**
