@@ -578,7 +578,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
                     // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
-                    if (deploymentDTO != null && DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
+                    if (deploymentDTO != null && WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
                         V1beta2Deployment v1beta2Deployment = K8sUtil.deserialize(msg, V1beta2Deployment.class);
                         if (v1beta2Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
                             deploymentDTO.setStatus(InstanceStatus.STOPPED.getStatus());

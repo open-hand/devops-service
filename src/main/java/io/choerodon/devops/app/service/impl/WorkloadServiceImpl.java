@@ -23,7 +23,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -415,7 +415,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
-        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
+        if (WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
             devopsDeploymentDTO.setAppConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG));
             devopsDeploymentDTO.setContainerConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG));
         }

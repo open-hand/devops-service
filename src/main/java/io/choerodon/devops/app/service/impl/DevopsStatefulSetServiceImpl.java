@@ -28,7 +28,7 @@ import io.choerodon.devops.api.vo.StatefulSetInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -104,7 +104,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
                 statefulSetInfoVO.setPorts(portRes);
                 ZoneId zoneId = ZoneId.systemDefault();
                 statefulSetInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
-                statefulSetInfoVO.setSourceType(statefulSetInfoVO.getInstanceId() == null ? DeploymentSourceTypeEnums.WORKLOAD.getType() : DeploymentSourceTypeEnums.CHART.getType());
+                statefulSetInfoVO.setSourceType(statefulSetInfoVO.getInstanceId() == null ? WorkloadSourceTypeEnums.WORKLOAD.getType() : WorkloadSourceTypeEnums.CHART.getType());
             }
             return statefulSetInfoVO;
         });

@@ -132,7 +132,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
 
         devopsEnvCommandService.baseListByObject(ObjectType.DEPLOYMENT.getType(), id).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
-        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
+        if (WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
             devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
         }
         devopsDeploymentMapper.deleteByPrimaryKey(id);
@@ -230,7 +230,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsDeploymentDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             devopsDeploymentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
-            devopsDeploymentDTO.setSourceType(DeploymentSourceTypeEnums.CHART.getType());
+            devopsDeploymentDTO.setSourceType(WorkloadSourceTypeEnums.CHART.getType());
             devopsDeploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
             devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
         }
@@ -252,7 +252,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
         DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(id);
-        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
+        if (WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
             devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
         }
         devopsDeploymentMapper.deleteByPrimaryKey(id);

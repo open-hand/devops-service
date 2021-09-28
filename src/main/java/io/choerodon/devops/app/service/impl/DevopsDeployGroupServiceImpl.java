@@ -40,7 +40,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
@@ -128,7 +128,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         Map<String, Object> extraInfo = new HashMap<>();
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getContainerConfig()));
-        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, WorkloadSourceTypeEnums.DEPLOY_GROUP.getType());
 
         workloadBaseCreateOrUpdateVO.setExtraInfo(extraInfo);
         DevopsEnvCommandDTO devopsEnvCommandDTO = workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, DEPLOYMENT, fromPipeline);

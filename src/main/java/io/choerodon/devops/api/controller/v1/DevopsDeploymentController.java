@@ -29,7 +29,7 @@ import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
 import io.choerodon.devops.app.service.WorkloadService;
 import io.choerodon.devops.app.service.impl.DevopsDeploymentServiceImpl;
-import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -57,7 +57,7 @@ public class DevopsDeploymentController {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         Map<String, Object> extraInfo = new HashMap<>();
-        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.WORKLOAD.getType());
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, WorkloadSourceTypeEnums.WORKLOAD.getType());
         workloadBaseCreateOrUpdateVO.setExtraInfo(extraInfo);
         workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, contentFile, ResourceType.DEPLOYMENT, false);
     }
