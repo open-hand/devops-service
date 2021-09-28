@@ -526,4 +526,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<InputStream> downloadArchiveByFormat(Integer projectId, Integer userId, String commitSha, String format) {
         throw new CommonException("error.down.project");
     }
+
+    @Override
+    public ResponseEntity<GitlabProjectDTO> queryExternalProjectByCode(String namespaceCode, String projectCode, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("error.query.external.project");
+    }
 }
