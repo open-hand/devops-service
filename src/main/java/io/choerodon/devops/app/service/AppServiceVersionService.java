@@ -120,6 +120,15 @@ public interface AppServiceVersionService {
      */
     Page<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageable, String params);
 
+    /**
+     * 获取共享应用版本
+     *
+     * @param appServiceId
+     * @param pageable
+     * @param version
+     * @return
+     */
+    Page<AppServiceVersionRespVO> pageShareVersionByAppServiceIdAndVersion(Long appServiceId, PageRequest pageable, String version);
 
     List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
 

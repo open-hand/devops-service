@@ -297,7 +297,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(appServiceInstanceInfoDTO.getProjectId(), appServiceInstanceInfoDTO.getAppServiceId());
-        appServiceInstanceInfoVO.setApplicationType(marketServiceVO.getApplicationType());
+        if (marketServiceVO != null) {
+            appServiceInstanceInfoVO.setApplicationType(marketServiceVO.getApplicationType());
+        }
         appServiceInstanceInfoVO.setAppServiceName(marketServiceVO != null ? marketServiceVO.getMarketServiceName() : MiscConstants.UNKNOWN_SERVICE);
     }
 
@@ -685,7 +687,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         // 获取相关的pod
-        List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
+        List<DevopsEnvPodVO> devopsEnvPodDTOS = devopsEnvResourceService.listPodResourceByInstanceId(instanceId);
 
         DevopsEnvResourceVO devopsEnvResourceVO = devopsEnvResourceService
                 .listResourcesInHelmRelease(instanceId);
@@ -701,8 +703,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvResourceVO.setDaemonSetVOS(
                 devopsEnvResourceVO.getDaemonSetVOS()
                         .stream()
-                        .peek(daemonSetVO -> daemonSetVO.setDevopsEnvPodDTOS(
-                                filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, daemonSetVO.getName())
+                        .peek(daemonSetVO -> daemonSetVO.setDevopsEnvPodVOS(
+                                filterPodsAssociatedWithResource(devopsEnvPodDTOS, daemonSetVO.getName(), ResourceType.DAEMONSET.getType())
                         ))
                         .collect(Collectors.toList())
         );
@@ -712,8 +714,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsEnvResourceVO.getStatefulSetVOS()
                         .stream()
                         .peek(statefulSetVO -> statefulSetVO.setDevopsEnvPodVOS(
-                                filterPodsAssociatedWithStatefulSet(devopsEnvPodDTOS, statefulSetVO.getName()))
-                        )
+                                filterPodsAssociatedWithResource(devopsEnvPodDTOS, statefulSetVO.getName(), ResourceType.STATEFULSET.getType())))
                         .collect(Collectors.toList())
         );
 
@@ -738,8 +739,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
         // 校验在应用中心的名称、code是否已存在
-
-        devopsDeployAppCenterService.checkNameUnique(projectId, RdupmTypeEnum.CHART.value(), appServiceDeployVO.getAppCenterId(), appServiceDeployVO.getAppName());
+        devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(appServiceDeployVO.getEnvironmentId(), RdupmTypeEnum.CHART.value(), appServiceDeployVO.getInstanceId(), appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode());
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
 
@@ -891,7 +891,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO, Boolean saveRecord) {
         // 校验在应用中心的名称、code是否已存在
-        devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, RdupmTypeEnum.CHART.value(), appServiceDeployVO.getInstanceId(), appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode());
+        devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(appServiceDeployVO.getEnvironmentId(), RdupmTypeEnum.CHART.value(), appServiceDeployVO.getInstanceId(), appServiceDeployVO.getAppName(), appServiceDeployVO.getAppCode());
 
         //1. 查询校验环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = getProjectEnvironment(projectId, appServiceDeployVO.getEnvironmentId());
@@ -2798,33 +2798,19 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     /**
      * filter the pods that are associated with the daemonSet.
      *
-     * @param devopsEnvPodDTOS the pods to be filtered
-     * @param daemonSetName    the name of daemonSet
+     * @param devopsEnvPodVOS the pods to be filtered
+     * @param resourceName    the name of resource
+     * @param kind            the resource kind
      * @return the pods
      */
-    private List<DevopsEnvPodVO> filterPodsAssociatedWithDaemonSet(List<DevopsEnvPodVO> devopsEnvPodDTOS, String
-            daemonSetName) {
-        return devopsEnvPodDTOS
+    private List<DevopsEnvPodVO> filterPodsAssociatedWithResource(List<DevopsEnvPodVO> devopsEnvPodVOS, String resourceName, String kind) {
+        return devopsEnvPodVOS
                 .stream()
                 .filter(
-                        devopsEnvPodDTO -> daemonSetName.equals(devopsEnvPodDTO.getName().substring(0, devopsEnvPodDTO.getName().lastIndexOf('-')))
+                        devopsEnvPodVO -> devopsEnvPodVO.getOwnerKind().equals(kind) && resourceName.equals(devopsEnvPodVO.getName().substring(0, devopsEnvPodVO.getName().lastIndexOf('-')))
                 )
                 .collect(Collectors.toList());
     }
-
-    /**
-     * filter the pods that are associated with the statefulSet.
-     *
-     * @param devopsEnvPodDTOS the pods to be filtered
-     * @param statefulSetName  the name of statefulSet
-     * @return the pods
-     */
-    private List<DevopsEnvPodVO> filterPodsAssociatedWithStatefulSet
-    (List<DevopsEnvPodVO> devopsEnvPodDTOS, String statefulSetName) {
-        // statefulSet名称逻辑和daemonSet一致
-        return filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, statefulSetName);
-    }
-
 
     private Page<DeployDetailTableVO> getDeployDetailDTOS(Page<DeployDTO> deployDTOPageInfo) {
 
@@ -2859,17 +2845,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     /**
      * filter the pods that are associated with the deployment.
      *
-     * @param devopsEnvPodDTOS the pods to be filtered
-     * @param deploymentName   the name of deployment
+     * @param devopsEnvPodVOS the pods to be filtered
+     * @param deploymentName  the name of deployment
      * @return the pods
      */
-    private List<DevopsEnvPodVO> filterPodsAssociated(List<DevopsEnvPodVO> devopsEnvPodDTOS, String
+    private List<DevopsEnvPodVO> filterPodsAssociated(List<DevopsEnvPodVO> devopsEnvPodVOS, String
             deploymentName) {
-        return devopsEnvPodDTOS.stream().filter(devopsEnvPodDTO -> {
-                    String podName = devopsEnvPodDTO.getName();
-                    String controllerNameFromPod = podName.substring(0,
-                            podName.lastIndexOf('-', podName.lastIndexOf('-') - 1));
-                    return deploymentName.equals(controllerNameFromPod);
+        return devopsEnvPodVOS.stream().filter(devopsEnvPodVO -> {
+                    if (ResourceType.REPLICASET.getType().equals(devopsEnvPodVO.getOwnerKind())) {
+                        String controllerNameFromPod = devopsEnvPodVO.getName().substring(0,
+                                devopsEnvPodVO.getName().lastIndexOf('-', devopsEnvPodVO.getName().lastIndexOf('-') - 1));
+                        return deploymentName.equals(controllerNameFromPod);
+                    } else {
+                        return false;
+                    }
                 }
         ).collect(Collectors.toList());
     }

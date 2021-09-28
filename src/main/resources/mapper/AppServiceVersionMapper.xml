@@ -639,4 +639,58 @@
         WHERE app_service_id = #{appServiceId,jdbcType=BIGINT} AND harbor_config_id IS NULL
     </update>
 
+    <select id="pageShareVersionByAppServiceIdAndVersion"
+            resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT DISTINCT
+        davall.id,
+        davall.app_service_id,
+        davall.`commit`,
+        davall.image,
+        davall.version
+        FROM
+        (
+        SELECT
+        dav.app_service_id,
+        dav.`commit`,
+        dav.version,
+        dav.id,
+        dav.image
+        FROM
+        devops_app_service_version dav
+        JOIN (
+        SELECT
+        dasr.version_type
+        FROM
+        devops_app_service_share_rule dasr
+        WHERE
+        dasr.app_service_id = #{appServiceId}
+        AND dasr.version IS NULL
+        ) dasr1 ON dav.version LIKE CONCAT(
+        CONCAT('%', dasr1.version_type, '%')
+        )
+        AND dav.app_service_id = #{appServiceId}
+        UNION
+        SELECT
+        dav.app_service_id,
+        dav.`commit`,
+        dav.version,
+        dav.id,
+        dav.image
+        FROM
+        devops_app_service_version dav
+        JOIN (
+        SELECT
+        dasr.version
+        FROM
+        devops_app_service_share_rule dasr
+        WHERE
+        dasr.app_service_id = #{appServiceId}
+        AND dasr.version IS NOT NULL
+        ) dasr2 ON dav.version = dasr2.version
+        AND dav.app_service_id = #{appServiceId}
+        ) davall
+        <if test='version != null'>
+           WHERE davall.version LIKE CONCAT(CONCAT('%', #{version}, '%'))
+        </if>
+    </select>
 </mapper>

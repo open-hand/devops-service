@@ -27,4 +27,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_job.groovy') {
         }
     }
 
+    changeSet(author: 'lihao', id: '2021-09-26-update-column') {
+        modifyDataType(tableName: 'devops_job', columnName: 'name', newDataType: 'VARCHAR(64)')
+    }
+
 }

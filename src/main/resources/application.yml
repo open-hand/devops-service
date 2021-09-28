@@ -210,6 +210,9 @@ devops:
   #jar的运行镜像
   jar:
     image: registry.cn-shanghai.aliyuncs.com/c7n/javabase:jdk8u282-b08
+  deploy:
+    # 部署时是否删除gitops文件空行，true代表删除
+    enableDeleteBlankLine: ${DEVOPS_DEPLOY_ENABLE_DELETE_BLANKLINE:true}
 # websocket的最大缓冲区大小，单位字节byte
 websocket:
   buffer:

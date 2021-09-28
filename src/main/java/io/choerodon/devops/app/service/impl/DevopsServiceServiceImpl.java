@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
+import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -504,6 +508,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         devopsServiceDTO.setEnvId(envId);
         return devopsServiceMapper.select(devopsServiceDTO);
+    }
+
+    @Override
+    public Integer countInstanceService(Long projectId, Long envId, Long objectId) {
+        List<DevopsServiceQueryDTO> devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
+                projectId, envId, objectId, null,
+                null, null, null);
+        return devopsServiceQueryDTOS.size();
     }
 
 
@@ -1015,7 +1027,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
         if (targetDeploymentId != null) {
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(targetDeploymentId);
-            selectors.put(AppServiceInstanceService.APPLICATION_LABEL, devopsDeploymentDTO.getName());
+            selectors.put(PARENT_WORK_LOAD_NAME_LABEL, devopsDeploymentDTO.getName());
+            selectors.put(PARENT_WORK_LOAD_LABEL, DEPLOYMENT.getType());
         }
         return selectors;
     }

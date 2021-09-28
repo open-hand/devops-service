@@ -1,7 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
 import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
 
 import java.io.IOException;
@@ -39,7 +40,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
@@ -58,7 +59,6 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployGroupServiceImpl.class);
 
-    private static final String AUTH_TYPE = "pull";
     private static final String WGET_COMMAND_TEMPLATE = "wget %s -O /choerodon/%s";
     private static final String WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE = "wget --user=%s --password=%s %s -O /choerodon/%s";
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
@@ -103,14 +103,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     @Override
     public DevopsDeployAppCenterEnvVO createOrUpdate(Long projectId, DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer, Boolean fromPipeline) {
         //1. 查询校验环境
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.getProjectEnvironment(projectId, devopsDeployGroupVO.getEnvironmentId());
 
         // 2.校验用户是否拥有环境权限
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         devopsDeployGroupVO.setProjectId(projectId);
         // 3.校验配置
-        validateConfig(devopsDeployGroupVO, onlyForContainer);
+        validateConfig(devopsDeployGroupVO, operateType, onlyForContainer);
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsDeployGroupVO.getProjectId());
 
@@ -118,7 +118,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         String deployment = buildDeploymentYaml(projectDTO, devopsEnvironmentDTO, devopsDeployGroupVO);
         // 5.创建deployment
         WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO = new WorkloadBaseCreateOrUpdateVO();
-        workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvId()));
+        workloadBaseCreateOrUpdateVO.setEnvId(String.valueOf(devopsDeployGroupVO.getEnvironmentId()));
         workloadBaseCreateOrUpdateVO.setOperateType(operateType);
         workloadBaseCreateOrUpdateVO.setContent(deployment);
         if (devopsDeployGroupVO.getInstanceId() != null) {
@@ -128,7 +128,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         Map<String, Object> extraInfo = new HashMap<>();
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getAppConfig()));
         extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG, JsonHelper.marshalByJackson(devopsDeployGroupVO.getContainerConfig()));
-        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
+        extraInfo.put(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE, WorkloadSourceTypeEnums.DEPLOY_GROUP.getType());
 
         workloadBaseCreateOrUpdateVO.setExtraInfo(extraInfo);
         DevopsEnvCommandDTO devopsEnvCommandDTO = workloadService.createOrUpdate(projectId, workloadBaseCreateOrUpdateVO, null, DEPLOYMENT, fromPipeline);
@@ -136,15 +136,15 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 更新关联的对象id
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
         if (MiscConstants.CREATE_TYPE.equals(operateType)) {
-            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppCode());
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(devopsDeployGroupVO.getEnvironmentId(), devopsDeployGroupVO.getAppCode());
             // 插入应用记录
-            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode(), projectId, devopsDeploymentDTO.getId(), devopsDeployGroupVO.getEnvId(), OperationTypeEnum.CREATE_APP.value(), "", RdupmTypeEnum.DEPLOYMENT.value());
+            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.baseCreate(devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode(), projectId, devopsDeploymentDTO.getId(), devopsDeployGroupVO.getEnvironmentId(), OperationTypeEnum.CREATE_APP.value(), "", RdupmTypeEnum.DEPLOYMENT.value());
 
             devopsDeploymentDTO.setInstanceId(devopsDeployAppCenterEnvDTO.getId());
             devopsDeploymentService.baseUpdate(devopsDeploymentDTO);
         } else {
             // 更新应用记录
-            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvId(), devopsDeployGroupVO.getAppCode());
+            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsDeployGroupVO.getEnvironmentId(), devopsDeployGroupVO.getAppCode());
             // 如果名称发生变化，更新名称
             if (!devopsDeployAppCenterEnvDTO.getName().equals(devopsDeployGroupVO.getAppName())) {
                 devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getAppName());
@@ -233,15 +233,17 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
         // 设置升级策略
         V1beta2DeploymentStrategy v1beta2DeploymentStrategy = new V1beta2DeploymentStrategy();
-        v1beta2DeploymentStrategy.setType("RollingUpdate");
-        V1beta2RollingUpdateDeployment rollingUpdate = new V1beta2RollingUpdateDeployment();
-        if (devopsDeployGroupAppConfigVO.getMaxSurge() != null) {
-            rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxSurge()));
+        v1beta2DeploymentStrategy.setType(devopsDeployGroupAppConfigVO.getStrategyType());
+        if (devopsDeployGroupAppConfigVO.getStrategyType().equals("RollingUpdate")) {
+            V1beta2RollingUpdateDeployment rollingUpdate = new V1beta2RollingUpdateDeployment();
+            if (devopsDeployGroupAppConfigVO.getMaxSurge() != null) {
+                rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxSurge()));
+            }
+            if (devopsDeployGroupAppConfigVO.getMaxUnavailable() != null) {
+                rollingUpdate.setMaxUnavailable(new IntOrString(devopsDeployGroupAppConfigVO.getMaxUnavailable()));
+            }
+            v1beta2DeploymentStrategy.setRollingUpdate(rollingUpdate);
         }
-        if (devopsDeployGroupAppConfigVO.getMaxUnavailable() != null) {
-            rollingUpdate.setMaxUnavailable(new IntOrString(devopsDeployGroupAppConfigVO.getMaxUnavailable()));
-        }
-        v1beta2DeploymentStrategy.setRollingUpdate(rollingUpdate);
         v1beta2DeploymentSpec.setStrategy(v1beta2DeploymentStrategy);
 
         // 设置dns策略
@@ -285,7 +287,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
 
         Map<String, String> matchLabels = new HashMap<>();
-        matchLabels.put("choerodon.io/application-name", devopsDeployGroupVO.getAppCode());
+        matchLabels.put(PARENT_WORK_LOAD_NAME_LABEL, devopsDeployGroupVO.getAppCode());
+        matchLabels.put(PARENT_WORK_LOAD_LABEL, DEPLOYMENT.getType());
 
         // 设置pod labels
         V1PodTemplateSpec v1PodTemplateSpec = new V1PodTemplateSpec();
@@ -376,11 +379,16 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
      *
      * @param devopsDeployGroupVO
      */
-    private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO, boolean onlyForContainer) {
+    private void validateConfig(DevopsDeployGroupVO devopsDeployGroupVO, String operateType, boolean onlyForContainer) {
         // 如果不仅是更新容器，还要更新应用配置以及应用名称，将进行以下校验
         if (!onlyForContainer) {
-            // 校验在应用中心的名称、code是否已存在
-            devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsDeployGroupVO.getProjectId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+            // 创建操作需要校验name和code
+            // 更新操作只需要校验name
+            if (MiscConstants.CREATE_TYPE.equals(operateType)) {
+                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsDeployGroupVO.getEnvironmentId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName(), devopsDeployGroupVO.getAppCode());
+            } else {
+                devopsDeployAppCenterService.checkNameUniqueAndThrow(devopsDeployGroupVO.getEnvironmentId(), RdupmTypeEnum.DEPLOYMENT.value(), devopsDeployGroupVO.getInstanceId(), devopsDeployGroupVO.getAppName());
+            }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
                 throw new CommonException("error.env.app.center.name.null");
@@ -464,6 +472,11 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                     if (StringUtils.isEmpty(name) || StringUtils.isEmpty(port) || StringUtils.isEmpty(protocol)) {
                         break;
                     }
+
+                    if (name.matches("[0-9]+") || !K8sUtil.PORT_NAME_PATTERN.matcher(name).matches()) {
+                        throw new CommonException("error.container.port.name.illegal");
+                    }
+
                     String namePort = name + port;
                     if (existPorts.contains(namePort)) {
                         throw new CommonException("error.container.port.exist");
@@ -693,7 +706,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                 configVO.setUserName(harborC7nRepoImageTagVo.getPullAccount());
                 configVO.setPassword(harborC7nRepoImageTagVo.getPullPassword());
                 configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
-                devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
+                devopsRegistrySecretDTO.setRepoType(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType());
                 dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
             } else {
                 configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());

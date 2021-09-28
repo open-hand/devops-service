@@ -12,6 +12,9 @@ import java.util.Map;
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -32,6 +35,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 public class ResourceConvertToYamlHandler<T> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceConvertToYamlHandler.class);
+
     public static final String UPDATE = "update";
     private static final String C7NTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease";
     private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
@@ -44,6 +49,9 @@ public class ResourceConvertToYamlHandler<T> {
     private static final String PERSISTENT_VOLUME_CLAIM = "!!io.kubernetes.client.models.V1PersistentVolumeClaim";
     private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1beta2Deployment";
     private static final List<String> WORKLOAD_RESOURCE_TYPE = new ArrayList<>();
+
+    @Value(value = "${devops.deploy.enableDeleteBlankLine:true}")
+    private Boolean enableDeleteBlankLine;
 
     static {
         WORKLOAD_RESOURCE_TYPE.add(ResourceType.DEPLOYMENT.getType());
@@ -197,7 +205,21 @@ public class ResourceConvertToYamlHandler<T> {
                         break;
                 }
             }
-            return resultBuilder.toString();
+            String result = resultBuilder.toString();
+            // 1. 判断是否开启删除gitops文件空行，没有开启则不处理。
+            if (Boolean.FALSE.equals(enableDeleteBlankLine)) {
+                LOGGER.info(">>>>>>>>>>>>>>>>return default gitops yaml <<<<<<<<<<<<<<<<<<<");
+                return result;
+            }
+            // 2. 如果开启，则删除空行后返回
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>Old result yaml is {} <<<<<<<<<<<<<<<<<<<", result);
+            }
+            String replacedResult = result.replaceAll("((\\r\\n)|\\n)[\\s\\t ]*(\\1)+", "$1");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>ReplacedResult yaml is {} <<<<<<<<<<<<<<<<<<<", replacedResult);
+            }
+            return replacedResult;
         } catch (FileNotFoundException e) {
             throw new CommonException(e.getMessage(), e);
         }

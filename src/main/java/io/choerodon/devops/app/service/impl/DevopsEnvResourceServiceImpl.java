@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +26,7 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -682,5 +684,30 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         } catch (IOException e) {
             throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, message);
         }
+    }
+
+    @Override
+    public List<DevopsEnvPodVO> listPodResourceByInstanceId(Long instanceId) {
+        List<DevopsEnvPodVO> devopsEnvPodVOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
+        Map<String, DevopsEnvPodVO> nameDevopsEnvPodVOMap = devopsEnvPodVOS.stream().collect(Collectors.toMap(DevopsEnvPodVO::getName, Function.identity()));
+
+        List<DevopsEnvResourceDTO> resourceWithDetailByInstanceId = devopsEnvResourceMapper.getResourceWithDetailByInstanceIdAndKind(instanceId, ResourceType.POD.getType());
+        for (DevopsEnvResourceDTO r : resourceWithDetailByInstanceId) {
+            try {
+                DevopsEnvPodVO devopsEnvPodVO = nameDevopsEnvPodVOMap.get(r.getName());
+                if (devopsEnvPodVO != null) {
+                    JsonNode info = new ObjectMapper().readTree(r.getMessage());
+                    JsonNode jsonNode = info.get("metadata").withArray("ownerReferences");
+                    JsonNode ownerReference = jsonNode.get(0);
+                    if (ownerReference != null) {
+                        devopsEnvPodVO.setOwnerName(ownerReference.get("name").asText());
+                        devopsEnvPodVO.setOwnerKind(ownerReference.get("kind").asText());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return devopsEnvPodVOS;
     }
 }

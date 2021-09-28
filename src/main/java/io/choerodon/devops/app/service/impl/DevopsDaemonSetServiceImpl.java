@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDaemonSetMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -103,6 +104,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
                 ZoneId zoneId = ZoneId.systemDefault();
                 daemonSetInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
             }
+            daemonSetInfoVO.setSourceType(daemonSetInfoVO.getInstanceId() == null ? WorkloadSourceTypeEnums.WORKLOAD.getType() : WorkloadSourceTypeEnums.CHART.getType());
             return daemonSetInfoVO;
         });
     }

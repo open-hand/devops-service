@@ -31,7 +31,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
@@ -157,6 +156,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
+    @Autowired
+    @Lazy
+    private DevopsHostUserPermissionService devopsHostUserPermissionService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -526,6 +528,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (devopsCdHostDeployInfoDTO.getJarDeployJson() != null) {
             cdHostDeployConfigVO.setJarDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class));
         }
+
+        devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserPermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
 
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
@@ -1930,7 +1934,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             String rdupmType = JobTypeEnum.CD_DEPLOY.value().equals(t.getType()) ? RdupmTypeEnum.CHART.value() : RdupmTypeEnum.DEPLOYMENT.value();
             if (DeployTypeEnum.CREATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 // 校验应用编码和应用名称
-                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(projectId, rdupmType, null, devopsCdEnvDeployInfoDTO.getAppName(), devopsCdEnvDeployInfoDTO.getAppCode());
+                devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsCdEnvDeployInfoDTO.getEnvId(), rdupmType, null, devopsCdEnvDeployInfoDTO.getAppName(), devopsCdEnvDeployInfoDTO.getAppCode());
             }
 
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据

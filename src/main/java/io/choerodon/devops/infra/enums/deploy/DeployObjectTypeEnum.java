@@ -14,7 +14,7 @@ public enum DeployObjectTypeEnum {
      */
     CHART("chart"),
     /**
-     * 部署组
+     * 部署组-deployment 类型
      */
     DEPLOYMENT("deployment"),
     JAR("jar"),

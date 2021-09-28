@@ -14,6 +14,9 @@ public class DevopsDeployGroupAppConfigVO {
     @ApiModelProperty(name = "pod总数")
     private Integer replicas;
 
+    @ApiModelProperty(name = "升级策略")
+    private String strategyType;
+
     @ApiModelProperty(name = "升级过程中，允许【超出副本数量】的最大数值")
     private String maxSurge;
     @ApiModelProperty(name = "升级过程中，不可用实例的最大数量")
@@ -123,5 +126,13 @@ public class DevopsDeployGroupAppConfigVO {
 
     public void setAnnotations(Map<String, String> annotations) {
         this.annotations = annotations;
+    }
+
+    public String getStrategyType() {
+        return strategyType;
+    }
+
+    public void setStrategyType(String strategyType) {
+        this.strategyType = strategyType;
     }
 }

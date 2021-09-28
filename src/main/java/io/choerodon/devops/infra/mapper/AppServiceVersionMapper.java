@@ -88,6 +88,9 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     List<AppServiceVersionDTO> listShareVersionByAppId(@Param("appServiceId") Long appServiceId,
                                                        @Param("params") List<String> params);
 
+    List<AppServiceVersionDTO> pageShareVersionByAppServiceIdAndVersion(@Param("appServiceId") Long appServiceId,
+                                                                        @Param("version") String version);
+
     /**
      * 根据应用服务id集合和share 查询应用服务最新版本
      *

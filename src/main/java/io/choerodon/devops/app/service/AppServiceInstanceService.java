@@ -24,7 +24,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface AppServiceInstanceService {
     String INSTANCE_LABEL_RELEASE = "choerodon.io/release";
     String INSTANCE_LABEL_APP_SERVICE_ID = "choerodon.io/app-service-id";
-    String APPLICATION_LABEL = "choerodon.io/application-name";
+    String PARENT_WORK_LOAD_LABEL = "choerodon.io/parent-workload";
+    String PARENT_WORK_LOAD_NAME_LABEL = "choerodon.io/parent-workload-name";
 
     /**
      * 根据实例id查询实例信息

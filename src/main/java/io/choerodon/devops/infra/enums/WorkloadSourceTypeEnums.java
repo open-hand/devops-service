@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.enums;
 /**
  * deployment来源类型
  */
-public enum DeploymentSourceTypeEnums {
+public enum WorkloadSourceTypeEnums {
     /**
      * 来自chart
      */
@@ -19,7 +19,7 @@ public enum DeploymentSourceTypeEnums {
 
     private String type;
 
-    DeploymentSourceTypeEnums(String type) {
+    WorkloadSourceTypeEnums(String type) {
         this.type = type;
     }
 

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -31,6 +32,9 @@ public class DaemonSetInfoVO {
     private String commandStatus;
 
     private String error;
+
+    @ApiModelProperty("来源类型 chart/工作负载")
+    private String sourceType;
 
     public Long getNumberReady() {
         return numberReady;
@@ -134,5 +138,13 @@ public class DaemonSetInfoVO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 }

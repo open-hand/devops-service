@@ -4,6 +4,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsEnvPodVO {
@@ -33,6 +34,10 @@ public class DevopsEnvPodVO {
     private List<ContainerVO> containers;
     private String nodeName;
     private Long restartCount;
+    @JsonIgnore
+    private String ownerKind;
+    @JsonIgnore
+    private String ownerName;
 
     public Long getId() {
         return id;
@@ -208,5 +213,21 @@ public class DevopsEnvPodVO {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
+    }
+
+    public String getOwnerKind() {
+        return ownerKind;
+    }
+
+    public void setOwnerKind(String ownerKind) {
+        this.ownerKind = ownerKind;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 }

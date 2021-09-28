@@ -93,4 +93,11 @@ public interface DevopsMiddlewareService {
      * @return
      */
     DevopsMiddlewareDTO queryByInstanceId(Long instanceId);
+
+    /**
+     * 更新主机应用名称
+     * @param projectId
+     * @param middlewareHostInstanceVO
+     */
+    void updateHostInstance(Long projectId, MiddlewareHostInstanceVO middlewareHostInstanceVO);
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.DevopsEnvResourceVO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -34,4 +35,7 @@ public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDTO
     String queryDetailsByKindAndName(@Param("envId") Long envId,
                                      @Param("kind") String kind,
                                      @Param("name") String name);
+
+    List<DevopsEnvResourceDTO> getResourceWithDetailByInstanceIdAndKind(@Param("instanceId") Long instanceId, @Param("kind") String kind);
+
 }

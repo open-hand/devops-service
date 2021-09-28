@@ -23,7 +23,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -34,7 +34,9 @@ import io.choerodon.devops.infra.util.*;
 public class WorkloadServiceImpl implements WorkloadService {
 
     private static final String METADATA = "metadata";
+    private static final String LABEL = "labels";
     private static final String KIND = "kind";
+    private static final String SPEC = "spec";
     private static final String MASTER = "master";
     private static final String WORK_LOAD = "WorkLoad";
 
@@ -140,8 +142,8 @@ public class WorkloadServiceImpl implements WorkloadService {
             throw new CommonException("error.workload.size", resourceType.getType());
         }
 
-        for (Object data : yaml.loadAll(content)) {
-            Map<String, Object> datas = (Map<String, Object>) data;
+        for (Object workload : yaml.loadAll(content)) {
+            Map<String, Object> datas = (Map<String, Object>) workload;
 
             String kind = (String) datas.get(KIND);
 
@@ -152,7 +154,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             // 前面对资源进行了数量校验，因此只会循环一次，resourceFilePath也只会被设置一次
             resourceFilePath = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), name);
             objects.add(datas);
-            String resourceContent = FileUtil.getYaml().dump(data);
+            String resourceContent = FileUtil.getYaml().dump(workload);
             // 如果是更新操作，需要校验资源是否发生变化，没有变化不再进行后续处理(流水线不校验)
             if (Boolean.FALSE.equals(fromPipeline)
                     && UPDATE_TYPE.equals(workloadBaseVO.getOperateType())
@@ -413,7 +415,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
-        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
+        if (WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
             devopsDeploymentDTO.setAppConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG));
             devopsDeploymentDTO.setContainerConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG));
         }
