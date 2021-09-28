@@ -24,8 +24,10 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
+import io.choerodon.devops.api.vo.GitlabRepositoryInfo;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.PermissionHelper;
+import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -1208,4 +1210,19 @@ public class GitlabServiceClientOperator {
     public InputStream downloadArchiveByFormat(Integer gitlabProjectId, Integer userId, String commitSha, String format) {
         return gitlabServiceClient.downloadArchiveByFormat(gitlabProjectId, userId, commitSha, format).getBody();
     }
+
+    public GitlabProjectDTO queryExternalProjectByCode(AppExternalConfigDTO appExternalConfigDTO) {
+        AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+        GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+        appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+        return gitlabServiceClient.queryExternalProjectByCode(repositoryInfo.getNamespaceCode(),
+                repositoryInfo.getProjectCode(),
+                appExternalConfigVO.getGitlabUrl(),
+                appExternalConfigVO.getAuthType(),
+                appExternalConfigVO.getAccessToken(),
+                appExternalConfigVO.getUsername(),
+                appExternalConfigVO.getPassword()).getBody();
+
+    }
+
 }

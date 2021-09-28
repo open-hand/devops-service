@@ -592,4 +592,6 @@ public interface AppServiceService {
 
     String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode);
 
+    AppServiceDTO createExternalApp(Long projectId, ExternalAppServiceVO externalAppServiceVO);
+
 }

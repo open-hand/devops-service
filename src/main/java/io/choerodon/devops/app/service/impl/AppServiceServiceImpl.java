@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -82,7 +81,6 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayloa
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -2579,6 +2577,18 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceDTO;
     }
 
+    protected AppServiceDTO getExternalApplicationServiceDTO(Long projectId, Integer gitlabProjectId, ExternalAppServiceVO appServiceReqVO) {
+        AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceReqVO, AppServiceDTO.class);
+        checkName(projectId, appServiceDTO.getName());
+        checkCode(projectId, appServiceDTO.getCode());
+        appServiceDTO.setToken(GenerateUUID.generateUUID());
+        appServiceDTO.setActive(true);
+        appServiceDTO.setGitlabProjectId(gitlabProjectId);
+        appServiceDTO.setSynchro(false);
+        appServiceDTO.setProjectId(projectId);
+        return appServiceDTO;
+    }
+
     @Override
     public AppServiceDTO baseCreate(AppServiceDTO appServiceDTO) {
         if (appServiceMapper.insert(appServiceDTO) != 1) {
@@ -3509,5 +3519,45 @@ public class AppServiceServiceImpl implements AppServiceService {
     public String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode) {
         return String.format("ssh://git@%s/%s-%s/%s.git",
                 gitlabSshUrl, orgCode, projectCode, serviceCode);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceDTO createExternalApp(Long projectId, ExternalAppServiceVO externalAppServiceVO) {
+        externalAppServiceVO.setProjectId(projectId);
+
+        ApplicationValidator.checkApplicationService(externalAppServiceVO.getCode());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        // 判断项目下是否还能创建应用服务
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
+
+        // 校验账户权限
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(externalAppServiceVO.getAppExternalConfigDTO());
+
+        AppServiceDTO appServiceDTO = getExternalApplicationServiceDTO(projectId,
+                gitlabProjectDTO.getId(),
+                externalAppServiceVO);
+        appServiceDTO = baseCreate(appServiceDTO);
+
+        //创建saga payload
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+        devOpsAppServicePayload.setPath(appServiceDTO.getCode());
+        devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
+        devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
+        devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType(APPSERVICE)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_EXTERNAL_APPLICATION_SERVICE)
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefId(String.valueOf(appServiceDTO.getId()))
+                        .withSourceId(projectId),
+                builder -> {
+                });
+        return appServiceDTO;
     }
 }
