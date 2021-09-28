@@ -342,6 +342,26 @@ public class AppServiceVersionController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下分页查询共享服务版本或者根据版本信息模糊查询")
+    @CustomPageRequest
+    @GetMapping(value = "/page/share_versions")
+    public ResponseEntity<Page<AppServiceVersionRespVO>> pageShareVersionByAppServiceIdAndVersion(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务Id", required = true)
+            @RequestParam(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "版本信息")
+            @RequestParam(value = "version", required = false) String version) {
+        return Optional.ofNullable(
+                        appServiceVersionService.pageShareVersionByAppServiceIdAndVersion(appServiceId, pageable, version))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询共享服务的所有共享版本")
     @GetMapping(value = "/{app_service_id}/list_share_versions")
     public ResponseEntity<List<AppServiceVersionVO>> listAppServiceVersionByShareAndAppSerivceId(

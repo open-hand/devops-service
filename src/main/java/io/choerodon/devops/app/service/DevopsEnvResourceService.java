@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.api.vo.DevopsEnvResourceVO;
 import io.choerodon.devops.api.vo.InstanceEventVO;
 import io.choerodon.devops.api.vo.PodEventVO;
@@ -93,4 +94,6 @@ public interface DevopsEnvResourceService {
     String queryYamlById(Long envId, Long workLoadId, String type);
 
     String queryDetailsYamlByKindAndName(Long envId, String kind, String name);
+
+    List<DevopsEnvPodVO> listPodResourceByInstanceId(Long instanceId);
 }

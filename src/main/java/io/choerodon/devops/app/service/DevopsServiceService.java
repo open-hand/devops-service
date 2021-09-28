@@ -168,6 +168,8 @@ public interface DevopsServiceService {
 
     List<DevopsServiceDTO> baseListByEnvId(Long envId);
 
+    Integer countInstanceService(Long projectId, Long envId, Long objectId);
+
     DevopsServiceDTO baseCreate(DevopsServiceDTO devopsServiceDTO);
 
     void baseDelete(Long id);

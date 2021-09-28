@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("应用中心 应用id")
-    private Long appCenterId;
+    private Long id;
     private String name;
     private String code;
 
@@ -83,6 +83,8 @@ public class AppCenterEnvDetailVO {
     private String commandVersion;
     private Boolean envActive;
     private Boolean envConnected;
+    @ApiModelProperty(name = "应用是否存在关联的网络，存在则返回false，否则false")
+    private Boolean existService;
 
     @Encrypt
     @ApiModelProperty(name = "市场应用版本id")
@@ -103,6 +105,14 @@ public class AppCenterEnvDetailVO {
 
     public String getEffectCommandVersion() {
         return effectCommandVersion;
+    }
+
+    public Boolean getExistService() {
+        return existService;
+    }
+
+    public void setExistService(Boolean existService) {
+        this.existService = existService;
     }
 
     public void setEffectCommandVersion(String effectCommandVersion) {
@@ -153,12 +163,12 @@ public class AppCenterEnvDetailVO {
         this.commandVersionId = commandVersionId;
     }
 
-    public Long getAppCenterId() {
-        return appCenterId;
+    public Long getId() {
+        return id;
     }
 
-    public void setAppCenterId(Long appCenterId) {
-        this.appCenterId = appCenterId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getEnvCode() {

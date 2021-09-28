@@ -35,12 +35,12 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
 
     Boolean checkNameUnique(@Param("rdupmType") String rdupmType,
                             @Param("objectId") Long objectId,
-                            @Param("projectId") Long projectId,
+                            @Param("envId") Long envId,
                             @Param("name") String name);
 
     Boolean checkCodeUnique(@Param("rdupmType") String rdupmType,
                             @Param("objectId") Long objectId,
-                            @Param("projectId") Long projectId,
+                            @Param("envId") Long envId,
                             @Param("code") String code);
 
     /**

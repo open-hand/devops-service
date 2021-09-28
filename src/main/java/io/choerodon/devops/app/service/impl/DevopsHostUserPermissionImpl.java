@@ -64,6 +64,28 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     }
 
     @Override
+    public Boolean checkUserPermission(Long projectId, Long hostId, Long userId) {
+        // 1. 主机是跳过权限校验的直接放行
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
+        if (Boolean.TRUE.equals(devopsHostDTO.getSkipCheckPermission())) {
+            return true;
+        }
+        // 2. 用户是root用户、项目所有者、主机创建者也直接放行
+        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)
+                || devopsHostDTO.getCreatedBy().equals(userId)) {
+            return true;
+        }
+        // 3. 判断用户是否在devops_host_user_permission表中
+        DevopsHostUserPermissionDTO devopsHostUserPermissionDTO = new DevopsHostUserPermissionDTO();
+        devopsHostUserPermissionDTO.setHostId(hostId);
+        devopsHostUserPermissionDTO.setIamUserId(userId);
+        if (!CollectionUtils.isEmpty(devopsHostUserPermissionMapper.select(devopsHostUserPermissionDTO))) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO) {
         if (devopsHostUserPermissionMapper.insert(devopsHostUserPermissionDTO) != 1) {

@@ -16,33 +16,38 @@ public interface DevopsDeployAppCenterService {
     /**
      * 校验名称环境下唯一
      *
-     * @param projectId
+     * @param envId
      * @param name
      * @return
      */
-    Boolean checkNameUnique(Long projectId, String rdupmType, Long objectId, String name);
-
-    Boolean checkNameUnique(Long projectId, Long appId, String name);
-
-    /**
-     * 校验名称环境下唯一,不唯一抛出异常
-     *
-     * @param projectId
-     * @param name
-     * @return
-     */
-    void checkNameUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name);
-
-    void checkNameUniqueAndThrow(Long projectId, Long appId, String name);
+    Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name);
 
     /**
      * 校验code环境下唯一
      *
-     * @param projectId
+     * @param envId
      * @param code
      * @return
      */
-    Boolean checkCodeUnique(Long projectId, String rdupmType, Long objectId, String code);
+    Boolean checkCodeUnique(Long envId, String rdupmType, Long objectId, String code);
+
+    /**
+     * 校验名称环境下唯一,并抛出异常
+     *
+     * @param envId
+     * @param name
+     * @return
+     */
+    void checkNameUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name);
+
+    /**
+     * 校验code环境下唯一,并抛出异常
+     *
+     * @param envId
+     * @param name
+     * @return
+     */
+    void checkCodeUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name);
 
     void checkNameAndCodeUniqueAndThrow(Long projectId, String rdupmType, Long objectId, String name, String code);
 
@@ -101,6 +106,7 @@ public interface DevopsDeployAppCenterService {
 
     /**
      * 根据项目id和环境id查询deployment的应用列表
+     *
      * @param projectId
      * @param envId
      * @param pageRequest
@@ -110,6 +116,7 @@ public interface DevopsDeployAppCenterService {
 
     /**
      * 根据项目id,环境id和应用服务id查询chart的应用列表
+     *
      * @param projectId
      * @param envId
      * @param appServiceId

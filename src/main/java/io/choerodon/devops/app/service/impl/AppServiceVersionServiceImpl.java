@@ -544,6 +544,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
+    public Page<AppServiceVersionRespVO> pageShareVersionByAppServiceIdAndVersion(Long appServiceId, PageRequest pageable, String version) {
+        return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.pageShareVersionByAppServiceIdAndVersion(appServiceId, version)), AppServiceVersionRespVO.class);
+    }
+
+    @Override
     public List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId, null);
         if (appServiceVersionDTOS.isEmpty()) {

@@ -35,4 +35,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deployment.groovy') {
             column(name: 'status', type: 'VARCHAR(32)', remarks: '实例状态', afterColumn: 'source_type')
         }
     }
+
+    changeSet(author: 'lihao', id: '2021-09-26-update-column') {
+        modifyDataType(tableName: 'devops_deployment', columnName: 'name', newDataType: 'VARCHAR(64)')
+    }
 }

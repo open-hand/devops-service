@@ -12,7 +12,7 @@ import io.choerodon.devops.app.service.WorkloadService;
 import io.choerodon.devops.app.service.impl.DevopsDeploymentServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.devops.infra.enums.DeploymentSourceTypeEnums;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.InstanceStatus;
 
 /**
@@ -36,12 +36,12 @@ public class DeploymentWorkLoad extends WorkLoad {
     @Override
     public Long createWorkload(String name, Long projectId, Long envId, Long commandId, Map<String, Object> extraInfo) {
         DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO(name, projectId, envId, commandId, (String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE), InstanceStatus.OPERATING.getStatus());
-        if (DeploymentSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
+        if (WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_SOURCE_TYPE))) {
             devopsDeploymentDTO.setAppConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_APP_CONFIG));
             devopsDeploymentDTO.setContainerConfig((String) extraInfo.get(DevopsDeploymentServiceImpl.EXTRA_INFO_KEY_CONTAINER_CONFIG));
-            devopsDeploymentDTO.setSourceType(DeploymentSourceTypeEnums.DEPLOY_GROUP.getType());
+            devopsDeploymentDTO.setSourceType(WorkloadSourceTypeEnums.DEPLOY_GROUP.getType());
         } else {
-            devopsDeploymentDTO.setSourceType(DeploymentSourceTypeEnums.WORKLOAD.getType());
+            devopsDeploymentDTO.setSourceType(WorkloadSourceTypeEnums.WORKLOAD.getType());
         }
         return devopsDeploymentService.baseCreate(devopsDeploymentDTO);
     }

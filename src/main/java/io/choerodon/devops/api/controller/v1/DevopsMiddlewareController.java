@@ -47,6 +47,7 @@ public class DevopsMiddlewareController {
                                                                        @RequestParam("market_deploy_object_id") Long marketDeployObjectId) {
         return ResponseEntity.ok(middlewareService.queryRedisConfig(projectId, appServiceInstanceId, marketDeployObjectId));
     }
+
     /**
      * redis主机部署
      */
@@ -100,5 +101,17 @@ public class DevopsMiddlewareController {
         marketInstanceCreationRequestVO.setInstanceId(instanceId);
         marketInstanceCreationRequestVO.setSource(AppSourceType.MIDDLEWARE.getValue());
         return ResponseEntity.ok(middlewareService.updateMiddlewareInstance(projectId, marketInstanceCreationRequestVO));
+    }
+
+    /**
+     * 更新中间件主机实例名称
+     */
+    @ApiOperation(value = "更新中间件主机实例名称")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/host/update")
+    public ResponseEntity<Void> updateAppName(@PathVariable("project_id") Long projectId,
+                                              @RequestBody MiddlewareHostInstanceVO middlewareHostInstanceVO) {
+        middlewareService.updateHostInstance(projectId, middlewareHostInstanceVO);
+        return ResponseEntity.noContent().build();
     }
 }

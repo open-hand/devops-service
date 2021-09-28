@@ -38,7 +38,7 @@ class DevopsDeployGroupServiceImplSpec extends Specification {
         given:
         def deployGroupVO = new DevopsDeployGroupVO();
         deployGroupVO.setProjectId(215874867621597184L)
-        deployGroupVO.setEnvId(217052402308542464L)
+        deployGroupVO.setEnvironmentId(217052402308542464L)
         deployGroupVO.setCode("unit-test-"+UUID.randomUUID().toString().substring(0,12))
         deployGroupVO.setName("unit-test-"+UUID.randomUUID().toString().substring(0,12))
 

@@ -15,6 +15,15 @@ public interface DevopsHostUserPermissionService {
     void checkUserPermissionAndThrow(Long projectId, Long hostId, Long userId);
 
     /**
+     * 校验用户是否有主机权限，没有权限则抛出异常
+     * @param projectId
+     * @param hostId 主机id
+     * @param userId 用户id
+     * @return 有权限返回true,否则false
+     */
+    Boolean checkUserPermission(Long projectId, Long hostId, Long userId);
+
+    /**
      * 插入关系
      */
     void baseCreate(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO);

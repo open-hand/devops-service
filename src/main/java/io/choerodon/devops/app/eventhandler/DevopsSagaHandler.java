@@ -717,6 +717,11 @@ public class DevopsSagaHandler {
     public void handlePodReadyEvent(String data) {
         PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, podReadyEventVO.getInstanceId());
+        if (devopsDeployAppCenterEnvDTO == null) {
+            LOGGER.info(">>>>>>>>>>>>>>>App not found, skip. instanceId : {}<<<<<<<<<<<<<<<<<", podReadyEventVO.getInstanceId());
+            return;
+        }
+
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
         if (devopsHzeroDeployDetailsDTO != null) {
             // pod的操作记录不是最新的则丢弃
