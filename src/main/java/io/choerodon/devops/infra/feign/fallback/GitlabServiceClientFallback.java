@@ -272,6 +272,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<ProjectHookDTO> createExternalProjectHook(Integer projectId, ProjectHookDTO projectHookDTO, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("error.projecthook.create");
+    }
+
+    @Override
     public ResponseEntity<ProjectHookDTO> updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
         throw new CommonException("error.projecthook.update");
     }
@@ -530,5 +535,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<GitlabProjectDTO> queryExternalProjectByCode(String namespaceCode, String projectCode, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.query.external.project");
+    }
+
+    @Override
+    public ResponseEntity<List<CiVariableVO>> batchSaveExternalProjectVariable(Integer projectId, List<CiVariableVO> ciVariableVOList, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("error.save.external.project");
     }
 }
