@@ -3510,4 +3510,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         return String.format("ssh://git@%s/%s-%s/%s.git",
                 gitlabSshUrl, orgCode, projectCode, serviceCode);
     }
+
+    @Override
+    public List<AppServiceDTO> queryAppByProjectIds(List<Long> projectIds) {
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<AppServiceDTO> appServiceDTOS = appServiceMapper.listByActiveAndProjects(projectIds);
+        return appServiceDTOS;
+    }
 }

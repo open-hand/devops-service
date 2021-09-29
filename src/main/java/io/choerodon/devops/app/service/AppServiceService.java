@@ -592,4 +592,6 @@ public interface AppServiceService {
 
     String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode);
 
+    List<AppServiceDTO> queryAppByProjectIds(List<Long> projectIds);
+
 }

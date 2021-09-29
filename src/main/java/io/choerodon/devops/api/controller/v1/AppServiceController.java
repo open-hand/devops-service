@@ -18,6 +18,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -875,6 +876,18 @@ public class AppServiceController {
         applicationServiceService.batchTransfer(projectId, appServiceTransferVOList);
         return ResponseEntity.noContent().build();
     }
+
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据项目ids查询应用服务")
+    @PostMapping("/by_project_ids")
+    public ResponseEntity<List<AppServiceDTO>> queryAppByProjectIds(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody List<Long> projectIds) {
+        return new ResponseEntity<>(applicationServiceService.queryAppByProjectIds(projectIds), HttpStatus.OK);
+    }
+
 
 }
 
