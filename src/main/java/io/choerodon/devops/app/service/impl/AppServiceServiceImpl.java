@@ -3584,7 +3584,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO = baseCreate(appServiceDTO);
 
         // 保存外部仓库配置
-        AppExternalConfigDTO appExternalConfigDTO = ConvertUtils.convertObject(externalAppServiceVO, AppExternalConfigDTO.class);
+        AppExternalConfigDTO appExternalConfigDTO = ConvertUtils.convertObject(externalAppServiceVO.getAppExternalConfigDTO(), AppExternalConfigDTO.class);
         appExternalConfigDTO.setAppServiceId(appServiceDTO.getId());
         appExternalConfigService.baseSave(appExternalConfigDTO);
 
