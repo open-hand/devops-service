@@ -6,6 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -24,8 +25,12 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class AppExternalConfigDTO extends AuditDomain {
 
     @Id
+    @Encrypt
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Encrypt
+    @ApiModelProperty("应用服务id")
+    private Long appServiceId;
 
     @ApiModelProperty("外部仓库地址")
     private String repositoryUrl;
@@ -40,6 +45,14 @@ public class AppExternalConfigDTO extends AuditDomain {
     private String username;
     @ApiModelProperty("gitlab密码")
     private String password;
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
 
     public Long getId() {
         return id;

@@ -403,6 +403,16 @@ public interface GitlabServiceClient {
             @RequestParam("userId") Integer userId,
             @RequestBody ProjectHookDTO projectHookDTO);
 
+    @PostMapping("/v1/external_projects/hook")
+    ResponseEntity<ProjectHookDTO> createExternalProjectHook(
+            @RequestParam("projectId") Integer projectId,
+            @RequestBody ProjectHookDTO projectHookDTO,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
     @PutMapping("/v1/hook")
     ResponseEntity<ProjectHookDTO> updateProjectHook(
             @RequestParam("projectId") Integer projectId,
@@ -755,4 +765,13 @@ public interface GitlabServiceClient {
             @RequestParam(value = "accessToken") String accessToken,
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
+
+    @PutMapping(value = "/v1/external_projects/{projectId}/variables")
+    ResponseEntity<List<CiVariableVO>> batchSaveExternalProjectVariable(@PathVariable("projectId") Integer projectId,
+                                                                        @RequestBody List<CiVariableVO> ciVariableVOList,
+                                                                        @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                                        @RequestParam(value = "authType") String authType,
+                                                                        @RequestParam(value = "accessToken") String accessToken,
+                                                                        @RequestParam(value = "username") String username,
+                                                                        @RequestParam(value = "password") String password);
 }

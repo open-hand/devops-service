@@ -246,6 +246,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -909,6 +911,43 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceMapper.updateByIdSelectiveWithoutAudit(appServiceDTO);
+    }
+
+    @Override
+    public void operationExternalApplication(DevOpsAppServicePayload devOpsAppServicePayload) {
+
+        AppServiceDTO appServiceDTO = baseQuery(devOpsAppServicePayload.getAppServiceId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServicePayload.getUserId()));
+
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.queryByAppSeviceId(appServiceDTO.getId());
+
+        // 2. 设置token等变量（创建或更新）
+        List<CiVariableVO> variables = new ArrayList<>();
+        variables.add(new CiVariableVO(GITLAB_VARIABLE_TOKEN, appServiceDTO.getToken()));
+        variables.add(new CiVariableVO(GITLAB_VARIABLE_TRIVY_INSECURE, "true"));
+        gitlabServiceClientOperator.batchSaveExternalProjectVariable(appServiceDTO.getGitlabProjectId(), appExternalConfigDTO, variables);
+
+        // 3. 添加webhook
+        setExternalProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), appServiceDTO.getToken(), appExternalConfigDTO);
+        // 4. 创建应用服务
+        appServiceDTO.setSynchro(true);
+        appServiceDTO.setFailed(false);
+        appServiceDTO.setActive(true);
+        baseUpdate(appServiceDTO);
+    }
+
+    public void setExternalProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, AppExternalConfigDTO appExternalConfigDTO) {
+        ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
+        projectHookDTO.setEnableSslVerification(true);
+        projectHookDTO.setProjectId(projectId);
+        projectHookDTO.setToken(token);
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook";
+        projectHookDTO.setUrl(uri);
+
+        appServiceDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createExternalWebHook(
+                projectId, appExternalConfigDTO, projectHookDTO)
+                .getId()));
     }
 
 
