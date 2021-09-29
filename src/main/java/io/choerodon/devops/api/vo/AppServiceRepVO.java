@@ -30,6 +30,9 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务对应gitlab项目的id")
     private Long gitlabProjectId;
 
+    @ApiModelProperty("外部应用服务gitlab地址")
+    private String externalRepositoryUrl;
+
     @ApiModelProperty("应用服务对应的gitlab仓库地址")
     private String repoUrl;
 
@@ -133,6 +136,14 @@ public class AppServiceRepVO {
 
     @ApiModelProperty("如果是市场服务，对应的就是部署对象")
     private MarketServiceDeployObjectVO marketServiceDeployObjectVO;
+
+    public String getExternalRepositoryUrl() {
+        return externalRepositoryUrl;
+    }
+
+    public void setExternalRepositoryUrl(String externalRepositoryUrl) {
+        this.externalRepositoryUrl = externalRepositoryUrl;
+    }
 
     public String getErrorMessage() {
         return errorMessage;
