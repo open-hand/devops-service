@@ -154,4 +154,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             column(name: 'artifact_id', type:  'varchar(512)', remarks: '应用服务附加的pom信息：artifactId（敏捷使用）', afterColumn: 'group_id')
         }
     }
+
+    changeSet(author: 'wanghao', id: '2021-09-29-add-columns') {
+        addColumn(tableName: 'devops_app_service') {
+            column(name: 'external_gitlab_url', type:  'varchar(512)', defaultValue: "none" ,remarks: '外部平台gitlab地址，不为空则是外部应用', afterColumn: 'token')
+        }
+
+        dropUniqueConstraint(constraintName: "uk_app_gitlab_project_id", tableName: "devops_app_service")
+
+        addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_app_gitlab_project_id_and_url', columnNames: "gitlab_project_id, external_gitlab_url")
+
+    }
 }

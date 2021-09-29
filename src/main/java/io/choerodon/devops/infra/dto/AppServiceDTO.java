@@ -26,11 +26,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_app_service")
 public class AppServiceDTO extends AuditDomain {
 
-    public static final String ENCRYPT_KEY = "devops_app_service";
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-//    @Encrypt(AppServiceDTO.ENCRYPT_KEY)
     private Long id;
     private Long projectId;
     private String name;
@@ -53,6 +50,9 @@ public class AppServiceDTO extends AuditDomain {
     private String type;
     private String imgUrl;
     private String errorMessage;
+
+    @ApiModelProperty("外部应用服务gitlab地址")
+    private String externalGitlabUrl;
     // TODO delete the field
     /**
      * @deprecated
@@ -68,6 +68,7 @@ public class AppServiceDTO extends AuditDomain {
     private String description;
     @Transient
     private String repoUrl;
+
 
     @Transient
     @ApiModelProperty("应用服务对应的gitlab的仓库的ssh协议克隆地址")
@@ -85,6 +86,14 @@ public class AppServiceDTO extends AuditDomain {
      */
     @Transient
     private Boolean emptyRepository;
+
+    public String getExternalGitlabUrl() {
+        return externalGitlabUrl;
+    }
+
+    public void setExternalGitlabUrl(String externalGitlabUrl) {
+        this.externalGitlabUrl = externalGitlabUrl;
+    }
 
     public String getErrorMessage() {
         return errorMessage;
