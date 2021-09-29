@@ -3368,10 +3368,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (appService.getGitlabProjectId() != null) {
             String projectCode = info.getProjCode();
             String tenantCode = info.getTenantNum();
-            appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
-            appService.setRepoUrl(
-                    gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
-                            + appService.getCode() + ".git");
+            if (MiscConstants.DEFAULT_INTERNAL_APP_SERVICE_REPO_URL.equals(appService.getExternalRepositoryUrl())) {
+                appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
+                appService.setRepoUrl(
+                        gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
+                                + appService.getCode() + ".git");
+            } else {
+                appService.setRepoUrl(appService.getExternalRepositoryUrl());
+            }
+
         }
     }
 
