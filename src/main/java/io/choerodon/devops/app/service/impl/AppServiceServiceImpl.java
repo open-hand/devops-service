@@ -3175,10 +3175,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void createAppServiceForTransfer(AppServiceTransferVO appServiceTransferVO) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         Integer userId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
-        String token = GenerateUUID.generateUUID();
+
 
         AppServiceDTO appServiceDTO = baseQuery(appServiceTransferVO.getAppServiceId());
-
+        String token = appServiceDTO.getToken();
         // 0. 如果修改了服务编码，则先修改原仓库编码
         GitlabProjectDTO oldProjectDTO = gitlabServiceClientOperator.queryProjectById(appServiceTransferVO.getGitlabProjectId());
         if (!Objects.equals(oldProjectDTO.getName(), appServiceTransferVO.getCode())) {
