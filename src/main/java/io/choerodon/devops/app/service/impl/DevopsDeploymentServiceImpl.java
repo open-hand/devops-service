@@ -157,6 +157,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsDeploymentDTO.setId(deployId);
         } else {
             devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
+            devopsWorkloadResourceContentService.update(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getId(), content);
         }
 
         devopsDeploymentDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
@@ -307,7 +308,8 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsDeploymentDTO devopsDeploymentDTO = selectByPrimaryKey(deploymentId);
         if (!ObjectUtils.isEmpty(devopsDeploymentDTO)) {
             String containerConfig = devopsDeploymentDTO.getContainerConfig();
-            List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = JsonHelper.unmarshalByJackson(containerConfig, new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {});
+            List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = JsonHelper.unmarshalByJackson(containerConfig, new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+            });
             if (!CollectionUtils.isEmpty(devopsDeployGroupContainerConfigVOS)) {
                 devopsEnvPortVOS = listPortByDevopsEnvMessageVOS(devopsDeployGroupContainerConfigVOS);
             }

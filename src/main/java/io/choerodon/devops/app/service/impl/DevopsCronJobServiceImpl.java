@@ -189,6 +189,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
             devopsCronJobDTO.setId(cronJobId);
         } else {
             devopsEnvCommandDTO.setObjectId(devopsCronJobDTO.getId());
+            devopsWorkloadResourceContentService.update(ResourceType.CRON_JOB.getType(), devopsCronJobDTO.getId(), content);
         }
 
         devopsCronJobDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
