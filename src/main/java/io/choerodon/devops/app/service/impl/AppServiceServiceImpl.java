@@ -3565,6 +3565,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional(rollbackFor = Exception.class)
     public AppServiceDTO createExternalApp(Long projectId, ExternalAppServiceVO externalAppServiceVO) {
         externalAppServiceVO.setProjectId(projectId);
+        externalAppServiceVO.setType(ApplicationType.NORMAL.getType());
 
         ApplicationValidator.checkApplicationService(externalAppServiceVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -3581,6 +3582,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(externalAppServiceVO.getAppExternalConfigDTO().getRepositoryUrl());
         appServiceDTO.setGitlabProjectUrl(gitlabRepositoryInfo.getGitlabUrl());
         appServiceDTO = baseCreate(appServiceDTO);
+
+        // 保存外部仓库配置
+        AppExternalConfigDTO appExternalConfigDTO = ConvertUtils.convertObject(externalAppServiceVO, AppExternalConfigDTO.class);
+        appExternalConfigDTO.setAppServiceId(appServiceDTO.getId());
+        appExternalConfigService.baseSave(appExternalConfigDTO);
 
         //创建saga payload
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();

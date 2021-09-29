@@ -12,4 +12,6 @@ import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 public interface AppExternalConfigService {
 
     AppExternalConfigDTO queryByAppSeviceId(Long id);
+
+    void baseSave(AppExternalConfigDTO appExternalConfigDTO);
 }
