@@ -1184,15 +1184,26 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchIdWithIssueId(appServiceId, branchId);
+        List<Long> branchIdToRemove = new ArrayList<>();
+        branchIdToRemove.add(branchId);
         if (devopsBranchDTO != null) {
             CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
+            String branchName = devopsBranchDTO.getBranchName();
+
+            // 这里的操作是查出之前被删除的同名分支id
+            List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitService.baseListByAppIdAndBranch(appServiceId, branchName, null);
+            if (!CollectionUtils.isEmpty(devopsGitlabCommitDTOS)) {
+                Set<Long> commitIds = devopsGitlabCommitDTOS.stream().map(DevopsGitlabCommitDTO::getId).collect(Collectors.toSet());
+                branchIdToRemove.addAll(devopsIssueRelService.listBranchIdsByCommitIds(commitIds));
+            }
         }
 
-        // 移除分支关联关系
-        devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueId);
-
-        // 移除分支对应的提交关联关系
-        devopsIssueRelService.deleteCommitRelationByBranchId(branchId, issueId);
+        branchIdToRemove.forEach(id -> {
+            // 移除分支关联关系
+            devopsIssueRelService.deleteRelationByObjectAndObjectIdAndIssueId(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), branchId, issueId);
+            // 移除分支对应的提交关联关系
+            devopsIssueRelService.deleteCommitRelationByBranchId(branchId, issueId);
+        });
 
         // 查出剩下的和敏捷问题有关联的分支
         Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndObjectType(projectId, DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);

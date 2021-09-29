@@ -98,13 +98,23 @@
         </foreach>
     </delete>
 
-    <select id="listRelatedBranchIds" resultType="java.lang.Long">
+    <select id="listExistRelationBranchIds" resultType="java.lang.Long">
         SELECT dir.object_id
         FROM devops_issue_rel dir
                 WHERE dir.object = 'branch'
                   AND dir.object_id IN
         <foreach collection="commitRelatedBranchIds" item="branchId" open="(" close=")" separator=",">
             #{branchId}
+        </foreach>
+    </select>
+
+    <select id="listBranchIdsByCommitIds" resultType="java.lang.Long">
+        SELECT dir.branch_id
+        FROM devops_issue_rel dir
+        WHERE dir.object='commit'
+        AND dir.object_id IN
+        <foreach collection="commitIds" item="commitId" open="(" close=")" separator=",">
+            #{commitId}
         </foreach>
     </select>
 </mapper>

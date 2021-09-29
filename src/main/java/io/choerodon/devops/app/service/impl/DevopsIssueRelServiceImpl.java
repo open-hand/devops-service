@@ -125,11 +125,19 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds) {
+    public List<Long> listExistRelationBranchIds(Set<Long> commitRelatedBranchIds) {
         if (CollectionUtils.isEmpty(commitRelatedBranchIds)) {
             return new ArrayList<>();
         }
-        return devopsIssueRelMapper.listRelatedBranchIds(commitRelatedBranchIds);
+        return devopsIssueRelMapper.listExistRelationBranchIds(commitRelatedBranchIds);
+    }
+
+    @Override
+    public List<Long> listBranchIdsByCommitIds(Set<Long> commitIds) {
+        if (CollectionUtils.isEmpty(commitIds)) {
+            return new ArrayList<>();
+        }
+        return devopsIssueRelMapper.listBranchIdsByCommitIds(commitIds);
     }
 
     @Override
