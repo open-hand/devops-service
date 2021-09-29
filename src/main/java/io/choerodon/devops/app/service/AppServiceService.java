@@ -107,6 +107,8 @@ public interface AppServiceService {
      */
     void operationApplication(DevOpsAppServicePayload gitlabProjectEventDTO);
 
+    void operationExternalApplication(DevOpsAppServicePayload gitlabProjectEventDTO);
+
     /**
      * 处理服务导入逻辑
      *

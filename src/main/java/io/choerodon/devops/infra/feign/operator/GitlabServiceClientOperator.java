@@ -208,6 +208,23 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public List<CiVariableVO> batchSaveExternalProjectVariable(Integer gitlabProjectId, AppExternalConfigDTO appExternalConfigDTO, List<CiVariableVO> ciVariableVOList) {
+        try {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            return gitlabServiceClient.batchSaveExternalProjectVariable(gitlabProjectId,
+                    ciVariableVOList,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword()).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
     public void batchDeleteGroupVariable(Integer gitlabGroupId, Integer userId, List<String> keys) {
         try {
             gitlabServiceClient.batchGroupDeleteVariable(gitlabGroupId, userId, keys);
@@ -421,6 +438,24 @@ public class GitlabServiceClientOperator {
     public ProjectHookDTO createWebHook(Integer projectId, Integer userId, ProjectHookDTO projectHookDTO) {
         try {
             return gitlabServiceClient.createProjectHook(projectId, userId, projectHookDTO).getBody();
+        } catch (Exception e) {
+            throw new CommonException("error.projecthook.create", e);
+
+        }
+    }
+
+    public ProjectHookDTO createExternalWebHook(Integer projectId, AppExternalConfigDTO appExternalConfigDTO, ProjectHookDTO projectHookDTO) {
+        try {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            return gitlabServiceClient.createExternalProjectHook(projectId,
+                    projectHookDTO,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword()).getBody();
         } catch (Exception e) {
             throw new CommonException("error.projecthook.create", e);
 
