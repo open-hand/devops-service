@@ -937,7 +937,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     public void setExternalProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, AppExternalConfigDTO appExternalConfigDTO) {
-        ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
+        ProjectHookDTO projectHookDTO =new ProjectHookDTO();
+        projectHookDTO.setPipelineEvents(true);
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);
         projectHookDTO.setToken(token);
