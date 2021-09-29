@@ -750,9 +750,9 @@ public interface GitlabServiceClient {
     ResponseEntity<GitlabProjectDTO> queryExternalProjectByCode(
             @RequestParam(value = "namespace_code") String namespaceCode,
             @RequestParam(value = "project_code") String projectCode,
-            @RequestParam(value = "gitlab_url") String gitlabUrl,
-            @RequestParam(value = "auth_type") String authType,
-            @RequestParam(value = "access_token") String accessToken,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
 }
