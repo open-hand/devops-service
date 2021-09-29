@@ -3580,7 +3580,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 gitlabProjectDTO.getId(),
                 externalAppServiceVO);
         GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(externalAppServiceVO.getAppExternalConfigDTO().getRepositoryUrl());
-        appServiceDTO.setGitlabProjectUrl(gitlabRepositoryInfo.getGitlabUrl());
+        appServiceDTO.setExternalRepositoryUrl(gitlabRepositoryInfo.getGitlabUrl());
         appServiceDTO = baseCreate(appServiceDTO);
 
         // 保存外部仓库配置

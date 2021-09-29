@@ -52,7 +52,7 @@ public class AppServiceDTO extends AuditDomain {
     private String errorMessage;
 
     @ApiModelProperty("外部应用服务gitlab地址")
-    private String externalGitlabUrl;
+    private String externalRepositoryUrl;
     // TODO delete the field
     /**
      * @deprecated
@@ -87,12 +87,12 @@ public class AppServiceDTO extends AuditDomain {
     @Transient
     private Boolean emptyRepository;
 
-    public String getExternalGitlabUrl() {
-        return externalGitlabUrl;
+    public String getExternalRepositoryUrl() {
+        return externalRepositoryUrl;
     }
 
-    public void setExternalGitlabUrl(String externalGitlabUrl) {
-        this.externalGitlabUrl = externalGitlabUrl;
+    public void setExternalRepositoryUrl(String externalRepositoryUrl) {
+        this.externalRepositoryUrl = externalRepositoryUrl;
     }
 
     public String getErrorMessage() {
