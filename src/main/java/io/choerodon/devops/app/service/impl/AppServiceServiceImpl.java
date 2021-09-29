@@ -3578,6 +3578,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = getExternalApplicationServiceDTO(projectId,
                 gitlabProjectDTO.getId(),
                 externalAppServiceVO);
+        GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(externalAppServiceVO.getAppExternalConfigDTO().getRepositoryUrl());
+        appServiceDTO.setGitlabProjectUrl(gitlabRepositoryInfo.getGitlabUrl());
         appServiceDTO = baseCreate(appServiceDTO);
 
         //创建saga payload
