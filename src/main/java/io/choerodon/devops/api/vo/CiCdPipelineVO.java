@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -63,6 +64,8 @@ public class CiCdPipelineVO {
     //cicd 流水线下的执行记录
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
 
+    private Set<String> relatedBranches;
+
 
     private Long objectVersionNumber;
 
@@ -78,6 +81,14 @@ public class CiCdPipelineVO {
     private String envName;
     //流程耗时
     private Long time;
+
+    public Set<String> getRelatedBranches() {
+        return relatedBranches;
+    }
+
+    public void setRelatedBranches(Set<String> relatedBranches) {
+        this.relatedBranches = relatedBranches;
+    }
 
     public Date getCreationDate() {
         return creationDate;

@@ -362,7 +362,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
-            initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+
+            ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
+                initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+            });
+
         }
     }
 
