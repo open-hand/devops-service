@@ -42,4 +42,19 @@
         left join devops_env_command deco ON (deco.id = dd.command_id)
         WHERE dd.id=#{deploymentId}
     </select>
+
+    <select id="selectByPrimaryKeyWithCommandInfo" resultType="io.choerodon.devops.api.vo.DevopsDeploymentVO">
+        SELECT dd.*,
+               der.id        AS env_resource_id,
+               der.resource_detail_id,
+               deco.command_type,
+               deco.`status` AS command_status,
+               deco.error
+        FROM devops_deployment dd
+                     LEFT JOIN devops_env_resource der
+                ON (dd.env_id = der.env_id AND dd.name = der.name AND der.kind = 'Deployment')
+        LEFT JOIN  devops_env_command deco ON (deco.id = dd.command_id)
+        WHERE dd.id = #{id}
+        ORDER BY dd.id DESC
+    </select>
 </mapper>

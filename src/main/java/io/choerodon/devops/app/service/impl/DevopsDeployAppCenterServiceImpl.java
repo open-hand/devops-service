@@ -173,9 +173,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
-                DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
-                if (!ObjectUtils.isEmpty(deploymentDTO)) {
-                    devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
+                DevopsDeploymentVO deploymentVO = devopsDeploymentService.selectByPrimaryWithCommandInfo(devopsDeployAppCenterVO.getObjectId());
+                if (!ObjectUtils.isEmpty(deploymentVO)) {
+                    devopsDeployAppCenterVO.setStatus(deploymentVO.getCommandStatus());
+                    devopsDeployAppCenterVO.setError(deploymentVO.getError());
                 }
             }
             calculatePodStatus(devopsEnvPodDTOS, detailVO);

@@ -22,4 +22,6 @@ public interface DevopsDeploymentMapper extends BaseMapper<DevopsDeploymentDTO>,
                                          @Param("fromInstance") Boolean fromInstance);
 
     DevopsDeploymentVO queryByDeploymentIdWithResourceDetail(@Param("deploymentId") Long deploymentId);
+
+    DevopsDeploymentVO selectByPrimaryKeyWithCommandInfo(@Param("id") Long id);
 }
