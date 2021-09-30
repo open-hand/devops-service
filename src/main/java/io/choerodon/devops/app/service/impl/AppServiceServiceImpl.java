@@ -431,13 +431,16 @@ public class AppServiceServiceImpl implements AppServiceService {
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setAppServiceId(appServiceId);
         devOpsAppServicePayload.setIamProjectId(projectId);
-        //删除应用服务后需要发送消息，这里将消息的内容封近paylod
-        List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), new PageRequest(0, 0), null).getContent();
-        if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(devopsUserPermissionVO -> devopsUserPermissionVO.setCreationDate(null));
+        //删除应用服务后需要发送消息，这里将消息的内容封近paylod, 外部应用不需要
+        if (appServiceDTO.getExternalConfigId() == null) {
+            List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), new PageRequest(0, 0), null).getContent();
+            if (!CollectionUtils.isEmpty(list)) {
+                list.forEach(devopsUserPermissionVO -> devopsUserPermissionVO.setCreationDate(null));
+            }
+            devOpsAppServicePayload.setDevopsUserPermissionVOS(list);
         }
+
         devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);
-        devOpsAppServicePayload.setDevopsUserPermissionVOS(list);
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
@@ -479,38 +482,44 @@ public class AppServiceServiceImpl implements AppServiceService {
         gitlabPipelineMapper.deleteByAppServiceId(appServiceId);
         // 删除应用服务的版本
         appServiceVersionService.deleteByAppServiceId(appServiceId);
-        //删除gitlab project
-        if (appServiceDTO.getGitlabProjectId() != null && appServiceDTO.getExternalConfigId() == null) {
-            Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
-            // 确保只有这个应用服务关联了仓库（大多数情况是这样，可能有一些特殊的脏数据）
-            if (selectCountByGitlabProjectId(gitlabProjectId) == 1) {
-                GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
-                if (gitlabProjectDTO != null && gitlabProjectDTO.getId() != null) {
-                    UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                    Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
-                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
-                    LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectId, appServiceDTO.getId());
+        //删除gitlab project,外部仓库不删除
+        if (appServiceDTO.getExternalConfigId() == null) {
+            if (appServiceDTO.getGitlabProjectId() != null) {
+                Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
+                // 确保只有这个应用服务关联了仓库（大多数情况是这样，可能有一些特殊的脏数据）
+                if (selectCountByGitlabProjectId(gitlabProjectId) == 1) {
+                    GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
+                    if (gitlabProjectDTO != null && gitlabProjectDTO.getId() != null) {
+                        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                        Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
+                        gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
+                        LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectId, appServiceDTO.getId());
+                    }
+                } else {
+                    LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectId);
                 }
             } else {
-                LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectId);
-            }
-        } else {
-            // 可能应用服务创建完成后被回滚了数据库没有存下仓库id
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
-            GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(tenant.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(), gitlabUserId);
-            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                // 一般情况下，这个关于count的if条件是true，不正常的数据才会false
-                if (selectCountByGitlabProjectId(gitlabProjectDO.getId()) == 0) {
-                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
-                    LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectDO.getId(), appServiceDTO.getId());
-                } else {
-                    LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectDO.getId());
+                // 可能应用服务创建完成后被回滚了数据库没有存下仓库id
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
+                GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(tenant.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(), gitlabUserId);
+                if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                    // 一般情况下，这个关于count的if条件是true，不正常的数据才会false
+                    if (selectCountByGitlabProjectId(gitlabProjectDO.getId()) == 0) {
+                        gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+                        LOGGER.info("Successfully delete gitlab project {} for app service with id {}", gitlabProjectDO.getId(), appServiceDTO.getId());
+                    } else {
+                        LOGGER.warn("The gitlab project id {} is associated with other app service, so skip...", gitlabProjectDO.getId());
+                    }
                 }
             }
+        } else {
+            // 外部仓库还需要删除认证配置
+            appExternalConfigService.baseDelete(appServiceDTO.getExternalConfigId());
         }
+
         //删除应用服务与自定义harbor仓库的关联关系
         HarborCustomRepo harborCustomRepo = rdupmClient.listRelatedCustomRepoByService(projectId, appServiceId).getBody();
         if (!Objects.isNull(harborCustomRepo)) {
