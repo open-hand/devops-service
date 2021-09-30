@@ -55,6 +55,12 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExternalConfigMapper, appExternalConfigDTO, ERROR_UPDATE_APP_CONFIG_FAILED);
     }
 
+    @Override
+    @Transactional
+    public void baseDelete(Long externalConfigId) {
+        appExternalConfigMapper.deleteByPrimaryKey(externalConfigId);
+    }
+
     protected void handlerAppExternalConfigDTO (AppExternalConfigDTO appExternalConfigDTO) {
         if (ExternalAppAuthTypeEnum.ACCESS_TOKEN.getValue().equals(appExternalConfigDTO.getAuthType())) {
             appExternalConfigDTO.setUsername(null);

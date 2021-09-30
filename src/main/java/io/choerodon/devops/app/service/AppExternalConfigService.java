@@ -16,4 +16,6 @@ public interface AppExternalConfigService {
     void baseSave(AppExternalConfigDTO appExternalConfigDTO);
 
     void update(Long projectId, Long id, AppExternalConfigDTO appExternalConfigDTO);
+
+    void baseDelete(Long externalConfigId);
 }
