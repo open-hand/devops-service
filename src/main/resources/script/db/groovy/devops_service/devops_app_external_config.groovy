@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_external_config.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'app_service_id', type: 'BIGINT UNSIGNED', remarks: '应用服务id') {
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '所属项目ID') {
                 constraints(nullable: false)
             }
             column(name: 'repository_url', type: 'VARCHAR(512)', remarks: '外部仓库地址') {
@@ -28,7 +28,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_external_config.groovy') {
 
         addUniqueConstraint(tableName: 'devops_app_external_config',
                 constraintName: 'uk_repository_url', columnNames: 'repository_url')
-        addUniqueConstraint(tableName: 'devops_app_external_config',
-                constraintName: 'uk_app_service_id', columnNames: 'app_service_id')
     }
 }

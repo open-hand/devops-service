@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -52,7 +53,11 @@ public class AppServiceDTO extends AuditDomain {
     private String errorMessage;
 
     @ApiModelProperty("外部应用服务gitlab地址")
-    private String externalRepositoryUrl;
+    private String externalGitlabUrl;
+
+    @Encrypt
+    @ApiModelProperty("外部仓库配置id")
+    private Long externalConfigId;
     // TODO delete the field
     /**
      * @deprecated
@@ -86,13 +91,31 @@ public class AppServiceDTO extends AuditDomain {
      */
     @Transient
     private Boolean emptyRepository;
+    @Transient
+    private AppExternalConfigDTO appExternalConfigDTO;
 
-    public String getExternalRepositoryUrl() {
-        return externalRepositoryUrl;
+    public AppExternalConfigDTO getAppExternalConfigDTO() {
+        return appExternalConfigDTO;
     }
 
-    public void setExternalRepositoryUrl(String externalRepositoryUrl) {
-        this.externalRepositoryUrl = externalRepositoryUrl;
+    public void setAppExternalConfigDTO(AppExternalConfigDTO appExternalConfigDTO) {
+        this.appExternalConfigDTO = appExternalConfigDTO;
+    }
+
+    public Long getExternalConfigId() {
+        return externalConfigId;
+    }
+
+    public void setExternalConfigId(Long externalConfigId) {
+        this.externalConfigId = externalConfigId;
+    }
+
+    public String getExternalGitlabUrl() {
+        return externalGitlabUrl;
+    }
+
+    public void setExternalGitlabUrl(String externalGitlabUrl) {
+        this.externalGitlabUrl = externalGitlabUrl;
     }
 
     public String getErrorMessage() {
