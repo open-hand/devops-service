@@ -505,6 +505,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
     }
 
+    @Transactional
+    @Override
+    public void delete(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
+        devopsDeployAppCenterEnvMapper.delete(devopsDeployAppCenterEnvDTO);
+    }
+
     private Page<DevopsDeployAppCenterVO> pageAppCenterByUserId(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {
         Page<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS;
         long userId = DetailsHelper.getUserDetails().getUserId();

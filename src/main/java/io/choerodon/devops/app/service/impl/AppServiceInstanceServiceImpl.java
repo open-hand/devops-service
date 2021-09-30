@@ -1951,9 +1951,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public void deleteByEnvId(Long envId) {
+        // 删除实例
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setEnvId(envId);
         appServiceInstanceMapper.delete(appServiceInstanceDTO);
+        // 删除实例对应的应用
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setEnvId(envId);
+        devopsDeployAppCenterService.delete(devopsDeployAppCenterEnvDTO);
     }
 
     @Override
