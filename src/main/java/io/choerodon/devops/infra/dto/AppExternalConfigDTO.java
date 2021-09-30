@@ -28,9 +28,9 @@ public class AppExternalConfigDTO extends AuditDomain {
     @Encrypt
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Encrypt
-    @ApiModelProperty("应用服务id")
-    private Long appServiceId;
+
+    @ApiModelProperty("项目id")
+    private Long projectId;
 
     @ApiModelProperty("外部仓库地址")
     private String repositoryUrl;
@@ -46,12 +46,12 @@ public class AppExternalConfigDTO extends AuditDomain {
     @ApiModelProperty("gitlab密码")
     private String password;
 
-    public Long getAppServiceId() {
-        return appServiceId;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setAppServiceId(Long appServiceId) {
-        this.appServiceId = appServiceId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public Long getId() {

@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 
 /**
@@ -29,9 +30,6 @@ public class AppServiceRepVO {
 
     @ApiModelProperty("应用服务对应gitlab项目的id")
     private Long gitlabProjectId;
-
-    @ApiModelProperty("外部应用服务gitlab地址")
-    private String externalRepositoryUrl;
 
     @ApiModelProperty("应用服务对应的gitlab仓库地址")
     private String repoUrl;
@@ -137,12 +135,15 @@ public class AppServiceRepVO {
     @ApiModelProperty("如果是市场服务，对应的就是部署对象")
     private MarketServiceDeployObjectVO marketServiceDeployObjectVO;
 
-    public String getExternalRepositoryUrl() {
-        return externalRepositoryUrl;
+    @ApiModelProperty("外部应用仓库配置")
+    private AppExternalConfigDTO appExternalConfigDTO;
+
+    public AppExternalConfigDTO getAppExternalConfigDTO() {
+        return appExternalConfigDTO;
     }
 
-    public void setExternalRepositoryUrl(String externalRepositoryUrl) {
-        this.externalRepositoryUrl = externalRepositoryUrl;
+    public void setAppExternalConfigDTO(AppExternalConfigDTO appExternalConfigDTO) {
+        this.appExternalConfigDTO = appExternalConfigDTO;
     }
 
     public String getErrorMessage() {

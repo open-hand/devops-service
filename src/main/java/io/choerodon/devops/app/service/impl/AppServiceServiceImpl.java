@@ -917,9 +917,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void operationExternalApplication(DevOpsAppServicePayload devOpsAppServicePayload) {
 
         AppServiceDTO appServiceDTO = baseQuery(devOpsAppServicePayload.getAppServiceId());
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServicePayload.getUserId()));
 
-        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.queryByAppSeviceId(appServiceDTO.getId());
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
 
         // 2. 设置token等变量（创建或更新）
         List<CiVariableVO> variables = new ArrayList<>();
@@ -3368,13 +3367,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (appService.getGitlabProjectId() != null) {
             String projectCode = info.getProjCode();
             String tenantCode = info.getTenantNum();
-            if (MiscConstants.DEFAULT_INTERNAL_APP_SERVICE_REPO_URL.equals(appService.getExternalRepositoryUrl())) {
+            if (MiscConstants.DEFAULT_INTERNAL_APP_SERVICE_REPO_URL.equals(appService.getExternalGitlabUrl())) {
                 appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
                 appService.setRepoUrl(
                         gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
                                 + appService.getCode() + ".git");
             } else {
-                appService.setRepoUrl(appService.getExternalRepositoryUrl());
+                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appService.getExternalConfigId());
+                appService.setRepoUrl(appExternalConfigDTO.getRepositoryUrl());
+                appService.setAppExternalConfigDTO(appExternalConfigDTO);
             }
 
         }
@@ -3581,16 +3582,17 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 校验账户权限
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(externalAppServiceVO.getAppExternalConfigDTO());
 
+        // 保存外部仓库配置
+        AppExternalConfigDTO appExternalConfigDTO = ConvertUtils.convertObject(externalAppServiceVO.getAppExternalConfigDTO(), AppExternalConfigDTO.class);
+        appExternalConfigService.baseSave(appExternalConfigDTO);
+
         AppServiceDTO appServiceDTO = getExternalApplicationServiceDTO(projectId,
                 gitlabProjectDTO.getId(),
                 externalAppServiceVO);
-        appServiceDTO.setExternalRepositoryUrl(externalAppServiceVO.getAppExternalConfigDTO().getRepositoryUrl());
+        GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(externalAppServiceVO.getAppExternalConfigDTO().getRepositoryUrl());
+        appServiceDTO.setExternalGitlabUrl(gitlabRepositoryInfo.getGitlabUrl());
+        appServiceDTO.setExternalConfigId(appExternalConfigDTO.getId());
         appServiceDTO = baseCreate(appServiceDTO);
-
-        // 保存外部仓库配置
-        AppExternalConfigDTO appExternalConfigDTO = ConvertUtils.convertObject(externalAppServiceVO.getAppExternalConfigDTO(), AppExternalConfigDTO.class);
-        appExternalConfigDTO.setAppServiceId(appServiceDTO.getId());
-        appExternalConfigService.baseSave(appExternalConfigDTO);
 
         //创建saga payload
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();

@@ -157,12 +157,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
 
     changeSet(author: 'wanghao', id: '2021-09-29-add-columns') {
         addColumn(tableName: 'devops_app_service') {
-            column(name: 'external_repository_url', type:  'varchar(512)', defaultValue: "none" ,remarks: '外部平台gitlab地址，不为空则是外部应用', afterColumn: 'token')
+            column(name: 'external_gitlab_url', type:  'varchar(512)', defaultValue: "none" ,remarks: '外部平台gitlab地址，不为空则是外部应用', afterColumn: 'token')
+            column(name: 'external_config_id', type:  'BIGINT UNSIGNED' ,remarks: '外部配置id', afterColumn: 'external_gitlab_url')
         }
 
         dropUniqueConstraint(constraintName: "uk_app_gitlab_project_id", tableName: "devops_app_service")
 
-        addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_app_gitlab_project_id_and_url', columnNames: "gitlab_project_id, external_repository_url")
+        addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_app_gitlab_project_id_and_url', columnNames: "gitlab_project_id, external_gitlab_url")
+        addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_external_config_id', columnNames: "external_config_id")
 
     }
 }
