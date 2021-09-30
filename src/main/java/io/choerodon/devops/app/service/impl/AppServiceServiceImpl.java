@@ -480,7 +480,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 删除应用服务的版本
         appServiceVersionService.deleteByAppServiceId(appServiceId);
         //删除gitlab project
-        if (appServiceDTO.getGitlabProjectId() != null) {
+        if (appServiceDTO.getGitlabProjectId() != null && appServiceDTO.getExternalConfigId() == null) {
             Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
             // 确保只有这个应用服务关联了仓库（大多数情况是这样，可能有一些特殊的脏数据）
             if (selectCountByGitlabProjectId(gitlabProjectId) == 1) {
