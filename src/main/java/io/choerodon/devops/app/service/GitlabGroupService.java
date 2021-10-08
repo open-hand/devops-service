@@ -40,4 +40,5 @@ public interface GitlabGroupService {
      */
     GroupDTO createSiteAppGroup(Long iamUserId, String groupName);
 
+    Boolean checkRepositoryAvailable(String groupName, String projectName, String token);
 }

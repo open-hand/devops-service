@@ -353,6 +353,29 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public void createExternalFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            FileCreationVO fileCreationVO = new FileCreationVO();
+            fileCreationVO.setPath(path);
+            fileCreationVO.setContent(content);
+            fileCreationVO.setCommitMessage(commitMessage);
+            fileCreationVO.setUserId(userId);
+            fileCreationVO.setBranchName(branch);
+            ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
+                    .createExternalFile(projectId, fileCreationVO,
+                            appExternalConfigDTO.getRepositoryUrl(),
+                            appExternalConfigDTO.getAuthType(),
+                            appExternalConfigDTO.getAccessToken(),
+                            appExternalConfigDTO.getUsername(),
+                            appExternalConfigDTO.getPassword());
+            if (result.getBody().getFilePath() == null) {
+                throw new CommonException("error.file.create");
+            }
+        } catch (RetryableException e) {
+            LOGGER.info(e.getMessage(), e);
+        }
+    }
+
     /**
      * 这里是更新master分支上的文件内容
      *
@@ -371,6 +394,29 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setCommitMessage(commitMessage);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .updateFile(projectId, fileCreationVO);
+            if (result.getBody() == null || result.getBody().getFilePath() == null) {
+                throw new CommonException("error.file.update");
+            }
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
+    public void updateExternalFile(Integer projectId, String path, String content, String commitMessage, Integer userId, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            FileCreationVO fileCreationVO = new FileCreationVO();
+            fileCreationVO.setUserId(userId);
+            fileCreationVO.setPath(path);
+            fileCreationVO.setContent(content);
+            fileCreationVO.setCommitMessage(commitMessage);
+            ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
+                    .updateExternalFile(projectId,
+                            fileCreationVO,
+                            appExternalConfigDTO.getRepositoryUrl(),
+                            appExternalConfigDTO.getAuthType(),
+                            appExternalConfigDTO.getAccessToken(),
+                            appExternalConfigDTO.getUsername(),
+                            appExternalConfigDTO.getPassword());
             if (result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.update");
             }
@@ -1149,6 +1195,21 @@ public class GitlabServiceClientOperator {
     public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
         try {
             return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public RepositoryFileDTO getExternalWholeFile(Integer projectId, String branch, String filePath, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            return gitlabServiceClient.getExternalFile(projectId,
+                    branch,
+                    filePath,
+                    appExternalConfigDTO.getRepositoryUrl(),
+                    appExternalConfigDTO.getAuthType(),
+                    appExternalConfigDTO.getAccessToken(),
+                    appExternalConfigDTO.getUsername(),
+                    appExternalConfigDTO.getPassword()).getBody();
         } catch (Exception e) {
             return null;
         }
