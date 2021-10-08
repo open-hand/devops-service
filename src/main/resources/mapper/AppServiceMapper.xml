@@ -23,6 +23,7 @@
         da.artifact_id
         FROM devops_app_service da
         WHERE da.project_id = #{projectId}
+        AND da.external_config_id IS NULL
         <if test="isActive != null">
             <if test="isActive">
                 AND da.is_active = TRUE
