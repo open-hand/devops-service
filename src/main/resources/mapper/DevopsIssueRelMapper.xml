@@ -117,4 +117,11 @@
             #{commitId}
         </foreach>
     </select>
+
+    <select id="listCommitRelationByBranchId" resultType="java.lang.Long">
+        SELECT dir.object_id
+        FROM devops_issue_rel dir
+        WHERE dir.object='commit'
+        AND dir.branch_id=#{branchId}
+    </select>
 </mapper>

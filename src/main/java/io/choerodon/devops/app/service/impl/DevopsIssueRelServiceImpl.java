@@ -145,4 +145,9 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     public void deleteCommitRelationByBranchId(Long branchId, Long issueId) {
         devopsIssueRelMapper.deleteCommitRelationByBranchIdAndIssueId(branchId, issueId);
     }
+
+    @Override
+    public List<Long> listCommitRelationByBranchId(Long branchId) {
+        return devopsIssueRelMapper.listCommitRelationByBranchId(branchId);
+    }
 }

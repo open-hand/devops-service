@@ -60,12 +60,13 @@ public interface DevopsIssueRelService {
 
     /**
      * 列出关联了敏捷问题的commitId或branchId
+     *
      * @param projectId
      * @param object
      * @param issueId
      * @return
      */
-    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(Long projectId,String object, Long issueId);
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(Long projectId, String object, Long issueId);
 
     /**
      * 列出敏捷问题以及关联的分支信息
@@ -85,4 +86,12 @@ public interface DevopsIssueRelService {
      * @param issueId  问题id
      */
     void deleteCommitRelationByBranchId(Long branchId, Long issueId);
+
+    /**
+     * 根据branchId列举出所有和问题关联的commitId
+     *
+     * @param branchId
+     * @return
+     */
+    List<Long> listCommitRelationByBranchId(Long branchId);
 }
