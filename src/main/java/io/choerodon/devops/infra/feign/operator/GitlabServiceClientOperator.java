@@ -741,7 +741,7 @@ public class GitlabServiceClientOperator {
     public List<BranchDTO> listBranch(Integer projectId, String path, Integer userId) {
         ResponseEntity<List<BranchDTO>> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.listBranch(projectId, userId);
+            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null,null, null);
         } catch (Exception e) {
             throw new CommonException("error.branch.get", e);
         }
@@ -922,7 +922,23 @@ public class GitlabServiceClientOperator {
 
     public List<BranchDTO> listBranch(Integer gitlabProjectId, Integer userId) {
         try {
-            return gitlabServiceClient.listBranch(gitlabProjectId, userId).getBody();
+            return gitlabServiceClient.listBranch(gitlabProjectId, userId, null, null, null, null, null).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
+    public List<BranchDTO> listExternalBranch(Integer gitlabProjectId, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
+
+            return gitlabServiceClient.listBranch(gitlabProjectId,
+                    null,
+                    gitlabRepositoryInfo.getGitlabUrl(),
+                    appExternalConfigDTO.getAuthType(),
+                    appExternalConfigDTO.getAccessToken(),
+                    appExternalConfigDTO.getUsername(),
+                    appExternalConfigDTO.getPassword()).getBody();
         } catch (Exception e) {
             throw new CommonException(e);
         }

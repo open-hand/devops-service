@@ -165,7 +165,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<BranchDTO>> listBranch(Integer projectId, Integer userId) {
+    public ResponseEntity<List<BranchDTO>> listBranch(Integer projectId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.select.branch");
     }
 

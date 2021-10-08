@@ -37,6 +37,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.core.utils.PageUtils;
 import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -140,6 +141,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     @Lazy
     private DevopsProjectService devopsProjectService;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -313,6 +316,29 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId) {
+        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+        if (applicationDTO.getExternalConfigId() != null) {
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(applicationDTO.getExternalConfigId());
+            List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listExternalBranch(applicationDTO.getGitlabProjectId(), appExternalConfigDTO);
+            if (branchDTOS == null) {
+                return new Page<>();
+            }
+
+
+            List<BranchVO> branchVOS = branchDTOS.stream().map(branchDTO -> {
+                BranchVO branchVO = new BranchVO();
+                branchVO.setBranchName(branchDTO.getName());
+                return branchVO;
+            }).collect(Collectors.toList());
+            if (params != null) {
+                Map<String, Object> maps = TypeUtil.castMapParams(params);
+                Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+                Object branchName = searchParam.get("branchName");
+                branchVOS = branchVOS.stream().filter(branchVO -> branchVO.getBranchName().contains(branchName.toString())).collect(Collectors.toList());
+            }
+            return PageUtils.createPageFromList(branchVOS, pageable);
+        }
+
         try {
             checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
         } catch (GitlabAccessInvalidException e) {
@@ -320,7 +346,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+
         if (applicationDTO == null) {
             return new Page<>();
         }
