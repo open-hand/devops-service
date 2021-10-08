@@ -1003,10 +1003,29 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public Pipeline retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public Pipeline retryPipeline(Integer projectId, Integer pipelineId, Integer userId, AppExternalConfigDTO appExternalConfigDTO) {
         ResponseEntity<Pipeline> pipeline;
         try {
-            pipeline = gitlabServiceClient.retryPipeline(projectId, pipelineId, userId);
+            if (appExternalConfigDTO == null) {
+                pipeline = gitlabServiceClient.retryPipeline(projectId,
+                        pipelineId,
+                        userId,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+            } else {
+                pipeline = gitlabServiceClient.retryPipeline(projectId,
+                        pipelineId,
+                        userId,
+                        appExternalConfigDTO.getRepositoryUrl(),
+                        appExternalConfigDTO.getAuthType(),
+                        appExternalConfigDTO.getAccessToken(),
+                        appExternalConfigDTO.getUsername(),
+                        appExternalConfigDTO.getPassword());
+            }
+
         } catch (Exception e) {
             throw new CommonException(ERROR_RETRY_PIPELINE_FILED);
         }
@@ -1014,10 +1033,29 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public Pipeline cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public Pipeline cancelPipeline(Integer projectId, Integer pipelineId, Integer userId, AppExternalConfigDTO appExternalConfigDTO) {
         ResponseEntity<Pipeline> pipeline;
         try {
-            pipeline = gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
+            if (appExternalConfigDTO == null) {
+                pipeline = gitlabServiceClient.cancelPipeline(projectId,
+                        pipelineId,
+                        userId,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+            } else {
+                pipeline = gitlabServiceClient.cancelPipeline(projectId,
+                        pipelineId,
+                        userId,
+                        appExternalConfigDTO.getRepositoryUrl(),
+                        appExternalConfigDTO.getAuthType(),
+                        appExternalConfigDTO.getAccessToken(),
+                        appExternalConfigDTO.getUsername(),
+                        appExternalConfigDTO.getPassword());
+            }
+
         } catch (Exception e) {
             throw new CommonException(ERROR_CANCEL_PIPELINE_FILED);
         }
