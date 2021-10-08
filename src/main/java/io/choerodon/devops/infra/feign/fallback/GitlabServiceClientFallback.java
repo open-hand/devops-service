@@ -26,23 +26,13 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
 public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
-    public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, FileCreationVO fileCreationVO) {
+    public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.file.create");
     }
 
     @Override
-    public ResponseEntity<RepositoryFileDTO> createExternalFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, FileCreationVO fileCreationVO) {
+    public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.file.update");
-    }
-
-    @Override
-    public ResponseEntity<RepositoryFileDTO> updateExternalFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
     }
 
     @Override

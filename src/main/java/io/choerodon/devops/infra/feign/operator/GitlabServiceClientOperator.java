@@ -325,7 +325,13 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setCommitMessage(commitMessage);
             fileCreationVO.setUserId(userId);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .createFile(projectId, fileCreationVO);
+                    .createFile(projectId,
+                            fileCreationVO,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
@@ -344,7 +350,13 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setUserId(userId);
             fileCreationVO.setBranchName(branch);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .createFile(projectId, fileCreationVO);
+                    .createFile(projectId,
+                            fileCreationVO,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
@@ -362,7 +374,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setUserId(userId);
             fileCreationVO.setBranchName(branch);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .createExternalFile(projectId, fileCreationVO,
+                    .createFile(projectId, fileCreationVO,
                             appExternalConfigDTO.getRepositoryUrl(),
                             appExternalConfigDTO.getAuthType(),
                             appExternalConfigDTO.getAccessToken(),
@@ -393,7 +405,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setContent(content);
             fileCreationVO.setCommitMessage(commitMessage);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .updateFile(projectId, fileCreationVO);
+                    .updateFile(projectId, fileCreationVO, null, null, null, null, null);
             if (result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.update");
             }
@@ -410,7 +422,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setContent(content);
             fileCreationVO.setCommitMessage(commitMessage);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
-                    .updateExternalFile(projectId,
+                    .updateFile(projectId,
                             fileCreationVO,
                             appExternalConfigDTO.getRepositoryUrl(),
                             appExternalConfigDTO.getAuthType(),
